@@ -1268,6 +1268,96 @@ ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
 
         inputAndTaskForSign sign =
             case sign of
+                FollowMothersEyes ->
+                    let
+                        followMothersEyesUpdateFunc value form_ =
+                            { form_ | followMothersEyes = Just value }
+                    in
+                    ( viewECDInput FollowMothersEyes form.followMothersEyes followMothersEyesUpdateFunc
+                    , form.followMothersEyes
+                    )
+
+                MoveArmsAndLegs ->
+                    let
+                        moveArmsAndLegsUpdateFunc value form_ =
+                            { form_ | moveArmsAndLegs = Just value }
+                    in
+                    ( viewECDInput MoveArmsAndLegs form.moveArmsAndLegs moveArmsAndLegsUpdateFunc
+                    , form.moveArmsAndLegs
+                    )
+
+                RaiseHandsUp ->
+                    let
+                        raiseHandsUpUpdateFunc value form_ =
+                            { form_ | raiseHandsUp = Just value }
+                    in
+                    ( viewECDInput RaiseHandsUp form.raiseHandsUp raiseHandsUpUpdateFunc
+                    , form.raiseHandsUp
+                    )
+
+                Smile ->
+                    let
+                        smileUpdateFunc value form_ =
+                            { form_ | smile = Just value }
+                    in
+                    ( viewECDInput Smile form.smile smileUpdateFunc
+                    , form.smile
+                    )
+
+                RollSideways ->
+                    let
+                        rollSidewaysUpdateFunc value form_ =
+                            { form_ | rollSideways = Just value }
+                    in
+                    ( viewECDInput RollSideways form.rollSideways rollSidewaysUpdateFunc
+                    , form.rollSideways
+                    )
+
+                BringHandsToMouth ->
+                    let
+                        bringHandsToMouthUpdateFunc value form_ =
+                            { form_ | bringHandsToMouth = Just value }
+                    in
+                    ( viewECDInput BringHandsToMouth form.bringHandsToMouth bringHandsToMouthUpdateFunc
+                    , form.bringHandsToMouth
+                    )
+
+                HoldHeadWithoutSupport ->
+                    let
+                        holdHeadWithoutSupportUpdateFunc value form_ =
+                            { form_ | holdHeadWithoutSupport = Just value }
+                    in
+                    ( viewECDInput HoldHeadWithoutSupport form.holdHeadWithoutSupport holdHeadWithoutSupportUpdateFunc
+                    , form.holdHeadWithoutSupport
+                    )
+
+                HoldAndShakeToys ->
+                    let
+                        holdAndShakeToysUpdateFunc value form_ =
+                            { form_ | holdAndShakeToys = Just value }
+                    in
+                    ( viewECDInput HoldAndShakeToys form.holdAndShakeToys holdAndShakeToysUpdateFunc
+                    , form.holdAndShakeToys
+                    )
+
+                ReactToSuddenSounds ->
+                    let
+                        reactToSuddenSoundsUpdateFunc value form_ =
+                            { form_ | reactToSuddenSounds = Just value }
+                    in
+                    ( viewECDInput ReactToSuddenSounds form.reactToSuddenSounds reactToSuddenSoundsUpdateFunc
+                    , form.reactToSuddenSounds
+                    )
+
+                UseConsonantSounds ->
+                    let
+                        useConsonantSoundsUpdateFunc value form_ =
+                            { form_ | useConsonantSounds = Just value }
+                    in
+                    ( viewECDInput UseConsonantSounds form.useConsonantSounds useConsonantSoundsUpdateFunc
+                    , form.useConsonantSounds
+                    )
+
                 RespondToSoundWithSound ->
                     let
                         respondToSoundWithSoundUpdateFunc value form_ =

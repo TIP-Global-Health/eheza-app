@@ -1307,38 +1307,51 @@ type alias WellChildECD =
 
 
 type ECDSign
-    = -- 6 to 9 months.
-      RespondToSoundWithSound
+    = -- From 5 weeks.
+      FollowMothersEyes
+    | MoveArmsAndLegs
+      -- From 13 weeks.
+    | RaiseHandsUp
+    | Smile
+    | RollSideways
+      -- From 6 months (secondary).
+    | BringHandsToMouth
+    | HoldHeadWithoutSupport
+    | HoldAndShakeToys
+    | ReactToSuddenSounds
+    | UseConsonantSounds
+      -- From 6 months (primary).
+    | RespondToSoundWithSound
     | TurnHeadWhenCalled
     | SitWithoutSupport
     | SmileBack
     | RollTummyToBack
     | ReachForToys
-      -- 9 to 15 months.
+      -- From 15 months.
     | UseSimpleGestures
     | StandOnTheirOwn
     | CopyDuringPlay
     | SayMamaDada
     | CanHoldSmallObjects
-      -- 15 to 18 months.
+      -- From 18 months.
     | LooksWhenPointedAt
     | UseSingleWords
     | WalkWithoutHelp
     | PlayPretend
     | PointToThingsOfInterest
-      -- 18 to 24 months.
+      -- From 2 years.
     | UseShortPhrases
     | InterestedInOtherChildren
     | FollowSimpleInstructions
     | KickBall
     | PointAtNamedObjects
-      -- 24 to 36 months.
+      -- From 3 years.
     | DressThemselves
     | WashHandsGoToToiled
     | KnowsColorsAndNumbers
     | UseMediumPhrases
     | PlayMakeBelieve
-      -- 36 to 48 months.
+      -- From 4 years.
     | FollowThreeStepInstructions
     | StandOnOneFootFiveSeconds
     | UseLongPhrases

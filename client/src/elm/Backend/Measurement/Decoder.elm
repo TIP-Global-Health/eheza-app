@@ -2905,6 +2905,36 @@ decodeECDSign =
         |> andThen
             (\sign ->
                 case sign of
+                    "follow-mothers-eyes" ->
+                        succeed FollowMothersEyes
+
+                    "move-arms-and-legs" ->
+                        succeed MoveArmsAndLegs
+
+                    "raise-hands-up" ->
+                        succeed RaiseHandsUp
+
+                    "smile" ->
+                        succeed Smile
+
+                    "roll-sideways" ->
+                        succeed RollSideways
+
+                    "bring-hands-to-mouth" ->
+                        succeed BringHandsToMouth
+
+                    "hold-head-without-support" ->
+                        succeed HoldHeadWithoutSupport
+
+                    "hold-and-shake-toys" ->
+                        succeed HoldAndShakeToys
+
+                    "react-to-sudden-sounds" ->
+                        succeed ReactToSuddenSounds
+
+                    "use-consonant-sounds" ->
+                        succeed UseConsonantSounds
+
                     "respond-to-sound-with-sound" ->
                         succeed RespondToSoundWithSound
 

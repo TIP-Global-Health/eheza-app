@@ -487,7 +487,17 @@ toSymptomsReviewValue form =
 
 fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm
 fromWellChildECDValue signs =
-    { respondToSoundWithSound = Maybe.map (EverySet.member RespondToSoundWithSound) signs
+    { followMothersEyes = Maybe.map (EverySet.member FollowMothersEyes) signs
+    , moveArmsAndLegs = Maybe.map (EverySet.member MoveArmsAndLegs) signs
+    , raiseHandsUp = Maybe.map (EverySet.member RaiseHandsUp) signs
+    , smile = Maybe.map (EverySet.member Smile) signs
+    , rollSideways = Maybe.map (EverySet.member RollSideways) signs
+    , bringHandsToMouth = Maybe.map (EverySet.member BringHandsToMouth) signs
+    , holdHeadWithoutSupport = Maybe.map (EverySet.member HoldHeadWithoutSupport) signs
+    , holdAndShakeToys = Maybe.map (EverySet.member HoldAndShakeToys) signs
+    , reactToSuddenSounds = Maybe.map (EverySet.member ReactToSuddenSounds) signs
+    , useConsonantSounds = Maybe.map (EverySet.member UseConsonantSounds) signs
+    , respondToSoundWithSound = Maybe.map (EverySet.member RespondToSoundWithSound) signs
     , turnHeadWhenCalled = Maybe.map (EverySet.member TurnHeadWhenCalled) signs
     , sitWithoutSupport = Maybe.map (EverySet.member SitWithoutSupport) signs
     , smileBack = Maybe.map (EverySet.member SmileBack) signs
@@ -527,7 +537,17 @@ wellChildECDFormWithDefault form saved =
         |> unwrap
             form
             (\signs ->
-                { respondToSoundWithSound = or form.respondToSoundWithSound (EverySet.member RespondToSoundWithSound signs |> Just)
+                { followMothersEyes = or form.followMothersEyes (EverySet.member FollowMothersEyes signs |> Just)
+                , moveArmsAndLegs = or form.moveArmsAndLegs (EverySet.member MoveArmsAndLegs signs |> Just)
+                , raiseHandsUp = or form.raiseHandsUp (EverySet.member RaiseHandsUp signs |> Just)
+                , smile = or form.smile (EverySet.member Smile signs |> Just)
+                , rollSideways = or form.rollSideways (EverySet.member RollSideways signs |> Just)
+                , bringHandsToMouth = or form.bringHandsToMouth (EverySet.member BringHandsToMouth signs |> Just)
+                , holdHeadWithoutSupport = or form.holdHeadWithoutSupport (EverySet.member HoldHeadWithoutSupport signs |> Just)
+                , holdAndShakeToys = or form.holdAndShakeToys (EverySet.member HoldAndShakeToys signs |> Just)
+                , reactToSuddenSounds = or form.reactToSuddenSounds (EverySet.member ReactToSuddenSounds signs |> Just)
+                , useConsonantSounds = or form.useConsonantSounds (EverySet.member UseConsonantSounds signs |> Just)
+                , respondToSoundWithSound = or form.respondToSoundWithSound (EverySet.member RespondToSoundWithSound signs |> Just)
                 , turnHeadWhenCalled = or form.turnHeadWhenCalled (EverySet.member TurnHeadWhenCalled signs |> Just)
                 , sitWithoutSupport = or form.sitWithoutSupport (EverySet.member SitWithoutSupport signs |> Just)
                 , smileBack = or form.smileBack (EverySet.member SmileBack signs |> Just)
@@ -570,7 +590,17 @@ toWellChildECDValueWithDefault saved form =
 
 toWellChildECDValue : WellChildECDForm -> Maybe (EverySet ECDSign)
 toWellChildECDValue form =
-    [ ifNullableTrue RespondToSoundWithSound form.respondToSoundWithSound
+    [ ifNullableTrue FollowMothersEyes form.followMothersEyes
+    , ifNullableTrue MoveArmsAndLegs form.moveArmsAndLegs
+    , ifNullableTrue RaiseHandsUp form.raiseHandsUp
+    , ifNullableTrue Smile form.smile
+    , ifNullableTrue RollSideways form.rollSideways
+    , ifNullableTrue BringHandsToMouth form.bringHandsToMouth
+    , ifNullableTrue HoldHeadWithoutSupport form.holdHeadWithoutSupport
+    , ifNullableTrue HoldAndShakeToys form.holdAndShakeToys
+    , ifNullableTrue ReactToSuddenSounds form.reactToSuddenSounds
+    , ifNullableTrue UseConsonantSounds form.useConsonantSounds
+    , ifNullableTrue RespondToSoundWithSound form.respondToSoundWithSound
     , ifNullableTrue TurnHeadWhenCalled form.turnHeadWhenCalled
     , ifNullableTrue SitWithoutSupport form.sitWithoutSupport
     , ifNullableTrue SmileBack form.smileBack

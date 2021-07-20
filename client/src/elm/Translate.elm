@@ -2953,6 +2953,56 @@ translationSet trans =
 
         ECDSignQuestion sign ->
             case sign of
+                FollowMothersEyes ->
+                    { english = " Does the child follow their mothers eyes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MoveArmsAndLegs ->
+                    { english = " Does the child move their arms and legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                RaiseHandsUp ->
+                    { english = " Does the child raise their hands up"
+                    , kinyarwanda = Nothing
+                    }
+
+                Smile ->
+                    { english = "Does the child smile"
+                    , kinyarwanda = Nothing
+                    }
+
+                RollSideways ->
+                    { english = "Does the child roll from left to right and right to left"
+                    , kinyarwanda = Nothing
+                    }
+
+                BringHandsToMouth ->
+                    { english = " Does the child bring their hands to their mouth"
+                    , kinyarwanda = Nothing
+                    }
+
+                HoldHeadWithoutSupport ->
+                    { english = "Does the child hold their head steady without support"
+                    , kinyarwanda = Nothing
+                    }
+
+                HoldAndShakeToys ->
+                    { english = "Does the child hold and shake toys and swing at dangling toys"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReactToSuddenSounds ->
+                    { english = "Does the child react to sudden noises or sounds"
+                    , kinyarwanda = Nothing
+                    }
+
+                UseConsonantSounds ->
+                    { english = "Is the child using consonant sounds in babbling, for example “da, da, da”"
+                    , kinyarwanda = Nothing
+                    }
+
                 RespondToSoundWithSound ->
                     { english = "Does the child respond to sound by making sound"
                     , kinyarwanda = Nothing
