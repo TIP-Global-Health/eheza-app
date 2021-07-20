@@ -1052,12 +1052,12 @@ toImmunisationValue form =
             allVaccineTypes False
                 |> List.filterMap
                     (\vaccineType ->
-                        vaccineAdministrationNote vaccineType
+                        determineVaccineAdministrationNote vaccineType
                             |> Maybe.map (\note -> ( vaccineType, note ))
                     )
                 |> Dict.fromList
 
-        vaccineAdministrationNote vaccineType =
+        determineVaccineAdministrationNote vaccineType =
             case vaccineType of
                 VaccineBCG ->
                     if form.bcgVaccinationGiven == Just True then
@@ -1114,19 +1114,30 @@ toImmunisationValue form =
 
                     else
                         form.hpvVaccinationNote
+
+        determineVaccineDate getNoteFunc getDateFunc =
+            let
+                note =
+                    getNoteFunc form
+            in
+            if List.member note [ Just AdministeredToday, Just AdministeredPreviously ] then
+                getDateFunc form
+
+            else
+                Nothing
     in
     Just <|
         ImmunisationValue
             form.suggestedVaccines
             vacinationNotes
-            form.bcgVaccinationDate
-            form.opvVaccinationDate
-            form.dtpVaccinationDate
-            form.pcv13VaccinationDate
-            form.rotarixVaccinationDate
-            form.ipvVaccinationDate
-            form.mrVaccinationDate
-            form.hpvVaccinationDate
+            (determineVaccineDate .bcgVaccinationNote .bcgVaccinationDate)
+            (determineVaccineDate .opvVaccinationNote .opvVaccinationDate)
+            (determineVaccineDate .dtpVaccinationNote .dtpVaccinationDate)
+            (determineVaccineDate .pcv13VaccinationNote .pcv13VaccinationDate)
+            (determineVaccineDate .rotarixVaccinationNote .rotarixVaccinationDate)
+            (determineVaccineDate .ipvVaccinationNote .ipvVaccinationDate)
+            (determineVaccineDate .mrVaccinationNote .mrVaccinationDate)
+            (determineVaccineDate .hpvVaccinationNote .hpvVaccinationDate)
 
 
 generateCompletedECDSigns : AssembledData -> List ECDSign
