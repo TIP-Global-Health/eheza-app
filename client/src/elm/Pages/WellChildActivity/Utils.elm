@@ -107,8 +107,9 @@ expectActivity currentDate isChw assembled db activity =
                 |> Maybe.withDefault False
 
         WellChildImmunisation ->
-            -- @todo
-            True
+            generateSuggestedVaccines currentDate isChw assembled
+                |> List.isEmpty
+                |> not
 
         WellChildECD ->
             ageInMonths currentDate assembled.person
