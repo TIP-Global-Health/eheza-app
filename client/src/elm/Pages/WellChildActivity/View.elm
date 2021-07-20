@@ -1220,38 +1220,33 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
 
 viewECDForm : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
 viewECDForm language currentDate assembled ecdForm =
-    ageInMonths currentDate assembled.person
-        |> Maybe.map
-            (\ageMonths ->
-                let
-                    totalTasks =
-                        List.length tasks
+    let
+        totalTasks =
+            List.length tasks
 
-                    tasksCompleted =
-                        List.map taskCompleted tasks
-                            |> List.sum
+        tasksCompleted =
+            List.map taskCompleted tasks
+                |> List.sum
 
-                    ( inputs, tasks ) =
-                        ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm
+        ( inputs, tasks ) =
+            ecdFormInputsAndTasks language currentDate assembled ecdForm
 
-                    disabled =
-                        tasksCompleted /= totalTasks
-                in
-                [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-                , div [ class "ui full segment" ]
-                    [ div [ class "full content" ]
-                        [ div [ class "ui form ecd" ]
-                            inputs
-                        ]
-                    , viewAction language (SaveECD assembled.participant.person assembled.measurements.ecd) disabled
-                    ]
-                ]
-            )
-        |> Maybe.withDefault []
+        disabled =
+            tasksCompleted /= totalTasks
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form ecd" ]
+                inputs
+            ]
+        , viewAction language (SaveECD assembled.participant.person assembled.measurements.ecd) disabled
+        ]
+    ]
 
 
-ecdFormInputsAndTasks : Language -> NominalDate -> AssembledData -> Int -> WellChildECDForm -> ( List (Html Msg), List (Maybe Bool) )
-ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
+ecdFormInputsAndTasks : Language -> NominalDate -> AssembledData -> WellChildECDForm -> ( List (Html Msg), List (Maybe Bool) )
+ecdFormInputsAndTasks language currentDate assembled ecdForm =
     let
         form =
             assembled.measurements.ecd
@@ -1262,7 +1257,7 @@ ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
             generateCompletedECDSigns assembled
 
         expected =
-            expectedECDSignsByAge ageMonths
+            expectedECDSignsByAge currentDate assembled
                 |> List.filter (\sign -> not <| List.member sign completed)
                 |> List.map inputAndTaskForSign
 

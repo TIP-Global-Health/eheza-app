@@ -1314,13 +1314,13 @@ type ECDSign
     | RaiseHandsUp
     | Smile
     | RollSideways
-      -- From 6 months (secondary).
+      -- From 6 months (minors).
     | BringHandsToMouth
     | HoldHeadWithoutSupport
     | HoldAndShakeToys
     | ReactToSuddenSounds
     | UseConsonantSounds
-      -- From 6 months (primary).
+      -- From 6 months (majors).
     | RespondToSoundWithSound
     | TurnHeadWhenCalled
     | SitWithoutSupport

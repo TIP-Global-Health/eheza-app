@@ -112,19 +112,14 @@ expectActivity currentDate isChw assembled db activity =
                 |> not
 
         WellChildECD ->
-            ageInMonths currentDate assembled.person
-                |> Maybe.map
-                    (\ageMonths ->
-                        let
-                            completed =
-                                generateCompletedECDSigns assembled
-                        in
-                        expectedECDSignsByAge ageMonths
-                            |> List.filter (\sign -> not <| List.member sign completed)
-                            |> List.isEmpty
-                            |> not
-                    )
-                |> Maybe.withDefault False
+            let
+                completed =
+                    generateCompletedECDSigns assembled
+            in
+            expectedECDSignsByAge currentDate assembled
+                |> List.filter (\sign -> not <| List.member sign completed)
+                |> List.isEmpty
+                |> not
 
         WellChildMedication ->
             allMedicationTasks
@@ -1257,53 +1252,151 @@ generateCompletedECDSigns assembled =
         |> EverySet.toList
 
 
-expectedECDSignsByAge : Int -> List ECDSign
-expectedECDSignsByAge ageMonths =
-    if ageMonths < 6 then
-        []
+expectedECDSignsByAge : NominalDate -> AssembledData -> List ECDSign
+expectedECDSignsByAge currentDate assembled =
+    assembled.person.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                let
+                    ageWeeks =
+                        Date.diff Weeks birthDate currentDate
 
-    else if ageMonths < 9 then
-        List.Extra.splitAt 1 groupedECDSigns
-            |> Tuple.first
-            |> List.concat
+                    ageMonths =
+                        Date.diff Months birthDate currentDate
 
-    else if ageMonths < 15 then
-        List.Extra.splitAt 2 groupedECDSigns
-            |> Tuple.first
-            |> List.concat
+                    groupedSigns =
+                        groupedECDSigns assembled
+                in
+                if ageWeeks < 5 then
+                    []
 
-    else if ageMonths < 18 then
-        List.Extra.splitAt 3 groupedECDSigns
-            |> Tuple.first
-            |> List.concat
+                else if ageWeeks < 13 then
+                    List.Extra.splitAt 1 groupedSigns
+                        |> Tuple.first
+                        |> List.concat
 
-    else if ageMonths < 24 then
-        List.Extra.splitAt 4 groupedECDSigns
-            |> Tuple.first
-            |> List.concat
+                else if ageMonths < 6 then
+                    List.Extra.splitAt 2 groupedSigns
+                        |> Tuple.first
+                        |> List.concat
 
-    else if ageMonths < 36 then
-        List.Extra.splitAt 5 groupedECDSigns
-            |> Tuple.first
-            |> List.concat
+                else if ageMonths < 15 then
+                    List.Extra.splitAt 3 groupedSigns
+                        |> Tuple.first
+                        |> List.concat
 
-    else
-        List.concat groupedECDSigns
+                else if ageMonths < 18 then
+                    List.Extra.splitAt 4 groupedSigns
+                        |> Tuple.first
+                        |> List.concat
+
+                else if ageMonths < 24 then
+                    List.Extra.splitAt 5 groupedSigns
+                        |> Tuple.first
+                        |> List.concat
+
+                else if ageMonths < 36 then
+                    List.Extra.splitAt 6 groupedSigns
+                        |> Tuple.first
+                        |> List.concat
+
+                else if ageMonths < 48 then
+                    List.Extra.splitAt 7 groupedSigns
+                        |> Tuple.first
+                        |> List.concat
+
+                else
+                    List.concat groupedSigns
+            )
+        |> Maybe.withDefault []
 
 
-groupedECDSigns : List (List ECDSign)
-groupedECDSigns =
-    [ ecdSigns6to8
-    , ecdSigns9to14
-    , ecdSigns15to17
-    , ecdSigns18to23
-    , ecdSigns24to35
-    , ecdSigns36to47
+sixMonthsECDAssessmentPerformed : AssembledData -> Bool
+sixMonthsECDAssessmentPerformed assembled =
+    assembled.person.birthDate
+        |> Maybe.andThen
+            (\birthDate ->
+                let
+                    lastECDAssessmentDate =
+                        assembled.previousMeasurementsWithDates
+                            |> List.filterMap
+                                (\( date, ( _, measurements ) ) ->
+                                    if isJust measurements.ecd then
+                                        Just date
+
+                                    else
+                                        Nothing
+                                )
+                            |> List.head
+                in
+                Maybe.map
+                    (\assessmentDate -> Date.diff Months birthDate assessmentDate >= 6)
+                    lastECDAssessmentDate
+            )
+        |> Maybe.withDefault False
+
+
+groupedECDSigns : AssembledData -> List (List ECDSign)
+groupedECDSigns assembled =
+    let
+        sixMonthsAssessmentPerformed =
+            sixMonthsECDAssessmentPerformed assembled
+    in
+    [ ecdSignsFrom5Weeks sixMonthsAssessmentPerformed
+    , ecdSignsFrom13Weeks sixMonthsAssessmentPerformed
+    , ecdSignsFrom6Months sixMonthsAssessmentPerformed
+    , ecdSignsFrom15Months
+    , ecdSignsFrom18Months
+    , ecdSignsFrom2Years
+    , ecdSignsFrom3Years
+    , ecdSignsFrom4Years
     ]
 
 
-ecdSigns6to8 : List ECDSign
-ecdSigns6to8 =
+ecdSignsFrom5Weeks : Bool -> List ECDSign
+ecdSignsFrom5Weeks sixMonthsAssessmentPerformed =
+    if sixMonthsAssessmentPerformed then
+        []
+
+    else
+        [ FollowMothersEyes
+        , MoveArmsAndLegs
+        ]
+
+
+ecdSignsFrom13Weeks : Bool -> List ECDSign
+ecdSignsFrom13Weeks sixMonthsAssessmentPerformed =
+    if sixMonthsAssessmentPerformed then
+        []
+
+    else
+        [ RaiseHandsUp
+        , Smile
+        , RollSideways
+        ]
+
+
+ecdSignsFrom6Months : Bool -> List ECDSign
+ecdSignsFrom6Months sixMonthsAssessmentPerformed =
+    if sixMonthsAssessmentPerformed then
+        ecdSignsFrom6MonthsMajors
+
+    else
+        ecdSignsFrom6MonthsMinors ++ ecdSignsFrom6MonthsMajors
+
+
+ecdSignsFrom6MonthsMinors : List ECDSign
+ecdSignsFrom6MonthsMinors =
+    [ BringHandsToMouth
+    , HoldHeadWithoutSupport
+    , HoldAndShakeToys
+    , ReactToSuddenSounds
+    , UseConsonantSounds
+    ]
+
+
+ecdSignsFrom6MonthsMajors : List ECDSign
+ecdSignsFrom6MonthsMajors =
     [ RespondToSoundWithSound
     , TurnHeadWhenCalled
     , SitWithoutSupport
@@ -1313,8 +1406,8 @@ ecdSigns6to8 =
     ]
 
 
-ecdSigns9to14 : List ECDSign
-ecdSigns9to14 =
+ecdSignsFrom15Months : List ECDSign
+ecdSignsFrom15Months =
     [ UseSimpleGestures
     , StandOnTheirOwn
     , CopyDuringPlay
@@ -1323,8 +1416,8 @@ ecdSigns9to14 =
     ]
 
 
-ecdSigns15to17 : List ECDSign
-ecdSigns15to17 =
+ecdSignsFrom18Months : List ECDSign
+ecdSignsFrom18Months =
     [ LooksWhenPointedAt
     , UseSingleWords
     , WalkWithoutHelp
@@ -1333,8 +1426,8 @@ ecdSigns15to17 =
     ]
 
 
-ecdSigns18to23 : List ECDSign
-ecdSigns18to23 =
+ecdSignsFrom2Years : List ECDSign
+ecdSignsFrom2Years =
     [ UseShortPhrases
     , InterestedInOtherChildren
     , FollowSimpleInstructions
@@ -1343,8 +1436,8 @@ ecdSigns18to23 =
     ]
 
 
-ecdSigns24to35 : List ECDSign
-ecdSigns24to35 =
+ecdSignsFrom3Years : List ECDSign
+ecdSignsFrom3Years =
     [ DressThemselves
     , WashHandsGoToToiled
     , KnowsColorsAndNumbers
@@ -1353,8 +1446,8 @@ ecdSigns24to35 =
     ]
 
 
-ecdSigns36to47 : List ECDSign
-ecdSigns36to47 =
+ecdSignsFrom4Years : List ECDSign
+ecdSignsFrom4Years =
     [ FollowThreeStepInstructions
     , StandOnOneFootFiveSeconds
     , UseLongPhrases
