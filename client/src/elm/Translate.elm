@@ -475,6 +475,7 @@ type TranslationId
     | DistributionNotice DistributionNotice
     | District
     | DOB
+    | Done
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
@@ -676,6 +677,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextDoseDue
     | NextSteps
     | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
@@ -975,6 +977,7 @@ type TranslationId
     | Uploading
     | UterineMyoma
     | VaccineDoseGivenQuestion VaccineType VaccineDose Bool
+    | VaccineType VaccineType
     | ValidationErrors
     | Version
     | View
@@ -2925,6 +2928,11 @@ translationSet trans =
 
         DOB ->
             { english = "DOB"
+            , kinyarwanda = Nothing
+            }
+
+        Done ->
+            { english = "Done"
             , kinyarwanda = Nothing
             }
 
@@ -4996,6 +5004,11 @@ translationSet trans =
         Next ->
             { english = "Next"
             , kinyarwanda = Just "Ibikurikiyeho"
+            }
+
+        NextDoseDue ->
+            { english = "Next Dose Due"
+            , kinyarwanda = Nothing
             }
 
         NextSteps ->
@@ -7742,18 +7755,18 @@ translationSet trans =
             case vaccineType of
                 VaccineBCG ->
                     if isChw then
-                        { english = "Did the child recieve the BCG Bacilius Calmette - Guérin (BCG) at birth"
+                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) at birth"
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin (BCG) - Dose " ++ doseNumber ++ " of 1 today"
+                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) - Dose " ++ doseNumber ++ " of 1 today"
                         , kinyarwanda = Nothing
                         }
 
                 VaccineOPV ->
                     if isChw then
-                        { english = "Did the child recieve the Oral Polio Vaccine (OPV) at birth"
+                        { english = "Did the child receive the Oral Polio Vaccine (OPV) at birth"
                         , kinyarwanda = Nothing
                         }
 
@@ -7789,6 +7802,48 @@ translationSet trans =
 
                 VaccineHPV ->
                     { english = "Did the child receive the HPV Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+        VaccineType vaccineType ->
+            case vaccineType of
+                VaccineBCG ->
+                    { english = "BCG Bacilius Calmette - Guérin Vaccine (BCG)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "Oral Polio Vaccine (OPV)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "DTP - HepB - Hib Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "Pneumoccocal Vaccine (PCV 13)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Rotavirus (Rotarix) Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = " Inactivated Polio Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Measles - Rubella Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "HPV Vaccine"
                     , kinyarwanda = Nothing
                     }
 

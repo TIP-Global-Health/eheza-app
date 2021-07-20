@@ -15,7 +15,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -901,6 +901,21 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
         vaccinationNoteTasks =
             List.filterMap .vaccinationNoteTask tasks
 
+        futureVaccines =
+            generateFutureVaccines currentDate isChw assembled
+                |> List.map viewNextDoseForVaccine
+
+        viewNextDoseForVaccine ( vaccineType, nextVaccinationData ) =
+            let
+                dueDate =
+                    Maybe.map (Tuple.second >> formatDDMMyyyy) nextVaccinationData
+                        |> Maybe.withDefault (translate language Translate.Done)
+            in
+            div [ class "next-vaccination" ]
+                [ div [ class "name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
+                , div [ class "due-date" ] [ text dueDate ]
+                ]
+
         disabled =
             tasksCompleted /= totalTasks
     in
@@ -909,6 +924,9 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
         [ div [ class "full content" ]
             [ div [ class "ui form immunisation" ]
                 inputs
+            , div [ class "future-vaccinations" ] <|
+                viewLabel language Translate.NextDoseDue
+                    :: futureVaccines
             ]
         , viewAction language (SaveImmunisation assembled.participant.person (Dict.fromList suggestedVaccines) assembled.measurements.immunisation) disabled
         ]
