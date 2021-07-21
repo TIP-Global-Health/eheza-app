@@ -1253,12 +1253,8 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
                 |> Maybe.map (Tuple.second >> .value)
                 |> wellChildECDFormWithDefault ecdForm
 
-        completed =
-            generateCompletedECDSigns assembled
-
-        expected =
-            expectedECDSignsByAge currentDate assembled
-                |> List.filter (\sign -> not <| List.member sign completed)
+        persentedECDSignsData =
+            generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
                 |> List.map inputAndTaskForSign
 
         inputAndTaskForSign sign =
@@ -1645,8 +1641,8 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
                 Nothing
             ]
     in
-    ( List.map Tuple.first expected |> List.concat
-    , List.map Tuple.second expected
+    ( List.map Tuple.first persentedECDSignsData |> List.concat
+    , List.map Tuple.second persentedECDSignsData
     )
 
 

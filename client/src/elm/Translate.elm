@@ -94,6 +94,7 @@ import Pages.PrenatalActivity.Model
         , PatientProvisionsTask(..)
         )
 import Pages.WellChildActivity.Model exposing (NutritionAssesmentTask(..))
+import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -984,13 +985,13 @@ type TranslationId
     | ViewProgressReport
     | Village
     | Warning
-    | WarningSignsOfAcuteIllness
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
+    | WellChildEncounterPopup WarningPopupType
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
@@ -7928,11 +7929,6 @@ translationSet trans =
             , kinyarwanda = Just "Impuruza"
             }
 
-        WarningSignsOfAcuteIllness ->
-            { english = "Child shows signs of acute illness. Please close this encounter and continue in an “Acute Illness” encounter immediately."
-            , kinyarwanda = Nothing
-            }
-
         WasFbfDistirbuted activity ->
             case activity of
                 ChildActivity _ ->
@@ -8009,6 +8005,25 @@ translationSet trans =
                     { english = "Vitals"
                     , kinyarwanda = Nothing
                     }
+
+        WellChildEncounterPopup popupType ->
+            case popupType of
+                PopupDangerSigns ->
+                    { english = "Child shows signs of acute illness. Please close this encounter and continue in an “Acute Illness” encounter immediately."
+                    , kinyarwanda = Nothing
+                    }
+
+                PopupECD ecdPopupType ->
+                    case ecdPopupType of
+                        ChildBehind ->
+                            { english = "Child is behind on ECD milestones. Continue to monitor the child and provide anticipatory guidance to the caregiver."
+                            , kinyarwanda = Nothing
+                            }
+
+                        ReferToSpecialist ->
+                            { english = "Child is behind on ECD milestones. Refer the child to a specialist."
+                            , kinyarwanda = Nothing
+                            }
 
         WellChildMedicationTask task ->
             case task of

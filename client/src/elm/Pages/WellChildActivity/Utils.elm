@@ -112,12 +112,7 @@ expectActivity currentDate isChw assembled db activity =
                 |> not
 
         WellChildECD ->
-            let
-                completed =
-                    generateCompletedECDSigns assembled
-            in
-            expectedECDSignsByAge currentDate assembled
-                |> List.filter (\sign -> not <| List.member sign completed)
+            generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
                 |> List.isEmpty
                 |> not
 
@@ -1236,11 +1231,39 @@ toImmunisationValue form =
             (determineVaccineDate .hpvVaccinationNote .hpvVaccinationDate)
 
 
-generateCompletedECDSigns : AssembledData -> List ECDSign
-generateCompletedECDSigns assembled =
-    assembled.previousMeasurementsWithDates
+generateRemianingECDSignsBeforeCurrentEncounter : NominalDate -> AssembledData -> List ECDSign
+generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled =
+    List.map (Tuple.second >> Tuple.second) assembled.previousMeasurementsWithDates
+        |> generateRemianingECDSigns currentDate assembled
+
+
+generateRemianingECDSignsAfterCurrentEncounter : NominalDate -> AssembledData -> List ECDSign
+generateRemianingECDSignsAfterCurrentEncounter currentDate assembled =
+    let
+        previousMeasurements =
+            List.map (Tuple.second >> Tuple.second) assembled.previousMeasurementsWithDates
+    in
+    (assembled.measurements
+        :: previousMeasurements
+    )
+        |> generateRemianingECDSigns currentDate assembled
+
+
+generateRemianingECDSigns : NominalDate -> AssembledData -> List WellChildMeasurements -> List ECDSign
+generateRemianingECDSigns currentDate assembled measurementsData =
+    let
+        completed =
+            generateCompletedECDSigns measurementsData
+    in
+    expectedECDSignsByAge currentDate assembled
+        |> List.filter (\sign -> not <| List.member sign completed)
+
+
+generateCompletedECDSigns : List WellChildMeasurements -> List ECDSign
+generateCompletedECDSigns measurementsData =
+    measurementsData
         |> List.map
-            (\( _, ( _, measurements ) ) ->
+            (\measurements ->
                 measurements.ecd
                     |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
                     |> Maybe.withDefault []
@@ -1311,6 +1334,30 @@ expectedECDSignsByAge currentDate assembled =
         |> Maybe.withDefault []
 
 
+groupedECDSigns : AssembledData -> List (List ECDSign)
+groupedECDSigns assembled =
+    let
+        sixMonthsAssessmentPerformed =
+            sixMonthsECDAssessmentPerformed assembled
+
+        ( from5Weeks, from13Weeks ) =
+            if sixMonthsAssessmentPerformed then
+                ( [], [] )
+
+            else
+                ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
+    in
+    [ from5Weeks
+    , from13Weeks
+    , ecdSignsFrom6Months sixMonthsAssessmentPerformed
+    , ecdSignsFrom15Months
+    , ecdSignsFrom18Months
+    , ecdSignsFrom2Years
+    , ecdSignsFrom3Years
+    , ecdSignsFrom4Years
+    ]
+
+
 sixMonthsECDAssessmentPerformed : AssembledData -> Bool
 sixMonthsECDAssessmentPerformed assembled =
     assembled.person.birthDate
@@ -1336,44 +1383,19 @@ sixMonthsECDAssessmentPerformed assembled =
         |> Maybe.withDefault False
 
 
-groupedECDSigns : AssembledData -> List (List ECDSign)
-groupedECDSigns assembled =
-    let
-        sixMonthsAssessmentPerformed =
-            sixMonthsECDAssessmentPerformed assembled
-    in
-    [ ecdSignsFrom5Weeks sixMonthsAssessmentPerformed
-    , ecdSignsFrom13Weeks sixMonthsAssessmentPerformed
-    , ecdSignsFrom6Months sixMonthsAssessmentPerformed
-    , ecdSignsFrom15Months
-    , ecdSignsFrom18Months
-    , ecdSignsFrom2Years
-    , ecdSignsFrom3Years
-    , ecdSignsFrom4Years
+ecdSignsFrom5Weeks : List ECDSign
+ecdSignsFrom5Weeks =
+    [ FollowMothersEyes
+    , MoveArmsAndLegs
     ]
 
 
-ecdSignsFrom5Weeks : Bool -> List ECDSign
-ecdSignsFrom5Weeks sixMonthsAssessmentPerformed =
-    if sixMonthsAssessmentPerformed then
-        []
-
-    else
-        [ FollowMothersEyes
-        , MoveArmsAndLegs
-        ]
-
-
-ecdSignsFrom13Weeks : Bool -> List ECDSign
-ecdSignsFrom13Weeks sixMonthsAssessmentPerformed =
-    if sixMonthsAssessmentPerformed then
-        []
-
-    else
-        [ RaiseHandsUp
-        , Smile
-        , RollSideways
-        ]
+ecdSignsFrom13Weeks : List ECDSign
+ecdSignsFrom13Weeks =
+    [ RaiseHandsUp
+    , Smile
+    , RollSideways
+    ]
 
 
 ecdSignsFrom6Months : Bool -> List ECDSign

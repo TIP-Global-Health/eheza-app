@@ -53,7 +53,7 @@ viewHeaderAndContent language currentDate zscores id isChw db model data =
             warningPopup language
                 data.participant.person
                 id
-                model.showPopup
+                model.warningPopupState
         ]
 
 
@@ -87,40 +87,49 @@ viewContent language currentDate zscores id isChw db model data =
         |> div [ class "ui unstackable items" ]
 
 
-warningPopup : Language -> PersonId -> WellChildEncounterId -> Bool -> Maybe (Html Msg)
-warningPopup language childId encounterId showPopup =
-    if showPopup then
-        let
-            warningHeading =
-                [ img [ src "assets/images/exclamation-red.png" ] []
-                , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
-                ]
-        in
-        Just <|
-            div [ class "ui active modal danger-signs-popup" ]
-                [ div [ class "content" ]
-                    [ div [ class "popup-heading-wrapper" ] warningHeading
-                    , div [ class "popup-action" ] [ text <| translate language Translate.WarningSignsOfAcuteIllness ]
-                    ]
-                , div
-                    [ class "actions" ]
-                    [ div [ class "two ui buttons" ]
-                        [ button
-                            [ class "ui fluid button"
-                            , onClick <| ShowWarningPopup False
-                            ]
-                            [ text <| translate language Translate.Cancel ]
-                        , button
-                            [ class "ui primary fluid button"
-                            , onClick <| NavigateToAcuteIllnessParticipantPage childId encounterId
-                            ]
-                            [ text <| translate language Translate.CloseAndContinue ]
+warningPopup : Language -> PersonId -> WellChildEncounterId -> Maybe WarningPopupType -> Maybe (Html Msg)
+warningPopup language childId encounterId warningPopupState =
+    warningPopupState
+        |> Maybe.map
+            (\popupType ->
+                let
+                    warningHeading =
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
-                    ]
-                ]
 
-    else
-        Nothing
+                    actions =
+                        case popupType of
+                            PopupDangerSigns ->
+                                div [ class "two ui buttons" ]
+                                    [ button
+                                        [ class "ui fluid button"
+                                        , onClick <| SetWarningPopupState Nothing
+                                        ]
+                                        [ text <| translate language Translate.Cancel ]
+                                    , button
+                                        [ class "ui primary fluid button"
+                                        , onClick <| NavigateToAcuteIllnessParticipantPage childId encounterId
+                                        ]
+                                        [ text <| translate language Translate.CloseAndContinue ]
+                                    ]
+
+                            PopupECD _ ->
+                                button
+                                    [ class "ui fluid button"
+                                    , onClick <| SetWarningPopupState Nothing
+                                    ]
+                                    [ text <| translate language Translate.Continue ]
+                in
+                div [ class "ui active modal danger-signs-popup" ]
+                    [ div [ class "content" ]
+                        [ div [ class "popup-heading-wrapper" ] warningHeading
+                        , div [ class "popup-action" ] [ text <| translate language <| Translate.WellChildEncounterPopup popupType ]
+                        ]
+                    , div [ class "actions" ]
+                        [ actions ]
+                    ]
+            )
 
 
 viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)

@@ -11,7 +11,14 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { selectedTab : Tab
-    , showPopup : Bool
+    , warningPopupState : Maybe WarningPopupType
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { selectedTab = Pending
+    , warningPopupState = Nothing
     }
 
 
@@ -19,20 +26,23 @@ type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
-    | ShowWarningPopup Bool
+    | SetWarningPopupState (Maybe WarningPopupType)
     | NavigateToAcuteIllnessParticipantPage PersonId WellChildEncounterId
+
+
+type WarningPopupType
+    = PopupDangerSigns
+    | PopupECD ECDPopupType
+
+
+type ECDPopupType
+    = ChildBehind
+    | ReferToSpecialist
 
 
 type Tab
     = Completed
     | Pending
-
-
-emptyModel : Model
-emptyModel =
-    { selectedTab = Pending
-    , showPopup = False
-    }
 
 
 type alias AssembledData =
