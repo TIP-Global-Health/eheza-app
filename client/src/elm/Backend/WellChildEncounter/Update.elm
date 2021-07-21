@@ -30,6 +30,21 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                         )
                     )
 
+        HandleClosedWellChildEncounter data ->
+            ( { model | closeWellChildEncounter = data }
+            , Cmd.none
+            )
+
+        SavePregnancySummary personId valueId value ->
+            ( { model | savePregnancySummary = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildPregnancySummaryEndpoint HandleSavedPregnancySummary
+            )
+
+        HandleSavedPregnancySummary data ->
+            ( { model | savePregnancySummary = data }
+            , Cmd.none
+            )
+
         SaveSymptomsReview personId valueId value ->
             ( { model | saveSymptomsReview = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildSymptomsReviewEndpoint HandleSavedSymptomsReview
@@ -57,6 +72,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedHeight data ->
             ( { model | saveHeight = data }
+            , Cmd.none
+            )
+
+        SaveHeadCircumference personId valueId value ->
+            ( { model | saveHeadCircumference = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildHeadCircumferenceEndpoint HandleSavedHeadCircumference
+            )
+
+        HandleSavedHeadCircumference data ->
+            ( { model | saveHeadCircumference = data }
             , Cmd.none
             )
 
@@ -140,18 +165,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SaveHeadCircumference personId valueId value ->
-            ( { model | saveHeadCircumference = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildHeadCircumferenceEndpoint HandleSavedHeadCircumference
+        SaveImmunisation personId valueId value ->
+            ( { model | saveImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildImmunisationEndpoint HandleSavedImmunisation
             )
 
-        HandleSavedHeadCircumference data ->
-            ( { model | saveHeadCircumference = data }
-            , Cmd.none
-            )
-
-        HandleClosedWellChildEncounter data ->
-            ( { model | closeWellChildEncounter = data }
+        HandleSavedImmunisation data ->
+            ( { model | saveImmunisation = data }
             , Cmd.none
             )
 
@@ -162,5 +182,35 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedECD data ->
             ( { model | saveECD = data }
+            , Cmd.none
+            )
+
+        SaveAlbendazole personId valueId value ->
+            ( { model | saveAlbendazole = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildAlbendazoleEndpoint HandleSavedAlbendazole
+            )
+
+        HandleSavedAlbendazole data ->
+            ( { model | saveAlbendazole = data }
+            , Cmd.none
+            )
+
+        SaveMebendezole personId valueId value ->
+            ( { model | saveMebendezole = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildMebendezoleEndpoint HandleSavedMebendezole
+            )
+
+        HandleSavedMebendezole data ->
+            ( { model | saveMebendezole = data }
+            , Cmd.none
+            )
+
+        SaveVitaminA personId valueId value ->
+            ( { model | saveVitaminA = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildVitaminAEndpoint HandleSavedVitaminA
+            )
+
+        HandleSavedVitaminA data ->
+            ( { model | saveVitaminA = data }
             , Cmd.none
             )

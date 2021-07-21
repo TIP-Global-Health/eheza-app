@@ -1944,8 +1944,8 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
                         [ NonAdministrationPatientDeclined, NonAdministrationOther ]
                         currentValue
-                        (SetMedicationDistributionMedicationNonAdministrationReason currentValue medication)
-                        Translate.MedicationNonAdministrationReason
+                        (SetMedicationDistributionAdministrationNote currentValue medication)
+                        Translate.AdministrationNote
                     ]
 
                 -- When answer for medication administartion is Yes, we clean the reason for not adminsetering the medication.

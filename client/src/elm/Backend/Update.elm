@@ -3097,6 +3097,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , True
             )
 
+        WellChildAlbendazoleRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | albendazole = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildContributingFactorsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -3167,6 +3175,22 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        WellChildImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | immunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildMebendezoleRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mebendezole = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildMuacRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -3191,6 +3215,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        WellChildPregnancySummaryRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pregnancySummary = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildSendToHCRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -3211,6 +3243,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildVitaminARevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitaminA = Just ( uuid, data ) })
                 model
             , recalc
             )

@@ -188,7 +188,12 @@ decodeWellChildMeasurements =
         |> optional "well_child_follow_up" (decodeHead decodeWellChildFollowUp) Nothing
         |> optional "well_child_send_to_hc" (decodeHead decodeWellChildSendToHC) Nothing
         |> optional "well_child_head_circumference" (decodeHead decodeWellChildHeadCircumference) Nothing
+        |> optional "well_child_immunisation" (decodeHead decodeWellChildImmunisation) Nothing
         |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
+        |> optional "well_child_albendazole" (decodeHead decodeWellChildAlbendazole) Nothing
+        |> optional "well_child_mebendezole" (decodeHead decodeWellChildMebendezole) Nothing
+        |> optional "well_child_pregnancy_summary" (decodeHead decodeWellChildPregnancySummary) Nothing
+        |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -2164,29 +2169,29 @@ decodeMedicationNonAdministrationSign =
                         |> Maybe.map
                             (\prefix ->
                                 let
-                                    medicationNonAdministrationReason =
+                                    administrationNote =
                                         List.tail parts
                                             |> Maybe.map (List.intersperse "-" >> String.concat)
-                                            |> Maybe.andThen medicationNonAdministrationReasonFromString
+                                            |> Maybe.andThen administrationNoteFromString
                                 in
                                 case prefix of
                                     "amoxicillin" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationAmoxicillin >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "coartem" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationCoartem >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "ors" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationORS >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "zinc" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationZinc >> succeed)
                                             |> Maybe.withDefault failure
 
@@ -3022,4 +3027,179 @@ decodeMeasurementNote =
                         fail <|
                             sign
                                 ++ " is not a recognized MeasurementNote"
+            )
+
+
+decodeWellChildImmunisation : Decoder WellChildImmunisation
+decodeWellChildImmunisation =
+    decodeWellChildMeasurement decodeImmunisationValue
+
+
+decodeImmunisationValue : Decoder ImmunisationValue
+decodeImmunisationValue =
+    succeed ImmunisationValue
+        |> required "suggested_vaccines" (list decodeSuggestedVaccine)
+        |> required "vaccination_notes" (list decodeVacinationNote)
+        |> required "field_bcg_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "field_opv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "field_dtp_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "field_pcv13_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "field_rotarix_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "field_ipv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "field_mr_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "field_hpv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+
+
+decodeSuggestedVaccine : Decoder SuggestedVaccine
+decodeSuggestedVaccine =
+    string
+        |> andThen
+            (\suggestedVaccine ->
+                let
+                    parts =
+                        String.split "-" suggestedVaccine
+
+                    type_ =
+                        List.head parts
+                            |> Maybe.andThen vaccineTypeFromString
+
+                    dose =
+                        List.tail parts
+                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                            |> Maybe.andThen vaccineDoseFromString
+                in
+                Maybe.map2 (\first second -> SuggestedVaccine first second |> succeed)
+                    type_
+                    dose
+                    |> Maybe.withDefault (fail <| suggestedVaccine ++ " is not a recognized SuggestedVaccine")
+            )
+
+
+decodeVacinationNote : Decoder VacinationNote
+decodeVacinationNote =
+    string
+        |> andThen
+            (\vacinationNote ->
+                let
+                    parts =
+                        String.split "-" vacinationNote
+
+                    type_ =
+                        List.head parts
+                            |> Maybe.andThen vaccineTypeFromString
+
+                    note =
+                        List.tail parts
+                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                            |> Maybe.andThen administrationNoteFromString
+                in
+                Maybe.map2 (\first second -> VacinationNote first second |> succeed)
+                    type_
+                    note
+                    |> Maybe.withDefault (fail <| vacinationNote ++ " is not a recognized VacinationNote")
+            )
+
+
+decodeVaccineType : Decoder VaccineType
+decodeVaccineType =
+    string
+        |> andThen
+            (\type_ ->
+                vaccineTypeFromString type_
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| type_ ++ " is not a recognized VaccineType")
+            )
+
+
+decodeVaccineDose : Decoder VaccineDose
+decodeVaccineDose =
+    string
+        |> andThen
+            (\dose ->
+                vaccineDoseFromString dose
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| dose ++ " is not a recognized VaccineDose")
+            )
+
+
+decodeWellChildAlbendazole : Decoder WellChildAlbendazole
+decodeWellChildAlbendazole =
+    string
+        |> andThen
+            (\note ->
+                administrationNoteFromString note
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
+            )
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildMebendezole : Decoder WellChildMebendezole
+decodeWellChildMebendezole =
+    string
+        |> andThen
+            (\note ->
+                administrationNoteFromString note
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
+            )
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildVitaminA : Decoder WellChildVitaminA
+decodeWellChildVitaminA =
+    string
+        |> andThen
+            (\note ->
+                administrationNoteFromString note
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
+            )
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildPregnancySummary : Decoder WellChildPregnancySummary
+decodeWellChildPregnancySummary =
+    decodeWellChildMeasurement decodePregnancySummaryValue
+
+
+decodePregnancySummaryValue : Decoder PregnancySummaryValue
+decodePregnancySummaryValue =
+    succeed PregnancySummaryValue
+        |> required "field_expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "field_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "field_apgars_one_minute" decodeInt
+        |> required "field_apgars_five_minutes" decodeInt
+        |> required "field_delivery_complications" (decodeEverySet decodeDeliveryComplication)
+
+
+decodeDeliveryComplication : Decoder DeliveryComplication
+decodeDeliveryComplication =
+    string
+        |> andThen
+            (\complication ->
+                case complication of
+                    "gestational-diabetes" ->
+                        succeed ComplicationGestationalDiabetes
+
+                    "emergency-c-section" ->
+                        succeed ComplicationEmergencyCSection
+
+                    "preclampsia" ->
+                        succeed ComplicationPreclampsia
+
+                    "maternal-hemmorhage" ->
+                        succeed ComplicationMaternalHemmorhage
+
+                    "hiv" ->
+                        succeed ComplicationHiv
+
+                    "maternal-death" ->
+                        succeed ComplicationMaternalDeath
+
+                    "none" ->
+                        succeed NoDeliveryComplications
+
+                    _ ->
+                        fail <| complication ++ " is not a recognized DeliveryComplication"
             )

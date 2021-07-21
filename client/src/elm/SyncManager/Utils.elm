@@ -612,6 +612,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
 
+        BackendAuthorityWellChildAlbendazole identifier ->
+            getIdentifier identifier "well_child_albendazole"
+
         BackendAuthorityWellChildContributingFactors identifier ->
             getIdentifier identifier "well_child_contributing_factors"
 
@@ -633,6 +636,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildHeight identifier ->
             getIdentifier identifier "well_child_height"
 
+        BackendAuthorityWellChildImmunisation identifier ->
+            getIdentifier identifier "well_child_immunisation"
+
+        BackendAuthorityWellChildMebendezole identifier ->
+            getIdentifier identifier "well_child_mebendezole"
+
         BackendAuthorityWellChildMuac identifier ->
             getIdentifier identifier "well_child_muac"
 
@@ -642,6 +651,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildPhoto identifier ->
             getIdentifier identifier "well_child_photo"
 
+        BackendAuthorityWellChildPregnancySummary identifier ->
+            getIdentifier identifier "well_child_pregancy_summary"
+
         BackendAuthorityWellChildSendToHC identifier ->
             getIdentifier identifier "well_child_send_to_hc"
 
@@ -650,6 +662,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityWellChildVitals identifier ->
             getIdentifier identifier "well_child_vitals"
+
+        BackendAuthorityWellChildVitaminA identifier ->
+            getIdentifier identifier "well_child_vitamin_a"
 
         BackendAuthorityWellChildWeight identifier ->
             getIdentifier identifier "well_child_weight"
@@ -1089,6 +1104,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWeight identifier
 
+        BackendAuthorityWellChildAlbendazole identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildAlbendazole identifier
+
         BackendAuthorityWellChildContributingFactors identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildContributingFactors identifier
 
@@ -1110,6 +1128,12 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildHeight identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildHeight identifier
 
+        BackendAuthorityWellChildImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildImmunisation identifier
+
+        BackendAuthorityWellChildMebendezole identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildMebendezole identifier
+
         BackendAuthorityWellChildMuac identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildMuac identifier
 
@@ -1119,6 +1143,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildPhoto identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildPhoto identifier
 
+        BackendAuthorityWellChildPregnancySummary identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildPregnancySummary identifier
+
         BackendAuthorityWellChildSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildSendToHC identifier
 
@@ -1127,6 +1154,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityWellChildVitals identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildVitals identifier
+
+        BackendAuthorityWellChildVitaminA identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildVitaminA identifier
 
         BackendAuthorityWellChildWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildWeight identifier
@@ -1529,6 +1559,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityWeight identifier ->
             WeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityWellChildAlbendazole identifier ->
+            WellChildAlbendazoleRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWellChildContributingFactors identifier ->
             WellChildContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1550,6 +1583,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityWellChildHeight identifier ->
             WellChildHeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityWellChildImmunisation identifier ->
+            WellChildImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildMebendezole identifier ->
+            WellChildMebendezoleRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWellChildMuac identifier ->
             WellChildMuacRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1559,6 +1598,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityWellChildPhoto identifier ->
             WellChildPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityWellChildPregnancySummary identifier ->
+            WellChildPregnancySummaryRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWellChildSendToHC identifier ->
             WellChildSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1567,6 +1609,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildVitals identifier ->
             WellChildVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildVitaminA identifier ->
+            WellChildVitaminARevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildWeight identifier ->
             WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity

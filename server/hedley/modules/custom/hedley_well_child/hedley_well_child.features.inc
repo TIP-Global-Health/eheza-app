@@ -19,6 +19,14 @@ function hedley_well_child_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_well_child_node_info() {
   $items = array(
+    'well_child_albendazole' => array(
+      'name' => t('Well Child Albendazole'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_contributing_factors' => array(
       'name' => t('Well Child Contributing Factors'),
       'base' => 'node_content',
@@ -75,6 +83,22 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_immunisation' => array(
+      'name' => t('Well Child Immunisation'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_mebendezole' => array(
+      'name' => t('Well Child Mebendezole'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_muac' => array(
       'name' => t('Well Child MUAC'),
       'base' => 'node_content',
@@ -99,6 +123,14 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_pregnancy_summary' => array(
+      'name' => t('Well Child Pregnancy Summary'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_send_to_hc' => array(
       'name' => t('Well Child Send to HC'),
       'base' => 'node_content',
@@ -117,6 +149,14 @@ function hedley_well_child_node_info() {
     ),
     'well_child_vitals' => array(
       'name' => t('Well Child Vitals'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_vitamin_a' => array(
+      'name' => t('Well Child Vitamin A'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

@@ -124,6 +124,7 @@ var tableForType = {
     village: 'nodes',
     vitals: 'shards',
     weight: 'shards',
+    well_child_albendazole: 'shards',
     well_child_contributing_factors: 'shards',
     well_child_ecd: 'shards',
     well_child_encounter: 'shards',
@@ -131,11 +132,15 @@ var tableForType = {
     well_child_head_circumference: 'shards',
     well_child_health_education: 'shards',
     well_child_height: 'shards',
+    well_child_immunisation: 'shards',
+    well_child_mebendezole: 'shards',
     well_child_muac: 'shards',
     well_child_nutrition: 'shards',
     well_child_photo: 'shards',
+    well_child_pregnancy_summary: 'shards',
     well_child_send_to_hc: 'shards',
     well_child_symptoms_review: 'shards',
+    well_child_vitamin_a: 'shards',
     well_child_vitals: 'shards',
     well_child_weight: 'shards'
 };

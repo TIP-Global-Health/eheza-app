@@ -675,7 +675,7 @@ type TranslationId
     | NoGroupsFound
     | NoMatchesFound
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
-    | MedicationNonAdministrationReason MedicationNonAdministrationReason
+    | AdministrationNote AdministrationNote
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -4980,7 +4980,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        MedicationNonAdministrationReason reason ->
+        AdministrationNote reason ->
             case reason of
                 NonAdministrationLackOfStock ->
                     { english = "Lack of Stock"
@@ -5005,6 +5005,16 @@ translationSet trans =
                 NonAdministrationOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
+                    }
+
+                AdministeredToday ->
+                    { english = "Administered Today"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdministeredPreviously ->
+                    { english = "Administered Previously"
+                    , kinyarwanda = Nothing
                     }
 
         NoParticipantsCompleted ->

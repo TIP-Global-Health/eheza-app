@@ -295,6 +295,9 @@ decodeRevision =
                     "weight" ->
                         decodeWithUuid WeightRevision decodeWeight
 
+                    "well_child_albendazole" ->
+                        decodeWithUuid WellChildAlbendazoleRevision decodeWellChildAlbendazole
+
                     "well_child_contributing_factors" ->
                         decodeWithUuid WellChildContributingFactorsRevision decodeWellChildContributingFactors
 
@@ -316,6 +319,12 @@ decodeRevision =
                     "well_child_height" ->
                         decodeWithUuid WellChildHeightRevision decodeWellChildHeight
 
+                    "well_child_immunisation" ->
+                        decodeWithUuid WellChildImmunisationRevision decodeWellChildImmunisation
+
+                    "well_child_mebendezole" ->
+                        decodeWithUuid WellChildMebendezoleRevision decodeWellChildMebendezole
+
                     "well_child_muac" ->
                         decodeWithUuid WellChildMuacRevision decodeWellChildMuac
 
@@ -325,6 +334,9 @@ decodeRevision =
                     "well_child_photo" ->
                         decodeWithUuid WellChildPhotoRevision decodeWellChildPhoto
 
+                    "well_child_pregancy_summary" ->
+                        decodeWithUuid WellChildPregnancySummaryRevision decodeWellChildPregnancySummary
+
                     "well_child_send_to_hc" ->
                         decodeWithUuid WellChildSendToHCRevision decodeWellChildSendToHC
 
@@ -333,6 +345,9 @@ decodeRevision =
 
                     "well_child_vitals" ->
                         decodeWithUuid WellChildVitalsRevision decodeWellChildVitals
+
+                    "well_child_vitamin_a" ->
+                        decodeWithUuid WellChildVitaminARevision decodeWellChildVitaminA
 
                     "well_child_weight" ->
                         decodeWithUuid WellChildWeightRevision decodeWellChildWeight

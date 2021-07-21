@@ -731,6 +731,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWeight
                             BackendAuthorityWeight
 
+                    "well_child_albendazole" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildAlbendazole
+                            BackendAuthorityWellChildAlbendazole
+
                     "well_child_contributing_factors" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildContributingFactors
@@ -766,6 +771,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildHeight
                             BackendAuthorityWellChildHeight
 
+                    "well_child_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildImmunisation
+                            BackendAuthorityWellChildImmunisation
+
+                    "well_child_mebendezole" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildMebendezole
+                            BackendAuthorityWellChildMebendezole
+
                     "well_child_muac" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildMuac
@@ -781,6 +796,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildPhoto
                             BackendAuthorityWellChildPhoto
 
+                    "well_child_pregancy_summary" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildPregnancySummary
+                            BackendAuthorityWellChildPregnancySummary
+
                     "well_child_send_to_hc" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildSendToHC
@@ -795,6 +815,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildVitals
                             BackendAuthorityWellChildVitals
+
+                    "well_child_vitamin_a" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildVitaminA
+                            BackendAuthorityWellChildVitaminA
 
                     "well_child_weight" ->
                         doDecode
