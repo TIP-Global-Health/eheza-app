@@ -46,17 +46,6 @@ type Msg
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssessmentTask)
     | SetWeight String
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NutritionAssessmentTask)
-    | SetProvidedEducationForDiagnosis Bool
-    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
-    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe NutritionAssessmentTask)
-    | SetContributingFactorsSign ContributingFactorsSign
-    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssessmentTask)
-    | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
       -- IMMUNISATION
     | SetImmunisationBoolInput (Bool -> ImmunisationForm -> ImmunisationForm) Bool
     | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
@@ -77,6 +66,19 @@ type Msg
     | SetVitaminAAdministered Bool
     | SetVitaminAReasonForNonAdministration AdministrationNote
     | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA )) (Maybe MedicationTask)
+      -- NEXT STEPS
+    | SetActiveNextStepsTask NextStepsTask
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NextStepsTask)
+    | SetProvidedEducationForDiagnosis Bool
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe NextStepsTask)
+    | SetContributingFactorsSign ContributingFactorsSign
+    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe NextStepsTask)
 
 
 type alias Model =

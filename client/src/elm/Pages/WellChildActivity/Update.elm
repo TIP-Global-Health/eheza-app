@@ -62,6 +62,11 @@ update currentDate id db msg model =
             nextTask
                 |> Maybe.map (\task -> [ SetActiveMedicationTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+
+        generateNextStepsMsgs nextTask =
+            nextTask
+                |> Maybe.map (\task -> [ SetActiveNextStepsTask task ])
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -641,250 +646,6 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
-        SetReferToHealthCenter value ->
-            let
-                form =
-                    model.nutritionAssessmentData.sendToHCForm
-
-                updatedForm =
-                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHandReferralForm value ->
-            let
-                form =
-                    model.nutritionAssessmentData.sendToHCForm
-
-                updatedForm =
-                    { form | handReferralForm = Just value }
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetReasonForNotSendingToHC value ->
-            let
-                form =
-                    model.nutritionAssessmentData.sendToHCForm
-
-                updatedForm =
-                    { form | reasonForNotSendingToHC = Just value }
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveSendToHC personId saved nextTask_ ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    Maybe.map (Tuple.second >> .value) saved
-
-                extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
-
-                appMsgs =
-                    model.nutritionAssessmentData.sendToHCForm
-                        |> toSendToHCValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.WellChildEncounter.Model.SaveSendToHC personId measurementId
-                                >> Backend.Model.MsgWellChildEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate id db) extraMsgs
-
-        SetProvidedEducationForDiagnosis value ->
-            let
-                form =
-                    model.nutritionAssessmentData.healthEducationForm
-
-                updatedForm =
-                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | healthEducationForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetReasonForNotProvidingHealthEducation value ->
-            let
-                form =
-                    model.nutritionAssessmentData.healthEducationForm
-
-                updatedForm =
-                    { form | reasonForNotProvidingHealthEducation = Just value }
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | healthEducationForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveHealthEducation personId saved nextTask_ ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    Maybe.map (Tuple.second >> .value) saved
-
-                extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
-
-                appMsgs =
-                    model.nutritionAssessmentData.healthEducationForm
-                        |> toHealthEducationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.WellChildEncounter.Model.SaveHealthEducation personId measurementId
-                                >> Backend.Model.MsgWellChildEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate id db) extraMsgs
-
-        SetContributingFactorsSign sign ->
-            let
-                form =
-                    Dict.get id db.wellChildMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
-                        |> Maybe.map
-                            (.contributingFactors
-                                >> Maybe.map (Tuple.second >> .value)
-                                >> contributingFactorsFormWithDefault model.nutritionAssessmentData.contributingFactorsForm
-                            )
-                        |> Maybe.withDefault model.nutritionAssessmentData.contributingFactorsForm
-
-                updatedForm =
-                    setMultiSelectInputValue .signs
-                        (\signs -> { form | signs = signs })
-                        NoContributingFactorsSign
-                        sign
-                        form
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | contributingFactorsForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveContributingFactors personId saved nextTask_ ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    Maybe.map (Tuple.second >> .value) saved
-
-                extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
-
-                appMsgs =
-                    model.nutritionAssessmentData.contributingFactorsForm
-                        |> toContributingFactorsValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.WellChildEncounter.Model.SaveContributingFactors personId measurementId
-                                >> Backend.Model.MsgWellChildEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate id db) extraMsgs
-
-        SetFollowUpOption option ->
-            let
-                form =
-                    model.nutritionAssessmentData.followUpForm
-
-                updatedForm =
-                    { form | option = Just option }
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | followUpForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveFollowUp personId saved assesment nextTask_ ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    Maybe.map (Tuple.second >> .value) saved
-
-                extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
-
-                appMsgs =
-                    model.nutritionAssessmentData.followUpForm
-                        |> (\form -> { form | assesment = Just assesment })
-                        |> toFollowUpValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.WellChildEncounter.Model.SaveFollowUp personId measurementId
-                                >> Backend.Model.MsgWellChildEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate id db) extraMsgs
-
         SetImmunisationBoolInput formUpdateFunc value ->
             let
                 updatedForm =
@@ -1161,6 +922,261 @@ update currentDate id db msg model =
                         |> toAdministrationNoteWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveVitaminA personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetActiveNextStepsTask task ->
+            let
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask_
+
+                appMsgs =
+                    model.nextStepsData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveSendToHC personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetProvidedEducationForDiagnosis value ->
+            let
+                form =
+                    model.nextStepsData.healthEducationForm
+
+                updatedForm =
+                    { form | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotProvidingHealthEducation value ->
+            let
+                form =
+                    model.nextStepsData.healthEducationForm
+
+                updatedForm =
+                    { form | reasonForNotProvidingHealthEducation = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask_
+
+                appMsgs =
+                    model.nextStepsData.healthEducationForm
+                        |> toHealthEducationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveHealthEducation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetContributingFactorsSign sign ->
+            let
+                form =
+                    Dict.get id db.wellChildMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.contributingFactors
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> contributingFactorsFormWithDefault model.nextStepsData.contributingFactorsForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.contributingFactorsForm
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoContributingFactorsSign
+                        sign
+                        form
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contributingFactorsForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveContributingFactors personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask_
+
+                appMsgs =
+                    model.nextStepsData.contributingFactorsForm
+                        |> toContributingFactorsValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveContributingFactors personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.nextStepsData.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | followUpForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFollowUp personId saved assesment nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask_
+
+                appMsgs =
+                    model.nextStepsData.followUpForm
+                        |> (\form -> { form | assesment = Just assesment })
+                        |> toFollowUpValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveFollowUp personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

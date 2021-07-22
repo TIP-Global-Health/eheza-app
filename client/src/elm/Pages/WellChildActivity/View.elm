@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend, resolvePreviousValuesSetForChild)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend, resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
@@ -141,6 +141,9 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
 
         WellChildMedication ->
             viewMedicationContent language currentDate isChw assembled model.medicationData
+
+        WellChildNextSteps ->
+            viewNextStepsContent language currentDate zscores id isChw assembled db model.nextStepsData
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -503,8 +506,8 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
             assembled.measurements
 
         tasks =
-            allNutritionAssesmentTasks
-                |> List.filter (expectNutritionAssessmentTask currentDate zscores isChw assembled db)
+            allNutritionAssessmentTasks
+                |> List.filter (expectNutritionAssessmentTask currentDate isChw assembled db)
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -543,26 +546,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                             , isJust measurements.weight
                             )
 
-                        TaskContributingFactors ->
-                            ( "next-steps-contributing-factors"
-                            , isJust measurements.contributingFactors
-                            )
-
-                        TaskHealthEducation ->
-                            ( "next-steps-health-education"
-                            , isJust measurements.healthEducation
-                            )
-
-                        TaskFollowUp ->
-                            ( "next-steps-follow-up"
-                            , isJust measurements.followUp
-                            )
-
-                        TaskSendToHC ->
-                            ( "next-steps-send-to-hc"
-                            , isJust measurements.sendToHC
-                            )
-
                 isActive =
                     activeTask == Just task
 
@@ -572,13 +555,13 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                 []
 
                             else
-                                [ onClick <| SetActiveNutritionAssesmentTask task ]
+                                [ onClick <| SetActiveNutritionAssessmentTask task ]
                            )
             in
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.NutritionAssesmentTask task)
+                    , text <| translate language (Translate.NutritionAssessmentTask task)
                     ]
                 ]
 
@@ -644,42 +627,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         |> weightFormWithDefault data.weightForm
                         |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight SetWeight
 
-                Just TaskContributingFactors ->
-                    measurements.contributingFactors
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
-                        |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
-                        |> List.singleton
-
-                Just TaskHealthEducation ->
-                    measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language
-                            currentDate
-                            SetProvidedEducationForDiagnosis
-                            SetReasonForNotProvidingHealthEducation
-                        |> List.singleton
-
-                Just TaskFollowUp ->
-                    measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate SetFollowUpOption
-                        |> List.singleton
-
-                Just TaskSendToHC ->
-                    measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language
-                            currentDate
-                            SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
-                            SetHandReferralForm
-                            Nothing
-                        |> List.singleton
-
                 Nothing ->
                     []
 
@@ -742,23 +689,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
 
                                     TaskWeight ->
                                         SaveWeight personId measurements.weight nextTask
-
-                                    TaskContributingFactors ->
-                                        SaveContributingFactors personId measurements.contributingFactors nextTask
-
-                                    TaskHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
-
-                                    TaskFollowUp ->
-                                        let
-                                            assesment =
-                                                generateNutritionAssesment currentDate zscores db assembled
-                                                    |> nutritionAssesmentForBackend
-                                        in
-                                        SaveFollowUp personId measurements.followUp assesment nextTask
-
-                                    TaskSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
 
                             disabled =
                                 case task of
@@ -843,7 +773,7 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
             form.measurementNotTaken == Just True
     in
     [ div [ class "ui form head-circumference" ] <|
-        [ viewLabel language <| Translate.NutritionAssesmentTask TaskHeadCircumference
+        [ viewLabel language <| Translate.NutritionAssessmentTask TaskHeadCircumference
         , p [ class "activity-helper" ] [ text <| translate language Translate.HeadCircumferenceHelper ]
         ]
             ++ inputSection
@@ -1872,6 +1802,214 @@ viewMedicationAdministrationForm language currentDate assembled config form =
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
     viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass dosage Nothing
+
+
+viewNextStepsContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> WellChildEncounterId
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> NextStepsData
+    -> List (Html Msg)
+viewNextStepsContent language currentDate zscores id isChw assembled db data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectNextStepsTask currentDate zscores isChw assembled db) nextStepsTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskContributingFactors ->
+                            ( "next-steps-contributing-factors"
+                            , isJust measurements.contributingFactors
+                            )
+
+                        TaskHealthEducation ->
+                            ( "next-steps-health-education"
+                            , isJust measurements.healthEducation
+                            )
+
+                        TaskFollowUp ->
+                            ( "next-steps-follow-up"
+                            , isJust measurements.followUp
+                            )
+
+                        TaskSendToHC ->
+                            ( "next-steps-send-to-hc"
+                            , isJust measurements.sendToHC
+                            )
+
+                        TaskNextVisit ->
+                            ( "next-steps-next-visit"
+                            , -- @todo
+                              --                  isJust measurements.nextVisit
+                              False
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveNextStepsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.WellChildNextStepsTask isChw task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskContributingFactors ->
+                    measurements.contributingFactors
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
+                        |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+                        |> List.singleton
+
+                Just TaskHealthEducation ->
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language
+                            currentDate
+                            SetProvidedEducationForDiagnosis
+                            SetReasonForNotProvidingHealthEducation
+                        |> List.singleton
+
+                Just TaskFollowUp ->
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language currentDate SetFollowUpOption
+                        |> List.singleton
+
+                Just TaskSendToHC ->
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHCForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNotSendingToHC
+                            SetHandReferralForm
+                            Nothing
+                        |> List.singleton
+
+                Just TaskNextVisit ->
+                    -- @todo
+                    []
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        tasksTray =
+            let
+                ( topTasks, bottomTasks ) =
+                    List.Extra.splitAt 5 tasks
+
+                topSection =
+                    List.map viewTask topTasks
+                        |> div [ class "ui five column grid" ]
+
+                bottomSection =
+                    if List.isEmpty bottomTasks then
+                        emptyNode
+
+                    else
+                        List.map viewTask bottomTasks
+                            |> div [ class "ui four column grid" ]
+            in
+            div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+                [ topSection, bottomSection ]
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskContributingFactors ->
+                                        SaveContributingFactors personId measurements.contributingFactors nextTask
+
+                                    TaskHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    TaskFollowUp ->
+                                        let
+                                            assesment =
+                                                generateNutritionAssessment currentDate zscores db assembled
+                                                    |> nutritionAssessmentForBackend
+                                        in
+                                        SaveFollowUp personId measurements.followUp assesment nextTask
+
+                                    TaskSendToHC ->
+                                        SaveSendToHC personId measurements.sendToHC nextTask
+
+                                    TaskNextVisit ->
+                                        -- @todo
+                                        SaveSendToHC personId measurements.sendToHC nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ tasksTray
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+
+-- HELPER FUNCTIONS
 
 
 viewAction : Language -> Msg -> Bool -> Html Msg
