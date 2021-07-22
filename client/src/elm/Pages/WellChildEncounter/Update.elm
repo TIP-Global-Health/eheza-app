@@ -48,3 +48,22 @@ update msg model =
             , []
             )
                 |> sequenceExtra update extraMsgs
+
+        NavigateToActivity encounterId activity ->
+            let
+                extraMsgs =
+                    [ SetActivePage (UserPage (WellChildActivityPage encounterId activity))
+                    ]
+
+                appMsgs =
+                    if activity == WellChildNextSteps then
+                        []
+
+                    else
+                        []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra update extraMsgs

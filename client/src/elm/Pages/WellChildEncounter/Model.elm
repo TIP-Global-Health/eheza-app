@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Person.Model exposing (Person)
+import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildEncounter.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Pages.Page exposing (Page)
@@ -28,6 +29,7 @@ type Msg
     | SetSelectedTab Tab
     | SetWarningPopupState (Maybe WarningPopupType)
     | NavigateToAcuteIllnessParticipantPage PersonId WellChildEncounterId
+    | NavigateToActivity WellChildEncounterId WellChildActivity
 
 
 type WarningPopupType
