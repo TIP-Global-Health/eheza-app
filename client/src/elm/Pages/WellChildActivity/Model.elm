@@ -86,6 +86,7 @@ type alias Model =
     , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
+    , nextStepsData : NextStepsData
     , warningPopupState : List NutritionAssesment
     }
 
@@ -98,6 +99,7 @@ emptyModel =
     , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
+    , nextStepsData = emptyNextStepsData
     , warningPopupState = []
     }
 
@@ -164,10 +166,6 @@ type alias NutritionAssessmentData =
     , nutritionForm : NutritionForm
     , photoForm : PhotoForm
     , weightForm : WeightForm
-    , contributingFactorsForm : ContributingFactorsForm
-    , healthEducationForm : HealthEducationForm
-    , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
     , activeTask : Maybe NutritionAssesmentTask
     }
 
@@ -180,10 +178,6 @@ emptyNutritionAssessmentData =
     , nutritionForm = emptyNutritionForm
     , photoForm = emptyPhotoForm
     , weightForm = emptyWeightForm
-    , contributingFactorsForm = emptyContributingFactorsForm
-    , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
     , activeTask = Nothing
     }
 
@@ -207,10 +201,6 @@ type NutritionAssesmentTask
     | TaskNutrition
     | TaskPhoto
     | TaskWeight
-    | TaskContributingFactors
-    | TaskHealthEducation
-    | TaskFollowUp
-    | TaskSendToHC
 
 
 allNutritionAssesmentTasks : List NutritionAssesmentTask
@@ -221,10 +211,6 @@ allNutritionAssesmentTasks =
     , TaskNutrition
     , TaskPhoto
     , TaskWeight
-    , TaskContributingFactors
-    , TaskHealthEducation
-    , TaskFollowUp
-    , TaskSendToHC
     ]
 
 
@@ -431,3 +417,30 @@ type MedicationTask
 allMedicationTasks : List MedicationTask
 allMedicationTasks =
     [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]
+
+
+type alias NextStepsData =
+    { contributingFactorsForm : ContributingFactorsForm
+    , healthEducationForm : HealthEducationForm
+    , sendToHCForm : SendToHCForm
+    , followUpForm : FollowUpForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { contributingFactorsForm = emptyContributingFactorsForm
+    , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , activeTask = Nothing
+    }
+
+
+type NextStepsTask
+    = TaskContributingFactors
+    | TaskHealthEducation
+    | TaskSendToHC
+    | TaskFollowUp
+    | TaskNextVisit

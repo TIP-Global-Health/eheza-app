@@ -6,7 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Date exposing (Unit(..))
@@ -66,21 +66,8 @@ activityCompleted currentDate zscores isChw assembled db activity =
                 ( mandatory, optional ) =
                     partitionNutritionAssessmentTasks isChw
             in
-            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw assembled db then
-                let
-                    nonEmptyAssessment =
-                        generateNutritionAssesment currentDate zscores db assembled
-                            |> List.isEmpty
-                            |> not
-                in
-                if nonEmptyAssessment then
-                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw assembled db) (optional ++ nutritionAssessmentNextStepsTasks)
-
-                else
-                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw assembled db) optional
-
-            else
-                False
+            (mandatory ++ optional)
+                |> List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw assembled db)
 
         WellChildECD ->
             (not <| activityExpected WellChildECD) || isJust measurements.ecd
@@ -95,6 +82,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
 
         WellChildImmunisation ->
             (not <| activityExpected WellChildImmunisation) || isJust measurements.immunisation
+
+        WellChildNextSteps ->
+            List.all (nextStepsTaskCompleted currentDate zscores isChw assembled db) nextStepsTasks
 
 
 expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
@@ -234,18 +224,6 @@ nutritionAssessmentTaskCompleted currentDate zscores isChw data db task =
         TaskWeight ->
             (not <| taskExpected TaskWeight) || isJust measurements.weight
 
-        TaskContributingFactors ->
-            (not <| taskExpected TaskContributingFactors) || isJust measurements.contributingFactors
-
-        TaskHealthEducation ->
-            (not <| taskExpected TaskHealthEducation) || isJust measurements.healthEducation
-
-        TaskFollowUp ->
-            (not <| taskExpected TaskFollowUp) || isJust measurements.followUp
-
-        TaskSendToHC ->
-            (not <| taskExpected TaskContributingFactors) || isJust measurements.sendToHC
-
 
 expectNutritionAssessmentTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssesmentTask -> Bool
 expectNutritionAssessmentTask currentDate zscores isChw data db task =
@@ -255,25 +233,6 @@ expectNutritionAssessmentTask currentDate zscores isChw data db task =
             ageInMonths currentDate data.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
-
-        TaskContributingFactors ->
-            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db then
-                -- Any assesment require Next Steps tasks.
-                generateNutritionAssesment currentDate zscores db data
-                    |> List.isEmpty
-                    |> not
-
-            else
-                False
-
-        TaskHealthEducation ->
-            expectNutritionAssessmentTask currentDate zscores isChw data db TaskContributingFactors
-
-        TaskFollowUp ->
-            expectNutritionAssessmentTask currentDate zscores isChw data db TaskContributingFactors
-
-        TaskSendToHC ->
-            expectNutritionAssessmentTask currentDate zscores isChw data db TaskContributingFactors
 
         -- View any other task.
         _ ->
@@ -298,11 +257,6 @@ partitionNutritionAssessmentTasks isChw =
 
     else
         ( [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
-
-
-nutritionAssessmentNextStepsTasks : List NutritionAssesmentTask
-nutritionAssessmentNextStepsTasks =
-    [ TaskContributingFactors, TaskHealthEducation, TaskFollowUp, TaskSendToHC ]
 
 
 nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssesmentTask -> ( Int, Int )
@@ -370,82 +324,6 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             in
             ( taskCompleted form.weight
             , 1
-            )
-
-        TaskContributingFactors ->
-            let
-                form =
-                    measurements.contributingFactors
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
-            in
-            ( taskCompleted form.signs
-            , 1
-            )
-
-        TaskHealthEducation ->
-            let
-                form =
-                    measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> healthEducationFormWithDefault data.healthEducationForm
-
-                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                    form.educationForDiagnosis
-                        |> Maybe.map
-                            (\providedHealthEducation ->
-                                if not providedHealthEducation then
-                                    if isJust form.reasonForNotProvidingHealthEducation then
-                                        ( 1, 1 )
-
-                                    else
-                                        ( 0, 1 )
-
-                                else
-                                    ( 0, 0 )
-                            )
-                        |> Maybe.withDefault ( 0, 0 )
-            in
-            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
-            , reasonForProvidingEducationCompleted + 1
-            )
-
-        TaskFollowUp ->
-            let
-                form =
-                    measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> followUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
-
-        TaskSendToHC ->
-            let
-                form =
-                    measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> sendToHCFormWithDefault data.sendToHCForm
-
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-            in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
             )
 
 
@@ -785,7 +663,7 @@ expectVaccineForPerson currentDate person vaccineType =
                         ageWeeks >= 35
 
                     VaccineHPV ->
-                        ageForHPV >= 12
+                        ageForHPV >= 12 && person.gender == Female
             )
         |> Maybe.withDefault False
 
@@ -1604,6 +1482,150 @@ resolveVitaminADosageAndIcon currentDate person =
                 else
                     ( "200,000 IU", "icon-capsule red" )
             )
+
+
+nextStepsTaskCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.NextStepsTask -> Bool
+nextStepsTaskCompleted currentDate zscores isChw data db task =
+    let
+        measurements =
+            data.measurements
+
+        taskExpected =
+            expectNextStepsTask currentDate zscores isChw data db
+    in
+    case task of
+        TaskContributingFactors ->
+            (not <| taskExpected TaskContributingFactors) || isJust measurements.contributingFactors
+
+        TaskHealthEducation ->
+            (not <| taskExpected TaskHealthEducation) || isJust measurements.healthEducation
+
+        TaskFollowUp ->
+            (not <| taskExpected TaskFollowUp) || isJust measurements.followUp
+
+        TaskSendToHC ->
+            (not <| taskExpected TaskSendToHC) || isJust measurements.sendToHC
+
+        TaskNextVisit ->
+            (not <| taskExpected TaskNextVisit)
+                || -- @todo
+                   -- isJust measurements.nextVisit
+                   False
+
+
+expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.NextStepsTask -> Bool
+expectNextStepsTask currentDate zscores isChw data db task =
+    case task of
+        TaskContributingFactors ->
+            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db then
+                -- Any assesment require Next Steps tasks.
+                generateNutritionAssesment currentDate zscores db data
+                    |> List.isEmpty
+                    |> not
+
+            else
+                False
+
+        TaskHealthEducation ->
+            expectNextStepsTask currentDate zscores isChw data db TaskContributingFactors
+
+        TaskFollowUp ->
+            expectNextStepsTask currentDate zscores isChw data db TaskContributingFactors
+
+        TaskSendToHC ->
+            expectNextStepsTask currentDate zscores isChw data db TaskContributingFactors
+
+        TaskNextVisit ->
+            True
+
+
+nextStepsTasksCompletedFromTotal : WellChildMeasurements -> NextStepsData -> Pages.WellChildActivity.Model.NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskContributingFactors ->
+            let
+                form =
+                    measurements.contributingFactors
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> contributingFactorsFormWithDefault data.contributingFactorsForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
+
+        TaskHealthEducation ->
+            let
+                form =
+                    measurements.healthEducation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> healthEducationFormWithDefault data.healthEducationForm
+
+                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+                    form.educationForDiagnosis
+                        |> Maybe.map
+                            (\providedHealthEducation ->
+                                if not providedHealthEducation then
+                                    if isJust form.reasonForNotProvidingHealthEducation then
+                                        ( 1, 1 )
+
+                                    else
+                                        ( 0, 1 )
+
+                                else
+                                    ( 0, 0 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+            in
+            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
+            , reasonForProvidingEducationCompleted + 1
+            )
+
+        TaskFollowUp ->
+            let
+                form =
+                    measurements.followUp
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
+            )
+
+        TaskSendToHC ->
+            let
+                form =
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
+
+        TaskNextVisit ->
+            -- @todo
+            ( 0, 1 )
+
+
+nextStepsTasks : List Pages.WellChildActivity.Model.NextStepsTask
+nextStepsTasks =
+    [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp ]
 
 
 

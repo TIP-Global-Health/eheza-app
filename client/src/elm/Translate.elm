@@ -93,7 +93,7 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
-import Pages.WellChildActivity.Model exposing (NutritionAssesmentTask(..))
+import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssesmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -993,6 +993,7 @@ type TranslationId
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
+    | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
     | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
     | WhatType
@@ -5426,26 +5427,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ibiro"
                     }
 
-                TaskContributingFactors ->
-                    { english = "Contributing Factors"
-                    , kinyarwanda = Just "Impamvu zateye uburwayi"
-                    }
-
-                TaskHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    }
-
-                TaskFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi"
-                    }
-
-                TaskSendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    }
-
         NutritionCaringOption option ->
             case option of
                 CaredByParent ->
@@ -7994,6 +7975,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildNextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Nothing
+                    }
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->
@@ -8039,6 +8025,39 @@ translationSet trans =
 
                 Pages.WellChildActivity.Model.TaskVitaminA ->
                     { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildNextStepsTask isChw task ->
+            case task of
+                TaskContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
+                    }
+
+                TaskHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                TaskSendToHC ->
+                    if isChw then
+                        { english = "Send to Health Center"
+                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                        }
+
+                    else
+                        { english = "Send to Program"
+                        , kinyarwanda = Nothing
+                        }
+
+                TaskFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
+
+                TaskNextVisit ->
+                    { english = "Next Visit"
                     , kinyarwanda = Nothing
                     }
 
