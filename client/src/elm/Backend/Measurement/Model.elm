@@ -208,11 +208,11 @@ type alias FollowUp =
 
 type alias FollowUpValue =
     { options : EverySet FollowUpOption
-    , assesment : EverySet NutritionAssesment
+    , assesment : EverySet NutritionAssessment
     }
 
 
-type NutritionAssesment
+type NutritionAssessment
     = AssesmentAcuteMalnutritionModerate
     | AssesmentAcuteMalnutritionSevere
     | AssesmentUnderweightModerate
@@ -221,7 +221,7 @@ type NutritionAssesment
     | AssesmentDangerSignsPresent
     | AssesmentMalnutritionSigns (List ChildNutritionSign)
     | AssesmentConsecutiveWeightLoss
-    | NoNutritionAssesment
+    | NoNutritionAssessment
 
 
 type ContributingFactorsSign

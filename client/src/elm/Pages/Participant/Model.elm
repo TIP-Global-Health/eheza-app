@@ -18,7 +18,7 @@ mother and child with the appropriate types.
 
 import Activity.Model exposing (ChildActivity, MotherActivity)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (NutritionAssesment)
+import Backend.Measurement.Model exposing (NutritionAssessment)
 import Measurement.Model
 import Pages.Page exposing (Page(..))
 
@@ -28,7 +28,7 @@ type Msg activity measurement
     | Redirect Page
     | SetSelectedActivity activity
     | SetSelectedTab Tab
-    | SetWarningPopupState (List NutritionAssesment)
+    | SetWarningPopupState (List NutritionAssessment)
 
 
 {-| Activity is a `Maybe` so we can model the case where the user
@@ -37,7 +37,7 @@ hasn't made a selection, and we should show a default.
 type alias Model activity =
     { selectedActivity : Maybe activity
     , selectedTab : Tab
-    , warningPopupState : List NutritionAssesment
+    , warningPopupState : List NutritionAssessment
     }
 
 

@@ -48,9 +48,9 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault form
 
-        generateNutritionAssesmentMsgs nextTask =
+        generateNutritionAssessmentMsgs nextTask =
             nextTask
-                |> Maybe.map (\task -> [ SetActiveNutritionAssesmentTask task ])
+                |> Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
 
         generateDangerSignsMsgs nextTask =
@@ -321,7 +321,7 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
-        SetActiveNutritionAssesmentTask task ->
+        SetActiveNutritionAssessmentTask task ->
             let
                 cmd =
                     case task of
@@ -366,7 +366,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.heightForm
@@ -439,7 +439,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.headCircumferenceForm
@@ -484,7 +484,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.muacForm
@@ -541,7 +541,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.nutritionForm
@@ -578,7 +578,7 @@ update currentDate id db msg model =
         SavePhoto personId maybePhotoId url nextTask_ ->
             let
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
@@ -622,7 +622,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.weightForm
@@ -701,7 +701,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.sendToHCForm
@@ -763,7 +763,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.healthEducationForm
@@ -820,7 +820,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.contributingFactorsForm
@@ -865,7 +865,7 @@ update currentDate id db msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 extraMsgs =
-                    generateNutritionAssesmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask_
 
                 appMsgs =
                     model.nutritionAssessmentData.followUpForm

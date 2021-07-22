@@ -29,7 +29,7 @@ import Backend.Model exposing (..)
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
@@ -3381,7 +3381,7 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
             else
                 let
                     assesmentAfter =
-                        Pages.NutritionActivity.Utils.generateNutritionAssesment currentDate zscores after assembledAfter
+                        Pages.NutritionActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
 
                     updateFollowUpAssesmentMsg =
                         assembledAfter.measurements.followUp
@@ -3390,7 +3390,7 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
                                     let
                                         updatedValue =
                                             measurement.value
-                                                |> (\value -> { value | assesment = nutritionAssesmentForBackend assesmentAfter })
+                                                |> (\value -> { value | assesment = nutritionAssessmentForBackend assesmentAfter })
                                     in
                                     Backend.NutritionEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
                                         |> Backend.Model.MsgNutritionEncounter id
@@ -3454,7 +3454,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                 else
                     let
                         assesment =
-                            Activity.Utils.generateNutritionAssesment
+                            Activity.Utils.generateNutritionAssessment
                                 currentDate
                                 zscores
                                 childId
@@ -3482,7 +3482,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                                 (\value ->
                                                     let
                                                         updatedValue =
-                                                            { value | assesment = nutritionAssesmentForBackend assesment }
+                                                            { value | assesment = nutritionAssessmentForBackend assesment }
                                                     in
                                                     Measurement.Model.SaveFollowUp followUpId updatedValue
                                                         |> Backend.Session.Model.MeasurementOutMsgChild childId

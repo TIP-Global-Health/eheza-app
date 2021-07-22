@@ -9,7 +9,7 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , HeightInCm(..)
         , MuacInCm(..)
-        , NutritionAssesment(..)
+        , NutritionAssessment(..)
         , NutritionMeasurement
         , NutritionMeasurements
         , WeightInKg(..)
@@ -35,8 +35,8 @@ import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores db assembled =
+generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment
+generateNutritionAssessment currentDate zscores db assembled =
     let
         measurements =
             assembled.measurements
@@ -55,7 +55,7 @@ generateNutritionAssesment currentDate zscores db assembled =
                 )
                 measurements.weight
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue True db
+    Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue True db
 
 
 expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
@@ -70,7 +70,7 @@ expectActivity currentDate zscores child isChw data db activity =
         NextSteps ->
             if mandatoryActivitiesCompleted currentDate zscores child isChw data db then
                 -- Any assesment require sending to HC.
-                generateNutritionAssesment currentDate zscores db data
+                generateNutritionAssessment currentDate zscores db data
                     |> List.isEmpty
                     |> not
 

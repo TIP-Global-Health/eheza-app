@@ -33,8 +33,8 @@ import ZScore.Model
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> PersonId -> ModelIndexedDb -> OfflineSession -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores childId db offlineSession =
+generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> PersonId -> ModelIndexedDb -> OfflineSession -> List NutritionAssessment
+generateNutritionAssessment currentDate zscores childId db offlineSession =
     let
         measurements =
             LocalData.unwrap
@@ -51,7 +51,7 @@ generateNutritionAssesment currentDate zscores childId db offlineSession =
         weightValue =
             Maybe.andThen (.weight >> Maybe.map (Tuple.second >> .value >> weightValueFunc)) measurements
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores childId muacValue nutritionValue weightValue True db
+    Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores childId muacValue nutritionValue weightValue True db
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translatefor that).
@@ -328,7 +328,7 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
 
         ContributingFactors ->
             mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db
-                && (generateNutritionAssesment currentDate zscores childId db offlineSession
+                && (generateNutritionAssessment currentDate zscores childId db offlineSession
                         |> List.isEmpty
                         |> not
                    )

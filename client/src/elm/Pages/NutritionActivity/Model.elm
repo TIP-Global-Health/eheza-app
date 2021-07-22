@@ -9,7 +9,7 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
-    | SetWarningPopupState (List NutritionAssesment)
+    | SetWarningPopupState (List NutritionAssessment)
     | SetHeight String
     | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
@@ -31,7 +31,7 @@ type Msg
     | SetContributingFactorsSign ContributingFactorsSign
     | SaveContributingFactors PersonId (Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (EverySet NutritionAssesment) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (EverySet NutritionAssessment) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -41,7 +41,7 @@ type alias Model =
     , photoData : PhotoData
     , weightData : WeightData
     , nextStepsData : NextStepsData
-    , warningPopupState : List NutritionAssesment
+    , warningPopupState : List NutritionAssessment
     }
 
 

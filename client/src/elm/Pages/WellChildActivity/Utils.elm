@@ -24,8 +24,8 @@ import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores db assembled =
+generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment
+generateNutritionAssessment currentDate zscores db assembled =
     let
         measurements =
             assembled.measurements
@@ -44,7 +44,7 @@ generateNutritionAssesment currentDate zscores db assembled =
                 )
                 measurements.weight
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue False db
+    Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue False db
 
 
 activityCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
@@ -196,7 +196,7 @@ complicationsPresent complications =
             True
 
 
-nutritionAssessmentTaskCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssesmentTask -> Bool
+nutritionAssessmentTaskCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
 nutritionAssessmentTaskCompleted currentDate zscores isChw data db task =
     let
         measurements =
@@ -225,7 +225,7 @@ nutritionAssessmentTaskCompleted currentDate zscores isChw data db task =
             (not <| taskExpected TaskWeight) || isJust measurements.weight
 
 
-expectNutritionAssessmentTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssesmentTask -> Bool
+expectNutritionAssessmentTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
 expectNutritionAssessmentTask currentDate zscores isChw data db task =
     case task of
         -- Show for children that are at least 6 month old.
@@ -239,8 +239,8 @@ expectNutritionAssessmentTask currentDate zscores isChw data db task =
             True
 
 
-mandatoryNutritionAssesmentTasksCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db =
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate zscores isChw data db =
     partitionNutritionAssessmentTasks isChw
         |> Tuple.first
         |> List.filter (not << nutritionAssessmentTaskCompleted currentDate zscores isChw data db)
@@ -250,7 +250,7 @@ mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db =
 {-| List of activities that need to be completed, in order to
 decide if to show Next Steps activity, or not.
 -}
-partitionNutritionAssessmentTasks : Bool -> ( List NutritionAssesmentTask, List NutritionAssesmentTask )
+partitionNutritionAssessmentTasks : Bool -> ( List NutritionAssessmentTask, List NutritionAssessmentTask )
 partitionNutritionAssessmentTasks isChw =
     if isChw then
         ( [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskHeight, TaskPhoto ] )
@@ -259,7 +259,7 @@ partitionNutritionAssessmentTasks isChw =
         ( [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
 
 
-nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssesmentTask -> ( Int, Int )
+nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
 nutritionAssessmentTasksCompletedFromTotal measurements data task =
     case task of
         TaskHeight ->
@@ -1517,9 +1517,9 @@ expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData
 expectNextStepsTask currentDate zscores isChw data db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate zscores isChw data db then
                 -- Any assesment require Next Steps tasks.
-                generateNutritionAssesment currentDate zscores db data
+                generateNutritionAssessment currentDate zscores db data
                     |> List.isEmpty
                     |> not
 

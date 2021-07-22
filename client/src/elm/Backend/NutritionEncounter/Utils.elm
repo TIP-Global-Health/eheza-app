@@ -23,7 +23,7 @@ import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generateNutritionAssesment :
+generateNutritionAssessment :
     NominalDate
     -> ZScore.Model.Model
     -> PersonId
@@ -32,8 +32,8 @@ generateNutritionAssesment :
     -> Maybe Float
     -> Bool
     -> ModelIndexedDb
-    -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores childId muacValue nutritionValue weightValue assessByPreviousWeights db =
+    -> List NutritionAssessment
+generateNutritionAssessment currentDate zscores childId muacValue nutritionValue weightValue assessByPreviousWeights db =
     let
         child =
             Dict.get childId db.people
@@ -57,7 +57,7 @@ generateNutritionAssesment currentDate zscores childId muacValue nutritionValue 
         assesmentByWeight =
             Maybe.map
                 (\child_ ->
-                    generateNutritionAssesmentByWeight currentDate zscores childId child_ weightValue assessByPreviousWeights db
+                    generateNutritionAssessmentByWeight currentDate zscores childId child_ weightValue assessByPreviousWeights db
                 )
                 child
                 |> Maybe.withDefault []
@@ -112,7 +112,7 @@ generateNutritionAssesment currentDate zscores childId muacValue nutritionValue 
     assesmentByMuacAndWeight ++ assementByNutritionSigns
 
 
-generateNutritionAssesmentByWeight :
+generateNutritionAssessmentByWeight :
     NominalDate
     -> ZScore.Model.Model
     -> PersonId
@@ -120,8 +120,8 @@ generateNutritionAssesmentByWeight :
     -> Maybe Float
     -> Bool
     -> ModelIndexedDb
-    -> List NutritionAssesment
-generateNutritionAssesmentByWeight currentDate zscores childId child weightValue assessByPreviousWeights db =
+    -> List NutritionAssessment
+generateNutritionAssessmentByWeight currentDate zscores childId child weightValue assessByPreviousWeights db =
     let
         -- We do not want to include here weight
         -- measurements taken at Well Child encounters.
@@ -482,10 +482,10 @@ muacModerate muac =
     muacIndication muac == ColorAlertYellow
 
 
-nutritionAssesmentForBackend : List NutritionAssesment -> EverySet NutritionAssesment
-nutritionAssesmentForBackend assesment =
+nutritionAssessmentForBackend : List NutritionAssessment -> EverySet NutritionAssessment
+nutritionAssessmentForBackend assesment =
     EverySet.fromList assesment
-        |> ifEverySetEmpty NoNutritionAssesment
+        |> ifEverySetEmpty NoNutritionAssessment
 
 
 sortTuplesByDateDesc : ( NominalDate, a ) -> ( NominalDate, a ) -> Order

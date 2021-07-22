@@ -108,7 +108,7 @@ type alias FollowUpForm =
     { option : Maybe FollowUpOption
 
     -- We do not display this. Using it when saving.
-    , assesment : Maybe (EverySet NutritionAssesment)
+    , assesment : Maybe (EverySet NutritionAssessment)
     }
 
 

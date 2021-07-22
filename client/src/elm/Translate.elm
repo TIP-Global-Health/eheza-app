@@ -93,7 +93,7 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
-import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssesmentTask(..))
+import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -708,8 +708,8 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
-    | NutritionAssesment NutritionAssesment
-    | NutritionAssesmentTask NutritionAssesmentTask
+    | NutritionAssessment NutritionAssessment
+    | NutritionAssessmentTask NutritionAssessmentTask
     | NutritionCaringOption CaringOption
     | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
@@ -3413,7 +3413,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
-                NutritionAssessment ->
+                Pages.PrenatalActivity.Model.NutritionAssessment ->
                     { english = "Nutrition Assessment"
                     , kinyarwanda = Just "Gusuzuma imirire"
                     }
@@ -5348,7 +5348,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
-        NutritionAssesment assessment ->
+        NutritionAssessment assessment ->
             case assessment of
                 AssesmentAcuteMalnutritionModerate ->
                     { english = "Moderate Acute Malnutrition"
@@ -5390,12 +5390,12 @@ translationSet trans =
                     , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
                     }
 
-                NoNutritionAssesment ->
+                NoNutritionAssessment ->
                     { english = "None"
                     , kinyarwanda = Nothing
                     }
 
-        NutritionAssesmentTask task ->
+        NutritionAssessmentTask task ->
             case task of
                 TaskHeight ->
                     { english = "Height"
