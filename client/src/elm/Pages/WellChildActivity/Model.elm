@@ -70,6 +70,8 @@ type Msg
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
+    | SetEnrollToNutritionProgram Bool
+    | SetReferToNutritionProgram Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool

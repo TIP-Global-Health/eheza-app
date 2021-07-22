@@ -32,6 +32,7 @@ import Measurement.View
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
+        , viewReferToProgramForm
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
@@ -1882,7 +1883,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task )) tasks
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal isChw measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -1917,15 +1918,26 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                         |> List.singleton
 
                 Just TaskSendToHC ->
+                    let
+                        viewFormFunc =
+                            if isChw then
+                                viewSendToHCForm language
+                                    currentDate
+                                    SetReferToHealthCenter
+                                    SetReasonForNotSendingToHC
+                                    SetHandReferralForm
+                                    Nothing
+
+                            else
+                                viewReferToProgramForm language
+                                    currentDate
+                                    SetEnrollToNutritionProgram
+                                    SetReferToNutritionProgram
+                    in
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language
-                            currentDate
-                            SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
-                            SetHandReferralForm
-                            Nothing
+                        |> viewFormFunc
                         |> List.singleton
 
                 Just TaskNextVisit ->

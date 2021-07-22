@@ -480,6 +480,8 @@ fromSendToHCValue saved =
     { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
     , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
     , accompanyToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalAccompanyToHC) saved
+    , enrollToNutritionProgram = Maybe.map (.signs >> EverySet.member EnrollToNutritionProgram) saved
+    , referToNutritionProgram = Maybe.map (.signs >> EverySet.member ReferToNutritionProgram) saved
     , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
     }
 
@@ -493,6 +495,8 @@ sendToHCFormWithDefault form saved =
                 { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
                 , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
                 , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
+                , enrollToNutritionProgram = or form.enrollToNutritionProgram (EverySet.member EnrollToNutritionProgram value.signs |> Just)
+                , referToNutritionProgram = or form.referToNutritionProgram (EverySet.member ReferToNutritionProgram value.signs |> Just)
                 , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
@@ -508,9 +512,11 @@ toSendToHCValue : SendToHCForm -> Maybe SendToHCValue
 toSendToHCValue form =
     let
         signs =
-            [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
-            , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+            [ ifNullableTrue HandReferrerForm form.handReferralForm
+            , ifNullableTrue ReferToHealthCenter form.referToHealthCenter
             , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
+            , ifNullableTrue EnrollToNutritionProgram form.enrollToNutritionProgram
+            , ifNullableTrue ReferToNutritionProgram form.referToNutritionProgram
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)

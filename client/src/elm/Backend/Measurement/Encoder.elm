@@ -1488,6 +1488,12 @@ encodeSendToHCSign sign =
             PrenatalAccompanyToHC ->
                 "accompany-to-hc"
 
+            EnrollToNutritionProgram ->
+                "enroll-to-nutrition-program"
+
+            ReferToNutritionProgram ->
+                "refer-to-nutrition-program"
+
             NoSendToHCSigns ->
                 "none"
 

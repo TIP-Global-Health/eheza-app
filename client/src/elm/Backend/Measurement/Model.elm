@@ -1071,6 +1071,8 @@ type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
     | PrenatalAccompanyToHC
+    | EnrollToNutritionProgram
+    | ReferToNutritionProgram
     | NoSendToHCSigns
 
 

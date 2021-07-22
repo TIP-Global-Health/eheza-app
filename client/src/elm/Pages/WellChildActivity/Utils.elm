@@ -1539,8 +1539,8 @@ expectNextStepsTask currentDate zscores isChw data db task =
             True
 
 
-nextStepsTasksCompletedFromTotal : WellChildMeasurements -> NextStepsData -> Pages.WellChildActivity.Model.NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal measurements data task =
+nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChildActivity.Model.NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal isChw measurements data task =
     case task of
         TaskContributingFactors ->
             let
@@ -1597,26 +1597,33 @@ nextStepsTasksCompletedFromTotal measurements data task =
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
+            in
+            if isChw then
+                let
+                    ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                        form.referToHealthCenter
+                            |> Maybe.map
+                                (\sentToHC ->
+                                    if not sentToHC then
+                                        if isJust form.reasonForNotSendingToHC then
+                                            ( 2, 2 )
 
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
+                                        else
+                                            ( 1, 2 )
 
                                     else
-                                        ( 1, 2 )
+                                        ( 1, 1 )
+                                )
+                            |> Maybe.withDefault ( 0, 1 )
+                in
+                ( reasonForNotSentActive + taskCompleted form.handReferralForm
+                , reasonForNotSentCompleted + 1
+                )
 
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-            in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
+            else
+                ( taskCompleted form.enrollToNutritionProgram + taskCompleted form.referToNutritionProgram
+                , 2
+                )
 
         TaskNextVisit ->
             -- @todo

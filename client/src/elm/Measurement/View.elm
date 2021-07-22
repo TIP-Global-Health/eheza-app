@@ -9,6 +9,7 @@ module Measurement.View exposing
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
     , viewMother
+    , viewReferToProgramForm
     , viewSendToHCForm
     , zScoreForHeightOrLength
     )
@@ -1191,6 +1192,37 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection
+
+
+viewReferToProgramForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
+    div [ class "ui form send-to-hc" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewActionTakenLabel language Translate.ReferToProgramAction "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.EnrollToProgramAction "icon-shuttle" Nothing
+            ]
+        , viewQuestionLabel language Translate.EnrollToProgramQuestion
+        , viewBoolInput
+            language
+            form.enrollToNutritionProgram
+            setEnrollToNutritionProgramMsg
+            "enroll-to-program"
+            Nothing
+        , viewQuestionLabel language Translate.ReferToProgramQuestion
+        , viewBoolInput
+            language
+            form.referToNutritionProgram
+            setReferToNutritionProgramMsg
+            "refer-to-program"
+            Nothing
+        ]
 
 
 viewBasicVitalsForm :

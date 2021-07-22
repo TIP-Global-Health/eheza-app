@@ -2012,6 +2012,12 @@ decodeSendToHCSign =
                     "accompany-to-hc" ->
                         succeed PrenatalAccompanyToHC
 
+                    "enroll-to-nutrition-program" ->
+                        succeed EnrollToNutritionProgram
+
+                    "refer-to-nutrition-program" ->
+                        succeed ReferToNutritionProgram
+
                     "none" ->
                         succeed NoSendToHCSigns
 

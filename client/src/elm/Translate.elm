@@ -498,6 +498,8 @@ type TranslationId
     | EndGroupEncounter
     | EnrolNewborn
     | EnrolNewbornHelper Bool
+    | EnrollToProgramAction
+    | EnrollToProgramQuestion
     | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -822,6 +824,8 @@ type TranslationId
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToHealthCenterQuestion
+    | ReferToProgramAction
+    | ReferToProgramQuestion
     | Register
     | RegisterHelper
     | RegisterNewParticipant
@@ -3365,6 +3369,16 @@ translationSet trans =
                 { english = "Click on 'Enroll Newborn' button to perform enrollment"
                 , kinyarwanda = Just "Kanda kuri 'Andika Uruhinja' kugira ngo urwandike"
                 }
+
+        EnrollToProgramAction ->
+            { english = "Enroll patient in program and direct them to the next program session"
+            , kinyarwanda = Nothing
+            }
+
+        EnrollToProgramQuestion ->
+            { english = "Have you enrolled the patient in the appropriate nutrition program"
+            , kinyarwanda = Nothing
+            }
 
         EnterAmountDistributed ->
             { english = "Enter amount distributed"
@@ -6629,6 +6643,16 @@ translationSet trans =
             , kinyarwanda = Just "Waba wohereje umurwayi ku kigo nderabuzima"
             }
 
+        ReferToProgramAction ->
+            { english = "Refer patient to appropriate nutrition program"
+            , kinyarwanda = Nothing
+            }
+
+        ReferToProgramQuestion ->
+            { english = "Did you direct the patient to attend the next program session"
+            , kinyarwanda = Nothing
+            }
+
         Register ->
             { english = "Register"
             , kinyarwanda = Nothing
@@ -8047,7 +8071,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Send to Program"
+                        { english = "Refer to Program"
                         , kinyarwanda = Nothing
                         }
 
