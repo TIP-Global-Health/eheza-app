@@ -427,7 +427,7 @@ update msg model =
                                     data.wellChildEncounterPages
                                         |> Dict.get id
                                         |> Maybe.withDefault Pages.WellChildEncounter.Model.emptyModel
-                                        |> Pages.WellChildEncounter.Update.update subMsg
+                                        |> Pages.WellChildEncounter.Update.update currentDate model.zscores isChw model.indexedDb subMsg
                             in
                             ( { data | wellChildEncounterPages = Dict.insert id subModel data.wellChildEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageWellChildEncounter id) subCmd
