@@ -131,7 +131,7 @@ viewPregnancyOutcome language currentDate initiator data model =
                 ToggleDateSelector
                 SetPregnancyConcludedDate
                 form.isDateSelectorOpen
-                (Date.add Days -92 today)
+                (Date.add Months -3 today)
                 today
                 form.pregnancyConcludedDate
 

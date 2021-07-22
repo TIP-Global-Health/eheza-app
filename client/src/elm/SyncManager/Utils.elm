@@ -652,7 +652,7 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             getIdentifier identifier "well_child_photo"
 
         BackendAuthorityWellChildPregnancySummary identifier ->
-            getIdentifier identifier "well_child_pregancy_summary"
+            getIdentifier identifier "well_child_pregnancy_summary"
 
         BackendAuthorityWellChildSendToHC identifier ->
             getIdentifier identifier "well_child_send_to_hc"

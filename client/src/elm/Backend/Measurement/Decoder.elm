@@ -3049,14 +3049,14 @@ decodeImmunisationValue =
     succeed ImmunisationValue
         |> required "suggested_vaccines" (list decodeSuggestedVaccine)
         |> required "vaccination_notes" (list decodeVacinationNote)
-        |> required "field_bcg_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "field_opv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "field_dtp_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "field_pcv13_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "field_rotarix_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "field_ipv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "field_mr_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "field_hpv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "bcg_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "opv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "dtp_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "pcv13_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "rotarix_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "ipv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "mr_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "hpv_vaccination_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
 
 
 decodeSuggestedVaccine : Decoder SuggestedVaccine
@@ -3171,11 +3171,11 @@ decodeWellChildPregnancySummary =
 decodePregnancySummaryValue : Decoder PregnancySummaryValue
 decodePregnancySummaryValue =
     succeed PregnancySummaryValue
-        |> required "field_expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "field_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "field_apgars_one_minute" decodeInt
-        |> required "field_apgars_five_minutes" decodeInt
-        |> required "field_delivery_complications" (decodeEverySet decodeDeliveryComplication)
+        |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "apgars_one_minute" decodeInt
+        |> required "apgars_five_minutes" decodeInt
+        |> required "delivery_complications" (decodeEverySet decodeDeliveryComplication)
 
 
 decodeDeliveryComplication : Decoder DeliveryComplication

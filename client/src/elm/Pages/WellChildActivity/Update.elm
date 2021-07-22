@@ -79,6 +79,126 @@ update currentDate id db msg model =
             , []
             )
 
+        SetExpectedDateConcluded value ->
+            let
+                updatedForm =
+                    model.pregnancySummaryForm
+                        |> (\form -> { form | expectedDateConcluded = Just value })
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        ToggleExpectedDateConcluded ->
+            let
+                updatedForm =
+                    model.pregnancySummaryForm
+                        |> (\form -> { form | isExpectedDateConcludedSelectorOpen = not form.isExpectedDateConcludedSelectorOpen })
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetDateConcluded value ->
+            let
+                updatedForm =
+                    model.pregnancySummaryForm
+                        |> (\form -> { form | dateConcluded = Just value })
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        ToggleDateConcluded ->
+            let
+                updatedForm =
+                    model.pregnancySummaryForm
+                        |> (\form -> { form | isDateConcludedSelectorOpen = not form.isDateConcludedSelectorOpen })
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetApgarsOneMinute value ->
+            let
+                updatedForm =
+                    model.pregnancySummaryForm
+                        |> (\form -> { form | apgarsOneMinute = String.toInt value })
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetApgarsFiveMinutes value ->
+            let
+                updatedForm =
+                    model.pregnancySummaryForm
+                        |> (\form -> { form | apgarsFiveMinutes = String.toInt value })
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetDeliveryComplicationsPresent value ->
+            let
+                updatedForm =
+                    model.pregnancySummaryForm
+                        |> (\form -> { form | deliveryComplicationsPresent = Just value, deliveryComplications = Nothing })
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetDeliveryComplication complication ->
+            let
+                form =
+                    resolveFormWithDefaults .pregnancySummary pregnancySummaryFormWithDefault model.pregnancySummaryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .deliveryComplications
+                        (\complications -> { form | deliveryComplications = complications })
+                        NoDeliveryComplications
+                        complication
+                        form
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SavePregnancySummary personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.pregnancySummaryForm
+                        |> toPregnancySummaryValueWithDefault measurement
+                        |> Maybe.map
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SavePregnancySummary personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         SetActiveDangerSignsTask task ->
             let
                 updatedData =

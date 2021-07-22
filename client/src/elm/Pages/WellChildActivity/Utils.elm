@@ -88,10 +88,20 @@ activityCompleted currentDate zscores isChw assembled db activity =
             (not <| activityExpected WellChildMedication)
                 || (isJust measurements.mebendezole && isJust measurements.vitaminA)
 
+        WellChildPregnancySummary ->
+            (not <| activityExpected WellChildPregnancySummary)
+                || isJust measurements.pregnancySummary
+
 
 expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate isChw assembled db activity =
     case activity of
+        WellChildPregnancySummary ->
+            ageInMonths currentDate assembled.person
+                |> Maybe.map
+                    (\ageMonths -> ageMonths < 2)
+                |> Maybe.withDefault False
+
         WellChildECD ->
             ageInMonths currentDate assembled.person
                 |> Maybe.map
@@ -112,6 +122,86 @@ expectActivity currentDate isChw assembled db activity =
                 |> List.filter (expectMedicationTask currentDate isChw assembled)
                 |> List.isEmpty
                 |> not
+
+        _ ->
+            True
+
+
+fromPregnancySummaryValue : Maybe PregnancySummaryValue -> PregnancySummaryForm
+fromPregnancySummaryValue saved =
+    let
+        deliveryComplications =
+            Maybe.map (.deliveryComplications >> EverySet.toList) saved
+
+        deliveryComplicationsPresent =
+            Maybe.map complicationsPresent deliveryComplications
+    in
+    { expectedDateConcluded = Maybe.map .expectedDateConcluded saved
+    , isExpectedDateConcludedSelectorOpen = False
+    , dateConcluded = Maybe.map .dateConcluded saved
+    , isDateConcludedSelectorOpen = False
+    , apgarsOneMinute = Maybe.map .apgarsOneMinute saved
+    , apgarsFiveMinutes = Maybe.map .apgarsFiveMinutes saved
+    , deliveryComplicationsPresent = deliveryComplicationsPresent
+    , deliveryComplications = deliveryComplications
+    }
+
+
+pregnancySummaryFormWithDefault : PregnancySummaryForm -> Maybe PregnancySummaryValue -> PregnancySummaryForm
+pregnancySummaryFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    deliveryComplications =
+                        if form.deliveryComplicationsPresent == Just False then
+                            [ NoDeliveryComplications ]
+
+                        else
+                            EverySet.toList value.deliveryComplications
+                in
+                { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
+                , isExpectedDateConcludedSelectorOpen = form.isExpectedDateConcludedSelectorOpen
+                , dateConcluded = or form.dateConcluded (Just value.dateConcluded)
+                , isDateConcludedSelectorOpen = form.isDateConcludedSelectorOpen
+                , apgarsOneMinute = or form.apgarsOneMinute (Just value.apgarsOneMinute)
+                , apgarsFiveMinutes = or form.apgarsFiveMinutes (Just value.apgarsFiveMinutes)
+                , deliveryComplicationsPresent = or form.deliveryComplicationsPresent (complicationsPresent deliveryComplications |> Just)
+                , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
+                }
+            )
+
+
+toPregnancySummaryValueWithDefault : Maybe PregnancySummaryValue -> PregnancySummaryForm -> Maybe PregnancySummaryValue
+toPregnancySummaryValueWithDefault saved form =
+    pregnancySummaryFormWithDefault form saved
+        |> toPregnancySummaryValue
+
+
+toPregnancySummaryValue : PregnancySummaryForm -> Maybe PregnancySummaryValue
+toPregnancySummaryValue form =
+    let
+        deliveryComplications =
+            form.deliveryComplications
+                |> Maybe.map EverySet.fromList
+                |> Maybe.withDefault (EverySet.singleton NoDeliveryComplications)
+    in
+    Maybe.map PregnancySummaryValue form.expectedDateConcluded
+        |> andMap form.dateConcluded
+        |> andMap form.apgarsOneMinute
+        |> andMap form.apgarsFiveMinutes
+        |> andMap (Just deliveryComplications)
+
+
+complicationsPresent : List DeliveryComplication -> Bool
+complicationsPresent complications =
+    case complications of
+        [] ->
+            False
+
+        [ NoDeliveryComplications ] ->
+            False
 
         _ ->
             True
