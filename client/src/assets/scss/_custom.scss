@@ -497,6 +497,11 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-ecd.svg);
 }
 
+.icon-task-medication {
+  background-image: url(#{$img-path}icon-medication-white.svg);
+  background-size: 152px 152px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -2166,6 +2171,34 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-symptoms-gray.svg);
+  }
+}
+
+.icon-albendazole {
+  .active &:after {
+    background-image: url(#{$img-path}icon-pills-box-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-pills-box-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-pills-box-gray.svg);
+  }
+}
+
+.icon-mebendezole {
+  .active &:after {
+    background-image: url(#{$img-path}icon-pills-box-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-pills-box-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-pills-box-gray.svg);
   }
 }
 

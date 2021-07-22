@@ -5,3 +5,4 @@ type WellChildActivity
     = WellChildDangerSigns
     | WellChildNutritionAssessment
     | WellChildECD
+    | WellChildMedication

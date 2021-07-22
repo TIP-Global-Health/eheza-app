@@ -33,6 +33,7 @@ import Measurement.View
         , viewSendToHCForm
         , zScoreForHeightOrLength
         )
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.NutritionActivity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
@@ -128,7 +129,10 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildECD ->
-            viewECDContent language currentDate assembled model.ecdForm
+            viewECDForm language currentDate assembled model.ecdForm
+
+        WellChildMedication ->
+            viewMedicationContent language currentDate isChw assembled model.medicationData
 
 
 viewDangerSignsContent :
@@ -679,8 +683,8 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
     ]
 
 
-viewECDContent : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
-viewECDContent language currentDate assembled ecdForm =
+viewECDForm : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
+viewECDForm language currentDate assembled ecdForm =
     ageInMonths currentDate assembled.person
         |> Maybe.map
             (\ageMonths ->
@@ -1024,6 +1028,234 @@ ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
     ( List.map Tuple.first expected |> List.concat
     , List.map Tuple.second expected
     )
+
+
+viewMedicationContent :
+    Language
+    -> NominalDate
+    -> Bool
+    -> AssembledData
+    -> MedicationData
+    -> List (Html Msg)
+viewMedicationContent language currentDate isChw assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            allMedicationTasks
+                |> List.filter (expectMedicationTask currentDate isChw assembled)
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskAlbendazole ->
+                            ( "albendazole"
+                            , isJust measurements.albendazole
+                            )
+
+                        TaskMebendezole ->
+                            ( "mebendezole"
+                            , isJust measurements.mebendezole
+                            )
+
+                        TaskVitaminA ->
+                            ( "treatment-review"
+                            , isJust measurements.vitaminA
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveMedicationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.WellChildMedicationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map (\task -> ( task, medicationTasksCompletedFromTotal measurements data task ))
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskAlbendazole ->
+                    let
+                        config =
+                            { medication = Albendazole
+                            , setMedicationAdministeredMsg = SetAlbendazoleAdministered
+                            , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
+                            , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
+                            , helper = Translate.AdministerAlbendazoleHelper
+                            }
+                    in
+                    measurements.albendazole
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationAdministrationFormWithDefault data.albendazoleForm
+                        |> viewMedicationAdministrationForm language currentDate assembled config
+
+                Just TaskMebendezole ->
+                    let
+                        config =
+                            { medication = Mebendezole
+                            , setMedicationAdministeredMsg = SetMebendezoleAdministered
+                            , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
+                            , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
+                            , helper = Translate.AdministerMebendezoleHelper
+                            }
+                    in
+                    measurements.mebendezole
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationAdministrationFormWithDefault data.mebendezoleForm
+                        |> viewMedicationAdministrationForm language currentDate assembled config
+
+                Just TaskVitaminA ->
+                    let
+                        config =
+                            { medication = VitaminA
+                            , setMedicationAdministeredMsg = SetVitaminAAdministered
+                            , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
+                            , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
+                            , helper = Translate.AdministeVitaminAHelper
+                            }
+                    in
+                    measurements.vitaminA
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationAdministrationFormWithDefault data.vitaminAForm
+                        |> viewMedicationAdministrationForm language currentDate assembled config
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskAlbendazole ->
+                                        SaveAlbendazole personId measurements.albendazole nextTask
+
+                                    TaskMebendezole ->
+                                        SaveMebendezole personId measurements.mebendezole nextTask
+
+                                    TaskVitaminA ->
+                                        SaveVitaminA personId measurements.vitaminA nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+type alias MedicationAdministrationFormConfig =
+    { medication : MedicationDistributionSign
+    , setMedicationAdministeredMsg : Bool -> Msg
+    , setReasonForNonAdministration : AdministrationNote -> Msg
+    , resolveDosageAndIconFunc : NominalDate -> Person -> Maybe ( String, String )
+    , helper : TranslationId
+    }
+
+
+viewMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationFormConfig -> MedicationAdministrationForm -> List (Html Msg)
+viewMedicationAdministrationForm language currentDate assembled config form =
+    let
+        instructions =
+            config.resolveDosageAndIconFunc currentDate assembled.person
+                |> Maybe.map
+                    (\( dosage, icon ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon dosage
+                            , div [ class "prescription" ] [ text <| translate language config.helper ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        questions =
+            [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign config.medication)
+            , viewBoolInput
+                language
+                form.medicationAdministered
+                config.setMedicationAdministeredMsg
+                ""
+                Nothing
+            ]
+                ++ derrivedQuestion
+
+        derrivedQuestion =
+            if form.medicationAdministered == Just False then
+                [ viewQuestionLabel language Translate.WhyNot
+                , viewCheckBoxSelectInput language
+                    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+                    [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                    form.reasonForNonAdministration
+                    config.setReasonForNonAdministration
+                    Translate.AdministrationNote
+                ]
+
+            else
+                []
+    in
+    [ div [ class "ui form medication-administration" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , instructions
+        ]
+            ++ questions
+    ]
+
+
+viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
+viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass dosage Nothing
 
 
 viewAction : Language -> Msg -> Bool -> Html Msg

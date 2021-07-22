@@ -47,13 +47,13 @@ generateNutritionAssesment currentDate zscores db assembled =
 
 
 activityCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-activityCompleted currentDate zscores isChw data db activity =
+activityCompleted currentDate zscores isChw assembled db activity =
     let
         measurements =
-            data.measurements
+            assembled.measurements
 
         activityExpected =
-            expectActivity currentDate data db
+            expectActivity currentDate isChw assembled db
     in
     case activity of
         WellChildDangerSigns ->
@@ -65,18 +65,18 @@ activityCompleted currentDate zscores isChw data db activity =
                 ( mandatory, optional ) =
                     partitionNutritionAssessmentTasks isChw
             in
-            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw data db then
+            if mandatoryNutritionAssesmentTasksCompleted currentDate zscores isChw assembled db then
                 let
                     nonEmptyAssessment =
-                        generateNutritionAssesment currentDate zscores db data
+                        generateNutritionAssesment currentDate zscores db assembled
                             |> List.isEmpty
                             |> not
                 in
                 if nonEmptyAssessment then
-                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw data db) (optional ++ nutritionAssessmentNextStepsTasks)
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw assembled db) (optional ++ nutritionAssessmentNextStepsTasks)
 
                 else
-                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw data db) optional
+                    List.all (nutritionAssessmentTaskCompleted currentDate zscores isChw assembled db) optional
 
             else
                 False
@@ -84,9 +84,13 @@ activityCompleted currentDate zscores isChw data db activity =
         WellChildECD ->
             (not <| activityExpected WellChildECD) || isJust measurements.ecd
 
+        WellChildMedication ->
+            (not <| activityExpected WellChildMedication)
+                || (isJust measurements.mebendezole && isJust measurements.vitaminA)
 
-expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate assembled db activity =
+
+expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
+expectActivity currentDate isChw assembled db activity =
     case activity of
         WellChildECD ->
             ageInMonths currentDate assembled.person
@@ -102,6 +106,12 @@ expectActivity currentDate assembled db activity =
                             |> not
                     )
                 |> Maybe.withDefault False
+
+        WellChildMedication ->
+            allMedicationTasks
+                |> List.filter (expectMedicationTask currentDate isChw assembled)
+                |> List.isEmpty
+                |> not
 
         _ ->
             True
@@ -685,6 +695,134 @@ ecdSigns36to47 =
     , ShareWithOtherChildren
     , CountToTen
     ]
+
+
+expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate isChw data task =
+    ageInMonths currentDate data.person
+        |> Maybe.map
+            (\ageMonths ->
+                case task of
+                    -- 6 years to 12 years.
+                    TaskAlbendazole ->
+                        ageMonths >= 60 && ageMonths < 120
+
+                    -- 1 year to 6 years.
+                    TaskMebendezole ->
+                        ageMonths >= 12 && ageMonths < 60
+
+                    -- 6 months to 6 years.
+                    TaskVitaminA ->
+                        ageMonths >= 6 && ageMonths < 60
+            )
+        |> Maybe.withDefault False
+
+
+medicationTasksCompletedFromTotal : WellChildMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal measurements data task =
+    let
+        processMedicationAdministrationTask form =
+            let
+                ( nonAdministrationCompleted, nonAdministrationActive ) =
+                    if form.medicationAdministered == Just False then
+                        ( taskCompleted form.reasonForNonAdministration, 1 )
+
+                    else
+                        ( 0, 0 )
+            in
+            ( taskCompleted form.medicationAdministered + nonAdministrationCompleted
+            , 1 + nonAdministrationActive
+            )
+    in
+    case task of
+        TaskAlbendazole ->
+            measurements.albendazole
+                |> Maybe.map (Tuple.second >> .value)
+                |> medicationAdministrationFormWithDefault data.albendazoleForm
+                |> processMedicationAdministrationTask
+
+        TaskMebendezole ->
+            measurements.mebendezole
+                |> Maybe.map (Tuple.second >> .value)
+                |> medicationAdministrationFormWithDefault data.mebendezoleForm
+                |> processMedicationAdministrationTask
+
+        TaskVitaminA ->
+            measurements.vitaminA
+                |> Maybe.map (Tuple.second >> .value)
+                |> medicationAdministrationFormWithDefault data.vitaminAForm
+                |> processMedicationAdministrationTask
+
+
+fromAdministrationNote : Maybe AdministrationNote -> MedicationAdministrationForm
+fromAdministrationNote saved =
+    Maybe.map
+        (\administrationNote ->
+            let
+                ( medicationAdministered, reasonForNonAdministration ) =
+                    if administrationNote == AdministeredToday then
+                        ( Just True, Nothing )
+
+                    else
+                        ( Just False, Just administrationNote )
+            in
+            MedicationAdministrationForm medicationAdministered reasonForNonAdministration
+        )
+        saved
+        |> Maybe.withDefault emptyMedicationAdministrationForm
+
+
+medicationAdministrationFormWithDefault : MedicationAdministrationForm -> Maybe AdministrationNote -> MedicationAdministrationForm
+medicationAdministrationFormWithDefault form saved =
+    let
+        fromSavedForm =
+            fromAdministrationNote saved
+    in
+    { medicationAdministered = or form.medicationAdministered fromSavedForm.medicationAdministered
+    , reasonForNonAdministration = or form.reasonForNonAdministration fromSavedForm.reasonForNonAdministration
+    }
+
+
+toAdministrationNoteWithDefault : Maybe AdministrationNote -> MedicationAdministrationForm -> Maybe AdministrationNote
+toAdministrationNoteWithDefault saved form =
+    medicationAdministrationFormWithDefault form saved
+        |> toAdministrationNote
+
+
+toAdministrationNote : MedicationAdministrationForm -> Maybe AdministrationNote
+toAdministrationNote form =
+    form.medicationAdministered
+        |> Maybe.andThen
+            (\medicationAdministered ->
+                if medicationAdministered then
+                    Just AdministeredToday
+
+                else
+                    form.reasonForNonAdministration
+            )
+
+
+resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveAlbendazoleDosageAndIcon currentDate person =
+    Just ( "500 mg", "icon-pills" )
+
+
+resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveMebendezoleDosageAndIcon currentDate person =
+    Just ( "500 mg", "icon-pills" )
+
+
+resolveVitaminADosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveVitaminADosageAndIcon currentDate person =
+    ageInMonths currentDate person
+        |> Maybe.map
+            (\ageMonths ->
+                if ageMonths < 18 then
+                    ( "100,000 IU", "icon-capsule blue" )
+
+                else
+                    ( "200,000 IU", "icon-capsule red" )
+            )
 
 
 

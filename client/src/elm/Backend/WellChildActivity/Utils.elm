@@ -15,6 +15,9 @@ encodeActivityAsString activity =
         WellChildECD ->
             "well-child-ecd"
 
+        WellChildMedication ->
+            "well-child-medication"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -29,6 +32,9 @@ decodeActivityFromString s =
 
         "well-child-danger-signs" ->
             Just WellChildDangerSigns
+
+        "well-child-medication" ->
+            Just WellChildMedication
 
         _ ->
             Nothing
@@ -49,7 +55,10 @@ getActivityIcon activity =
         WellChildECD ->
             "ecd"
 
+        WellChildMedication ->
+            "medication"
+
 
 getAllActivities : List WellChildActivity
 getAllActivities =
-    [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildECD ]
+    [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildECD, WellChildMedication ]

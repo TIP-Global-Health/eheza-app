@@ -2141,6 +2141,15 @@ decodeMedicationDistributionSign =
                     "lemon-juice-or-honey" ->
                         succeed LemonJuiceOrHoney
 
+                    "albendazole" ->
+                        succeed Albendazole
+
+                    "mebendezole" ->
+                        succeed Mebendezole
+
+                    "vitamin-a" ->
+                        succeed VitaminA
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -3124,30 +3133,27 @@ decodeVaccineDose =
 
 decodeWellChildAlbendazole : Decoder WellChildAlbendazole
 decodeWellChildAlbendazole =
-    string
-        |> andThen
-            (\note ->
-                administrationNoteFromString note
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
-            )
+    decodeAdministrationNote
+        |> field "administration_note"
         |> decodeWellChildMeasurement
 
 
 decodeWellChildMebendezole : Decoder WellChildMebendezole
 decodeWellChildMebendezole =
-    string
-        |> andThen
-            (\note ->
-                administrationNoteFromString note
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
-            )
+    decodeAdministrationNote
+        |> field "administration_note"
         |> decodeWellChildMeasurement
 
 
 decodeWellChildVitaminA : Decoder WellChildVitaminA
 decodeWellChildVitaminA =
+    decodeAdministrationNote
+        |> field "administration_note"
+        |> decodeWellChildMeasurement
+
+
+decodeAdministrationNote : Decoder AdministrationNote
+decodeAdministrationNote =
     string
         |> andThen
             (\note ->
@@ -3155,7 +3161,6 @@ decodeWellChildVitaminA =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
             )
-        |> decodeWellChildMeasurement
 
 
 decodeWellChildPregnancySummary : Decoder WellChildPregnancySummary

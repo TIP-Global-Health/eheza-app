@@ -309,6 +309,9 @@ type TranslationId
     | AddToGroup
     | Admin
     | Administer
+    | AdministerMebendezoleHelper
+    | AdministerAlbendazoleHelper
+    | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
     | AddressInformation
@@ -975,6 +978,7 @@ type TranslationId
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
+    | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
     | WhatType
@@ -1439,6 +1443,21 @@ translationSet trans =
         Administer ->
             { english = "Administer"
             , kinyarwanda = Just "Tanga umuti"
+            }
+
+        AdministerMebendezoleHelper ->
+            { english = "Give the child one tablet by mouth"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerAlbendazoleHelper ->
+            { english = "One tablet by mouth"
+            , kinyarwanda = Nothing
+            }
+
+        AdministeVitaminAHelper ->
+            { english = "Put the correct number of drops directly into the mouth of the child"
+            , kinyarwanda = Nothing
             }
 
         Administered ->
@@ -4610,6 +4629,21 @@ translationSet trans =
                     , kinyarwanda = Just "Umutobe w'indimu n'ubuki"
                     }
 
+                Albendazole ->
+                    { english = "Albendazole"
+                    , kinyarwanda = Nothing
+                    }
+
+                Mebendezole ->
+                    { english = "Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                VitaminA ->
+                    { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -7682,6 +7716,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildMedication ->
+                    { english = "Medication"
+                    , kinyarwanda = Nothing
+                    }
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->
@@ -7691,6 +7730,23 @@ translationSet trans =
 
                 Pages.WellChildActivity.Model.TaskVitals ->
                     { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildMedicationTask task ->
+            case task of
+                Pages.WellChildActivity.Model.TaskAlbendazole ->
+                    { english = "Albendazole"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskMebendezole ->
+                    { english = "Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskVitaminA ->
+                    { english = "Vitamin A"
                     , kinyarwanda = Nothing
                     }
 

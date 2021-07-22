@@ -57,6 +57,11 @@ update currentDate id db msg model =
             nextTask
                 |> Maybe.map (\task -> [ SetActiveDangerSignsTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+
+        generateMedicationMsgs nextTask =
+            nextTask
+                |> Maybe.map (\task -> [ SetActiveMedicationTask task ])
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -795,3 +800,188 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveMedicationTask task ->
+            let
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAlbendazoleAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.albendazoleForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | albendazoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAlbendazoleReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.albendazoleForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | albendazoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveAlbendazole personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask_
+
+                appMsgs =
+                    model.medicationData.albendazoleForm
+                        |> toAdministrationNoteWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveAlbendazole personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMebendezoleAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.mebendezoleForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | mebendezoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMebendezoleReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.mebendezoleForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | mebendezoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMebendezole personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask_
+
+                appMsgs =
+                    model.medicationData.mebendezoleForm
+                        |> toAdministrationNoteWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveMebendezole personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetVitaminAAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.vitaminAForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | vitaminAForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVitaminAReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.vitaminAForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | vitaminAForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveVitaminA personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask_
+
+                appMsgs =
+                    model.medicationData.vitaminAForm
+                        |> toAdministrationNoteWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveVitaminA personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs

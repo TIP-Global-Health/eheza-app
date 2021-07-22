@@ -47,12 +47,24 @@ type Msg
       -- ECD
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
+      -- MEDICATION
+    | SetActiveMedicationTask MedicationTask
+    | SetAlbendazoleAdministered Bool
+    | SetAlbendazoleReasonForNonAdministration AdministrationNote
+    | SaveAlbendazole PersonId (Maybe ( WellChildAlbendazoleId, WellChildAlbendazole )) (Maybe MedicationTask)
+    | SetMebendezoleAdministered Bool
+    | SetMebendezoleReasonForNonAdministration AdministrationNote
+    | SaveMebendezole PersonId (Maybe ( WellChildMebendezoleId, WellChildMebendezole )) (Maybe MedicationTask)
+    | SetVitaminAAdministered Bool
+    | SetVitaminAReasonForNonAdministration AdministrationNote
+    | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA )) (Maybe MedicationTask)
 
 
 type alias Model =
     { dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
     , ecdForm : WellChildECDForm
+    , medicationData : MedicationData
     , warningPopupState : List NutritionAssesment
     }
 
@@ -62,6 +74,7 @@ emptyModel =
     { dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
     , ecdForm = emptyWellChildECDForm
+    , medicationData = emptyMedicationData
     , warningPopupState = []
     }
 
@@ -236,3 +249,42 @@ emptyWellChildECDForm =
     , shareWithOtherChildren = Nothing
     , countToTen = Nothing
     }
+
+
+type alias MedicationData =
+    { albendazoleForm : MedicationAdministrationForm
+    , mebendezoleForm : MedicationAdministrationForm
+    , vitaminAForm : MedicationAdministrationForm
+    , activeTask : Maybe MedicationTask
+    }
+
+
+emptyMedicationData : MedicationData
+emptyMedicationData =
+    { albendazoleForm = emptyMedicationAdministrationForm
+    , mebendezoleForm = emptyMedicationAdministrationForm
+    , vitaminAForm = emptyMedicationAdministrationForm
+    , activeTask = Nothing
+    }
+
+
+type alias MedicationAdministrationForm =
+    { medicationAdministered : Maybe Bool
+    , reasonForNonAdministration : Maybe AdministrationNote
+    }
+
+
+emptyMedicationAdministrationForm : MedicationAdministrationForm
+emptyMedicationAdministrationForm =
+    MedicationAdministrationForm Nothing Nothing
+
+
+type MedicationTask
+    = TaskAlbendazole
+    | TaskMebendezole
+    | TaskVitaminA
+
+
+allMedicationTasks : List MedicationTask
+allMedicationTasks =
+    [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]
