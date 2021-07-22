@@ -3603,48 +3603,49 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
 
 generateNutritionAssessmentWellChildlMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> WellChildEncounterId -> List App.Model.Msg
 generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw after id =
-    Maybe.map
-        (\assembledAfter ->
-            let
-                mandatoryActivitiesCompleted =
-                    Pages.WellChildActivity.Utils.mandatoryNutritionAssessmentTasksCompleted
-                        currentDate
-                        isChw
-                        assembledAfter
-                        after
-            in
-            if not mandatoryActivitiesCompleted then
-                -- Assement is done only when all mandatory measurements were recorded.
-                []
-
-            else
+    Pages.WellChildEncounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembledAfter ->
                 let
-                    assesmentAfter =
-                        Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
-
-                    updateFollowUpAssesmentMsg =
-                        assembledAfter.measurements.followUp
-                            |> Maybe.map
-                                (\( measurementId, measurement ) ->
-                                    let
-                                        updatedValue =
-                                            measurement.value
-                                                |> (\value -> { value | assesment = nutritionAssessmentForBackend assesmentAfter })
-                                    in
-                                    Backend.WellChildEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
-                                        |> Backend.Model.MsgWellChildEncounter id
-                                        |> App.Model.MsgIndexedDb
-                                        |> List.singleton
-                                )
-                            |> Maybe.withDefault []
+                    mandatoryActivitiesCompleted =
+                        Pages.WellChildActivity.Utils.mandatoryNutritionAssessmentTasksCompleted
+                            currentDate
+                            isChw
+                            assembledAfter
+                            after
                 in
-                updateFollowUpAssesmentMsg
-         -- Show warning popup with new assesment.
-         -- , Pages.WellChildActivity.Model.SetWarningPopupState assesmentAfter
-         --      |> App.Model.MsgPageWellChildActivity id Backend.WellChildActivity.Model.WellChildNutritionAssessment
-         --      |> App.Model.MsgLoggedIn
-        )
-        (RemoteData.toMaybe <| Pages.WellChildEncounter.Utils.generateAssembledData id after)
+                if not mandatoryActivitiesCompleted then
+                    -- Assement is done only when all mandatory measurements were recorded.
+                    []
+
+                else
+                    let
+                        assesmentAfter =
+                            Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+
+                        updateFollowUpAssesmentMsg =
+                            assembledAfter.measurements.followUp
+                                |> Maybe.map
+                                    (\( measurementId, measurement ) ->
+                                        let
+                                            updatedValue =
+                                                measurement.value
+                                                    |> (\value -> { value | assesment = nutritionAssessmentForBackend assesmentAfter })
+                                        in
+                                        Backend.WellChildEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                            |> Backend.Model.MsgWellChildEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                            |> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+                    in
+                    updateFollowUpAssesmentMsg
+             -- Show warning popup with new assesment.
+             -- , Pages.WellChildActivity.Model.SetWarningPopupState assesmentAfter
+             --      |> App.Model.MsgPageWellChildActivity id Backend.WellChildActivity.Model.WellChildNutritionAssessment
+             --      |> App.Model.MsgLoggedIn
+            )
         |> Maybe.withDefault []
 
 

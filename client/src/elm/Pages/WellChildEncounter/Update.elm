@@ -60,38 +60,40 @@ update currentDate zscores isChw db msg model =
                 extraMsgs =
                     [ SetActivePage (UserPage (WellChildActivityPage encounterId activity)) ]
 
+                -- View Assessment popu when mavigating to Next Steps activity.
                 appMsgs =
                     if activity == WellChildNextSteps then
-                        Maybe.map
-                            (\assembled ->
-                                let
-                                    mandatoryActivitiesCompleted =
-                                        Pages.WellChildActivity.Utils.mandatoryNutritionAssessmentTasksCompleted
-                                            currentDate
-                                            isChw
-                                            assembled
-                                            db
-                                in
-                                if not mandatoryActivitiesCompleted then
-                                    -- Assement is done only when all mandatory measurements were recorded.
-                                    []
-
-                                else
+                        Pages.WellChildEncounter.Utils.generateAssembledData encounterId db
+                            |> RemoteData.toMaybe
+                            |> Maybe.map
+                                (\assembled ->
                                     let
-                                        assessment =
-                                            Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores db assembled
+                                        mandatoryActivitiesCompleted =
+                                            Pages.WellChildActivity.Utils.mandatoryNutritionAssessmentTasksCompleted
+                                                currentDate
+                                                isChw
+                                                assembled
+                                                db
                                     in
-                                    if List.isEmpty assessment then
+                                    if not mandatoryActivitiesCompleted then
+                                        -- Assement is done only when all mandatory measurements were recorded.
                                         []
 
                                     else
-                                        -- Show warning popup with new assesment.
-                                        Pages.WellChildActivity.Model.SetWarningPopupState assessment
-                                            |> App.Model.MsgPageWellChildActivity encounterId Backend.WellChildActivity.Model.WellChildNextSteps
-                                            |> App.Model.MsgLoggedIn
-                                            |> List.singleton
-                            )
-                            (RemoteData.toMaybe <| Pages.WellChildEncounter.Utils.generateAssembledData encounterId db)
+                                        let
+                                            assessment =
+                                                Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores db assembled
+                                        in
+                                        if List.isEmpty assessment then
+                                            []
+
+                                        else
+                                            -- Show warning popup with new assesment.
+                                            Pages.WellChildActivity.Model.SetWarningPopupState assessment
+                                                |> App.Model.MsgPageWellChildActivity encounterId Backend.WellChildActivity.Model.WellChildNextSteps
+                                                |> App.Model.MsgLoggedIn
+                                                |> List.singleton
+                                )
                             |> Maybe.withDefault []
 
                     else
