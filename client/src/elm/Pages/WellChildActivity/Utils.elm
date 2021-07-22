@@ -1632,7 +1632,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
 
 nextStepsTasks : List Pages.WellChildActivity.Model.NextStepsTask
 nextStepsTasks =
-    [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp ]
+    [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp, TaskNextVisit ]
 
 
 

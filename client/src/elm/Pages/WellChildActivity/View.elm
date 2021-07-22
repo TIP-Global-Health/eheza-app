@@ -640,26 +640,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                 tasks
                 |> List.head
 
-        tasksTray =
-            let
-                ( topTasks, bottomTasks ) =
-                    List.Extra.splitAt 5 tasks
-
-                topSection =
-                    List.map viewTask topTasks
-                        |> div [ class "ui five column grid" ]
-
-                bottomSection =
-                    if List.isEmpty bottomTasks then
-                        emptyNode
-
-                    else
-                        List.map viewTask bottomTasks
-                            |> div [ class "ui four column grid" ]
-            in
-            div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-                [ topSection, bottomSection ]
-
         actions =
             activeTask
                 |> Maybe.map
@@ -703,7 +683,10 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                     )
                 |> Maybe.withDefault emptyNode
     in
-    [ tasksTray
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
@@ -1956,26 +1939,6 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                 tasks
                 |> List.head
 
-        tasksTray =
-            let
-                ( topTasks, bottomTasks ) =
-                    List.Extra.splitAt 5 tasks
-
-                topSection =
-                    List.map viewTask topTasks
-                        |> div [ class "ui five column grid" ]
-
-                bottomSection =
-                    if List.isEmpty bottomTasks then
-                        emptyNode
-
-                    else
-                        List.map viewTask bottomTasks
-                            |> div [ class "ui four column grid" ]
-            in
-            div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-                [ topSection, bottomSection ]
-
         actions =
             activeTask
                 |> Maybe.map
@@ -2011,7 +1974,10 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                     )
                 |> Maybe.withDefault emptyNode
     in
-    [ tasksTray
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
