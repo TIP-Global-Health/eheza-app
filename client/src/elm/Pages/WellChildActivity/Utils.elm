@@ -1535,12 +1535,12 @@ nextStepsTaskCompleted currentDate zscores isChw data db task =
 
 
 expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.NextStepsTask -> Bool
-expectNextStepsTask currentDate zscores isChw data db task =
+expectNextStepsTask currentDate zscores isChw assembled db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssessmentTasksCompleted currentDate isChw data db then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db then
                 -- Any assesment require Next Steps tasks.
-                generateNutritionAssessment currentDate zscores db data
+                generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
                     |> not
 
@@ -1548,18 +1548,23 @@ expectNextStepsTask currentDate zscores isChw data db task =
                 False
 
         TaskHealthEducation ->
-            expectNextStepsTask currentDate zscores isChw data db TaskContributingFactors
+            expectNextStepsTask currentDate zscores isChw assembled db TaskContributingFactors
 
         TaskFollowUp ->
-            expectNextStepsTask currentDate zscores isChw data db TaskContributingFactors
+            expectNextStepsTask currentDate zscores isChw assembled db TaskContributingFactors
 
         TaskSendToHC ->
-            expectNextStepsTask currentDate zscores isChw data db TaskContributingFactors
+            expectNextStepsTask currentDate zscores isChw assembled db TaskContributingFactors
                 || -- For newborn exam, we send to HC if newborn was not vaccinated at birth.
-                   (isChw && (newbornVaccinatedAtBirth data.measurements == Just False))
+                   (isChw && (newbornVaccinatedAtBirth assembled.measurements == Just False))
 
         TaskNextVisit ->
             not isChw
+                -- Activities that affect determinating next visit date are
+                -- either completed, or not shown at current visit.
+                && activityCompleted currentDate zscores isChw assembled db WellChildImmunisation
+                && activityCompleted currentDate zscores isChw assembled db WellChildECD
+                && activityCompleted currentDate zscores isChw assembled db WellChildMedication
 
 
 newbornVaccinatedAtBirth : WellChildMeasurements -> Maybe Bool
