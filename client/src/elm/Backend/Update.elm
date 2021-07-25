@@ -3722,7 +3722,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
                     |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
             setDiagnosisMsg =
-                -- We have an update to diagnosis based on current measurments,
+                -- We have an update to diagnosis based on current measurements,
                 -- and it is not yet set for the encounter.
                 if data.encounter.diagnosis == NoAcuteIllnessDiagnosis && diagnosisByCurrentEncounterMeasurements /= NoAcuteIllnessDiagnosis then
                     [ updateDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]

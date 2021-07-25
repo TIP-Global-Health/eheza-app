@@ -54,9 +54,13 @@ activityCompleted currentDate zscores isChw assembled db activity =
             assembled.measurements
 
         activityExpected =
-            expectActivity currentDate isChw assembled db
+            expectActivity currentDate zscores isChw assembled db
     in
     case activity of
+        WellChildPregnancySummary ->
+            (not <| activityExpected WellChildPregnancySummary)
+                || isJust measurements.pregnancySummary
+
         WellChildDangerSigns ->
             (not <| activityExpected WellChildDangerSigns)
                 || (isJust measurements.symptomsReview && isJust measurements.vitals)
@@ -76,10 +80,6 @@ activityCompleted currentDate zscores isChw assembled db activity =
             (not <| activityExpected WellChildMedication)
                 || (isJust measurements.mebendezole && isJust measurements.vitaminA)
 
-        WellChildPregnancySummary ->
-            (not <| activityExpected WellChildPregnancySummary)
-                || isJust measurements.pregnancySummary
-
         WellChildImmunisation ->
             (not <| activityExpected WellChildImmunisation) || isJust measurements.immunisation
 
@@ -87,14 +87,24 @@ activityCompleted currentDate zscores isChw assembled db activity =
             List.all (nextStepsTaskCompleted currentDate zscores isChw assembled db) nextStepsTasks
 
 
-expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate isChw assembled db activity =
+expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
+expectActivity currentDate zscores isChw assembled db activity =
     case activity of
         WellChildPregnancySummary ->
-            ageInMonths currentDate assembled.person
-                |> Maybe.map
-                    (\ageMonths -> ageMonths < 2)
-                |> Maybe.withDefault False
+            if isChw then
+                ageInMonths currentDate assembled.person
+                    |> Maybe.map
+                        (\ageMonths -> ageMonths < 2)
+                    |> Maybe.withDefault False
+
+            else
+                False
+
+        WellChildDangerSigns ->
+            not isChw
+
+        WellChildNutritionAssessment ->
+            True
 
         WellChildImmunisation ->
             generateSuggestedVaccines currentDate isChw assembled
@@ -102,18 +112,29 @@ expectActivity currentDate isChw assembled db activity =
                 |> not
 
         WellChildECD ->
-            generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
-                |> List.isEmpty
-                |> not
+            if isChw then
+                False
+
+            else
+                generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
+                    |> List.isEmpty
+                    |> not
 
         WellChildMedication ->
-            allMedicationTasks
-                |> List.filter (expectMedicationTask currentDate isChw assembled)
+            if isChw then
+                False
+
+            else
+                allMedicationTasks
+                    |> List.filter (expectMedicationTask currentDate isChw assembled)
+                    |> List.isEmpty
+                    |> not
+
+        WellChildNextSteps ->
+            nextStepsTasks
+                |> List.filter (expectNextStepsTask currentDate zscores isChw assembled db)
                 |> List.isEmpty
                 |> not
-
-        _ ->
-            True
 
 
 fromPregnancySummaryValue : Maybe PregnancySummaryValue -> PregnancySummaryForm
@@ -1534,9 +1555,24 @@ expectNextStepsTask currentDate zscores isChw data db task =
 
         TaskSendToHC ->
             expectNextStepsTask currentDate zscores isChw data db TaskContributingFactors
+                || -- For newborn exam, we send to HC if newborn was not vaccinated at birth.
+                   (isChw && (newbornVaccinatedAtBirth data.measurements == Just False))
 
         TaskNextVisit ->
-            True
+            not isChw
+
+
+newbornVaccinatedAtBirth : WellChildMeasurements -> Maybe Bool
+newbornVaccinatedAtBirth measurements =
+    measurements.immunisation
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> (\value ->
+                        -- At least one (of two) vaccines given at birth, was administered.
+                        isJust value.bcgVaccinationDate || isJust value.opvVaccinationDate
+                   )
+            )
 
 
 nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChildActivity.Model.NextStepsTask -> ( Int, Int )
