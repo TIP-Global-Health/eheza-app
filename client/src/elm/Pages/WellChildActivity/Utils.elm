@@ -1574,8 +1574,8 @@ newbornVaccinatedAtBirth measurements =
             (Tuple.second
                 >> .value
                 >> (\value ->
-                        -- At least one (of two) vaccines given at birth, was administered.
-                        isJust value.bcgVaccinationDate || isJust value.opvVaccinationDate
+                        --Both vaccines given at birth were administered.
+                        isJust value.bcgVaccinationDate && isJust value.opvVaccinationDate
                    )
             )
 
