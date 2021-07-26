@@ -12,7 +12,7 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
-    | SetWarningPopupState (List NutritionAssessment)
+    | SetWarningPopupState (Maybe WarningPopupType)
     | NoOp
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
@@ -37,6 +37,7 @@ type Msg
     | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
     | SetHeadCircumference String
     | ToggleHeadCircumferenceNotTaken
+    | CloseHeadCircumferencePopup PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | SetMuac String
     | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssessmentTask)
@@ -91,7 +92,7 @@ type alias Model =
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
     , nextStepsData : NextStepsData
-    , warningPopupState : List NutritionAssessment
+    , warningPopupState : Maybe WarningPopupType
     }
 
 
@@ -104,8 +105,14 @@ emptyModel =
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
     , nextStepsData = emptyNextStepsData
-    , warningPopupState = []
+    , warningPopupState = Nothing
     }
+
+
+type WarningPopupType
+    = PopupNutritionAssesment (List NutritionAssessment)
+    | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
 
 
 type alias PregnancySummaryForm =

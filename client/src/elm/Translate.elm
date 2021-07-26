@@ -996,6 +996,8 @@ type TranslationId
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
+    | WellChildMacrocephalyWarning
+    | WellChildMicrocephalyWarning
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
     | WellChildSymptom WellChildSymptom
@@ -8034,6 +8036,16 @@ translationSet trans =
                             { english = "Child is behind on ECD milestones. Refer the child to a specialist."
                             , kinyarwanda = Nothing
                             }
+
+        WellChildMacrocephalyWarning ->
+            { english = "Child shows signs of macrocephaly, follow hydrocephalus protocol. Please refer to a specialist if concerned for genetic syndrome or other problems."
+            , kinyarwanda = Nothing
+            }
+
+        WellChildMicrocephalyWarning ->
+            { english = "Child shows signs of microcephaly. Monitor for developmental, nutritional, and genetic problems.  Please refer to a specialist if concerned for genetic syndrome or other problems."
+            , kinyarwanda = Nothing
+            }
 
         WellChildMedicationTask task ->
             case task of

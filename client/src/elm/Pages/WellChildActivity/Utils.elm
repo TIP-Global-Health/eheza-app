@@ -605,7 +605,7 @@ generateSuggestedVaccines currentDate isChw assembled =
                             |> List.map (Tuple.second >> Tuple.second)
 
                     suggestedDose =
-                        case latestVaccinationDataByVaccineType previousMeasurements vaccineType of
+                        case latestVaccinationDataForVaccine previousMeasurements vaccineType of
                             Just ( lastDoseDate, lastDoseGiven ) ->
                                 nextDoseForVaccine currentDate lastDoseDate lastDoseGiven vaccineType
 
@@ -633,7 +633,7 @@ generateFutureVaccines currentDate isChw assembled =
                         assembled.measurements :: previousMeasurements
 
                     nextVaccinationData =
-                        case latestVaccinationDataByVaccineType measurementsData vaccineType of
+                        case latestVaccinationDataForVaccine measurementsData vaccineType of
                             Just ( lastDoseDate, lastDoseGiven ) ->
                                 nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType
 
@@ -689,8 +689,8 @@ expectVaccineForPerson currentDate person vaccineType =
         |> Maybe.withDefault False
 
 
-latestVaccinationDataByVaccineType : List WellChildMeasurements -> VaccineType -> Maybe ( NominalDate, VaccineDose )
-latestVaccinationDataByVaccineType measurementsData vaccineType =
+latestVaccinationDataForVaccine : List WellChildMeasurements -> VaccineType -> Maybe ( NominalDate, VaccineDose )
+latestVaccinationDataForVaccine measurementsData vaccineType =
     List.filterMap
         (\measurements ->
             measurements.immunisation
@@ -1378,8 +1378,64 @@ ecdSignsFrom4Years =
 
 
 expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
-expectMedicationTask currentDate isChw data task =
-    ageInMonths currentDate data.person
+expectMedicationTask currentDate isChw assembled task =
+    let
+        nextAdmnistrationData =
+            assembled.previousMeasurementsWithDates
+                |> List.map (Tuple.second >> Tuple.second)
+                |> nextMedicationAdmnistrationData currentDate assembled.person
+    in
+    Dict.get task nextAdmnistrationData
+        |> Maybe.map
+            (\nextDate ->
+                let
+                    compare =
+                        Date.compare nextDate currentDate
+                in
+                compare == LT || compare == EQ
+            )
+        |> Maybe.withDefault False
+
+
+nextMedicationAdmnistrationData : NominalDate -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
+nextMedicationAdmnistrationData currentDate person measurements =
+    let
+        administeredMebendezole =
+            List.filterMap .mebendezole measurements
+                |> latestAdministrationDateForMedicine
+
+        administeredVitamineA =
+            List.filterMap .mebendezole measurements
+                |> latestAdministrationDateForMedicine
+    in
+    List.filter (expectMedicationByAge currentDate person) allMedicationTasks
+        |> List.map
+            (\medication ->
+                case medication of
+                    TaskAlbendazole ->
+                        List.filterMap .albendazole measurements
+                            |> latestAdministrationDateForMedicine
+                            |> Maybe.map (\date -> ( TaskAlbendazole, Date.add Months 6 date ))
+                            |> Maybe.withDefault ( TaskAlbendazole, currentDate )
+
+                    TaskMebendezole ->
+                        List.filterMap .mebendezole measurements
+                            |> latestAdministrationDateForMedicine
+                            |> Maybe.map (\date -> ( TaskMebendezole, Date.add Months 6 date ))
+                            |> Maybe.withDefault ( TaskMebendezole, currentDate )
+
+                    TaskVitaminA ->
+                        List.filterMap .mebendezole measurements
+                            |> latestAdministrationDateForMedicine
+                            |> Maybe.map (\date -> ( TaskVitaminA, Date.add Months 6 date ))
+                            |> Maybe.withDefault ( TaskVitaminA, currentDate )
+            )
+        |> Dict.fromList
+
+
+expectMedicationByAge : NominalDate -> Person -> MedicationTask -> Bool
+expectMedicationByAge currentDate person task =
+    ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
                 case task of
@@ -1396,6 +1452,22 @@ expectMedicationTask currentDate isChw data task =
                         ageMonths >= 6 && ageMonths < 60
             )
         |> Maybe.withDefault False
+
+
+latestAdministrationDateForMedicine : List ( id, { a | value : AdministrationNote, dateMeasured : NominalDate } ) -> Maybe NominalDate
+latestAdministrationDateForMedicine measurements =
+    List.filterMap
+        (Tuple.second
+            >> (\measurement ->
+                    if measurement.value == AdministeredToday then
+                        Just measurement.dateMeasured
+
+                    else
+                        Nothing
+               )
+        )
+        measurements
+        |> List.head
 
 
 medicationTasksCompletedFromTotal : WellChildMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
@@ -1574,7 +1646,7 @@ newbornVaccinatedAtBirth measurements =
             (Tuple.second
                 >> .value
                 >> (\value ->
-                        --Both vaccines given at birth were administered.
+                        -- Both vaccines given at birth were administered.
                         isJust value.bcgVaccinationDate && isJust value.opvVaccinationDate
                    )
             )
@@ -1674,6 +1746,76 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
 nextStepsTasks : List Pages.WellChildActivity.Model.NextStepsTask
 nextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp, TaskNextVisit ]
+
+
+generateNextVisitDateForECD : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextVisitDateForECD currentDate assembled db =
+    if List.isEmpty (generateRemianingECDSignsAfterCurrentEncounter currentDate assembled) then
+        Nothing
+
+    else
+        assembled.person.birthDate
+            |> Maybe.map
+                (\birthDate ->
+                    let
+                        ageWeeks =
+                            Date.diff Weeks birthDate currentDate
+
+                        ageMonth =
+                            Date.diff Months birthDate currentDate
+
+                        ageYears =
+                            Date.diff Years birthDate currentDate
+                    in
+                    if ageWeeks < 6 then
+                        Date.add Weeks 6 birthDate
+
+                    else if ageWeeks < 14 then
+                        Date.add Weeks 14 birthDate
+
+                    else if ageMonth < 6 then
+                        Date.add Months 6 birthDate
+
+                    else if ageMonth < 15 then
+                        Date.add Months 15 birthDate
+
+                    else if ageYears < 2 then
+                        Date.add Years 2 birthDate
+
+                    else if ageYears < 3 then
+                        Date.add Years 3 birthDate
+
+                    else if ageYears < 4 then
+                        Date.add Years 4 birthDate
+
+                    else
+                        Date.add Months 6 currentDate
+                )
+
+
+generateNextVisitDateForMedication : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextVisitDateForMedication currentDate assembled db =
+    let
+        previousMeasurements =
+            List.map (Tuple.second >> Tuple.second) assembled.previousMeasurementsWithDates
+
+        measurements =
+            assembled.measurements :: previousMeasurements
+    in
+    nextMedicationAdmnistrationData currentDate assembled.person measurements
+        |> Dict.values
+        |> List.sortWith Date.compare
+        |> List.reverse
+        |> List.head
+
+
+generateNextVisitDateForImmunisation : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextVisitDateForImmunisation currentDate isChw assembled db =
+    generateFutureVaccines currentDate isChw assembled
+        |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
+        |> List.sortWith Date.compare
+        |> List.reverse
+        |> List.head
 
 
 
