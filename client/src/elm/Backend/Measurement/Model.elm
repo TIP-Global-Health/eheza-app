@@ -1308,7 +1308,7 @@ type alias WellChildECD =
 
 type ECDSign
     = -- 6 to 9 months.
-      RespontToSoundWithSound
+      RespondToSoundWithSound
     | TurnHeadWhenCalled
     | SitWithoutSupport
     | SmileBack
@@ -1352,8 +1352,8 @@ type alias WellChildImmunisation =
 
 
 type alias ImmunisationValue =
-    { suggestedVaccines : List SuggestedVaccine
-    , vacinationNotes : List VacinationNote
+    { suggestedVaccines : Dict VaccineType VaccineDose
+    , vacinationNotes : Dict VaccineType AdministrationNote
     , bcgVaccinationDate : Maybe NominalDate
     , opvVaccinationDate : Maybe NominalDate
     , dtpVaccinationDate : Maybe NominalDate
@@ -1362,18 +1362,6 @@ type alias ImmunisationValue =
     , ipvVaccinationDate : Maybe NominalDate
     , mrVaccinationDate : Maybe NominalDate
     , hpvVaccinationDate : Maybe NominalDate
-    }
-
-
-type alias SuggestedVaccine =
-    { type_ : VaccineType
-    , dose : VaccineDose
-    }
-
-
-type alias VacinationNote =
-    { type_ : VaccineType
-    , note : AdministrationNote
     }
 
 

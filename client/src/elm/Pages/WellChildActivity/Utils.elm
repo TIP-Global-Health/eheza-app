@@ -9,6 +9,7 @@ import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -92,6 +93,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
             (not <| activityExpected WellChildPregnancySummary)
                 || isJust measurements.pregnancySummary
 
+        WellChildImmunisation ->
+            (not <| activityExpected WellChildImmunisation) || isJust measurements.immunisation
+
 
 expectActivity : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate isChw assembled db activity =
@@ -101,6 +105,11 @@ expectActivity currentDate isChw assembled db activity =
                 |> Maybe.map
                     (\ageMonths -> ageMonths < 2)
                 |> Maybe.withDefault False
+
+        WellChildImmunisation ->
+            generateSuggestedVaccines currentDate isChw assembled
+                |> List.isEmpty
+                |> not
 
         WellChildECD ->
             ageInMonths currentDate assembled.person
@@ -306,221 +315,6 @@ nutritionAssessmentNextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskFollowUp, TaskSendToHC ]
 
 
-fromSymptomsReviewValue : Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm
-fromSymptomsReviewValue saved =
-    { symptoms = Maybe.map EverySet.toList saved }
-
-
-symptomsReviewFormWithDefault : SymptomsReviewForm -> Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm
-symptomsReviewFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { symptoms = or form.symptoms (EverySet.toList value |> Just) }
-            )
-
-
-toSymptomsReviewValueWithDefault : Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm -> Maybe (EverySet WellChildSymptom)
-toSymptomsReviewValueWithDefault saved form =
-    symptomsReviewFormWithDefault form saved
-        |> toSymptomsReviewValue
-
-
-toSymptomsReviewValue : SymptomsReviewForm -> Maybe (EverySet WellChildSymptom)
-toSymptomsReviewValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoWellChildSymptoms) form.symptoms
-
-
-fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm
-fromWellChildECDValue signs =
-    { respontToSoundWithSound = Maybe.map (EverySet.member RespontToSoundWithSound) signs
-    , turnHeadWhenCalled = Maybe.map (EverySet.member TurnHeadWhenCalled) signs
-    , sitWithoutSupport = Maybe.map (EverySet.member SitWithoutSupport) signs
-    , smileBack = Maybe.map (EverySet.member SmileBack) signs
-    , rollTummyToBack = Maybe.map (EverySet.member RollTummyToBack) signs
-    , reachForToys = Maybe.map (EverySet.member ReachForToys) signs
-    , useSimpleGestures = Maybe.map (EverySet.member UseSimpleGestures) signs
-    , standOnTheirOwn = Maybe.map (EverySet.member StandOnTheirOwn) signs
-    , copyDuringPlay = Maybe.map (EverySet.member CopyDuringPlay) signs
-    , sayMamaDada = Maybe.map (EverySet.member SayMamaDada) signs
-    , canHoldSmallObjects = Maybe.map (EverySet.member CanHoldSmallObjects) signs
-    , looksWhenPointedAt = Maybe.map (EverySet.member LooksWhenPointedAt) signs
-    , useSingleWords = Maybe.map (EverySet.member UseSingleWords) signs
-    , walkWithoutHelp = Maybe.map (EverySet.member WalkWithoutHelp) signs
-    , playPretend = Maybe.map (EverySet.member PlayPretend) signs
-    , pointToThingsOfInterest = Maybe.map (EverySet.member PointToThingsOfInterest) signs
-    , useShortPhrases = Maybe.map (EverySet.member UseShortPhrases) signs
-    , interestedInOtherChildren = Maybe.map (EverySet.member InterestedInOtherChildren) signs
-    , followSimlpeInstructions = Maybe.map (EverySet.member FollowSimpleInstructions) signs
-    , kickBall = Maybe.map (EverySet.member KickBall) signs
-    , pointAtNamedObjects = Maybe.map (EverySet.member PointAtNamedObjects) signs
-    , dressThemselves = Maybe.map (EverySet.member DressThemselves) signs
-    , washHandsGoToToiled = Maybe.map (EverySet.member WashHandsGoToToiled) signs
-    , knowsColorsAndNumbers = Maybe.map (EverySet.member KnowsColorsAndNumbers) signs
-    , useMediumPhrases = Maybe.map (EverySet.member UseMediumPhrases) signs
-    , playMakeBelieve = Maybe.map (EverySet.member PlayMakeBelieve) signs
-    , followThreeStepInstructions = Maybe.map (EverySet.member FollowThreeStepInstructions) signs
-    , standOnOneFootFiveSeconds = Maybe.map (EverySet.member StandOnOneFootFiveSeconds) signs
-    , useLongPhrases = Maybe.map (EverySet.member UseLongPhrases) signs
-    , shareWithOtherChildren = Maybe.map (EverySet.member ShareWithOtherChildren) signs
-    , countToTen = Maybe.map (EverySet.member CountToTen) signs
-    }
-
-
-wellChildECDFormWithDefault : WellChildECDForm -> Maybe (EverySet ECDSign) -> WellChildECDForm
-wellChildECDFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\signs ->
-                { respontToSoundWithSound = or form.respontToSoundWithSound (EverySet.member RespontToSoundWithSound signs |> Just)
-                , turnHeadWhenCalled = or form.turnHeadWhenCalled (EverySet.member TurnHeadWhenCalled signs |> Just)
-                , sitWithoutSupport = or form.sitWithoutSupport (EverySet.member SitWithoutSupport signs |> Just)
-                , smileBack = or form.smileBack (EverySet.member SmileBack signs |> Just)
-                , rollTummyToBack = or form.rollTummyToBack (EverySet.member RollTummyToBack signs |> Just)
-                , reachForToys = or form.reachForToys (EverySet.member ReachForToys signs |> Just)
-                , useSimpleGestures = or form.useSimpleGestures (EverySet.member UseSimpleGestures signs |> Just)
-                , standOnTheirOwn = or form.standOnTheirOwn (EverySet.member StandOnTheirOwn signs |> Just)
-                , copyDuringPlay = or form.copyDuringPlay (EverySet.member CopyDuringPlay signs |> Just)
-                , sayMamaDada = or form.sayMamaDada (EverySet.member SayMamaDada signs |> Just)
-                , canHoldSmallObjects = or form.canHoldSmallObjects (EverySet.member CanHoldSmallObjects signs |> Just)
-                , looksWhenPointedAt = or form.looksWhenPointedAt (EverySet.member LooksWhenPointedAt signs |> Just)
-                , useSingleWords = or form.useSingleWords (EverySet.member UseSingleWords signs |> Just)
-                , walkWithoutHelp = or form.walkWithoutHelp (EverySet.member WalkWithoutHelp signs |> Just)
-                , playPretend = or form.playPretend (EverySet.member PlayPretend signs |> Just)
-                , pointToThingsOfInterest = or form.pointToThingsOfInterest (EverySet.member PointToThingsOfInterest signs |> Just)
-                , useShortPhrases = or form.useShortPhrases (EverySet.member UseShortPhrases signs |> Just)
-                , interestedInOtherChildren = or form.interestedInOtherChildren (EverySet.member InterestedInOtherChildren signs |> Just)
-                , followSimlpeInstructions = or form.followSimlpeInstructions (EverySet.member FollowSimpleInstructions signs |> Just)
-                , kickBall = or form.kickBall (EverySet.member KickBall signs |> Just)
-                , pointAtNamedObjects = or form.pointAtNamedObjects (EverySet.member PointAtNamedObjects signs |> Just)
-                , dressThemselves = or form.dressThemselves (EverySet.member DressThemselves signs |> Just)
-                , washHandsGoToToiled = or form.washHandsGoToToiled (EverySet.member WashHandsGoToToiled signs |> Just)
-                , knowsColorsAndNumbers = or form.knowsColorsAndNumbers (EverySet.member KnowsColorsAndNumbers signs |> Just)
-                , useMediumPhrases = or form.useMediumPhrases (EverySet.member UseMediumPhrases signs |> Just)
-                , playMakeBelieve = or form.playMakeBelieve (EverySet.member PlayMakeBelieve signs |> Just)
-                , followThreeStepInstructions = or form.followThreeStepInstructions (EverySet.member FollowThreeStepInstructions signs |> Just)
-                , standOnOneFootFiveSeconds = or form.standOnOneFootFiveSeconds (EverySet.member StandOnOneFootFiveSeconds signs |> Just)
-                , useLongPhrases = or form.useLongPhrases (EverySet.member UseLongPhrases signs |> Just)
-                , shareWithOtherChildren = or form.shareWithOtherChildren (EverySet.member ShareWithOtherChildren signs |> Just)
-                , countToTen = or form.countToTen (EverySet.member CountToTen signs |> Just)
-                }
-            )
-
-
-toWellChildECDValueWithDefault : Maybe (EverySet ECDSign) -> WellChildECDForm -> Maybe (EverySet ECDSign)
-toWellChildECDValueWithDefault saved form =
-    wellChildECDFormWithDefault form saved
-        |> toWellChildECDValue
-
-
-toWellChildECDValue : WellChildECDForm -> Maybe (EverySet ECDSign)
-toWellChildECDValue form =
-    [ ifNullableTrue RespontToSoundWithSound form.respontToSoundWithSound
-    , ifNullableTrue TurnHeadWhenCalled form.turnHeadWhenCalled
-    , ifNullableTrue SitWithoutSupport form.sitWithoutSupport
-    , ifNullableTrue SmileBack form.smileBack
-    , ifNullableTrue RollTummyToBack form.rollTummyToBack
-    , ifNullableTrue ReachForToys form.reachForToys
-    , ifNullableTrue UseSimpleGestures form.useSimpleGestures
-    , ifNullableTrue StandOnTheirOwn form.standOnTheirOwn
-    , ifNullableTrue CopyDuringPlay form.copyDuringPlay
-    , ifNullableTrue SayMamaDada form.sayMamaDada
-    , ifNullableTrue CanHoldSmallObjects form.canHoldSmallObjects
-    , ifNullableTrue LooksWhenPointedAt form.looksWhenPointedAt
-    , ifNullableTrue UseSingleWords form.useSingleWords
-    , ifNullableTrue WalkWithoutHelp form.walkWithoutHelp
-    , ifNullableTrue PlayPretend form.playPretend
-    , ifNullableTrue PointToThingsOfInterest form.pointToThingsOfInterest
-    , ifNullableTrue UseShortPhrases form.useShortPhrases
-    , ifNullableTrue InterestedInOtherChildren form.interestedInOtherChildren
-    , ifNullableTrue FollowSimpleInstructions form.followSimlpeInstructions
-    , ifNullableTrue KickBall form.kickBall
-    , ifNullableTrue PointAtNamedObjects form.pointAtNamedObjects
-    , ifNullableTrue DressThemselves form.dressThemselves
-    , ifNullableTrue WashHandsGoToToiled form.washHandsGoToToiled
-    , ifNullableTrue KnowsColorsAndNumbers form.knowsColorsAndNumbers
-    , ifNullableTrue UseMediumPhrases form.useMediumPhrases
-    , ifNullableTrue PlayMakeBelieve form.playMakeBelieve
-    , ifNullableTrue FollowThreeStepInstructions form.followThreeStepInstructions
-    , ifNullableTrue StandOnOneFootFiveSeconds form.standOnOneFootFiveSeconds
-    , ifNullableTrue UseLongPhrases form.useLongPhrases
-    , ifNullableTrue ShareWithOtherChildren form.shareWithOtherChildren
-    , ifNullableTrue CountToTen form.countToTen
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoECDSigns)
-
-
-fromHeadCircumferenceValue : Maybe HeadCircumferenceValue -> HeadCircumferenceForm
-fromHeadCircumferenceValue saved =
-    { headCircumference = Maybe.map (.headCircumference >> headCircumferenceValueFunc) saved
-    , headCircumferenceDirty = False
-    , measurementNotTaken = Maybe.andThen (.notes >> EverySet.member NoteNotTaken >> Just) saved
-    }
-
-
-headCircumferenceFormWithDefault : HeadCircumferenceForm -> Maybe HeadCircumferenceValue -> HeadCircumferenceForm
-headCircumferenceFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { headCircumference = valueConsideringIsDirtyField form.headCircumferenceDirty form.headCircumference (headCircumferenceValueFunc value.headCircumference)
-                , headCircumferenceDirty = form.headCircumferenceDirty
-                , measurementNotTaken = or form.measurementNotTaken (EverySet.member NoteNotTaken value.notes |> Just)
-                }
-            )
-
-
-toHeadCircumferenceValueWithDefault : Maybe HeadCircumferenceValue -> HeadCircumferenceForm -> Maybe HeadCircumferenceValue
-toHeadCircumferenceValueWithDefault saved form =
-    headCircumferenceFormWithDefault form saved
-        |> toHeadCircumferenceValue
-
-
-toHeadCircumferenceValue : HeadCircumferenceForm -> Maybe HeadCircumferenceValue
-toHeadCircumferenceValue form =
-    let
-        headCircumference =
-            Maybe.map (\cm -> HeadCircumferenceInCm cm) form.headCircumference
-
-        notes =
-            [ Maybe.map (ifTrue NoteNotTaken) form.measurementNotTaken ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMeasurementNotes)
-    in
-    Maybe.map HeadCircumferenceValue headCircumference
-        |> andMap notes
-
-
-dangerSignsTasksCompletedFromTotal : WellChildMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
-dangerSignsTasksCompletedFromTotal measurements data task =
-    case task of
-        TaskSymptomsReview ->
-            let
-                form =
-                    measurements.symptomsReview
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> symptomsReviewFormWithDefault data.symptomsReviewForm
-            in
-            ( taskCompleted form.symptoms
-            , 1
-            )
-
-        TaskVitals ->
-            let
-                form =
-                    measurements.vitals
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> basicVitalsFormWithDefault data.vitalsForm
-            in
-            ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
-            , 2
-            )
-
-
 nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssesmentTask -> ( Int, Int )
 nutritionAssessmentTasksCompletedFromTotal measurements data task =
     case task of
@@ -665,6 +459,758 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             )
 
 
+fromSymptomsReviewValue : Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm
+fromSymptomsReviewValue saved =
+    { symptoms = Maybe.map EverySet.toList saved }
+
+
+symptomsReviewFormWithDefault : SymptomsReviewForm -> Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm
+symptomsReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { symptoms = or form.symptoms (EverySet.toList value |> Just) }
+            )
+
+
+toSymptomsReviewValueWithDefault : Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm -> Maybe (EverySet WellChildSymptom)
+toSymptomsReviewValueWithDefault saved form =
+    symptomsReviewFormWithDefault form saved
+        |> toSymptomsReviewValue
+
+
+toSymptomsReviewValue : SymptomsReviewForm -> Maybe (EverySet WellChildSymptom)
+toSymptomsReviewValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoWellChildSymptoms) form.symptoms
+
+
+fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm
+fromWellChildECDValue signs =
+    { respondToSoundWithSound = Maybe.map (EverySet.member RespondToSoundWithSound) signs
+    , turnHeadWhenCalled = Maybe.map (EverySet.member TurnHeadWhenCalled) signs
+    , sitWithoutSupport = Maybe.map (EverySet.member SitWithoutSupport) signs
+    , smileBack = Maybe.map (EverySet.member SmileBack) signs
+    , rollTummyToBack = Maybe.map (EverySet.member RollTummyToBack) signs
+    , reachForToys = Maybe.map (EverySet.member ReachForToys) signs
+    , useSimpleGestures = Maybe.map (EverySet.member UseSimpleGestures) signs
+    , standOnTheirOwn = Maybe.map (EverySet.member StandOnTheirOwn) signs
+    , copyDuringPlay = Maybe.map (EverySet.member CopyDuringPlay) signs
+    , sayMamaDada = Maybe.map (EverySet.member SayMamaDada) signs
+    , canHoldSmallObjects = Maybe.map (EverySet.member CanHoldSmallObjects) signs
+    , looksWhenPointedAt = Maybe.map (EverySet.member LooksWhenPointedAt) signs
+    , useSingleWords = Maybe.map (EverySet.member UseSingleWords) signs
+    , walkWithoutHelp = Maybe.map (EverySet.member WalkWithoutHelp) signs
+    , playPretend = Maybe.map (EverySet.member PlayPretend) signs
+    , pointToThingsOfInterest = Maybe.map (EverySet.member PointToThingsOfInterest) signs
+    , useShortPhrases = Maybe.map (EverySet.member UseShortPhrases) signs
+    , interestedInOtherChildren = Maybe.map (EverySet.member InterestedInOtherChildren) signs
+    , followSimlpeInstructions = Maybe.map (EverySet.member FollowSimpleInstructions) signs
+    , kickBall = Maybe.map (EverySet.member KickBall) signs
+    , pointAtNamedObjects = Maybe.map (EverySet.member PointAtNamedObjects) signs
+    , dressThemselves = Maybe.map (EverySet.member DressThemselves) signs
+    , washHandsGoToToiled = Maybe.map (EverySet.member WashHandsGoToToiled) signs
+    , knowsColorsAndNumbers = Maybe.map (EverySet.member KnowsColorsAndNumbers) signs
+    , useMediumPhrases = Maybe.map (EverySet.member UseMediumPhrases) signs
+    , playMakeBelieve = Maybe.map (EverySet.member PlayMakeBelieve) signs
+    , followThreeStepInstructions = Maybe.map (EverySet.member FollowThreeStepInstructions) signs
+    , standOnOneFootFiveSeconds = Maybe.map (EverySet.member StandOnOneFootFiveSeconds) signs
+    , useLongPhrases = Maybe.map (EverySet.member UseLongPhrases) signs
+    , shareWithOtherChildren = Maybe.map (EverySet.member ShareWithOtherChildren) signs
+    , countToTen = Maybe.map (EverySet.member CountToTen) signs
+    }
+
+
+wellChildECDFormWithDefault : WellChildECDForm -> Maybe (EverySet ECDSign) -> WellChildECDForm
+wellChildECDFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\signs ->
+                { respondToSoundWithSound = or form.respondToSoundWithSound (EverySet.member RespondToSoundWithSound signs |> Just)
+                , turnHeadWhenCalled = or form.turnHeadWhenCalled (EverySet.member TurnHeadWhenCalled signs |> Just)
+                , sitWithoutSupport = or form.sitWithoutSupport (EverySet.member SitWithoutSupport signs |> Just)
+                , smileBack = or form.smileBack (EverySet.member SmileBack signs |> Just)
+                , rollTummyToBack = or form.rollTummyToBack (EverySet.member RollTummyToBack signs |> Just)
+                , reachForToys = or form.reachForToys (EverySet.member ReachForToys signs |> Just)
+                , useSimpleGestures = or form.useSimpleGestures (EverySet.member UseSimpleGestures signs |> Just)
+                , standOnTheirOwn = or form.standOnTheirOwn (EverySet.member StandOnTheirOwn signs |> Just)
+                , copyDuringPlay = or form.copyDuringPlay (EverySet.member CopyDuringPlay signs |> Just)
+                , sayMamaDada = or form.sayMamaDada (EverySet.member SayMamaDada signs |> Just)
+                , canHoldSmallObjects = or form.canHoldSmallObjects (EverySet.member CanHoldSmallObjects signs |> Just)
+                , looksWhenPointedAt = or form.looksWhenPointedAt (EverySet.member LooksWhenPointedAt signs |> Just)
+                , useSingleWords = or form.useSingleWords (EverySet.member UseSingleWords signs |> Just)
+                , walkWithoutHelp = or form.walkWithoutHelp (EverySet.member WalkWithoutHelp signs |> Just)
+                , playPretend = or form.playPretend (EverySet.member PlayPretend signs |> Just)
+                , pointToThingsOfInterest = or form.pointToThingsOfInterest (EverySet.member PointToThingsOfInterest signs |> Just)
+                , useShortPhrases = or form.useShortPhrases (EverySet.member UseShortPhrases signs |> Just)
+                , interestedInOtherChildren = or form.interestedInOtherChildren (EverySet.member InterestedInOtherChildren signs |> Just)
+                , followSimlpeInstructions = or form.followSimlpeInstructions (EverySet.member FollowSimpleInstructions signs |> Just)
+                , kickBall = or form.kickBall (EverySet.member KickBall signs |> Just)
+                , pointAtNamedObjects = or form.pointAtNamedObjects (EverySet.member PointAtNamedObjects signs |> Just)
+                , dressThemselves = or form.dressThemselves (EverySet.member DressThemselves signs |> Just)
+                , washHandsGoToToiled = or form.washHandsGoToToiled (EverySet.member WashHandsGoToToiled signs |> Just)
+                , knowsColorsAndNumbers = or form.knowsColorsAndNumbers (EverySet.member KnowsColorsAndNumbers signs |> Just)
+                , useMediumPhrases = or form.useMediumPhrases (EverySet.member UseMediumPhrases signs |> Just)
+                , playMakeBelieve = or form.playMakeBelieve (EverySet.member PlayMakeBelieve signs |> Just)
+                , followThreeStepInstructions = or form.followThreeStepInstructions (EverySet.member FollowThreeStepInstructions signs |> Just)
+                , standOnOneFootFiveSeconds = or form.standOnOneFootFiveSeconds (EverySet.member StandOnOneFootFiveSeconds signs |> Just)
+                , useLongPhrases = or form.useLongPhrases (EverySet.member UseLongPhrases signs |> Just)
+                , shareWithOtherChildren = or form.shareWithOtherChildren (EverySet.member ShareWithOtherChildren signs |> Just)
+                , countToTen = or form.countToTen (EverySet.member CountToTen signs |> Just)
+                }
+            )
+
+
+toWellChildECDValueWithDefault : Maybe (EverySet ECDSign) -> WellChildECDForm -> Maybe (EverySet ECDSign)
+toWellChildECDValueWithDefault saved form =
+    wellChildECDFormWithDefault form saved
+        |> toWellChildECDValue
+
+
+toWellChildECDValue : WellChildECDForm -> Maybe (EverySet ECDSign)
+toWellChildECDValue form =
+    [ ifNullableTrue RespondToSoundWithSound form.respondToSoundWithSound
+    , ifNullableTrue TurnHeadWhenCalled form.turnHeadWhenCalled
+    , ifNullableTrue SitWithoutSupport form.sitWithoutSupport
+    , ifNullableTrue SmileBack form.smileBack
+    , ifNullableTrue RollTummyToBack form.rollTummyToBack
+    , ifNullableTrue ReachForToys form.reachForToys
+    , ifNullableTrue UseSimpleGestures form.useSimpleGestures
+    , ifNullableTrue StandOnTheirOwn form.standOnTheirOwn
+    , ifNullableTrue CopyDuringPlay form.copyDuringPlay
+    , ifNullableTrue SayMamaDada form.sayMamaDada
+    , ifNullableTrue CanHoldSmallObjects form.canHoldSmallObjects
+    , ifNullableTrue LooksWhenPointedAt form.looksWhenPointedAt
+    , ifNullableTrue UseSingleWords form.useSingleWords
+    , ifNullableTrue WalkWithoutHelp form.walkWithoutHelp
+    , ifNullableTrue PlayPretend form.playPretend
+    , ifNullableTrue PointToThingsOfInterest form.pointToThingsOfInterest
+    , ifNullableTrue UseShortPhrases form.useShortPhrases
+    , ifNullableTrue InterestedInOtherChildren form.interestedInOtherChildren
+    , ifNullableTrue FollowSimpleInstructions form.followSimlpeInstructions
+    , ifNullableTrue KickBall form.kickBall
+    , ifNullableTrue PointAtNamedObjects form.pointAtNamedObjects
+    , ifNullableTrue DressThemselves form.dressThemselves
+    , ifNullableTrue WashHandsGoToToiled form.washHandsGoToToiled
+    , ifNullableTrue KnowsColorsAndNumbers form.knowsColorsAndNumbers
+    , ifNullableTrue UseMediumPhrases form.useMediumPhrases
+    , ifNullableTrue PlayMakeBelieve form.playMakeBelieve
+    , ifNullableTrue FollowThreeStepInstructions form.followThreeStepInstructions
+    , ifNullableTrue StandOnOneFootFiveSeconds form.standOnOneFootFiveSeconds
+    , ifNullableTrue UseLongPhrases form.useLongPhrases
+    , ifNullableTrue ShareWithOtherChildren form.shareWithOtherChildren
+    , ifNullableTrue CountToTen form.countToTen
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoECDSigns)
+
+
+fromHeadCircumferenceValue : Maybe HeadCircumferenceValue -> HeadCircumferenceForm
+fromHeadCircumferenceValue saved =
+    { headCircumference = Maybe.map (.headCircumference >> headCircumferenceValueFunc) saved
+    , headCircumferenceDirty = False
+    , measurementNotTaken = Maybe.andThen (.notes >> EverySet.member NoteNotTaken >> Just) saved
+    }
+
+
+headCircumferenceFormWithDefault : HeadCircumferenceForm -> Maybe HeadCircumferenceValue -> HeadCircumferenceForm
+headCircumferenceFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { headCircumference = valueConsideringIsDirtyField form.headCircumferenceDirty form.headCircumference (headCircumferenceValueFunc value.headCircumference)
+                , headCircumferenceDirty = form.headCircumferenceDirty
+                , measurementNotTaken = or form.measurementNotTaken (EverySet.member NoteNotTaken value.notes |> Just)
+                }
+            )
+
+
+toHeadCircumferenceValueWithDefault : Maybe HeadCircumferenceValue -> HeadCircumferenceForm -> Maybe HeadCircumferenceValue
+toHeadCircumferenceValueWithDefault saved form =
+    headCircumferenceFormWithDefault form saved
+        |> toHeadCircumferenceValue
+
+
+toHeadCircumferenceValue : HeadCircumferenceForm -> Maybe HeadCircumferenceValue
+toHeadCircumferenceValue form =
+    let
+        headCircumference =
+            Maybe.map (\cm -> HeadCircumferenceInCm cm) form.headCircumference
+
+        notes =
+            [ Maybe.map (ifTrue NoteNotTaken) form.measurementNotTaken ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMeasurementNotes)
+    in
+    Maybe.map HeadCircumferenceValue headCircumference
+        |> andMap notes
+
+
+dangerSignsTasksCompletedFromTotal : WellChildMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
+dangerSignsTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskSymptomsReview ->
+            let
+                form =
+                    measurements.symptomsReview
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> symptomsReviewFormWithDefault data.symptomsReviewForm
+            in
+            ( taskCompleted form.symptoms
+            , 1
+            )
+
+        TaskVitals ->
+            let
+                form =
+                    measurements.vitals
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> basicVitalsFormWithDefault data.vitalsForm
+            in
+            ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
+            , 2
+            )
+
+
+generateSuggestedVaccines : NominalDate -> Bool -> AssembledData -> List ( VaccineType, VaccineDose )
+generateSuggestedVaccines currentDate isChw assembled =
+    allVaccineTypes isChw
+        |> List.filter (expectVaccineForPerson currentDate assembled.person)
+        |> List.filterMap
+            (\vaccineType ->
+                let
+                    previousMeasurements =
+                        assembled.previousMeasurementsWithDates
+                            |> List.map (Tuple.second >> Tuple.second)
+
+                    suggestedDose =
+                        case latestVaccinationDataByVaccineType previousMeasurements vaccineType of
+                            Just ( lastDoseDate, lastDoseGiven ) ->
+                                nextDoseForVaccine currentDate lastDoseDate lastDoseGiven vaccineType
+
+                            Nothing ->
+                                Just VaccineDoseFirst
+                in
+                Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
+            )
+
+
+generateFutureVaccines : NominalDate -> Bool -> AssembledData -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccines currentDate isChw assembled =
+    allVaccineTypes isChw
+        |> List.filter (expectVaccineForPerson currentDate assembled.person)
+        |> List.map
+            (\vaccineType ->
+                let
+                    previousMeasurements =
+                        assembled.previousMeasurementsWithDates
+                            |> List.map (Tuple.second >> Tuple.second)
+
+                    measurementsData =
+                        -- Adding measurements from current encounter,
+                        -- to account for vaccinations done today.
+                        assembled.measurements :: previousMeasurements
+
+                    nextVaccinationData =
+                        case latestVaccinationDataByVaccineType measurementsData vaccineType of
+                            Just ( lastDoseDate, lastDoseGiven ) ->
+                                nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType
+
+                            Nothing ->
+                                -- There were no vaccination so far, so
+                                -- we offer first dose for today.
+                                Just ( VaccineDoseFirst, currentDate )
+                in
+                -- Getting Nothing at nextVaccinationData indicates that
+                -- vacination cycle is completed for this vaccine.
+                ( vaccineType, nextVaccinationData )
+            )
+
+
+expectVaccineForPerson : NominalDate -> Person -> VaccineType -> Bool
+expectVaccineForPerson currentDate person vaccineType =
+    person.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                let
+                    ageWeeks =
+                        Date.diff Weeks birthDate currentDate
+
+                    ageForHPV =
+                        Date.add Weeks -1 currentDate
+                            |> Date.diff Years birthDate
+                in
+                case vaccineType of
+                    VaccineBCG ->
+                        True
+
+                    VaccineOPV ->
+                        True
+
+                    VaccineDTP ->
+                        ageWeeks >= 5
+
+                    VaccinePCV13 ->
+                        ageWeeks >= 5
+
+                    VaccineRotarix ->
+                        ageWeeks >= 5
+
+                    VaccineIPV ->
+                        ageWeeks >= 13
+
+                    VaccineMR ->
+                        ageWeeks >= 35
+
+                    VaccineHPV ->
+                        ageForHPV >= 12
+            )
+        |> Maybe.withDefault False
+
+
+latestVaccinationDataByVaccineType : List WellChildMeasurements -> VaccineType -> Maybe ( NominalDate, VaccineDose )
+latestVaccinationDataByVaccineType measurementsData vaccineType =
+    List.filterMap
+        (\measurements ->
+            measurements.immunisation
+                |> Maybe.andThen
+                    (Tuple.second
+                        >> .value
+                        >> (\value ->
+                                let
+                                    suggestedDose =
+                                        Dict.get vaccineType value.suggestedVaccines
+
+                                    vaccinationDate =
+                                        getVaccinationDateFromImmunisationValue vaccineType value
+                                in
+                                Maybe.map2 (\dose date -> ( date, dose ))
+                                    suggestedDose
+                                    vaccinationDate
+                           )
+                    )
+        )
+        measurementsData
+        |> List.sortBy (Tuple.second >> vaccineDoseForSortDesc)
+        |> List.head
+
+
+nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> VaccineType -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType =
+    if getLastDoseForVaccine vaccineType == lastDoseGiven then
+        Nothing
+
+    else
+        getNextVaccineDose lastDoseGiven
+            |> Maybe.map
+                (\dose ->
+                    let
+                        ( interval, unit ) =
+                            getIntervalForVaccine vaccineType
+                    in
+                    ( dose, Date.add unit interval lastDoseDate )
+                )
+
+
+nextDoseForVaccine : NominalDate -> NominalDate -> VaccineDose -> VaccineType -> Maybe VaccineDose
+nextDoseForVaccine currentDate lastDoseDate lastDoseGiven vaccineType =
+    nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType
+        |> Maybe.andThen
+            (\( dose, dueDate ) ->
+                if Date.compare dueDate currentDate == GT then
+                    Nothing
+
+                else
+                    Just dose
+            )
+
+
+getVaccinationDateFromImmunisationValue : VaccineType -> (ImmunisationValue -> Maybe NominalDate)
+getVaccinationDateFromImmunisationValue vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            .bcgVaccinationDate
+
+        VaccineOPV ->
+            .opvVaccinationDate
+
+        VaccineDTP ->
+            .dtpVaccinationDate
+
+        VaccinePCV13 ->
+            .pcv13VaccinationDate
+
+        VaccineRotarix ->
+            .rotarixVaccinationDate
+
+        VaccineIPV ->
+            .ipvVaccinationDate
+
+        VaccineMR ->
+            .mrVaccinationDate
+
+        VaccineHPV ->
+            .hpvVaccinationDate
+
+
+vaccineDoseForSortDesc : VaccineDose -> Int
+vaccineDoseForSortDesc dose =
+    case dose of
+        VaccineDoseFirst ->
+            4
+
+        VaccineDoseSecond ->
+            3
+
+        VaccineDoseThird ->
+            2
+
+        VaccineDoseFourth ->
+            1
+
+
+getNextVaccineDose : VaccineDose -> Maybe VaccineDose
+getNextVaccineDose dose =
+    case dose of
+        VaccineDoseFirst ->
+            Just VaccineDoseSecond
+
+        VaccineDoseSecond ->
+            Just VaccineDoseThird
+
+        VaccineDoseThird ->
+            Just VaccineDoseFourth
+
+        VaccineDoseFourth ->
+            Nothing
+
+
+getIntervalForVaccine : VaccineType -> ( Int, Unit )
+getIntervalForVaccine vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            ( 0, Days )
+
+        VaccineOPV ->
+            ( 28, Days )
+
+        VaccineDTP ->
+            ( 28, Days )
+
+        VaccinePCV13 ->
+            ( 28, Days )
+
+        VaccineRotarix ->
+            ( 28, Days )
+
+        VaccineIPV ->
+            ( 0, Days )
+
+        VaccineMR ->
+            ( 6, Months )
+
+        VaccineHPV ->
+            ( 6, Months )
+
+
+getLastDoseForVaccine : VaccineType -> VaccineDose
+getLastDoseForVaccine vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            VaccineDoseFirst
+
+        VaccineOPV ->
+            VaccineDoseFourth
+
+        VaccineDTP ->
+            VaccineDoseSecond
+
+        VaccinePCV13 ->
+            VaccineDoseThird
+
+        VaccineRotarix ->
+            VaccineDoseSecond
+
+        VaccineIPV ->
+            VaccineDoseFirst
+
+        VaccineMR ->
+            VaccineDoseSecond
+
+        VaccineHPV ->
+            VaccineDoseSecond
+
+
+allVaccineTypes : Bool -> List VaccineType
+allVaccineTypes isChw =
+    if isChw then
+        [ VaccineBCG, VaccineOPV ]
+
+    else
+        [ VaccineBCG
+        , VaccineOPV
+        , VaccineDTP
+        , VaccinePCV13
+        , VaccineRotarix
+        , VaccineIPV
+        , VaccineMR
+        , VaccineHPV
+        ]
+
+
+fromImmunisationValue : Maybe ImmunisationValue -> ImmunisationForm
+fromImmunisationValue saved =
+    let
+        suggestedVaccines =
+            Maybe.map .suggestedVaccines saved
+                |> Maybe.withDefault Dict.empty
+
+        vacinationNotes =
+            Maybe.map .vacinationNotes saved
+
+        vaccineGiven administrationNote =
+            Maybe.map ((==) AdministeredToday) administrationNote
+
+        resolveAdministrationNote vaccineType =
+            Maybe.andThen (Dict.get vaccineType) vacinationNotes
+
+        bcgVaccinationNote =
+            resolveAdministrationNote VaccineBCG
+
+        opvVaccinationNote =
+            resolveAdministrationNote VaccineOPV
+
+        dtpVaccinationNote =
+            resolveAdministrationNote VaccineDTP
+
+        pcv13VaccinationNote =
+            resolveAdministrationNote VaccinePCV13
+
+        rotarixVaccinationNote =
+            resolveAdministrationNote VaccineRotarix
+
+        ipvVaccinationNote =
+            resolveAdministrationNote VaccineIPV
+
+        mrVaccinationNote =
+            resolveAdministrationNote VaccineMR
+
+        hpvVaccinationNote =
+            resolveAdministrationNote VaccineHPV
+    in
+    { suggestedVaccines = suggestedVaccines
+    , bcgVaccinationGiven = vaccineGiven bcgVaccinationNote
+    , opvVaccinationGiven = vaccineGiven opvVaccinationNote
+    , dtpVaccinationGiven = vaccineGiven dtpVaccinationNote
+    , pcv13VaccinationGiven = vaccineGiven pcv13VaccinationNote
+    , rotarixVaccinationGiven = vaccineGiven rotarixVaccinationNote
+    , ipvVaccinationGiven = vaccineGiven ipvVaccinationNote
+    , mrVaccinationGiven = vaccineGiven mrVaccinationNote
+    , hpvVaccinationGiven = vaccineGiven hpvVaccinationNote
+    , bcgVaccinationNote = bcgVaccinationNote
+    , opvVaccinationNote = opvVaccinationNote
+    , dtpVaccinationNote = dtpVaccinationNote
+    , pcv13VaccinationNote = pcv13VaccinationNote
+    , rotarixVaccinationNote = rotarixVaccinationNote
+    , ipvVaccinationNote = ipvVaccinationNote
+    , mrVaccinationNote = mrVaccinationNote
+    , hpvVaccinationNote = hpvVaccinationNote
+    , bcgVaccinationDate = Maybe.andThen .bcgVaccinationDate saved
+    , opvVaccinationDate = Maybe.andThen .opvVaccinationDate saved
+    , dtpVaccinationDate = Maybe.andThen .dtpVaccinationDate saved
+    , pcv13VaccinationDate = Maybe.andThen .pcv13VaccinationDate saved
+    , rotarixVaccinationDate = Maybe.andThen .rotarixVaccinationDate saved
+    , ipvVaccinationDate = Maybe.andThen .ipvVaccinationDate saved
+    , mrVaccinationDate = Maybe.andThen .mrVaccinationDate saved
+    , hpvVaccinationDate = Maybe.andThen .hpvVaccinationDate saved
+    , bcgVaccinationDateSelectorOpen = False
+    , opvVaccinationDateSelectorOpen = False
+    , dtpVaccinationDateSelectorOpen = False
+    , pcv13VaccinationDateSelectorOpen = False
+    , rotarixVaccinationDateSelectorOpen = False
+    , ipvVaccinationDateSelectorOpen = False
+    , mrVaccinationDateSelectorOpen = False
+    , hpvVaccinationDateSelectorOpen = False
+    }
+
+
+immunisationFormWithDefault : ImmunisationForm -> Maybe ImmunisationValue -> ImmunisationForm
+immunisationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    vaccineGiven administrationNote =
+                        Maybe.map ((==) AdministeredToday) administrationNote
+
+                    resolveAdministrationNote vaccineType =
+                        Dict.get vaccineType value.vacinationNotes
+
+                    bcgVaccinationNote =
+                        resolveAdministrationNote VaccineBCG
+
+                    opvVaccinationNote =
+                        resolveAdministrationNote VaccineOPV
+
+                    dtpVaccinationNote =
+                        resolveAdministrationNote VaccineDTP
+
+                    pcv13VaccinationNote =
+                        resolveAdministrationNote VaccinePCV13
+
+                    rotarixVaccinationNote =
+                        resolveAdministrationNote VaccineRotarix
+
+                    ipvVaccinationNote =
+                        resolveAdministrationNote VaccineIPV
+
+                    mrVaccinationNote =
+                        resolveAdministrationNote VaccineMR
+
+                    hpvVaccinationNote =
+                        resolveAdministrationNote VaccineHPV
+                in
+                { suggestedVaccines = form.suggestedVaccines
+                , bcgVaccinationGiven = or form.bcgVaccinationGiven (vaccineGiven bcgVaccinationNote)
+                , opvVaccinationGiven = or form.opvVaccinationGiven (vaccineGiven opvVaccinationNote)
+                , dtpVaccinationGiven = or form.dtpVaccinationGiven (vaccineGiven dtpVaccinationNote)
+                , pcv13VaccinationGiven = or form.pcv13VaccinationGiven (vaccineGiven pcv13VaccinationNote)
+                , rotarixVaccinationGiven = or form.rotarixVaccinationGiven (vaccineGiven rotarixVaccinationNote)
+                , ipvVaccinationGiven = or form.ipvVaccinationGiven (vaccineGiven ipvVaccinationNote)
+                , mrVaccinationGiven = or form.mrVaccinationGiven (vaccineGiven mrVaccinationNote)
+                , hpvVaccinationGiven = or form.hpvVaccinationGiven (vaccineGiven hpvVaccinationNote)
+                , bcgVaccinationNote = or form.bcgVaccinationNote bcgVaccinationNote
+                , opvVaccinationNote = or form.opvVaccinationNote opvVaccinationNote
+                , dtpVaccinationNote = or form.dtpVaccinationNote dtpVaccinationNote
+                , pcv13VaccinationNote = or form.pcv13VaccinationNote pcv13VaccinationNote
+                , rotarixVaccinationNote = or form.rotarixVaccinationNote rotarixVaccinationNote
+                , ipvVaccinationNote = or form.ipvVaccinationNote ipvVaccinationNote
+                , mrVaccinationNote = or form.mrVaccinationNote mrVaccinationNote
+                , hpvVaccinationNote = or form.hpvVaccinationNote hpvVaccinationNote
+                , bcgVaccinationDate = or form.bcgVaccinationDate value.bcgVaccinationDate
+                , opvVaccinationDate = or form.opvVaccinationDate value.opvVaccinationDate
+                , dtpVaccinationDate = or form.dtpVaccinationDate value.dtpVaccinationDate
+                , pcv13VaccinationDate = or form.pcv13VaccinationDate value.pcv13VaccinationDate
+                , rotarixVaccinationDate = or form.rotarixVaccinationDate value.rotarixVaccinationDate
+                , ipvVaccinationDate = or form.ipvVaccinationDate value.ipvVaccinationDate
+                , mrVaccinationDate = or form.mrVaccinationDate value.mrVaccinationDate
+                , hpvVaccinationDate = or form.hpvVaccinationDate value.hpvVaccinationDate
+                , bcgVaccinationDateSelectorOpen = form.bcgVaccinationDateSelectorOpen
+                , opvVaccinationDateSelectorOpen = form.opvVaccinationDateSelectorOpen
+                , dtpVaccinationDateSelectorOpen = form.dtpVaccinationDateSelectorOpen
+                , pcv13VaccinationDateSelectorOpen = form.pcv13VaccinationDateSelectorOpen
+                , rotarixVaccinationDateSelectorOpen = form.rotarixVaccinationDateSelectorOpen
+                , ipvVaccinationDateSelectorOpen = form.ipvVaccinationDateSelectorOpen
+                , mrVaccinationDateSelectorOpen = form.mrVaccinationDateSelectorOpen
+                , hpvVaccinationDateSelectorOpen = form.hpvVaccinationDateSelectorOpen
+                }
+            )
+
+
+toImmunisationValueWithDefault : Maybe ImmunisationValue -> ImmunisationForm -> Maybe ImmunisationValue
+toImmunisationValueWithDefault saved form =
+    immunisationFormWithDefault form saved
+        |> toImmunisationValue
+
+
+toImmunisationValue : ImmunisationForm -> Maybe ImmunisationValue
+toImmunisationValue form =
+    let
+        vacinationNotes =
+            allVaccineTypes False
+                |> List.filterMap
+                    (\vaccineType ->
+                        determineVaccineAdministrationNote vaccineType
+                            |> Maybe.map (\note -> ( vaccineType, note ))
+                    )
+                |> Dict.fromList
+
+        determineVaccineAdministrationNote vaccineType =
+            case vaccineType of
+                VaccineBCG ->
+                    if form.bcgVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.bcgVaccinationNote
+
+                VaccineOPV ->
+                    if form.opvVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.opvVaccinationNote
+
+                VaccineDTP ->
+                    if form.dtpVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.dtpVaccinationNote
+
+                VaccinePCV13 ->
+                    if form.pcv13VaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.pcv13VaccinationNote
+
+                VaccineRotarix ->
+                    if form.rotarixVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.rotarixVaccinationNote
+
+                VaccineIPV ->
+                    if form.ipvVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.ipvVaccinationNote
+
+                VaccineMR ->
+                    if form.mrVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.mrVaccinationNote
+
+                VaccineHPV ->
+                    if form.hpvVaccinationGiven == Just True then
+                        Just AdministeredToday
+
+                    else
+                        form.hpvVaccinationNote
+
+        determineVaccineDate getNoteFunc getDateFunc =
+            let
+                note =
+                    getNoteFunc form
+            in
+            if List.member note [ Just AdministeredToday, Just AdministeredPreviously ] then
+                getDateFunc form
+
+            else
+                Nothing
+    in
+    Just <|
+        ImmunisationValue
+            form.suggestedVaccines
+            vacinationNotes
+            (determineVaccineDate .bcgVaccinationNote .bcgVaccinationDate)
+            (determineVaccineDate .opvVaccinationNote .opvVaccinationDate)
+            (determineVaccineDate .dtpVaccinationNote .dtpVaccinationDate)
+            (determineVaccineDate .pcv13VaccinationNote .pcv13VaccinationDate)
+            (determineVaccineDate .rotarixVaccinationNote .rotarixVaccinationDate)
+            (determineVaccineDate .ipvVaccinationNote .ipvVaccinationDate)
+            (determineVaccineDate .mrVaccinationNote .mrVaccinationDate)
+            (determineVaccineDate .hpvVaccinationNote .hpvVaccinationDate)
+
+
 generateCompletedECDSigns : AssembledData -> List ECDSign
 generateCompletedECDSigns assembled =
     assembled.previousMeasurementsWithDates
@@ -728,7 +1274,7 @@ groupedECDSigns =
 
 ecdSigns6to8 : List ECDSign
 ecdSigns6to8 =
-    [ RespontToSoundWithSound
+    [ RespondToSoundWithSound
     , TurnHeadWhenCalled
     , SitWithoutSupport
     , SmileBack

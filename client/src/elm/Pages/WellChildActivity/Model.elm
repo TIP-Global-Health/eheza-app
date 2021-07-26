@@ -1,5 +1,6 @@
 module Pages.WellChildActivity.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
@@ -56,6 +57,12 @@ type Msg
     | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssesmentTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
+      -- IMMUNISATION
+    | SetImmunisationBoolInput (Bool -> ImmunisationForm -> ImmunisationForm) Bool
+    | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
+    | SetImmunisationDateInput (Date -> ImmunisationForm -> ImmunisationForm) Date
+    | ToggleImmunisationDateSelectorInput (ImmunisationForm -> ImmunisationForm)
+    | SaveImmunisation PersonId (Dict VaccineType VaccineDose) (Maybe ( WellChildImmunisationId, WellChildImmunisation ))
       -- ECD
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
@@ -76,6 +83,7 @@ type alias Model =
     { pregnancySummaryForm : PregnancySummaryForm
     , dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
+    , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
     , warningPopupState : List NutritionAssesment
@@ -87,6 +95,7 @@ emptyModel =
     { pregnancySummaryForm = emptyPregnancySummaryForm
     , dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
+    , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
     , warningPopupState = []
@@ -219,8 +228,83 @@ allNutritionAssesmentTasks =
     ]
 
 
+type alias ImmunisationForm =
+    { suggestedVaccines : Dict VaccineType VaccineDose
+    , bcgVaccinationGiven : Maybe Bool
+    , opvVaccinationGiven : Maybe Bool
+    , dtpVaccinationGiven : Maybe Bool
+    , pcv13VaccinationGiven : Maybe Bool
+    , rotarixVaccinationGiven : Maybe Bool
+    , ipvVaccinationGiven : Maybe Bool
+    , mrVaccinationGiven : Maybe Bool
+    , hpvVaccinationGiven : Maybe Bool
+    , bcgVaccinationNote : Maybe AdministrationNote
+    , opvVaccinationNote : Maybe AdministrationNote
+    , dtpVaccinationNote : Maybe AdministrationNote
+    , pcv13VaccinationNote : Maybe AdministrationNote
+    , rotarixVaccinationNote : Maybe AdministrationNote
+    , ipvVaccinationNote : Maybe AdministrationNote
+    , mrVaccinationNote : Maybe AdministrationNote
+    , hpvVaccinationNote : Maybe AdministrationNote
+    , bcgVaccinationDate : Maybe NominalDate
+    , opvVaccinationDate : Maybe NominalDate
+    , dtpVaccinationDate : Maybe NominalDate
+    , pcv13VaccinationDate : Maybe NominalDate
+    , rotarixVaccinationDate : Maybe NominalDate
+    , ipvVaccinationDate : Maybe NominalDate
+    , mrVaccinationDate : Maybe NominalDate
+    , hpvVaccinationDate : Maybe NominalDate
+    , bcgVaccinationDateSelectorOpen : Bool
+    , opvVaccinationDateSelectorOpen : Bool
+    , dtpVaccinationDateSelectorOpen : Bool
+    , pcv13VaccinationDateSelectorOpen : Bool
+    , rotarixVaccinationDateSelectorOpen : Bool
+    , ipvVaccinationDateSelectorOpen : Bool
+    , mrVaccinationDateSelectorOpen : Bool
+    , hpvVaccinationDateSelectorOpen : Bool
+    }
+
+
+emptyImmunisationForm : ImmunisationForm
+emptyImmunisationForm =
+    { suggestedVaccines = Dict.empty
+    , bcgVaccinationGiven = Nothing
+    , opvVaccinationGiven = Nothing
+    , dtpVaccinationGiven = Nothing
+    , pcv13VaccinationGiven = Nothing
+    , rotarixVaccinationGiven = Nothing
+    , ipvVaccinationGiven = Nothing
+    , mrVaccinationGiven = Nothing
+    , hpvVaccinationGiven = Nothing
+    , bcgVaccinationNote = Nothing
+    , opvVaccinationNote = Nothing
+    , dtpVaccinationNote = Nothing
+    , pcv13VaccinationNote = Nothing
+    , rotarixVaccinationNote = Nothing
+    , ipvVaccinationNote = Nothing
+    , mrVaccinationNote = Nothing
+    , hpvVaccinationNote = Nothing
+    , bcgVaccinationDate = Nothing
+    , opvVaccinationDate = Nothing
+    , dtpVaccinationDate = Nothing
+    , pcv13VaccinationDate = Nothing
+    , rotarixVaccinationDate = Nothing
+    , ipvVaccinationDate = Nothing
+    , mrVaccinationDate = Nothing
+    , hpvVaccinationDate = Nothing
+    , bcgVaccinationDateSelectorOpen = False
+    , opvVaccinationDateSelectorOpen = False
+    , dtpVaccinationDateSelectorOpen = False
+    , pcv13VaccinationDateSelectorOpen = False
+    , rotarixVaccinationDateSelectorOpen = False
+    , ipvVaccinationDateSelectorOpen = False
+    , mrVaccinationDateSelectorOpen = False
+    , hpvVaccinationDateSelectorOpen = False
+    }
+
+
 type alias WellChildECDForm =
-    { respontToSoundWithSound : Maybe Bool
+    { respondToSoundWithSound : Maybe Bool
     , turnHeadWhenCalled : Maybe Bool
     , sitWithoutSupport : Maybe Bool
     , smileBack : Maybe Bool
@@ -256,7 +340,7 @@ type alias WellChildECDForm =
 
 emptyWellChildECDForm : WellChildECDForm
 emptyWellChildECDForm =
-    { respontToSoundWithSound = Nothing
+    { respondToSoundWithSound = Nothing
     , turnHeadWhenCalled = Nothing
     , sitWithoutSupport = Nothing
     , smileBack = Nothing

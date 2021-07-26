@@ -885,6 +885,73 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetImmunisationBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetImmunisationAdministrationNoteInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetImmunisationDateInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        ToggleImmunisationDateSelectorInput formUpdateFunc ->
+            let
+                updatedForm =
+                    formUpdateFunc model.immunisationForm
+            in
+            ( { model | immunisationForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveImmunisation personId suggestedVaccines saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.immunisationForm
+                        |> (\form -> { form | suggestedVaccines = suggestedVaccines })
+                        |> toImmunisationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveImmunisation personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         SetECDBoolInput formUpdateFunc value ->
             let
                 updatedForm =

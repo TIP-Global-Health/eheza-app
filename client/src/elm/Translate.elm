@@ -475,6 +475,7 @@ type TranslationId
     | DistributionNotice DistributionNotice
     | District
     | DOB
+    | Done
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
@@ -676,6 +677,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextDoseDue
     | NextSteps
     | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
@@ -873,6 +875,7 @@ type TranslationId
     | SelectAllSigns
     | SelectPostpartumChildDangerSigns
     | SelectDangerSigns
+    | SelectDate
     | SelectPostpartumMotherDangerSigns
     | SelectedProgram
     | SelectedVillage
@@ -973,6 +976,8 @@ type TranslationId
     | UpdateError
     | Uploading
     | UterineMyoma
+    | VaccineDoseGivenQuestion VaccineType VaccineDose Bool
+    | VaccineType VaccineType
     | ValidationErrors
     | Version
     | View
@@ -2926,6 +2931,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Done ->
+            { english = "Done"
+            , kinyarwanda = Nothing
+            }
+
         Downloading ->
             { english = "Downloading"
             , kinyarwanda = Nothing
@@ -2943,7 +2953,7 @@ translationSet trans =
 
         ECDSignQuestion sign ->
             case sign of
-                RespontToSoundWithSound ->
+                RespondToSoundWithSound ->
                     { english = "Does the child respond to sound by making sound"
                     , kinyarwanda = Nothing
                     }
@@ -4996,6 +5006,11 @@ translationSet trans =
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 
+        NextDoseDue ->
+            { english = "Next Dose Due"
+            , kinyarwanda = Nothing
+            }
+
         NextSteps ->
             { english = "Next Steps"
             , kinyarwanda = Just "Ibikurikiyeho"
@@ -7024,6 +7039,11 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
             }
 
+        SelectDate ->
+            { english = "Select Date"
+            , kinyarwanda = Nothing
+            }
+
         SelectPostpartumMotherDangerSigns ->
             { english = "Please select one or more of the danger signs the mother is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
@@ -7716,6 +7736,117 @@ translationSet trans =
             , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
             }
 
+        VaccineDoseGivenQuestion vaccineType dose isChw ->
+            let
+                doseNumber =
+                    case dose of
+                        VaccineDoseFirst ->
+                            "1"
+
+                        VaccineDoseSecond ->
+                            "2"
+
+                        VaccineDoseThird ->
+                            "3"
+
+                        VaccineDoseFourth ->
+                            "4"
+            in
+            case vaccineType of
+                VaccineBCG ->
+                    if isChw then
+                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) at birth"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) - Dose " ++ doseNumber ++ " of 1 today"
+                        , kinyarwanda = Nothing
+                        }
+
+                VaccineOPV ->
+                    if isChw then
+                        { english = "Did the child receive the Oral Polio Vaccine (OPV) at birth"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Did the child receive the Oral Polio Vaccine (OPV) - Dose " ++ doseNumber ++ " of 4 today"
+                        , kinyarwanda = Nothing
+                        }
+
+                VaccineDTP ->
+                    { english = "Did the child receive the DTP - HepB - Hib Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "Did the child receive the Pneumoccocal Vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Did the child receive the Rotavirus (Rotarix) Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "Did the child receive the  Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Did the child receive the Measles - Rubella Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "Did the child receive the HPV Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    , kinyarwanda = Nothing
+                    }
+
+        VaccineType vaccineType ->
+            case vaccineType of
+                VaccineBCG ->
+                    { english = "BCG Bacilius Calmette - Guérin Vaccine (BCG)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "Oral Polio Vaccine (OPV)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "DTP - HepB - Hib Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "Pneumoccocal Vaccine (PCV 13)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Rotavirus (Rotarix) Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = " Inactivated Polio Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Measles - Rubella Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "HPV Vaccine"
+                    , kinyarwanda = Nothing
+                    }
+
         ValidationErrors ->
             { english = "Validation Errors"
             , kinyarwanda = Nothing
@@ -7809,6 +7940,11 @@ translationSet trans =
 
                 WellChildPregnancySummary ->
                     { english = "History"
+                    , kinyarwanda = Nothing
+                    }
+
+                WellChildImmunisation ->
+                    { english = "Immunization"
                     , kinyarwanda = Nothing
                     }
 

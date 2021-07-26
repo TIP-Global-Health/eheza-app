@@ -15,7 +15,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -132,6 +132,9 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
 
         WellChildNutritionAssessment ->
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
+
+        WellChildImmunisation ->
+            viewImmunisationForm language currentDate isChw assembled model.immunisationForm
 
         WellChildECD ->
             viewECDForm language currentDate assembled model.ecdForm
@@ -288,7 +291,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form pregnancy-dating" ] <|
+            [ div [ class "ui form pregnancy-summary" ] <|
                 [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
                 , div [ class "form-input date" ]
                     [ expectedDateConcludedInput ]
@@ -859,6 +862,362 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
     ]
 
 
+viewImmunisationForm : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> List (Html Msg)
+viewImmunisationForm language currentDate isChw assembled immunisationForm =
+    let
+        form =
+            assembled.measurements.immunisation
+                |> Maybe.map (Tuple.second >> .value)
+                |> immunisationFormWithDefault immunisationForm
+
+        ( tasksCompleted, totalTasks ) =
+            ( (List.map taskCompleted vaccinationGivenTasks |> List.sum)
+                + (List.map taskCompleted vaccinationDateTasks |> List.sum)
+                + (List.map taskCompleted vaccinationNoteTasks |> List.sum)
+            , List.length vaccinationGivenTasks
+                + List.length vaccinationDateTasks
+                + List.length vaccinationNoteTasks
+            )
+
+        suggestedVaccines =
+            generateSuggestedVaccines currentDate isChw assembled
+
+        inputsAndtasks =
+            List.map (inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form) suggestedVaccines
+
+        inputs =
+            List.map Tuple.first inputsAndtasks
+                |> List.concat
+
+        tasks =
+            List.map Tuple.second inputsAndtasks
+
+        vaccinationGivenTasks =
+            List.map .vaccinationGivenTask tasks
+
+        vaccinationDateTasks =
+            List.filterMap .vaccinationDateTask tasks
+
+        vaccinationNoteTasks =
+            List.filterMap .vaccinationNoteTask tasks
+
+        futureVaccines =
+            generateFutureVaccines currentDate isChw assembled
+                |> List.map viewNextDoseForVaccine
+
+        viewNextDoseForVaccine ( vaccineType, nextVaccinationData ) =
+            let
+                dueDate =
+                    Maybe.map (Tuple.second >> formatDDMMyyyy) nextVaccinationData
+                        |> Maybe.withDefault (translate language Translate.Done)
+            in
+            div [ class "next-vaccination" ]
+                [ div [ class "name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
+                , div [ class "due-date" ] [ text dueDate ]
+                ]
+
+        disabled =
+            tasksCompleted /= totalTasks
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form immunisation" ]
+                inputs
+            , div [ class "future-vaccinations" ] <|
+                viewLabel language Translate.NextDoseDue
+                    :: futureVaccines
+            ]
+        , viewAction language (SaveImmunisation assembled.participant.person (Dict.fromList suggestedVaccines) assembled.measurements.immunisation) disabled
+        ]
+    ]
+
+
+type alias SuggestedVaccineTasks =
+    { vaccinationGivenTask : Maybe Bool
+    , vaccinationDateTask : Maybe (Maybe NominalDate)
+    , vaccinationNoteTask : Maybe (Maybe AdministrationNote)
+    }
+
+
+inputsAndTasksForSuggestedVaccine : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> ( VaccineType, VaccineDose ) -> ( List (Html Msg), SuggestedVaccineTasks )
+inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( vaccineType, vaccineDose ) =
+    let
+        ( vaccinationGivenInput, vaccinationGivenTask ) =
+            ( [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion vaccineType vaccineDose isChw
+              , viewBoolInput
+                    language
+                    (config.getVaccinationGivenFunc form)
+                    (SetImmunisationBoolInput config.setBoolInputFunc)
+                    ""
+                    Nothing
+              ]
+            , config.getVaccinationGivenFunc form
+            )
+
+        ( vaccinationDerrivedInputs, vaccinationDateTask, vaccinationNoteTask ) =
+            if config.getVaccinationGivenFunc form == Just False then
+                let
+                    ( vaccinationDateInput, dateTask ) =
+                        if config.getVaccinationNoteFunc form == Just AdministeredPreviously then
+                            ( [ div [ class "form-input date previous" ]
+                                    [ viewLabel language Translate.SelectDate
+                                    , DateSelector.SelectorDropdown.view
+                                        (ToggleImmunisationDateSelectorInput config.toggleDateSelectorFunc)
+                                        (SetImmunisationDateInput config.setDateInputFunc)
+                                        (config.getVaccinationDateSelectorOpenFunc form)
+                                        (Date.add Months -6 currentDate)
+                                        (Date.add Days -1 currentDate)
+                                        (config.getVaccinationDateFunc form)
+                                    ]
+                              ]
+                            , Just <| config.getVaccinationDateFunc form
+                            )
+
+                        else
+                            ( [], Nothing )
+                in
+                ( [ div [ class "why-not" ]
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined ]
+                            [ NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                            (config.getVaccinationNoteFunc form)
+                            (SetImmunisationAdministrationNoteInput config.setAdministrationNoteFunc)
+                            Translate.AdministrationNote
+                        ]
+                  ]
+                    ++ vaccinationDateInput
+                , dateTask
+                , Just <| config.getVaccinationNoteFunc form
+                )
+
+            else
+                ( [], Nothing, Nothing )
+
+        config =
+            case vaccineType of
+                VaccineBCG ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( if isChw then
+                                            assembled.person.birthDate
+                                                |> Maybe.withDefault currentDate
+                                                |> Just
+
+                                          else
+                                            Just currentDate
+                                        , Just AdministeredToday
+                                        )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | bcgVaccinationGiven = Just value
+                                , bcgVaccinationNote = vaccinationNote
+                                , bcgVaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | bcgVaccinationDateSelectorOpen = not form_.bcgVaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | bcgVaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | bcgVaccinationNote = Just value, bcgVaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .bcgVaccinationGiven
+                    , getVaccinationDateFunc = .bcgVaccinationDate
+                    , getVaccinationNoteFunc = .bcgVaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .bcgVaccinationDateSelectorOpen
+                    }
+
+                VaccineOPV ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( if isChw then
+                                            assembled.person.birthDate
+                                                |> Maybe.withDefault currentDate
+                                                |> Just
+
+                                          else
+                                            Just currentDate
+                                        , Just AdministeredToday
+                                        )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | opvVaccinationGiven = Just value
+                                , opvVaccinationNote = vaccinationNote
+                                , opvVaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | opvVaccinationDateSelectorOpen = not form_.opvVaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | opvVaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | opvVaccinationNote = Just value, opvVaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .opvVaccinationGiven
+                    , getVaccinationDateFunc = .opvVaccinationDate
+                    , getVaccinationNoteFunc = .opvVaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .opvVaccinationDateSelectorOpen
+                    }
+
+                VaccineDTP ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( Just currentDate, Just AdministeredToday )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | dtpVaccinationGiven = Just value
+                                , dtpVaccinationNote = vaccinationNote
+                                , dtpVaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | dtpVaccinationDateSelectorOpen = not form_.dtpVaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | dtpVaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | dtpVaccinationNote = Just value, dtpVaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .dtpVaccinationGiven
+                    , getVaccinationDateFunc = .dtpVaccinationDate
+                    , getVaccinationNoteFunc = .dtpVaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .dtpVaccinationDateSelectorOpen
+                    }
+
+                VaccinePCV13 ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( Just currentDate, Just AdministeredToday )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | pcv13VaccinationGiven = Just value
+                                , pcv13VaccinationNote = vaccinationNote
+                                , pcv13VaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | pcv13VaccinationDateSelectorOpen = not form_.pcv13VaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | pcv13VaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | pcv13VaccinationNote = Just value, pcv13VaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .pcv13VaccinationGiven
+                    , getVaccinationDateFunc = .pcv13VaccinationDate
+                    , getVaccinationNoteFunc = .pcv13VaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .pcv13VaccinationDateSelectorOpen
+                    }
+
+                VaccineRotarix ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( Just currentDate, Just AdministeredToday )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | rotarixVaccinationGiven = Just value
+                                , rotarixVaccinationNote = vaccinationNote
+                                , rotarixVaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | rotarixVaccinationDateSelectorOpen = not form_.rotarixVaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | rotarixVaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | rotarixVaccinationNote = Just value, rotarixVaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .rotarixVaccinationGiven
+                    , getVaccinationDateFunc = .rotarixVaccinationDate
+                    , getVaccinationNoteFunc = .rotarixVaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .rotarixVaccinationDateSelectorOpen
+                    }
+
+                VaccineIPV ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( Just currentDate, Just AdministeredToday )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | ipvVaccinationGiven = Just value
+                                , ipvVaccinationNote = vaccinationNote
+                                , ipvVaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | ipvVaccinationDateSelectorOpen = not form_.ipvVaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | ipvVaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | ipvVaccinationNote = Just value, ipvVaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .ipvVaccinationGiven
+                    , getVaccinationDateFunc = .ipvVaccinationDate
+                    , getVaccinationNoteFunc = .ipvVaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .ipvVaccinationDateSelectorOpen
+                    }
+
+                VaccineMR ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( Just currentDate, Just AdministeredToday )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | mrVaccinationGiven = Just value
+                                , mrVaccinationNote = vaccinationNote
+                                , mrVaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | mrVaccinationDateSelectorOpen = not form_.mrVaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | mrVaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | mrVaccinationNote = Just value, mrVaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .mrVaccinationGiven
+                    , getVaccinationDateFunc = .mrVaccinationDate
+                    , getVaccinationNoteFunc = .mrVaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .mrVaccinationDateSelectorOpen
+                    }
+
+                VaccineHPV ->
+                    { setBoolInputFunc =
+                        \value form_ ->
+                            let
+                                ( vaccinationDate, vaccinationNote ) =
+                                    if value == True then
+                                        ( Just currentDate, Just AdministeredToday )
+
+                                    else
+                                        ( Nothing, Nothing )
+                            in
+                            { form_
+                                | hpvVaccinationGiven = Just value
+                                , hpvVaccinationNote = vaccinationNote
+                                , hpvVaccinationDate = vaccinationDate
+                            }
+                    , toggleDateSelectorFunc = \form_ -> { form_ | hpvVaccinationDateSelectorOpen = not form_.hpvVaccinationDateSelectorOpen }
+                    , setDateInputFunc = \value form_ -> { form_ | hpvVaccinationDate = Just value }
+                    , setAdministrationNoteFunc = \value form_ -> { form_ | hpvVaccinationNote = Just value, hpvVaccinationDate = Nothing }
+                    , getVaccinationGivenFunc = .hpvVaccinationGiven
+                    , getVaccinationDateFunc = .hpvVaccinationDate
+                    , getVaccinationNoteFunc = .hpvVaccinationNote
+                    , getVaccinationDateSelectorOpenFunc = .hpvVaccinationDateSelectorOpen
+                    }
+    in
+    ( vaccinationGivenInput ++ vaccinationDerrivedInputs
+    , SuggestedVaccineTasks vaccinationGivenTask vaccinationDateTask vaccinationNoteTask
+    )
+
+
 viewECDForm : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
 viewECDForm language currentDate assembled ecdForm =
     ageInMonths currentDate assembled.person
@@ -909,13 +1268,13 @@ ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
 
         inputAndTaskForSign sign =
             case sign of
-                RespontToSoundWithSound ->
+                RespondToSoundWithSound ->
                     let
-                        respontToSoundWithSoundUpdateFunc value form_ =
-                            { form_ | respontToSoundWithSound = Just value }
+                        respondToSoundWithSoundUpdateFunc value form_ =
+                            { form_ | respondToSoundWithSound = Just value }
                     in
-                    ( viewECDInput RespontToSoundWithSound form.respontToSoundWithSound respontToSoundWithSoundUpdateFunc
-                    , form.respontToSoundWithSound
+                    ( viewECDInput RespondToSoundWithSound form.respondToSoundWithSound respondToSoundWithSoundUpdateFunc
+                    , form.respondToSoundWithSound
                     )
 
                 TurnHeadWhenCalled ->
