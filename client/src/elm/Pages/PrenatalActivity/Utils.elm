@@ -18,8 +18,8 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , taskAllCompleted
         , taskCompleted
-        , taskListCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
         , viewQuestionLabel
@@ -1174,7 +1174,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> vitalsFormWithDefault data.vitalsForm
             in
-            ( taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
+            ( taskAllCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
                 + ([ Maybe.map (always ()) form.heartRate
                    , Maybe.map (always ()) form.respiratoryRate
                    , Maybe.map (always ()) form.bodyTemperature
@@ -1223,7 +1223,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             ( (List.map taskCompleted tasks_ |> List.sum)
                 -- This is for BMI task, which is considered as completed
                 -- when both height and weight are set.
-                + taskListCompleted tasksForBmi
+                + taskAllCompleted tasksForBmi
             , List.length tasks_ + 1
             )
 

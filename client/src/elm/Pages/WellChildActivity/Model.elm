@@ -429,6 +429,7 @@ type alias NextStepsData =
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
     , followUpForm : FollowUpForm
+    , nextVisitForm : NextVisitForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -439,8 +440,20 @@ emptyNextStepsData =
     , healthEducationForm = emptyHealthEducationForm
     , followUpForm = emptyFollowUpForm
     , sendToHCForm = emptySendToHCForm
+    , nextVisitForm = emptyNextVisitForm
     , activeTask = Nothing
     }
+
+
+type alias NextVisitForm =
+    { immunisationDate : Maybe NominalDate
+    , pediatricVisitDate : Maybe NominalDate
+    }
+
+
+emptyNextVisitForm : NextVisitForm
+emptyNextVisitForm =
+    NextVisitForm Nothing Nothing
 
 
 type NextStepsTask

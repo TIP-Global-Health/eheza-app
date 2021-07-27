@@ -1737,8 +1737,9 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
                 )
 
         TaskNextVisit ->
-            -- @todo
-            ( 0, 1 )
+            ( 0
+            , 0
+            )
 
 
 nextStepsTasks : List Pages.WellChildActivity.Model.NextStepsTask

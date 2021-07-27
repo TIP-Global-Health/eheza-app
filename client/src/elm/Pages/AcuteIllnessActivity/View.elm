@@ -50,7 +50,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , taskCompleted
-        , taskListCompleted
+        , taskAllCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput

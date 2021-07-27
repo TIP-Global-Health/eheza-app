@@ -34,7 +34,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , taskCompleted
-        , taskListCompleted
+        , taskAllCompleted
         , tasksBarId
         , viewAlert
         , viewBoolInput
