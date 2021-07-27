@@ -1872,6 +1872,11 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
+        nextVisitForm =
+            measurements.nextVisit
+                |> Maybe.map (Tuple.second >> .value)
+                |> nextVisitFormWithDefault data.nextVisitForm
+
         viewForm =
             case activeTask of
                 Just TaskContributingFactors ->
@@ -1922,10 +1927,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                         |> List.singleton
 
                 Just TaskNextVisit ->
-                    measurements.nextVisit
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> nextVisitFormWithDefault data.nextVisitForm
-                        |> viewNextVisitForm language currentDate isChw assembled db
+                    viewNextVisitForm language currentDate isChw assembled db nextVisitForm
                         |> List.singleton
 
                 Nothing ->
@@ -1967,7 +1969,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                                     TaskNextVisit ->
                                         let
                                             ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-                                                generateNextVisitDates currentDate isChw assembled db
+                                                resolveNextVisitDates currentDate isChw assembled db nextVisitForm
                                         in
                                         SaveNextVisit personId measurements.nextVisit nextDateForImmunisationVisit nextDateForPediatricVisit nextTask
 
@@ -1998,7 +2000,7 @@ viewNextVisitForm : Language -> NominalDate -> Bool -> AssembledData -> ModelInd
 viewNextVisitForm language currentDate isChw assembled db form =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-            generateNextVisitDates currentDate isChw assembled db
+            resolveNextVisitDates currentDate isChw assembled db form
 
         viewSection value label =
             Maybe.map
@@ -2013,6 +2015,19 @@ viewNextVisitForm language currentDate isChw assembled db form =
     div [ class "ui form next-visit" ] <|
         viewSection nextDateForImmunisationVisit Translate.NextImmunisationVisit
             ++ viewSection nextDateForPediatricVisit Translate.NextPediatricVisit
+
+
+{-| We use saved values. If not found, fallback to logcal generation of next visit dates.
+-}
+resolveNextVisitDates : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NextVisitForm -> ( Maybe NominalDate, Maybe NominalDate )
+resolveNextVisitDates currentDate isChw assembled db form =
+    let
+        ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
+            generateNextVisitDates currentDate isChw assembled db
+    in
+    ( Maybe.Extra.or form.immunisationDate nextDateForImmunisationVisit
+    , Maybe.Extra.or form.pediatricVisitDate nextDateForPediatricVisit
+    )
 
 
 
