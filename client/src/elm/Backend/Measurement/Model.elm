@@ -1433,6 +1433,16 @@ type DeliveryComplication
     | NoDeliveryComplications
 
 
+type alias WellChildNextVisit =
+    WellChildMeasurement NextVisitValue
+
+
+type alias NextVisitValue =
+    { immunisationDate : NominalDate
+    , pediatricVisitDate : NominalDate
+    }
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -1651,6 +1661,7 @@ type alias WellChildMeasurements =
     , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
     , pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
     , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
+    , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
     }
 
 

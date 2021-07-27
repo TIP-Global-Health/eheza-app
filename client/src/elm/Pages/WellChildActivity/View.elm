@@ -1841,9 +1841,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
 
                         TaskNextVisit ->
                             ( "next-steps-next-visit"
-                            , -- @todo
-                              --                  isJust measurements.nextVisit
-                              False
+                            , isJust measurements.nextVisit
                             )
 
                 isActive =
@@ -1924,6 +1922,25 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                         |> List.singleton
 
                 Just TaskNextVisit ->
+                    let
+                        nextVisitDateForECD =
+                            generateNextVisitDateForECD currentDate assembled db
+
+                        _ =
+                            Debug.log "nextVisitDateForECD" nextVisitDateForECD
+
+                        nextVisitDateForMedication =
+                            generateNextVisitDateForMedication currentDate assembled db
+
+                        _ =
+                            Debug.log "nextVisitDateForMedication" nextVisitDateForMedication
+
+                        nextVisitDateForImmunisation =
+                            generateNextVisitDateForImmunisation currentDate isChw assembled db
+
+                        _ =
+                            Debug.log "nextVisitDateForImmunisation" nextVisitDateForImmunisation
+                    in
                     -- @todo
                     []
 
@@ -1964,8 +1981,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                                         SaveSendToHC personId measurements.sendToHC nextTask
 
                                     TaskNextVisit ->
-                                        -- @todo
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                                        SaveNextVisit personId measurements.nextVisit nextTask
 
                             disabled =
                                 tasksCompleted /= totalTasks

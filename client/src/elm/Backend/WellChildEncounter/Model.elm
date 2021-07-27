@@ -120,3 +120,5 @@ type Msg
     | HandleSavedMebendezole (WebData ())
     | SaveVitaminA PersonId (Maybe WellChildVitaminAId) AdministrationNote
     | HandleSavedVitaminA (WebData ())
+    | SaveNextVisit PersonId (Maybe WellChildNextVisitId) NextVisitValue
+    | HandleSavedNextVisit (WebData ())

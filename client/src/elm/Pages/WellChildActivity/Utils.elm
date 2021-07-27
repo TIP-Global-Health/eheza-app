@@ -1601,9 +1601,7 @@ nextStepsTaskCompleted currentDate zscores isChw data db task =
 
         TaskNextVisit ->
             (not <| taskExpected TaskNextVisit)
-                || -- @todo
-                   -- isJust measurements.nextVisit
-                   False
+                || isJust measurements.nextVisit
 
 
 expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.NextStepsTask -> Bool

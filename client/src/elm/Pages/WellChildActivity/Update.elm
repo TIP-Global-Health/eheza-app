@@ -1222,3 +1222,34 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveNextVisit personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask_
+
+                appMsgs =
+                    -- @todo
+                    -- model.nextStepsData.nextVisitForm
+                    --     |> (\form -> { form | assesment = Just assesment })
+                    --     |> toNextVisitValueWithDefault measurement
+                    --     |> Maybe.map
+                    --         (Backend.WellChildEncounter.Model.SaveNextVisit personId measurementId
+                    --             >> Backend.Model.MsgWellChildEncounter id
+                    --             >> App.Model.MsgIndexedDb
+                    --             >> List.singleton
+                    --         )
+                    --     |> Maybe.withDefault []
+                    []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
