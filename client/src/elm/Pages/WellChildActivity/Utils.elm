@@ -16,7 +16,7 @@ import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCompleted, taskCompleted, valueConsideringIsDirtyField)
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..))
@@ -1635,6 +1635,7 @@ expectNextStepsTask currentDate zscores isChw assembled db task =
                 && activityCompleted currentDate zscores isChw assembled db WellChildImmunisation
                 && activityCompleted currentDate zscores isChw assembled db WellChildECD
                 && activityCompleted currentDate zscores isChw assembled db WellChildMedication
+                && nextVisitRequired currentDate isChw assembled db
 
 
 newbornVaccinatedAtBirth : WellChildMeasurements -> Maybe Bool
@@ -1737,8 +1738,14 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
                 )
 
         TaskNextVisit ->
-            ( 0
-            , 0
+            let
+                form =
+                    measurements.nextVisit
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> nextVisitFormWithDefault data.nextVisitForm
+            in
+            ( taskAnyCompleted [ form.immunisationDate, form.pediatricVisitDate ]
+            , 1
             )
 
 
@@ -1747,8 +1754,33 @@ nextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp, TaskNextVisit ]
 
 
-generateNextVisitDateForECD : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextVisitDateForECD currentDate assembled db =
+nextVisitRequired : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+nextVisitRequired currentDate isChw assembled db =
+    let
+        ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
+            generateNextVisitDates currentDate isChw assembled db
+    in
+    isJust nextDateForImmunisationVisit || isJust nextDateForPediatricVisit
+
+
+generateNextVisitDates : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> ( Maybe NominalDate, Maybe NominalDate )
+generateNextVisitDates currentDate isChw assembled db =
+    let
+        nextVisitDateForECD =
+            generateNextDateForECDVisit currentDate assembled db
+
+        nextVisitDateForMedication =
+            generateNextDateForMedicationVisit currentDate assembled db
+    in
+    ( generateNextDateForImmunisationVisit currentDate isChw assembled db
+    , Maybe.Extra.values [ nextVisitDateForECD, nextVisitDateForMedication ]
+        |> List.sortWith Date.compare
+        |> List.head
+    )
+
+
+generateNextDateForECDVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextDateForECDVisit currentDate assembled db =
     if List.isEmpty (generateRemianingECDSignsAfterCurrentEncounter currentDate assembled) then
         Nothing
 
@@ -1792,8 +1824,8 @@ generateNextVisitDateForECD currentDate assembled db =
                 )
 
 
-generateNextVisitDateForMedication : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextVisitDateForMedication currentDate assembled db =
+generateNextDateForMedicationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextDateForMedicationVisit currentDate assembled db =
     let
         previousMeasurements =
             List.map (Tuple.second >> Tuple.second) assembled.previousMeasurementsWithDates
@@ -1808,8 +1840,8 @@ generateNextVisitDateForMedication currentDate assembled db =
         |> List.head
 
 
-generateNextVisitDateForImmunisation : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextVisitDateForImmunisation currentDate isChw assembled db =
+generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextDateForImmunisationVisit currentDate isChw assembled db =
     generateFutureVaccines currentDate isChw assembled
         |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
         |> List.sortWith Date.compare

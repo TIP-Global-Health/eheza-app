@@ -681,6 +681,8 @@ type TranslationId
     | Never
     | Next
     | NextDoseDue
+    | NextImmunisationVisit
+    | NextPediatricVisit
     | NextSteps
     | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
@@ -5074,6 +5076,16 @@ translationSet trans =
 
         NextDoseDue ->
             { english = "Next Dose Due"
+            , kinyarwanda = Nothing
+            }
+
+        NextImmunisationVisit ->
+            { english = "Next immunisation visit"
+            , kinyarwanda = Nothing
+            }
+
+        NextPediatricVisit ->
+            { english = "Next pediatric visit"
             , kinyarwanda = Nothing
             }
 

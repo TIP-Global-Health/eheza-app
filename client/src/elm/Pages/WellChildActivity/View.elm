@@ -1922,27 +1922,11 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                         |> List.singleton
 
                 Just TaskNextVisit ->
-                    let
-                        nextVisitDateForECD =
-                            generateNextVisitDateForECD currentDate assembled db
-
-                        _ =
-                            Debug.log "nextVisitDateForECD" nextVisitDateForECD
-
-                        nextVisitDateForMedication =
-                            generateNextVisitDateForMedication currentDate assembled db
-
-                        _ =
-                            Debug.log "nextVisitDateForMedication" nextVisitDateForMedication
-
-                        nextVisitDateForImmunisation =
-                            generateNextVisitDateForImmunisation currentDate isChw assembled db
-
-                        _ =
-                            Debug.log "nextVisitDateForImmunisation" nextVisitDateForImmunisation
-                    in
-                    -- @todo
-                    []
+                    measurements.nextVisit
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> nextVisitFormWithDefault data.nextVisitForm
+                        |> viewNextVisitForm language currentDate isChw assembled db
+                        |> List.singleton
 
                 Nothing ->
                     []
@@ -1981,10 +1965,18 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                                         SaveSendToHC personId measurements.sendToHC nextTask
 
                                     TaskNextVisit ->
-                                        SaveNextVisit personId measurements.nextVisit nextTask
+                                        let
+                                            ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
+                                                generateNextVisitDates currentDate isChw assembled db
+                                        in
+                                        SaveNextVisit personId measurements.nextVisit nextDateForImmunisationVisit nextDateForPediatricVisit nextTask
 
                             disabled =
-                                tasksCompleted /= totalTasks
+                                if task == TaskNextVisit then
+                                    False
+
+                                else
+                                    tasksCompleted /= totalTasks
                         in
                         viewAction language saveMsg disabled
                     )
@@ -2000,6 +1992,27 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
             (viewForm ++ [ actions ])
         ]
     ]
+
+
+viewNextVisitForm : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NextVisitForm -> Html Msg
+viewNextVisitForm language currentDate isChw assembled db form =
+    let
+        ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
+            generateNextVisitDates currentDate isChw assembled db
+
+        viewSection value label =
+            Maybe.map
+                (\date ->
+                    [ viewLabel language label
+                    , div [ class "date" ] [ text <| formatDDMMyyyy date ]
+                    ]
+                )
+                value
+                |> Maybe.withDefault []
+    in
+    div [ class "ui form next-visit" ] <|
+        viewSection nextDateForImmunisationVisit Translate.NextImmunisationVisit
+            ++ viewSection nextDateForPediatricVisit Translate.NextPediatricVisit
 
 
 
