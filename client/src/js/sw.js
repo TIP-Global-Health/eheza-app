@@ -135,6 +135,7 @@ var tableForType = {
     well_child_immunisation: 'shards',
     well_child_mebendezole: 'shards',
     well_child_muac: 'shards',
+    well_child_next_visit: 'shards',
     well_child_nutrition: 'shards',
     well_child_photo: 'shards',
     well_child_pregnancy_summary: 'shards',
