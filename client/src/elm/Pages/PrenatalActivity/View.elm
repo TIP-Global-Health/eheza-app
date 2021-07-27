@@ -33,8 +33,8 @@ import Pages.PrenatalEncounter.View exposing (generateActivityData, viewMotherAn
 import Pages.Utils
     exposing
         ( isTaskCompleted
-        , taskCompleted
         , taskAllCompleted
+        , taskCompleted
         , tasksBarId
         , viewAlert
         , viewBoolInput
