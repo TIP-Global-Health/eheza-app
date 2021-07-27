@@ -2811,8 +2811,8 @@ encodeWellChildNextVisit =
 
 encodeNextVisitValue : NextVisitValue -> List ( String, Value )
 encodeNextVisitValue value =
-    [ ( "immunisation_date", Gizra.NominalDate.encodeYYYYMMDD value.immunisationDate )
-    , ( "pediatric_visit_date", Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
+    [ ( "immunisation_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.immunisationDate )
+    , ( "pediatric_visit_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
     , ( "deleted", bool False )
     , ( "type", string "well_child_next_visit" )
     ]

@@ -1817,6 +1817,39 @@ generateNextVisitDateForImmunisation currentDate isChw assembled db =
         |> List.head
 
 
+fromNextVisitValue : Maybe NextVisitValue -> NextVisitForm
+fromNextVisitValue saved =
+    { immunisationDate = Maybe.andThen .immunisationDate saved
+    , pediatricVisitDate = Maybe.andThen .pediatricVisitDate saved
+    }
+
+
+nextVisitFormWithDefault : NextVisitForm -> Maybe NextVisitValue -> NextVisitForm
+nextVisitFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { immunisationDate = or form.immunisationDate value.immunisationDate
+                , pediatricVisitDate = or form.pediatricVisitDate value.pediatricVisitDate
+                }
+            )
+
+
+toNextVisitValueWithDefault : Maybe NextVisitValue -> NextVisitForm -> Maybe NextVisitValue
+toNextVisitValueWithDefault saved form =
+    nextVisitFormWithDefault form saved
+        |> toNextVisitValue
+
+
+toNextVisitValue : NextVisitForm -> Maybe NextVisitValue
+toNextVisitValue form =
+    Just <|
+        NextVisitValue
+            form.immunisationDate
+            form.pediatricVisitDate
+
+
 
 -- HELPER FUNCTIONS
 
