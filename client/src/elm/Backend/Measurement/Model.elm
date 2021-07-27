@@ -1643,7 +1643,8 @@ type alias HomeVisitMeasurements =
 {-| A set of Well Child measurements that correspond to the same Well Child encounter.
 -}
 type alias WellChildMeasurements =
-    { symptomsReview : Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )
+    { pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
+    , symptomsReview : Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )
     , vitals : Maybe ( WellChildVitalsId, WellChildVitals )
     , height : Maybe ( WellChildHeightId, WellChildHeight )
     , muac : Maybe ( WellChildMuacId, WellChildMuac )
@@ -1659,7 +1660,6 @@ type alias WellChildMeasurements =
     , ecd : Maybe ( WellChildECDId, WellChildECD )
     , albendazole : Maybe ( WellChildAlbendazoleId, WellChildAlbendazole )
     , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
-    , pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
     , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
     , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
     }

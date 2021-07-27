@@ -176,6 +176,7 @@ decodeHomeVisitMeasurements =
 decodeWellChildMeasurements : Decoder WellChildMeasurements
 decodeWellChildMeasurements =
     succeed WellChildMeasurements
+        |> optional "well_child_pregnancy_summary" (decodeHead decodeWellChildPregnancySummary) Nothing
         |> optional "well_child_symptoms_review" (decodeHead decodeWellChildSymptomsReview) Nothing
         |> optional "well_child_vitals" (decodeHead decodeWellChildVitals) Nothing
         |> optional "well_child_height" (decodeHead decodeWellChildHeight) Nothing
@@ -192,8 +193,8 @@ decodeWellChildMeasurements =
         |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
         |> optional "well_child_albendazole" (decodeHead decodeWellChildAlbendazole) Nothing
         |> optional "well_child_mebendezole" (decodeHead decodeWellChildMebendezole) Nothing
-        |> optional "well_child_pregnancy_summary" (decodeHead decodeWellChildPregnancySummary) Nothing
         |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
+        |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -3244,3 +3245,15 @@ decodeDeliveryComplication =
                     _ ->
                         fail <| complication ++ " is not a recognized DeliveryComplication"
             )
+
+
+decodeWellChildNextVisit : Decoder WellChildNextVisit
+decodeWellChildNextVisit =
+    decodeWellChildMeasurement decodeNextVisitValue
+
+
+decodeNextVisitValue : Decoder NextVisitValue
+decodeNextVisitValue =
+    succeed NextVisitValue
+        |> required "immunisation_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "pediatric_visit_date" Gizra.NominalDate.decodeYYYYMMDD
