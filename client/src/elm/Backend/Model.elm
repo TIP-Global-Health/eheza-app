@@ -430,6 +430,7 @@ type Revision
     | WellChildImmunisationRevision WellChildImmunisationId WellChildImmunisation
     | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole
     | WellChildMuacRevision WellChildMuacId WellChildMuac
+    | WellChildNextVisitRevision WellChildNextVisitId WellChildNextVisit
     | WellChildNutritionRevision WellChildNutritionId WellChildNutrition
     | WellChildPhotoRevision WellChildPhotoId WellChildPhoto
     | WellChildPregnancySummaryRevision WellChildPregnancySummaryId WellChildPregnancySummary

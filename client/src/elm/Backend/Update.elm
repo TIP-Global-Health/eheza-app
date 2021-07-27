@@ -3294,6 +3294,14 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        WellChildNextVisitRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | nextVisit = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildNutritionRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
