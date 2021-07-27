@@ -622,7 +622,7 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Well Child Follow Up"
 
             BackendAuthorityWellChildHeadCircumference identifier ->
-                viewMeasurement identifier "Well Child HeadCircumference"
+                viewMeasurement identifier "Well Child Head Circumference"
 
             BackendAuthorityWellChildHealthEducation identifier ->
                 viewMeasurement identifier "Well Child Health Education"
@@ -639,6 +639,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildMuac identifier ->
                 viewMeasurement identifier "Well Child Muac"
 
+            BackendAuthorityWellChildNextVisit identifier ->
+                viewMeasurement identifier "Well Child Next Visit"
+
             BackendAuthorityWellChildNutrition identifier ->
                 viewMeasurement identifier "Well Child Nutrition"
 
@@ -646,7 +649,7 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Well Child Photo"
 
             BackendAuthorityWellChildPregnancySummary identifier ->
-                viewMeasurement identifier "Well Child PregnancySummary"
+                viewMeasurement identifier "Well Child Pregnancy Summary"
 
             BackendAuthorityWellChildSendToHC identifier ->
                 viewMeasurement identifier "Well Child Send to HC"
