@@ -54,6 +54,7 @@ type alias Model =
     , saveAlbendazole : WebData ()
     , saveMebendezole : WebData ()
     , saveVitaminA : WebData ()
+    , saveNextVisit : WebData ()
     }
 
 
@@ -78,6 +79,7 @@ emptyModel =
     , saveAlbendazole = NotAsked
     , saveMebendezole = NotAsked
     , saveVitaminA = NotAsked
+    , saveNextVisit = NotAsked
     }
 
 
