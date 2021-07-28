@@ -663,6 +663,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildSymptomsReview identifier ->
             getIdentifier identifier "well_child_symptoms_review"
 
+        BackendAuthorityWellChildVaccinationHistory identifier ->
+            getIdentifier identifier "well_child_vaccination_history"
+
         BackendAuthorityWellChildVitals identifier ->
             getIdentifier identifier "well_child_vitals"
 
@@ -1158,6 +1161,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildSymptomsReview identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildSymptomsReview identifier
 
+        BackendAuthorityWellChildVaccinationHistory identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildVaccinationHistory identifier
+
         BackendAuthorityWellChildVitals identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildVitals identifier
 
@@ -1615,6 +1621,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildSymptomsReview identifier ->
             WellChildSymptomsReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildVaccinationHistory identifier ->
+            WellChildVaccinationHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildVitals identifier ->
             WellChildVitalsRevision (toEntityUuid identifier.uuid) identifier.entity

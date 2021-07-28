@@ -146,6 +146,7 @@ type BackendAuthorityEntity
     | BackendAuthorityWellChildPregnancySummary (BackendEntity WellChildPregnancySummary)
     | BackendAuthorityWellChildSendToHC (BackendEntity WellChildSendToHC)
     | BackendAuthorityWellChildSymptomsReview (BackendEntity WellChildSymptomsReview)
+    | BackendAuthorityWellChildVaccinationHistory (BackendEntity WellChildVaccinationHistory)
     | BackendAuthorityWellChildVitals (BackendEntity WellChildVitals)
     | BackendAuthorityWellChildVitaminA (BackendEntity WellChildVitaminA)
     | BackendAuthorityWellChildWeight (BackendEntity WellChildWeight)
