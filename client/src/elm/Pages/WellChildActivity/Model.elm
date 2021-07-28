@@ -88,6 +88,7 @@ type alias Model =
     { pregnancySummaryForm : PregnancySummaryForm
     , dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
+    , vaccinationHistoryForm : VaccinationHistoryForm
     , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
@@ -101,6 +102,7 @@ emptyModel =
     { pregnancySummaryForm = emptyPregnancySummaryForm
     , dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
+    , vaccinationHistoryForm = emptyVaccinationHistoryForm
     , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
@@ -217,6 +219,21 @@ allNutritionAssessmentTasks =
     , TaskPhoto
     , TaskWeight
     ]
+
+
+type alias VaccinationHistoryForm =
+    { vaccinationsAdministered : Dict VaccineType (EverySet VaccineDose)
+    , vaccinationDates : Dict VaccineType (EverySet NominalDate)
+    , dateSelectorsState : Dict VaccineType (EverySet VaccineDose)
+    }
+
+
+emptyVaccinationHistoryForm : VaccinationHistoryForm
+emptyVaccinationHistoryForm =
+    { vaccinationsAdministered = Dict.empty
+    , vaccinationDates = Dict.empty
+    , dateSelectorsState = Dict.empty
+    }
 
 
 type alias ImmunisationForm =
