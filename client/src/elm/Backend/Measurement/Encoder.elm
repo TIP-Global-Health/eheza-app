@@ -2696,7 +2696,7 @@ encodeImmunisationValue value =
         maybeToEverySet =
             Maybe.map EverySet.singleton >> Maybe.withDefault EverySet.empty
     in
-    [ ( "suggested_vaccines", list encodeSuggestedVaccine (Dict.toList value.suggestedVaccines) )
+    [ ( "suggested_vaccines", list encodeVaccinationEntry (Dict.toList value.suggestedVaccines) )
     , ( "vaccination_notes", list encodeVacinationNote (Dict.toList value.vacinationNotes) )
     , ( "opv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.opvVaccinationDate) )
     , ( "bcg_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.bcgVaccinationDate) )
@@ -2711,8 +2711,8 @@ encodeImmunisationValue value =
     ]
 
 
-encodeSuggestedVaccine : ( VaccineType, VaccineDose ) -> Value
-encodeSuggestedVaccine ( type_, dose ) =
+encodeVaccinationEntry : ( VaccineType, VaccineDose ) -> Value
+encodeVaccinationEntry ( type_, dose ) =
     vaccineTypeToString type_ ++ "-" ++ vaccineDoseToString dose |> string
 
 
@@ -2829,7 +2829,17 @@ encodeWellChildVaccinationHistory =
 
 encodeVaccinationHistoryValue : VaccinationHistoryValue -> List ( String, Value )
 encodeVaccinationHistoryValue value =
-    [ ( "suggested_vaccines", list encodeSuggestedVaccine (Dict.toList value.suggestedVaccines) )
+    let
+        implodeAdministeredVaccines =
+            Dict.toList
+                >> List.map
+                    (\( type_, set ) ->
+                        EverySet.toList set
+                            |> List.map (\dose -> ( type_, dose ))
+                    )
+                >> List.concat
+    in
+    [ ( "suggested_vaccines", list encodeVaccinationEntry (implodeAdministeredVaccines value.administeredVaccines) )
     , ( "opv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.opvVaccinationDate )
     , ( "bcg_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.bcgVaccinationDate )
     , ( "pcv13_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.pcv13VaccinationDate )
