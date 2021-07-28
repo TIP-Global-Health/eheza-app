@@ -16,12 +16,6 @@ class HedleyRestfulWellChildImmunisation extends HedleyRestfulWellChildActivityB
   protected $multiFields = [
     'field_suggested_vaccines',
     'field_vaccination_notes',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $fields = [
     'field_bcg_vaccination_date',
     'field_opv_vaccination_date',
     'field_dtp_vaccination_date',
@@ -35,7 +29,7 @@ class HedleyRestfulWellChildImmunisation extends HedleyRestfulWellChildActivityB
   /**
    * {@inheritdoc}
    */
-  protected $dateFields = [
+  protected $multiDateFields = [
     'field_bcg_vaccination_date',
     'field_opv_vaccination_date',
     'field_dtp_vaccination_date',

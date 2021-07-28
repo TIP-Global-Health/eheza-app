@@ -2692,16 +2692,20 @@ encodeWellChildImmunisation =
 
 encodeImmunisationValue : ImmunisationValue -> List ( String, Value )
 encodeImmunisationValue value =
+    let
+        maybeToEverySet =
+            Maybe.map EverySet.singleton >> Maybe.withDefault EverySet.empty
+    in
     [ ( "suggested_vaccines", list encodeSuggestedVaccine (Dict.toList value.suggestedVaccines) )
     , ( "vaccination_notes", list encodeVacinationNote (Dict.toList value.vacinationNotes) )
-    , ( "opv_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.opvVaccinationDate )
-    , ( "bcg_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.bcgVaccinationDate )
-    , ( "pcv13_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pcv13VaccinationDate )
-    , ( "dtp_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.dtpVaccinationDate )
-    , ( "rotarix_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.rotarixVaccinationDate )
-    , ( "ipv_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.ipvVaccinationDate )
-    , ( "mr_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.mrVaccinationDate )
-    , ( "hpv_vaccination_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.hpvVaccinationDate )
+    , ( "opv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.opvVaccinationDate) )
+    , ( "bcg_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.bcgVaccinationDate) )
+    , ( "pcv13_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.pcv13VaccinationDate) )
+    , ( "dtp_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.dtpVaccinationDate) )
+    , ( "rotarix_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.rotarixVaccinationDate) )
+    , ( "ipv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.ipvVaccinationDate) )
+    , ( "mr_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.mrVaccinationDate) )
+    , ( "hpv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.hpvVaccinationDate) )
     , ( "deleted", bool False )
     , ( "type", string "well_child_immunisation" )
     ]
@@ -2813,6 +2817,7 @@ encodeNextVisitValue : NextVisitValue -> List ( String, Value )
 encodeNextVisitValue value =
     [ ( "immunisation_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.immunisationDate )
     , ( "pediatric_visit_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
+    , ( "multi_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.multiDate )
     , ( "deleted", bool False )
     , ( "type", string "well_child_next_visit" )
     ]

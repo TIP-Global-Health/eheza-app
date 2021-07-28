@@ -449,6 +449,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'date_concluded',
           'expected_date_concluded',
           'appointment_confirmation',
+          'immunisation_date',
+          'pediatric_visit_date',
+        ];
+
+        $multiDateFields = [
           'bcg_vaccination_date',
           'opv_vaccination_date',
           'dtp_vaccination_date',
@@ -457,12 +462,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'ipv_vaccination_date',
           'mr_vaccination_date',
           'hpv_vaccination_date',
-          'immunisation_date',
-          'pediatric_visit_date',
-        ];
-
-        $multiDateFields = [
-          'multi_date',
         ];
 
         $data = [];

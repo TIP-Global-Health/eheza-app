@@ -63,8 +63,11 @@ decodeNullAsEmptyArray =
 turns it into an `EverySet`.
 -}
 decodeEverySet : Decoder a -> Decoder (EverySet a)
-decodeEverySet =
-    map EverySet.fromList << list
+decodeEverySet decoder =
+    oneOf
+        [ map EverySet.fromList <| list decoder
+        , succeed EverySet.empty
+        ]
 
 
 decodeWithDefault : a -> Decoder a -> Decoder a
