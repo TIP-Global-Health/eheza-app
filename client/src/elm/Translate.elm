@@ -8011,6 +8011,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildVaccinationHistory ->
+                    { english = "Vaccine History"
+                    , kinyarwanda = Nothing
+                    }
+
                 WellChildNextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Nothing

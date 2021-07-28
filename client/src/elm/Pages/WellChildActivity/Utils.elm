@@ -80,6 +80,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
             (not <| activityExpected WellChildMedication)
                 || (isJust measurements.mebendezole && isJust measurements.vitaminA)
 
+        WellChildVaccinationHistory ->
+            (not <| activityExpected WellChildVaccinationHistory) || isJust measurements.vaccinationHistory
+
         WellChildImmunisation ->
             (not <| activityExpected WellChildImmunisation) || isJust measurements.immunisation
 
@@ -105,6 +108,9 @@ expectActivity currentDate zscores isChw assembled db activity =
 
         WellChildNutritionAssessment ->
             True
+
+        WellChildVaccinationHistory ->
+            not isChw
 
         WellChildImmunisation ->
             generateSuggestedVaccines currentDate isChw assembled

@@ -134,6 +134,9 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
         WellChildNutritionAssessment ->
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
+        WellChildVaccinationHistory ->
+            viewVaccinationHistoryForm language currentDate isChw assembled model.vaccinationHistoryForm
+
         WellChildImmunisation ->
             viewImmunisationForm language currentDate isChw assembled model.immunisationForm
 
@@ -774,6 +777,12 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
         , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
         ]
     ]
+
+
+viewVaccinationHistoryForm : Language -> NominalDate -> Bool -> AssembledData -> VaccinationHistoryForm -> List (Html Msg)
+viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHistoryForm =
+    --@todo
+    []
 
 
 viewImmunisationForm : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> List (Html Msg)
