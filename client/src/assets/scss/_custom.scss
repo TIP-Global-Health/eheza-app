@@ -507,6 +507,10 @@ h3.ui.header {
   background-size: 152px 152px;
 }
 
+.icon-task-vaccination-history {
+  background-image: url(#{$img-path}icon-vaccination-history.svg);
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
