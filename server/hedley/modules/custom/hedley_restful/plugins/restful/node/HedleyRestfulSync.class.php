@@ -461,6 +461,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'pediatric_visit_date',
         ];
 
+        $multiDateFields = [
+          'multi_date',
+        ];
+
         $data = [];
         foreach (array_keys($item['data']) as $key) {
           $value = $item['data'][$key];
@@ -471,9 +475,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             $data[$key] = hedley_restful_uuid_to_nid($value);
           }
           elseif (in_array($key, $dateFields) && !empty($value)) {
-            // Restful seems to want date values as timestamps -- should
-            // investigate if there are other possibilities.
+            // Restful wants date values as timestamps.
             $data[$key] = strtotime($value);
+          }
+          elseif (in_array($key, $multiDateFields) && !empty($value)) {
+            foreach($value as $date) {
+              // Restful wants date values as timestamps.
+              $data[$key][] = strtotime($date);
+            }
           }
           else {
             $data[$key] = $value;

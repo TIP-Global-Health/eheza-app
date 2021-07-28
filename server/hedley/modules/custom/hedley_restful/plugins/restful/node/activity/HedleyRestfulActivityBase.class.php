@@ -32,6 +32,12 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
   protected $dateFields = [];
 
   /**
+   * Fields that are list of dates. This is a sub list of $multiFields.
+   *
+   * @var array
+   */
+  protected $multiDateFields = [];
+  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
@@ -132,6 +138,17 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
         $public_name = str_replace('field_', '', $field_name);
         $date = explode(' ', $item->{$public_name});
         $item->{$public_name} = !empty($date[0]) ? $date[0] : NULL;
+      }
+
+      foreach ($this->multiDateFields as $field_name) {
+        $public_name = str_replace('field_', '', $field_name);
+        $dates = [];
+        foreach ($item->{$public_name} as $raw_date) {
+          $date = explode(' ', $raw_date);
+          $dates[] = !empty($date[0]) ? $date[0] : NULL;
+        }
+
+        $item->{$public_name} = $dates;
       }
     }
 
