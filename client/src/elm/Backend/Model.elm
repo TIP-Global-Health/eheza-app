@@ -436,6 +436,7 @@ type Revision
     | WellChildPregnancySummaryRevision WellChildPregnancySummaryId WellChildPregnancySummary
     | WellChildSendToHCRevision WellChildSendToHCId WellChildSendToHC
     | WellChildSymptomsReviewRevision WellChildSymptomsReviewId WellChildSymptomsReview
+    | WellChildVaccinationHistoryRevision WellChildVaccinationHistoryId WellChildVaccinationHistory
     | WellChildVitalsRevision WellChildVitalsId WellChildVitals
     | WellChildVitaminARevision WellChildVitaminAId WellChildVitaminA
     | WellChildWeightRevision WellChildWeightId WellChildWeight

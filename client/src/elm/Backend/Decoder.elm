@@ -346,6 +346,9 @@ decodeRevision =
                     "well_child_symptoms_review" ->
                         decodeWithUuid WellChildSymptomsReviewRevision decodeWellChildSymptomsReview
 
+                    "well_child_vaccination_history" ->
+                        decodeWithUuid WellChildVaccinationHistoryRevision decodeWellChildVaccinationHistory
+
                     "well_child_vitals" ->
                         decodeWithUuid WellChildVitalsRevision decodeWellChildVitals
 
