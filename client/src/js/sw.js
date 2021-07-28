@@ -141,6 +141,7 @@ var tableForType = {
     well_child_pregnancy_summary: 'shards',
     well_child_send_to_hc: 'shards',
     well_child_symptoms_review: 'shards',
+    well_child_vaccination_history: 'shards',
     well_child_vitamin_a: 'shards',
     well_child_vitals: 'shards',
     well_child_weight: 'shards'
