@@ -19,14 +19,6 @@ function hedley_well_child_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_well_child_node_info() {
   $items = array(
-    'vaccination_history' => array(
-      'name' => t('Vaccination History'),
-      'base' => 'node_content',
-      'description' => '',
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
     'well_child_albendazole' => array(
       'name' => t('Well Child Albendazole'),
       'base' => 'node_content',
@@ -157,6 +149,14 @@ function hedley_well_child_node_info() {
     ),
     'well_child_symptoms_review' => array(
       'name' => t('Well Child Symptoms Review'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_vaccination_history' => array(
+      'name' => t('Well Child Vaccination History'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',
