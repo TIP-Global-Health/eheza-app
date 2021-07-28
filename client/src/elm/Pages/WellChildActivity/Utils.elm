@@ -113,9 +113,11 @@ expectActivity currentDate zscores isChw assembled db activity =
             not isChw
 
         WellChildImmunisation ->
-            generateSuggestedVaccines currentDate isChw assembled
-                |> List.isEmpty
-                |> not
+            let
+                suggestedVaccines =
+                    generateSuggestedVaccines currentDate isChw assembled
+            in
+            (not <| List.isEmpty suggestedVaccines) && activityCompleted currentDate zscores isChw assembled db WellChildVaccinationHistory
 
         WellChildECD ->
             if isChw then
