@@ -2839,5 +2839,5 @@ encodeVaccinationHistoryValue value =
     , ( "mr_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.mrVaccinationDate )
     , ( "hpv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.hpvVaccinationDate )
     , ( "deleted", bool False )
-    , ( "type", string "well_child_immunisation" )
+    , ( "type", string "well_child_vaccination_history" )
     ]
