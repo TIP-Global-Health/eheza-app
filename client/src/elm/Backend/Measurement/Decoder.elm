@@ -195,6 +195,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_mebendezole" (decodeHead decodeWellChildMebendezole) Nothing
         |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
         |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
+        |> optional "well_child_vaccination_history" (decodeHead decodeWellChildVaccinationHistory) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -3261,3 +3262,22 @@ decodeNextVisitValue =
     succeed NextVisitValue
         |> required "immunisation_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
         |> required "pediatric_visit_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+
+
+decodeWellChildVaccinationHistory : Decoder WellChildVaccinationHistory
+decodeWellChildVaccinationHistory =
+    decodeWellChildMeasurement decodeVaccinationHistoryValue
+
+
+decodeVaccinationHistoryValue : Decoder VaccinationHistoryValue
+decodeVaccinationHistoryValue =
+    succeed VaccinationHistoryValue
+        |> required "suggested_vaccines" (map Dict.fromList (list decodeSuggestedVaccine))
+        |> required "bcg_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "opv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "dtp_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "pcv13_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "rotarix_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "ipv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "mr_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "hpv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
