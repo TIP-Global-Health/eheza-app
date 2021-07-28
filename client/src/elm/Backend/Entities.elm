@@ -941,3 +941,11 @@ type alias WellChildNextVisitId =
 
 type WellChildNextVisitUuidType
     = WellChildNextVisitUuidType
+
+
+type alias WellChildVaccinationHistoryId =
+    EntityUuid WellChildVaccinationHistoryUuidType
+
+
+type WellChildVaccinationHistoryUuidType
+    = WellChildVaccinationHistoryUuidType
