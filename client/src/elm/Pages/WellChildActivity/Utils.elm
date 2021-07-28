@@ -1619,13 +1619,17 @@ expectNextStepsTask currentDate zscores isChw assembled db task =
 
         TaskHealthEducation ->
             expectNextStepsTask currentDate zscores isChw assembled db TaskContributingFactors
+                || -- At newborn exam, nurse should preovide Health Education,
+                   -- if newborn was not vaccinated at birth.
+                   (isChw && (newbornVaccinatedAtBirth assembled.measurements == Just False))
 
         TaskFollowUp ->
             expectNextStepsTask currentDate zscores isChw assembled db TaskContributingFactors
 
         TaskSendToHC ->
             expectNextStepsTask currentDate zscores isChw assembled db TaskContributingFactors
-                || -- For newborn exam, we send to HC if newborn was not vaccinated at birth.
+                || -- At newborn exam, Nurse should send patient to HC,
+                   -- if newborn was not vaccinated at birth.
                    (isChw && (newbornVaccinatedAtBirth assembled.measurements == Just False))
 
         TaskNextVisit ->
