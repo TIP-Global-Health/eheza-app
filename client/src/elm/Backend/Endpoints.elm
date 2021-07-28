@@ -855,3 +855,9 @@ wellChildNextVisitEndpoint : ReadWriteEndPoint Error WellChildNextVisitId WellCh
 wellChildNextVisitEndpoint =
     swEndpoint "nodes/well_child_next_visit" decodeWellChildNextVisit
         |> withValueEncoder (object << encodeWellChildNextVisit)
+
+
+wellChildVaccinationHistoryEndpoint : ReadWriteEndPoint Error WellChildVaccinationHistoryId WellChildVaccinationHistory WellChildVaccinationHistory ()
+wellChildVaccinationHistoryEndpoint =
+    swEndpoint "nodes/well_child_vaccination_history" decodeWellChildVaccinationHistory
+        |> withValueEncoder (object << encodeWellChildVaccinationHistory)
