@@ -790,59 +790,133 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 |> Maybe.map (Tuple.second >> .value)
                 |> vaccinationHistoryFormWithDefault vaccinationHistoryForm
 
-        inputs =
-            allVaccinesWithDoses
-                |> Dict.map
-                    (\type_ doses ->
-                        List.map
-                            (\dose ->
-                                let
-                                    administeredVaccineValue =
-                                        Dict.get type_ form.administeredVaccines
-                                            |> Maybe.andThen (Dict.get dose)
-                                            |> Maybe.withDefault Nothing
+        ( vaccinesCompleted, vaccinesToProcess ) =
+            Dict.toList allVaccinesWithDoses
+                |> List.partition isVaccineCompleted
 
-                                    derrivedInputs =
-                                        if administeredVaccineValue == Just True then
-                                            let
-                                                selectorState =
-                                                    Dict.get ( type_, dose ) form.dateSelectorsState
-                                                        |> Maybe.withDefault False
+        -- allVaccinesWithDoses : Dict VaccineType (List VaccineDose)
+        vaccinesForView =
+            List.map
+                (\( vaccineType, doses ) ->
+                    List.filterMap
+                        (\dose ->
+                            if isJust <| wasDoseCompleted ( vaccineType, dose ) then
+                                Just ( vaccineType, dose )
 
-                                                vaccinationDate =
-                                                    Dict.get type_ form.vaccinationDates
-                                                        |> Maybe.andThen (Dict.get dose)
-                                                        |> Maybe.withDefault Nothing
-                                            in
-                                            [ div [ class "form-input date previous" ]
-                                                [ viewLabel language Translate.SelectDate
-                                                , DateSelector.SelectorDropdown.view
-                                                    (ToggleVaccinationHistoryDateSelectorInput type_ dose)
-                                                    (SetVaccinationHistoryDateInput type_ dose)
-                                                    selectorState
-                                                    (Date.add Months -6 currentDate)
-                                                    (Date.add Days -1 currentDate)
-                                                    vaccinationDate
-                                                ]
-                                            ]
+                            else
+                                Nothing
+                        )
+                        doses
+                )
+                vaccinesCompleted
+                |> List.concat
 
-                                        else
-                                            []
-                                in
-                                [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False
-                                , viewBoolInput
-                                    language
-                                    administeredVaccineValue
-                                    (SetVaccinationHistoryBoolInput type_ dose)
-                                    ""
-                                    Nothing
-                                ]
-                                    ++ derrivedInputs
-                            )
-                            doses
-                            |> List.concat
+        vaccineToProcess =
+            List.head vaccinesToProcess
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+
+        isVaccineCompleted ( vaccineType, doses ) =
+            List.all
+                (\dose ->
+                    (wasVaccineGiven vaccineType dose == Just True)
+                        && wasDateSet vaccineType dose
+                )
+                doses
+                || List.any
+                    (\dose -> wasVaccineGiven vaccineType dose == Just False)
+                    doses
+
+        ( dosesCompleted, dosesToProcess ) =
+            vaccineToProcess
+                |> List.map
+                    (\( vaccineType, doses ) ->
+                        List.map (\dose -> ( vaccineType, dose )) doses
                     )
-                |> Dict.values
+                |> List.concat
+                |> List.partition wasDoseProcessed
+
+        doseToProcess =
+            List.head dosesToProcess
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+
+        wasDoseProcessed ( vaccineType, dose ) =
+            isJust <| wasDoseCompleted ( vaccineType, dose )
+
+        wasDoseCompleted ( vaccineType, dose ) =
+            wasVaccineGiven vaccineType dose
+                |> Maybe.andThen
+                    (\wasGiven ->
+                        if wasGiven then
+                            Just <| wasDateSet vaccineType dose
+
+                        else
+                            Just True
+                    )
+
+        wasVaccineGiven vaccineType dose =
+            Dict.get vaccineType form.administeredVaccines
+                |> Maybe.andThen (Dict.get dose >> Maybe.withDefault Nothing)
+
+        wasDateSet vaccineType dose =
+            Dict.get vaccineType form.vaccinationDates
+                |> Maybe.andThen (Dict.get dose)
+                |> Maybe.map isJust
+                |> Maybe.withDefault False
+
+        forView =
+            vaccinesForView
+                ++ dosesCompleted
+                ++ doseToProcess
+
+        inputs =
+            forView
+                |> List.map
+                    (\( type_, dose ) ->
+                        let
+                            administeredVaccineValue =
+                                Dict.get type_ form.administeredVaccines
+                                    |> Maybe.andThen (Dict.get dose)
+                                    |> Maybe.withDefault Nothing
+
+                            derrivedInputs =
+                                if administeredVaccineValue == Just True then
+                                    let
+                                        selectorState =
+                                            Dict.get ( type_, dose ) form.dateSelectorsState
+                                                |> Maybe.withDefault False
+
+                                        vaccinationDate =
+                                            Dict.get type_ form.vaccinationDates
+                                                |> Maybe.andThen (Dict.get dose)
+                                                |> Maybe.withDefault Nothing
+                                    in
+                                    [ div [ class "form-input date previous" ]
+                                        [ viewLabel language Translate.SelectDate
+                                        , DateSelector.SelectorDropdown.view
+                                            (ToggleVaccinationHistoryDateSelectorInput type_ dose)
+                                            (SetVaccinationHistoryDateInput type_ dose)
+                                            selectorState
+                                            (Date.add Months -6 currentDate)
+                                            (Date.add Days -1 currentDate)
+                                            vaccinationDate
+                                        ]
+                                    ]
+
+                                else
+                                    []
+                        in
+                        [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False
+                        , viewBoolInput
+                            language
+                            administeredVaccineValue
+                            (SetVaccinationHistoryBoolInput type_ dose)
+                            ""
+                            Nothing
+                        ]
+                            ++ derrivedInputs
+                    )
                 |> List.concat
 
         disabled =

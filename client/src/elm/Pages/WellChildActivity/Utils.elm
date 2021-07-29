@@ -658,41 +658,65 @@ generateFutureVaccines currentDate isChw assembled =
 
 expectVaccineForPerson : NominalDate -> Person -> VaccineType -> Bool
 expectVaccineForPerson currentDate person vaccineType =
+    expectVaccineDoseForPerson currentDate person ( vaccineType, VaccineDoseFirst )
+
+
+expectVaccineDoseForPerson : NominalDate -> Person -> ( VaccineType, VaccineDose ) -> Bool
+expectVaccineDoseForPerson currentDate person ( vaccineType, vaccineDose ) =
     person.birthDate
         |> Maybe.map
             (\birthDate ->
                 let
-                    ageWeeks =
-                        Date.diff Weeks birthDate currentDate
+                    doseIntervals =
+                        vaccineDoseToComparable vaccineDose - 1
 
-                    ageForHPV =
-                        Date.add Weeks -1 currentDate
-                            |> Date.diff Years birthDate
+                    ( interval, unit ) =
+                        getIntervalForVaccine vaccineType
+
+                    compared =
+                        Date.compare expectedDate currentDate
+
+                    expectedDate =
+                        case vaccineType of
+                            VaccineBCG ->
+                                birthDate
+
+                            VaccineOPV ->
+                                Date.add unit (doseIntervals * interval) birthDate
+
+                            VaccineDTP ->
+                                Date.add Weeks 5 birthDate
+                                    |> Date.add unit (doseIntervals * interval)
+
+                            VaccinePCV13 ->
+                                Date.add Weeks 5 birthDate
+                                    |> Date.add unit (doseIntervals * interval)
+
+                            VaccineRotarix ->
+                                Date.add Weeks 5 birthDate
+                                    |> Date.add unit (doseIntervals * interval)
+
+                            VaccineIPV ->
+                                Date.add Weeks 13 birthDate
+                                    |> Date.add unit (doseIntervals * interval)
+
+                            VaccineMR ->
+                                Date.add Weeks 35 birthDate
+                                    |> Date.add unit (doseIntervals * interval)
+
+                            VaccineHPV ->
+                                Date.add Years 12 birthDate
+                                    |> Date.add Weeks -1
+                                    |> Date.add unit (doseIntervals * interval)
+
+                    genderCondition =
+                        if vaccineType == VaccineHPV then
+                            person.gender == Female
+
+                        else
+                            True
                 in
-                case vaccineType of
-                    VaccineBCG ->
-                        True
-
-                    VaccineOPV ->
-                        True
-
-                    VaccineDTP ->
-                        ageWeeks >= 5
-
-                    VaccinePCV13 ->
-                        ageWeeks >= 5
-
-                    VaccineRotarix ->
-                        ageWeeks >= 5
-
-                    VaccineIPV ->
-                        ageWeeks >= 13
-
-                    VaccineMR ->
-                        ageWeeks >= 35
-
-                    VaccineHPV ->
-                        ageForHPV >= 12 && person.gender == Female
+                (compared == LT || compared == EQ) && genderCondition
             )
         |> Maybe.withDefault False
 
