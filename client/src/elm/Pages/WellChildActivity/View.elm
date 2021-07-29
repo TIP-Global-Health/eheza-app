@@ -794,7 +794,6 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
             Dict.toList allVaccinesWithDoses
                 |> List.partition isVaccineCompleted
 
-        -- allVaccinesWithDoses : Dict VaccineType (List VaccineDose)
         vaccinesForView =
             List.map
                 (\( vaccineType, doses ) ->
@@ -842,7 +841,8 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 |> Maybe.withDefault []
 
         wasDoseProcessed ( vaccineType, dose ) =
-            isJust <| wasDoseCompleted ( vaccineType, dose )
+            wasDoseCompleted ( vaccineType, dose )
+                |> Maybe.withDefault False
 
         wasDoseCompleted ( vaccineType, dose ) =
             wasVaccineGiven vaccineType dose
