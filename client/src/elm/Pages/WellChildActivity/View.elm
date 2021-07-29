@@ -854,7 +854,19 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
 
         wasVaccineGiven vaccineType dose =
             Dict.get vaccineType form.administeredVaccines
-                |> Maybe.andThen (Dict.get dose >> Maybe.withDefault Nothing)
+                |> Maybe.andThen (Dict.get dose)
+                |> Maybe.withDefault
+                    (if wasVaccineSuggested vaccineType dose then
+                        Just False
+
+                     else
+                        Nothing
+                    )
+
+        wasVaccineSuggested vaccineType dose =
+            Dict.get vaccineType form.suggestedVaccines
+                |> Maybe.map (EverySet.member dose)
+                |> Maybe.withDefault False
 
         wasDateSet vaccineType dose =
             Dict.get vaccineType form.vaccinationDates
@@ -904,13 +916,11 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                 else
                                     always NoOp
 
-                            administeredVaccineValue =
-                                Dict.get type_ form.administeredVaccines
-                                    |> Maybe.andThen (Dict.get dose)
-                                    |> Maybe.withDefault Nothing
+                            vaccineGiven =
+                                wasVaccineGiven type_ dose
 
                             ( derrivedInput, derrivedTask ) =
-                                if administeredVaccineValue == Just True then
+                                if vaccineGiven == Just True then
                                     let
                                         selectorState =
                                             Dict.get ( type_, dose ) form.dateSelectorsState
@@ -950,13 +960,13 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                         ( [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False False
                           , viewBoolInput
                                 language
-                                administeredVaccineValue
+                                vaccineGiven
                                 setBoolInputAction
                                 ""
                                 Nothing
                           ]
                             ++ derrivedInput
-                        , { boolTask = administeredVaccineValue
+                        , { boolTask = vaccineGiven
                           , dateTask = derrivedTask
                           }
                         )
