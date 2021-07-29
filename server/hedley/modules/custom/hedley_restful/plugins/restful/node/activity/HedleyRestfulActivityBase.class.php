@@ -37,6 +37,7 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
    * @var array
    */
   protected $multiDateFields = [];
+  
   /**
    * {@inheritdoc}
    */

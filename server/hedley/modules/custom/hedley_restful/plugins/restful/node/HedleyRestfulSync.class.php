@@ -478,7 +478,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             $data[$key] = strtotime($value);
           }
           elseif (in_array($key, $multiDateFields) && !empty($value)) {
-            foreach($value as $date) {
+            foreach ($value as $date) {
               // Restful wants date values as timestamps.
               $data[$key][] = strtotime($date);
             }
