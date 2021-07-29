@@ -779,10 +779,60 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
     ]
 
 
+
+-- type alias VaccinationHistoryForm =
+--     { administeredVaccines : Dict VaccineType (EverySet VaccineDose)
+--     , administeredVaccinesDirty : Bool
+--     , vaccinationDates : Dict VaccineType (EverySet NominalDate)
+--     , vaccinationDatesDirty : Bool
+--     , dateSelectorsState : Dict ( VaccineType, VaccineDose ) Bool
+--     }
+
+
 viewVaccinationHistoryForm : Language -> NominalDate -> Bool -> AssembledData -> VaccinationHistoryForm -> List (Html Msg)
 viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHistoryForm =
-    --@todo
-    []
+    let
+        ( tasksCompleted, totalTasks ) =
+            ( 0, 1 )
+
+        form =
+            assembled.measurements.vaccinationHistory
+                |> Maybe.map (Tuple.second >> .value)
+                |> vaccinationHistoryFormWithDefault vaccinationHistoryForm
+
+        inputs =
+            allVaccinesWithDoses
+                |> Dict.map
+                    (\type_ doses ->
+                        List.map
+                            (\dose ->
+                                [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False
+                                , viewBoolInput
+                                    language
+                                    (Dict.get type_ form.administeredVaccines
+                                        |> Maybe.map (\dosesGiven -> EverySet.member dose dosesGiven)
+                                    )
+                                    (SetVaccinationHistoryBoolInput type_ dose)
+                                    ""
+                                    Nothing
+                                ]
+                            )
+                            doses
+                            |> List.concat
+                    )
+                |> Dict.values
+                |> List.concat
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form vaccination-history" ]
+                inputs
+            ]
+
+        -- , viewAction language (SaveImmunisation assembled.participant.person (Dict.fromList suggestedVaccines) assembled.measurements.immunisation) disabled
+        ]
+    ]
 
 
 viewImmunisationForm : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> List (Html Msg)

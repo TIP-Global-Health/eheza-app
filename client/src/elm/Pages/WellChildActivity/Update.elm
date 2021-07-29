@@ -8,6 +8,7 @@ import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildEncounter.Model
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -645,6 +646,124 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetVaccinationHistoryBoolInput type_ dose vaccineGiven ->
+            let
+                form =
+                    resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
+
+                administeredVaccines =
+                    if vaccineGiven then
+                        Dict.get type_ form.administeredVaccines
+                            |> Maybe.map
+                                (\doses ->
+                                    Dict.insert type_ (EverySet.insert dose doses) form.administeredVaccines
+                                )
+                            |> Maybe.withDefault (Dict.insert type_ (EverySet.singleton dose) form.administeredVaccines)
+
+                    else
+                        Dict.get type_ form.administeredVaccines
+                            |> Maybe.map
+                                (\doses ->
+                                    Dict.insert type_ (EverySet.remove dose doses) form.administeredVaccines
+                                )
+                            |> Maybe.withDefault form.administeredVaccines
+
+                vaccinationDates =
+                    if vaccineGiven then
+                        form.vaccinationDates
+
+                    else
+                        Dict.get type_ form.vaccinationDates
+                            |> Maybe.andThen
+                                (\dates ->
+                                    let
+                                        dateToRemove =
+                                            EverySet.toList dates
+                                                |> List.sortWith Date.compare
+                                                |> List.reverse
+                                                |> List.head
+                                    in
+                                    Maybe.map
+                                        (\toRemove ->
+                                            Dict.insert type_ (EverySet.remove toRemove dates) form.vaccinationDates
+                                        )
+                                        dateToRemove
+                                )
+                            |> Maybe.withDefault form.vaccinationDates
+
+                updatedForm =
+                    { form | administeredVaccines = administeredVaccines, administeredVaccinesDirty = True, vaccinationDates = vaccinationDates }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationHistoryDateInput type_ date ->
+            let
+                form =
+                    resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
+
+                vaccinationDates =
+                    Dict.get type_ form.vaccinationDates
+                        |> Maybe.map
+                            (\dates ->
+                                Dict.insert type_ (EverySet.insert date dates) form.vaccinationDates
+                            )
+                        |> Maybe.withDefault (Dict.insert type_ (EverySet.singleton date) form.vaccinationDates)
+
+                updatedForm =
+                    { form | vaccinationDates = vaccinationDates, vaccinationDatesDirty = True }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        ToggleVaccinationHistoryDateSelectorInput type_ dose ->
+            let
+                form =
+                    model.vaccinationHistoryForm
+
+                dateSelectorsState =
+                    Dict.get ( type_, dose ) form.dateSelectorsState
+                        |> Maybe.map (always (Dict.insert ( type_, dose ) False form.dateSelectorsState))
+                        |> Maybe.withDefault (Dict.insert ( type_, dose ) True form.dateSelectorsState)
+
+                updatedForm =
+                    { form | dateSelectorsState = dateSelectorsState }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveVaccinationHistory personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.vaccinationHistoryForm
+                        |> toVaccinationHistoryValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveVaccinationHistory personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
 
         SetImmunisationBoolInput formUpdateFunc value ->
             let

@@ -720,7 +720,8 @@ latestVaccinationDataForVaccine measurementsData vaccineType =
                     )
         )
         measurementsData
-        |> List.sortBy (Tuple.second >> vaccineDoseForSortDesc)
+        |> List.sortBy (Tuple.second >> vaccineDoseToComparable)
+        |> List.reverse
         |> List.head
 
 
@@ -780,22 +781,6 @@ getVaccinationDateFromImmunisationValue vaccineType =
 
         VaccineHPV ->
             .hpvVaccinationDate
-
-
-vaccineDoseForSortDesc : VaccineDose -> Int
-vaccineDoseForSortDesc dose =
-    case dose of
-        VaccineDoseFirst ->
-            4
-
-        VaccineDoseSecond ->
-            3
-
-        VaccineDoseThird ->
-            2
-
-        VaccineDoseFourth ->
-            1
 
 
 getNextVaccineDose : VaccineDose -> Maybe VaccineDose
@@ -870,6 +855,33 @@ getLastDoseForVaccine vaccineType =
             VaccineDoseSecond
 
 
+allVaccinesWithDoses : Dict VaccineType (List VaccineDose)
+allVaccinesWithDoses =
+    allVaccineTypes False
+        |> List.map
+            (\type_ ->
+                ( type_, getAllDosesForVaccine type_ )
+            )
+        |> Dict.fromList
+
+
+getAllDosesForVaccine : VaccineType -> List VaccineDose
+getAllDosesForVaccine vaccineType =
+    let
+        lastDose =
+            getLastDoseForVaccine vaccineType
+    in
+    List.filterMap
+        (\dose ->
+            if vaccineDoseToComparable dose <= vaccineDoseToComparable lastDose then
+                Just dose
+
+            else
+                Nothing
+        )
+        allVaccineDoses
+
+
 allVaccineTypes : Bool -> List VaccineType
 allVaccineTypes isChw =
     if isChw then
@@ -885,6 +897,27 @@ allVaccineTypes isChw =
         , VaccineMR
         , VaccineHPV
         ]
+
+
+allVaccineDoses : List VaccineDose
+allVaccineDoses =
+    [ VaccineDoseFirst, VaccineDoseSecond, VaccineDoseThird, VaccineDoseFourth ]
+
+
+vaccineDoseToComparable : VaccineDose -> Int
+vaccineDoseToComparable dose =
+    case dose of
+        VaccineDoseFirst ->
+            1
+
+        VaccineDoseSecond ->
+            2
+
+        VaccineDoseThird ->
+            3
+
+        VaccineDoseFourth ->
+            4
 
 
 fromImmunisationValue : Maybe ImmunisationValue -> ImmunisationForm

@@ -46,6 +46,11 @@ type Msg
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssessmentTask)
     | SetWeight String
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
+      -- VACCINATION HISTORY
+    | SetVaccinationHistoryBoolInput VaccineType VaccineDose Bool
+    | SetVaccinationHistoryDateInput VaccineType Date
+    | ToggleVaccinationHistoryDateSelectorInput VaccineType VaccineDose
+    | SaveVaccinationHistory PersonId (Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory ))
       -- IMMUNISATION
     | SetImmunisationBoolInput (Bool -> ImmunisationForm -> ImmunisationForm) Bool
     | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
