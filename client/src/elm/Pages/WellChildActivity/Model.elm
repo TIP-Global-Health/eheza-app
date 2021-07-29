@@ -222,16 +222,20 @@ allNutritionAssessmentTasks =
 
 
 type alias VaccinationHistoryForm =
-    { vaccinationsAdministered : Dict VaccineType (EverySet VaccineDose)
+    { administeredVaccines : Dict VaccineType (EverySet VaccineDose)
+    , administeredVaccinesDirty : Bool
     , vaccinationDates : Dict VaccineType (EverySet NominalDate)
-    , dateSelectorsState : Dict VaccineType (EverySet VaccineDose)
+    , vaccinationDatesDirty : Bool
+    , dateSelectorsState : Dict ( VaccineType, VaccineDose ) Bool
     }
 
 
 emptyVaccinationHistoryForm : VaccinationHistoryForm
 emptyVaccinationHistoryForm =
-    { vaccinationsAdministered = Dict.empty
+    { administeredVaccines = Dict.empty
+    , administeredVaccinesDirty = False
     , vaccinationDates = Dict.empty
+    , vaccinationDatesDirty = False
     , dateSelectorsState = Dict.empty
     }
 

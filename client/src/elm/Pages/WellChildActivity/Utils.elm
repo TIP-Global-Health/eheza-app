@@ -1894,6 +1894,112 @@ toNextVisitValue form =
             form.pediatricVisitDate
 
 
+fromVaccinationHistoryValue : Maybe VaccinationHistoryValue -> VaccinationHistoryForm
+fromVaccinationHistoryValue saved =
+    let
+        administeredVaccines =
+            Maybe.map .administeredVaccines saved
+                |> Maybe.withDefault Dict.empty
+    in
+    { administeredVaccines = administeredVaccines
+    , administeredVaccinesDirty = False
+    , vaccinationDates = generateVaccinationDatesFromValue saved
+    , vaccinationDatesDirty = False
+    , dateSelectorsState = Dict.empty
+    }
+
+
+vaccinationHistoryFormWithDefault : VaccinationHistoryForm -> Maybe VaccinationHistoryValue -> VaccinationHistoryForm
+vaccinationHistoryFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    administeredVaccines =
+                        if form.administeredVaccinesDirty then
+                            form.administeredVaccines
+
+                        else
+                            Maybe.map .administeredVaccines saved
+                                |> Maybe.withDefault Dict.empty
+
+                    vaccinationDates =
+                        if form.vaccinationDatesDirty then
+                            form.vaccinationDates
+
+                        else
+                            generateVaccinationDatesFromValue saved
+                in
+                { administeredVaccines = administeredVaccines
+                , administeredVaccinesDirty = form.administeredVaccinesDirty
+                , vaccinationDates = vaccinationDates
+                , vaccinationDatesDirty = form.vaccinationDatesDirty
+                , dateSelectorsState = form.dateSelectorsState
+                }
+            )
+
+
+generateVaccinationDatesFromValue : Maybe VaccinationHistoryValue -> Dict VaccineType (EverySet NominalDate)
+generateVaccinationDatesFromValue saved =
+    let
+        getVaccinationDateForVaccine getTypeFunc =
+            Maybe.map getTypeFunc saved
+
+        allVaccinesData =
+            [ ( VaccineBCG, .bcgVaccinationDate )
+            , ( VaccineOPV, .opvVaccinationDate )
+            , ( VaccineDTP, .dtpVaccinationDate )
+            , ( VaccinePCV13, .pcv13VaccinationDate )
+            , ( VaccineRotarix, .rotarixVaccinationDate )
+            , ( VaccineIPV, .ipvVaccinationDate )
+            , ( VaccineMR, .mrVaccinationDate )
+            , ( VaccineHPV, .hpvVaccinationDate )
+            ]
+    in
+    List.filterMap
+        (\( type_, getDateFunc ) ->
+            getVaccinationDateForVaccine getDateFunc
+                |> Maybe.map
+                    (\set ->
+                        if EverySet.isEmpty set then
+                            Nothing
+
+                        else
+                            Just ( type_, set )
+                    )
+        )
+        allVaccinesData
+        |> Maybe.Extra.values
+        |> Dict.fromList
+
+
+toVaccinationHistoryValueWithDefault : Maybe VaccinationHistoryValue -> VaccinationHistoryForm -> Maybe VaccinationHistoryValue
+toVaccinationHistoryValueWithDefault saved form =
+    vaccinationHistoryFormWithDefault form saved
+        |> toVaccinationHistoryValue
+
+
+toVaccinationHistoryValue : VaccinationHistoryForm -> Maybe VaccinationHistoryValue
+toVaccinationHistoryValue form =
+    let
+        getVaccinationDatesForVaccine type_ =
+            Dict.get type_ form.vaccinationDates
+                |> Maybe.withDefault EverySet.empty
+    in
+    Just <|
+        { administeredVaccines = form.administeredVaccines
+        , bcgVaccinationDate = getVaccinationDatesForVaccine VaccineBCG
+        , opvVaccinationDate = getVaccinationDatesForVaccine VaccineOPV
+        , dtpVaccinationDate = getVaccinationDatesForVaccine VaccineDTP
+        , pcv13VaccinationDate = getVaccinationDatesForVaccine VaccinePCV13
+        , rotarixVaccinationDate = getVaccinationDatesForVaccine VaccineRotarix
+        , ipvVaccinationDate = getVaccinationDatesForVaccine VaccineIPV
+        , mrVaccinationDate = getVaccinationDatesForVaccine VaccineMR
+        , hpvVaccinationDate = getVaccinationDatesForVaccine VaccineHPV
+        }
+
+
 
 -- HELPER FUNCTIONS
 
