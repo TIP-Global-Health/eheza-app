@@ -1979,7 +1979,7 @@ generateAdministeredVaccinesFromValue saved =
         |> Maybe.withDefault Dict.empty
 
 
-generateVaccinationDatesFromValue : Maybe VaccinationHistoryValue -> Dict VaccineType (EverySet NominalDate)
+generateVaccinationDatesFromValue : Maybe VaccinationHistoryValue -> Dict VaccineType (Dict VaccineDose (Maybe NominalDate))
 generateVaccinationDatesFromValue saved =
     let
         getVaccinationDateForVaccine getTypeFunc =
@@ -1995,22 +1995,40 @@ generateVaccinationDatesFromValue saved =
             , ( VaccineMR, .mrVaccinationDate )
             , ( VaccineHPV, .hpvVaccinationDate )
             ]
-    in
-    List.filterMap
-        (\( type_, getDateFunc ) ->
-            getVaccinationDateForVaccine getDateFunc
-                |> Maybe.map
-                    (\set ->
-                        if EverySet.isEmpty set then
-                            Nothing
 
-                        else
-                            Just ( type_, set )
-                    )
+        administeredVaccines =
+            Maybe.map .administeredVaccines saved
+                |> Maybe.withDefault Dict.empty
+
+        datesDict =
+            List.filterMap
+                (\( type_, getDateFunc ) ->
+                    getVaccinationDateForVaccine getDateFunc
+                        |> Maybe.map
+                            (\set ->
+                                if EverySet.isEmpty set then
+                                    Nothing
+
+                                else
+                                    Just ( type_, EverySet.toList set |> List.map Just )
+                            )
+                )
+                allVaccinesData
+                |> Maybe.Extra.values
+                |> Dict.fromList
+    in
+    Dict.map
+        (\type_ dates ->
+            let
+                doses =
+                    Dict.get type_ administeredVaccines
+                        |> Maybe.map EverySet.toList
+                        |> Maybe.withDefault []
+            in
+            List.Extra.zip doses dates
+                |> Dict.fromList
         )
-        allVaccinesData
-        |> Maybe.Extra.values
-        |> Dict.fromList
+        datesDict
 
 
 toVaccinationHistoryValueWithDefault : Maybe VaccinationHistoryValue -> VaccinationHistoryForm -> Maybe VaccinationHistoryValue
@@ -2040,6 +2058,11 @@ toVaccinationHistoryValue form =
 
         getVaccinationDatesForVaccine type_ =
             Dict.get type_ form.vaccinationDates
+                |> Maybe.map
+                    (Dict.values
+                        >> List.filterMap identity
+                        >> EverySet.fromList
+                    )
                 |> Maybe.withDefault EverySet.empty
     in
     Just <|

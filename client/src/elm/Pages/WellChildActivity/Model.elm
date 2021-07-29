@@ -48,7 +48,7 @@ type Msg
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- VACCINATION HISTORY
     | SetVaccinationHistoryBoolInput VaccineType VaccineDose Bool
-    | SetVaccinationHistoryDateInput VaccineType Date
+    | SetVaccinationHistoryDateInput VaccineType VaccineDose Date
     | ToggleVaccinationHistoryDateSelectorInput VaccineType VaccineDose
     | SaveVaccinationHistory PersonId (Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory ))
       -- IMMUNISATION
@@ -229,7 +229,7 @@ allNutritionAssessmentTasks =
 type alias VaccinationHistoryForm =
     { administeredVaccines : Dict VaccineType (Dict VaccineDose (Maybe Bool))
     , administeredVaccinesDirty : Bool
-    , vaccinationDates : Dict VaccineType (EverySet NominalDate)
+    , vaccinationDates : Dict VaccineType (Dict VaccineDose (Maybe NominalDate))
     , vaccinationDatesDirty : Bool
     , dateSelectorsState : Dict ( VaccineType, VaccineDose ) Bool
     }
