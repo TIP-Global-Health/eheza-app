@@ -779,16 +779,6 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
     ]
 
 
-
--- type alias VaccinationHistoryForm =
---     { administeredVaccines : Dict VaccineType (EverySet VaccineDose)
---     , administeredVaccinesDirty : Bool
---     , vaccinationDates : Dict VaccineType (EverySet NominalDate)
---     , vaccinationDatesDirty : Bool
---     , dateSelectorsState : Dict ( VaccineType, VaccineDose ) Bool
---     }
-
-
 viewVaccinationHistoryForm : Language -> NominalDate -> Bool -> AssembledData -> VaccinationHistoryForm -> List (Html Msg)
 viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHistoryForm =
     let
@@ -806,22 +796,59 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                     (\type_ doses ->
                         List.map
                             (\dose ->
+                                let
+                                    administeredVaccineValue =
+                                        Dict.get type_ form.administeredVaccines
+                                            |> Maybe.andThen (Dict.get dose)
+                                            |> Maybe.withDefault Nothing
+
+                                    derrivedInputs =
+                                        if administeredVaccineValue == Just True then
+                                            let
+                                                selectorState =
+                                                    Dict.get ( type_, dose ) form.dateSelectorsState
+                                                        |> Maybe.withDefault False
+
+                                                vaccinationDate =
+                                                    Dict.get type_ form.vaccinationDates
+                                                        |> Maybe.andThen
+                                                            (EverySet.toList
+                                                                >> List.sortWith Date.compare
+                                                                >> List.reverse
+                                                                >> List.head
+                                                            )
+                                            in
+                                            [ viewLabel language Translate.SelectDate
+                                            , DateSelector.SelectorDropdown.view
+                                                (ToggleVaccinationHistoryDateSelectorInput type_ dose)
+                                                (SetVaccinationHistoryDateInput type_)
+                                                selectorState
+                                                (Date.add Months -6 currentDate)
+                                                (Date.add Days -1 currentDate)
+                                                vaccinationDate
+                                            ]
+
+                                        else
+                                            []
+                                in
                                 [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False
                                 , viewBoolInput
                                     language
-                                    (Dict.get type_ form.administeredVaccines
-                                        |> Maybe.map (\dosesGiven -> EverySet.member dose dosesGiven)
-                                    )
+                                    administeredVaccineValue
                                     (SetVaccinationHistoryBoolInput type_ dose)
                                     ""
                                     Nothing
                                 ]
+                                    ++ derrivedInputs
                             )
                             doses
                             |> List.concat
                     )
                 |> Dict.values
                 |> List.concat
+
+        disabled =
+            tasksCompleted /= totalTasks
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -829,8 +856,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
             [ div [ class "ui form vaccination-history" ]
                 inputs
             ]
-
-        -- , viewAction language (SaveImmunisation assembled.participant.person (Dict.fromList suggestedVaccines) assembled.measurements.immunisation) disabled
+        , viewAction language (SaveVaccinationHistory assembled.participant.person assembled.measurements.vaccinationHistory) disabled
         ]
     ]
 

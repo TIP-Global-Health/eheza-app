@@ -227,7 +227,7 @@ allNutritionAssessmentTasks =
 
 
 type alias VaccinationHistoryForm =
-    { administeredVaccines : Dict VaccineType (EverySet VaccineDose)
+    { administeredVaccines : Dict VaccineType (Dict VaccineDose (Maybe Bool))
     , administeredVaccinesDirty : Bool
     , vaccinationDates : Dict VaccineType (EverySet NominalDate)
     , vaccinationDatesDirty : Bool

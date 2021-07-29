@@ -1929,12 +1929,7 @@ toNextVisitValue form =
 
 fromVaccinationHistoryValue : Maybe VaccinationHistoryValue -> VaccinationHistoryForm
 fromVaccinationHistoryValue saved =
-    let
-        administeredVaccines =
-            Maybe.map .administeredVaccines saved
-                |> Maybe.withDefault Dict.empty
-    in
-    { administeredVaccines = administeredVaccines
+    { administeredVaccines = generateAdministeredVaccinesFromValue saved
     , administeredVaccinesDirty = False
     , vaccinationDates = generateVaccinationDatesFromValue saved
     , vaccinationDatesDirty = False
@@ -1954,8 +1949,7 @@ vaccinationHistoryFormWithDefault form saved =
                             form.administeredVaccines
 
                         else
-                            Maybe.map .administeredVaccines saved
-                                |> Maybe.withDefault Dict.empty
+                            generateAdministeredVaccinesFromValue saved
 
                     vaccinationDates =
                         if form.vaccinationDatesDirty then
@@ -1971,6 +1965,18 @@ vaccinationHistoryFormWithDefault form saved =
                 , dateSelectorsState = form.dateSelectorsState
                 }
             )
+
+
+generateAdministeredVaccinesFromValue : Maybe VaccinationHistoryValue -> Dict VaccineType (Dict VaccineDose (Maybe Bool))
+generateAdministeredVaccinesFromValue saved =
+    let
+        everySetToDict key set =
+            EverySet.toList set
+                |> List.map (\dose -> ( dose, Just True ))
+                |> Dict.fromList
+    in
+    Maybe.map (.administeredVaccines >> Dict.map everySetToDict) saved
+        |> Maybe.withDefault Dict.empty
 
 
 generateVaccinationDatesFromValue : Maybe VaccinationHistoryValue -> Dict VaccineType (EverySet NominalDate)
@@ -2016,12 +2022,28 @@ toVaccinationHistoryValueWithDefault saved form =
 toVaccinationHistoryValue : VaccinationHistoryForm -> Maybe VaccinationHistoryValue
 toVaccinationHistoryValue form =
     let
+        administeredVaccines =
+            Dict.map
+                (\type_ doses ->
+                    Dict.toList doses
+                        |> List.filterMap
+                            (\( dose, maybeGiven ) ->
+                                if maybeGiven == Just True then
+                                    Just dose
+
+                                else
+                                    Nothing
+                            )
+                        |> EverySet.fromList
+                )
+                form.administeredVaccines
+
         getVaccinationDatesForVaccine type_ =
             Dict.get type_ form.vaccinationDates
                 |> Maybe.withDefault EverySet.empty
     in
     Just <|
-        { administeredVaccines = form.administeredVaccines
+        { administeredVaccines = administeredVaccines
         , bcgVaccinationDate = getVaccinationDatesForVaccine VaccineBCG
         , opvVaccinationDate = getVaccinationDatesForVaccine VaccineOPV
         , dtpVaccinationDate = getVaccinationDatesForVaccine VaccineDTP

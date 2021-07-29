@@ -653,25 +653,16 @@ update currentDate id db msg model =
                     resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
 
                 administeredVaccines =
-                    if vaccineGiven then
-                        Dict.get type_ form.administeredVaccines
-                            |> Maybe.map
-                                (\doses ->
-                                    Dict.insert type_ (EverySet.insert dose doses) form.administeredVaccines
-                                )
-                            |> Maybe.withDefault (Dict.insert type_ (EverySet.singleton dose) form.administeredVaccines)
+                    Dict.get type_ form.administeredVaccines
+                        |> Maybe.map
+                            (\doses ->
+                                Dict.insert type_ (Dict.insert dose (Just vaccineGiven) doses) form.administeredVaccines
+                            )
+                        |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just vaccineGiven)) form.administeredVaccines)
 
-                    else
-                        Dict.get type_ form.administeredVaccines
-                            |> Maybe.map
-                                (\doses ->
-                                    Dict.insert type_ (EverySet.remove dose doses) form.administeredVaccines
-                                )
-                            |> Maybe.withDefault form.administeredVaccines
-
-                vaccinationDates =
+                ( vaccinationDates, vaccinationDatesDirty ) =
                     if vaccineGiven then
-                        form.vaccinationDates
+                        ( form.vaccinationDates, form.vaccinationDatesDirty )
 
                     else
                         Dict.get type_ form.vaccinationDates
@@ -686,14 +677,19 @@ update currentDate id db msg model =
                                     in
                                     Maybe.map
                                         (\toRemove ->
-                                            Dict.insert type_ (EverySet.remove toRemove dates) form.vaccinationDates
+                                            ( Dict.insert type_ (EverySet.remove toRemove dates) form.vaccinationDates, True )
                                         )
                                         dateToRemove
                                 )
-                            |> Maybe.withDefault form.vaccinationDates
+                            |> Maybe.withDefault ( form.vaccinationDates, form.vaccinationDatesDirty )
 
                 updatedForm =
-                    { form | administeredVaccines = administeredVaccines, administeredVaccinesDirty = True, vaccinationDates = vaccinationDates }
+                    { form
+                        | administeredVaccines = administeredVaccines
+                        , administeredVaccinesDirty = True
+                        , vaccinationDates = vaccinationDates
+                        , vaccinationDatesDirty = vaccinationDatesDirty
+                    }
             in
             ( { model | vaccinationHistoryForm = updatedForm }
             , Cmd.none
