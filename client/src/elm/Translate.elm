@@ -983,7 +983,7 @@ type TranslationId
     | UpdateError
     | Uploading
     | UterineMyoma
-    | VaccineDoseGivenQuestion VaccineType VaccineDose Bool
+    | VaccineDoseGivenQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
     | Version
@@ -7804,7 +7804,7 @@ translationSet trans =
             , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
             }
 
-        VaccineDoseGivenQuestion vaccineType dose isChw ->
+        VaccineDoseGivenQuestion vaccineType dose isChw todaySuffix ->
             let
                 doseNumber =
                     case dose of
@@ -7819,6 +7819,13 @@ translationSet trans =
 
                         VaccineDoseFourth ->
                             "4"
+
+                suffix =
+                    if todaySuffix then
+                        " today"
+
+                    else
+                        ""
             in
             case vaccineType of
                 VaccineBCG ->
@@ -7828,7 +7835,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) - Dose " ++ doseNumber ++ " of 1 today"
+                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) - Dose " ++ doseNumber ++ " of 1" ++ suffix
                         , kinyarwanda = Nothing
                         }
 
@@ -7839,37 +7846,37 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Did the child receive the Oral Polio Vaccine (OPV) - Dose " ++ doseNumber ++ " of 4 today"
+                        { english = "Did the child receive the Oral Polio Vaccine (OPV) - Dose " ++ doseNumber ++ " of 4" ++ suffix
                         , kinyarwanda = Nothing
                         }
 
                 VaccineDTP ->
-                    { english = "Did the child receive the DTP - HepB - Hib Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    { english = "Did the child receive the DTP - HepB - Hib Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccinePCV13 ->
-                    { english = "Did the child receive the Pneumoccocal Vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3 today"
+                    { english = "Did the child receive the Pneumoccocal Vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineRotarix ->
-                    { english = "Did the child receive the Rotavirus (Rotarix) Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    { english = "Did the child receive the Rotavirus (Rotarix) Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineIPV ->
-                    { english = "Did the child receive the  Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1 today"
+                    { english = "Did the child receive the  Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineMR ->
-                    { english = "Did the child receive the Measles - Rubella Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    { english = "Did the child receive the Measles - Rubella Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineHPV ->
-                    { english = "Did the child receive the HPV Vaccine - Dose " ++ doseNumber ++ " of 2 today"
+                    { english = "Did the child receive the HPV Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 

@@ -870,11 +870,43 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 ++ dosesCompleted
                 ++ doseToProcess
 
+        totalItemsforView =
+            List.length forView
+
+        itemsForView =
+            List.indexedMap
+                (\index ( type_, dose ) ->
+                    { type_ = type_
+                    , dose = dose
+
+                    -- Only last 2 questions will have active inputs
+                    , active = index + 2 >= totalItemsforView
+                    }
+                )
+                forView
+
+        birthDate =
+            assembled.person.birthDate
+                |> Maybe.withDefault (Date.add Months -6 currentDate)
+
         inputs =
-            forView
+            itemsForView
                 |> List.map
-                    (\( type_, dose ) ->
+                    (\item ->
                         let
+                            type_ =
+                                item.type_
+
+                            dose =
+                                item.dose
+
+                            setBoolInputAction =
+                                if item.active then
+                                    SetVaccinationHistoryBoolInput type_ dose
+
+                                else
+                                    always NoOp
+
                             administeredVaccineValue =
                                 Dict.get type_ form.administeredVaccines
                                     |> Maybe.andThen (Dict.get dose)
@@ -891,14 +923,23 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                             Dict.get type_ form.vaccinationDates
                                                 |> Maybe.andThen (Dict.get dose)
                                                 |> Maybe.withDefault Nothing
+
+                                        ( setDateAction, toggleAction ) =
+                                            if item.active then
+                                                ( SetVaccinationHistoryDateInput type_ dose
+                                                , ToggleVaccinationHistoryDateSelectorInput type_ dose
+                                                )
+
+                                            else
+                                                ( always NoOp, NoOp )
                                     in
                                     [ div [ class "form-input date previous" ]
                                         [ viewLabel language Translate.SelectDate
                                         , DateSelector.SelectorDropdown.view
-                                            (ToggleVaccinationHistoryDateSelectorInput type_ dose)
-                                            (SetVaccinationHistoryDateInput type_ dose)
+                                            toggleAction
+                                            setDateAction
                                             selectorState
-                                            (Date.add Months -6 currentDate)
+                                            birthDate
                                             (Date.add Days -1 currentDate)
                                             vaccinationDate
                                         ]
@@ -907,11 +948,11 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                 else
                                     []
                         in
-                        [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False
+                        [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False False
                         , viewBoolInput
                             language
                             administeredVaccineValue
-                            (SetVaccinationHistoryBoolInput type_ dose)
+                            setBoolInputAction
                             ""
                             Nothing
                         ]
@@ -1015,7 +1056,7 @@ inputsAndTasksForSuggestedVaccine : Language -> NominalDate -> Bool -> Assembled
 inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( vaccineType, vaccineDose ) =
     let
         ( vaccinationGivenInput, vaccinationGivenTask ) =
-            ( [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion vaccineType vaccineDose isChw
+            ( [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion vaccineType vaccineDose isChw True
               , viewBoolInput
                     language
                     (config.getVaccinationGivenFunc form)
