@@ -1953,7 +1953,8 @@ toNextVisitValue form =
 
 fromVaccinationHistoryValue : Maybe VaccinationHistoryValue -> VaccinationHistoryForm
 fromVaccinationHistoryValue saved =
-    { administeredVaccines = generateAdministeredVaccinesFromValue saved
+    { suggestedVaccines = Maybe.map .suggestedVaccines saved |> Maybe.withDefault Dict.empty
+    , administeredVaccines = generateAdministeredVaccinesFromValue saved
     , administeredVaccinesDirty = False
     , vaccinationDates = generateVaccinationDatesFromValue saved
     , vaccinationDatesDirty = False
@@ -1968,6 +1969,14 @@ vaccinationHistoryFormWithDefault form saved =
             form
             (\value ->
                 let
+                    suggestedVaccines =
+                        if Dict.isEmpty form.suggestedVaccines then
+                            Maybe.map .suggestedVaccines saved
+                                |> Maybe.withDefault Dict.empty
+
+                        else
+                            form.suggestedVaccines
+
                     administeredVaccines =
                         if form.administeredVaccinesDirty then
                             form.administeredVaccines
@@ -1982,7 +1991,8 @@ vaccinationHistoryFormWithDefault form saved =
                         else
                             generateVaccinationDatesFromValue saved
                 in
-                { administeredVaccines = administeredVaccines
+                { suggestedVaccines = suggestedVaccines
+                , administeredVaccines = administeredVaccines
                 , administeredVaccinesDirty = form.administeredVaccinesDirty
                 , vaccinationDates = vaccinationDates
                 , vaccinationDatesDirty = form.vaccinationDatesDirty
@@ -2090,7 +2100,8 @@ toVaccinationHistoryValue form =
                 |> Maybe.withDefault EverySet.empty
     in
     Just <|
-        { administeredVaccines = administeredVaccines
+        { suggestedVaccines = form.suggestedVaccines
+        , administeredVaccines = administeredVaccines
         , bcgVaccinationDate = getVaccinationDatesForVaccine VaccineBCG
         , opvVaccinationDate = getVaccinationDatesForVaccine VaccineOPV
         , dtpVaccinationDate = getVaccinationDatesForVaccine VaccineDTP

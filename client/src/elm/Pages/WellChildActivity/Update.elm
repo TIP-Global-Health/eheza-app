@@ -732,7 +732,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveVaccinationHistory personId saved ->
+        SaveVaccinationHistory personId suggestedVaccines saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -742,6 +742,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.vaccinationHistoryForm
+                        |> (\form -> { form | suggestedVaccines = suggestedVaccines })
                         |> toVaccinationHistoryValueWithDefault measurement
                         |> unwrap
                             []

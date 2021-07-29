@@ -862,13 +862,13 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 |> Maybe.map isJust
                 |> Maybe.withDefault False
 
-        forView =
+        suggested =
             vaccinesForView
                 ++ dosesCompleted
                 ++ doseToProcess
 
         totalItemsforView =
-            List.length forView
+            List.length suggested
 
         itemsForView =
             List.indexedMap
@@ -880,7 +880,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                     , active = index + 2 >= totalItemsforView
                     }
                 )
-                forView
+                suggested
 
         birthDate =
             assembled.person.birthDate
@@ -982,6 +982,20 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 + List.length dateTasks
             )
 
+        suggestedVaccines =
+            List.foldl
+                (\( vaccineType, dose ) accum ->
+                    let
+                        updated =
+                            Dict.get vaccineType accum
+                                |> Maybe.map (EverySet.insert dose)
+                                |> Maybe.withDefault (EverySet.singleton dose)
+                    in
+                    Dict.insert vaccineType updated accum
+                )
+                Dict.empty
+                suggested
+
         disabled =
             tasksCompleted /= totalTasks
     in
@@ -991,7 +1005,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
             [ div [ class "ui form vaccination-history" ]
                 inputs
             ]
-        , viewAction language (SaveVaccinationHistory assembled.participant.person assembled.measurements.vaccinationHistory) disabled
+        , viewAction language (SaveVaccinationHistory assembled.participant.person suggestedVaccines assembled.measurements.vaccinationHistory) disabled
         ]
     ]
 

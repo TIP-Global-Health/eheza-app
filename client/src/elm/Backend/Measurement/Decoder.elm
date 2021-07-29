@@ -3272,7 +3272,7 @@ decodeWellChildVaccinationHistory =
 decodeVaccinationHistoryValue : Decoder VaccinationHistoryValue
 decodeVaccinationHistoryValue =
     let
-        explodeAdministeredVaccines =
+        explodeVaccines =
             List.foldl
                 (\( type_, dose ) accum ->
                     let
@@ -3286,7 +3286,8 @@ decodeVaccinationHistoryValue =
                 Dict.empty
     in
     succeed VaccinationHistoryValue
-        |> required "suggested_vaccines" (map explodeAdministeredVaccines (list decodeVaccinationEntry))
+        |> required "suggested_vaccines" (map explodeVaccines (list decodeVaccinationEntry))
+        |> required "administered_vaccines" (map explodeVaccines (list decodeVaccinationEntry))
         |> required "bcg_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "opv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "dtp_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)

@@ -6312,6 +6312,44 @@ function hedley_well_child_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-well_child_vaccination_history-field_administered_vaccines'.
+  $field_instances['node-well_child_vaccination_history-field_administered_vaccines'] = array(
+    'bundle' => 'well_child_vaccination_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_administered_vaccines',
+    'label' => 'Administered Vaccines',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-well_child_vaccination_history-field_bcg_vaccination_date'.
   $field_instances['node-well_child_vaccination_history-field_bcg_vaccination_date'] = array(
     'bundle' => 'well_child_vaccination_history',
@@ -6364,7 +6402,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 9,
     ),
   );
 
@@ -6421,7 +6459,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -6478,7 +6516,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 15,
+      'weight' => 11,
     ),
   );
 
@@ -6535,7 +6573,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 25,
+      'weight' => 16,
     ),
   );
 
@@ -6592,7 +6630,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 21,
+      'weight' => 14,
     ),
   );
 
@@ -6649,7 +6687,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 23,
+      'weight' => 15,
     ),
   );
 
@@ -6693,7 +6731,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -6750,7 +6788,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 13,
+      'weight' => 10,
     ),
   );
 
@@ -6807,7 +6845,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 17,
+      'weight' => 12,
     ),
   );
 
@@ -6852,7 +6890,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -6909,7 +6947,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 19,
+      'weight' => 13,
     ),
   );
 
@@ -6954,7 +6992,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -6982,7 +7020,7 @@ function hedley_well_child_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_suggested_vaccines',
-    'label' => 'Administered Vaccines',
+    'label' => 'Suggested Vaccines',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -6992,7 +7030,7 @@ function hedley_well_child_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 9,
+      'weight' => 7,
     ),
   );
 
@@ -7077,7 +7115,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 

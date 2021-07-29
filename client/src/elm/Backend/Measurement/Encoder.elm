@@ -2830,7 +2830,7 @@ encodeWellChildVaccinationHistory =
 encodeVaccinationHistoryValue : VaccinationHistoryValue -> List ( String, Value )
 encodeVaccinationHistoryValue value =
     let
-        implodeAdministeredVaccines =
+        implodeVaccines =
             Dict.toList
                 >> List.map
                     (\( type_, set ) ->
@@ -2839,7 +2839,8 @@ encodeVaccinationHistoryValue value =
                     )
                 >> List.concat
     in
-    [ ( "suggested_vaccines", list encodeVaccinationEntry (implodeAdministeredVaccines value.administeredVaccines) )
+    [ ( "suggested_vaccines", list encodeVaccinationEntry (implodeVaccines value.suggestedVaccines) )
+    , ( "administered_vaccines", list encodeVaccinationEntry (implodeVaccines value.administeredVaccines) )
     , ( "opv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.opvVaccinationDate )
     , ( "bcg_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.bcgVaccinationDate )
     , ( "pcv13_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.pcv13VaccinationDate )

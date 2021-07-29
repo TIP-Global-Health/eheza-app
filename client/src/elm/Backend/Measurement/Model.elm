@@ -1448,7 +1448,8 @@ type alias WellChildVaccinationHistory =
 
 
 type alias VaccinationHistoryValue =
-    { administeredVaccines : Dict VaccineType (EverySet VaccineDose)
+    { suggestedVaccines : Dict VaccineType (EverySet VaccineDose)
+    , administeredVaccines : Dict VaccineType (EverySet VaccineDose)
     , bcgVaccinationDate : EverySet NominalDate
     , opvVaccinationDate : EverySet NominalDate
     , dtpVaccinationDate : EverySet NominalDate

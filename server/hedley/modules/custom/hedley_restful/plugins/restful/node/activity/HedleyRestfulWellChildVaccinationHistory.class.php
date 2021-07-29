@@ -15,6 +15,7 @@ class HedleyRestfulWellChildVaccinationHistory extends HedleyRestfulWellChildAct
    */
   protected $multiFields = [
     'field_suggested_vaccines',
+    'field_administered_vaccines',
     'field_bcg_vaccination_date',
     'field_opv_vaccination_date',
     'field_dtp_vaccination_date',
