@@ -814,14 +814,16 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                                         |> Maybe.andThen (Dict.get dose)
                                                         |> Maybe.withDefault Nothing
                                             in
-                                            [ viewLabel language Translate.SelectDate
-                                            , DateSelector.SelectorDropdown.view
-                                                (ToggleVaccinationHistoryDateSelectorInput type_ dose)
-                                                (SetVaccinationHistoryDateInput type_ dose)
-                                                selectorState
-                                                (Date.add Months -6 currentDate)
-                                                (Date.add Days -1 currentDate)
-                                                vaccinationDate
+                                            [ div [ class "form-input date previous" ]
+                                                [ viewLabel language Translate.SelectDate
+                                                , DateSelector.SelectorDropdown.view
+                                                    (ToggleVaccinationHistoryDateSelectorInput type_ dose)
+                                                    (SetVaccinationHistoryDateInput type_ dose)
+                                                    selectorState
+                                                    (Date.add Months -6 currentDate)
+                                                    (Date.add Days -1 currentDate)
+                                                    vaccinationDate
+                                                ]
                                             ]
 
                                         else
