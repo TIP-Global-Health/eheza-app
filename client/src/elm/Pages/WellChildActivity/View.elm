@@ -782,9 +782,6 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
 viewVaccinationHistoryForm : Language -> NominalDate -> Bool -> AssembledData -> VaccinationHistoryForm -> List (Html Msg)
 viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHistoryForm =
     let
-        ( tasksCompleted, totalTasks ) =
-            ( 0, 1 )
-
         form =
             assembled.measurements.vaccinationHistory
                 |> Maybe.map (Tuple.second >> .value)
@@ -889,7 +886,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
             assembled.person.birthDate
                 |> Maybe.withDefault (Date.add Months -6 currentDate)
 
-        inputs =
+        inputsAndTasks =
             itemsForView
                 |> List.map
                     (\item ->
@@ -912,7 +909,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                     |> Maybe.andThen (Dict.get dose)
                                     |> Maybe.withDefault Nothing
 
-                            derrivedInputs =
+                            ( derrivedInput, derrivedTask ) =
                                 if administeredVaccineValue == Just True then
                                     let
                                         selectorState =
@@ -933,32 +930,57 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                             else
                                                 ( always NoOp, NoOp )
                                     in
-                                    [ div [ class "form-input date previous" ]
-                                        [ viewLabel language Translate.SelectDate
-                                        , DateSelector.SelectorDropdown.view
-                                            toggleAction
-                                            setDateAction
-                                            selectorState
-                                            birthDate
-                                            (Date.add Days -1 currentDate)
-                                            vaccinationDate
-                                        ]
-                                    ]
+                                    ( [ div [ class "form-input date previous" ]
+                                            [ viewLabel language Translate.SelectDate
+                                            , DateSelector.SelectorDropdown.view
+                                                toggleAction
+                                                setDateAction
+                                                selectorState
+                                                birthDate
+                                                (Date.add Days -1 currentDate)
+                                                vaccinationDate
+                                            ]
+                                      ]
+                                    , Just vaccinationDate
+                                    )
 
                                 else
-                                    []
+                                    ( [], Nothing )
                         in
-                        [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False False
-                        , viewBoolInput
-                            language
-                            administeredVaccineValue
-                            setBoolInputAction
-                            ""
-                            Nothing
-                        ]
-                            ++ derrivedInputs
+                        ( [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False False
+                          , viewBoolInput
+                                language
+                                administeredVaccineValue
+                                setBoolInputAction
+                                ""
+                                Nothing
+                          ]
+                            ++ derrivedInput
+                        , { boolTask = administeredVaccineValue
+                          , dateTask = derrivedTask
+                          }
+                        )
                     )
+
+        inputs =
+            List.map Tuple.first inputsAndTasks
                 |> List.concat
+
+        tasks =
+            List.map Tuple.second inputsAndTasks
+
+        boolTasks =
+            List.map .boolTask tasks
+
+        dateTasks =
+            List.filterMap .dateTask tasks
+
+        ( tasksCompleted, totalTasks ) =
+            ( (List.map taskCompleted boolTasks |> List.sum)
+                + (List.map taskCompleted dateTasks |> List.sum)
+            , List.length boolTasks
+                + List.length dateTasks
+            )
 
         disabled =
             tasksCompleted /= totalTasks
@@ -994,15 +1016,15 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
         suggestedVaccines =
             generateSuggestedVaccines currentDate isChw assembled
 
-        inputsAndtasks =
+        inputsAndTasks =
             List.map (inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form) suggestedVaccines
 
         inputs =
-            List.map Tuple.first inputsAndtasks
+            List.map Tuple.first inputsAndTasks
                 |> List.concat
 
         tasks =
-            List.map Tuple.second inputsAndtasks
+            List.map Tuple.second inputsAndTasks
 
         vaccinationGivenTasks =
             List.map .vaccinationGivenTask tasks
