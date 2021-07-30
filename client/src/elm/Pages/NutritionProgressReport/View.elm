@@ -4,6 +4,7 @@ import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), NutritionHeight, NutritionWeight, WeightInKg(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
@@ -92,7 +93,7 @@ viewContent language currentDate zscores db data =
         -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
         currentNutritionSigns =
             data.measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> Maybe.withDefault EverySet.empty
 
         defaultLastAssessmentDate =

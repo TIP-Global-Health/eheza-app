@@ -6,6 +6,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildEncounter.Model
 import Date
@@ -44,7 +45,7 @@ update currentDate id db msg model =
                 |> RemoteData.toMaybe
                 |> Maybe.map
                     (getMeasurementFunc
-                        >> Maybe.map (Tuple.second >> .value)
+                        >> getMeasurementValueFunc
                         >> formWithDefaultsFunc form
                     )
                 |> Maybe.withDefault form
@@ -185,7 +186,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.pregnancySummaryForm
@@ -243,7 +244,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateDangerSignsMsgs nextTask_
@@ -305,7 +306,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateDangerSignsMsgs nextTask_
@@ -369,7 +370,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -442,7 +443,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -487,7 +488,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -517,7 +518,7 @@ update currentDate id db msg model =
                         |> RemoteData.toMaybe
                         |> Maybe.map
                             (.nutrition
-                                >> Maybe.map (Tuple.second >> .value)
+                                >> getMeasurementValueFunc
                                 >> nutritionFormWithDefault model.nutritionAssessmentData.nutritionForm
                             )
                         |> Maybe.withDefault model.nutritionAssessmentData.nutritionForm
@@ -544,7 +545,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -625,7 +626,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -751,7 +752,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.vaccinationHistoryForm
@@ -818,7 +819,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.immunisationForm
@@ -855,7 +856,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.ecdForm
@@ -922,7 +923,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateMedicationMsgs nextTask_
@@ -980,7 +981,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateMedicationMsgs nextTask_
@@ -1038,7 +1039,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateMedicationMsgs nextTask_
@@ -1162,7 +1163,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1224,7 +1225,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1254,7 +1255,7 @@ update currentDate id db msg model =
                         |> RemoteData.toMaybe
                         |> Maybe.map
                             (.contributingFactors
-                                >> Maybe.map (Tuple.second >> .value)
+                                >> getMeasurementValueFunc
                                 >> contributingFactorsFormWithDefault model.nextStepsData.contributingFactorsForm
                             )
                         |> Maybe.withDefault model.nextStepsData.contributingFactorsForm
@@ -1281,7 +1282,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1326,7 +1327,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1355,7 +1356,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_

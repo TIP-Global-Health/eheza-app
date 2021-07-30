@@ -3,6 +3,7 @@ module Pages.PrenatalEncounter.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
@@ -512,7 +513,7 @@ getLmpMeasurement measurements =
 getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
 getObstetricHistory measurements =
     measurements.obstetricHistory
-        |> Maybe.map (Tuple.second >> .value)
+        |> getMeasurementValueFunc
 
 
 getMotherHeightMeasurement : PrenatalMeasurements -> Maybe HeightInCm

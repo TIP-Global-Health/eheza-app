@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
@@ -202,7 +202,7 @@ viewHeightContent language currentDate zscores assembled data previousValue =
     let
         form =
             assembled.measurements.height
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> heightFormWithDefault data.form
 
         totalTasks =
@@ -307,7 +307,7 @@ viewMuacContent language currentDate assembled data previousValue =
     let
         form =
             assembled.measurements.muac
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> muacFormWithDefault data.form
 
         totalTasks =
@@ -386,7 +386,7 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
     let
         form =
             measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> nutritionFormWithDefault data.form
 
         totalTasks =
@@ -448,7 +448,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
                     )
 
                 Nothing ->
-                    ( Maybe.map (Tuple.second >> .value) measurements.photo
+                    ( getMeasurementValueFunc measurements.photo
                     , []
                     , True
                     )
@@ -519,7 +519,7 @@ viewWeightContent language currentDate zscores assembled data previousValue =
     let
         form =
             assembled.measurements.weight
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> weightFormWithDefault data.form
 
         totalTasks =
@@ -530,7 +530,7 @@ viewWeightContent language currentDate zscores assembled data previousValue =
 
         heightValue =
             assembled.measurements.height
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
 
         constraints =
             getInputConstraintsWeight
@@ -714,7 +714,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
             case activeTask of
                 Just NextStepsSendToHC ->
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHCForm language
                             currentDate
@@ -725,7 +725,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language
                             currentDate
@@ -734,13 +734,13 @@ viewNextStepsContent language currentDate zscores id assembled db data =
 
                 Just NextStepContributingFactors ->
                     measurements.contributingFactors
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
 
                 Just NextStepFollowUp ->
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate SetFollowUpOption
 

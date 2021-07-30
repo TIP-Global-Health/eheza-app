@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -183,7 +183,7 @@ viewPregnancyDatingContent language currentDate assembled data =
     let
         form =
             assembled.measurements.lastMenstrualPeriod
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> lastMenstrualPeriodFormWithDefault data.form
 
         lmpRangeInput =
@@ -329,7 +329,7 @@ viewHistoryContent language currentDate assembled data_ =
                             let
                                 formStep1_ =
                                     assembled.measurements.obstetricHistory
-                                        |> Maybe.map (Tuple.second >> .value)
+                                        |> getMeasurementValueFunc
                                         |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
                             in
                             viewObstetricFormFirstStep language currentDate assembled formStep1_
@@ -338,7 +338,7 @@ viewHistoryContent language currentDate assembled data_ =
                             let
                                 formStep2_ =
                                     assembled.measurements.obstetricHistoryStep2
-                                        |> Maybe.map (Tuple.second >> .value)
+                                        |> getMeasurementValueFunc
                                         |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
                             in
                             viewObstetricFormSecondStep language currentDate assembled formStep2_
@@ -347,7 +347,7 @@ viewHistoryContent language currentDate assembled data_ =
                     let
                         medicalForm =
                             assembled.measurements.medicalHistory
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> medicalHistoryFormWithDefault data.medicalForm
                     in
                     viewMedicalForm language currentDate assembled medicalForm
@@ -356,7 +356,7 @@ viewHistoryContent language currentDate assembled data_ =
                     let
                         socialForm =
                             assembled.measurements.socialHistory
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> socialHistoryFormWithDefault data.socialForm
 
                         showCounselingQuestion =
@@ -568,7 +568,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.vitals
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> vitalsFormWithDefault data.vitalsForm
                     in
                     viewVitalsForm language currentDate assembled form
@@ -580,7 +580,7 @@ viewExaminationContent language currentDate assembled data =
 
                         form_ =
                             assembled.measurements.nutrition
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                         form =
@@ -600,7 +600,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.corePhysicalExam
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
                     in
                     viewCorePhysicalExamForm language currentDate assembled form
@@ -609,7 +609,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.obstetricalExam
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> obstetricalExamFormWithDefault data.obstetricalExamForm
                     in
                     viewObstetricalExamForm language currentDate assembled form
@@ -618,7 +618,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.breastExam
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> breastExamFormWithDefault data.breastExamForm
                     in
                     viewBreastExamForm language currentDate assembled form
@@ -730,7 +730,7 @@ viewFamilyPlanningContent language currentDate assembled data =
     let
         form =
             assembled.measurements.familyPlanning
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> familyPlanningFormWithDefault data.form
 
         totalTasks =
@@ -849,7 +849,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.medication
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> medicationFormWithDefault data.medicationForm
 
                         questions =
@@ -865,7 +865,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.resource
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> resourceFormWithDefault data.resourcesForm
                     in
                     viewResourcesForm language currentDate assembled form
@@ -932,7 +932,7 @@ viewDangerSignsContent language currentDate assembled data =
     let
         form =
             assembled.measurements.dangerSigns
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> dangerSignsFormWithDefault data.form
 
         ( inputs, tasksCompleted, totalTasks ) =
@@ -1007,7 +1007,7 @@ viewPrenatalPhotoContent language currentDate assembled data =
                     )
 
                 Nothing ->
-                    ( Maybe.map (Tuple.second >> .value)
+                    ( getMeasurementValueFunc
                         assembled.measurements.prenatalPhoto
                     , []
                     , True
@@ -1085,7 +1085,7 @@ viewBirthPlanContent language currentDate assembled data =
 
         form =
             assembled.measurements.birthPlan
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> birthPlanFormWithDefault data.form
 
         healthInsuranceFunc value form_ =
@@ -1168,7 +1168,7 @@ viewLaboratoryContent language currentDate assembled data =
     let
         form =
             assembled.measurements.pregnancyTest
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> pregnancyTestingFormWithDefault data.form
 
         totalTasks =
@@ -1340,19 +1340,19 @@ viewNextStepsContent language currentDate assembled data =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
                     measurements.appointmentConfirmation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
                         |> viewAppointmentConfirmationForm language currentDate assembled
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHCForm language
                             currentDate
@@ -1363,7 +1363,7 @@ viewNextStepsContent language currentDate assembled data =
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 

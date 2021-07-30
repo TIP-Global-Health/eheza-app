@@ -3,6 +3,7 @@ module Pages.WellChildEncounter.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (..)
@@ -68,9 +69,6 @@ generateAssembledData id db =
         previousVaccinationHistories =
             List.filterMap (.vaccinationHistory >> getMeasurementValueFunc)
                 previousMeasurements
-
-        getMeasurementValueFunc =
-            Maybe.map (Tuple.second >> .value)
 
         histories =
             Maybe.map (\history -> history :: previousVaccinationHistories) vaccinationHistory

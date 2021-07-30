@@ -3,7 +3,7 @@ module Pages.WellChildActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (headCircumferenceValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Gender(..), Person)
@@ -31,10 +31,10 @@ generateNutritionAssessment currentDate zscores db assembled =
             assembled.measurements
 
         muacValue =
-            Maybe.map (Tuple.second >> .value) measurements.muac
+            getMeasurementValueFunc measurements.muac
 
         nutritionValue =
-            Maybe.map (Tuple.second >> .value) measurements.nutrition
+            getMeasurementValueFunc measurements.nutrition
 
         weightValue =
             Maybe.map
@@ -295,7 +295,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.height
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> heightFormWithDefault data.heightForm
             in
             ( taskCompleted form.height
@@ -306,7 +306,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.headCircumference
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> headCircumferenceFormWithDefault data.headCircumferenceForm
             in
             ( taskCompleted form.headCircumference
@@ -317,7 +317,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.muac
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
             in
             ( taskCompleted form.muac
@@ -328,7 +328,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.nutrition
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> nutritionFormWithDefault data.nutritionForm
             in
             ( taskCompleted form.signs
@@ -348,7 +348,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.weight
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> weightFormWithDefault data.weightForm
             in
             ( taskCompleted form.weight
@@ -582,7 +582,7 @@ dangerSignsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.symptomsReview
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsReviewFormWithDefault data.symptomsReviewForm
             in
             ( taskCompleted form.symptoms
@@ -593,7 +593,7 @@ dangerSignsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.vitals
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> basicVitalsFormWithDefault data.vitalsForm
             in
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
@@ -1541,19 +1541,19 @@ medicationTasksCompletedFromTotal measurements data task =
     case task of
         TaskAlbendazole ->
             measurements.albendazole
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> medicationAdministrationFormWithDefault data.albendazoleForm
                 |> processMedicationAdministrationTask
 
         TaskMebendezole ->
             measurements.mebendezole
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> medicationAdministrationFormWithDefault data.mebendezoleForm
                 |> processMedicationAdministrationTask
 
         TaskVitaminA ->
             measurements.vitaminA
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> medicationAdministrationFormWithDefault data.vitaminAForm
                 |> processMedicationAdministrationTask
 
@@ -1714,7 +1714,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
             let
                 form =
                     measurements.contributingFactors
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
             in
             ( taskCompleted form.signs
@@ -1725,7 +1725,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
             let
                 form =
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
@@ -1752,7 +1752,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
             let
                 form =
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option
@@ -1763,7 +1763,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
             let
                 form =
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
             in
             if isChw then
@@ -1797,7 +1797,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
             let
                 form =
                     measurements.nextVisit
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> nextVisitFormWithDefault data.nextVisitForm
             in
             ( taskAnyCompleted [ form.immunisationDate, form.pediatricVisitDate ]

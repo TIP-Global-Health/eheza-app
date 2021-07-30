@@ -25,7 +25,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, heightValueFunc, mapMeasurementData, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (currentValues, getMeasurementValueFunc, heightValueFunc, mapMeasurementData, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Gender, Person)
@@ -498,7 +498,7 @@ viewPhoto language measurement photo =
                     Just url
 
                 Nothing ->
-                    Maybe.map (Tuple.second >> .value)
+                    getMeasurementValueFunc
                         measurement.current
     in
     divKeyed
@@ -826,7 +826,7 @@ viewContributingFactors language currentDate measurement form =
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         formContent =
             contributingFactorsFormWithDefault form saved
@@ -882,7 +882,7 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         assesment =
             generateNutritionAssessment currentDate zscores childId db offlineSession
@@ -930,7 +930,7 @@ viewHealthEducation language currentDate measurement form_ =
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         form =
             healthEducationFormWithDefault form_ saved
@@ -1061,7 +1061,7 @@ viewSendToHC language currentDate measurement form_ =
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         form =
             sendToHCFormWithDefault form_ saved

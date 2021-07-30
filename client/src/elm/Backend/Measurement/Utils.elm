@@ -629,3 +629,8 @@ vaccineDoseToString dose =
 
         VaccineDoseFourth ->
             "4"
+
+
+getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v
+getMeasurementValueFunc =
+    Maybe.map (Tuple.second >> .value)

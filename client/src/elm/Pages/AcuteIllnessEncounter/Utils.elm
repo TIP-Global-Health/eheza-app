@@ -33,7 +33,7 @@ import Backend.Measurement.Model
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
         )
-import Backend.Measurement.Utils exposing (muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
@@ -1080,7 +1080,7 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
 malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe MalariaRapidTestResult
 malariaRapidTestResult measurements =
     measurements.malariaTesting
-        |> Maybe.map (Tuple.second >> .value)
+        |> getMeasurementValueFunc
 
 
 malariaDangerSignsPresent : AcuteIllnessMeasurements -> Bool

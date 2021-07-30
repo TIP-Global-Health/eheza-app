@@ -20,7 +20,8 @@ import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements, WellChildSymptom(..))
 import Backend.Measurement.Utils
     exposing
-        ( mapChildMeasurementsAtOfflineSession
+        ( getMeasurementValueFunc
+        , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
         , splitChildMeasurements
         , splitMotherMeasurements
@@ -3557,7 +3558,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                                 Maybe.map Tuple.first followUp
 
                                             followUpValue =
-                                                Maybe.map (Tuple.second >> .value) followUp
+                                                getMeasurementValueFunc followUp
                                         in
                                         followUpValue
                                             |> Maybe.map

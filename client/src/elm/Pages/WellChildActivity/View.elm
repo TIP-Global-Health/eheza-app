@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (headCircumferenceIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend, resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person)
@@ -155,7 +155,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
     let
         form =
             assembled.measurements.pregnancySummary
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> pregnancySummaryFormWithDefault form_
 
         ( deliveryComplicationsCompleted, deliveryComplicationsActive ) =
@@ -391,7 +391,7 @@ viewDangerSignsContent language currentDate assembled data =
             case activeTask of
                 Just TaskSymptomsReview ->
                     measurements.symptomsReview
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsReviewFormWithDefault data.symptomsReviewForm
                         |> viewSymptomsReviewForm language currentDate assembled.person
 
@@ -405,7 +405,7 @@ viewDangerSignsContent language currentDate assembled data =
                             resolvePreviousValue assembled .vitals .bodyTemperature
                     in
                     measurements.vitals
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> basicVitalsFormWithDefault data.vitalsForm
                         |> viewBasicVitalsForm language
                             currentDate
@@ -586,25 +586,25 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
             case activeTask of
                 Just TaskHeight ->
                     measurements.height
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> heightFormWithDefault data.heightForm
                         |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
 
                 Just TaskHeadCircumference ->
                     measurements.headCircumference
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> headCircumferenceFormWithDefault data.headCircumferenceForm
                         |> viewHeadCircumferenceForm language currentDate zscores assembled.person previousValuesSet.headCircumference
 
                 Just TaskMuac ->
                     measurements.muac
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
                         |> viewMuacForm language currentDate assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
                     measurements.nutrition
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate SetNutritionSign
 
@@ -616,7 +616,7 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                     Just url
 
                                 Nothing ->
-                                    Maybe.map (Tuple.second >> .value) assembled.measurements.photo
+                                    getMeasurementValueFunc assembled.measurements.photo
                     in
                     viewPhotoForm language currentDate displayPhoto DropZoneComplete
 
@@ -624,10 +624,10 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                     let
                         heightValue =
                             assembled.measurements.height
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                     in
                     measurements.weight
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> weightFormWithDefault data.weightForm
                         |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight SetWeight
 
@@ -784,7 +784,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
     let
         form =
             assembled.measurements.vaccinationHistory
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> vaccinationHistoryFormWithDefault vaccinationHistoryForm
 
         ( vaccinesCompleted, vaccinesToProcess ) =
@@ -1057,7 +1057,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
     let
         form =
             assembled.measurements.immunisation
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> immunisationFormWithDefault immunisationForm
 
         ( tasksCompleted, totalTasks ) =
@@ -1440,7 +1440,7 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
     let
         form =
             assembled.measurements.ecd
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> wellChildECDFormWithDefault ecdForm
 
         persentedECDSignsData =
@@ -1922,7 +1922,7 @@ viewMedicationContent language currentDate isChw assembled data =
                             }
                     in
                     measurements.albendazole
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
                         |> viewMedicationAdministrationForm language currentDate assembled config
 
@@ -1937,7 +1937,7 @@ viewMedicationContent language currentDate isChw assembled data =
                             }
                     in
                     measurements.mebendezole
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
                         |> viewMedicationAdministrationForm language currentDate assembled config
 
@@ -1952,7 +1952,7 @@ viewMedicationContent language currentDate isChw assembled data =
                             }
                     in
                     measurements.vitaminA
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
                         |> viewMedicationAdministrationForm language currentDate assembled config
 
@@ -2150,21 +2150,21 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
 
         nextVisitForm =
             measurements.nextVisit
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> nextVisitFormWithDefault data.nextVisitForm
 
         viewForm =
             case activeTask of
                 Just TaskContributingFactors ->
                     measurements.contributingFactors
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
                         |> List.singleton
 
                 Just TaskHealthEducation ->
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language
                             currentDate
@@ -2174,7 +2174,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
 
                 Just TaskFollowUp ->
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate SetFollowUpOption
                         |> List.singleton
@@ -2197,7 +2197,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                                     SetReferToNutritionProgram
                     in
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewFormFunc
                         |> List.singleton

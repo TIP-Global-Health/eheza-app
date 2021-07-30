@@ -5,7 +5,7 @@ import Activity.Utils exposing (generateNutritionAssessment, getActivityIcon, ge
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (NutritionAssessment)
-import Backend.Measurement.Utils exposing (mapMeasurementData)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, mapMeasurementData)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Person)
@@ -103,7 +103,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                         Maybe.map Tuple.first contributingFactors
 
                     contributingFactorsValue =
-                        Maybe.map (Tuple.second >> .value) contributingFactors
+                        getMeasurementValueFunc contributingFactors
 
                     followUp =
                         mapMeasurementData .followUp measurements
@@ -113,7 +113,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                         Maybe.map Tuple.first followUp
 
                     followUpValue =
-                        Maybe.map (Tuple.second >> .value) followUp
+                        getMeasurementValueFunc followUp
 
                     sendToHC =
                         mapMeasurementData .sendToHC measurements
@@ -123,7 +123,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                         Maybe.map Tuple.first sendToHC
 
                     sendToHCValue =
-                        Maybe.map (Tuple.second >> .value) sendToHC
+                        getMeasurementValueFunc sendToHC
 
                     healthEducation =
                         mapMeasurementData .healthEducation measurements
@@ -133,7 +133,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                         Maybe.map Tuple.first healthEducation
 
                     healthEducationValue =
-                        Maybe.map (Tuple.second >> .value) healthEducation
+                        getMeasurementValueFunc healthEducation
 
                     viewTask task =
                         let

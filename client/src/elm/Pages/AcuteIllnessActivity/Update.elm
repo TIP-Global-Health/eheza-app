@@ -25,6 +25,7 @@ import Backend.Measurement.Model
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
         )
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -59,7 +60,7 @@ update currentDate id db msg model =
                 |> RemoteData.toMaybe
                 |> Maybe.map
                     (getMeasurementFunc
-                        >> Maybe.map (Tuple.second >> .value)
+                        >> getMeasurementValueFunc
                         >> formWithDefaultsFunc form
                     )
                 |> Maybe.withDefault form
@@ -240,7 +241,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -278,7 +279,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -316,7 +317,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -441,7 +442,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -479,7 +480,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -534,7 +535,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -593,7 +594,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -676,7 +677,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.laboratoryData.malariaTestingForm
@@ -730,7 +731,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -785,7 +786,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -849,7 +850,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.priorTreatmentData.treatmentReviewForm
@@ -939,7 +940,7 @@ update currentDate id db msg model =
                         |> RemoteData.toMaybe
                         |> Maybe.map
                             (.isolation
-                                >> Maybe.map (Tuple.second >> .value)
+                                >> getMeasurementValueFunc
                                 >> isolationFormWithDefault model.nextStepsData.isolationForm
                             )
                         |> Maybe.withDefault model.nextStepsData.isolationForm
@@ -966,7 +967,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -1099,7 +1100,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -1257,7 +1258,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -1346,7 +1347,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -1434,7 +1435,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -1553,7 +1554,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.ongoingTreatmentData.treatmentReviewForm
@@ -1628,7 +1629,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.dangerSignsData.reviewDangerSignsForm
@@ -1688,7 +1689,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -1743,7 +1744,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
