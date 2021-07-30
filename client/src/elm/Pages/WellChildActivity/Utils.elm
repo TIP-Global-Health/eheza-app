@@ -603,46 +603,35 @@ dangerSignsTasksCompletedFromTotal measurements data task =
 
 generateSuggestedVaccines : NominalDate -> Bool -> AssembledData -> List ( VaccineType, VaccineDose )
 generateSuggestedVaccines currentDate isChw assembled =
-    allVaccineTypes isChw
-        |> List.filter (expectVaccineForPerson currentDate assembled.person)
-        |> List.filterMap
-            (\vaccineType ->
-                let
-                    previousMeasurements =
-                        assembled.previousMeasurementsWithDates
-                            |> List.map (Tuple.second >> Tuple.second)
+    if isChw then
+        [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
 
-                    suggestedDose =
-                        case latestVaccinationDataForVaccine previousMeasurements vaccineType of
-                            Just ( lastDoseDate, lastDoseAdministered ) ->
-                                nextDoseForVaccine currentDate lastDoseDate lastDoseAdministered vaccineType
+    else
+        List.filter (expectVaccineForPerson currentDate assembled.person) allVaccineTypes
+            |> List.filterMap
+                (\vaccineType ->
+                    let
+                        suggestedDose =
+                            case latestVaccinationDataForVaccine assembled.vaccinationHistory vaccineType of
+                                Just ( lastDoseAdministered, lastDoseDate ) ->
+                                    nextDoseForVaccine currentDate lastDoseDate lastDoseAdministered vaccineType
 
-                            Nothing ->
-                                Just VaccineDoseFirst
-                in
-                Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
-            )
+                                Nothing ->
+                                    Just VaccineDoseFirst
+                    in
+                    Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
+                )
 
 
 generateFutureVaccines : NominalDate -> Bool -> AssembledData -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
 generateFutureVaccines currentDate isChw assembled =
-    allVaccineTypes isChw
-        |> List.filter (expectVaccineForPerson currentDate assembled.person)
+    List.filter (expectVaccineForPerson currentDate assembled.person) allVaccineTypes
         |> List.map
             (\vaccineType ->
                 let
-                    previousMeasurements =
-                        assembled.previousMeasurementsWithDates
-                            |> List.map (Tuple.second >> Tuple.second)
-
-                    measurementsData =
-                        -- Adding measurements from current encounter,
-                        -- to account for vaccinations done today.
-                        assembled.measurements :: previousMeasurements
-
                     nextVaccinationData =
-                        case latestVaccinationDataForVaccine measurementsData vaccineType of
-                            Just ( lastDoseDate, lastDoseAdministered ) ->
+                        case latestVaccinationDataForVaccine assembled.vaccinationProgress vaccineType of
+                            Just ( lastDoseAdministered, lastDoseDate ) ->
                                 nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
 
                             Nothing ->
@@ -721,32 +710,15 @@ expectVaccineDoseForPerson currentDate person ( vaccineType, vaccineDose ) =
         |> Maybe.withDefault False
 
 
-latestVaccinationDataForVaccine : List WellChildMeasurements -> VaccineType -> Maybe ( NominalDate, VaccineDose )
-latestVaccinationDataForVaccine measurementsData vaccineType =
-    List.filterMap
-        (\measurements ->
-            measurements.immunisation
-                |> Maybe.andThen
-                    (Tuple.second
-                        >> .value
-                        >> (\value ->
-                                let
-                                    suggestedDose =
-                                        Dict.get vaccineType value.suggestedVaccines
-
-                                    vaccinationDate =
-                                        getVaccinationDateFromImmunisationValue vaccineType value
-                                in
-                                Maybe.map2 (\dose date -> ( date, dose ))
-                                    suggestedDose
-                                    vaccinationDate
-                           )
-                    )
-        )
-        measurementsData
-        |> List.sortBy (Tuple.second >> vaccineDoseToComparable)
-        |> List.reverse
-        |> List.head
+latestVaccinationDataForVaccine : Dict VaccineType (Dict VaccineDose NominalDate) -> VaccineType -> Maybe ( VaccineDose, NominalDate )
+latestVaccinationDataForVaccine vaccinationsData vaccineType =
+    Dict.get vaccineType vaccinationsData
+        |> Maybe.andThen
+            (Dict.toList
+                >> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+                >> List.reverse
+                >> List.head
+            )
 
 
 nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> VaccineType -> Maybe ( VaccineDose, NominalDate )
@@ -807,6 +779,34 @@ getVaccinationDateFromImmunisationValue vaccineType =
             .hpvVaccinationDate
 
 
+getVaccinationDatesFromVaccinationHistoryValue : VaccineType -> (VaccinationHistoryValue -> EverySet NominalDate)
+getVaccinationDatesFromVaccinationHistoryValue vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            .bcgVaccinationDate
+
+        VaccineOPV ->
+            .opvVaccinationDate
+
+        VaccineDTP ->
+            .dtpVaccinationDate
+
+        VaccinePCV13 ->
+            .pcv13VaccinationDate
+
+        VaccineRotarix ->
+            .rotarixVaccinationDate
+
+        VaccineIPV ->
+            .ipvVaccinationDate
+
+        VaccineMR ->
+            .mrVaccinationDate
+
+        VaccineHPV ->
+            .hpvVaccinationDate
+
+
 getNextVaccineDose : VaccineDose -> Maybe VaccineDose
 getNextVaccineDose dose =
     case dose of
@@ -823,32 +823,29 @@ getNextVaccineDose dose =
             Nothing
 
 
-getIntervalForVaccine : VaccineType -> ( Int, Unit )
-getIntervalForVaccine vaccineType =
-    case vaccineType of
-        VaccineBCG ->
-            ( 0, Days )
+allVaccinesWithDoses : Dict VaccineType (List VaccineDose)
+allVaccinesWithDoses =
+    List.map
+        (\type_ -> ( type_, getAllDosesForVaccine type_ ))
+        allVaccineTypes
+        |> Dict.fromList
 
-        VaccineOPV ->
-            ( 28, Days )
 
-        VaccineDTP ->
-            ( 28, Days )
+getAllDosesForVaccine : VaccineType -> List VaccineDose
+getAllDosesForVaccine vaccineType =
+    let
+        lastDose =
+            getLastDoseForVaccine vaccineType
+    in
+    List.filterMap
+        (\dose ->
+            if vaccineDoseToComparable dose <= vaccineDoseToComparable lastDose then
+                Just dose
 
-        VaccinePCV13 ->
-            ( 28, Days )
-
-        VaccineRotarix ->
-            ( 28, Days )
-
-        VaccineIPV ->
-            ( 0, Days )
-
-        VaccineMR ->
-            ( 6, Months )
-
-        VaccineHPV ->
-            ( 6, Months )
+            else
+                Nothing
+        )
+        allVaccineDoses
 
 
 getLastDoseForVaccine : VaccineType -> VaccineDose
@@ -879,48 +876,45 @@ getLastDoseForVaccine vaccineType =
             VaccineDoseSecond
 
 
-allVaccinesWithDoses : Dict VaccineType (List VaccineDose)
-allVaccinesWithDoses =
-    allVaccineTypes False
-        |> List.map
-            (\type_ ->
-                ( type_, getAllDosesForVaccine type_ )
-            )
-        |> Dict.fromList
+getIntervalForVaccine : VaccineType -> ( Int, Unit )
+getIntervalForVaccine vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            ( 0, Days )
+
+        VaccineOPV ->
+            ( 28, Days )
+
+        VaccineDTP ->
+            ( 28, Days )
+
+        VaccinePCV13 ->
+            ( 28, Days )
+
+        VaccineRotarix ->
+            ( 28, Days )
+
+        VaccineIPV ->
+            ( 0, Days )
+
+        VaccineMR ->
+            ( 6, Months )
+
+        VaccineHPV ->
+            ( 6, Months )
 
 
-getAllDosesForVaccine : VaccineType -> List VaccineDose
-getAllDosesForVaccine vaccineType =
-    let
-        lastDose =
-            getLastDoseForVaccine vaccineType
-    in
-    List.filterMap
-        (\dose ->
-            if vaccineDoseToComparable dose <= vaccineDoseToComparable lastDose then
-                Just dose
-
-            else
-                Nothing
-        )
-        allVaccineDoses
-
-
-allVaccineTypes : Bool -> List VaccineType
-allVaccineTypes isChw =
-    if isChw then
-        [ VaccineBCG, VaccineOPV ]
-
-    else
-        [ VaccineBCG
-        , VaccineOPV
-        , VaccineDTP
-        , VaccinePCV13
-        , VaccineRotarix
-        , VaccineIPV
-        , VaccineMR
-        , VaccineHPV
-        ]
+allVaccineTypes : List VaccineType
+allVaccineTypes =
+    [ VaccineBCG
+    , VaccineOPV
+    , VaccineDTP
+    , VaccinePCV13
+    , VaccineRotarix
+    , VaccineIPV
+    , VaccineMR
+    , VaccineHPV
+    ]
 
 
 allVaccineDoses : List VaccineDose
@@ -1104,12 +1098,12 @@ toImmunisationValue : ImmunisationForm -> Maybe ImmunisationValue
 toImmunisationValue form =
     let
         vacinationNotes =
-            allVaccineTypes False
-                |> List.filterMap
-                    (\vaccineType ->
-                        determineVaccineAdministrationNote vaccineType
-                            |> Maybe.map (\note -> ( vaccineType, note ))
-                    )
+            List.filterMap
+                (\vaccineType ->
+                    determineVaccineAdministrationNote vaccineType
+                        |> Maybe.map (\note -> ( vaccineType, note ))
+                )
+                allVaccineTypes
                 |> Dict.fromList
 
         determineVaccineAdministrationNote vaccineType =
@@ -1197,19 +1191,13 @@ toImmunisationValue form =
 
 generateRemianingECDSignsBeforeCurrentEncounter : NominalDate -> AssembledData -> List ECDSign
 generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled =
-    List.map (Tuple.second >> Tuple.second) assembled.previousMeasurementsWithDates
+    getPreviousMeasurements assembled.previousMeasurementsWithDates
         |> generateRemianingECDSigns currentDate assembled
 
 
 generateRemianingECDSignsAfterCurrentEncounter : NominalDate -> AssembledData -> List ECDSign
 generateRemianingECDSignsAfterCurrentEncounter currentDate assembled =
-    let
-        previousMeasurements =
-            List.map (Tuple.second >> Tuple.second) assembled.previousMeasurementsWithDates
-    in
-    (assembled.measurements
-        :: previousMeasurements
-    )
+    (assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates)
         |> generateRemianingECDSigns currentDate assembled
 
 
@@ -1446,8 +1434,7 @@ expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask ->
 expectMedicationTask currentDate isChw assembled task =
     let
         nextAdmnistrationData =
-            assembled.previousMeasurementsWithDates
-                |> List.map (Tuple.second >> Tuple.second)
+            getPreviousMeasurements assembled.previousMeasurementsWithDates
                 |> nextMedicationAdmnistrationData currentDate assembled.person
     in
     Dict.get task nextAdmnistrationData
@@ -1896,11 +1883,8 @@ generateNextDateForECDVisit currentDate assembled db =
 generateNextDateForMedicationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
 generateNextDateForMedicationVisit currentDate assembled db =
     let
-        previousMeasurements =
-            List.map (Tuple.second >> Tuple.second) assembled.previousMeasurementsWithDates
-
         measurements =
-            assembled.measurements :: previousMeasurements
+            assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
     in
     nextMedicationAdmnistrationData currentDate assembled.person measurements
         |> Dict.values
@@ -2129,6 +2113,66 @@ toVaccinationHistoryValue form =
         }
 
 
+generateVaccinationProgress : List ImmunisationValue -> List VaccinationHistoryValue -> Dict VaccineType (Dict VaccineDose NominalDate)
+generateVaccinationProgress immunisations vaccinationHistories =
+    List.map (\vaccineType -> ( vaccineType, generateVaccinationProgressForVaccine immunisations vaccinationHistories vaccineType )) allVaccineTypes
+        |> Dict.fromList
+
+
+generateVaccinationProgressForVaccine : List ImmunisationValue -> List VaccinationHistoryValue -> VaccineType -> Dict VaccineDose NominalDate
+generateVaccinationProgressForVaccine immunisations vaccinationHistories vaccineType =
+    let
+        dataFromImmunisation =
+            generateVaccinationProgressFromImmunisationForVaccine immunisations vaccineType
+
+        dataFromVaccinationHistory =
+            generateVaccinationProgressFromVaccinationHistoryForVaccine vaccinationHistories vaccineType
+    in
+    Dict.union dataFromImmunisation dataFromVaccinationHistory
+
+
+generateVaccinationProgressFromImmunisationForVaccine : List ImmunisationValue -> VaccineType -> Dict VaccineDose NominalDate
+generateVaccinationProgressFromImmunisationForVaccine values vaccineType =
+    List.filterMap
+        (\value ->
+            let
+                suggestedDose =
+                    Dict.get vaccineType value.suggestedVaccines
+
+                vaccinationDate =
+                    getVaccinationDateFromImmunisationValue vaccineType value
+            in
+            Maybe.map2 (\dose date -> ( dose, date ))
+                suggestedDose
+                vaccinationDate
+        )
+        values
+        |> Dict.fromList
+
+
+generateVaccinationProgressFromVaccinationHistoryForVaccine : List VaccinationHistoryValue -> VaccineType -> Dict VaccineDose NominalDate
+generateVaccinationProgressFromVaccinationHistoryForVaccine values vaccineType =
+    List.filterMap
+        (\value ->
+            let
+                administeredDoses =
+                    Dict.get vaccineType value.administeredVaccines
+
+                vaccinationDates =
+                    getVaccinationDatesFromVaccinationHistoryValue vaccineType value
+            in
+            Maybe.map
+                (\doses ->
+                    List.Extra.zip (EverySet.toList doses)
+                        (EverySet.toList vaccinationDates)
+                )
+                administeredDoses
+        )
+        values
+        |> List.concat
+        |> Dict.fromList
+
+
 
 -- HELPER FUNCTIONS
 
@@ -2144,3 +2188,8 @@ resolvePreviousValue assembled measurementFunc valueFunc =
             )
         |> List.reverse
         |> List.head
+
+
+getPreviousMeasurements : List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) ) -> List WellChildMeasurements
+getPreviousMeasurements =
+    List.map (Tuple.second >> Tuple.second)
