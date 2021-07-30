@@ -983,7 +983,7 @@ type TranslationId
     | UpdateError
     | Uploading
     | UterineMyoma
-    | VaccineDoseGivenQuestion VaccineType VaccineDose Bool Bool
+    | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
     | Version
@@ -7804,7 +7804,7 @@ translationSet trans =
             , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
             }
 
-        VaccineDoseGivenQuestion vaccineType dose isChw todaySuffix ->
+        VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->
             let
                 doseNumber =
                     case dose of

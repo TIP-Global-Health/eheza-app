@@ -815,12 +815,12 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
         isVaccineCompleted ( vaccineType, doses ) =
             List.all
                 (\dose ->
-                    (wasVaccineGiven vaccineType dose == Just True)
+                    (wasVaccineAdministered vaccineType dose == Just True)
                         && wasDateSet vaccineType dose
                 )
                 doses
                 || List.any
-                    (\dose -> wasVaccineGiven vaccineType dose == Just False)
+                    (\dose -> wasVaccineAdministered vaccineType dose == Just False)
                     doses
 
         ( dosesCompleted, dosesToProcess ) =
@@ -842,17 +842,17 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 |> Maybe.withDefault False
 
         wasDoseCompleted ( vaccineType, dose ) =
-            wasVaccineGiven vaccineType dose
+            wasVaccineAdministered vaccineType dose
                 |> Maybe.andThen
-                    (\wasGiven ->
-                        if wasGiven then
+                    (\wasAdministered ->
+                        if wasAdministered then
                             Just <| wasDateSet vaccineType dose
 
                         else
                             Just True
                     )
 
-        wasVaccineGiven vaccineType dose =
+        wasVaccineAdministered vaccineType dose =
             Dict.get vaccineType form.administeredVaccines
                 |> Maybe.andThen (Dict.get dose)
                 |> Maybe.withDefault
@@ -916,11 +916,11 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                 else
                                     always NoOp
 
-                            vaccineGiven =
-                                wasVaccineGiven type_ dose
+                            vaccineAdministered =
+                                wasVaccineAdministered type_ dose
 
                             ( derrivedInput, derrivedTask ) =
-                                if vaccineGiven == Just True then
+                                if vaccineAdministered == Just True then
                                     let
                                         selectorState =
                                             Dict.get ( type_, dose ) form.dateSelectorsState
@@ -957,16 +957,16 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                 else
                                     ( [], Nothing )
                         in
-                        ( [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion type_ dose False False
+                        ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion type_ dose False False
                           , viewBoolInput
                                 language
-                                vaccineGiven
+                                vaccineAdministered
                                 setBoolInputAction
                                 ""
                                 Nothing
                           ]
                             ++ derrivedInput
-                        , { boolTask = vaccineGiven
+                        , { boolTask = vaccineAdministered
                           , dateTask = derrivedTask
                           }
                         )
@@ -1029,10 +1029,10 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
                 |> immunisationFormWithDefault immunisationForm
 
         ( tasksCompleted, totalTasks ) =
-            ( (List.map taskCompleted vaccinationGivenTasks |> List.sum)
+            ( (List.map taskCompleted vaccinationAdministeredTasks |> List.sum)
                 + (List.map taskCompleted vaccinationDateTasks |> List.sum)
                 + (List.map taskCompleted vaccinationNoteTasks |> List.sum)
-            , List.length vaccinationGivenTasks
+            , List.length vaccinationAdministeredTasks
                 + List.length vaccinationDateTasks
                 + List.length vaccinationNoteTasks
             )
@@ -1050,8 +1050,8 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
         tasks =
             List.map Tuple.second inputsAndTasks
 
-        vaccinationGivenTasks =
-            List.map .vaccinationGivenTask tasks
+        vaccinationAdministeredTasks =
+            List.map .vaccinationAdministeredTask tasks
 
         vaccinationDateTasks =
             List.filterMap .vaccinationDateTask tasks
@@ -1092,7 +1092,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
 
 
 type alias SuggestedVaccineTasks =
-    { vaccinationGivenTask : Maybe Bool
+    { vaccinationAdministeredTask : Maybe Bool
     , vaccinationDateTask : Maybe (Maybe NominalDate)
     , vaccinationNoteTask : Maybe (Maybe AdministrationNote)
     }
@@ -1101,20 +1101,20 @@ type alias SuggestedVaccineTasks =
 inputsAndTasksForSuggestedVaccine : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> ( VaccineType, VaccineDose ) -> ( List (Html Msg), SuggestedVaccineTasks )
 inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( vaccineType, vaccineDose ) =
     let
-        ( vaccinationGivenInput, vaccinationGivenTask ) =
-            ( [ viewQuestionLabel language <| Translate.VaccineDoseGivenQuestion vaccineType vaccineDose isChw True
+        ( vaccinationAdministeredInput, vaccinationAdministeredTask ) =
+            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion vaccineType vaccineDose isChw True
               , viewBoolInput
                     language
-                    (config.getVaccinationGivenFunc form)
+                    (config.getVaccinationAdministeredFunc form)
                     (SetImmunisationBoolInput config.setBoolInputFunc)
                     ""
                     Nothing
               ]
-            , config.getVaccinationGivenFunc form
+            , config.getVaccinationAdministeredFunc form
             )
 
         ( vaccinationDerrivedInputs, vaccinationDateTask, vaccinationNoteTask ) =
-            if config.getVaccinationGivenFunc form == Just False then
+            if config.getVaccinationAdministeredFunc form == Just False then
                 let
                     ( vaccinationDateInput, dateTask ) =
                         if config.getVaccinationNoteFunc form == Just AdministeredPreviously then
@@ -1175,14 +1175,14 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | bcgVaccinationGiven = Just value
+                                | bcgVaccinationAdministered = Just value
                                 , bcgVaccinationNote = vaccinationNote
                                 , bcgVaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | bcgVaccinationDateSelectorOpen = not form_.bcgVaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | bcgVaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | bcgVaccinationNote = Just value, bcgVaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .bcgVaccinationGiven
+                    , getVaccinationAdministeredFunc = .bcgVaccinationAdministered
                     , getVaccinationDateFunc = .bcgVaccinationDate
                     , getVaccinationNoteFunc = .bcgVaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .bcgVaccinationDateSelectorOpen
@@ -1208,14 +1208,14 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | opvVaccinationGiven = Just value
+                                | opvVaccinationAdministered = Just value
                                 , opvVaccinationNote = vaccinationNote
                                 , opvVaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | opvVaccinationDateSelectorOpen = not form_.opvVaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | opvVaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | opvVaccinationNote = Just value, opvVaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .opvVaccinationGiven
+                    , getVaccinationAdministeredFunc = .opvVaccinationAdministered
                     , getVaccinationDateFunc = .opvVaccinationDate
                     , getVaccinationNoteFunc = .opvVaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .opvVaccinationDateSelectorOpen
@@ -1233,14 +1233,14 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | dtpVaccinationGiven = Just value
+                                | dtpVaccinationAdministered = Just value
                                 , dtpVaccinationNote = vaccinationNote
                                 , dtpVaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | dtpVaccinationDateSelectorOpen = not form_.dtpVaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | dtpVaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | dtpVaccinationNote = Just value, dtpVaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .dtpVaccinationGiven
+                    , getVaccinationAdministeredFunc = .dtpVaccinationAdministered
                     , getVaccinationDateFunc = .dtpVaccinationDate
                     , getVaccinationNoteFunc = .dtpVaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .dtpVaccinationDateSelectorOpen
@@ -1258,14 +1258,14 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | pcv13VaccinationGiven = Just value
+                                | pcv13VaccinationAdministered = Just value
                                 , pcv13VaccinationNote = vaccinationNote
                                 , pcv13VaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | pcv13VaccinationDateSelectorOpen = not form_.pcv13VaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | pcv13VaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | pcv13VaccinationNote = Just value, pcv13VaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .pcv13VaccinationGiven
+                    , getVaccinationAdministeredFunc = .pcv13VaccinationAdministered
                     , getVaccinationDateFunc = .pcv13VaccinationDate
                     , getVaccinationNoteFunc = .pcv13VaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .pcv13VaccinationDateSelectorOpen
@@ -1283,14 +1283,14 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | rotarixVaccinationGiven = Just value
+                                | rotarixVaccinationAdministered = Just value
                                 , rotarixVaccinationNote = vaccinationNote
                                 , rotarixVaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | rotarixVaccinationDateSelectorOpen = not form_.rotarixVaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | rotarixVaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | rotarixVaccinationNote = Just value, rotarixVaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .rotarixVaccinationGiven
+                    , getVaccinationAdministeredFunc = .rotarixVaccinationAdministered
                     , getVaccinationDateFunc = .rotarixVaccinationDate
                     , getVaccinationNoteFunc = .rotarixVaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .rotarixVaccinationDateSelectorOpen
@@ -1308,14 +1308,14 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | ipvVaccinationGiven = Just value
+                                | ipvVaccinationAdministered = Just value
                                 , ipvVaccinationNote = vaccinationNote
                                 , ipvVaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | ipvVaccinationDateSelectorOpen = not form_.ipvVaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | ipvVaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | ipvVaccinationNote = Just value, ipvVaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .ipvVaccinationGiven
+                    , getVaccinationAdministeredFunc = .ipvVaccinationAdministered
                     , getVaccinationDateFunc = .ipvVaccinationDate
                     , getVaccinationNoteFunc = .ipvVaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .ipvVaccinationDateSelectorOpen
@@ -1333,14 +1333,14 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | mrVaccinationGiven = Just value
+                                | mrVaccinationAdministered = Just value
                                 , mrVaccinationNote = vaccinationNote
                                 , mrVaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | mrVaccinationDateSelectorOpen = not form_.mrVaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | mrVaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | mrVaccinationNote = Just value, mrVaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .mrVaccinationGiven
+                    , getVaccinationAdministeredFunc = .mrVaccinationAdministered
                     , getVaccinationDateFunc = .mrVaccinationDate
                     , getVaccinationNoteFunc = .mrVaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .mrVaccinationDateSelectorOpen
@@ -1358,21 +1358,21 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                                         ( Nothing, Nothing )
                             in
                             { form_
-                                | hpvVaccinationGiven = Just value
+                                | hpvVaccinationAdministered = Just value
                                 , hpvVaccinationNote = vaccinationNote
                                 , hpvVaccinationDate = vaccinationDate
                             }
                     , toggleDateSelectorFunc = \form_ -> { form_ | hpvVaccinationDateSelectorOpen = not form_.hpvVaccinationDateSelectorOpen }
                     , setDateInputFunc = \value form_ -> { form_ | hpvVaccinationDate = Just value }
                     , setAdministrationNoteFunc = \value form_ -> { form_ | hpvVaccinationNote = Just value, hpvVaccinationDate = Nothing }
-                    , getVaccinationGivenFunc = .hpvVaccinationGiven
+                    , getVaccinationAdministeredFunc = .hpvVaccinationAdministered
                     , getVaccinationDateFunc = .hpvVaccinationDate
                     , getVaccinationNoteFunc = .hpvVaccinationNote
                     , getVaccinationDateSelectorOpenFunc = .hpvVaccinationDateSelectorOpen
                     }
     in
-    ( vaccinationGivenInput ++ vaccinationDerrivedInputs
-    , SuggestedVaccineTasks vaccinationGivenTask vaccinationDateTask vaccinationNoteTask
+    ( vaccinationAdministeredInput ++ vaccinationDerrivedInputs
+    , SuggestedVaccineTasks vaccinationAdministeredTask vaccinationDateTask vaccinationNoteTask
     )
 
 

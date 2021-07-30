@@ -249,14 +249,14 @@ emptyVaccinationHistoryForm =
 
 type alias ImmunisationForm =
     { suggestedVaccines : Dict VaccineType VaccineDose
-    , bcgVaccinationGiven : Maybe Bool
-    , opvVaccinationGiven : Maybe Bool
-    , dtpVaccinationGiven : Maybe Bool
-    , pcv13VaccinationGiven : Maybe Bool
-    , rotarixVaccinationGiven : Maybe Bool
-    , ipvVaccinationGiven : Maybe Bool
-    , mrVaccinationGiven : Maybe Bool
-    , hpvVaccinationGiven : Maybe Bool
+    , bcgVaccinationAdministered : Maybe Bool
+    , opvVaccinationAdministered : Maybe Bool
+    , dtpVaccinationAdministered : Maybe Bool
+    , pcv13VaccinationAdministered : Maybe Bool
+    , rotarixVaccinationAdministered : Maybe Bool
+    , ipvVaccinationAdministered : Maybe Bool
+    , mrVaccinationAdministered : Maybe Bool
+    , hpvVaccinationAdministered : Maybe Bool
     , bcgVaccinationNote : Maybe AdministrationNote
     , opvVaccinationNote : Maybe AdministrationNote
     , dtpVaccinationNote : Maybe AdministrationNote
@@ -287,14 +287,14 @@ type alias ImmunisationForm =
 emptyImmunisationForm : ImmunisationForm
 emptyImmunisationForm =
     { suggestedVaccines = Dict.empty
-    , bcgVaccinationGiven = Nothing
-    , opvVaccinationGiven = Nothing
-    , dtpVaccinationGiven = Nothing
-    , pcv13VaccinationGiven = Nothing
-    , rotarixVaccinationGiven = Nothing
-    , ipvVaccinationGiven = Nothing
-    , mrVaccinationGiven = Nothing
-    , hpvVaccinationGiven = Nothing
+    , bcgVaccinationAdministered = Nothing
+    , opvVaccinationAdministered = Nothing
+    , dtpVaccinationAdministered = Nothing
+    , pcv13VaccinationAdministered = Nothing
+    , rotarixVaccinationAdministered = Nothing
+    , ipvVaccinationAdministered = Nothing
+    , mrVaccinationAdministered = Nothing
+    , hpvVaccinationAdministered = Nothing
     , bcgVaccinationNote = Nothing
     , opvVaccinationNote = Nothing
     , dtpVaccinationNote = Nothing

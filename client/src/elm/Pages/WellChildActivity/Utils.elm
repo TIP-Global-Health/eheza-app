@@ -614,8 +614,8 @@ generateSuggestedVaccines currentDate isChw assembled =
 
                     suggestedDose =
                         case latestVaccinationDataForVaccine previousMeasurements vaccineType of
-                            Just ( lastDoseDate, lastDoseGiven ) ->
-                                nextDoseForVaccine currentDate lastDoseDate lastDoseGiven vaccineType
+                            Just ( lastDoseDate, lastDoseAdministered ) ->
+                                nextDoseForVaccine currentDate lastDoseDate lastDoseAdministered vaccineType
 
                             Nothing ->
                                 Just VaccineDoseFirst
@@ -642,8 +642,8 @@ generateFutureVaccines currentDate isChw assembled =
 
                     nextVaccinationData =
                         case latestVaccinationDataForVaccine measurementsData vaccineType of
-                            Just ( lastDoseDate, lastDoseGiven ) ->
-                                nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType
+                            Just ( lastDoseDate, lastDoseAdministered ) ->
+                                nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
 
                             Nothing ->
                                 -- There were no vaccination so far, so
@@ -750,12 +750,12 @@ latestVaccinationDataForVaccine measurementsData vaccineType =
 
 
 nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> VaccineType -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType =
-    if getLastDoseForVaccine vaccineType == lastDoseGiven then
+nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType =
+    if getLastDoseForVaccine vaccineType == lastDoseAdministered then
         Nothing
 
     else
-        getNextVaccineDose lastDoseGiven
+        getNextVaccineDose lastDoseAdministered
             |> Maybe.map
                 (\dose ->
                     let
@@ -767,8 +767,8 @@ nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType =
 
 
 nextDoseForVaccine : NominalDate -> NominalDate -> VaccineDose -> VaccineType -> Maybe VaccineDose
-nextDoseForVaccine currentDate lastDoseDate lastDoseGiven vaccineType =
-    nextVaccinationDataForVaccine lastDoseDate lastDoseGiven vaccineType
+nextDoseForVaccine currentDate lastDoseDate lastDoseAdministered vaccineType =
+    nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
         |> Maybe.andThen
             (\( dose, dueDate ) ->
                 if Date.compare dueDate currentDate == GT then
@@ -954,7 +954,7 @@ fromImmunisationValue saved =
         vacinationNotes =
             Maybe.map .vacinationNotes saved
 
-        vaccineGiven administrationNote =
+        vaccineAdministered administrationNote =
             Maybe.map ((==) AdministeredToday) administrationNote
 
         resolveAdministrationNote vaccineType =
@@ -985,14 +985,14 @@ fromImmunisationValue saved =
             resolveAdministrationNote VaccineHPV
     in
     { suggestedVaccines = suggestedVaccines
-    , bcgVaccinationGiven = vaccineGiven bcgVaccinationNote
-    , opvVaccinationGiven = vaccineGiven opvVaccinationNote
-    , dtpVaccinationGiven = vaccineGiven dtpVaccinationNote
-    , pcv13VaccinationGiven = vaccineGiven pcv13VaccinationNote
-    , rotarixVaccinationGiven = vaccineGiven rotarixVaccinationNote
-    , ipvVaccinationGiven = vaccineGiven ipvVaccinationNote
-    , mrVaccinationGiven = vaccineGiven mrVaccinationNote
-    , hpvVaccinationGiven = vaccineGiven hpvVaccinationNote
+    , bcgVaccinationAdministered = vaccineAdministered bcgVaccinationNote
+    , opvVaccinationAdministered = vaccineAdministered opvVaccinationNote
+    , dtpVaccinationAdministered = vaccineAdministered dtpVaccinationNote
+    , pcv13VaccinationAdministered = vaccineAdministered pcv13VaccinationNote
+    , rotarixVaccinationAdministered = vaccineAdministered rotarixVaccinationNote
+    , ipvVaccinationAdministered = vaccineAdministered ipvVaccinationNote
+    , mrVaccinationAdministered = vaccineAdministered mrVaccinationNote
+    , hpvVaccinationAdministered = vaccineAdministered hpvVaccinationNote
     , bcgVaccinationNote = bcgVaccinationNote
     , opvVaccinationNote = opvVaccinationNote
     , dtpVaccinationNote = dtpVaccinationNote
@@ -1027,7 +1027,7 @@ immunisationFormWithDefault form saved =
             form
             (\value ->
                 let
-                    vaccineGiven administrationNote =
+                    vaccineAdministered administrationNote =
                         Maybe.map ((==) AdministeredToday) administrationNote
 
                     resolveAdministrationNote vaccineType =
@@ -1058,14 +1058,14 @@ immunisationFormWithDefault form saved =
                         resolveAdministrationNote VaccineHPV
                 in
                 { suggestedVaccines = form.suggestedVaccines
-                , bcgVaccinationGiven = or form.bcgVaccinationGiven (vaccineGiven bcgVaccinationNote)
-                , opvVaccinationGiven = or form.opvVaccinationGiven (vaccineGiven opvVaccinationNote)
-                , dtpVaccinationGiven = or form.dtpVaccinationGiven (vaccineGiven dtpVaccinationNote)
-                , pcv13VaccinationGiven = or form.pcv13VaccinationGiven (vaccineGiven pcv13VaccinationNote)
-                , rotarixVaccinationGiven = or form.rotarixVaccinationGiven (vaccineGiven rotarixVaccinationNote)
-                , ipvVaccinationGiven = or form.ipvVaccinationGiven (vaccineGiven ipvVaccinationNote)
-                , mrVaccinationGiven = or form.mrVaccinationGiven (vaccineGiven mrVaccinationNote)
-                , hpvVaccinationGiven = or form.hpvVaccinationGiven (vaccineGiven hpvVaccinationNote)
+                , bcgVaccinationAdministered = or form.bcgVaccinationAdministered (vaccineAdministered bcgVaccinationNote)
+                , opvVaccinationAdministered = or form.opvVaccinationAdministered (vaccineAdministered opvVaccinationNote)
+                , dtpVaccinationAdministered = or form.dtpVaccinationAdministered (vaccineAdministered dtpVaccinationNote)
+                , pcv13VaccinationAdministered = or form.pcv13VaccinationAdministered (vaccineAdministered pcv13VaccinationNote)
+                , rotarixVaccinationAdministered = or form.rotarixVaccinationAdministered (vaccineAdministered rotarixVaccinationNote)
+                , ipvVaccinationAdministered = or form.ipvVaccinationAdministered (vaccineAdministered ipvVaccinationNote)
+                , mrVaccinationAdministered = or form.mrVaccinationAdministered (vaccineAdministered mrVaccinationNote)
+                , hpvVaccinationAdministered = or form.hpvVaccinationAdministered (vaccineAdministered hpvVaccinationNote)
                 , bcgVaccinationNote = or form.bcgVaccinationNote bcgVaccinationNote
                 , opvVaccinationNote = or form.opvVaccinationNote opvVaccinationNote
                 , dtpVaccinationNote = or form.dtpVaccinationNote dtpVaccinationNote
@@ -1115,56 +1115,56 @@ toImmunisationValue form =
         determineVaccineAdministrationNote vaccineType =
             case vaccineType of
                 VaccineBCG ->
-                    if form.bcgVaccinationGiven == Just True then
+                    if form.bcgVaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
                         form.bcgVaccinationNote
 
                 VaccineOPV ->
-                    if form.opvVaccinationGiven == Just True then
+                    if form.opvVaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
                         form.opvVaccinationNote
 
                 VaccineDTP ->
-                    if form.dtpVaccinationGiven == Just True then
+                    if form.dtpVaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
                         form.dtpVaccinationNote
 
                 VaccinePCV13 ->
-                    if form.pcv13VaccinationGiven == Just True then
+                    if form.pcv13VaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
                         form.pcv13VaccinationNote
 
                 VaccineRotarix ->
-                    if form.rotarixVaccinationGiven == Just True then
+                    if form.rotarixVaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
                         form.rotarixVaccinationNote
 
                 VaccineIPV ->
-                    if form.ipvVaccinationGiven == Just True then
+                    if form.ipvVaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
                         form.ipvVaccinationNote
 
                 VaccineMR ->
-                    if form.mrVaccinationGiven == Just True then
+                    if form.mrVaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
                         form.mrVaccinationNote
 
                 VaccineHPV ->
-                    if form.hpvVaccinationGiven == Just True then
+                    if form.hpvVaccinationAdministered == Just True then
                         Just AdministeredToday
 
                     else
@@ -2079,8 +2079,8 @@ toVaccinationHistoryValue form =
                 (\type_ doses ->
                     Dict.toList doses
                         |> List.filterMap
-                            (\( dose, maybeGiven ) ->
-                                if maybeGiven == Just True then
+                            (\( dose, maybeAdministered ) ->
+                                if maybeAdministered == Just True then
                                     Just dose
 
                                 else

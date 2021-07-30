@@ -647,7 +647,7 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
-        SetVaccinationHistoryBoolInput type_ dose vaccineGiven ->
+        SetVaccinationHistoryBoolInput type_ dose vaccineAdministered ->
             let
                 form =
                     resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
@@ -656,12 +656,12 @@ update currentDate id db msg model =
                     Dict.get type_ form.administeredVaccines
                         |> Maybe.map
                             (\doses ->
-                                Dict.insert type_ (Dict.insert dose (Just vaccineGiven) doses) form.administeredVaccines
+                                Dict.insert type_ (Dict.insert dose (Just vaccineAdministered) doses) form.administeredVaccines
                             )
-                        |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just vaccineGiven)) form.administeredVaccines)
+                        |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just vaccineAdministered)) form.administeredVaccines)
 
                 ( vaccinationDates, vaccinationDatesDirty ) =
-                    if vaccineGiven then
+                    if vaccineAdministered then
                         ( form.vaccinationDates, form.vaccinationDatesDirty )
 
                     else
