@@ -898,113 +898,136 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
             assembled.person.birthDate
                 |> Maybe.withDefault (Date.add Months -6 currentDate)
 
-        inputsAndTasks =
-            itemsForView
-                |> List.map
-                    (\item ->
-                        let
-                            type_ =
-                                item.type_
+        catchUpRequiredInput =
+            [ viewQuestionLabel language Translate.VaccinationCatchUpRequiredQuestion
+            , viewBoolInput
+                language
+                form.catchUpRequired
+                SetCatchUpRequired
+                ""
+                Nothing
+            ]
 
-                            dose =
-                                item.dose
+        catchUpRequired =
+            form.catchUpRequired == Just True
 
-                            setBoolInputAction =
-                                if item.active then
-                                    SetVaccinationHistoryBoolInput type_ dose
+        catchUpInputsAndTasks =
+            if not catchUpRequired then
+                []
 
-                                else
-                                    always NoOp
+            else
+                itemsForView
+                    |> List.map
+                        (\item ->
+                            let
+                                type_ =
+                                    item.type_
 
-                            vaccineAdministered =
-                                wasVaccineAdministered type_ dose
+                                dose =
+                                    item.dose
 
-                            ( derrivedInput, derrivedTask ) =
-                                if vaccineAdministered == Just True then
-                                    let
-                                        selectorState =
-                                            Dict.get ( type_, dose ) form.dateSelectorsState
-                                                |> Maybe.withDefault False
+                                setBoolInputAction =
+                                    if item.active then
+                                        SetVaccinationHistoryBoolInput type_ dose
 
-                                        vaccinationDate =
-                                            Dict.get type_ form.vaccinationDates
-                                                |> Maybe.andThen (Dict.get dose)
-                                                |> Maybe.withDefault Nothing
+                                    else
+                                        always NoOp
 
-                                        ( setDateAction, toggleAction ) =
-                                            if item.active then
-                                                ( SetVaccinationHistoryDateInput type_ dose
-                                                , ToggleVaccinationHistoryDateSelectorInput type_ dose
-                                                )
+                                vaccineAdministered =
+                                    wasVaccineAdministered type_ dose
 
-                                            else
-                                                ( always NoOp, NoOp )
-                                    in
-                                    ( [ div [ class "form-input date previous" ]
-                                            [ viewLabel language Translate.SelectDate
-                                            , DateSelector.SelectorDropdown.view
-                                                toggleAction
-                                                setDateAction
-                                                selectorState
-                                                birthDate
-                                                (Date.add Days -1 currentDate)
-                                                vaccinationDate
-                                            ]
-                                      ]
-                                    , Just vaccinationDate
-                                    )
+                                ( derrivedInput, derrivedTask ) =
+                                    if vaccineAdministered == Just True then
+                                        let
+                                            selectorState =
+                                                Dict.get ( type_, dose ) form.dateSelectorsState
+                                                    |> Maybe.withDefault False
 
-                                else
-                                    ( [], Nothing )
-                        in
-                        ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion type_ dose False False
-                          , viewBoolInput
-                                language
-                                vaccineAdministered
-                                setBoolInputAction
-                                ""
-                                Nothing
-                          ]
-                            ++ derrivedInput
-                        , { boolTask = vaccineAdministered
-                          , dateTask = derrivedTask
-                          }
+                                            vaccinationDate =
+                                                Dict.get type_ form.vaccinationDates
+                                                    |> Maybe.andThen (Dict.get dose)
+                                                    |> Maybe.withDefault Nothing
+
+                                            ( setDateAction, toggleAction ) =
+                                                if item.active then
+                                                    ( SetVaccinationHistoryDateInput type_ dose
+                                                    , ToggleVaccinationHistoryDateSelectorInput type_ dose
+                                                    )
+
+                                                else
+                                                    ( always NoOp, NoOp )
+                                        in
+                                        ( [ div [ class "form-input date previous" ]
+                                                [ viewLabel language Translate.SelectDate
+                                                , DateSelector.SelectorDropdown.view
+                                                    toggleAction
+                                                    setDateAction
+                                                    selectorState
+                                                    birthDate
+                                                    (Date.add Days -1 currentDate)
+                                                    vaccinationDate
+                                                ]
+                                          ]
+                                        , Just vaccinationDate
+                                        )
+
+                                    else
+                                        ( [], Nothing )
+                            in
+                            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion type_ dose False False
+                              , viewBoolInput
+                                    language
+                                    vaccineAdministered
+                                    setBoolInputAction
+                                    ""
+                                    Nothing
+                              ]
+                                ++ derrivedInput
+                            , { boolTask = vaccineAdministered
+                              , dateTask = derrivedTask
+                              }
+                            )
                         )
-                    )
 
-        inputs =
-            List.map Tuple.first inputsAndTasks
+        catchUpInputs =
+            List.map Tuple.first catchUpInputsAndTasks
                 |> List.concat
 
-        tasks =
-            List.map Tuple.second inputsAndTasks
+        catchUpTasks =
+            List.map Tuple.second catchUpInputsAndTasks
 
         boolTasks =
-            List.map .boolTask tasks
+            List.map .boolTask catchUpTasks
 
         dateTasks =
-            List.filterMap .dateTask tasks
+            List.filterMap .dateTask catchUpTasks
 
         ( tasksCompleted, totalTasks ) =
-            ( (List.map taskCompleted boolTasks |> List.sum)
+            ( taskCompleted form.catchUpRequired
+                + (List.map taskCompleted boolTasks |> List.sum)
                 + (List.map taskCompleted dateTasks |> List.sum)
-            , List.length boolTasks
+            , 1
+                + List.length boolTasks
                 + List.length dateTasks
             )
 
         suggestedVaccines =
-            List.foldl
-                (\( vaccineType, dose ) accum ->
-                    let
-                        updated =
-                            Dict.get vaccineType accum
-                                |> Maybe.map (EverySet.insert dose)
-                                |> Maybe.withDefault (EverySet.singleton dose)
-                    in
-                    Dict.insert vaccineType updated accum
-                )
+            if not catchUpRequired then
                 Dict.empty
-                suggested
+
+            else
+                List.foldl
+                    (\( vaccineType, dose ) accum ->
+                        let
+                            updated =
+                                Dict.get vaccineType accum
+                                    |> Maybe.map (EverySet.insert dose)
+                                    |> Maybe.withDefault (EverySet.singleton dose)
+                        in
+                        Dict.insert vaccineType updated accum
+                    )
+                    Dict.empty
+                    suggested
 
         disabled =
             tasksCompleted /= totalTasks
@@ -1012,8 +1035,21 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form vaccination-history" ]
-                inputs
+            [ div [ class "ui form vaccination-history" ] <|
+                [ viewLabel language Translate.ReviewVaccinationHistoryLabel
+                , button
+                    [ classList
+                        [ ( "ui primary button review-history", True )
+                        , ( "disabled", catchUpRequired )
+                        ]
+
+                    -- @todo
+                    -- , onClick SaveAcuteIllnessOutcome
+                    ]
+                    [ text <| translate language Translate.ReviewVaccinationHistory ]
+                ]
+                    ++ catchUpRequiredInput
+                    ++ catchUpInputs
             ]
         , viewAction language (SaveVaccinationHistory assembled.participant.person suggestedVaccines assembled.measurements.vaccinationHistory) disabled
         ]

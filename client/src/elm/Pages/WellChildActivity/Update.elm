@@ -647,6 +647,19 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetCatchUpRequired value ->
+            let
+                form =
+                    model.vaccinationHistoryForm
+
+                updatedForm =
+                    { form | catchUpRequired = Just value }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
         SetVaccinationHistoryBoolInput type_ dose vaccineAdministered ->
             let
                 form =

@@ -3284,10 +3284,16 @@ decodeVaccinationHistoryValue =
                     Dict.insert type_ updated accum
                 )
                 Dict.empty
+
+        decodeVaccines =
+            oneOf
+                [ map explodeVaccines (list decodeVaccinationEntry)
+                , succeed Dict.empty
+                ]
     in
     succeed VaccinationHistoryValue
-        |> required "suggested_vaccines" (map explodeVaccines (list decodeVaccinationEntry))
-        |> required "administered_vaccines" (map explodeVaccines (list decodeVaccinationEntry))
+        |> required "suggested_vaccines" decodeVaccines
+        |> required "administered_vaccines" decodeVaccines
         |> required "bcg_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "opv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "dtp_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)

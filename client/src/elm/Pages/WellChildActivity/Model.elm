@@ -47,6 +47,7 @@ type Msg
     | SetWeight String
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- VACCINATION HISTORY
+    | SetCatchUpRequired Bool
     | SetVaccinationHistoryBoolInput VaccineType VaccineDose Bool
     | SetVaccinationHistoryDateInput VaccineType VaccineDose Date
     | ToggleVaccinationHistoryDateSelectorInput VaccineType VaccineDose
@@ -227,7 +228,8 @@ allNutritionAssessmentTasks =
 
 
 type alias VaccinationHistoryForm =
-    { suggestedVaccines : Dict VaccineType (EverySet VaccineDose)
+    { catchUpRequired : Maybe Bool
+    , suggestedVaccines : Dict VaccineType (EverySet VaccineDose)
     , administeredVaccines : Dict VaccineType (Dict VaccineDose (Maybe Bool))
     , administeredVaccinesDirty : Bool
     , vaccinationDates : Dict VaccineType (Dict VaccineDose (Maybe NominalDate))
@@ -238,7 +240,8 @@ type alias VaccinationHistoryForm =
 
 emptyVaccinationHistoryForm : VaccinationHistoryForm
 emptyVaccinationHistoryForm =
-    { suggestedVaccines = Dict.empty
+    { catchUpRequired = Nothing
+    , suggestedVaccines = Dict.empty
     , administeredVaccines = Dict.empty
     , administeredVaccinesDirty = False
     , vaccinationDates = Dict.empty

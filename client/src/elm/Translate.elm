@@ -860,6 +860,8 @@ type TranslationId
     | Retry
     | ReviewCaseWith144Respondent
     | Reviewed
+    | ReviewVaccinationHistory
+    | ReviewVaccinationHistoryLabel
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -983,6 +985,7 @@ type TranslationId
     | UpdateError
     | Uploading
     | UterineMyoma
+    | VaccinationCatchUpRequiredQuestion
     | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
@@ -6914,6 +6917,16 @@ translationSet trans =
             , kinyarwanda = Just "Byarebwe"
             }
 
+        ReviewVaccinationHistory ->
+            { english = "Review Vaccination History"
+            , kinyarwanda = Nothing
+            }
+
+        ReviewVaccinationHistoryLabel ->
+            { english = "Review the patients vaccination history in E-Heza"
+            , kinyarwanda = Nothing
+            }
+
         RhNegative ->
             { english = "RH Negative"
             , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
@@ -7802,6 +7815,11 @@ translationSet trans =
         UterineMyoma ->
             { english = "Uterine Myoma"
             , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
+            }
+
+        VaccinationCatchUpRequiredQuestion ->
+            { english = "Are there previous immunizations that are not in E-Heza that need to be recorded"
+            , kinyarwanda = Nothing
             }
 
         VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->

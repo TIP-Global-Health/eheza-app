@@ -1953,7 +1953,16 @@ toNextVisitValue form =
 
 fromVaccinationHistoryValue : Maybe VaccinationHistoryValue -> VaccinationHistoryForm
 fromVaccinationHistoryValue saved =
-    { suggestedVaccines = Maybe.map .suggestedVaccines saved |> Maybe.withDefault Dict.empty
+    let
+        catchUpRequired =
+            Just <| not <| Dict.isEmpty suggestedVaccinesByValue
+
+        suggestedVaccinesByValue =
+            Maybe.map .suggestedVaccines saved
+                |> Maybe.withDefault Dict.empty
+    in
+    { catchUpRequired = catchUpRequired
+    , suggestedVaccines = suggestedVaccinesByValue
     , administeredVaccines = generateAdministeredVaccinesFromValue saved
     , administeredVaccinesDirty = False
     , vaccinationDates = generateVaccinationDatesFromValue saved
@@ -1969,10 +1978,16 @@ vaccinationHistoryFormWithDefault form saved =
             form
             (\value ->
                 let
+                    catchUpRequiredByValue =
+                        Just <| not <| Dict.isEmpty suggestedVaccinesByValue
+
+                    suggestedVaccinesByValue =
+                        Maybe.map .suggestedVaccines saved
+                            |> Maybe.withDefault Dict.empty
+
                     suggestedVaccines =
                         if Dict.isEmpty form.suggestedVaccines then
-                            Maybe.map .suggestedVaccines saved
-                                |> Maybe.withDefault Dict.empty
+                            suggestedVaccinesByValue
 
                         else
                             form.suggestedVaccines
@@ -1991,7 +2006,8 @@ vaccinationHistoryFormWithDefault form saved =
                         else
                             generateVaccinationDatesFromValue saved
                 in
-                { suggestedVaccines = suggestedVaccines
+                { catchUpRequired = Maybe.Extra.or form.catchUpRequired catchUpRequiredByValue
+                , suggestedVaccines = suggestedVaccines
                 , administeredVaccines = administeredVaccines
                 , administeredVaccinesDirty = form.administeredVaccinesDirty
                 , vaccinationDates = vaccinationDates
