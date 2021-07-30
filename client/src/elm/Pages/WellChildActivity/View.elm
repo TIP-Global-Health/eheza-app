@@ -898,16 +898,6 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
             assembled.person.birthDate
                 |> Maybe.withDefault (Date.add Months -6 currentDate)
 
-        catchUpRequiredInput =
-            [ viewQuestionLabel language Translate.VaccinationCatchUpRequiredQuestion
-            , viewBoolInput
-                language
-                form.catchUpRequired
-                SetCatchUpRequired
-                ""
-                Nothing
-            ]
-
         catchUpRequired =
             form.catchUpRequired == Just True
 
@@ -1047,8 +1037,14 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                     -- , onClick SaveAcuteIllnessOutcome
                     ]
                     [ text <| translate language Translate.ReviewVaccinationHistory ]
+                , viewQuestionLabel language Translate.VaccinationCatchUpRequiredQuestion
+                , viewBoolInput
+                    language
+                    form.catchUpRequired
+                    SetCatchUpRequired
+                    ""
+                    Nothing
                 ]
-                    ++ catchUpRequiredInput
                     ++ catchUpInputs
             ]
         , viewAction language (SaveVaccinationHistory assembled.participant.person suggestedVaccines assembled.measurements.vaccinationHistory) disabled

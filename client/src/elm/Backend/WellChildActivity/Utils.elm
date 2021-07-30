@@ -101,4 +101,4 @@ getAllActivities isChw =
         [ WellChildPregnancySummary, WellChildImmunisation, WellChildNutritionAssessment, WellChildNextSteps ]
 
     else
-        [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildVaccinationHistory, WellChildImmunisation, WellChildECD, WellChildMedication, WellChildNextSteps ]
+        [ WellChildVaccinationHistory, WellChildDangerSigns, WellChildNutritionAssessment, WellChildImmunisation, WellChildECD, WellChildMedication, WellChildNextSteps ]
