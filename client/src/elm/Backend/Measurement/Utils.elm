@@ -279,6 +279,9 @@ administrationNoteFromString reason =
         "patient-unable-to-afford" ->
             Just NonAdministrationPatientUnableToAfford
 
+        "home-birth" ->
+            Just NonAdministrationHomeBirth
+
         "other" ->
             Just NonAdministrationOther
 
@@ -306,6 +309,9 @@ administrationNoteToString reason =
 
         NonAdministrationPatientUnableToAfford ->
             "patient-unable-to-afford"
+
+        NonAdministrationHomeBirth ->
+            "home-birth"
 
         NonAdministrationOther ->
             "other"
