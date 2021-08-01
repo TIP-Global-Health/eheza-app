@@ -5238,6 +5238,11 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
+                NonAdministrationHomeBirth ->
+                    { english = "Home Birth"
+                    , kinyarwanda = Nothing
+                    }
+
                 NonAdministrationOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"

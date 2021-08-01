@@ -1097,6 +1097,7 @@ type AdministrationNote
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
     | NonAdministrationPatientUnableToAfford
+    | NonAdministrationHomeBirth
     | NonAdministrationOther
     | AdministeredToday
     | AdministeredPreviously

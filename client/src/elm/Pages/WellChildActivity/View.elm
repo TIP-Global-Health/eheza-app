@@ -1279,12 +1279,23 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
 
                         else
                             ( [], Nothing )
+
+                    ( leftOptions, rightOptions ) =
+                        if isChw then
+                            ( [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationKnownAllergy ]
+                            , [ NonAdministrationPatientUnableToAfford, NonAdministrationHomeBirth, NonAdministrationOther ]
+                            )
+
+                        else
+                            ( [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined ]
+                            , [ NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                            )
                 in
                 ( [ div [ class "why-not" ]
                         [ viewQuestionLabel language Translate.WhyNot
                         , viewCheckBoxSelectInput language
-                            [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined ]
-                            [ NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                            leftOptions
+                            rightOptions
                             (config.getVaccinationNoteFunc form)
                             (SetImmunisationAdministrationNoteInput config.setAdministrationNoteFunc)
                             Translate.AdministrationNote
