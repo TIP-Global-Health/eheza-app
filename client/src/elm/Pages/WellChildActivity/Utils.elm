@@ -650,6 +650,27 @@ expectVaccineForPerson currentDate person vaccineType =
     expectVaccineDoseForPerson currentDate person ( vaccineType, VaccineDoseFirst )
 
 
+filterExpextedDosesForPerson : NominalDate -> Person -> ( VaccineType, List VaccineDose ) -> Maybe ( VaccineType, List VaccineDose )
+filterExpextedDosesForPerson currentDate person ( vaccine, doses ) =
+    let
+        expectedDoses =
+            List.filterMap
+                (\dose ->
+                    if expectVaccineDoseForPerson currentDate person ( vaccine, dose ) then
+                        Just dose
+
+                    else
+                        Nothing
+                )
+                doses
+    in
+    if List.isEmpty expectedDoses then
+        Nothing
+
+    else
+        Just ( vaccine, expectedDoses )
+
+
 expectVaccineDoseForPerson : NominalDate -> Person -> ( VaccineType, VaccineDose ) -> Bool
 expectVaccineDoseForPerson currentDate person ( vaccineType, vaccineDose ) =
     person.birthDate
