@@ -59,7 +59,7 @@ view language currentDate zscores childId originActivity ( sessionId, session ) 
         , viewModal <|
             warningPopup language
                 currentDate
-                SetWarningPopupState
+                (SetWarningPopupState [])
                 model.warningPopupState
         ]
 

@@ -98,7 +98,7 @@ viewHeaderAndContent language currentDate zscores id activity isChw db model dat
         , viewModal <|
             warningPopup language
                 currentDate
-                SetWarningPopupState
+                (SetWarningPopupState [])
                 model.warningPopupState
         ]
 
@@ -128,8 +128,8 @@ viewContent language currentDate zscores id activity isChw db model assembled =
         |> div [ class "ui unstackable items" ]
 
 
-warningPopup : Language -> NominalDate -> (List NutritionAssessment -> msg) -> List NutritionAssessment -> Maybe (Html msg)
-warningPopup language currentDate setStateMsg state =
+warningPopup : Language -> NominalDate -> msg -> List NutritionAssessment -> Maybe (Html msg)
+warningPopup language currentDate closePopupMsg state =
     if List.isEmpty state then
         Nothing
 
@@ -164,7 +164,7 @@ warningPopup language currentDate setStateMsg state =
                     [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
-                        , onClick <| setStateMsg []
+                        , onClick closePopupMsg
                         ]
                         [ text <| translate language Translate.Continue ]
                     ]

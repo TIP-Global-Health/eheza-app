@@ -90,10 +90,7 @@ viewHeaderAndContent language currentDate zscores id isChw activity db model dat
         [ header
         , content
         , viewModal <|
-            warningPopup language
-                currentDate
-                SetWarningPopupState
-                model.warningPopupState
+            viewWarningPopup language currentDate model.warningPopupState
         ]
 
 
@@ -120,6 +117,51 @@ viewContent language currentDate zscores id isChw activity db model assembled =
         :: viewActivity language currentDate zscores id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
+
+
+viewWarningPopup : Language -> NominalDate -> Maybe WarningPopupType -> Maybe (Html Msg)
+viewWarningPopup language currentDate warningPopupState =
+    warningPopupState
+        |> Maybe.andThen
+            (\popupType ->
+                case popupType of
+                    PopupNutritionAssesment assessment ->
+                        warningPopup language
+                            currentDate
+                            (SetWarningPopupState Nothing)
+                            assessment
+
+                    PopupMacrocephaly personId saved nextTask_ ->
+                        headCircumferencePopup language ( personId, saved, nextTask_ ) Translate.WellChildMacrocephalyWarning
+
+                    PopupMicrocephaly personId saved nextTask_ ->
+                        headCircumferencePopup language ( personId, saved, nextTask_ ) Translate.WellChildMicrocephalyWarning
+            )
+
+
+headCircumferencePopup :
+    Language
+    -> ( PersonId, Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference ), Maybe NutritionAssessmentTask )
+    -> TranslationId
+    -> Maybe (Html Msg)
+headCircumferencePopup language ( personId, saved, nextTask_ ) message =
+    Just <|
+        div [ class "ui active modal danger-signs-popup" ]
+            [ div [ class "content" ]
+                [ div [ class "popup-heading-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                    ]
+                , div [ class "popup-action" ] [ text <| translate language message ]
+                ]
+            , div [ class "actions" ]
+                [ button
+                    [ class "ui fluid button"
+                    , onClick <| CloseHeadCircumferencePopup personId saved nextTask_
+                    ]
+                    [ text <| translate language Translate.Continue ]
+                ]
+            ]
 
 
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -582,6 +624,28 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
         previousValuesSet =
             resolvePreviousValuesSetForChild assembled.participant.person db
 
+        headCircumferenceForm =
+            measurements.headCircumference
+                |> getMeasurementValueFunc
+                |> headCircumferenceFormWithDefault data.headCircumferenceForm
+
+        headCircumferenceZScore =
+            let
+                maybeAgeInDays =
+                    Maybe.map
+                        (\birthDate -> diffDays birthDate currentDate)
+                        person.birthDate
+            in
+            headCircumferenceForm.headCircumference
+                |> Maybe.andThen
+                    (\headCircumference ->
+                        Maybe.andThen
+                            (\ageInDays ->
+                                zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
+                            )
+                            maybeAgeInDays
+                    )
+
         viewForm =
             case activeTask of
                 Just TaskHeight ->
@@ -591,10 +655,7 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
 
                 Just TaskHeadCircumference ->
-                    measurements.headCircumference
-                        |> getMeasurementValueFunc
-                        |> headCircumferenceFormWithDefault data.headCircumferenceForm
-                        |> viewHeadCircumferenceForm language currentDate zscores assembled.person previousValuesSet.headCircumference
+                    viewHeadCircumferenceForm language currentDate assembled.person headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
 
                 Just TaskMuac ->
                     measurements.muac
@@ -654,7 +715,27 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                         SaveHeight personId measurements.height nextTask
 
                                     TaskHeadCircumference ->
-                                        SaveHeadCircumference personId measurements.headCircumference nextTask
+                                        let
+                                            saveHeadCircumferenceMsg =
+                                                SaveHeadCircumference personId measurements.headCircumference nextTask
+                                        in
+                                        headCircumferenceZScore
+                                            |> Maybe.map
+                                                (\zscore ->
+                                                    if zscore > 3 then
+                                                        PopupMacrocephaly personId measurements.headCircumference nextTask
+                                                            |> Just
+                                                            |> SetWarningPopupState
+
+                                                    else if zscore < -3 then
+                                                        PopupMicrocephaly personId measurements.headCircumference nextTask
+                                                            |> Just
+                                                            |> SetWarningPopupState
+
+                                                    else
+                                                        saveHeadCircumferenceMsg
+                                                )
+                                            |> Maybe.withDefault saveHeadCircumferenceMsg
 
                                     TaskMuac ->
                                         SaveMuac personId measurements.muac nextTask
@@ -701,31 +782,20 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
 viewHeadCircumferenceForm :
     Language
     -> NominalDate
-    -> ZScore.Model.Model
     -> Person
+    -> Maybe Float
     -> Maybe Float
     -> HeadCircumferenceForm
     -> List (Html Msg)
-viewHeadCircumferenceForm language currentDate zscores person previousValue form =
+viewHeadCircumferenceForm language currentDate person zscore previousValue form =
     let
         maybeAgeInDays =
             Maybe.map
                 (\birthDate -> diffDays birthDate currentDate)
                 person.birthDate
 
-        zScoreValue =
-            form.headCircumference
-                |> Maybe.andThen
-                    (\headCircumference ->
-                        Maybe.andThen
-                            (\ageInDays ->
-                                zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
-                            )
-                            maybeAgeInDays
-                    )
-
         zScoreText =
-            Maybe.map viewZScore zScoreValue
+            Maybe.map viewZScore zscore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 
         inputSection =
@@ -745,7 +815,7 @@ viewHeadCircumferenceForm language currentDate zscores person previousValue form
                     , div
                         [ class "five wide column" ]
                         [ showMaybe <|
-                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zScoreValue
+                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zscore
                         ]
                     ]
                 , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand

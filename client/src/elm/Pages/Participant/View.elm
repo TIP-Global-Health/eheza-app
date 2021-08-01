@@ -197,7 +197,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
         popup =
             warningPopup language
                 currentDate
-                SetWarningPopupState
+                (SetWarningPopupState [])
                 model.warningPopupState
                 |> viewModal
                 |> keyed "pupup"
