@@ -89,7 +89,9 @@ update currentDate zscores isChw db msg model =
 
                                         else
                                             -- Show warning popup with new assesment.
-                                            Pages.WellChildActivity.Model.SetWarningPopupState assessment
+                                            Pages.WellChildActivity.Model.PopupNutritionAssesment assessment
+                                                |> Just
+                                                |> Pages.WellChildActivity.Model.SetWarningPopupState
                                                 |> App.Model.MsgPageWellChildActivity encounterId Backend.WellChildActivity.Model.WellChildNextSteps
                                                 |> App.Model.MsgLoggedIn
                                                 |> List.singleton

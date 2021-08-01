@@ -435,6 +435,19 @@ update currentDate id db msg model =
             , []
             )
 
+        CloseHeadCircumferencePopup personId saved nextTask_ ->
+            let
+                extraMsgs =
+                    [ SetWarningPopupState Nothing
+                    , SaveHeadCircumference personId saved nextTask_
+                    ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
         SaveHeadCircumference personId saved nextTask_ ->
             let
                 measurementId =
