@@ -224,17 +224,6 @@ type NutritionAssessmentTask
     | TaskWeight
 
 
-allNutritionAssessmentTasks : List NutritionAssessmentTask
-allNutritionAssessmentTasks =
-    [ TaskHeight
-    , TaskHeadCircumference
-    , TaskMuac
-    , TaskNutrition
-    , TaskPhoto
-    , TaskWeight
-    ]
-
-
 type alias VaccinationHistoryForm =
     { catchUpRequired : Maybe Bool
     , suggestedVaccines : Dict VaccineType (EverySet VaccineDose)

@@ -595,8 +595,11 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
         measurements =
             assembled.measurements
 
+        ( mandatory, optional ) =
+            partitionNutritionAssessmentTasks isChw
+
         tasks =
-            allNutritionAssessmentTasks
+            (mandatory ++ optional)
                 |> List.filter (expectNutritionAssessmentTask currentDate isChw assembled db)
 
         activeTask =
