@@ -1317,6 +1317,75 @@ input::placeholder {
     width: 470px;
   }
 
+  &.vaccination-history-popup {
+    border-top: 15px solid $color-primary;
+    margin-left: -350px;
+    width: 700px;
+
+    .header {
+      padding: 20px 0;
+    }
+
+    .content {
+      padding: 0;
+    }
+
+    .content .caption  {
+      border-bottom: 2px solid $color-text;
+      display: flex;
+      padding: 10px 0;
+
+      div {
+        float: left;
+        font-weight: 600;
+      }
+
+      div.name {
+        width: 65%;
+      }
+
+      div.dates {
+        width: 35%;
+      }
+    }
+
+    .content .entries  {
+      display: flex;
+      flex-direction: column;
+
+      .entry {
+        align-items: center;
+        border-bottom: 2px solid $color-text;
+        display: flex;
+        padding: 20px;
+
+        .name {
+          float: left;
+          text-align: left;
+          width: 65%;
+        }
+
+        .dates {
+          float: left;
+          text-align: center;
+          width: 35%;
+
+          p {
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      .entry:last-child  {
+        border: 0;
+      }
+    }
+
+    .actions .button {
+      margin-left: 0;
+    }
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;
@@ -1347,8 +1416,8 @@ input::placeholder {
   }
 
   > .actions {
-    border-top: 0;
     background: transparent;
+    border-top: 0;
     margin: 0;
     padding: 0;
   }

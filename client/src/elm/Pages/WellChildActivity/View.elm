@@ -1,6 +1,6 @@
 module Pages.WellChildActivity.View exposing (view)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
@@ -78,13 +78,13 @@ view language currentDate zscores id isChw activity db model =
 
 
 viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores id isChw activity db model data =
+viewHeaderAndContent language currentDate zscores id isChw activity db model assembled =
     let
         header =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores id isChw activity db model data
+            viewContent language currentDate zscores id isChw activity db model assembled
     in
     div [ class "page-activity well-child" ]
         [ header
@@ -136,6 +136,9 @@ viewWarningPopup language currentDate warningPopupState =
 
                     PopupMicrocephaly personId saved nextTask_ ->
                         headCircumferencePopup language ( personId, saved, nextTask_ ) Translate.WellChildMicrocephalyWarning
+
+                    PopupVaccinationHistory vaccinationHistory ->
+                        vaccinationHistoryPopup language currentDate vaccinationHistory
             )
 
 
@@ -160,6 +163,47 @@ headCircumferencePopup language ( personId, saved, nextTask_ ) message =
                     , onClick <| CloseHeadCircumferencePopup personId saved nextTask_
                     ]
                     [ text <| translate language Translate.Continue ]
+                ]
+            ]
+
+
+vaccinationHistoryPopup : Language -> NominalDate -> Dict VaccineType (Dict VaccineDose NominalDate) -> Maybe (Html Msg)
+vaccinationHistoryPopup language currentDate vaccinationHistory =
+    let
+        entries =
+            Dict.toList vaccinationHistory
+                |> List.map viewVaccinationEntry
+
+        viewVaccinationEntry ( vaccineType, doses ) =
+            if Dict.isEmpty doses then
+                emptyNode
+
+            else
+                div [ class "entry" ]
+                    [ div [ class "name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
+                    , Dict.values doses
+                        |> List.sortWith Date.compare
+                        |> List.map (formatDDMMyyyy >> text >> List.singleton >> p [])
+                        |> div [ class "dates" ]
+                    ]
+    in
+    Just <|
+        div [ class "ui active modal vaccination-history-popup" ] <|
+            [ div [ class "header" ]
+                [ text <| translate language Translate.ImmunisationHistory ]
+            , div [ class "content" ]
+                [ div [ class "caption" ]
+                    [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                    , div [ class "dates" ] [ text <| translate language Translate.DateReceived ]
+                    ]
+                , div [ class "entries" ] entries
+                ]
+            , div [ class "actions" ]
+                [ button
+                    [ class "ui primary fluid button"
+                    , onClick <| SetWarningPopupState Nothing
+                    ]
+                    [ text <| translate language Translate.Close ]
                 ]
             ]
 
@@ -1103,9 +1147,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                         [ ( "ui primary button review-history", True )
                         , ( "disabled", catchUpRequired )
                         ]
-
-                    -- @todo
-                    -- , onClick SaveAcuteIllnessOutcome
+                    , onClick <| SetWarningPopupState <| Just <| PopupVaccinationHistory assembled.vaccinationHistory
                     ]
                     [ text <| translate language Translate.ReviewVaccinationHistory ]
                 , viewQuestionLabel language Translate.VaccinationCatchUpRequiredQuestion

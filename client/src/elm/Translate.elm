@@ -449,6 +449,7 @@ type TranslationId
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | DashboardLabel
+    | DateReceived
     | DateOfBirth
     | Day
     | DayAbbrev
@@ -581,6 +582,8 @@ type TranslationId
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IdleWaitingForSync
+    | Immunisation
+    | ImmunisationHistory
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
     | IndividualEncounterFirstVisit IndividualEncounterType
@@ -2721,6 +2724,11 @@ translationSet trans =
             , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
             }
 
+        DateReceived ->
+            { english = "Date Received"
+            , kinyarwanda = Nothing
+            }
+
         DeliveryLocation ->
             { english = "Delivery Location"
             , kinyarwanda = Just "Aho yabyariye"
@@ -4109,6 +4117,16 @@ translationSet trans =
 
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
+            , kinyarwanda = Nothing
+            }
+
+        Immunisation ->
+            { english = "Immunisation"
+            , kinyarwanda = Nothing
+            }
+
+        ImmunisationHistory ->
+            { english = "Immunisation History"
             , kinyarwanda = Nothing
             }
 

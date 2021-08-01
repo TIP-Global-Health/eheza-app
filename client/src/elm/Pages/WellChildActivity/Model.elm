@@ -122,6 +122,7 @@ type WarningPopupType
     = PopupNutritionAssesment (List NutritionAssessment)
     | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupVaccinationHistory (Dict VaccineType (Dict VaccineDose NominalDate))
 
 
 type alias PregnancySummaryForm =
