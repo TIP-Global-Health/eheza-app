@@ -282,7 +282,8 @@ decide if to show Next Steps activity, or not.
 partitionNutritionAssessmentTasks : Bool -> ( List NutritionAssessmentTask, List NutritionAssessmentTask )
 partitionNutritionAssessmentTasks isChw =
     if isChw then
-        ( [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskHeight, TaskPhoto ] )
+        -- Muac is not here, because Newbor Exam is done for children that are less than 2 months old.
+        ( [ TaskHeadCircumference, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
 
     else
         ( [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
