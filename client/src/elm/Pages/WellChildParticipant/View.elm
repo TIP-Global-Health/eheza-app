@@ -129,12 +129,16 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                                     in
                                     if isChw then
                                         ( resolveActiveEncounter newbornEncounters
-                                        , -- There can be only one newborn exam encounter.
-                                          -- We will not to allow create new / edit existing action, if
-                                          -- we already have one encounter, and it is not active from today.
-                                          List.head newbornEncounters
-                                            |> Maybe.map (Tuple.second >> isDailyEncounterActive currentDate >> not)
-                                            |> Maybe.withDefault False
+                                        , -- We will not allow creating newborn exam encounter if
+                                          -- child has performed SPV encounter.
+                                          (not <| List.isEmpty pediatricCareEncounetrs)
+                                            -- We will not to allow create new / edit existing action, if
+                                            -- we already have one encounter (as there can be only one
+                                            --  newborn exam encounter), and it is not active from today.
+                                            || (List.head newbornEncounters
+                                                    |> Maybe.map (Tuple.second >> isDailyEncounterActive currentDate >> not)
+                                                    |> Maybe.withDefault False
+                                               )
                                         )
 
                                     else

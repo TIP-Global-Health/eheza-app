@@ -1123,8 +1123,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                                                     else
                                                                                         Nothing
 
-                                                                                else if List.member sign Pages.WellChildActivity.Utils.ecdSignsFrom6MonthsMajors then
-                                                                                    if ageMonths >= 12 then
+                                                                                else if List.member sign Pages.WellChildActivity.Utils.ecdSigns6To12MonthsMajors then
+                                                                                    -- Signs will be displayed until child is 13 months old.
+                                                                                    if ageMonths == 12 then
                                                                                         Just Pages.WellChildEncounter.Model.ReferToSpecialist
 
                                                                                     else if ageMonths >= 9 then

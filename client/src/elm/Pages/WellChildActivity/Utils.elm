@@ -1187,7 +1187,7 @@ expectedECDSignsByAge currentDate assembled =
                         Date.diff Months birthDate currentDate
 
                     groupedSigns =
-                        groupedECDSigns assembled
+                        groupedECDSigns ageMonths assembled
                 in
                 if ageWeeks < 5 then
                     []
@@ -1233,8 +1233,8 @@ expectedECDSignsByAge currentDate assembled =
         |> Maybe.withDefault []
 
 
-groupedECDSigns : AssembledData -> List (List ECDSign)
-groupedECDSigns assembled =
+groupedECDSigns : Int -> AssembledData -> List (List ECDSign)
+groupedECDSigns ageMonths assembled =
     let
         sixMonthsAssessmentPerformed =
             sixMonthsECDAssessmentPerformed assembled
@@ -1248,7 +1248,7 @@ groupedECDSigns assembled =
     in
     [ from5Weeks
     , from13Weeks
-    , ecdSignsFrom6Months sixMonthsAssessmentPerformed
+    , ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed
     , ecdSignsFrom15Months
     , ecdSignsFrom18Months
     , ecdSignsFrom2Years
@@ -1297,17 +1297,20 @@ ecdSignsFrom13Weeks =
     ]
 
 
-ecdSignsFrom6Months : Bool -> List ECDSign
-ecdSignsFrom6Months sixMonthsAssessmentPerformed =
-    if sixMonthsAssessmentPerformed then
-        ecdSignsFrom6MonthsMajors
+ecdSigns6To12Months : Int -> Bool -> List ECDSign
+ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed =
+    if ageMonths > 12 then
+        []
+
+    else if sixMonthsAssessmentPerformed then
+        ecdSigns6To12MonthsMajors
 
     else
-        ecdSignsFrom6MonthsMinors ++ ecdSignsFrom6MonthsMajors
+        ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
 
 
-ecdSignsFrom6MonthsMinors : List ECDSign
-ecdSignsFrom6MonthsMinors =
+ecdSigns6To12MonthsMinors : List ECDSign
+ecdSigns6To12MonthsMinors =
     [ BringHandsToMouth
     , HoldHeadWithoutSupport
     , HoldAndShakeToys
@@ -1316,8 +1319,8 @@ ecdSignsFrom6MonthsMinors =
     ]
 
 
-ecdSignsFrom6MonthsMajors : List ECDSign
-ecdSignsFrom6MonthsMajors =
+ecdSigns6To12MonthsMajors : List ECDSign
+ecdSigns6To12MonthsMajors =
     [ RespondToSoundWithSound
     , TurnHeadWhenCalled
     , SitWithoutSupport
