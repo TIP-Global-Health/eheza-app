@@ -111,7 +111,7 @@ emptyModel =
 
 
 type WarningPopupType
-    = PopupNutritionAssesment (List NutritionAssessment)
+    = PopupNutritionAssessment (List NutritionAssessment)
     | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
 
