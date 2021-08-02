@@ -214,14 +214,14 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
         WellChildPregnancySummary ->
             viewPregnancySummaryForm language currentDate assembled model.pregnancySummaryForm
 
+        WellChildVaccinationHistory ->
+            viewVaccinationHistoryForm language currentDate isChw assembled model.vaccinationHistoryForm
+
         WellChildDangerSigns ->
             viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
         WellChildNutritionAssessment ->
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
-
-        WellChildVaccinationHistory ->
-            viewVaccinationHistoryForm language currentDate isChw assembled model.vaccinationHistoryForm
 
         WellChildImmunisation ->
             viewImmunisationForm language currentDate isChw assembled model.immunisationForm
@@ -1000,21 +1000,47 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
         totalItemsforView =
             List.length suggested
 
+        birthDate =
+            assembled.person.birthDate
+                -- We should not get here, because child with no birth date
+                -- would not be allowed to participate in encounter.
+                |> Maybe.withDefault (Date.add Months -6 currentDate)
+
         itemsForView =
             List.indexedMap
-                (\index ( type_, dose ) ->
-                    { type_ = type_
+                (\index ( vaccineType, dose ) ->
+                    let
+                        startDate =
+                            vacinationDateByPreviousDoseDate previousDoseDate birthDate ( vaccineType, dose )
+
+                        previousDoseDate =
+                            getPreviousVaccineDose dose
+                                |> Maybe.andThen
+                                    (\previouseDose ->
+                                        let
+                                            dateRecorded =
+                                                Dict.get vaccineType form.vaccinationDates
+                                                    |> Maybe.andThen (Dict.get previouseDose)
+                                                    |> Maybe.Extra.join
+
+                                            dateFromHistory =
+                                                Dict.get vaccineType assembled.vaccinationHistory
+                                                    |> Maybe.andThen (Dict.get previouseDose)
+                                        in
+                                        Maybe.Extra.or dateRecorded dateFromHistory
+                                    )
+                    in
+                    { type_ = vaccineType
                     , dose = dose
+
+                    -- The date from which this vaccine dose can be administered.
+                    , startDate = startDate
 
                     -- Only last 2 questions will have active inputs
                     , active = index + 2 >= totalItemsforView
                     }
                 )
                 suggested
-
-        birthDate =
-            assembled.person.birthDate
-                |> Maybe.withDefault (Date.add Months -6 currentDate)
 
         catchUpRequired =
             form.catchUpRequired == Just True
@@ -1071,7 +1097,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                                     toggleAction
                                                     setDateAction
                                                     selectorState
-                                                    birthDate
+                                                    item.startDate
                                                     (Date.add Days -1 currentDate)
                                                     vaccinationDate
                                                 ]
@@ -1168,6 +1194,21 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
     ]
 
 
+vacinationDateByPreviousDoseDate : Maybe NominalDate -> NominalDate -> ( VaccineType, VaccineDose ) -> NominalDate
+vacinationDateByPreviousDoseDate previousDoseDate birthDate ( vaccineType, dose ) =
+    Maybe.map
+        (\previousDate ->
+            let
+                ( interval, unit ) =
+                    getIntervalForVaccine vaccineType
+            in
+            -- Allow grace of one unit.
+            Date.add unit (interval - 1) previousDate
+        )
+        previousDoseDate
+        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, dose ))
+
+
 viewImmunisationForm : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> List (Html Msg)
 viewImmunisationForm language currentDate isChw assembled immunisationForm =
     let
@@ -1247,10 +1288,10 @@ type alias SuggestedVaccineTasks =
 
 
 inputsAndTasksForSuggestedVaccine : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> ( VaccineType, VaccineDose ) -> ( List (Html Msg), SuggestedVaccineTasks )
-inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( vaccineType, vaccineDose ) =
+inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( vaccineType, dose ) =
     let
         ( vaccinationAdministeredInput, vaccinationAdministeredTask ) =
-            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion vaccineType vaccineDose isChw True
+            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion vaccineType dose isChw True
               , viewBoolInput
                     language
                     (config.getVaccinationAdministeredFunc form)
@@ -1261,18 +1302,36 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
             , config.getVaccinationAdministeredFunc form
             )
 
+        birthDate =
+            assembled.person.birthDate
+                -- We should not get here, because child with no birth date
+                -- would not be allowed to participate in encounter.
+                |> Maybe.withDefault (Date.add Months -6 currentDate)
+
         ( vaccinationDerrivedInputs, vaccinationDateTask, vaccinationNoteTask ) =
             if config.getVaccinationAdministeredFunc form == Just False then
                 let
                     ( vaccinationDateInput, dateTask ) =
                         if config.getVaccinationNoteFunc form == Just AdministeredPreviously then
+                            let
+                                startDate =
+                                    vacinationDateByPreviousDoseDate previousDoseDate birthDate ( vaccineType, dose )
+
+                                previousDoseDate =
+                                    getPreviousVaccineDose dose
+                                        |> Maybe.andThen
+                                            (\previouseDose ->
+                                                Dict.get vaccineType assembled.vaccinationHistory
+                                                    |> Maybe.andThen (Dict.get previouseDose)
+                                            )
+                            in
                             ( [ div [ class "form-input date previous" ]
                                     [ viewLabel language Translate.SelectDate
                                     , DateSelector.SelectorDropdown.view
                                         (ToggleImmunisationDateSelectorInput config.toggleDateSelectorFunc)
                                         (SetImmunisationDateInput config.setDateInputFunc)
                                         (config.getVaccinationDateSelectorOpenFunc form)
-                                        (Date.add Months -6 currentDate)
+                                        startDate
                                         (Date.add Days -1 currentDate)
                                         (config.getVaccinationDateFunc form)
                                     ]

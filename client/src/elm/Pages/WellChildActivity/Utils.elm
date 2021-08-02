@@ -678,47 +678,11 @@ expectVaccineDoseForPerson currentDate person ( vaccineType, vaccineDose ) =
         |> Maybe.map
             (\birthDate ->
                 let
-                    doseIntervals =
-                        vaccineDoseToComparable vaccineDose - 1
-
-                    ( interval, unit ) =
-                        getIntervalForVaccine vaccineType
+                    expectedDate =
+                        initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose )
 
                     compared =
                         Date.compare expectedDate currentDate
-
-                    expectedDate =
-                        case vaccineType of
-                            VaccineBCG ->
-                                birthDate
-
-                            VaccineOPV ->
-                                Date.add unit (doseIntervals * interval) birthDate
-
-                            VaccineDTP ->
-                                Date.add Weeks 5 birthDate
-                                    |> Date.add unit (doseIntervals * interval)
-
-                            VaccinePCV13 ->
-                                Date.add Weeks 5 birthDate
-                                    |> Date.add unit (doseIntervals * interval)
-
-                            VaccineRotarix ->
-                                Date.add Weeks 5 birthDate
-                                    |> Date.add unit (doseIntervals * interval)
-
-                            VaccineIPV ->
-                                Date.add Weeks 13 birthDate
-                                    |> Date.add unit (doseIntervals * interval)
-
-                            VaccineMR ->
-                                Date.add Weeks 35 birthDate
-                                    |> Date.add unit (doseIntervals * interval)
-
-                            VaccineHPV ->
-                                Date.add Years 12 birthDate
-                                    |> Date.add Weeks -1
-                                    |> Date.add unit (doseIntervals * interval)
 
                     genderCondition =
                         if vaccineType == VaccineHPV then
@@ -730,6 +694,48 @@ expectVaccineDoseForPerson currentDate person ( vaccineType, vaccineDose ) =
                 (compared == LT || compared == EQ) && genderCondition
             )
         |> Maybe.withDefault False
+
+
+initialVaccinationDateByBirthDate : NominalDate -> ( VaccineType, VaccineDose ) -> NominalDate
+initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose ) =
+    let
+        dosesInterval =
+            vaccineDoseToComparable vaccineDose - 1
+
+        ( interval, unit ) =
+            getIntervalForVaccine vaccineType
+    in
+    case vaccineType of
+        VaccineBCG ->
+            birthDate
+
+        VaccineOPV ->
+            Date.add unit (dosesInterval * interval) birthDate
+
+        VaccineDTP ->
+            Date.add Weeks 5 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccinePCV13 ->
+            Date.add Weeks 5 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineRotarix ->
+            Date.add Weeks 5 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineIPV ->
+            Date.add Weeks 13 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineMR ->
+            Date.add Weeks 35 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineHPV ->
+            Date.add Years 12 birthDate
+                |> Date.add Weeks -1
+                |> Date.add unit (dosesInterval * interval)
 
 
 latestVaccinationDataForVaccine : Dict VaccineType (Dict VaccineDose NominalDate) -> VaccineType -> Maybe ( VaccineDose, NominalDate )
@@ -829,20 +835,17 @@ getVaccinationDatesFromVaccinationHistoryValue vaccineType =
             .hpvVaccinationDate
 
 
-getNextVaccineDose : VaccineDose -> Maybe VaccineDose
-getNextVaccineDose dose =
-    case dose of
-        VaccineDoseFirst ->
-            Just VaccineDoseSecond
-
-        VaccineDoseSecond ->
-            Just VaccineDoseThird
-
-        VaccineDoseThird ->
-            Just VaccineDoseFourth
-
-        VaccineDoseFourth ->
-            Nothing
+allVaccineTypes : List VaccineType
+allVaccineTypes =
+    [ VaccineBCG
+    , VaccineOPV
+    , VaccineDTP
+    , VaccinePCV13
+    , VaccineRotarix
+    , VaccineIPV
+    , VaccineMR
+    , VaccineHPV
+    ]
 
 
 allVaccinesWithDoses : Dict VaccineType (List VaccineDose)
@@ -905,16 +908,16 @@ getIntervalForVaccine vaccineType =
             ( 0, Days )
 
         VaccineOPV ->
-            ( 28, Days )
+            ( 4, Weeks )
 
         VaccineDTP ->
-            ( 28, Days )
+            ( 4, Weeks )
 
         VaccinePCV13 ->
-            ( 28, Days )
+            ( 4, Weeks )
 
         VaccineRotarix ->
-            ( 28, Days )
+            ( 4, Weeks )
 
         VaccineIPV ->
             ( 0, Days )
@@ -926,22 +929,41 @@ getIntervalForVaccine vaccineType =
             ( 6, Months )
 
 
-allVaccineTypes : List VaccineType
-allVaccineTypes =
-    [ VaccineBCG
-    , VaccineOPV
-    , VaccineDTP
-    , VaccinePCV13
-    , VaccineRotarix
-    , VaccineIPV
-    , VaccineMR
-    , VaccineHPV
-    ]
-
-
 allVaccineDoses : List VaccineDose
 allVaccineDoses =
     [ VaccineDoseFirst, VaccineDoseSecond, VaccineDoseThird, VaccineDoseFourth ]
+
+
+getNextVaccineDose : VaccineDose -> Maybe VaccineDose
+getNextVaccineDose dose =
+    case dose of
+        VaccineDoseFirst ->
+            Just VaccineDoseSecond
+
+        VaccineDoseSecond ->
+            Just VaccineDoseThird
+
+        VaccineDoseThird ->
+            Just VaccineDoseFourth
+
+        VaccineDoseFourth ->
+            Nothing
+
+
+getPreviousVaccineDose : VaccineDose -> Maybe VaccineDose
+getPreviousVaccineDose dose =
+    case dose of
+        VaccineDoseFirst ->
+            Nothing
+
+        VaccineDoseSecond ->
+            Just VaccineDoseFirst
+
+        VaccineDoseThird ->
+            Just VaccineDoseSecond
+
+        VaccineDoseFourth ->
+            Just VaccineDoseThird
 
 
 vaccineDoseToComparable : VaccineDose -> Int
