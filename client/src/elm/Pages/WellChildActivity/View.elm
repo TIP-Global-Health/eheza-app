@@ -1227,7 +1227,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
             )
 
         suggestedVaccines =
-            generateSuggestedVaccines currentDate isChw assembled
+            generateSuggestedVaccinations currentDate isChw assembled
 
         inputsAndTasks =
             List.map (inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form) suggestedVaccines
