@@ -176,6 +176,7 @@ decodeHomeVisitMeasurements =
 decodeWellChildMeasurements : Decoder WellChildMeasurements
 decodeWellChildMeasurements =
     succeed WellChildMeasurements
+        |> optional "well_child_pregnancy_summary" (decodeHead decodeWellChildPregnancySummary) Nothing
         |> optional "well_child_symptoms_review" (decodeHead decodeWellChildSymptomsReview) Nothing
         |> optional "well_child_vitals" (decodeHead decodeWellChildVitals) Nothing
         |> optional "well_child_height" (decodeHead decodeWellChildHeight) Nothing
@@ -192,8 +193,8 @@ decodeWellChildMeasurements =
         |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
         |> optional "well_child_albendazole" (decodeHead decodeWellChildAlbendazole) Nothing
         |> optional "well_child_mebendezole" (decodeHead decodeWellChildMebendezole) Nothing
-        |> optional "well_child_pregnancy_summary" (decodeHead decodeWellChildPregnancySummary) Nothing
         |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
+        |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1387,7 +1388,7 @@ decodeFollowUpValue : Decoder FollowUpValue
 decodeFollowUpValue =
     succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
-        |> custom decodeNutritionAssesment
+        |> custom decodeNutritionAssessment
 
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
@@ -2011,6 +2012,12 @@ decodeSendToHCSign =
 
                     "accompany-to-hc" ->
                         succeed PrenatalAccompanyToHC
+
+                    "enroll-to-nutrition-program" ->
+                        succeed EnrollToNutritionProgram
+
+                    "refer-to-nutrition-program" ->
+                        succeed ReferToNutritionProgram
 
                     "none" ->
                         succeed NoSendToHCSigns
@@ -2790,26 +2797,26 @@ decodeReasonForNotProvidingHealthEducation =
             )
 
 
-decodeNutritionAssesment : Decoder (EverySet NutritionAssesment)
-decodeNutritionAssesment =
-    map2 postProcessNutritionAssesment
-        (field "nutrition_assesment" (decodeEverySet decodeNutritionAssesmentFromString))
+decodeNutritionAssessment : Decoder (EverySet NutritionAssessment)
+decodeNutritionAssessment =
+    map2 postProcessNutritionAssessment
+        (field "nutrition_assesment" (decodeEverySet decodeNutritionAssessmentFromString))
         (field "nutrition_signs" (decodeEverySet decodeChildNutritionSign))
 
 
-decodeNutritionAssesmentFromString : Decoder NutritionAssesment
-decodeNutritionAssesmentFromString =
+decodeNutritionAssessmentFromString : Decoder NutritionAssessment
+decodeNutritionAssessmentFromString =
     string
         |> andThen
             (\s ->
-                nutritionAssesmentFromString s
+                nutritionAssessmentFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (s ++ " is not a recognized NutritionAssesment" |> fail)
+                    |> Maybe.withDefault (s ++ " is not a recognized NutritionAssessment" |> fail)
             )
 
 
-postProcessNutritionAssesment : EverySet NutritionAssesment -> EverySet ChildNutritionSign -> EverySet NutritionAssesment
-postProcessNutritionAssesment assesmentFromString nutritionSign =
+postProcessNutritionAssessment : EverySet NutritionAssessment -> EverySet ChildNutritionSign -> EverySet NutritionAssessment
+postProcessNutritionAssessment assesmentFromString nutritionSign =
     assesmentFromString
         |> EverySet.toList
         |> List.head
@@ -3238,3 +3245,15 @@ decodeDeliveryComplication =
                     _ ->
                         fail <| complication ++ " is not a recognized DeliveryComplication"
             )
+
+
+decodeWellChildNextVisit : Decoder WellChildNextVisit
+decodeWellChildNextVisit =
+    decodeWellChildMeasurement decodeNextVisitValue
+
+
+decodeNextVisitValue : Decoder NextVisitValue
+decodeNextVisitValue =
+    succeed NextVisitValue
+        |> required "immunisation_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "pediatric_visit_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)

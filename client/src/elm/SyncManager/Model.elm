@@ -140,6 +140,7 @@ type BackendAuthorityEntity
     | BackendAuthorityWellChildImmunisation (BackendEntity WellChildImmunisation)
     | BackendAuthorityWellChildMebendezole (BackendEntity WellChildMebendezole)
     | BackendAuthorityWellChildMuac (BackendEntity WellChildMuac)
+    | BackendAuthorityWellChildNextVisit (BackendEntity WellChildNextVisit)
     | BackendAuthorityWellChildNutrition (BackendEntity WellChildNutrition)
     | BackendAuthorityWellChildPhoto (BackendEntity WellChildPhoto)
     | BackendAuthorityWellChildPregnancySummary (BackendEntity WellChildPregnancySummary)

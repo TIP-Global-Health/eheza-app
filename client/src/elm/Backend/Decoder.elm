@@ -328,6 +328,9 @@ decodeRevision =
                     "well_child_muac" ->
                         decodeWithUuid WellChildMuacRevision decodeWellChildMuac
 
+                    "well_child_next_visit" ->
+                        decodeWithUuid WellChildNextVisitRevision decodeWellChildNextVisit
+
                     "well_child_nutrition" ->
                         decodeWithUuid WellChildNutritionRevision decodeWellChildNutrition
 

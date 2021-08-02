@@ -281,6 +281,39 @@ function hedley_well_child_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_immunisation_date'.
+  $field_bases['field_immunisation_date'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_immunisation_date',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'cache_count' => 4,
+      'cache_enabled' => 0,
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
   // Exported field_base: 'field_ipv_vaccination_date'.
   $field_bases['field_ipv_vaccination_date'] = array(
     'active' => 1,
@@ -413,6 +446,39 @@ function hedley_well_child_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_pediatric_visit_date'.
+  $field_bases['field_pediatric_visit_date'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_pediatric_visit_date',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'cache_count' => 4,
+      'cache_enabled' => 0,
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
   // Exported field_base: 'field_rotarix_vaccination_date'.
   $field_bases['field_rotarix_vaccination_date'] = array(
     'active' => 1,
@@ -508,6 +574,7 @@ function hedley_well_child_field_default_field_bases() {
         'bcg-known-allergy' => 'BCG Not administered - Known allergy',
         'bcg-patient-declined' => 'BCG Not administered - Patient declined',
         'bcg-patient-unable-to-afford' => 'BCG Not administered - Patient unable to afford',
+        'bcg-home-birth' => 'BCG Not administered - Home birth',
         'bcg-other' => 'BCG Not administered - Other',
         'opv-administered-today' => 'OPV Administered Today',
         'opv-administered-previously' => 'OPV Administered Previously',
@@ -515,6 +582,7 @@ function hedley_well_child_field_default_field_bases() {
         'opv-known-allergy' => 'OPV Not administered - Known allergy',
         'opv-patient-declined' => 'OPV Not administered - Patient declined',
         'opv-patient-unable-to-afford' => 'OPV Not administered - Patient unable to afford',
+        'opv-home-birth' => 'OPV Not administered - Home birth',
         'opv-other' => 'OPV Not administered - Other',
         'dtp-administered-today' => 'DTP Administered Today',
         'dtp-administered-previously' => 'DTP Administered Previously',

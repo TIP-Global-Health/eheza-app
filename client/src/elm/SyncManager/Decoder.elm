@@ -786,6 +786,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildMuac
                             BackendAuthorityWellChildMuac
 
+                    "well_child_next_visit" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildNextVisit
+                            BackendAuthorityWellChildNextVisit
+
                     "well_child_nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildNutrition

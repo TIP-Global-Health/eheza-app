@@ -933,3 +933,11 @@ type alias WellChildAlbendazoleId =
 
 type WellChildAlbendazoleUuidType
     = WellChildAlbendazoleUuidType
+
+
+type alias WellChildNextVisitId =
+    EntityUuid WellChildNextVisitUuidType
+
+
+type WellChildNextVisitUuidType
+    = WellChildNextVisitUuidType

@@ -9,6 +9,7 @@ module Measurement.View exposing
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
     , viewMother
+    , viewReferToProgramForm
     , viewSendToHCForm
     , zScoreForHeightOrLength
     )
@@ -17,7 +18,7 @@ module Measurement.View exposing
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import Activity.Utils exposing (generateNutritionAssesment)
+import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
@@ -26,7 +27,7 @@ import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, e
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValues, heightValueFunc, mapMeasurementData, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
@@ -884,8 +885,8 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
             Maybe.map (Tuple.second >> .value) measurement.current
 
         assesment =
-            generateNutritionAssesment currentDate zscores childId db offlineSession
-                |> nutritionAssesmentForBackend
+            generateNutritionAssessment currentDate zscores childId db offlineSession
+                |> nutritionAssessmentForBackend
 
         form_ =
             { form | assesment = Just assesment }
@@ -1191,6 +1192,37 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection
+
+
+viewReferToProgramForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
+    div [ class "ui form send-to-hc" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewActionTakenLabel language Translate.ReferToProgramAction "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.EnrollToProgramAction "icon-shuttle" Nothing
+            ]
+        , viewQuestionLabel language Translate.EnrollToProgramQuestion
+        , viewBoolInput
+            language
+            form.enrollToNutritionProgram
+            setEnrollToNutritionProgramMsg
+            "enroll-to-program"
+            Nothing
+        , viewQuestionLabel language Translate.ReferToProgramQuestion
+        , viewBoolInput
+            language
+            form.referToNutritionProgram
+            setReferToNutritionProgramMsg
+            "refer-to-program"
+            Nothing
+        ]
 
 
 viewBasicVitalsForm :

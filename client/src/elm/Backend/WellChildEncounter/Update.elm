@@ -214,3 +214,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveVitaminA = data }
             , Cmd.none
             )
+
+        SaveNextVisit personId valueId value ->
+            ( { model | saveNextVisit = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildNextVisitEndpoint HandleSavedNextVisit
+            )
+
+        HandleSavedNextVisit data ->
+            ( { model | saveNextVisit = data }
+            , Cmd.none
+            )

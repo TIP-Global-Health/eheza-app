@@ -8,7 +8,7 @@ import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
-import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssesmentForBackend, resolvePreviousValuesSetForChild)
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssessmentForBackend, resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -98,7 +98,7 @@ viewHeaderAndContent language currentDate zscores id activity isChw db model dat
         , viewModal <|
             warningPopup language
                 currentDate
-                SetWarningPopupState
+                (SetWarningPopupState [])
                 model.warningPopupState
         ]
 
@@ -128,8 +128,8 @@ viewContent language currentDate zscores id activity isChw db model assembled =
         |> div [ class "ui unstackable items" ]
 
 
-warningPopup : Language -> NominalDate -> (List NutritionAssesment -> msg) -> List NutritionAssesment -> Maybe (Html msg)
-warningPopup language currentDate setStateMsg state =
+warningPopup : Language -> NominalDate -> msg -> List NutritionAssessment -> Maybe (Html msg)
+warningPopup language currentDate closePopupMsg state =
     if List.isEmpty state then
         Nothing
 
@@ -149,10 +149,10 @@ warningPopup language currentDate setStateMsg state =
                                 List.map (Translate.ChildNutritionSignLabel >> translate language) signs
                                     |> String.join ", "
                         in
-                        text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
+                        text <| translate language (Translate.NutritionAssessment assessment) ++ ": " ++ translatedSigns
 
                     _ ->
-                        text <| translate language <| Translate.NutritionAssesment assessment
+                        text <| translate language <| Translate.NutritionAssessment assessment
         in
         Just <|
             div [ class "ui active modal diagnosis-popup" ]
@@ -164,7 +164,7 @@ warningPopup language currentDate setStateMsg state =
                     [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
-                        , onClick <| setStateMsg []
+                        , onClick closePopupMsg
                         ]
                         [ text <| translate language Translate.Continue ]
                     ]
@@ -775,8 +775,8 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                                     NextStepFollowUp ->
                                         let
                                             assesment =
-                                                generateNutritionAssesment currentDate zscores db assembled
-                                                    |> nutritionAssesmentForBackend
+                                                generateNutritionAssessment currentDate zscores db assembled
+                                                    |> nutritionAssessmentForBackend
                                         in
                                         SaveFollowUp personId measurements.followUp assesment nextTask
                         in

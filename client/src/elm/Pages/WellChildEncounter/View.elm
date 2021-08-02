@@ -137,7 +137,7 @@ viewMainPageContent language currentDate zscores id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities isChw
-                |> List.filter (expectActivity currentDate isChw data db)
+                |> List.filter (expectActivity currentDate zscores isChw data db)
                 |> List.partition (activityCompleted currentDate zscores isChw data db)
 
         pendingTabTitle =
@@ -159,7 +159,7 @@ viewMainPageContent language currentDate zscores id isChw db data model =
             div [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| WellChildActivityPage id activity
+                    , onClick <| NavigateToActivity id activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]

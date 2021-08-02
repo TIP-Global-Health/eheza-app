@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssesment(..), PrenatalAssesment(..))
+import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -336,10 +336,10 @@ viewNutritionFollowUpEntry language currentDate entry =
                             List.map (Translate.ChildNutritionSignLabel >> translate language) signs
                                 |> String.join ", "
                     in
-                    text <| translate language (Translate.NutritionAssesment assessment) ++ ": " ++ translatedSigns
+                    text <| translate language (Translate.NutritionAssessment assessment) ++ ": " ++ translatedSigns
 
                 _ ->
-                    text <| translate language <| Translate.NutritionAssesment assessment
+                    text <| translate language <| Translate.NutritionAssessment assessment
 
         popupData =
             FollowUpNutrition <| FollowUpNutritionData entry.personId item.personName

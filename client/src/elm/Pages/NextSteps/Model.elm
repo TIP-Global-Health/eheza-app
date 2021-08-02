@@ -30,13 +30,13 @@ type alias Model =
     , contributingFactorsForm : ContributingFactorsForm
     , followUpForm : FollowUpForm
     , activeTask : Maybe NextStepsTask
-    , warningPopupState : List NutritionAssesment
+    , warningPopupState : List NutritionAssessment
     }
 
 
 type Msg
     = SetRedirectPage Page
-    | SetWarningPopupState (List NutritionAssesment)
+    | SetWarningPopupState (List NutritionAssessment)
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool

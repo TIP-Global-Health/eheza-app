@@ -123,6 +123,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'well_child_immunisation' => 'well-child-immunisation',
   'well_child_mebendezole' => 'well-child-mebendezole',
   'well_child_muac' => 'well-child-muac',
+  'well_child_next_visit' => 'well-child-next-visit',
   'well_child_nutrition' => 'well-child-nutrition',
   'well_child_photo' => 'well-child-photo',
   'well_child_pregnancy_summary' => 'well-child-pregnancy-summary',

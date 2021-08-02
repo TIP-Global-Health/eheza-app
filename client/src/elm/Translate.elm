@@ -93,7 +93,7 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
-import Pages.WellChildActivity.Model exposing (NutritionAssesmentTask(..))
+import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -498,6 +498,8 @@ type TranslationId
     | EndGroupEncounter
     | EnrolNewborn
     | EnrolNewbornHelper Bool
+    | EnrollToProgramAction
+    | EnrollToProgramQuestion
     | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -679,6 +681,8 @@ type TranslationId
     | Never
     | Next
     | NextDoseDue
+    | NextImmunisationVisit
+    | NextPediatricVisit
     | NextSteps
     | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
@@ -708,8 +712,8 @@ type TranslationId
     | NumberOfStillbirthsPreTerm
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
-    | NutritionAssesment NutritionAssesment
-    | NutritionAssesmentTask NutritionAssesmentTask
+    | NutritionAssessment NutritionAssessment
+    | NutritionAssessmentTask NutritionAssessmentTask
     | NutritionCaringOption CaringOption
     | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
@@ -822,6 +826,8 @@ type TranslationId
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToHealthCenterQuestion
+    | ReferToProgramAction
+    | ReferToProgramQuestion
     | Register
     | RegisterHelper
     | RegisterNewParticipant
@@ -992,7 +998,10 @@ type TranslationId
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
+    | WellChildMacrocephalyWarning
+    | WellChildMicrocephalyWarning
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
+    | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
     | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
     | WhatType
@@ -3365,6 +3374,16 @@ translationSet trans =
                 , kinyarwanda = Just "Kanda kuri 'Andika Uruhinja' kugira ngo urwandike"
                 }
 
+        EnrollToProgramAction ->
+            { english = "Enroll patient in program and direct them to the next program session"
+            , kinyarwanda = Nothing
+            }
+
+        EnrollToProgramQuestion ->
+            { english = "Have you enrolled the patient in the appropriate nutrition program"
+            , kinyarwanda = Nothing
+            }
+
         EnterAmountDistributed ->
             { english = "Enter amount distributed"
             , kinyarwanda = Nothing
@@ -3412,7 +3431,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
-                NutritionAssessment ->
+                Pages.PrenatalActivity.Model.NutritionAssessment ->
                     { english = "Nutrition Assessment"
                     , kinyarwanda = Just "Gusuzuma imirire"
                     }
@@ -5062,6 +5081,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        NextImmunisationVisit ->
+            { english = "Next immunisation visit"
+            , kinyarwanda = Nothing
+            }
+
+        NextPediatricVisit ->
+            { english = "Next pediatric visit"
+            , kinyarwanda = Nothing
+            }
+
         NextSteps ->
             { english = "Next Steps"
             , kinyarwanda = Just "Ibikurikiyeho"
@@ -5186,6 +5215,11 @@ translationSet trans =
                 NonAdministrationPatientUnableToAfford ->
                     { english = "Patient unable to afford"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                NonAdministrationHomeBirth ->
+                    { english = "Home Birth"
+                    , kinyarwanda = Nothing
                     }
 
                 NonAdministrationOther ->
@@ -5347,7 +5381,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
-        NutritionAssesment assessment ->
+        NutritionAssessment assessment ->
             case assessment of
                 AssesmentAcuteMalnutritionModerate ->
                     { english = "Moderate Acute Malnutrition"
@@ -5389,12 +5423,12 @@ translationSet trans =
                     , kinyarwanda = Just "Gutakaza ibiro mu buryo bwikurikiranije"
                     }
 
-                NoNutritionAssesment ->
+                NoNutritionAssessment ->
                     { english = "None"
                     , kinyarwanda = Nothing
                     }
 
-        NutritionAssesmentTask task ->
+        NutritionAssessmentTask task ->
             case task of
                 TaskHeight ->
                     { english = "Height"
@@ -5424,26 +5458,6 @@ translationSet trans =
                 TaskWeight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
-                    }
-
-                TaskContributingFactors ->
-                    { english = "Contributing Factors"
-                    , kinyarwanda = Just "Impamvu zateye uburwayi"
-                    }
-
-                TaskHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    }
-
-                TaskFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi"
-                    }
-
-                TaskSendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
         NutritionCaringOption option ->
@@ -6646,6 +6660,16 @@ translationSet trans =
         ReferredPatientToHealthCenterQuestion ->
             { english = "Have you referred the patient to the health center"
             , kinyarwanda = Just "Waba wohereje umurwayi ku kigo nderabuzima"
+            }
+
+        ReferToProgramAction ->
+            { english = "Refer patient to appropriate nutrition program"
+            , kinyarwanda = Nothing
+            }
+
+        ReferToProgramQuestion ->
+            { english = "Did you direct the patient to attend the next program session"
+            , kinyarwanda = Nothing
             }
 
         Register ->
@@ -7994,6 +8018,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildNextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Nothing
+                    }
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->
@@ -8025,6 +8054,16 @@ translationSet trans =
                             , kinyarwanda = Nothing
                             }
 
+        WellChildMacrocephalyWarning ->
+            { english = "Child shows signs of macrocephaly, follow hydrocephalus protocol. Please refer to a specialist if concerned for genetic syndrome or other problems."
+            , kinyarwanda = Nothing
+            }
+
+        WellChildMicrocephalyWarning ->
+            { english = "Child shows signs of microcephaly. Monitor for developmental, nutritional, and genetic problems.  Please refer to a specialist if concerned for genetic syndrome or other problems."
+            , kinyarwanda = Nothing
+            }
+
         WellChildMedicationTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskAlbendazole ->
@@ -8039,6 +8078,39 @@ translationSet trans =
 
                 Pages.WellChildActivity.Model.TaskVitaminA ->
                     { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildNextStepsTask isChw task ->
+            case task of
+                TaskContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Just "Impamvu zateye uburwayi"
+                    }
+
+                TaskHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                TaskSendToHC ->
+                    if isChw then
+                        { english = "Send to Health Center"
+                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                        }
+
+                    else
+                        { english = "Refer to Program"
+                        , kinyarwanda = Nothing
+                        }
+
+                TaskFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
+
+                TaskNextVisit ->
+                    { english = "Next Visit"
                     , kinyarwanda = Nothing
                     }
 

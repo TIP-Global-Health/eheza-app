@@ -279,6 +279,9 @@ administrationNoteFromString reason =
         "patient-unable-to-afford" ->
             Just NonAdministrationPatientUnableToAfford
 
+        "home-birth" ->
+            Just NonAdministrationHomeBirth
+
         "other" ->
             Just NonAdministrationOther
 
@@ -306,6 +309,9 @@ administrationNoteToString reason =
 
         NonAdministrationPatientUnableToAfford ->
             "patient-unable-to-afford"
+
+        NonAdministrationHomeBirth ->
+            "home-birth"
 
         NonAdministrationOther ->
             "other"
@@ -344,8 +350,8 @@ mapChildMeasurementsAtOfflineSession childId func offlineSession =
     { offlineSession | measurements = mapped }
 
 
-nutritionAssesmentToString : NutritionAssesment -> String
-nutritionAssesmentToString assesment =
+nutritionAssessmentToString : NutritionAssessment -> String
+nutritionAssessmentToString assesment =
     case assesment of
         AssesmentAcuteMalnutritionModerate ->
             "malnutrition-moderate"
@@ -371,12 +377,12 @@ nutritionAssesmentToString assesment =
         AssesmentConsecutiveWeightLoss ->
             "consecutive-weight-loss"
 
-        NoNutritionAssesment ->
+        NoNutritionAssessment ->
             "none"
 
 
-nutritionAssesmentFromString : String -> Maybe NutritionAssesment
-nutritionAssesmentFromString assesment =
+nutritionAssessmentFromString : String -> Maybe NutritionAssessment
+nutritionAssessmentFromString assesment =
     case assesment of
         "malnutrition-moderate" ->
             Just AssesmentAcuteMalnutritionModerate
@@ -405,7 +411,7 @@ nutritionAssesmentFromString assesment =
             Just AssesmentConsecutiveWeightLoss
 
         "none" ->
-            Just NoNutritionAssesment
+            Just NoNutritionAssessment
 
         _ ->
             Nothing

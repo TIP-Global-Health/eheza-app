@@ -1449,6 +1449,10 @@ div.page-activity.well-child {
 
       @include next-steps;
 
+      .date {
+        margin-bottom: 20px;
+      }
+
       .form-input {
         margin-bottom: 30px;
 

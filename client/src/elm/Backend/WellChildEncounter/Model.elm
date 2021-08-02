@@ -54,6 +54,7 @@ type alias Model =
     , saveAlbendazole : WebData ()
     , saveMebendezole : WebData ()
     , saveVitaminA : WebData ()
+    , saveNextVisit : WebData ()
     }
 
 
@@ -78,6 +79,7 @@ emptyModel =
     , saveAlbendazole = NotAsked
     , saveMebendezole = NotAsked
     , saveVitaminA = NotAsked
+    , saveNextVisit = NotAsked
     }
 
 
@@ -120,3 +122,5 @@ type Msg
     | HandleSavedMebendezole (WebData ())
     | SaveVitaminA PersonId (Maybe WellChildVitaminAId) AdministrationNote
     | HandleSavedVitaminA (WebData ())
+    | SaveNextVisit PersonId (Maybe WellChildNextVisitId) NextVisitValue
+    | HandleSavedNextVisit (WebData ())

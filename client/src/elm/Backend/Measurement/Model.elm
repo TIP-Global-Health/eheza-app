@@ -208,11 +208,11 @@ type alias FollowUp =
 
 type alias FollowUpValue =
     { options : EverySet FollowUpOption
-    , assesment : EverySet NutritionAssesment
+    , assesment : EverySet NutritionAssessment
     }
 
 
-type NutritionAssesment
+type NutritionAssessment
     = AssesmentAcuteMalnutritionModerate
     | AssesmentAcuteMalnutritionSevere
     | AssesmentUnderweightModerate
@@ -221,7 +221,7 @@ type NutritionAssesment
     | AssesmentDangerSignsPresent
     | AssesmentMalnutritionSigns (List ChildNutritionSign)
     | AssesmentConsecutiveWeightLoss
-    | NoNutritionAssesment
+    | NoNutritionAssessment
 
 
 type ContributingFactorsSign
@@ -1071,6 +1071,8 @@ type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
     | PrenatalAccompanyToHC
+    | EnrollToNutritionProgram
+    | ReferToNutritionProgram
     | NoSendToHCSigns
 
 
@@ -1095,6 +1097,7 @@ type AdministrationNote
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
     | NonAdministrationPatientUnableToAfford
+    | NonAdministrationHomeBirth
     | NonAdministrationOther
     | AdministeredToday
     | AdministeredPreviously
@@ -1431,6 +1434,16 @@ type DeliveryComplication
     | NoDeliveryComplications
 
 
+type alias WellChildNextVisit =
+    WellChildMeasurement NextVisitValue
+
+
+type alias NextVisitValue =
+    { immunisationDate : Maybe NominalDate
+    , pediatricVisitDate : Maybe NominalDate
+    }
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -1631,7 +1644,8 @@ type alias HomeVisitMeasurements =
 {-| A set of Well Child measurements that correspond to the same Well Child encounter.
 -}
 type alias WellChildMeasurements =
-    { symptomsReview : Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )
+    { pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
+    , symptomsReview : Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )
     , vitals : Maybe ( WellChildVitalsId, WellChildVitals )
     , height : Maybe ( WellChildHeightId, WellChildHeight )
     , muac : Maybe ( WellChildMuacId, WellChildMuac )
@@ -1647,8 +1661,8 @@ type alias WellChildMeasurements =
     , ecd : Maybe ( WellChildECDId, WellChildECD )
     , albendazole : Maybe ( WellChildAlbendazoleId, WellChildAlbendazole )
     , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
-    , pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
     , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
+    , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
     }
 
 

@@ -645,6 +645,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildMuac identifier ->
             getIdentifier identifier "well_child_muac"
 
+        BackendAuthorityWellChildNextVisit identifier ->
+            getIdentifier identifier "well_child_next_visit"
+
         BackendAuthorityWellChildNutrition identifier ->
             getIdentifier identifier "well_child_nutrition"
 
@@ -1137,6 +1140,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildMuac identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildMuac identifier
 
+        BackendAuthorityWellChildNextVisit identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildNextVisit identifier
+
         BackendAuthorityWellChildNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildNutrition identifier
 
@@ -1591,6 +1597,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildMuac identifier ->
             WellChildMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildNextVisit identifier ->
+            WellChildNextVisitRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildNutrition identifier ->
             WellChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity

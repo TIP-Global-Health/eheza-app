@@ -2151,6 +2151,20 @@ input::placeholder {
   }
 }
 
+.icon-next-steps-next-visit {
+  .active &:after {
+    background-image: url(#{$img-path}icon-next-visit-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-next-visit-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-next-visit-gray.svg);
+  }
+}
+
 .icon-head-circumference {
   .active &:after {
     background-image: url(#{$img-path}icon-head-circumference-white.svg);

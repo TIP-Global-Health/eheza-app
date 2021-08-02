@@ -49,8 +49,8 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , taskAllCompleted
         , taskCompleted
-        , taskListCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput

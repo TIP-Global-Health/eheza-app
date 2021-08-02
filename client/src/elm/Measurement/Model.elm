@@ -108,7 +108,7 @@ type alias FollowUpForm =
     { option : Maybe FollowUpOption
 
     -- We do not display this. Using it when saving.
-    , assesment : Maybe (EverySet NutritionAssesment)
+    , assesment : Maybe (EverySet NutritionAssessment)
     }
 
 
@@ -132,13 +132,21 @@ type alias SendToHCForm =
     { handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
     , accompanyToHealthCenter : Maybe Bool
+    , enrollToNutritionProgram : Maybe Bool
+    , referToNutritionProgram : Maybe Bool
     , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
     }
 
 
 emptySendToHCForm : SendToHCForm
 emptySendToHCForm =
-    SendToHCForm Nothing Nothing Nothing Nothing
+    { handReferralForm = Nothing
+    , referToHealthCenter = Nothing
+    , accompanyToHealthCenter = Nothing
+    , enrollToNutritionProgram = Nothing
+    , referToNutritionProgram = Nothing
+    , reasonForNotSendingToHC = Nothing
+    }
 
 
 {-| The UI for participant consent forms for a particular mother.

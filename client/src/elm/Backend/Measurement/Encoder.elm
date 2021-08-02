@@ -1488,6 +1488,12 @@ encodeSendToHCSign sign =
             PrenatalAccompanyToHC ->
                 "accompany-to-hc"
 
+            EnrollToNutritionProgram ->
+                "enroll-to-nutrition-program"
+
+            ReferToNutritionProgram ->
+                "refer-to-nutrition-program"
+
             NoSendToHCSigns ->
                 "none"
 
@@ -1576,7 +1582,7 @@ encodeFollowUpValueWithType type_ value =
         assesment =
             EverySet.toList value.assesment
                 |> List.head
-                |> Maybe.withDefault NoNutritionAssesment
+                |> Maybe.withDefault NoNutritionAssessment
 
         nutritionSigns =
             case assesment of
@@ -1587,7 +1593,7 @@ encodeFollowUpValueWithType type_ value =
                     EverySet.singleton NormalChildNutrition
     in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
-    , ( "nutrition_assesment", encodeEverySet encodeNutritionAssesment value.assesment )
+    , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
     , ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritionSigns )
     , ( "deleted", bool False )
     , ( "type", string type_ )
@@ -1607,9 +1613,9 @@ encodeAcuteIllnessFollowUpValue value =
     ]
 
 
-encodeNutritionAssesment : NutritionAssesment -> Value
-encodeNutritionAssesment assesment =
-    nutritionAssesmentToString assesment
+encodeNutritionAssessment : NutritionAssessment -> Value
+encodeNutritionAssessment assesment =
+    nutritionAssessmentToString assesment
         |> string
 
 
@@ -2796,3 +2802,17 @@ encodeDeliveryComplication complication =
 
             NoDeliveryComplications ->
                 "none"
+
+
+encodeWellChildNextVisit : WellChildNextVisit -> List ( String, Value )
+encodeWellChildNextVisit =
+    encodeWellChildMeasurement encodeNextVisitValue
+
+
+encodeNextVisitValue : NextVisitValue -> List ( String, Value )
+encodeNextVisitValue value =
+    [ ( "immunisation_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.immunisationDate )
+    , ( "pediatric_visit_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
+    , ( "deleted", bool False )
+    , ( "type", string "well_child_next_visit" )
+    ]

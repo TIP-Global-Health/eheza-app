@@ -1,13 +1,13 @@
 module Pages.NextSteps.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByActivity)
-import Activity.Utils exposing (generateNutritionAssesment, getActivityIcon, getAllActivities, getParticipantCountForActivity)
+import Activity.Utils exposing (generateNutritionAssessment, getActivityIcon, getAllActivities, getParticipantCountForActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (NutritionAssesment)
+import Backend.Measurement.Model exposing (NutritionAssessment)
 import Backend.Measurement.Utils exposing (mapMeasurementData)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData)
@@ -59,7 +59,7 @@ view language currentDate zscores childId originActivity ( sessionId, session ) 
         , viewModal <|
             warningPopup language
                 currentDate
-                SetWarningPopupState
+                (SetWarningPopupState [])
                 model.warningPopupState
         ]
 
@@ -251,8 +251,8 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                                 NextStepFollowUp ->
                                                     let
                                                         assesment =
-                                                            generateNutritionAssesment currentDate zscores childId db session.offlineSession
-                                                                |> nutritionAssesmentForBackend
+                                                            generateNutritionAssessment currentDate zscores childId db session.offlineSession
+                                                                |> nutritionAssessmentForBackend
 
                                                         form =
                                                             model.followUpForm |> (\form_ -> { form_ | assesment = Just assesment })

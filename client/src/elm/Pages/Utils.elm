@@ -568,9 +568,18 @@ taskCompletedWithException maybe exception =
             0
 
 
-taskListCompleted : List (Maybe a) -> Int
-taskListCompleted list =
+taskAllCompleted : List (Maybe a) -> Int
+taskAllCompleted list =
     if List.all isJust list then
+        1
+
+    else
+        0
+
+
+taskAnyCompleted : List (Maybe a) -> Int
+taskAnyCompleted list =
+    if List.any isJust list then
         1
 
     else

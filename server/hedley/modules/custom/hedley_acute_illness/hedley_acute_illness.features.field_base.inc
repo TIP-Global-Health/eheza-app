@@ -966,6 +966,8 @@ function hedley_acute_illness_field_default_field_bases() {
         'refer-to-hc' => 'Refer to HC',
         'referral-form' => 'Referral form',
         'accompany-to-hc' => 'Accompany to HC',
+        'enroll-to-nutrition-program' => 'Enroll To Nutrition Program',
+        'refer-to-nutrition-program' => 'Refer To Nutrition Program',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',

@@ -12,7 +12,7 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
-    | SetWarningPopupState (List NutritionAssesment)
+    | SetWarningPopupState (Maybe WarningPopupType)
     | NoOp
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
@@ -32,31 +32,21 @@ type Msg
     | SetVitalsBodyTemperature String
     | SaveVitals PersonId (Maybe ( WellChildVitalsId, WellChildVitals )) (Maybe DangerSignsTask)
       -- NUTRITION ASSESMENT
-    | SetActiveNutritionAssesmentTask NutritionAssesmentTask
+    | SetActiveNutritionAssessmentTask NutritionAssessmentTask
     | SetHeight String
-    | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssesmentTask)
+    | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
     | SetHeadCircumference String
     | ToggleHeadCircumferenceNotTaken
-    | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssesmentTask)
+    | CloseHeadCircumferencePopup PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | SetMuac String
-    | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssesmentTask)
+    | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssessmentTask)
     | SetNutritionSign ChildNutritionSign
-    | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (Maybe NutritionAssesmentTask)
+    | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (Maybe NutritionAssessmentTask)
     | DropZoneComplete DropZoneFile
-    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssesmentTask)
+    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssessmentTask)
     | SetWeight String
-    | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssesmentTask)
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NutritionAssesmentTask)
-    | SetProvidedEducationForDiagnosis Bool
-    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
-    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe NutritionAssesmentTask)
-    | SetContributingFactorsSign ContributingFactorsSign
-    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NutritionAssesmentTask)
-    | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssesment) (Maybe NutritionAssesmentTask)
+    | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- IMMUNISATION
     | SetImmunisationBoolInput (Bool -> ImmunisationForm -> ImmunisationForm) Bool
     | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
@@ -77,6 +67,22 @@ type Msg
     | SetVitaminAAdministered Bool
     | SetVitaminAReasonForNonAdministration AdministrationNote
     | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA )) (Maybe MedicationTask)
+      -- NEXT STEPS
+    | SetActiveNextStepsTask NextStepsTask
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetEnrollToNutritionProgram Bool
+    | SetReferToNutritionProgram Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NextStepsTask)
+    | SetProvidedEducationForDiagnosis Bool
+    | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe NextStepsTask)
+    | SetContributingFactorsSign ContributingFactorsSign
+    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe NextStepsTask)
+    | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -86,7 +92,8 @@ type alias Model =
     , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
-    , warningPopupState : List NutritionAssesment
+    , nextStepsData : NextStepsData
+    , warningPopupState : Maybe WarningPopupType
     }
 
 
@@ -98,8 +105,15 @@ emptyModel =
     , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
-    , warningPopupState = []
+    , nextStepsData = emptyNextStepsData
+    , warningPopupState = Nothing
     }
+
+
+type WarningPopupType
+    = PopupNutritionAssessment (List NutritionAssessment)
+    | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
 
 
 type alias PregnancySummaryForm =
@@ -164,11 +178,7 @@ type alias NutritionAssessmentData =
     , nutritionForm : NutritionForm
     , photoForm : PhotoForm
     , weightForm : WeightForm
-    , contributingFactorsForm : ContributingFactorsForm
-    , healthEducationForm : HealthEducationForm
-    , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
-    , activeTask : Maybe NutritionAssesmentTask
+    , activeTask : Maybe NutritionAssessmentTask
     }
 
 
@@ -180,10 +190,6 @@ emptyNutritionAssessmentData =
     , nutritionForm = emptyNutritionForm
     , photoForm = emptyPhotoForm
     , weightForm = emptyWeightForm
-    , contributingFactorsForm = emptyContributingFactorsForm
-    , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
     , activeTask = Nothing
     }
 
@@ -200,31 +206,23 @@ emptyHeadCircumferenceForm =
     HeadCircumferenceForm Nothing False Nothing
 
 
-type NutritionAssesmentTask
+type NutritionAssessmentTask
     = TaskHeight
     | TaskHeadCircumference
     | TaskMuac
     | TaskNutrition
     | TaskPhoto
     | TaskWeight
-    | TaskContributingFactors
-    | TaskHealthEducation
-    | TaskFollowUp
-    | TaskSendToHC
 
 
-allNutritionAssesmentTasks : List NutritionAssesmentTask
-allNutritionAssesmentTasks =
+allNutritionAssessmentTasks : List NutritionAssessmentTask
+allNutritionAssessmentTasks =
     [ TaskHeight
     , TaskHeadCircumference
     , TaskMuac
     , TaskNutrition
     , TaskPhoto
     , TaskWeight
-    , TaskContributingFactors
-    , TaskHealthEducation
-    , TaskFollowUp
-    , TaskSendToHC
     ]
 
 
@@ -431,3 +429,43 @@ type MedicationTask
 allMedicationTasks : List MedicationTask
 allMedicationTasks =
     [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]
+
+
+type alias NextStepsData =
+    { contributingFactorsForm : ContributingFactorsForm
+    , healthEducationForm : HealthEducationForm
+    , sendToHCForm : SendToHCForm
+    , followUpForm : FollowUpForm
+    , nextVisitForm : NextVisitForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { contributingFactorsForm = emptyContributingFactorsForm
+    , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = emptyFollowUpForm
+    , sendToHCForm = emptySendToHCForm
+    , nextVisitForm = emptyNextVisitForm
+    , activeTask = Nothing
+    }
+
+
+type alias NextVisitForm =
+    { immunisationDate : Maybe NominalDate
+    , pediatricVisitDate : Maybe NominalDate
+    }
+
+
+emptyNextVisitForm : NextVisitForm
+emptyNextVisitForm =
+    NextVisitForm Nothing Nothing
+
+
+type NextStepsTask
+    = TaskContributingFactors
+    | TaskHealthEducation
+    | TaskSendToHC
+    | TaskFollowUp
+    | TaskNextVisit
