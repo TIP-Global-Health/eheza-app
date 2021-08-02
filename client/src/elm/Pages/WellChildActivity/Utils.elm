@@ -1839,12 +1839,30 @@ generateNextDateForMedicationVisit currentDate assembled db =
 
         measurements =
             assembled.measurements :: previousMeasurements
+
+        nextDate =
+            nextMedicationAdmnistrationData currentDate assembled.person measurements
+                |> Dict.values
+                |> List.sortWith Date.compare
+                |> List.reverse
+                |> List.head
     in
-    nextMedicationAdmnistrationData currentDate assembled.person measurements
-        |> Dict.values
-        |> List.sortWith Date.compare
-        |> List.reverse
-        |> List.head
+    Maybe.andThen
+        (\date ->
+            let
+                compared =
+                    Date.compare date currentDate
+            in
+            if compared == LT || compared == EQ then
+                -- Next date already passed, or, it's due today.
+                -- Per requirements, we schedule next date as if medication
+                -- was administered today.
+                Date.add Months 6 currentDate
+
+            else
+                Just date
+        )
+        nextDate
 
 
 generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
