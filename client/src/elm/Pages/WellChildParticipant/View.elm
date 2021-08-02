@@ -210,9 +210,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
         [ div [ class "button-label" ]
             [ text <|
                 translate language <|
-                    Translate.IndividualEncounterLabel
-                        Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                        isChw
+                    Translate.WellChildEncounterType newEncounterType
             ]
         , div [ class "icon-back" ] []
         ]

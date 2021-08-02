@@ -57,6 +57,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -1004,6 +1005,7 @@ type TranslationId
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
+    | WellChildEncounterType WellChildEncounterType
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
@@ -8101,6 +8103,63 @@ translationSet trans =
                             { english = "Child is behind on ECD milestones. Refer the child to a specialist."
                             , kinyarwanda = Nothing
                             }
+
+        WellChildEncounterType encounterType ->
+            case encounterType of
+                NewbornExam ->
+                    { english = "Newborn Exam"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCareBirthTo6Weeks ->
+                    { english = "Birth to 6 Weeks visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare6Weeks ->
+                    { english = "6 Weeks visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare10Weeks ->
+                    { english = "10 Weeks visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare14Weeks ->
+                    { english = "14 Weeks visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare6Months ->
+                    { english = "6 Months visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare9Months ->
+                    { english = "9 Months visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare12Months ->
+                    { english = "12 Months visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare15Months ->
+                    { english = "15 Months visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare18Months ->
+                    { english = "18 Months visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCareRecurrent ->
+                    { english = "Recurrent visit (from 2 years)"
+                    , kinyarwanda = Nothing
+                    }
 
         WellChildMacrocephalyWarning ->
             { english = "Child shows signs of macrocephaly, follow hydrocephalus protocol. Please refer to a specialist if concerned for genetic syndrome or other problems."
