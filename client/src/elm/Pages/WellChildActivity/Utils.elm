@@ -1262,7 +1262,7 @@ expectedECDSignsByAge currentDate assembled =
                         Date.diff Months birthDate currentDate
 
                     groupedSigns =
-                        groupedECDSigns assembled
+                        groupedECDSigns ageMonths assembled
                 in
                 if ageWeeks < 5 then
                     []
@@ -1308,8 +1308,8 @@ expectedECDSignsByAge currentDate assembled =
         |> Maybe.withDefault []
 
 
-groupedECDSigns : AssembledData -> List (List ECDSign)
-groupedECDSigns assembled =
+groupedECDSigns : Int -> AssembledData -> List (List ECDSign)
+groupedECDSigns ageMonths assembled =
     let
         sixMonthsAssessmentPerformed =
             sixMonthsECDAssessmentPerformed assembled
@@ -1323,7 +1323,7 @@ groupedECDSigns assembled =
     in
     [ from5Weeks
     , from13Weeks
-    , ecdSignsFrom6Months sixMonthsAssessmentPerformed
+    , ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed
     , ecdSignsFrom15Months
     , ecdSignsFrom18Months
     , ecdSignsFrom2Years
@@ -1372,17 +1372,20 @@ ecdSignsFrom13Weeks =
     ]
 
 
-ecdSignsFrom6Months : Bool -> List ECDSign
-ecdSignsFrom6Months sixMonthsAssessmentPerformed =
-    if sixMonthsAssessmentPerformed then
-        ecdSignsFrom6MonthsMajors
+ecdSigns6To12Months : Int -> Bool -> List ECDSign
+ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed =
+    if ageMonths > 12 then
+        []
+
+    else if sixMonthsAssessmentPerformed then
+        ecdSigns6To12MonthsMajors
 
     else
-        ecdSignsFrom6MonthsMinors ++ ecdSignsFrom6MonthsMajors
+        ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
 
 
-ecdSignsFrom6MonthsMinors : List ECDSign
-ecdSignsFrom6MonthsMinors =
+ecdSigns6To12MonthsMinors : List ECDSign
+ecdSigns6To12MonthsMinors =
     [ BringHandsToMouth
     , HoldHeadWithoutSupport
     , HoldAndShakeToys
@@ -1391,8 +1394,8 @@ ecdSignsFrom6MonthsMinors =
     ]
 
 
-ecdSignsFrom6MonthsMajors : List ECDSign
-ecdSignsFrom6MonthsMajors =
+ecdSigns6To12MonthsMajors : List ECDSign
+ecdSigns6To12MonthsMajors =
     [ RespondToSoundWithSound
     , TurnHeadWhenCalled
     , SitWithoutSupport
@@ -1907,12 +1910,30 @@ generateNextDateForMedicationVisit currentDate assembled db =
     let
         measurements =
             assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
+
+        nextDate =
+            nextMedicationAdmnistrationData currentDate assembled.person measurements
+                |> Dict.values
+                |> List.sortWith Date.compare
+                |> List.reverse
+                |> List.head
     in
-    nextMedicationAdmnistrationData currentDate assembled.person measurements
-        |> Dict.values
-        |> List.sortWith Date.compare
-        |> List.reverse
-        |> List.head
+    Maybe.andThen
+        (\date ->
+            let
+                compared =
+                    Date.compare date currentDate
+            in
+            if compared == LT || compared == EQ then
+                -- Next date already passed, or, it's due today.
+                -- Per requirements, we schedule next date as if medication
+                -- was administered today.
+                Just <| Date.add Months 6 currentDate
+
+            else
+                Just date
+        )
+        nextDate
 
 
 generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
