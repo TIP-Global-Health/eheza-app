@@ -2955,7 +2955,7 @@ translationSet trans =
         ECDSignQuestion sign ->
             case sign of
                 FollowMothersEyes ->
-                    { english = " Does the child follow their mothers eyes"
+                    { english = "Does the child follow their mothers eyes"
                     , kinyarwanda = Nothing
                     }
 
