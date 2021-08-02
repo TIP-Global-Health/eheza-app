@@ -2522,6 +2522,36 @@ encodeECDSign : ECDSign -> Value
 encodeECDSign sign =
     string <|
         case sign of
+            FollowMothersEyes ->
+                "follow-mothers-eyes"
+
+            MoveArmsAndLegs ->
+                "move-arms-and-legs"
+
+            RaiseHandsUp ->
+                "raise-hands-up"
+
+            Smile ->
+                "smile"
+
+            RollSideways ->
+                "roll-sideways"
+
+            BringHandsToMouth ->
+                "bring-hands-to-mouth"
+
+            HoldHeadWithoutSupport ->
+                "hold-head-without-support"
+
+            HoldAndShakeToys ->
+                "hold-and-shake-toys"
+
+            ReactToSuddenSounds ->
+                "react-to-sudden-sounds"
+
+            UseConsonantSounds ->
+                "use-consonant-sounds"
+
             RespondToSoundWithSound ->
                 "respond-to-sound-with-sound"
 

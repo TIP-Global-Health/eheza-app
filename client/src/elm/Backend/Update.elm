@@ -1078,6 +1078,89 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         else
                             []
+
+                processWellChildECDRevision participantId encounterId after =
+                    if downloadingContent then
+                        []
+
+                    else
+                        encounterId
+                            |> Maybe.andThen
+                                (\id ->
+                                    Pages.WellChildEncounter.Utils.generateAssembledData id after
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map
+                                            (\assembledAfter ->
+                                                let
+                                                    warningsList =
+                                                        assembledAfter.person.birthDate
+                                                            |> Maybe.map
+                                                                (\birthDate ->
+                                                                    let
+                                                                        ageWeeks =
+                                                                            Date.diff Weeks birthDate currentDate
+
+                                                                        ageMonths =
+                                                                            Date.diff Months birthDate currentDate
+                                                                    in
+                                                                    Pages.WellChildActivity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
+                                                                        |> List.filterMap
+                                                                            (\sign ->
+                                                                                if List.member sign Pages.WellChildActivity.Utils.ecdSignsFrom5Weeks then
+                                                                                    if ageMonths >= 6 then
+                                                                                        Just Pages.WellChildEncounter.Model.ReferToSpecialist
+
+                                                                                    else if ageWeeks >= 14 then
+                                                                                        Just Pages.WellChildEncounter.Model.ChildBehind
+
+                                                                                    else
+                                                                                        Nothing
+
+                                                                                else if List.member sign Pages.WellChildActivity.Utils.ecdSignsFrom13Weeks then
+                                                                                    if ageMonths >= 6 then
+                                                                                        Just Pages.WellChildEncounter.Model.ReferToSpecialist
+
+                                                                                    else
+                                                                                        Nothing
+
+                                                                                else if List.member sign Pages.WellChildActivity.Utils.ecdSigns6To12MonthsMajors then
+                                                                                    -- Signs will be displayed until child is 13 months old.
+                                                                                    if ageMonths == 12 then
+                                                                                        Just Pages.WellChildEncounter.Model.ReferToSpecialist
+
+                                                                                    else if ageMonths >= 9 then
+                                                                                        Just Pages.WellChildEncounter.Model.ChildBehind
+
+                                                                                    else
+                                                                                        Nothing
+
+                                                                                else
+                                                                                    Nothing
+                                                                            )
+                                                                )
+                                                            |> Maybe.withDefault []
+                                                in
+                                                if List.member Pages.WellChildEncounter.Model.ReferToSpecialist warningsList then
+                                                    Pages.WellChildEncounter.Model.PopupECD Pages.WellChildEncounter.Model.ReferToSpecialist
+                                                        |> Just
+                                                        |> Pages.WellChildEncounter.Model.SetWarningPopupState
+                                                        |> App.Model.MsgPageWellChildEncounter id
+                                                        |> App.Model.MsgLoggedIn
+                                                        |> List.singleton
+
+                                                else if List.member Pages.WellChildEncounter.Model.ChildBehind warningsList then
+                                                    Pages.WellChildEncounter.Model.PopupECD Pages.WellChildEncounter.Model.ChildBehind
+                                                        |> Just
+                                                        |> Pages.WellChildEncounter.Model.SetWarningPopupState
+                                                        |> App.Model.MsgPageWellChildEncounter id
+                                                        |> App.Model.MsgLoggedIn
+                                                        |> List.singleton
+
+                                                else
+                                                    []
+                                            )
+                                )
+                            |> Maybe.withDefault []
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -1536,6 +1619,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             processWellChildVitalsRevision data.participantId data.encounterId data.value
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildECDRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildECDRevision data.participantId data.encounterId newModel
                     in
                     ( newModel
                     , Cmd.none
@@ -3727,7 +3823,7 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
             -- Show danger signs alert popup.
-            , Pages.WellChildEncounter.Model.ShowWarningPopup True
+            , Pages.WellChildEncounter.Model.SetWarningPopupState (Just Pages.WellChildEncounter.Model.PopupDangerSigns)
                 |> App.Model.MsgPageWellChildEncounter id
                 |> App.Model.MsgLoggedIn
             ]

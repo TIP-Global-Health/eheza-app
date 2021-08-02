@@ -304,7 +304,17 @@ emptyImmunisationForm =
 
 
 type alias WellChildECDForm =
-    { respondToSoundWithSound : Maybe Bool
+    { followMothersEyes : Maybe Bool
+    , moveArmsAndLegs : Maybe Bool
+    , raiseHandsUp : Maybe Bool
+    , smile : Maybe Bool
+    , rollSideways : Maybe Bool
+    , bringHandsToMouth : Maybe Bool
+    , holdHeadWithoutSupport : Maybe Bool
+    , holdAndShakeToys : Maybe Bool
+    , reactToSuddenSounds : Maybe Bool
+    , useConsonantSounds : Maybe Bool
+    , respondToSoundWithSound : Maybe Bool
     , turnHeadWhenCalled : Maybe Bool
     , sitWithoutSupport : Maybe Bool
     , smileBack : Maybe Bool
@@ -340,7 +350,17 @@ type alias WellChildECDForm =
 
 emptyWellChildECDForm : WellChildECDForm
 emptyWellChildECDForm =
-    { respondToSoundWithSound = Nothing
+    { followMothersEyes = Nothing
+    , moveArmsAndLegs = Nothing
+    , raiseHandsUp = Nothing
+    , smile = Nothing
+    , rollSideways = Nothing
+    , bringHandsToMouth = Nothing
+    , holdHeadWithoutSupport = Nothing
+    , holdAndShakeToys = Nothing
+    , reactToSuddenSounds = Nothing
+    , useConsonantSounds = Nothing
+    , respondToSoundWithSound = Nothing
     , turnHeadWhenCalled = Nothing
     , sitWithoutSupport = Nothing
     , smileBack = Nothing

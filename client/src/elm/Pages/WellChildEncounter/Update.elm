@@ -32,14 +32,14 @@ update msg model =
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
 
-        ShowWarningPopup isShown ->
-            ( { model | showPopup = isShown }, Cmd.none, [] )
+        SetWarningPopupState state ->
+            ( { model | warningPopupState = state }, Cmd.none, [] )
 
         NavigateToAcuteIllnessParticipantPage childId encounterId ->
             let
                 extraMsgs =
                     [ SetActivePage (UserPage (AcuteIllnessParticipantPage childId))
-                    , ShowWarningPopup False
+                    , SetWarningPopupState Nothing
                     , CloseEncounter encounterId
                     ]
             in

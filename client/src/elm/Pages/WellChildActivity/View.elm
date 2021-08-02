@@ -1220,54 +1220,135 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
 
 viewECDForm : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
 viewECDForm language currentDate assembled ecdForm =
-    ageInMonths currentDate assembled.person
-        |> Maybe.map
-            (\ageMonths ->
-                let
-                    totalTasks =
-                        List.length tasks
+    let
+        totalTasks =
+            List.length tasks
 
-                    tasksCompleted =
-                        List.map taskCompleted tasks
-                            |> List.sum
+        tasksCompleted =
+            List.map taskCompleted tasks
+                |> List.sum
 
-                    ( inputs, tasks ) =
-                        ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm
+        ( inputs, tasks ) =
+            ecdFormInputsAndTasks language currentDate assembled ecdForm
 
-                    disabled =
-                        tasksCompleted /= totalTasks
-                in
-                [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-                , div [ class "ui full segment" ]
-                    [ div [ class "full content" ]
-                        [ div [ class "ui form ecd" ]
-                            inputs
-                        ]
-                    , viewAction language (SaveECD assembled.participant.person assembled.measurements.ecd) disabled
-                    ]
-                ]
-            )
-        |> Maybe.withDefault []
+        disabled =
+            tasksCompleted /= totalTasks
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form ecd" ]
+                inputs
+            ]
+        , viewAction language (SaveECD assembled.participant.person assembled.measurements.ecd) disabled
+        ]
+    ]
 
 
-ecdFormInputsAndTasks : Language -> NominalDate -> AssembledData -> Int -> WellChildECDForm -> ( List (Html Msg), List (Maybe Bool) )
-ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
+ecdFormInputsAndTasks : Language -> NominalDate -> AssembledData -> WellChildECDForm -> ( List (Html Msg), List (Maybe Bool) )
+ecdFormInputsAndTasks language currentDate assembled ecdForm =
     let
         form =
             assembled.measurements.ecd
                 |> Maybe.map (Tuple.second >> .value)
                 |> wellChildECDFormWithDefault ecdForm
 
-        completed =
-            generateCompletedECDSigns assembled
-
-        expected =
-            expectedECDSignsByAge ageMonths
-                |> List.filter (\sign -> not <| List.member sign completed)
+        persentedECDSignsData =
+            generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
                 |> List.map inputAndTaskForSign
 
         inputAndTaskForSign sign =
             case sign of
+                FollowMothersEyes ->
+                    let
+                        followMothersEyesUpdateFunc value form_ =
+                            { form_ | followMothersEyes = Just value }
+                    in
+                    ( viewECDInput FollowMothersEyes form.followMothersEyes followMothersEyesUpdateFunc
+                    , form.followMothersEyes
+                    )
+
+                MoveArmsAndLegs ->
+                    let
+                        moveArmsAndLegsUpdateFunc value form_ =
+                            { form_ | moveArmsAndLegs = Just value }
+                    in
+                    ( viewECDInput MoveArmsAndLegs form.moveArmsAndLegs moveArmsAndLegsUpdateFunc
+                    , form.moveArmsAndLegs
+                    )
+
+                RaiseHandsUp ->
+                    let
+                        raiseHandsUpUpdateFunc value form_ =
+                            { form_ | raiseHandsUp = Just value }
+                    in
+                    ( viewECDInput RaiseHandsUp form.raiseHandsUp raiseHandsUpUpdateFunc
+                    , form.raiseHandsUp
+                    )
+
+                Smile ->
+                    let
+                        smileUpdateFunc value form_ =
+                            { form_ | smile = Just value }
+                    in
+                    ( viewECDInput Smile form.smile smileUpdateFunc
+                    , form.smile
+                    )
+
+                RollSideways ->
+                    let
+                        rollSidewaysUpdateFunc value form_ =
+                            { form_ | rollSideways = Just value }
+                    in
+                    ( viewECDInput RollSideways form.rollSideways rollSidewaysUpdateFunc
+                    , form.rollSideways
+                    )
+
+                BringHandsToMouth ->
+                    let
+                        bringHandsToMouthUpdateFunc value form_ =
+                            { form_ | bringHandsToMouth = Just value }
+                    in
+                    ( viewECDInput BringHandsToMouth form.bringHandsToMouth bringHandsToMouthUpdateFunc
+                    , form.bringHandsToMouth
+                    )
+
+                HoldHeadWithoutSupport ->
+                    let
+                        holdHeadWithoutSupportUpdateFunc value form_ =
+                            { form_ | holdHeadWithoutSupport = Just value }
+                    in
+                    ( viewECDInput HoldHeadWithoutSupport form.holdHeadWithoutSupport holdHeadWithoutSupportUpdateFunc
+                    , form.holdHeadWithoutSupport
+                    )
+
+                HoldAndShakeToys ->
+                    let
+                        holdAndShakeToysUpdateFunc value form_ =
+                            { form_ | holdAndShakeToys = Just value }
+                    in
+                    ( viewECDInput HoldAndShakeToys form.holdAndShakeToys holdAndShakeToysUpdateFunc
+                    , form.holdAndShakeToys
+                    )
+
+                ReactToSuddenSounds ->
+                    let
+                        reactToSuddenSoundsUpdateFunc value form_ =
+                            { form_ | reactToSuddenSounds = Just value }
+                    in
+                    ( viewECDInput ReactToSuddenSounds form.reactToSuddenSounds reactToSuddenSoundsUpdateFunc
+                    , form.reactToSuddenSounds
+                    )
+
+                UseConsonantSounds ->
+                    let
+                        useConsonantSoundsUpdateFunc value form_ =
+                            { form_ | useConsonantSounds = Just value }
+                    in
+                    ( viewECDInput UseConsonantSounds form.useConsonantSounds useConsonantSoundsUpdateFunc
+                    , form.useConsonantSounds
+                    )
+
                 RespondToSoundWithSound ->
                     let
                         respondToSoundWithSoundUpdateFunc value form_ =
@@ -1560,8 +1641,8 @@ ecdFormInputsAndTasks language currentDate assembled ageMonths ecdForm =
                 Nothing
             ]
     in
-    ( List.map Tuple.first expected |> List.concat
-    , List.map Tuple.second expected
+    ( List.map Tuple.first persentedECDSignsData |> List.concat
+    , List.map Tuple.second persentedECDSignsData
     )
 
 

@@ -94,6 +94,7 @@ import Pages.PrenatalActivity.Model
         , PatientProvisionsTask(..)
         )
 import Pages.WellChildActivity.Model exposing (NutritionAssesmentTask(..))
+import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -984,13 +985,13 @@ type TranslationId
     | ViewProgressReport
     | Village
     | Warning
-    | WarningSignsOfAcuteIllness
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
+    | WellChildEncounterPopup WarningPopupType
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildSymptom WellChildSymptom
     | WhatDoYouWantToDo
@@ -2953,6 +2954,56 @@ translationSet trans =
 
         ECDSignQuestion sign ->
             case sign of
+                FollowMothersEyes ->
+                    { english = "Does the child follow their mothers eyes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MoveArmsAndLegs ->
+                    { english = " Does the child move their arms and legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                RaiseHandsUp ->
+                    { english = " Does the child raise their hands up"
+                    , kinyarwanda = Nothing
+                    }
+
+                Smile ->
+                    { english = "Does the child smile"
+                    , kinyarwanda = Nothing
+                    }
+
+                RollSideways ->
+                    { english = "Does the child roll from left to right and right to left"
+                    , kinyarwanda = Nothing
+                    }
+
+                BringHandsToMouth ->
+                    { english = " Does the child bring their hands to their mouth"
+                    , kinyarwanda = Nothing
+                    }
+
+                HoldHeadWithoutSupport ->
+                    { english = "Does the child hold their head steady without support"
+                    , kinyarwanda = Nothing
+                    }
+
+                HoldAndShakeToys ->
+                    { english = "Does the child hold and shake toys and swing at dangling toys"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReactToSuddenSounds ->
+                    { english = "Does the child react to sudden noises or sounds"
+                    , kinyarwanda = Nothing
+                    }
+
+                UseConsonantSounds ->
+                    { english = "Is the child using consonant sounds in babbling, for example “da, da, da”"
+                    , kinyarwanda = Nothing
+                    }
+
                 RespondToSoundWithSound ->
                     { english = "Does the child respond to sound by making sound"
                     , kinyarwanda = Nothing
@@ -7878,11 +7929,6 @@ translationSet trans =
             , kinyarwanda = Just "Impuruza"
             }
 
-        WarningSignsOfAcuteIllness ->
-            { english = "Child shows signs of acute illness. Please close this encounter and continue in an “Acute Illness” encounter immediately."
-            , kinyarwanda = Nothing
-            }
-
         WasFbfDistirbuted activity ->
             case activity of
                 ChildActivity _ ->
@@ -7959,6 +8005,25 @@ translationSet trans =
                     { english = "Vitals"
                     , kinyarwanda = Nothing
                     }
+
+        WellChildEncounterPopup popupType ->
+            case popupType of
+                PopupDangerSigns ->
+                    { english = "Child shows signs of acute illness. Please close this encounter and continue in an “Acute Illness” encounter immediately."
+                    , kinyarwanda = Nothing
+                    }
+
+                PopupECD ecdPopupType ->
+                    case ecdPopupType of
+                        ChildBehind ->
+                            { english = "Child is behind on ECD milestones. Continue to monitor the child and provide anticipatory guidance to the caregiver."
+                            , kinyarwanda = Nothing
+                            }
+
+                        ReferToSpecialist ->
+                            { english = "Child is behind on ECD milestones. Refer the child to a specialist."
+                            , kinyarwanda = Nothing
+                            }
 
         WellChildMedicationTask task ->
             case task of
