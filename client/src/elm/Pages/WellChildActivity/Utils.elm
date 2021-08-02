@@ -2011,7 +2011,7 @@ generateNextDateForImmunisationVisit currentDate isChw assembled db =
         -- We do this, because per requirements, if we have several vaccines, we
         -- select the latest date - to be able to administer all in single encounter.
         -- However, we do not want to wait 6 months, if we need to administer a vaccine
-        -- that needs only 28 days interwal.
+        -- that needs only 28 days interval.
         intervalMonths =
             if List.all (\vaccineType -> List.member vaccineType [ VaccineMR, VaccineHPV ]) futureVaccines then
                 6
