@@ -27,8 +27,20 @@ emptyWellChildEncounter participant startDate encounterType shard =
 
 
 type WellChildEncounterType
-    = PediatricCare
-    | NewbornExam
+    = NewbornExam
+      -- This encounter will occur if immunisation at
+      -- birth was not completed.
+    | PediatricCareBirthTo6Weeks
+    | PediatricCare6Weeks
+    | PediatricCare10Weeks
+    | PediatricCare14Weeks
+    | PediatricCare6Months
+    | PediatricCare9Months
+    | PediatricCare12Months
+    | PediatricCare15Months
+    | PediatricCare18Months
+      -- From age of 2 years, every 6 months.
+    | PediatricCareRecurrent
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress

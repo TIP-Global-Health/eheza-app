@@ -7,6 +7,7 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (..)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
@@ -119,3 +120,46 @@ generatePreviousMeasurements currentEncounterId participantId db =
                 >> List.sortWith
                     (\( date1, _ ) ( date2, _ ) -> Date.compare date2 date1)
             )
+
+
+encounterTypeByAge : NominalDate -> Bool -> NominalDate -> WellChildEncounterType
+encounterTypeByAge currentDate isChw birthDate =
+    let
+        ageWeeks =
+            Date.diff Weeks birthDate currentDate
+
+        ageMonths =
+            Date.diff Months birthDate currentDate
+    in
+    if isChw then
+        NewbornExam
+
+    else if ageWeeks < 6 then
+        PediatricCareBirthTo6Weeks
+
+    else if ageWeeks < 10 then
+        PediatricCare6Weeks
+
+    else if ageWeeks < 14 then
+        PediatricCare10Weeks
+
+    else if ageMonths < 6 then
+        PediatricCare14Weeks
+
+    else if ageMonths < 9 then
+        PediatricCare6Months
+
+    else if ageMonths < 12 then
+        PediatricCare9Months
+
+    else if ageMonths < 15 then
+        PediatricCare12Months
+
+    else if ageMonths < 18 then
+        PediatricCare15Months
+
+    else if ageMonths < 24 then
+        PediatricCare18Months
+
+    else
+        PediatricCareRecurrent

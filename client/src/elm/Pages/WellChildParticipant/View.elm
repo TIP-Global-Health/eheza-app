@@ -16,6 +16,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.WellChildEncounter.Utils exposing (encounterTypeByAge)
 import Pages.WellChildParticipant.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -119,7 +120,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                                     let
                                         ( pediatricCareEncounetrs, newbornEncounters ) =
                                             Dict.toList dict
-                                                |> List.partition (Tuple.second >> .encounterType >> (==) PediatricCare)
+                                                |> List.partition (Tuple.second >> .encounterType >> (/=) NewbornExam)
 
                                         -- Resolve active encounter for person. There should not be more than one.
                                         resolveActiveEncounter encounters =
@@ -186,7 +187,11 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                 NewbornExam
 
             else
-                PediatricCare
+                Dict.get id db.people
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.andThen .birthDate
+                    |> Maybe.map (encounterTypeByAge currentDate isChw)
+                    |> Maybe.withDefault PediatricCareRecurrent
 
         navigateToEncounterAction id_ =
             [ Pages.Page.WellChildEncounterPage id_
