@@ -1249,7 +1249,20 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
             List.filterMap .vaccinationNoteTask tasks
 
         futureVaccines =
-            generateFutureVaccines currentDate isChw assembled
+            List.filterMap
+                (\( vaccineType, dose ) ->
+                    -- If the date is not set in form, we know that either answer
+                    -- was not provided yet, or answer notified that vaccine was
+                    -- not administered (today, or previously).
+                    -- In this case, we do not show data of future vaccination.
+                    getVaccinationDateFromImmunisationForm vaccineType form
+                        |> Maybe.map
+                            (\administationDate ->
+                                ( vaccineType, nextVaccinationDataForVaccine administationDate dose vaccineType )
+                            )
+                )
+                -- We only show next doses due date for vaccines offered today.
+                suggestedVaccines
                 |> List.map viewNextDoseForVaccine
 
         viewNextDoseForVaccine ( vaccineType, nextVaccinationData ) =
