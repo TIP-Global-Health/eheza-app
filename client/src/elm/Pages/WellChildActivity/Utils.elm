@@ -1857,7 +1857,7 @@ generateNextDateForMedicationVisit currentDate assembled db =
                 -- Next date already passed, or, it's due today.
                 -- Per requirements, we schedule next date as if medication
                 -- was administered today.
-                Date.add Months 6 currentDate
+                Just <| Date.add Months 6 currentDate
 
             else
                 Just date
