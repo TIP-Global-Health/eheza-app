@@ -8,6 +8,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
+import Pages.WellChildEncounter.Model exposing (VaccinationProgressDict)
 
 
 type Msg
@@ -122,7 +123,7 @@ type WarningPopupType
     = PopupNutritionAssesment (List NutritionAssessment)
     | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
-    | PopupVaccinationHistory (Dict VaccineType (Dict VaccineDose NominalDate))
+    | PopupVaccinationHistory VaccinationProgressDict
 
 
 type alias PregnancySummaryForm =

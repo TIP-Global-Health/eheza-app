@@ -6,17 +6,20 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter, WellChildEncounterType(..))
+import Date
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.WellChildEncounter.Utils exposing (encounterTypeByAge)
+import Pages.WellChildActivity.Utils exposing (generateFutureVaccinationsData, generateVaccinationProgress, getPreviousMeasurements, nextMedicationAdmnistrationData)
+import Pages.WellChildEncounter.Utils exposing (..)
 import Pages.WellChildParticipant.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -75,16 +78,15 @@ viewActions :
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
     -> Html App.Model.Msg
 viewActions language currentDate selectedHealthCenter id isChw db sessions =
-    div []
-        [ p [ class "label-visit" ]
+    div [] <|
+        p [ class "label-visit" ]
             [ text <|
                 translate language <|
                     Translate.IndividualEncounterSelectVisit
                         Backend.IndividualEncounterParticipant.Model.WellChildEncounter
                         isChw
             ]
-        , viewWellChildAction language currentDate selectedHealthCenter id isChw db sessions
-        ]
+            :: viewWellChildAction language currentDate selectedHealthCenter id isChw db sessions
 
 
 viewWellChildAction :
@@ -95,30 +97,30 @@ viewWellChildAction :
     -> Bool
     -> ModelIndexedDb
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
-    -> Html App.Model.Msg
+    -> List (Html App.Model.Msg)
 viewWellChildAction language currentDate selectedHealthCenter id isChw db sessions =
     let
         -- Person Well Child participant.
-        maybeSessionId =
+        maybeParticipantId =
             sessions
                 |> Dict.toList
                 |> List.filter
-                    (\( sessionId, session ) ->
+                    (\( participantId, session ) ->
                         session.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
                     )
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        ( maybeActiveEncounterId, disableAction ) =
-            maybeSessionId
+        ( maybeActiveEncounterId, disableAction, completedPediatricCareEncounters ) =
+            maybeParticipantId
                 |> Maybe.map
-                    (\sessionId ->
-                        Dict.get sessionId db.wellChildEncountersByParticipant
+                    (\participantId ->
+                        Dict.get participantId db.wellChildEncountersByParticipant
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
                                 (\dict ->
                                     let
-                                        ( pediatricCareEncounetrs, newbornEncounters ) =
+                                        ( pediatricCareEncounters, newbornEncounters ) =
                                             Dict.toList dict
                                                 |> List.partition (Tuple.second >> .encounterType >> (/=) NewbornExam)
 
@@ -132,7 +134,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                                         ( resolveActiveEncounter newbornEncounters
                                         , -- We will not allow creating newborn exam encounter if
                                           -- child has performed SPV encounter.
-                                          (not <| List.isEmpty pediatricCareEncounetrs)
+                                          (not <| List.isEmpty pediatricCareEncounters)
                                             -- We will not to allow create new / edit existing action, if
                                             -- we already have one encounter (as there can be only one
                                             --  newborn exam encounter), and it is not active from today.
@@ -140,34 +142,45 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                                                     |> Maybe.map (Tuple.second >> isDailyEncounterActive currentDate >> not)
                                                     |> Maybe.withDefault False
                                                )
+                                        , []
                                         )
 
                                     else
-                                        ( resolveActiveEncounter pediatricCareEncounetrs
+                                        let
+                                            activeEncounterId =
+                                                resolveActiveEncounter pediatricCareEncounters
+                                        in
+                                        ( activeEncounterId
                                         , -- We will not to allow create new / edit existing action, if
                                           -- there was pediatric care encounter completed today.
                                           List.filter
                                             (\( _, encounter ) ->
                                                 encounter.startDate == currentDate && encounter.endDate == Just currentDate
                                             )
-                                            pediatricCareEncounetrs
+                                            pediatricCareEncounters
                                             |> List.isEmpty
                                             |> not
+                                        , List.filter
+                                            (\( encounterId, _ ) ->
+                                                activeEncounterId /= Just encounterId
+                                            )
+                                            pediatricCareEncounters
+                                            |> List.sortBy (Tuple.second >> .encounterType >> encounterToComparable)
                                         )
                                 )
-                            |> RemoteData.withDefault ( Nothing, False )
+                            |> RemoteData.withDefault ( Nothing, False, [] )
                     )
-                |> Maybe.withDefault ( Nothing, False )
+                |> Maybe.withDefault ( Nothing, False, [] )
 
         action =
             maybeActiveEncounterId
                 |> Maybe.map navigateToEncounterAction
                 |> Maybe.withDefault
-                    (maybeSessionId
+                    (maybeParticipantId
                         |> Maybe.map
                             -- If participant exists, create new encounter for it.
-                            (\sessionId ->
-                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter sessionId currentDate newEncounterType (Just selectedHealthCenter)
+                            (\participantId ->
+                                [ Backend.WellChildEncounter.Model.emptyWellChildEncounter participantId currentDate nextEncounterType (Just selectedHealthCenter)
                                     |> Backend.Model.PostWellChildEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -176,22 +189,11 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                         -- If participant does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.WellChildEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.WellChildData newEncounterType)
+                                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.WellChildData nextEncounterType)
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]
                     )
-
-        newEncounterType =
-            if isChw then
-                NewbornExam
-
-            else
-                Dict.get id db.people
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.andThen .birthDate
-                    |> Maybe.map (encounterTypeByAge currentDate isChw)
-                    |> Maybe.withDefault PediatricCareRecurrent
 
         navigateToEncounterAction id_ =
             [ Pages.Page.WellChildEncounterPage id_
@@ -199,18 +201,170 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                 |> App.Model.SetActivePage
                 |> onClick
             ]
+
+        maybePerson =
+            Dict.get id db.people
+                |> Maybe.andThen RemoteData.toMaybe
+
+        encounterDueDate =
+            Date.max encounterDueDateByMeasurements dueDateForNextEncounter
+
+        encounterDueDateByMeasurements =
+            Maybe.Extra.or expectedDateForEncounterByImmunisation expectedDateForEncounterByMedication
+                |> Maybe.withDefault currentDate
+
+        ( expectedDateForEncounterByImmunisation, expectedDateForEncounterByMedication ) =
+            if isChw || isJust maybeActiveEncounterId then
+                ( Nothing, Nothing )
+
+            else
+                Maybe.map
+                    (\participantId ->
+                        let
+                            previousMeasurements =
+                                generatePreviousMeasurements Nothing participantId db
+                                    |> RemoteData.toMaybe
+                                    |> Maybe.map getPreviousMeasurements
+                                    |> Maybe.withDefault []
+                        in
+                        ( generateExpectedDateByImmunisation previousMeasurements
+                        , generateExpectedDateByMedication previousMeasurements
+                        )
+                    )
+                    maybeParticipantId
+                    |> Maybe.withDefault ( Nothing, Nothing )
+
+        generateExpectedDateByImmunisation measurements =
+            let
+                immunisations =
+                    List.filterMap (.immunisation >> getMeasurementValueFunc)
+                        measurements
+
+                vaccinationHistories =
+                    List.filterMap (.vaccinationHistory >> getMeasurementValueFunc)
+                        measurements
+
+                futureVaccinationsData =
+                    Maybe.map
+                        (\person ->
+                            generateVaccinationProgress immunisations vaccinationHistories
+                                |> generateFutureVaccinationsData currentDate isChw person
+                        )
+                        maybePerson
+                        |> Maybe.withDefault []
+            in
+            List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinationsData
+                |> List.sortWith Date.compare
+                |> List.head
+
+        generateExpectedDateByMedication measurements =
+            maybePerson
+                |> Maybe.andThen
+                    (\person ->
+                        person.birthDate
+                            |> Maybe.andThen
+                                (\birthDate ->
+                                    let
+                                        ageMonths =
+                                            Date.diff Date.Months birthDate currentDate
+                                    in
+                                    if ageMonths < 15 then
+                                        Nothing
+
+                                    else
+                                        nextMedicationAdmnistrationData currentDate person measurements
+                                            |> Dict.values
+                                            |> List.sortWith Date.compare
+                                            |> List.reverse
+                                            |> List.head
+                                )
+                    )
+
+        dueDateForNextEncounter =
+            Maybe.andThen .birthDate maybePerson
+                |> Maybe.map (\birthDate -> dueDateForEncounter birthDate nextEncounterType)
+                |> Maybe.withDefault currentDate
+
+        nextEncounterType =
+            if isChw then
+                NewbornExam
+
+            else
+                Maybe.andThen .birthDate maybePerson
+                    |> Maybe.map
+                        (\birthDate ->
+                            if isJust maybeActiveEncounterId || List.isEmpty completedPediatricCareEncounters then
+                                -- If there's active encounter, or there were no previous encounters,
+                                -- the type is resolved by current date.
+                                resolveEncounterTypeOnDate isChw currentDate birthDate
+
+                            else
+                                let
+                                    encounterTypeByMeasurementsDate =
+                                        resolveEncounterTypeOnDate isChw encounterDueDateByMeasurements birthDate
+
+                                    encounterTypeByCompletedEncounters =
+                                        completedPediatricCareEncounters
+                                            |> List.reverse
+                                            |> List.head
+                                            |> Maybe.map
+                                                (Tuple.second
+                                                    >> .encounterType
+                                                    >> getNextPediatricCareEncounter
+                                                )
+                                            |> Maybe.withDefault PediatricCareRecurrent
+                                in
+                                if encounterToComparable encounterTypeByMeasurementsDate < encounterToComparable encounterTypeByCompletedEncounters then
+                                    encounterTypeByCompletedEncounters
+
+                                else
+                                    encounterTypeByMeasurementsDate
+                        )
+                    |> Maybe.withDefault PediatricCareRecurrent
+
+        allowNewEncounter =
+            not <| Date.compare encounterDueDate currentDate == GT
+
+        encounterLabel =
+            (translate language <| Translate.WellChildEncounterType nextEncounterType)
+                ++ encounterLabelSuffix
+
+        encounterLabelSuffix =
+            if allowNewEncounter then
+                ""
+
+            else
+                " - " ++ formatDDMMyyyy encounterDueDate
+
+        completedEncountersButtons =
+            List.map
+                (Tuple.second >> viewCompletedEncounter)
+                completedPediatricCareEncounters
+
+        viewCompletedEncounter encounter =
+            div [ class "ui primary button disabled" ]
+                [ div [ class "button-label" ]
+                    [ text <| translate language <| Translate.WellChildEncounterType encounter.encounterType
+                    , text " - "
+                    , text <| translate language Translate.Completed
+                    ]
+                , div [ class "icon-back" ] []
+                ]
+
+        actionButton =
+            div
+                (classList
+                    [ ( "ui primary button", True )
+                    , ( "disabled", disableAction || not allowNewEncounter )
+                    ]
+                    :: action
+                )
+                [ div [ class "button-label" ]
+                    [ text encounterLabel
+                    ]
+                , div [ class "icon-back" ] []
+                ]
+
+        -- completedPediatricCareEncounters
     in
-    div
-        (classList
-            [ ( "ui primary button", True )
-            , ( "disabled", disableAction )
-            ]
-            :: action
-        )
-        [ div [ class "button-label" ]
-            [ text <|
-                translate language <|
-                    Translate.WellChildEncounterType newEncounterType
-            ]
-        , div [ class "icon-back" ] []
-        ]
+    completedEncountersButtons ++ [ actionButton ]

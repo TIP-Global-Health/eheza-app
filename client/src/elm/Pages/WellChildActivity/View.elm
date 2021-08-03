@@ -57,7 +57,7 @@ import Pages.Utils
         )
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
-import Pages.WellChildEncounter.Model exposing (AssembledData)
+import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -167,7 +167,7 @@ headCircumferencePopup language ( personId, saved, nextTask_ ) message =
             ]
 
 
-vaccinationHistoryPopup : Language -> NominalDate -> Dict VaccineType (Dict VaccineDose NominalDate) -> Maybe (Html Msg)
+vaccinationHistoryPopup : Language -> NominalDate -> VaccinationProgressDict -> Maybe (Html Msg)
 vaccinationHistoryPopup language currentDate vaccinationHistory =
     let
         entries =

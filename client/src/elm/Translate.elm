@@ -401,6 +401,7 @@ type TranslationId
     | CloseAcuteIllnessLabel
     | CloseAndContinue
     | ColorAlertIndication ColorAlertIndication
+    | Completed
     | CompleteHCReferralForm
     | CompletedHCReferralForm
     | Contacted114
@@ -2408,6 +2409,11 @@ translationSet trans =
                     { english = "Green"
                     , kinyarwanda = Just "Icyatsi"
                     }
+
+        Completed ->
+            { english = "Completed"
+            , kinyarwanda = Nothing
+            }
 
         CompleteHCReferralForm ->
             { english = "Complete a health center referral form"
