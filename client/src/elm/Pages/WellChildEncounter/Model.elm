@@ -29,7 +29,7 @@ type Msg
     | SetActivePage Page
     | SetSelectedTab Tab
     | SetWarningPopupState (Maybe WarningPopupType)
-    | NavigateToAcuteIllnessParticipantPage PersonId WellChildEncounterId
+    | TriggerAcuteIllnessEncounter PersonId WellChildEncounterId
     | NavigateToActivity WellChildEncounterId WellChildActivity
 
 

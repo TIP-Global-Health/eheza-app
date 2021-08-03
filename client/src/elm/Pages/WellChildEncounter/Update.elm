@@ -41,17 +41,22 @@ update currentDate zscores isChw db msg model =
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
-        NavigateToAcuteIllnessParticipantPage childId encounterId ->
+        TriggerAcuteIllnessEncounter childId encounterId ->
             let
                 extraMsgs =
                     [ SetActivePage (UserPage (AcuteIllnessParticipantPage childId))
                     , SetWarningPopupState Nothing
-                    , CloseEncounter encounterId
+                    ]
+
+                markEncounterAsAITriggerMsg =
+                    [ Backend.WellChildEncounter.Model.MarkWellChildEncounterAsAITrigger
+                        |> Backend.Model.MsgWellChildEncounter encounterId
+                        |> App.Model.MsgIndexedDb
                     ]
             in
             ( model
             , Cmd.none
-            , []
+            , markEncounterAsAITriggerMsg
             )
                 |> sequenceExtra (update currentDate zscores isChw db) extraMsgs
 

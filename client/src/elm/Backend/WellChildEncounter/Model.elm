@@ -12,6 +12,7 @@ type alias WellChildEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , encounterType : WellChildEncounterType
+    , encounterNote : EncounterNote
     , shard : Maybe HealthCenterId
     }
 
@@ -22,6 +23,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
     , startDate = startDate
     , endDate = Nothing
     , encounterType = encounterType
+    , encounterNote = NoEncounterNotes
     , shard = shard
     }
 
@@ -43,11 +45,16 @@ type WellChildEncounterType
     | PediatricCareRecurrent
 
 
+type EncounterNote
+    = NoteTriggeredAcuteIllnessEncounter
+    | NoEncounterNotes
+
+
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { closeWellChildEncounter : WebData ()
+    { editWellChildEncounter : WebData ()
     , savePregnancySummary : WebData ()
     , saveSymptomsReview : WebData ()
     , saveVitals : WebData ()
@@ -73,7 +80,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { closeWellChildEncounter = NotAsked
+    { editWellChildEncounter = NotAsked
     , savePregnancySummary = NotAsked
     , saveSymptomsReview = NotAsked
     , saveVitals = NotAsked
@@ -100,6 +107,8 @@ emptyModel =
 type Msg
     = CloseWellChildEncounter
     | HandleClosedWellChildEncounter (WebData ())
+    | MarkWellChildEncounterAsAITrigger
+    | HandleMarkedWellChildEncounterAsAITrigger (WebData ())
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
     | HandleSavedPregnancySummary (WebData ())
     | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)

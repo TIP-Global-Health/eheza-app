@@ -364,7 +364,5 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                     ]
                 , div [ class "icon-back" ] []
                 ]
-
-        -- completedPediatricCareEncounters
     in
     completedEncountersButtons ++ [ actionButton ]
