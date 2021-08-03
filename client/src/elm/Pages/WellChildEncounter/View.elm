@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.WellChildActivity.Utils exposing (activityCompleted, expectActivity)
+import Pages.WellChildActivity.Utils exposing (activityCompleted, expectActivity, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildEncounter.Model exposing (..)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -31,34 +31,34 @@ import ZScore.Model
 view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate zscores id isChw db model =
     let
-        data =
+        assembeld =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw db model) identity assembeld
 
 
 viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores id isChw db model data =
+viewHeaderAndContent language currentDate zscores id isChw db model assembeld =
     let
         header =
-            viewHeader language isChw data
+            viewHeader language isChw assembeld
 
         content =
-            viewContent language currentDate zscores id isChw db model data
+            viewContent language currentDate zscores id isChw db model assembeld
     in
     div [ class "page-encounter home-visit" ]
         [ header
         , content
         , viewModal <|
             warningPopup language
-                data.participant.person
+                assembeld.participant.person
                 id
                 model.warningPopupState
         ]
 
 
 viewHeader : Language -> Bool -> AssembledData -> Html Msg
-viewHeader language isChw data =
+viewHeader language isChw assembeld =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -71,7 +71,7 @@ viewHeader language isChw data =
             ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| WellChildParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| WellChildParticipantPage assembeld.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -80,9 +80,9 @@ viewHeader language isChw data =
 
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id isChw db model data =
-    ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
-        :: viewMainPageContent language currentDate zscores id isChw db data model
+viewContent language currentDate zscores id isChw db model assembeld =
+    ((viewPersonDetails language currentDate assembeld.person Nothing |> div [ class "item" ])
+        :: viewMainPageContent language currentDate zscores id isChw db assembeld model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -133,12 +133,12 @@ warningPopup language childId encounterId warningPopupState =
 
 
 viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate zscores id isChw db data model =
+viewMainPageContent language currentDate zscores id isChw db assembeld model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities isChw
-                |> List.filter (expectActivity currentDate zscores isChw data db)
-                |> List.partition (activityCompleted currentDate zscores isChw data db)
+                |> List.filter (expectActivity currentDate zscores isChw assembeld db)
+                |> List.partition (activityCompleted currentDate zscores isChw assembeld db)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -205,7 +205,15 @@ viewMainPageContent language currentDate zscores id isChw db data model =
                 ]
 
         allowEndEcounter =
-            List.isEmpty pendingActivities
+            case pendingActivities of
+                [] ->
+                    True
+
+                [ WellChildNutritionAssessment ] ->
+                    mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembeld db
+
+                _ ->
+                    False
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
