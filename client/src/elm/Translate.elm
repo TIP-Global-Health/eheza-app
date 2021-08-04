@@ -4129,12 +4129,12 @@ translationSet trans =
             }
 
         Immunisation ->
-            { english = "Immunisation"
+            { english = "Immunization"
             , kinyarwanda = Nothing
             }
 
         ImmunisationHistory ->
-            { english = "Immunisation History"
+            { english = "Immunization History"
             , kinyarwanda = Nothing
             }
 
@@ -5111,7 +5111,7 @@ translationSet trans =
             }
 
         NextImmunisationVisit ->
-            { english = "Next immunisation visit"
+            { english = "Next immunization visit"
             , kinyarwanda = Nothing
             }
 
@@ -8065,7 +8065,7 @@ translationSet trans =
                     }
 
                 WellChildImmunisation ->
-                    { english = "Immunization"
+                    { english = "Immunizations"
                     , kinyarwanda = Nothing
                     }
 
