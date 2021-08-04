@@ -182,6 +182,7 @@ function hedley_schedule_field_default_field_bases() {
       'allowed_values' => array(
         'acute-illness' => 'Acute Illness',
         'antenatal' => 'Antenatal',
+        'home-visit' => 'Home visit',
         'inmmunization' => 'Inmmunization',
         'nutrition' => 'Nutrition',
       ),
@@ -317,6 +318,41 @@ function hedley_schedule_field_default_field_bases() {
     'type' => 'text',
   );
 
+  // Exported field_base: 'field_newborn'.
+  $field_bases['field_newborn'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_newborn',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'person' => 'person',
+        ),
+      ),
+      'target_type' => 'node',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
+  );
+
   // Exported field_base: 'field_outcome'.
   $field_bases['field_outcome'] = array(
     'active' => 1,
@@ -369,6 +405,34 @@ function hedley_schedule_field_default_field_bases() {
       'allowed_values' => array(
         'facility' => 'Facility',
         'home' => 'Home',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_prenatal_encounter_type'.
+  $field_bases['field_prenatal_encounter_type'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_encounter_type',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'nurse' => 'Nurse',
+        'chw-1' => 'Chw 1',
+        'chw-2' => 'Chw 2',
+        'chw-3' => 'Chw 3',
+        'chw-postpartum' => 'Chw postpartum',
       ),
       'allowed_values_function' => '',
     ),

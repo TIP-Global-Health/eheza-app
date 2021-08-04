@@ -4,8 +4,8 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.IndividualEncounterParticipant.Utils exposing (emptyIndividualEncounterParticipant, isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -161,7 +161,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
 
         startIllnessAction =
             emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession
+                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> MsgBackend
 
         createIllnessNavigateToEncounterSection =
@@ -175,7 +175,10 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id db activ
         activeIllnessesExists =
             List.map Tuple.first activeSessions
                 |> List.filterMap (getAcuteIllnessDiagnosisForParticipant db)
-                |> List.filter ((/=) NoAcuteIllnessDiagnosis)
+                |> List.filter
+                    (\diagnosis ->
+                        not <| List.member diagnosis [ DiagnosisFeverOfUnknownOrigin, NoAcuteIllnessDiagnosis ]
+                    )
                 |> List.isEmpty
                 |> not
 
@@ -255,7 +258,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id db ac
 
         startIllnessAction =
             emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession
+                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> MsgBackend
 
         createIllnessNavigateToEncounterButton =
@@ -331,28 +334,30 @@ viewActiveIllness language currentDate selectedHealthCenter db viewMode sessionI
                         >> Maybe.map .diagnosis
                     )
     in
-    case mDiagnosis of
-        Nothing ->
-            Nothing
+    Maybe.andThen
+        (\diagnosis ->
+            if diagnosis == DiagnosisFeverOfUnknownOrigin then
+                -- Do not show illness if diagnosis is
+                -- fever of unknown origin.
+                Nothing
 
-        Just NoAcuteIllnessDiagnosis ->
-            Nothing
+            else
+                sessionEncounters
+                    |> Maybe.andThen
+                        (\encounters ->
+                            case viewMode of
+                                -- No need to view illnesses for this view mode.
+                                ManageIllnesses ->
+                                    Nothing
 
-        Just diagnosis ->
-            sessionEncounters
-                |> Maybe.andThen
-                    (\encounters ->
-                        case viewMode of
-                            -- No need to view illnesses for this view mode.
-                            ManageIllnesses ->
-                                Nothing
+                                ManageParticipants ->
+                                    viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis
 
-                            ManageParticipants ->
-                                viewActiveIllnessForManagement language currentDate selectedHealthCenter sessionId encounters diagnosis
-
-                            RecordOutcome ->
-                                viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis
-                    )
+                                RecordOutcome ->
+                                    viewActiveIllnessForOutcome language currentDate sessionId encounters diagnosis
+                        )
+        )
+        mDiagnosis
 
 
 viewActiveIllnessForManagement :

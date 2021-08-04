@@ -4,9 +4,10 @@ import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
-import Backend.Dashboard.Model exposing (DashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
@@ -23,7 +24,7 @@ import Editable exposing (Editable)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
-import RemoteData exposing (RemoteData, WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
 
@@ -49,23 +50,31 @@ type BackendAuthorityEntity
     = BackendAuthorityAcuteFindings (BackendEntity AcuteFindings)
     | BackendAuthorityAcuteIllnessDangerSigns (BackendEntity AcuteIllnessDangerSigns)
     | BackendAuthorityAcuteIllnessEncounter (BackendEntity AcuteIllnessEncounter)
+    | BackendAuthorityAcuteIllnessFollowUp (BackendEntity AcuteIllnessFollowUp)
     | BackendAuthorityAcuteIllnessMuac (BackendEntity AcuteIllnessMuac)
     | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
+    | BackendAuthorityAppointmentConfirmation (BackendEntity PrenatalAppointmentConfirmation)
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
+    | BackendAuthorityBirthPlan (BackendEntity BirthPlan)
     | BackendAuthorityChildFbf (BackendEntity Fbf)
     | BackendAuthorityCall114 (BackendEntity Call114)
     | BackendAuthorityClinic (BackendEntity Clinic)
+    | BackendAuthorityContributingFactors (BackendEntity ContributingFactors)
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
-    | BackendAuthorityDashboardStats (BackendEntity DashboardStats)
+    | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
+    | BackendAuthorityFollowUp (BackendEntity FollowUp)
+    | BackendAuthorityGroupHealthEducation (BackendEntity GroupHealthEducation)
+    | BackendAuthorityGroupSendToHC (BackendEntity GroupSendToHC)
     | BackendAuthorityHealthEducation (BackendEntity HealthEducation)
     | BackendAuthorityHCContact (BackendEntity HCContact)
     | BackendAuthorityHeight (BackendEntity Height)
+    | BackendAuthorityHomeVisitEncounter (BackendEntity HomeVisitEncounter)
     | BackendAuthorityIndividualParticipant (BackendEntity IndividualEncounterParticipant)
     | BackendAuthorityIsolation (BackendEntity Isolation)
     | BackendAuthorityLactation (BackendEntity Lactation)
@@ -77,11 +86,19 @@ type BackendAuthorityEntity
     | BackendAuthorityMotherFbf (BackendEntity Fbf)
     | BackendAuthorityMuac (BackendEntity Muac)
     | BackendAuthorityNutrition (BackendEntity ChildNutrition)
+    | BackendAuthorityNutritionCaring (BackendEntity NutritionCaring)
+    | BackendAuthorityNutritionContributingFactors (BackendEntity NutritionContributingFactors)
     | BackendAuthorityNutritionEncounter (BackendEntity NutritionEncounter)
+    | BackendAuthorityNutritionFeeding (BackendEntity NutritionFeeding)
+    | BackendAuthorityNutritionFollowUp (BackendEntity NutritionFollowUp)
+    | BackendAuthorityNutritionFoodSecurity (BackendEntity NutritionFoodSecurity)
+    | BackendAuthorityNutritionHealthEducation (BackendEntity NutritionHealthEducation)
     | BackendAuthorityNutritionHeight (BackendEntity NutritionHeight)
+    | BackendAuthorityNutritionHygiene (BackendEntity NutritionHygiene)
     | BackendAuthorityNutritionMuac (BackendEntity NutritionMuac)
     | BackendAuthorityNutritionNutrition (BackendEntity NutritionNutrition)
     | BackendAuthorityNutritionPhoto (BackendEntity NutritionPhoto)
+    | BackendAuthorityNutritionSendToHC (BackendEntity NutritionSendToHC)
     | BackendAuthorityNutritionWeight (BackendEntity NutritionWeight)
     | BackendAuthorityObstetricHistory (BackendEntity ObstetricHistory)
     | BackendAuthorityObstetricHistoryStep2 (BackendEntity ObstetricHistoryStep2)
@@ -89,8 +106,12 @@ type BackendAuthorityEntity
     | BackendAuthorityParticipantConsent (BackendEntity ParticipantConsent)
     | BackendAuthorityPerson (BackendEntity Person)
     | BackendAuthorityPhoto (BackendEntity Photo)
-    | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
     | BackendAuthorityPmtctParticipant (BackendEntity PmtctParticipant)
+    | BackendAuthorityPregnancyTesting (BackendEntity PregnancyTest)
+    | BackendAuthorityPrenatalHealthEducation (BackendEntity PrenatalHealthEducation)
+    | BackendAuthorityPrenatalFollowUp (BackendEntity PrenatalFollowUp)
+    | BackendAuthorityPrenatalSendToHC (BackendEntity PrenatalSendToHC)
+    | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
     | BackendAuthorityPrenatalFamilyPlanning (BackendEntity PrenatalFamilyPlanning)
     | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
     | BackendAuthorityPrenatalEncounter (BackendEntity PrenatalEncounter)
@@ -204,6 +225,16 @@ type alias Model =
     , syncInfoGeneral : SyncInfoGeneral
     , syncInfoAuthorities : SyncInfoAuthorityZipper
 
+    -- We store download responses until we get an acknowledgement
+    -- from IndexedDB for the save operation.
+    -- Only then we know that DB was updated and we can
+    -- update the Model as well.
+    , downloadAuthorityResponse : WebData (DownloadSyncResponse BackendAuthorityEntity)
+    , downloadGeneralResponse : WebData (DownloadSyncResponse BackendGeneralEntity)
+
+    -- Used to determine if download request has timed out.
+    , downloadRequestTime : Time.Posix
+
     -- Determine how we're going to download photos.
     , downloadPhotosMode : DownloadPhotosMode
 
@@ -230,6 +261,9 @@ emptyModel flags =
     , downloadPhotosStatus = DownloadPhotosIdle
     , syncInfoGeneral = flags.syncInfoGeneral
     , syncInfoAuthorities = flags.syncInfoAuthorities
+    , downloadAuthorityResponse = NotAsked
+    , downloadGeneralResponse = NotAsked
+    , downloadRequestTime = Time.millisToPosix 0
     , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
@@ -264,7 +298,6 @@ We can have the `a` replaced with BackendGeneralEntity or BackendAuthorityEntity
 -}
 type alias DownloadSyncResponse a =
     { entities : List a
-    , lastTimestampOfLastRevision : Time.Posix
     , revisionCount : Int
     , deviceName : String
     }
@@ -414,6 +447,25 @@ type UploadPhotoError
     | UploadError String
 
 
+type alias IndexDbSaveResult =
+    { table : IndexDbSaveResultTable
+    , status : IndexDbSaveStatus
+    , timestamp : String
+    }
+
+
+type IndexDbSaveResultTable
+    = IndexDbSaveResultTableAutority
+    | IndexDbSaveResultTableAuthorityStats
+    | IndexDbSaveResultTableDeferredPhotos
+    | IndexDbSaveResultTableGeneral
+
+
+type IndexDbSaveStatus
+    = IndexDbSaveFailure
+    | IndexDbSaveSuccess
+
+
 {-| The info we get from query to `generalPhotoUploadChanges`.
 -}
 type alias IndexDbQueryUploadPhotoResultRecord =
@@ -464,6 +516,15 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
     }
 
 
+{-| For slow devices, download request 'fetch' phase
+takes less than 12 seconds, and the 'save' phase,
+less than 3. Timeout is double the sum of the 2.
+-}
+downloadRequestTimeout : Int
+downloadRequestTimeout =
+    (12000 + 3000) * 2
+
+
 type SyncIncidentType
     = FileUploadIncident IncidentContnentIdentifier
     | ContentUploadIncident IncidentContnentIdentifier
@@ -483,6 +544,7 @@ type Msg
     | RefreshPage
     | BackendAuthorityFetch
     | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityFetchedDataSavedHandle String
     | BackendAuthorityDashboardStatsFetch
     | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
       -- This is the main entry point for the Sync loop. This will dispatch a call
@@ -491,6 +553,7 @@ type Msg
     | BackendFetchPhotos
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | BackendGeneralFetchedDataSavedHandle String
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
@@ -508,6 +571,7 @@ type Msg
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
+    | SavedAtIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
     | FetchFromIndexDbUploadGeneral
     | FetchFromIndexDbUploadAuthority

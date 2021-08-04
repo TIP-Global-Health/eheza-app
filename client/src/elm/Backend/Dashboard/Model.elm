@@ -1,30 +1,24 @@
-module Backend.Dashboard.Model exposing
-    ( CaseManagement
-    , CaseNutrition
-    , CaseNutritionTotal
-    , ChildrenBeneficiariesStats
-    , DashboardStats
-    , FamilyPlanningStats
-    , GoodNutrition
-    , Nutrition
-    , NutritionStatus(..)
-    , NutritionValue
-    , ParticipantStats
-    , Periods
-    , TotalBeneficiaries
-    , emptyModel
-    , emptyNutrition
-    , emptyNutritionValue
-    , emptyTotalBeneficiaries
-    )
+module Backend.Dashboard.Model exposing (..)
 
 {-| The stats for the dashboard.
 -}
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
+import Backend.Entities exposing (VillageId)
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
+import Backend.Measurement.Model exposing (Call114Sign, DangerSign, FamilyPlanningSign, FollowUpMeasurements, IsolationSign, SendToHCSign)
 import Backend.Person.Model exposing (Gender)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+
+
+type alias AssembledData =
+    { stats : DashboardStats
+    , acuteIllnessData : List AcuteIllnessDataItem
+    , prenatalData : List PrenatalDataItem
+    , caseManagementData : Maybe FollowUpMeasurements
+    }
 
 
 {-| To void a cycle in dependency, we just define the zScore here.
@@ -34,14 +28,16 @@ type alias ZScore =
     Float
 
 
-type alias DashboardStats =
-    { caseManagement : List CaseManagement
-    , childrenBeneficiaries : List ChildrenBeneficiariesStats
+type alias DashboardStatsRaw =
+    { caseManagement : CaseManagementData
+    , childrenBeneficiaries : ChildrenBeneficiariesData
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
-    , maybeGoodNutrition : Maybe GoodNutrition
     , missedSessions : List ParticipantStats
-    , totalEncounters : Periods
+    , totalEncounters : TotalEncountersData
+    , acuteIllnessData : List AcuteIllnessDataItem
+    , prenatalData : List PrenatalDataItem
+    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
@@ -51,22 +47,54 @@ type alias DashboardStats =
     }
 
 
-emptyModel : DashboardStats
+emptyModel : DashboardStatsRaw
 emptyModel =
-    { caseManagement = []
-    , childrenBeneficiaries = []
+    { caseManagement = CaseManagementData Dict.empty Dict.empty
+    , childrenBeneficiaries = Dict.empty
     , completedPrograms = []
     , familyPlanning = []
-    , maybeGoodNutrition = Nothing
     , missedSessions = []
-    , totalEncounters = Periods 0 0
+    , totalEncounters = TotalEncountersData Dict.empty Dict.empty
+    , acuteIllnessData = []
+    , prenatalData = []
+    , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
     }
 
 
+type alias DashboardStats =
+    { caseManagement : CaseManagementPast2Years
+    , childrenBeneficiaries : List ChildrenBeneficiariesStats
+    , completedPrograms : List ParticipantStats
+    , familyPlanning : List FamilyPlanningStats
+    , missedSessions : List ParticipantStats
+    , totalEncounters : TotalEncountersData
+    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
+
+    -- UTC Date and time on which statistics were generated.
+    , timestamp : String
+    }
+
+
+type alias CaseManagementPast2Years =
+    { thisYear : List CaseManagement
+    , lastYear : List CaseManagement
+    }
+
+
+type alias PersonIdentifier =
+    Int
+
+
+type alias CaseManagementData =
+    { thisYear : Dict ProgramType (List CaseManagement)
+    , lastYear : Dict ProgramType (List CaseManagement)
+    }
+
+
 type alias CaseManagement =
-    { identifier : Int
+    { identifier : PersonIdentifier
     , name : String
     , birthDate : NominalDate
     , gender : Gender
@@ -79,6 +107,7 @@ type alias CaseNutrition =
     , underweight : Dict Int NutritionValue
     , wasting : Dict Int NutritionValue
     , muac : Dict Int NutritionValue
+    , nutritionSigns : Dict Int NutritionValue
     }
 
 
@@ -87,11 +116,17 @@ type alias CaseNutritionTotal =
     , underweight : Dict Int Nutrition
     , wasting : Dict Int Nutrition
     , muac : Dict Int Nutrition
+    , nutritionSigns : Dict Int Nutrition
     }
 
 
+type alias ChildrenBeneficiariesData =
+    Dict ProgramType (List ChildrenBeneficiariesStats)
+
+
 type alias ChildrenBeneficiariesStats =
-    { gender : Gender
+    { identifier : PersonIdentifier
+    , gender : Gender
     , birthDate : NominalDate
     , memberSince : NominalDate
     , name : String
@@ -120,12 +155,6 @@ type alias ParticipantStats =
 type alias Periods =
     { lastYear : Int
     , thisYear : Int
-    }
-
-
-type alias GoodNutrition =
-    { all : Periods
-    , good : Periods
     }
 
 
@@ -175,3 +204,56 @@ type NutritionStatus
     | Moderate
     | Neutral
     | Severe
+
+
+type ProgramType
+    = ProgramAchi
+    | ProgramFbf
+    | ProgramIndividual
+    | ProgramPmtct
+    | ProgramSorwathe
+    | ProgramUnknown
+
+
+type alias TotalEncountersData =
+    { global : Dict ProgramType Periods
+    , villages : Dict VillageId (Dict ProgramType Periods)
+    }
+
+
+type alias PrenatalDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , expectedDateConcluded : Maybe NominalDate
+    , dateConcluded : Maybe NominalDate
+    , outcome : Maybe IndividualEncounterParticipantOutcome
+    , deliveryLocation : Maybe DeliveryLocation
+    , encounters : List PrenatalEncounterDataItem
+    }
+
+
+type alias PrenatalEncounterDataItem =
+    { startDate : NominalDate
+    , dangerSigns : EverySet DangerSign
+    }
+
+
+type alias AcuteIllnessDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , diagnosis : AcuteIllnessDiagnosis
+    , dateConcluded : Maybe NominalDate
+    , outcome : Maybe IndividualEncounterParticipantOutcome
+    , encounters : List AcuteIllnessEncounterDataItem
+    }
+
+
+type alias AcuteIllnessEncounterDataItem =
+    { startDate : NominalDate
+    , sequenceNumber : Int
+    , diagnosis : AcuteIllnessDiagnosis
+    , feverRecorded : Bool
+    , call114Signs : EverySet Call114Sign
+    , isolationSigns : EverySet IsolationSign
+    , sendToHCSigns : EverySet SendToHCSign
+    }

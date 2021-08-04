@@ -1,10 +1,31 @@
-module Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, colors, column, familyPlanningSignToColor, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine, yScale)
+module Pages.Dashboard.GraphUtils exposing
+    ( barChartHeight
+    , barChartWidth
+    , column
+    , familyPlanningSignToColor
+    , familyPlanningSignsColors
+    , feverCauseToColor
+    , feverCausesColors
+    , gridXScale
+    , gridYScale
+    , padding
+    , pieChartHeight
+    , pieChartWidth
+    , radius
+    , xAxis
+    , xGridLine
+    , xScale
+    , yAxis
+    , yGridLine
+    , yScale
+    )
 
 import AssocList as Dict exposing (Dict)
 import Axis
-import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods)
+import Backend.Dashboard.Model exposing (DashboardStats, Nutrition, Periods)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Color exposing (Color)
+import Pages.Dashboard.Model exposing (FeverCause(..), allFeverCauses)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Time exposing (Month(..))
 import TypedSvg exposing (g, line, rect)
@@ -168,24 +189,51 @@ familyPlanningSignToColor sign =
             Color.rgb (3 / 255) (121 / 255) (113 / 255)
 
 
-colors : Dict FamilyPlanningSign Color
-colors =
-    Dict.fromList
-        [ ( AutoObservation, familyPlanningSignToColor AutoObservation )
-        , ( Condoms, familyPlanningSignToColor Condoms )
-        , ( CycleBeads, familyPlanningSignToColor CycleBeads )
-        , ( CycleCounting, familyPlanningSignToColor CycleCounting )
-        , ( Hysterectomy, familyPlanningSignToColor Hysterectomy )
-        , ( Implants, familyPlanningSignToColor Implants )
-        , ( Injectables, familyPlanningSignToColor Injectables )
-        , ( NoFamilyPlanning, familyPlanningSignToColor NoFamilyPlanning )
-        , ( IUD, familyPlanningSignToColor IUD )
-        , ( LactationAmenorrhea, familyPlanningSignToColor LactationAmenorrhea )
-        , ( OralContraceptives, familyPlanningSignToColor OralContraceptives )
-        , ( Spermicide, familyPlanningSignToColor Spermicide )
-        , ( TubalLigatures, familyPlanningSignToColor TubalLigatures )
-        , ( Vasectomy, familyPlanningSignToColor Vasectomy )
-        ]
+familyPlanningSignsColors : Dict FamilyPlanningSign Color
+familyPlanningSignsColors =
+    [ AutoObservation
+    , Condoms
+    , CycleBeads
+    , CycleCounting
+    , Hysterectomy
+    , Implants
+    , Injectables
+    , NoFamilyPlanning
+    , IUD
+    , LactationAmenorrhea
+    , OralContraceptives
+    , Spermicide
+    , TubalLigatures
+    , Vasectomy
+    ]
+        |> List.map (\sign -> ( sign, familyPlanningSignToColor sign ))
+        |> Dict.fromList
+
+
+feverCauseToColor : FeverCause -> Color
+feverCauseToColor cause =
+    case cause of
+        FeverCauseCovid19 ->
+            Color.rgb (27 / 255) (207 / 255) (193 / 255)
+
+        FeverCauseMalaria ->
+            Color.rgb (253 / 255) (240 / 255) (124 / 255)
+
+        FeverCauseRespiratory ->
+            Color.rgb (240 / 255) (111 / 255) (107 / 255)
+
+        FeverCauseGI ->
+            Color.rgb (238 / 255) (87 / 255) (142 / 255)
+
+        FeverCauseUnknown ->
+            Color.rgb (157 / 255) (121 / 255) (188 / 255)
+
+
+feverCausesColors : Dict FeverCause Color
+feverCausesColors =
+    allFeverCauses
+        |> List.map (\cause -> ( cause, feverCauseToColor cause ))
+        |> Dict.fromList
 
 
 radius : Float

@@ -3,6 +3,7 @@ module SyncManager.Decoder exposing
     , decodeDownloadSyncResponseAuthorityStats
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
+    , decodeIndexDbSaveResult
     )
 
 import AssocList as Dict
@@ -11,6 +12,7 @@ import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
 import Backend.HealthCenter.Decoder
+import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
@@ -27,19 +29,7 @@ import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
-import SyncManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendGeneralEntity(..)
-        , DownloadSyncResponse
-        , IndexDbQueryDeferredPhotoResultRecord
-        , IndexDbQueryTypeResult(..)
-        , IndexDbQueryUploadAuthorityResultRecord
-        , IndexDbQueryUploadGeneralResultRecord
-        , IndexDbQueryUploadPhotoResultRecord
-        , UploadMethod(..)
-        , UploadPhotoError(..)
-        )
+import SyncManager.Model exposing (..)
 import Time
 
 
@@ -227,7 +217,6 @@ decodeDownloadSyncResponseGeneral =
     field "data"
         (succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
-            |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
             |> optional "device_name" string ""
         )
@@ -292,7 +281,6 @@ decodeDownloadSyncResponseAuthority =
     field "data"
         (succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
-            |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
             |> hardcoded ""
         )
@@ -303,7 +291,6 @@ decodeDownloadSyncResponseAuthorityStats =
     field "data"
         (succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
-            |> hardcoded (Time.millisToPosix 0)
             |> hardcoded 0
             |> hardcoded ""
         )
@@ -352,6 +339,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.AcuteIllnessEncounter.Decoder.decodeAcuteIllnessEncounter
                             BackendAuthorityAcuteIllnessEncounter
 
+                    "acute_illness_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessFollowUp
+                            BackendAuthorityAcuteIllnessFollowUp
+
                     "acute_illness_muac" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessMuac
@@ -366,6 +358,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
                             BackendAuthorityAcuteIllnessVitals
+
+                    "appointment_confirmation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAppointmentConfirmation
+                            BackendAuthorityAppointmentConfirmation
 
                     "attendance" ->
                         doDecode
@@ -387,10 +384,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeBreastExam
                             BackendAuthorityBreastExam
 
+                    "birth_plan" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBirthPlan
+                            BackendAuthorityBirthPlan
+
                     "clinic" ->
                         doDecode
                             Backend.Clinic.Decoder.decodeClinic
                             BackendAuthorityClinic
+
+                    "contributing_factors" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeContributingFactors
+                            BackendAuthorityContributingFactors
 
                     "counseling_session" ->
                         doDecode
@@ -417,6 +424,21 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeFamilyPlanning
                             BackendAuthorityFamilyPlanning
 
+                    "follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFollowUp
+                            BackendAuthorityFollowUp
+
+                    "group_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeGroupHealthEducation
+                            BackendAuthorityGroupHealthEducation
+
+                    "group_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeGroupSendToHC
+                            BackendAuthorityGroupSendToHC
+
                     "health_education" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeHealthEducation
@@ -431,6 +453,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeHeight
                             BackendAuthorityHeight
+
+                    "home_visit_encounter" ->
+                        doDecode
+                            Backend.HomeVisitEncounter.Decoder.decodeHomeVisitEncounter
+                            BackendAuthorityHomeVisitEncounter
 
                     "individual_participant" ->
                         doDecode
@@ -487,15 +514,50 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeNutrition
                             BackendAuthorityNutrition
 
+                    "nutrition_caring" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionCaring
+                            BackendAuthorityNutritionCaring
+
+                    "nutrition_contributing_factors" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionContributingFactors
+                            BackendAuthorityNutritionContributingFactors
+
                     "nutrition_encounter" ->
                         doDecode
                             Backend.NutritionEncounter.Decoder.decodeNutritionEncounter
                             BackendAuthorityNutritionEncounter
 
+                    "nutrition_feeding" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionFeeding
+                            BackendAuthorityNutritionFeeding
+
+                    "nutrition_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionFollowUp
+                            BackendAuthorityNutritionFollowUp
+
+                    "nutrition_food_security" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionFoodSecurity
+                            BackendAuthorityNutritionFoodSecurity
+
+                    "nutrition_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionHealthEducation
+                            BackendAuthorityNutritionHealthEducation
+
                     "nutrition_height" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionHeight
                             BackendAuthorityNutritionHeight
+
+                    "nutrition_hygiene" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionHygiene
+                            BackendAuthorityNutritionHygiene
 
                     "nutrition_muac" ->
                         doDecode
@@ -511,6 +573,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionPhoto
                             BackendAuthorityNutritionPhoto
+
+                    "nutrition_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionSendToHC
+                            BackendAuthorityNutritionSendToHC
 
                     "nutrition_weight" ->
                         doDecode
@@ -547,6 +614,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePhoto
                             BackendAuthorityPhoto
 
+                    "pregnancy_testing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePregnancyTesting
+                            BackendAuthorityPregnancyTesting
+
                     "prenatal_photo" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalPhoto
@@ -562,10 +634,25 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
                             BackendAuthorityPrenatalFamilyPlanning
 
+                    "prenatal_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHealthEducation
+                            BackendAuthorityPrenatalHealthEducation
+
                     "prenatal_nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalNutrition
                             BackendAuthorityPrenatalNutrition
+
+                    "prenatal_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFollowUp
+                            BackendAuthorityPrenatalFollowUp
+
+                    "prenatal_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSendToHc
+                            BackendAuthorityPrenatalSendToHC
 
                     "prenatal_encounter" ->
                         doDecode
@@ -597,7 +684,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "statistics" ->
                         doDecode
-                            Backend.Dashboard.Decoder.decodeDashboardStats
+                            Backend.Dashboard.Decoder.decodeDashboardStatsRaw
                             BackendAuthorityDashboardStats
 
                     "symptoms_general" ->
@@ -642,4 +729,52 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     _ ->
                         fail <| type_ ++ " is unknown BackendAuthorityEntity"
+            )
+
+
+decodeIndexDbSaveResult : Decoder IndexDbSaveResult
+decodeIndexDbSaveResult =
+    succeed IndexDbSaveResult
+        |> required "table" decodeIndexDbSaveResultTable
+        |> required "status" decodeIndexDbSaveStatus
+        |> required "timestamp" string
+
+
+decodeIndexDbSaveResultTable : Decoder IndexDbSaveResultTable
+decodeIndexDbSaveResultTable =
+    string
+        |> andThen
+            (\table ->
+                case table of
+                    "Authority" ->
+                        succeed IndexDbSaveResultTableAutority
+
+                    "AuthorityStats" ->
+                        succeed IndexDbSaveResultTableAuthorityStats
+
+                    "DeferredPhotos" ->
+                        succeed IndexDbSaveResultTableDeferredPhotos
+
+                    "General" ->
+                        succeed IndexDbSaveResultTableGeneral
+
+                    _ ->
+                        fail <| table ++ " is not a recognized IndexDbSaveResultTable"
+            )
+
+
+decodeIndexDbSaveStatus : Decoder IndexDbSaveStatus
+decodeIndexDbSaveStatus =
+    string
+        |> andThen
+            (\status ->
+                case status of
+                    "Success" ->
+                        succeed IndexDbSaveSuccess
+
+                    "Failure" ->
+                        succeed IndexDbSaveFailure
+
+                    _ ->
+                        fail <| status ++ " is not a recognized IndexDbSaveStatus"
             )

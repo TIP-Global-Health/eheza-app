@@ -35,6 +35,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'acute_illness_follow_up' => array(
+      'name' => t('Acute Illness Follow Up'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'acute_illness_muac' => array(
       'name' => t('Acute Illness Muac'),
       'base' => 'node_content',

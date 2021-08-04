@@ -1,11 +1,4 @@
-module Backend.IndividualEncounterParticipant.Encoder exposing
-    ( acuteIllnessOutcomeToString
-    , encodeAcuteIllnessOutcome
-    , encodeDeliveryLocation
-    , encodeIndividualEncounterParticipant
-    , encodePregnancyOutcome
-    , pregnancyOutcomeToString
-    )
+module Backend.IndividualEncounterParticipant.Encoder exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Backend.IndividualEncounterParticipant.Utils exposing (encodeIndividualEncounterTypeAsString)
@@ -30,6 +23,7 @@ encodeIndividualEncounterParticipant data =
     , ( "date_concluded", maybe encodeYYYYMMDD data.dateConcluded )
     , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome data.outcome )
     , ( "outcome_location", maybe encodeDeliveryLocation data.deliveryLocation )
+    , ( "newborn", maybe encodeEntityUuid data.newborn )
     , ( "deleted", bool data.deleted )
     , ( "type", string "individual_participant" )
     ]

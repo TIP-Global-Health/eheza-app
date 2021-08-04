@@ -372,6 +372,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteIllnessEncounter identifier ->
                 text ("Acute Illness Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
+            BackendAuthorityAcuteIllnessFollowUp identifier ->
+                viewMeasurement identifier "Acute Illness Follow Up"
+
             BackendAuthorityAcuteIllnessMuac identifier ->
                 viewMeasurement identifier "Acute Illness Muac"
 
@@ -381,11 +384,17 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteIllnessVitals identifier ->
                 viewMeasurement identifier "Acute Illness Vitals"
 
+            BackendAuthorityAppointmentConfirmation identifier ->
+                viewMeasurement identifier "Appointment Confirmation"
+
             BackendAuthorityAttendance identifier ->
                 viewMeasurement identifier "Attendance"
 
             BackendAuthorityBreastExam identifier ->
                 viewMeasurement identifier "Breast Exam"
+
+            BackendAuthorityBirthPlan identifier ->
+                viewMeasurement identifier "Birth Plan"
 
             BackendAuthorityCall114 identifier ->
                 viewMeasurement identifier "Call 114"
@@ -395,6 +404,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name
+
+            BackendAuthorityContributingFactors identifier ->
+                viewMeasurement identifier "Contributing Factors"
 
             BackendAuthorityCounselingSession identifier ->
                 viewMeasurement identifier "Counseling Session"
@@ -414,6 +426,15 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
 
+            BackendAuthorityFollowUp identifier ->
+                viewMeasurement identifier "Follow Up"
+
+            BackendAuthorityGroupHealthEducation identifier ->
+                viewMeasurement identifier "Group Health Education"
+
+            BackendAuthorityGroupSendToHC identifier ->
+                viewMeasurement identifier "Group Send to HC"
+
             BackendAuthorityHealthEducation identifier ->
                 viewMeasurement identifier "Health Education"
 
@@ -422,6 +443,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityHeight identifier ->
                 viewMeasurement identifier "Height"
+
+            BackendAuthorityHomeVisitEncounter identifier ->
+                text ("HomeVisitEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
             BackendAuthorityIndividualParticipant identifier ->
                 text <| "Individual Participant for person ID " ++ fromEntityUuid identifier.entity.person
@@ -456,11 +480,32 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"
 
+            BackendAuthorityNutritionCaring identifier ->
+                viewMeasurement identifier "Nutrition Caring"
+
+            BackendAuthorityNutritionContributingFactors identifier ->
+                viewMeasurement identifier "Nutrition Contributing Factors"
+
             BackendAuthorityNutritionEncounter identifier ->
                 text ("NutritionEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
+            BackendAuthorityNutritionFeeding identifier ->
+                viewMeasurement identifier "Nutrition Feeding"
+
+            BackendAuthorityNutritionFollowUp identifier ->
+                viewMeasurement identifier "Nutrition Follow Up"
+
+            BackendAuthorityNutritionFoodSecurity identifier ->
+                viewMeasurement identifier "Nutrition Food Security"
+
+            BackendAuthorityNutritionHealthEducation identifier ->
+                viewMeasurement identifier "Nutrition Health Education"
+
             BackendAuthorityNutritionHeight identifier ->
                 viewMeasurement identifier "Nutrition Height"
+
+            BackendAuthorityNutritionHygiene identifier ->
+                viewMeasurement identifier "Nutrition Hygiene"
 
             BackendAuthorityNutritionMuac identifier ->
                 viewMeasurement identifier "Nutrition Muac"
@@ -470,6 +515,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityNutritionPhoto identifier ->
                 viewMeasurement identifier "Nutrition Photo"
+
+            BackendAuthorityNutritionSendToHC identifier ->
+                viewMeasurement identifier "Nutrition Send to HC"
 
             BackendAuthorityNutritionWeight identifier ->
                 viewMeasurement identifier "Nutrition Weight"
@@ -492,14 +540,26 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPhoto identifier ->
                 viewMeasurement identifier "Photo"
 
-            BackendAuthorityPrenatalPhoto identifier ->
-                viewMeasurement identifier "Prenatal Photo"
-
             BackendAuthorityPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
+            BackendAuthorityPregnancyTesting identifier ->
+                viewMeasurement identifier "Pregnancy Testing"
+
+            BackendAuthorityPrenatalPhoto identifier ->
+                viewMeasurement identifier "Prenatal Photo"
+
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalHealthEducation identifier ->
+                viewMeasurement identifier "Prenatal Health Education"
+
+            BackendAuthorityPrenatalFollowUp identifier ->
+                viewMeasurement identifier "Prenatal Follow Up"
+
+            BackendAuthorityPrenatalSendToHC identifier ->
+                viewMeasurement identifier "Prenatal Send to HC"
 
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"

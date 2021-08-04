@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulNutritionActivityBase.
  */
-abstract class HedleyRestfulNutritionActivityBase extends HedleyRestfulIndividualActivityBase {
+abstract class HedleyRestfulNutritionActivityBase extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
@@ -30,9 +30,9 @@ abstract class HedleyRestfulNutritionActivityBase extends HedleyRestfulIndividua
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_nutrition_encounter', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_nutrition_encounter', FALSE);
     // Get the UUID of the Prenatal encounter.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nutrition_encounter.field_nutrition_encounter_target_id", 'uuid_nutrition_encounter');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nutrition_encounter.field_nutrition_encounter_target_id", 'uuid_nutrition_encounter');
 
     return $query;
   }

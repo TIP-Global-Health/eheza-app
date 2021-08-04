@@ -4,8 +4,9 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
-import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Gizra.Html exposing (emptyNode)
@@ -13,6 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PregnancyOutcome.Model exposing (Model, Msg(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
@@ -24,8 +26,8 @@ import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> IndividualEncounterParticipantId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> RecordPreganancyInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw initiator db model =
     let
         lastEncounterId =
             Dict.get id db.prenatalEncountersByParticipant
@@ -42,12 +44,18 @@ view language currentDate id db model =
                         generateAssembledData encounterId db
                     )
                 |> Maybe.withDefault NotAsked
+    in
+    viewWebData language (viewHeaderAndContent language currentDate id isChw initiator model) identity data
 
+
+viewHeaderAndContent : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw initiator model data =
+    let
         header =
-            viewWebData language (viewHeader language) identity data
+            viewHeader language data
 
         content =
-            viewWebData language (viewContent language currentDate model) identity data
+            viewContent language currentDate isChw initiator model data
     in
     div
         [ class "page-outcome pregnancy" ]
@@ -72,20 +80,35 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model data =
+viewContent : Language -> NominalDate -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isChw initiator model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data Nothing
-            ++ viewPregnancyOutcome language currentDate data model
+        viewMotherAndMeasurements language currentDate isChw data Nothing
+            ++ viewPregnancyOutcome language currentDate initiator data model
 
 
-viewPregnancyOutcome : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewPregnancyOutcome language currentDate data model =
+viewPregnancyOutcome : Language -> NominalDate -> RecordPreganancyInitiator -> AssembledData -> Model -> List (Html Msg)
+viewPregnancyOutcome language currentDate initiator data model =
     let
+        currentPregnancyOutcome =
+            case data.participant.outcome of
+                Just (Pregnancy outcome) ->
+                    Just outcome
+
+                _ ->
+                    Nothing
+
+        form =
+            { model
+                | pregnancyConcludedDate = Maybe.Extra.or model.pregnancyConcludedDate data.participant.dateConcluded
+                , pregnancyOutcome = Maybe.Extra.or model.pregnancyOutcome currentPregnancyOutcome
+                , deliveryLocation = Maybe.Extra.or model.deliveryLocation data.participant.deliveryLocation
+            }
+
         pregnancyOutcomeInput =
             option
                 [ value ""
-                , selected (model.pregnancyOutcome == Nothing)
+                , selected (form.pregnancyOutcome == Nothing)
                 ]
                 [ text "" ]
                 :: (allPregnancyOutcome
@@ -93,7 +116,7 @@ viewPregnancyOutcome language currentDate data model =
                             (\outcome ->
                                 option
                                     [ value (pregnancyOutcomeToString outcome)
-                                    , selected (model.pregnancyOutcome == Just outcome)
+                                    , selected (form.pregnancyOutcome == Just outcome)
                                     ]
                                     [ text <| translate language <| Translate.PregnancyOutcome outcome ]
                             )
@@ -107,16 +130,27 @@ viewPregnancyOutcome language currentDate data model =
             DateSelector.SelectorDropdown.view
                 ToggleDateSelector
                 SetPregnancyConcludedDate
-                model.isDateSelectorOpen
+                form.isDateSelectorOpen
                 (Date.add Days -92 today)
                 today
-                model.pregnancyConcludedDate
+                form.pregnancyConcludedDate
 
         totalTasks =
             3
 
         tasksCompleted =
-            taskCompleted model.pregnancyConcludedDate + taskCompleted model.pregnancyOutcome + taskCompleted model.isFacilityDelivery
+            taskCompleted form.pregnancyConcludedDate + taskCompleted form.pregnancyOutcome + taskCompleted form.deliveryLocation
+
+        destinationPage =
+            case initiator of
+                InitiatorParticipantPage ->
+                    PinCodePage
+
+                InitiatorWarningPopup ->
+                    UserPage <| PrenatalParticipantPage data.participant.person
+
+                InitiatorPostpartumEncounter encounterId ->
+                    UserPage <| PrenatalEncounterPage encounterId
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -130,7 +164,7 @@ viewPregnancyOutcome language currentDate data model =
                 , viewLabel language Translate.DeliveryLocation
                 , viewBoolInput
                     language
-                    model.isFacilityDelivery
+                    (Maybe.map ((==) FacilityDelivery) form.deliveryLocation)
                     SetDeliveryLocation
                     "delivery-location"
                     (Just ( Translate.Facility, Translate.Home ))
@@ -139,7 +173,7 @@ viewPregnancyOutcome language currentDate data model =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick SavePregnancyOutcome
+                , onClick <| SavePregnancyOutcome destinationPage
                 ]
                 [ text <| translate language Translate.Save ]
             ]

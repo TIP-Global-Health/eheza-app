@@ -11,7 +11,7 @@ echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 
 # Install global packages.
 npm install -g elm@latest-0.19.1
-npm install -g elm-test@0.18.12
+npm install -g elm-test@0.19.1-revision6
 npm install --global gulp-cli
 npm install -g bower
 

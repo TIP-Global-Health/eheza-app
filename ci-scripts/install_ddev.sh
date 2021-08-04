@@ -30,7 +30,7 @@ mkcert -install
 # Installing ddev.
 # -------------------------------------------------- #
 echo "Install ddev."
-curl -s -L https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash
+curl -s -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh && bash install_ddev.sh v1.17.0
 
 echo "Configure ddev."
 mkdir ~/.ddev

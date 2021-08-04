@@ -17,6 +17,8 @@ import Pages.Activities.View
 import Pages.Activity.Model
 import Pages.Activity.View
 import Pages.Attendance.View
+import Pages.NextSteps.Model
+import Pages.NextSteps.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Participant.View
@@ -134,8 +136,14 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
         MotherPage motherId ->
             Dict.get motherId model.motherPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewMother language currentDate isChw motherId ( sessionId, session ) model
+                |> Pages.Participant.View.viewMother language currentDate zscores isChw motherId ( sessionId, session ) model db
                 |> Html.map (MsgMother motherId)
+
+        NextStepsPage childId activity ->
+            Dict.get childId model.nextStepsPages
+                |> Maybe.withDefault Pages.NextSteps.Model.emptyModel
+                |> Pages.NextSteps.View.view language currentDate zscores childId activity ( sessionId, session ) db
+                |> Html.map (MsgNextSteps childId activity)
 
 
 viewClosedSession : Language -> SessionId -> Session -> ModelIndexedDb -> Html Msg

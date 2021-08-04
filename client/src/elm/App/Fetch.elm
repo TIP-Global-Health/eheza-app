@@ -16,6 +16,9 @@ import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
+import Pages.GlobalCaseManagement.Fetch
+import Pages.HomeVisitActivity.Fetch
+import Pages.HomeVisitEncounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
 import Pages.NutritionActivity.Fetch
@@ -89,12 +92,22 @@ fetch model =
                 getLoggedInData model
                     |> Maybe.map
                         (\( healthCenterId, loggedIn ) ->
-                            Pages.Dashboard.Fetch.fetch healthCenterId loggedIn.dashboardPage
+                            Pages.Dashboard.Fetch.fetch currentDate healthCenterId model.indexedDb loggedIn.dashboardPage
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
 
-            UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
+            UserPage GlobalCaseManagementPage ->
+                Maybe.map2
+                    (\( healthCenterId, loggedIn ) villageId ->
+                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId villageId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                    (getLoggedInData model)
+                    model.villageId
+                    |> Maybe.withDefault []
+
+            UserPage (ClinicalProgressReportPage _ prenatalEncounterId) ->
                 Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
@@ -164,7 +177,7 @@ fetch model =
                     |> List.map MsgIndexedDb
 
             UserPage (SessionPage sessionId sessionPage) ->
-                Pages.Session.Fetch.fetch currentDate sessionId sessionPage model.indexedDb
+                Pages.Session.Fetch.fetch currentDate model.zscores sessionId sessionPage model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (PrenatalEncounterPage id) ->
@@ -179,7 +192,7 @@ fetch model =
                 Pages.IndividualEncounterTypes.Fetch.fetch
                     |> List.map MsgIndexedDb
 
-            UserPage (PregnancyOutcomePage id) ->
+            UserPage (PregnancyOutcomePage _ id) ->
                 Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
@@ -197,6 +210,14 @@ fetch model =
 
             UserPage (AcuteIllnessActivityPage id _) ->
                 Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (HomeVisitEncounterPage id) ->
+                Pages.HomeVisitEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (HomeVisitActivityPage id _) ->
+                Pages.HomeVisitActivity.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage nutritionEncounterId) ->
@@ -224,7 +245,7 @@ shouldFetch : Model -> Msg -> Bool
 shouldFetch model msg =
     case msg of
         MsgIndexedDb subMsg ->
-            Backend.Fetch.shouldFetch model.indexedDb subMsg
+            Backend.Fetch.shouldFetch model.currentTime model.indexedDb subMsg
 
         _ ->
             False

@@ -133,6 +133,128 @@ encodePrenatalPhotoUrl (PhotoUrl url) =
     ]
 
 
+encodePregnancyTesting : PregnancyTest -> List ( String, Value )
+encodePregnancyTesting =
+    encodePrenatalMeasurement encodePregnancyTestingValue
+
+
+encodePregnancyTestingValue : PregnancyTestResult -> List ( String, Value )
+encodePregnancyTestingValue value =
+    [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
+    , ( "deleted", bool False )
+    , ( "type", string "pregnancy_testing" )
+    ]
+
+
+encodePregnancyTestResult : PregnancyTestResult -> Value
+encodePregnancyTestResult =
+    pregnancyTestResultAsString >> string
+
+
+pregnancyTestResultAsString : PregnancyTestResult -> String
+pregnancyTestResultAsString sign =
+    case sign of
+        PregnancyTestPositive ->
+            "positive"
+
+        PregnancyTestNegative ->
+            "negative"
+
+        PregnancyTestIndeterminate ->
+            "indeterminate"
+
+        PregnancyTestUnableToConduct ->
+            "unable-to-conduct"
+
+
+encodePrenatalHealthEducation : PrenatalHealthEducation -> List ( String, Value )
+encodePrenatalHealthEducation =
+    encodePrenatalMeasurement encodePrenatalHealthEducationValue
+
+
+encodePrenatalHealthEducationValue : EverySet PrenatalHealthEducationSign -> List ( String, Value )
+encodePrenatalHealthEducationValue signs =
+    [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign signs )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_health_education" )
+    ]
+
+
+encodePrenatalHealthEducationSign : PrenatalHealthEducationSign -> Value
+encodePrenatalHealthEducationSign sign =
+    string <|
+        case sign of
+            EducationExpectations ->
+                "expectations"
+
+            EducationVisitsReview ->
+                "visits-review"
+
+            EducationWarningSigns ->
+                "warning-signs"
+
+            EducationHemorrhaging ->
+                "hemorrhaging"
+
+            EducationFamilyPlanning ->
+                "family-planning"
+
+            EducationBreastfeeding ->
+                "breastfeeding"
+
+            EducationImmunization ->
+                "immunization"
+
+            EducationHygiene ->
+                "hygiene"
+
+            NoPrenatalHealthEducationSigns ->
+                "none"
+
+
+encodePrenatalFollowUp : PrenatalFollowUp -> List ( String, Value )
+encodePrenatalFollowUp =
+    encodePrenatalMeasurement encodePrenatalFollowUpValue
+
+
+encodePrenatalFollowUpValue : PrenatalFollowUpValue -> List ( String, Value )
+encodePrenatalFollowUpValue value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+    , ( "prenatal_assesment", encodePrenatalAssesment value.assesment )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_follow_up" )
+    ]
+
+
+encodePrenatalAssesment : PrenatalAssesment -> Value
+encodePrenatalAssesment assesment =
+    string <|
+        case assesment of
+            AssesmentNormalPregnancy ->
+                "normal"
+
+            AssesmentHighRiskPregnancy ->
+                "high-risk"
+
+
+encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
+encodePrenatalSendToHC =
+    encodePrenatalMeasurement (encodeSendToHCValueWithType "prenatal_send_to_hc")
+
+
+encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
+encodeAppointmentConfirmation =
+    encodePrenatalMeasurement encodeAppointmentConfirmationValue
+
+
+encodeAppointmentConfirmationValue : PrenatalAppointmentConfirmationValue -> List ( String, Value )
+encodeAppointmentConfirmationValue value =
+    [ ( "appointment_confirmation", Gizra.NominalDate.encodeYYYYMMDD value.date )
+    , ( "deleted", bool False )
+    , ( "type", string "appointment_confirmation" )
+    ]
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement encodeNutritionValue
@@ -254,6 +376,11 @@ encodeNutritionMeasurement =
 encodeAcuteIllnessMeasurement : (value -> List ( String, Value )) -> AcuteIllnessMeasurement value -> List ( String, Value )
 encodeAcuteIllnessMeasurement =
     encodeMeasurement "acute_illness_encounter"
+
+
+encodeHomeVisitMeasurement : (value -> List ( String, Value )) -> HomeVisitMeasurement value -> List ( String, Value )
+encodeHomeVisitMeasurement =
+    encodeMeasurement "home_visit_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
@@ -562,12 +689,24 @@ encodeDangerSign sign =
                 "none"
 
 
-encodeDangerSignsValue : EverySet DangerSign -> List ( String, Value )
+encodeDangerSignsValue : DangerSignsValue -> List ( String, Value )
 encodeDangerSignsValue value =
-    [ ( "danger_signs", encodeEverySet encodeDangerSign value )
+    [ ( "danger_signs", encodeEverySet encodeDangerSign value.signs )
+    , ( "postpartum_mother", encodeEverySet encodePostpartumMotherDangerSign value.postpartumMother )
+    , ( "postpartum_child", encodeEverySet encodePostpartumChildDangerSign value.postpartumChild )
     , ( "deleted", bool False )
     , ( "type", string "danger_signs" )
     ]
+
+
+encodePostpartumMotherDangerSign : PostpartumMotherDangerSign -> Value
+encodePostpartumMotherDangerSign sign =
+    postpartumMotherDangerSignToString sign |> string
+
+
+encodePostpartumChildDangerSign : PostpartumChildDangerSign -> Value
+encodePostpartumChildDangerSign sign =
+    postpartumChildDangerSignToString sign |> string
 
 
 encodeDangerSigns : DangerSigns -> List ( String, Value )
@@ -898,6 +1037,43 @@ encodeObstetricHistoryStep2Value value =
     , ( "deleted", bool False )
     , ( "type", string "obstetric_history_step2" )
     ]
+
+
+encodeBirthPlan : BirthPlan -> List ( String, Value )
+encodeBirthPlan =
+    encodePrenatalMeasurement encodeBirthPlanValue
+
+
+encodeBirthPlanValue : BirthPlanValue -> List ( String, Value )
+encodeBirthPlanValue value =
+    [ ( "birth_plan_signs", encodeEverySet encodeBirthPlanSign value.signs )
+    , ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign value.familyPlanning )
+    , ( "deleted", bool False )
+    , ( "type", string "birth_plan" )
+    ]
+
+
+encodeBirthPlanSign : BirthPlanSign -> Value
+encodeBirthPlanSign sign =
+    string <|
+        case sign of
+            Insurance ->
+                "have-insurance"
+
+            BoughtClothes ->
+                "bought-clothes-for-child"
+
+            CaregiverAccompany ->
+                "caregiver-to-accompany-you"
+
+            SavedMoney ->
+                "saved-money-for-use"
+
+            Transportation ->
+                "planned-for-transportation"
+
+            NoBirthPlan ->
+                "none"
 
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
@@ -1288,20 +1464,30 @@ malariaRapidTestResultAsString sign =
 
 encodeSendToHC : SendToHC -> List ( String, Value )
 encodeSendToHC =
-    encodeAcuteIllnessMeasurement encodeSendToHCValue
+    encodeAcuteIllnessMeasurement (encodeSendToHCValueWithType "send_to_hc")
 
 
-encodeSendToHCValue : SendToHCValue -> List ( String, Value )
-encodeSendToHCValue value =
-    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value.signs )
+encodeNutritionSendToHC : NutritionSendToHC -> List ( String, Value )
+encodeNutritionSendToHC =
+    encodeNutritionMeasurement (encodeSendToHCValueWithType "nutrition_send_to_hc")
+
+
+encodeGroupSendToHC : GroupSendToHC -> List ( String, Value )
+encodeGroupSendToHC =
+    encodeGroupMeasurement (encodeSendToHCValueWithType "group_send_to_hc")
+
+
+encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
+encodeSendToHCValueWithType type_ value =
+    [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
     , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
-    , ( "type", string "send_to_hc" )
+    , ( "type", string type_ )
     ]
 
 
-encondeSendToHCSign : SendToHCSign -> Value
-encondeSendToHCSign sign =
+encodeSendToHCSign : SendToHCSign -> Value
+encodeSendToHCSign sign =
     string <|
         case sign of
             HandReferrerForm ->
@@ -1309,6 +1495,9 @@ encondeSendToHCSign sign =
 
             ReferToHealthCenter ->
                 "refer-to-hc"
+
+            PrenatalAccompanyToHC ->
+                "accompany-to-hc"
 
             NoSendToHCSigns ->
                 "none"
@@ -1332,6 +1521,361 @@ encodeReasonForNotSendingToHC event =
 
             NoReasonForNotSendingToHC ->
                 "none"
+
+
+encodeContributingFactors : ContributingFactors -> List ( String, Value )
+encodeContributingFactors =
+    encodeGroupMeasurement (encodeContributingFactorsValueWithType "contributing_factors")
+
+
+encodeNutritionContributingFactors : NutritionContributingFactors -> List ( String, Value )
+encodeNutritionContributingFactors =
+    encodeNutritionMeasurement (encodeContributingFactorsValueWithType "nutrition_contributing_factors")
+
+
+encodeContributingFactorsValueWithType : String -> EverySet ContributingFactorsSign -> List ( String, Value )
+encodeContributingFactorsValueWithType type_ value =
+    [ ( "contributing_factors_signs", encodeEverySet encodeContributingFactorsSign value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeContributingFactorsSign : ContributingFactorsSign -> Value
+encodeContributingFactorsSign sign =
+    string <|
+        case sign of
+            FactorLackOfBreastMilk ->
+                "lack-of-breast-milk"
+
+            FactorMaternalMastitis ->
+                "maternal-mastitis"
+
+            FactorPoorSuck ->
+                "poor-suck"
+
+            FactorDiarrheaOrVomiting ->
+                "diarrhea-or-vomiting"
+
+            NoContributingFactorsSign ->
+                "none"
+
+
+encodeFollowUp : FollowUp -> List ( String, Value )
+encodeFollowUp =
+    encodeGroupMeasurement (encodeFollowUpValueWithType "follow_up")
+
+
+encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
+encodeNutritionFollowUp =
+    encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+
+
+encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
+    let
+        assesment =
+            EverySet.toList value.assesment
+                |> List.head
+                |> Maybe.withDefault NoNutritionAssesment
+
+        nutritionSigns =
+            case assesment of
+                AssesmentMalnutritionSigns signs ->
+                    EverySet.fromList signs
+
+                _ ->
+                    EverySet.singleton NormalChildNutrition
+    in
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+    , ( "nutrition_assesment", encodeEverySet encodeNutritionAssesment value.assesment )
+    , ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritionSigns )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
+encodeAcuteIllnessFollowUp =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
+
+
+encodeAcuteIllnessFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodeAcuteIllnessFollowUpValue value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_follow_up" )
+    ]
+
+
+encodeNutritionAssesment : NutritionAssesment -> Value
+encodeNutritionAssesment assesment =
+    nutritionAssesmentToString assesment
+        |> string
+
+
+encodeFollowUpOption : FollowUpOption -> Value
+encodeFollowUpOption option =
+    string <|
+        case option of
+            OneDay ->
+                "1-d"
+
+            ThreeDays ->
+                "3-d"
+
+            OneWeek ->
+                "1-w"
+
+            TwoWeeks ->
+                "2-w"
+
+            OneMonths ->
+                "1-m"
+
+            TwoMonths ->
+                "2-m"
+
+            ThreeMonths ->
+                "3-m"
+
+
+encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
+encodeNutritionFeeding =
+    encodeHomeVisitMeasurement encodeNutritionFeedingValue
+
+
+encodeNutritionFeedingValue : NutritionFeedingValue -> List ( String, Value )
+encodeNutritionFeedingValue value =
+    [ ( "nutrition_feeding_signs", encodeEverySet encodeNutritionFeedingSign value.signs )
+    , ( "supplement_type", encodeNutritionSupplementType value.supplementType )
+    , ( "sachets_per_day", float value.sachetsPerDay )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_feeding" )
+    ]
+
+
+encodeNutritionSupplementType : NutritionSupplementType -> Value
+encodeNutritionSupplementType type_ =
+    string <|
+        case type_ of
+            FortifiedPorridge ->
+                "fortified-porridge"
+
+            Rutf ->
+                "rutf"
+
+            Ongera ->
+                "ongera"
+
+            TherapeuticMilk ->
+                "therapeutic-milk"
+
+            NoNutritionSupplementType ->
+                "none"
+
+
+encodeNutritionFeedingSign : NutritionFeedingSign -> Value
+encodeNutritionFeedingSign sign =
+    string <|
+        case sign of
+            ReceiveSupplement ->
+                "receive-supplement"
+
+            RationPresentAtHome ->
+                "ration-present-at-home"
+
+            EnoughTillNextSession ->
+                "enough-till-next-session"
+
+            SupplementShared ->
+                "supplement-shared"
+
+            EncouragedToEat ->
+                "encouraged-to-eat"
+
+            RefusingToEat ->
+                "refusing-to-eat"
+
+            FeedingSignBreastfeeding ->
+                "breastfeeding"
+
+            CleanWaterAvailable ->
+                "clean-water-available"
+
+            EatenWithWater ->
+                "eaten-with-water"
+
+            NoNutritionFeedingSigns ->
+                "none"
+
+
+encodeNutritionHygiene : NutritionHygiene -> List ( String, Value )
+encodeNutritionHygiene =
+    encodeHomeVisitMeasurement encodeNutritionHygieneValue
+
+
+encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
+encodeNutritionHygieneValue value =
+    [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
+    , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
+    , ( "water_preparation_option", encodeWaterPreparationOption value.waterPreparationOption )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_hygiene" )
+    ]
+
+
+encodeNutritionHygieneSign : NutritionHygieneSign -> Value
+encodeNutritionHygieneSign sign =
+    string <|
+        case sign of
+            SoapInTheHouse ->
+                "soap-in-the-house"
+
+            WashHandsBeforeFeeding ->
+                "wash-hands-before-feeding"
+
+            FoodCovered ->
+                "food-covered"
+
+            NoNutritionHygieneSigns ->
+                "none"
+
+
+encodeMainWaterSource : MainWaterSource -> Value
+encodeMainWaterSource type_ =
+    string <|
+        case type_ of
+            PipedWaterToHome ->
+                "piped-water-to-home"
+
+            PublicWaterTap ->
+                "public-water-tap"
+
+            RainWaterCollectionSystem ->
+                "rain-water-collection-system"
+
+            NaturalSourceFlowingWater ->
+                "natural-source-flowing-water"
+
+            NaturalSourceStandingWater ->
+                "natural-source-standing-water"
+
+            BottledWater ->
+                "bottled-water"
+
+
+encodeWaterPreparationOption : WaterPreparationOption -> Value
+encodeWaterPreparationOption type_ =
+    string <|
+        case type_ of
+            Boiled ->
+                "boiled"
+
+            PurificationSolution ->
+                "purification-solution"
+
+            Filtered ->
+                "filtered"
+
+            Bottled ->
+                "bottled"
+
+            NoWaterPreparationOption ->
+                "none"
+
+
+encodeNutritionFoodSecurity : NutritionFoodSecurity -> List ( String, Value )
+encodeNutritionFoodSecurity =
+    encodeHomeVisitMeasurement encodeNutritionFoodSecurityValue
+
+
+encodeNutritionFoodSecurityValue : NutritionFoodSecurityValue -> List ( String, Value )
+encodeNutritionFoodSecurityValue value =
+    [ ( "food_security_signs", encodeEverySet encodeNutritionFoodSecuritySign value.signs )
+    , ( "main_income_source", encodeMainIncomeSource value.mainIncomeSource )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_food_security" )
+    ]
+
+
+encodeNutritionFoodSecuritySign : NutritionFoodSecuritySign -> Value
+encodeNutritionFoodSecuritySign sign =
+    string <|
+        case sign of
+            HouseholdGotFood ->
+                "household-got-food"
+
+            NoNutritionFoodSecuritySigns ->
+                "none"
+
+
+encodeMainIncomeSource : MainIncomeSource -> Value
+encodeMainIncomeSource type_ =
+    string <|
+        case type_ of
+            HomeBasedAgriculture ->
+                "home-based-agriculture"
+
+            CommercialAgriculture ->
+                "commercial-agriculture"
+
+            PublicEmployee ->
+                "public-employee"
+
+            PrivateBusinessEmpployee ->
+                "private-business-employee"
+
+
+encodeNutritionCaring : NutritionCaring -> List ( String, Value )
+encodeNutritionCaring =
+    encodeHomeVisitMeasurement encodeNutritionCaringValue
+
+
+encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
+encodeNutritionCaringValue value =
+    [ ( "nutrition_caring_signs", encodeEverySet encondeNutritionCaringSign value.signs )
+    , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
+    , ( "deleted", bool False )
+    , ( "type", string "nutrition_caring" )
+    ]
+
+
+encondeNutritionCaringSign : NutritionCaringSign -> Value
+encondeNutritionCaringSign sign =
+    string <|
+        case sign of
+            ParentsAliveHealthy ->
+                "parent-alive-and-healthy"
+
+            ChildClean ->
+                "child-clean"
+
+            NoCaringSigns ->
+                "none"
+
+
+encodeNutritionCaringOption : CaringOption -> Value
+encodeNutritionCaringOption option =
+    string <|
+        case option of
+            CaredByParent ->
+                "parent"
+
+            CaredByGrandparent ->
+                "grandparent"
+
+            CaredBySibling ->
+                "sibling"
+
+            CaredByNeighbor ->
+                "neighbor"
+
+            CaredByHouseHelper ->
+                "house-helper"
+
+            CaredByDaycare ->
+                "daycare"
 
 
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
@@ -1824,14 +2368,25 @@ encodeAcuteIllnessNutritionValue nutritions =
 
 encodeHealthEducation : HealthEducation -> List ( String, Value )
 encodeHealthEducation =
-    encodeAcuteIllnessMeasurement encodeHealthEducationValue
+    encodeAcuteIllnessMeasurement (encodeHealthEducationValueWithType "health_education")
 
 
-encodeHealthEducationValue : EverySet HealthEducationSign -> List ( String, Value )
-encodeHealthEducationValue value =
-    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value )
+encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )
+encodeNutritionHealthEducation =
+    encodeNutritionMeasurement (encodeHealthEducationValueWithType "nutrition_health_education")
+
+
+encodeGroupHealthEducation : GroupHealthEducation -> List ( String, Value )
+encodeGroupHealthEducation =
+    encodeGroupMeasurement (encodeHealthEducationValueWithType "group_health_education")
+
+
+encodeHealthEducationValueWithType : String -> HealthEducationValue -> List ( String, Value )
+encodeHealthEducationValueWithType type_ value =
+    [ ( "health_education_signs", encodeEverySet encodeHealthEducationSign value.signs )
+    , ( "reason_not_given_education", encodeReasonForNotProvidingHealthEducation value.reasonForNotProvidingHealthEducation )
     , ( "deleted", bool False )
-    , ( "type", string "health_education" )
+    , ( "type", string type_ )
     ]
 
 
@@ -1843,4 +2398,27 @@ encodeHealthEducationSign sign =
                 "education-for-diagnosis"
 
             NoHealthEducationSigns ->
+                "none"
+
+
+encodeReasonForNotProvidingHealthEducation : ReasonForNotProvidingHealthEducation -> Value
+encodeReasonForNotProvidingHealthEducation reason =
+    string <|
+        case reason of
+            PatientNeedsEmergencyReferral ->
+                "needs-emergency-referral"
+
+            ReceivedEmergencyCase ->
+                "received-emergency-case"
+
+            LackOfAppropriateEducationUserGuide ->
+                "lack-of-appropriate-education-guide"
+
+            PatientRefused ->
+                "patient-refused"
+
+            PatientTooIll ->
+                "patient-too-ill"
+
+            NoReasonForNotProvidingHealthEducation ->
                 "none"

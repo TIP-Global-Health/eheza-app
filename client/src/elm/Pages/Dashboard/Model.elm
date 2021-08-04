@@ -1,37 +1,16 @@
-module Pages.Dashboard.Model exposing
-    ( BeneficiariesTableLabels(..)
-    , Card
-    , CardValueSeverity(..)
-    , DashboardFilter(..)
-    , DashboardSubFilter(..)
-    , FamilyPlanningSignsCounter
-    , FilterGender(..)
-    , FilterPeriod(..)
-    , FilterType(..)
-    , MalnorishedNutritionData
-    , Model
-    , MonthlyChartType(..)
-    , Msg(..)
-    , StatsCard
-    , caseManagementFilters
-    , caseManagementSubFilters
-    , emptyModel
-    , filterGenders
-    , filterPeriodsForCaseManagementPage
-    , filterPeriodsForMainPage
-    , filterPeriodsForStatsPage
-    , monthlyChartFilters
-    )
-
-{-| Filtering by period
--}
+module Pages.Dashboard.Model exposing (..)
 
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
+import Backend.Entities exposing (HealthCenterId, VillageId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Page exposing (DashboardPage(..), Page(..))
+import Maybe.Extra exposing (isJust)
+import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..))
 
 
 type FilterPeriod
@@ -41,21 +20,20 @@ type FilterPeriod
     | OneYear
 
 
+type FilterProgramType
+    = FilterAllPrograms
+    | FilterProgramAchi
+    | FilterProgramFbf
+    | FilterProgramPmtct
+    | FilterProgramSorwathe
+    | FilterProgramCommunity
+
+
 type BeneficiariesTableLabels
     = New
     | Missed
     | Malnourished
     | Total
-
-
-filterPeriodsForMainPage : List FilterPeriod
-filterPeriodsForMainPage =
-    []
-
-
-filterPeriodsForCaseManagementPage : List FilterPeriod
-filterPeriodsForCaseManagementPage =
-    []
 
 
 filterPeriodsForStatsPage : List FilterPeriod
@@ -129,31 +107,64 @@ caseManagementSubFilters mainFilter =
 
 type alias Model =
     { period : FilterPeriod
+    , programTypeFilter : FilterProgramType
+    , selectedVillageFilter : Maybe VillageId
     , beneficiariesGender : FilterGender
     , currentBeneficiariesChartsFilter : DashboardFilter
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
     , latestPage : DashboardPage
-    , modalTable : List ParticipantStats
-    , modalTitle : String
-    , modalState : Bool
+    , modalState : Maybe ModalState
+
+    -- This is used by month selector to determine
+    -- the gap from current month. We allow to go back
+    -- 6 months, so, valid values are between 0 and 5.
+    , monthGap : MonthGap
     }
 
 
-emptyModel : Model
-emptyModel =
+emptyModel : Maybe VillageId -> Model
+emptyModel maybeSelectedVillage =
+    let
+        ( programTypeFilter, selectedVillage ) =
+            if isJust maybeSelectedVillage then
+                -- This is CHW Nurse, as on CHW work with villages.
+                ( FilterProgramCommunity
+                , maybeSelectedVillage
+                )
+
+            else
+                ( FilterAllPrograms
+                , Nothing
+                )
+    in
     { period = OneYear
+    , programTypeFilter = programTypeFilter
+    , selectedVillageFilter = selectedVillage
     , beneficiariesGender = Boys
     , currentBeneficiariesChartsFilter = Stunting
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
     , latestPage = MainPage
-    , modalTable = []
-    , modalTitle = ""
-    , modalState = False
+    , modalState = Nothing
+    , monthGap = 0
     }
+
+
+type alias MonthGap =
+    Int
+
+
+maxMonthGap : MonthGap
+maxMonthGap =
+    5
+
+
+type ModalState
+    = StatisticsModal String (List ParticipantStats)
+    | FiltersModal
 
 
 {-| A record to hold the count of total signs used.
@@ -214,12 +225,34 @@ type MonthlyChartType
     | MonthlyChartIncidence
 
 
+type FeverCause
+    = FeverCauseCovid19
+    | FeverCauseMalaria
+    | FeverCauseRespiratory
+    | FeverCauseGI
+    | FeverCauseUnknown
+
+
+allFeverCauses : List FeverCause
+allFeverCauses =
+    [ FeverCauseCovid19
+    , FeverCauseMalaria
+    , FeverCauseRespiratory
+    , FeverCauseGI
+    , FeverCauseUnknown
+    ]
+
+
 type Msg
-    = ModalToggle Bool (List ParticipantStats) String
+    = SetModalState (Maybe ModalState)
+    | Reset (Maybe VillageId)
+    | ChangeMonthGap Int
     | NavigateToStuntingTable DashboardSubFilter
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
     | SetFilterBeneficiariesChart DashboardFilter FilterType
     | SetFilterCaseManagement DashboardFilter
     | SetSubFilterCaseManagement DashboardSubFilter
+    | SetFilterProgramType String
+    | SetSelectedVillage String
     | SetActivePage Page

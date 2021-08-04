@@ -1,36 +1,437 @@
-module Pages.PrenatalEncounter.Utils exposing
-    ( calculateEDD
-    , calculateEDDandEGADays
-    , expectPrenatalActivity
-    , generateAssembledData
-    , generateEDDandEGA
-    , generateEGAWeeksDaysLabel
-    , generateGravida
-    , generatePara
-    , generatePreviousMeasurements
-    , getFirstEncounterMeasurements
-    , getLastEncounterMeasurements
-    , getLastEncounterMeasurementsWithDate
-    , getLmpMeasurement
-    , getMotherHeightMeasurement
-    , isFirstPrenatalEncounter
-    , resolveGlobalLmpDate
-    , resolveGlobalObstetricHistory
-    , shouldShowPatientProvisionsResourcesTask
-    )
+module Pages.PrenatalEncounter.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (..)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, orElse, unwrap)
+import Pages.PrenatalActivity.Model exposing (NextStepsTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import PrenatalActivity.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+
+
+getAllActivities : AssembledData -> List PrenatalActivity
+getAllActivities data =
+    case data.encounter.encounterType of
+        NurseEncounter ->
+            if isFirstEncounter data then
+                [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
+
+            else
+                [ DangerSigns, PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, PrenatalPhoto ]
+
+        ChwFirstEncounter ->
+            [ PregnancyDating, Laboratory, DangerSigns, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
+
+        ChwSecondEncounter ->
+            [ DangerSigns, BirthPlan, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
+
+        ChwThirdPlusEncounter ->
+            [ DangerSigns, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
+
+        ChwPostpartumEncounter ->
+            [ PregnancyOutcome, DangerSigns, NextSteps ]
+
+
+getSubsequentEncounterType : PrenatalEncounterType -> Maybe PrenatalEncounterType
+getSubsequentEncounterType currentEncounterType =
+    case currentEncounterType of
+        NurseEncounter ->
+            Nothing
+
+        ChwFirstEncounter ->
+            Just ChwSecondEncounter
+
+        ChwSecondEncounter ->
+            Just ChwThirdPlusEncounter
+
+        ChwThirdPlusEncounter ->
+            Just ChwThirdPlusEncounter
+
+        ChwPostpartumEncounter ->
+            Nothing
+
+
+generatePostCreateDestination : PrenatalEncounterType -> Bool -> PrenatalEncounterPostCreateDestination
+generatePostCreateDestination encounterType hasNurseEncounter =
+    case encounterType of
+        ChwFirstEncounter ->
+            if hasNurseEncounter then
+                DestinationClinicalProgressReportPage
+
+            else
+                DestinationEncounterPage
+
+        ChwSecondEncounter ->
+            if hasNurseEncounter then
+                DestinationClinicalProgressReportPage
+
+            else
+                DestinationEncounterPageWithWarningPopup
+
+        ChwThirdPlusEncounter ->
+            if hasNurseEncounter then
+                DestinationClinicalProgressReportPage
+
+            else
+                DestinationEncounterPageWithWarningPopup
+
+        ChwPostpartumEncounter ->
+            DestinationEncounterPage
+
+        -- We should never get here.
+        NurseEncounter ->
+            DestinationEncounterPage
+
+
+expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
+expectActivity currentDate data activity =
+    case data.encounter.encounterType of
+        NurseEncounter ->
+            case activity of
+                PregnancyDating ->
+                    -- Only show on first encounter
+                    isFirstEncounter data
+
+                History ->
+                    True
+
+                Examination ->
+                    True
+
+                FamilyPlanning ->
+                    True
+
+                PatientProvisions ->
+                    True
+
+                DangerSigns ->
+                    True
+
+                PrenatalPhoto ->
+                    expectPrenatalPhoto currentDate data
+
+                -- Unique Chw activities.
+                _ ->
+                    False
+
+        ChwFirstEncounter ->
+            case activity of
+                PregnancyDating ->
+                    -- Do not show, if patient already visited health center.
+                    isFirstEncounter data
+
+                Laboratory ->
+                    -- Do not show, if patient already visited health center.
+                    isFirstEncounter data
+
+                DangerSigns ->
+                    True
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+        ChwSecondEncounter ->
+            case activity of
+                DangerSigns ->
+                    True
+
+                BirthPlan ->
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+        ChwThirdPlusEncounter ->
+            case activity of
+                DangerSigns ->
+                    True
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    activityCompleted currentDate data DangerSigns
+                        && noDangerSigns data
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+        ChwPostpartumEncounter ->
+            case activity of
+                PregnancyOutcome ->
+                    True
+
+                DangerSigns ->
+                    True
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate data
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate data =
+    case data.encounter.encounterType of
+        NurseEncounter ->
+            -- There're no mandatory activities for nurse encounters.
+            True
+
+        ChwFirstEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
+                        && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
+                        && activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwSecondEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data BirthPlan
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwThirdPlusEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwPostpartumEncounter ->
+            activityCompleted currentDate data PregnancyOutcome
+                && activityCompleted currentDate data DangerSigns
+
+
+noDangerSigns : AssembledData -> Bool
+noDangerSigns data =
+    let
+        getDangerSignsType getFunc =
+            data.measurements.dangerSigns
+                |> Maybe.map (Tuple.second >> .value >> getFunc >> EverySet.toList)
+                |> Maybe.withDefault []
+
+        dangerSignsEmpty emptySign signsList =
+            List.isEmpty signsList || signsList == [ emptySign ]
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSignsEmpty =
+                    getDangerSignsType .postpartumMother
+                        |> dangerSignsEmpty NoPostpartumMotherDangerSigns
+
+                childSignsEmpty =
+                    getDangerSignsType .postpartumChild
+                        |> dangerSignsEmpty NoPostpartumChildDangerSigns
+            in
+            motherSignsEmpty && childSignsEmpty
+
+        _ ->
+            getDangerSignsType .signs
+                |> dangerSignsEmpty NoDangerSign
+
+
+dangerSignsPresent : AssembledData -> Bool
+dangerSignsPresent data =
+    isJust data.measurements.dangerSigns && not (noDangerSigns data)
+
+
+generateDangerSignsList : Language -> AssembledData -> List String
+generateDangerSignsList language data =
+    let
+        getDangerSignsListForType getFunc translateFunc noSignsValue =
+            data.measurements.dangerSigns
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> getFunc
+                        >> EverySet.toList
+                        >> List.filter ((/=) noSignsValue)
+                        >> List.map (translateFunc >> translate language)
+                    )
+                |> Maybe.withDefault []
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSigns =
+                    getDangerSignsListForType .postpartumMother Translate.PostpartumMotherDangerSign NoPostpartumMotherDangerSigns
+
+                childSigns =
+                    getDangerSignsListForType .postpartumChild Translate.PostpartumChildDangerSign NoPostpartumChildDangerSigns
+            in
+            motherSigns ++ childSigns
+
+        _ ->
+            getDangerSignsListForType .signs Translate.DangerSign NoDangerSign
+
+
+activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool
+activityCompleted currentDate data activity =
+    case activity of
+        PregnancyDating ->
+            isJust data.measurements.lastMenstrualPeriod
+
+        History ->
+            if isFirstEncounter data then
+                -- First antenatal encounter - all tasks should be completed
+                isJust data.measurements.obstetricHistory
+                    && isJust data.measurements.obstetricHistoryStep2
+                    && isJust data.measurements.medicalHistory
+                    && isJust data.measurements.socialHistory
+
+            else
+                -- Subsequent antenatal encounter - only Social history task
+                -- needs to be completed.
+                isJust data.measurements.socialHistory
+
+        Examination ->
+            isJust data.measurements.vitals
+                && isJust data.measurements.nutrition
+                && isJust data.measurements.corePhysicalExam
+                && isJust data.measurements.obstetricalExam
+                && isJust data.measurements.breastExam
+
+        FamilyPlanning ->
+            isJust data.measurements.familyPlanning
+
+        PatientProvisions ->
+            if shouldShowPatientProvisionsResourcesTask data then
+                isJust data.measurements.medication && isJust data.measurements.resource
+
+            else
+                isJust data.measurements.medication
+
+        DangerSigns ->
+            isJust data.measurements.dangerSigns
+
+        PrenatalPhoto ->
+            isJust data.measurements.prenatalPhoto
+
+        Laboratory ->
+            isJust data.measurements.pregnancyTest
+
+        Backend.PrenatalActivity.Model.HealthEducation ->
+            isJust data.measurements.healthEducation
+
+        BirthPlan ->
+            isJust data.measurements.birthPlan
+
+        NextSteps ->
+            let
+                nextStepsTasks =
+                    resolveNextStepsTasks currentDate data
+            in
+            case nextStepsTasks of
+                [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
+                    isJust data.measurements.appointmentConfirmation && isJust data.measurements.followUp
+
+                [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                    isJust data.measurements.sendToHC && isJust data.measurements.followUp
+
+                [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
+                    isJust data.measurements.healthEducation
+                        && isJust data.participant.newborn
+
+                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
+                    isJust data.measurements.sendToHC
+                        && isJust data.measurements.followUp
+                        && isJust data.measurements.healthEducation
+                        && isJust data.participant.newborn
+
+                _ ->
+                    False
+
+        PregnancyOutcome ->
+            isJust data.participant.endDate
+
+
+resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate data =
+    case data.encounter.encounterType of
+        -- We should never get here, as Next Steps
+        -- displayed only for CHW.
+        NurseEncounter ->
+            []
+
+        _ ->
+            -- The order is important. Do not change.
+            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
+                |> List.filter (expectNextStepsTasks currentDate data)
+
+
+expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTasks currentDate data task =
+    let
+        dangerSigns =
+            dangerSignsPresent data
+    in
+    case task of
+        NextStepsAppointmentConfirmation ->
+            not dangerSigns && data.encounter.encounterType /= ChwPostpartumEncounter
+
+        NextStepsFollowUp ->
+            case data.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    dangerSigns
+
+                _ ->
+                    True
+
+        NextStepsSendToHC ->
+            dangerSigns
+
+        NextStepsHealthEducation ->
+            data.encounter.encounterType == ChwPostpartumEncounter
+
+        NextStepsNewbornEnrolment ->
+            data.encounter.encounterType == ChwPostpartumEncounter
 
 
 calculateEDD : NominalDate -> NominalDate
@@ -120,61 +521,74 @@ getMotherHeightMeasurement measurements =
         |> Maybe.map (Tuple.second >> .value >> .height)
 
 
-resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
-resolveGlobalLmpDate measurements previousMeasurements =
-    -- When there are no previous measurements, we try to resolve
-    -- from current encounter.
-    if List.isEmpty previousMeasurements then
-        getLmpMeasurement measurements
-
-    else
-        -- When there are previous measurements, we know that Lmp date
+resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
+resolveGlobalLmpDate measurements nursePreviousMeasurements chwPreviousMeasurements =
+    let
+        -- When measurements list is not empty, we know that Lmp date
         -- will be located at head of the list, becuase previous measurements
-        -- are sorted by encounter date, and Lmp date is a mandatory measurement.
-        previousMeasurements
-            |> List.head
-            |> Maybe.andThen getLmpMeasurement
+        -- are sorted ASC by encounter date, and Lmp date is a mandatory
+        -- measurement at first encounter.
+        getLmpMeasurementFromList measurementsList =
+            List.head measurementsList
+                |> Maybe.andThen getLmpMeasurement
+    in
+    getLmpMeasurementFromList nursePreviousMeasurements
+        |> orElse (getLmpMeasurementFromList chwPreviousMeasurements)
+        |> orElse (getLmpMeasurement measurements)
 
 
 resolveGlobalObstetricHistory : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe ObstetricHistoryValue
-resolveGlobalObstetricHistory measurements previousMeasurements =
+resolveGlobalObstetricHistory measurements nursePreviousMeasurements =
     -- When there are no previous measurements, we try to resolve
     -- from current encounter.
-    if List.isEmpty previousMeasurements then
+    if List.isEmpty nursePreviousMeasurements then
         getObstetricHistory measurements
 
     else
         -- When there are previous measurements, we know that Lmp Obstetric history
         -- will be located at head of the list, becuase previous measurements
         -- are sorted by encounter date, and Obstetric history date is a mandatory measurement.
-        previousMeasurements
+        nursePreviousMeasurements
             |> List.head
             |> Maybe.andThen getObstetricHistory
 
 
-generatePreviousMeasurements : PrenatalEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, PrenatalMeasurements ))
+generatePreviousMeasurements :
+    PrenatalEncounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> ( List ( NominalDate, PrenatalMeasurements ), List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements ) )
 generatePreviousMeasurements currentEncounterId participantId db =
     Dict.get participantId db.prenatalEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.map
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
             (Dict.toList
-                >> List.filterMap
-                    (\( encounterId, encounter ) ->
+                >> List.filter
+                    (\( id, _ ) ->
                         -- We do not want to get data of current encounter.
-                        if encounterId == currentEncounterId then
-                            Nothing
-
-                        else
-                            case Dict.get encounterId db.prenatalMeasurements of
-                                Just (Success data) ->
-                                    Just ( encounter.startDate, data )
-
-                                _ ->
-                                    Nothing
+                        id /= currentEncounterId
                     )
-                >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2)
+                >> List.sortWith (\( _, e1 ) ( _, e2 ) -> Gizra.NominalDate.compare e1.startDate e2.startDate)
+                >> (\previousEncounters ->
+                        let
+                            ( nurseEncounters, chwEncounters ) =
+                                List.partition (Tuple.second >> .encounterType >> (==) NurseEncounter) previousEncounters
+
+                            getEncounterMeasurements ( encounterId, encounter ) =
+                                case Dict.get encounterId db.prenatalMeasurements of
+                                    Just (Success measurements) ->
+                                        Just ( encounter.startDate, encounter.encounterType, measurements )
+
+                                    _ ->
+                                        Nothing
+                        in
+                        ( List.filterMap getEncounterMeasurements nurseEncounters
+                            |> List.map (\( date, _, measurements ) -> ( date, measurements ))
+                        , List.filterMap getEncounterMeasurements chwEncounters
+                        )
+                   )
             )
+        |> Maybe.withDefault ( [], [] )
 
 
 generateAssembledData : PrenatalEncounterId -> ModelIndexedDb -> WebData AssembledData
@@ -204,25 +618,29 @@ generateAssembledData id db =
                             |> Maybe.withDefault NotAsked
                     )
 
-        previousMeasurementsWithDates =
+        ( nursePreviousMeasurementsWithDates, chwPreviousMeasurementsWithDates ) =
             encounter
-                |> RemoteData.andThen
+                |> RemoteData.toMaybe
+                |> Maybe.map
                     (\encounter_ ->
                         generatePreviousMeasurements id encounter_.participant db
                     )
-                |> RemoteData.withDefault []
+                |> Maybe.withDefault ( [], [] )
 
-        previousMeasurements =
-            List.map Tuple.second previousMeasurementsWithDates
+        nursePreviousMeasurements =
+            List.map Tuple.second nursePreviousMeasurementsWithDates
+
+        chwPreviousMeasurements =
+            List.map (\( _, _, previousMeasurements ) -> previousMeasurements) chwPreviousMeasurementsWithDates
 
         globalLmpDate =
             measurements
-                |> RemoteData.map (\measurements_ -> resolveGlobalLmpDate measurements_ previousMeasurements)
+                |> RemoteData.map (\measurements_ -> resolveGlobalLmpDate measurements_ nursePreviousMeasurements chwPreviousMeasurements)
                 |> RemoteData.withDefault Nothing
 
         globalObstetricHistory =
             measurements
-                |> RemoteData.map (\measurements_ -> resolveGlobalObstetricHistory measurements_ previousMeasurements)
+                |> RemoteData.map (\measurements_ -> resolveGlobalObstetricHistory measurements_ nursePreviousMeasurements)
                 |> RemoteData.withDefault Nothing
     in
     RemoteData.map AssembledData (Success id)
@@ -230,26 +648,10 @@ generateAssembledData id db =
         |> RemoteData.andMap participant
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success previousMeasurementsWithDates)
+        |> RemoteData.andMap (Success nursePreviousMeasurementsWithDates)
+        |> RemoteData.andMap (Success chwPreviousMeasurementsWithDates)
         |> RemoteData.andMap (Success globalLmpDate)
         |> RemoteData.andMap (Success globalObstetricHistory)
-
-
-expectPrenatalActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
-expectPrenatalActivity currentDate data activity =
-    let
-        isFirstEncounter =
-            List.isEmpty data.previousMeasurementsWithDates
-    in
-    case activity of
-        PregnancyDating ->
-            isFirstEncounter
-
-        PrenatalPhoto ->
-            expectPrenatalPhoto currentDate data
-
-        _ ->
-            True
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
@@ -262,8 +664,8 @@ expectPrenatalPhoto currentDate data =
             --  3. Week 28, or more.
             [ [ (>) 13 ], [ (>) 28, (<=) 13 ], [ (<=) 28 ] ]
 
-        previousMeasurements =
-            List.map Tuple.second data.previousMeasurementsWithDates
+        nursePreviousMeasurements =
+            List.map Tuple.second data.nursePreviousMeasurementsWithDates
     in
     data.globalLmpDate
         |> Maybe.map
@@ -285,7 +687,7 @@ expectPrenatalPhoto currentDate data =
                         (\conditions ->
                             -- There should be no encounters that are  within dates range,
                             -- that got a photo measurement.
-                            data.previousMeasurementsWithDates
+                            data.nursePreviousMeasurementsWithDates
                                 |> List.filterMap
                                     (\( encounterDate, measurements ) ->
                                         let
@@ -314,7 +716,7 @@ expectPrenatalPhoto currentDate data =
 
 shouldShowPatientProvisionsResourcesTask : AssembledData -> Bool
 shouldShowPatientProvisionsResourcesTask assembled =
-    assembled.previousMeasurementsWithDates
+    assembled.nursePreviousMeasurementsWithDates
         |> List.filter
             (\( _, measurements ) ->
                 measurements.resource
@@ -324,31 +726,39 @@ shouldShowPatientProvisionsResourcesTask assembled =
         |> List.isEmpty
 
 
-isFirstPrenatalEncounter : AssembledData -> Bool
-isFirstPrenatalEncounter assembled =
-    List.isEmpty assembled.previousMeasurementsWithDates
+isFirstEncounter : AssembledData -> Bool
+isFirstEncounter assembled =
+    List.isEmpty assembled.nursePreviousMeasurementsWithDates
 
 
-getFirstEncounterMeasurements : AssembledData -> PrenatalMeasurements
-getFirstEncounterMeasurements data =
-    case data.previousMeasurementsWithDates of
+getFirstEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
+getFirstEncounterMeasurements isChw data =
+    case data.nursePreviousMeasurementsWithDates of
         [] ->
-            data.measurements
+            if isChw then
+                emptyPrenatalMeasurements
+
+            else
+                data.measurements
 
         first :: others ->
             Tuple.second first
 
 
-getLastEncounterMeasurementsWithDate : NominalDate -> AssembledData -> ( NominalDate, PrenatalMeasurements )
-getLastEncounterMeasurementsWithDate currentDate data =
-    case List.reverse data.previousMeasurementsWithDates of
+getLastEncounterMeasurementsWithDate : NominalDate -> Bool -> AssembledData -> ( NominalDate, PrenatalMeasurements )
+getLastEncounterMeasurementsWithDate currentDate isChw data =
+    case List.reverse data.nursePreviousMeasurementsWithDates of
         [] ->
-            ( currentDate, data.measurements )
+            if isChw then
+                ( currentDate, emptyPrenatalMeasurements )
+
+            else
+                ( currentDate, data.measurements )
 
         first :: others ->
             first
 
 
-getLastEncounterMeasurements : NominalDate -> AssembledData -> PrenatalMeasurements
-getLastEncounterMeasurements currentDate data =
-    getLastEncounterMeasurementsWithDate currentDate data |> Tuple.second
+getLastEncounterMeasurements : NominalDate -> Bool -> AssembledData -> PrenatalMeasurements
+getLastEncounterMeasurements currentDate isChw data =
+    getLastEncounterMeasurementsWithDate currentDate isChw data |> Tuple.second

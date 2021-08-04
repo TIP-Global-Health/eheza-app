@@ -3,41 +3,42 @@
 
   .timestamp {
     color: $color-white;
-    text-align: center;
+    text-align: left;
+    margin: 30px 0px 10px;
+    font-size: 18px;
+  }
+
+  .month-selector {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+
+    .label {
+      color: white;
+      font-size: 25px;
+      margin: 0 40px;
+    }
+
+    .icon-back.rotate-180 {
+      transform: rotate(180deg);
+    }
+
+    .icon-back.hidden {
+      visibility: hidden;
+    }
+  }
+
+  .case-management-label {
+    color: $color-white;
+    font-weight: 500;
+    margin-bottom: 10px;
+    margin-top: 50px;
   }
 
   .ui.segment {
-    padding: 1.5rem 2rem;
 
-    &.filters {
-      background-color: $color-light-background;
-      padding: 15px 20px;
-
-      .ui.button {
-        font-size: 22px;
-        line-height: 30px;
-        text-transform: none;
-        font-weight: normal;
-        padding: 0 4px;
-        border-radius: 3px;
-
-        &:link,
-        &:focus,
-        &:active,
-        &:hover {
-          background-color: $color-primary;
-        }
-
-        &.inactive {
-          background-color: transparent;
-          color: $color-background;
-        }
-      }
-    }
-
-    .content {
-
-      .very.basic.table {
+    .content .very.basic.table {
         width: 100%;
 
         thead {
@@ -77,10 +78,87 @@
           }
         }
       }
+
+    &.filters {
+      background-color: $color-light-background;
+      min-height: 60px;
+      padding: 15px 20px;
+
+      .label {
+        color: $color-white;
+      }
+
+      .ui.button {
+        font-size: 22px;
+        line-height: 30px;
+        text-transform: none;
+        font-weight: normal;
+        padding: 0 4px;
+        border-radius: 3px;
+
+        &:link,
+        &:focus,
+        &:active,
+        &:hover {
+          background-color: $color-primary;
+        }
+
+        &.inactive {
+          background-color: transparent;
+          color: $color-background;
+        }
+
+        &.program-type-filter {
+          float: right;
+        }
+      }
+
+      .icon-settings {
+        background: url(#{$img-path}icon-settings.svg);
+        background-size: 24px 24px;
+        display: block;
+        float: right;
+        height: 24px;
+        margin-left: 8px;
+        margin-top: 4px;
+        width: 24px;
+      }
     }
 
-    &.family-planning {
-      margin-bottom: 40px;
+    &.chw-filters {
+      background-color: transparent;
+      min-height: 40px;
+      padding: 25px 0;
+      margin-bottom: 25px;
+      display: flex;
+      border-bottom: solid 1px $color-white;
+
+      button {
+        background-color: $color-white;
+        border: solid 2px $color-primary;
+        border-radius: 3px;
+        color: $color-primary;
+        width: 300px;
+        font-size: 24px;
+        font-weight: 700;
+        margin-right:25px;
+        padding: 15px;
+        text-transform: none;
+
+        &:last-child {
+          margin-right: 0px;
+        }
+
+        &.active {
+          background-color: $color-primary;
+          border: solid 2px $color-white;
+          color: $color-white;
+        }
+      }
+    }
+
+    &.donut-chart {
+      margin-top: 40px;
 
       .header {
 
@@ -140,11 +218,19 @@
           }
 
           svg.pie-chart {
-            position: absolute;
-            width: 400px;
             height: 400px;
-            top: 35px;
             left: 55px;
+            position: absolute;
+            top: 35px;
+            width: 400px;
+          }
+
+          svg.pie-chart.fever {
+            height: 500px;
+            left: -235px;
+            position: absolute;
+            top: 4px;
+            width: 500px;
           }
 
           .legend {
@@ -173,6 +259,76 @@
         }
       }
     }
+
+    &.donut-chart.fever {
+      min-height: 300px;
+
+      .row .content {
+
+        svg.pie-chart {
+          height: 500px;
+          left: -185px;
+          position: absolute;
+          top: 4px;
+          width: 500px;
+        }
+
+        .in-chart {
+          font-size: 18px;
+          left: -150px;
+          top: 100px;
+        }
+
+        .legend {
+          margin: 0 0 0 400px;
+
+          .legend-item span {
+            font-size: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  .overlay .ui.modal {
+    margin-left: -350px;
+    width: 700px;
+
+    .header {
+      font-size: 30px;
+      font-weight: 500;
+      margin-bottom: 25px;
+      text-align: left;
+      text-transform: capitalize;
+    }
+
+    .content {
+      text-align: left;
+
+      .helper {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 3px;
+      }
+
+      .select-input {
+        background: none;
+        border: 2px solid $color-gray;
+        font-size: 28px;
+        height: 50px;
+        margin-bottom: 20px;
+        padding: 0 7px;
+        width: 100%;
+      }
+    }
+
+    .actions {
+      margin-top: 40px;
+
+      button {
+        margin-left: 0;
+      }
+    }
   }
 
   &.stats {
@@ -184,10 +340,10 @@
     .overlay {
 
       .ui.modal {
-        margin-left: -365px !important;
-        width: 730px !important;
+        margin-left: -365px;
         height: 400px;
         overflow: scroll;
+        width: 730px;
 
         .header {
           padding: 0;
@@ -342,15 +498,17 @@
     }
   }
 
-  .dashboard-cards {
-    padding: 1.5rem 3rem;
+  .dashboard-card {
+    padding: 15px 5px 20px;
     border-radius: 1px;
     min-height: 130px;
 
     .header {
       font-size: 20px;
       text-align: center;
+      font-weight: bolder;
       line-height: 20px;
+      height: 65px;
     }
 
     .this-year {
@@ -434,6 +592,16 @@
           line-height: 10px;
         }
       }
+    }
+  }
+
+  .dashboard-card.chw {
+    min-height: 150px;
+    padding: 20px 10px 20px;
+    border-top:4px solid $color-primary;
+
+    .value {
+      color: $color-light-background;
     }
   }
 
@@ -569,6 +737,11 @@
     }
   }
 
+  .dashboards-monthly-chart {
+    display: flex;
+    flex-direction: column;
+  }
+
   .fbf-beneficiaries {
 
     .header {
@@ -609,10 +782,6 @@
   .case-management .header .filters {
     margin-bottom: 10px;
     margin-top: 0;
-
-    &.secondary {
-
-    }
   }
 
   .dashboards-links {

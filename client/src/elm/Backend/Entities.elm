@@ -95,6 +95,14 @@ type BreastExamUuidType
     = BreastExamUuidType
 
 
+type alias BirthPlanId =
+    EntityUuid BirthPlanUuidType
+
+
+type BirthPlanUuidType
+    = BirthPlanUuidType
+
+
 type alias CorePhysicalExamId =
     EntityUuid CorePhysicalExamUuidType
 
@@ -621,3 +629,155 @@ type alias HealthEducationId =
 
 type HealthEducationUuidType
     = HealthEducationUuidType
+
+
+type alias NutritionSendToHCId =
+    EntityUuid NutritionSendToHCIdUuidType
+
+
+type NutritionSendToHCIdUuidType
+    = NutritionSendToHCIdUuidType
+
+
+type alias NutritionHealthEducationId =
+    EntityUuid NutritionHealthEducationUuidType
+
+
+type NutritionHealthEducationUuidType
+    = NutritionHealthEducationUuidType
+
+
+type alias NutritionContributingFactorsId =
+    EntityUuid NutritionContributingFactorsIdUuidType
+
+
+type NutritionContributingFactorsIdUuidType
+    = NutritionContributingFactorsIdUuidType
+
+
+type alias NutritionFollowUpId =
+    EntityUuid NutritionFollowUpIdUuidType
+
+
+type NutritionFollowUpIdUuidType
+    = NutritionFollowUpIdUuidType
+
+
+type alias GroupSendToHCId =
+    EntityUuid GroupSendToHCIdUuidType
+
+
+type GroupSendToHCIdUuidType
+    = GroupSendToHCIdUuidType
+
+
+type alias GroupHealthEducationId =
+    EntityUuid GroupHealthEducationUuidType
+
+
+type GroupHealthEducationUuidType
+    = GroupHealthEducationUuidType
+
+
+type alias ContributingFactorsId =
+    EntityUuid ContributingFactorsIdUuidType
+
+
+type ContributingFactorsIdUuidType
+    = ContributingFactorsIdUuidType
+
+
+type alias FollowUpId =
+    EntityUuid FollowUpIdUuidType
+
+
+type FollowUpIdUuidType
+    = FollowUpIdUuidType
+
+
+type alias HomeVisitEncounterId =
+    EntityUuid HomeVisitEncounterUuidType
+
+
+type HomeVisitEncounterUuidType
+    = HomeVisitEncounterUuidType
+
+
+type alias NutritionFeedingId =
+    EntityUuid NutritionFeedingIdUuidType
+
+
+type NutritionFeedingIdUuidType
+    = NutritionFeedingIdUuidType
+
+
+type alias NutritionHygieneId =
+    EntityUuid NutritionHygieneIdUuidType
+
+
+type NutritionHygieneIdUuidType
+    = NutritionHygieneIdUuidType
+
+
+type alias NutritionFoodSecurityId =
+    EntityUuid NutritionFoodSecurityIdUuidType
+
+
+type NutritionFoodSecurityIdUuidType
+    = NutritionFoodSecurityIdUuidType
+
+
+type alias NutritionCaringId =
+    EntityUuid NutritionCaringIdUuidType
+
+
+type NutritionCaringIdUuidType
+    = NutritionCaringIdUuidType
+
+
+type alias AcuteIllnessFollowUpId =
+    EntityUuid AcuteIllnessFollowUpIdUuidType
+
+
+type AcuteIllnessFollowUpIdUuidType
+    = AcuteIllnessFollowUpIdUuidType
+
+
+type alias PregnancyTestId =
+    EntityUuid PregnancyTestUuidType
+
+
+type PregnancyTestUuidType
+    = PregnancyTestUuidType
+
+
+type alias PrenatalHealthEducationId =
+    EntityUuid PrenatalHealthEducationUuidType
+
+
+type PrenatalHealthEducationUuidType
+    = PrenatalHealthEducationUuidType
+
+
+type alias PrenatalFollowUpId =
+    EntityUuid PrenatalFollowUpUuidType
+
+
+type PrenatalFollowUpUuidType
+    = PrenatalFollowUpUuidType
+
+
+type alias PrenatalSendToHcId =
+    EntityUuid PrenatalSendToHcUuidType
+
+
+type PrenatalSendToHcUuidType
+    = PrenatalSendToHcUuidType
+
+
+type alias PrenatalAppointmentConfirmationId =
+    EntityUuid PrenatalAppointmentConfirmationUuidType
+
+
+type PrenatalAppointmentConfirmationUuidType
+    = PrenatalAppointmentConfirmationUuidType

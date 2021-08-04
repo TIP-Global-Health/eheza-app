@@ -2,17 +2,21 @@ module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
-import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import AcuteIllnessActivity.Utils
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Utils
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encodeIndividualEncounterTypeAsString)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.NutritionActivity.Utils
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
-import NutritionActivity.Model exposing (NutritionActivity(..))
-import NutritionActivity.Utils
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
+import Backend.PrenatalActivity.Utils
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import Backend.PrenatalEncounter.Utils exposing (..)
 import Pages.Page exposing (..)
-import PrenatalActivity.Model exposing (PrenatalActivity)
-import PrenatalActivity.Utils
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import Url
 import Url.Parser as Parser exposing ((</>), Parser, custom, int, map, oneOf, s, string, top)
@@ -63,16 +67,43 @@ pageToFragment current =
                                 MainPage ->
                                     "main"
 
-                                StatsPage ->
-                                    "stats"
+                                NursePage nurseDashboardPage ->
+                                    case nurseDashboardPage of
+                                        StatsPage ->
+                                            "stats"
 
-                                CaseManagementPage ->
-                                    "case-management"
+                                        CaseManagementPage ->
+                                            "case-management"
+
+                                ChwPage chwDashboardPage ->
+                                    case chwDashboardPage of
+                                        AcuteIllnessPage acuteIllnessSubPage ->
+                                            case acuteIllnessSubPage of
+                                                OverviewPage ->
+                                                    "acute-illness"
+
+                                                Covid19Page ->
+                                                    "covid-19"
+
+                                                MalariaPage ->
+                                                    "malaria"
+
+                                                GastroPage ->
+                                                    "gastro"
+
+                                        NutritionPage ->
+                                            "nutrition"
+
+                                        AntenatalPage ->
+                                            "antenatal"
                     in
                     Just ("dashboard/" ++ url)
 
-                ClinicalProgressReportPage prenatalEncounterId ->
-                    Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
+                GlobalCaseManagementPage ->
+                    Just "case-management"
+
+                ClinicalProgressReportPage initiator prenatalEncounterId ->
+                    Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId ++ "/" ++ progressReportInitiatorToUrlFragmemt initiator
 
                 DemographicsReportPage prenatalEncounterId ->
                     Just <| "demographics-report/" ++ fromEntityUuid prenatalEncounterId
@@ -162,6 +193,9 @@ pageToFragment current =
                                 MotherPage id ->
                                     "/mother/" ++ fromEntityUuid id
 
+                                NextStepsPage id activity ->
+                                    "/next-steps/" ++ fromEntityUuid id ++ "/" ++ Activity.Utils.encodeActivityAsString activity
+
                                 ParticipantsPage ->
                                     "/participants"
 
@@ -177,19 +211,19 @@ pageToFragment current =
                     Just <| "prenatal-encounter/" ++ fromEntityUuid id
 
                 PrenatalActivityPage id activity ->
-                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
+                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.encodeActivityAsString activity
 
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
 
-                PregnancyOutcomePage id ->
-                    Just <| "pregnancy-outcome/" ++ fromEntityUuid id
+                PregnancyOutcomePage initiator id ->
+                    Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragmemt initiator
 
                 NutritionEncounterPage id ->
                     Just <| "nutrition-encounter/" ++ fromEntityUuid id
 
                 NutritionActivityPage id activity ->
-                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ NutritionActivity.Utils.encodeActivityAsString activity
+                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NutritionActivity.Utils.encodeActivityAsString activity
 
                 NutritionProgressReportPage encounterId ->
                     Just <| "nutrition-progress-report/" ++ fromEntityUuid encounterId
@@ -198,7 +232,7 @@ pageToFragment current =
                     Just <| "acute-illness-encounter/" ++ fromEntityUuid id
 
                 AcuteIllnessActivityPage id activity ->
-                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ AcuteIllnessActivity.Utils.encodeActivityAsString activity
+                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.AcuteIllnessActivity.Utils.encodeActivityAsString activity
 
                 AcuteIllnessProgressReportPage id ->
                     Just <| "acute-illness-progress-report/" ++ fromEntityUuid id
@@ -206,18 +240,25 @@ pageToFragment current =
                 AcuteIllnessOutcomePage id ->
                     Just <| "acute-illness-outcome/" ++ fromEntityUuid id
 
+                HomeVisitEncounterPage id ->
+                    Just <| "home-visit-encounter/" ++ fromEntityUuid id
+
+                HomeVisitActivityPage id activity ->
+                    Just <| "home-visit-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.HomeVisitActivity.Utils.encodeActivityAsString activity
+
 
 parser : Parser (Page -> c) c
 parser =
     oneOf
         [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
-        , map (\page -> UserPage <| DashboardPage page) (s "dashboard" </> parseDashboardPage)
         , map DevicePage (s "device")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
         , map (UserPage ClinicalPage) (s "clinical")
+        , map (\page -> UserPage <| DashboardPage page) (s "dashboard" </> parseDashboardPage)
+        , map (UserPage GlobalCaseManagementPage) (s "case-management")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (\origin -> UserPage <| PersonsPage Nothing origin) (s "persons" </> parseOrigin)
         , map (\id origin -> UserPage <| PersonsPage (Just id) origin) (s "relations" </> parseUuid </> parseOrigin)
@@ -231,11 +272,11 @@ parser =
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
-        , map (\id -> UserPage <| ClinicalProgressReportPage id) (s "clinical-progress-report" </> parseUuid)
+        , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parseClinicalProgressReportInitiator)
         , map (\id -> UserPage <| DemographicsReportPage id) (s "demographics-report" </> parseUuid)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
-        , map (\id -> UserPage <| PregnancyOutcomePage id) (s "pregnancy-outcome" </> parseUuid)
+        , map (\id initiator -> UserPage <| PregnancyOutcomePage initiator id) (s "pregnancy-outcome" </> parseUuid </> parseRecordPreganancyInitiator)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
         , map (\id -> UserPage <| NutritionProgressReportPage id) (s "nutrition-progress-report" </> parseUuid)
@@ -243,6 +284,8 @@ parser =
         , map (\id activity -> UserPage <| AcuteIllnessActivityPage id activity) (s "acute-illness-activity" </> parseUuid </> parseAcuteIllnessActivity)
         , map (\id -> UserPage <| AcuteIllnessProgressReportPage id) (s "acute-illness-progress-report" </> parseUuid)
         , map (\id -> UserPage <| AcuteIllnessOutcomePage id) (s "acute-illness-outcome" </> parseUuid)
+        , map (\id -> UserPage <| HomeVisitEncounterPage id) (s "home-visit-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| HomeVisitActivityPage id activity) (s "home-visit-activity" </> parseUuid </> parseHomeVisitActivity)
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
@@ -253,8 +296,14 @@ parseDashboardPage : Parser (DashboardPage -> c) c
 parseDashboardPage =
     oneOf
         [ map MainPage (s "main")
-        , map StatsPage (s "stats")
-        , map CaseManagementPage (s "case-management")
+        , map (NursePage StatsPage) (s "stats")
+        , map (NursePage CaseManagementPage) (s "case-management")
+        , map (ChwPage <| AcuteIllnessPage OverviewPage) (s "acute-illness")
+        , map (ChwPage <| AcuteIllnessPage Covid19Page) (s "covid-19")
+        , map (ChwPage <| AcuteIllnessPage MalariaPage) (s "malaria")
+        , map (ChwPage <| AcuteIllnessPage GastroPage) (s "gastro")
+        , map (ChwPage NutritionPage) (s "nutrition")
+        , map (ChwPage AntenatalPage) (s "antenatal")
         ]
 
 
@@ -266,6 +315,7 @@ parseSessionPage =
         , map ChildPage (s "child" </> parseUuid)
         , map ProgressReportPage (s "progress" </> parseUuid)
         , map MotherPage (s "mother" </> parseUuid)
+        , map NextStepsPage (s "next-steps" </> parseUuid </> parseActivity)
         , map ParticipantsPage (s "participants")
         , map AttendancePage top
         ]
@@ -283,17 +333,22 @@ parseActivity =
 
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
 parsePrenatalActivity =
-    custom "PrenatalActivity" PrenatalActivity.Utils.decodeActivityFromString
+    custom "PrenatalActivity" Backend.PrenatalActivity.Utils.decodeActivityFromString
 
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c
 parseNutritionActivity =
-    custom "NutritionActivity" NutritionActivity.Utils.decodeActivityFromString
+    custom "NutritionActivity" Backend.NutritionActivity.Utils.decodeActivityFromString
 
 
 parseAcuteIllnessActivity : Parser (AcuteIllnessActivity -> c) c
 parseAcuteIllnessActivity =
-    custom "AcuteIllnessActivity" AcuteIllnessActivity.Utils.decodeActivityFromString
+    custom "AcuteIllnessActivity" Backend.AcuteIllnessActivity.Utils.decodeActivityFromString
+
+
+parseHomeVisitActivity : Parser (HomeVisitActivity -> c) c
+parseHomeVisitActivity =
+    custom "HomeVisitActivity" Backend.HomeVisitActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
@@ -304,3 +359,13 @@ parseIndividualEncounterType =
 parseOrigin : Parser (Initiator -> c) c
 parseOrigin =
     custom "Initiator" initiatorFromUrlFragmemt
+
+
+parseRecordPreganancyInitiator : Parser (RecordPreganancyInitiator -> c) c
+parseRecordPreganancyInitiator =
+    custom "RecordPreganancyInitiator" recordPreganancyInitiatorFromUrlFragmemt
+
+
+parseClinicalProgressReportInitiator : Parser (ClinicalProgressReportInitiator -> c) c
+parseClinicalProgressReportInitiator =
+    custom "ClinicalProgressReportInitiator" progressReportInitiatorFromUrlFragmemt

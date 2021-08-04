@@ -256,6 +256,20 @@ dbSync.version(15).upgrade(function (tx) {
     })
 });
 
+dbSync.version(16).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+});
+
+/**
+ * --- !!! IMPORTANT !!! ---
+ *
+ * When creating new DB version, update:
+ *
+ * 1. dbVersion constant bellow (app.js)
+ * 2. dbVerno constant at sw.js
+ * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
+ */
+
 dbSync.shards.hook('creating', function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
@@ -302,7 +316,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 15;
+const dbVersion = 16;
 
 /**
  * Return saved info for General sync.
@@ -508,12 +522,24 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
   }
 
   table.bulkPut(entities)
-      .then(function(lastKey) {})
-      .catch(Dexie.BulkError, function (e) {
-        // Explicitly catching the bulkAdd() operation makes those successful
-        // additions commit despite that there were errors.
-        // console.error (e);
+      .then(function() {
+          return sendIndexedDbSaveResult('Success', info.table, info.timestamp);
+      }).catch(Dexie.BulkError, function (e) {
+          return sendIndexedDbSaveResult('Failure', info.table, info.timestamp);
       });
+
+  /**
+   * Report that save operation was successful.
+   */
+  function sendIndexedDbSaveResult(status, table, timestamp) {
+    const dataForSend = {
+      'status': status,
+      'table': table,
+      'timestamp': timestamp
+    }
+
+    elmApp.ports.savedAtIndexedDb.send(dataForSend);
+  }
 
 });
 
@@ -543,7 +569,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (!result[0]) {
           // No photos to upload.
-          return sendResultToElm(queryType, {tag: 'Success', result: null});
+          return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: null});
         }
 
         const photosUploadCache = "photos-upload";
@@ -583,11 +609,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               }
               catch (e) {
                   // Network error.
-                  return sendResultToElm(queryType, {tag: 'Error', error: 'NetworkError', reason: e.toString()});
+                  return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'NetworkError', reason: e.toString()});
               }
 
               if (!response.ok) {
-                return sendResultToElm(queryType, {tag: 'Error', error: 'UploadError', reason: row.photo});
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: row.photo});
               }
 
               // Response indicated success.
@@ -596,7 +622,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               }
               catch (e) {
                 // Bad JSON.
-                return sendResultToElm(queryType, {tag: 'Error', error: 'BadJson', reason: row.photo});
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'BadJson', reason: row.photo});
               }
 
               const changes = {
@@ -629,7 +655,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
             }
 
-            return sendResultToElm(queryType, {tag: 'Success', result: row});
+            return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
         });
       })();
       break;
@@ -647,7 +673,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendResultToElm(queryType, null);
+          return sendIndexedDbFetchResult(queryType, null);
         }
 
         let entitiesResult = await dbSync
@@ -663,7 +689,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           'remaining': totalEntites - entitiesResult.length
         };
 
-        return sendResultToElm(queryType, resultToSend);
+        return sendIndexedDbFetchResult(queryType, resultToSend);
       })();
       break;
 
@@ -683,7 +709,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendResultToElm(queryType, null);
+          return sendIndexedDbFetchResult(queryType, null);
         }
 
         let entitiesResult = await dbSync
@@ -721,7 +747,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             };
         }
 
-        return sendResultToElm(queryType, resultToSend);
+        return sendIndexedDbFetchResult(queryType, resultToSend);
       })();
       break;
 
@@ -749,7 +775,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             result[0].remaining = totalEntites;
         }
 
-        return sendResultToElm(queryType, result);
+        return sendIndexedDbFetchResult(queryType, result);
       })();
       break;
 
@@ -797,7 +823,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .shardChanges
             .count();
 
-        return sendResultToElm(queryType, totalEntites);
+        return sendIndexedDbFetchResult(queryType, totalEntites);
       })();
         break;
 
@@ -808,7 +834,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   /**
    * Prepare and send the result.
    */
-  function sendResultToElm(queryType, result) {
+  function sendIndexedDbFetchResult(queryType, result) {
     const dataForSend = {
       // Query type should match SyncManager.Model.IndexDbQueryTypeResult
       'queryType': queryType + 'Result',
@@ -817,6 +843,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
     elmApp.ports.getFromIndexDb.send(dataForSend);
   }
+
 });
 
 /**

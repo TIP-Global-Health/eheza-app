@@ -765,34 +765,6 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
-  // Exported field_base: 'field_reason_not_sent_to_hc'.
-  $field_bases['field_reason_not_sent_to_hc'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_reason_not_sent_to_hc',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'client-refused' => 'Client refused',
-        'no-ambulance' => 'No ambulance available',
-        'unable-to-afford-fee' => 'Client unable to afford fees',
-        'other' => 'Other',
-        'none' => 'None',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
   // Exported field_base: 'field_poor_suck_period'.
   $field_bases['field_poor_suck_period'] = array(
     'active' => 1,
@@ -893,6 +865,63 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_reason_not_given_education'.
+  $field_bases['field_reason_not_given_education'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_reason_not_given_education',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'needs-emergency-referral' => 'Patient needs an emergency referral',
+        'received-emergency-case' => 'Received an emergency case to treat',
+        'lack-of-appropriate-education-guide' => 'Lack of appropriate education user guide',
+        'patient-refused' => 'Patient refused',
+        'patient-too-ill' => 'Patient too ill',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_reason_not_sent_to_hc'.
+  $field_bases['field_reason_not_sent_to_hc'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_reason_not_sent_to_hc',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'client-refused' => 'Client refused',
+        'no-ambulance' => 'No ambulance available',
+        'unable-to-afford-fee' => 'Client unable to afford fees',
+        'other' => 'Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_send_to_hc'.
   $field_bases['field_send_to_hc'] = array(
     'active' => 1,
@@ -911,6 +940,7 @@ function hedley_acute_illness_field_default_field_bases() {
       'allowed_values' => array(
         'refer-to-hc' => 'Refer to HC',
         'referral-form' => 'Referral form',
+        'accompany-to-hc' => 'Accompany to HC',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',

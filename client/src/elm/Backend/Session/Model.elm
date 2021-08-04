@@ -135,6 +135,10 @@ type alias Model =
     , saveParticipantConsentRequest : Dict PersonId (WebData ())
     , savePhotoRequest : Dict PersonId (WebData ())
     , saveWeightRequest : Dict PersonId (WebData ())
+    , saveContributingFactorsRequest : Dict PersonId (WebData ())
+    , saveFollowUpRequest : Dict PersonId (WebData ())
+    , saveHealthEducationRequest : Dict PersonId (WebData ())
+    , saveSendToHCRequest : Dict PersonId (WebData ())
     }
 
 
@@ -152,6 +156,10 @@ emptyModel =
     , saveParticipantConsentRequest = Dict.empty
     , savePhotoRequest = Dict.empty
     , saveWeightRequest = Dict.empty
+    , saveContributingFactorsRequest = Dict.empty
+    , saveFollowUpRequest = Dict.empty
+    , saveHealthEducationRequest = Dict.empty
+    , saveSendToHCRequest = Dict.empty
     }
 
 
@@ -171,6 +179,10 @@ type Msg
     | HandleSaveParticipantConsent PersonId (WebData ())
     | HandleSavePhoto PersonId (WebData ())
     | HandleSaveWeight PersonId (WebData ())
+    | HandleSaveContributingFactors PersonId (WebData ())
+    | HandleSaveFollowUp PersonId (WebData ())
+    | HandleSaveHealthEducation PersonId (WebData ())
+    | HandleSaveSendToHC PersonId (WebData ())
 
 
 batchSize : Int

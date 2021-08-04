@@ -74,7 +74,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     $query->fields('node', ['type', 'nid', 'vid', 'changed', 'title', 'status']);
     $query->condition('node.nid', $node_ids, 'IN');
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE);
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE);
 
     return $query;
   }
@@ -154,6 +154,13 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
       'value' => $date['value'] ? hedley_restful_timestamp_only_date($date['value']) : NULL,
       'value2' => $date['value2'] ? hedley_restful_timestamp_only_date($date['value2']) : NULL,
     ];
+  }
+
+  /**
+   * Show the date with date only.
+   */
+  protected function renderDate2($date) {
+    return date('Y-m-d', $date);
   }
 
 }

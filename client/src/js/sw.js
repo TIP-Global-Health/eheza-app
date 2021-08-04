@@ -21,6 +21,16 @@ var photosUploadCache = "photos-upload";
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
 
+/**
+ * The DB version on the backend.
+ *
+ * We use this constant to verify that we work with most updated
+ * DB at nodes.js.
+ *
+ * @type {number}
+ */
+var dbVerno = 16;
+
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
 // General entities), or SyncManager.Model.BackendAuthorityEntity (for Authority
@@ -29,15 +39,19 @@ var tableForType = {
     acute_findings: 'shards',
     acute_illness_danger_signs: 'shards',
     acute_illness_encounter: 'shards',
+    acute_illness_follow_up: 'shards',
     acute_illness_muac: 'shards',
     acute_illness_nutrition: 'shards',
     acute_illness_vitals: 'shards',
+    appointment_confirmation: 'shards',
     attendance: 'shards',
     breast_exam: 'shards',
+    birth_plan: 'shards',
     call_114: 'shards',
     catchment_area: 'nodes',
     child_fbf: 'shards',
     clinic: 'shards',
+    contributing_factors: 'shards',
     counseling_schedule: 'nodes',
     counseling_session: 'shards',
     counseling_topic: 'nodes',
@@ -45,10 +59,14 @@ var tableForType = {
     danger_signs: 'shards',
     exposure: 'shards',
     family_planning: 'shards',
+    follow_up: 'shards',
+    group_health_education: 'shards',
+    group_send_to_hc: 'shards',
     hc_contact: 'shards',
     health_center: 'nodes',
     health_education: 'shards',
     height: 'shards',
+    home_visit_encounter: 'shards',
     individual_participant: 'shards',
     isolation: 'shards',
     lactation: 'shards',
@@ -61,11 +79,19 @@ var tableForType = {
     muac: 'shards',
     nurse: 'nodes',
     nutrition: 'shards',
+    nutrition_caring: 'shards',
+    nutrition_contributing_factors: 'shards',
+    nutrition_feeding: 'shards',
+    nutrition_follow_up: 'shards',
+    nutrition_food_security: 'shards',
     nutrition_encounter: 'shards',
+    nutrition_health_education: 'shards',
     nutrition_height: 'shards',
+    nutrition_hygiene: 'shards',
     nutrition_muac: 'shards',
     nutrition_nutrition: 'shards',
     nutrition_photo: 'shards',
+    nutrition_send_to_hc: 'shards',
     nutrition_weight: 'shards',
     obstetric_history: 'shards',
     obstetric_history_step2: 'shards',
@@ -74,11 +100,15 @@ var tableForType = {
     participant_form: 'nodes',
     person: 'shards',
     photo: 'shards',
+    pregnancy_testing: 'shards',
+    prenatal_health_education: 'shards',
     prenatal_photo: 'shards',
     pmtct_participant: 'shards',
     prenatal_family_planning: 'shards',
     prenatal_nutrition: 'shards',
     prenatal_encounter: 'shards',
+    prenatal_follow_up: 'shards',
+    prenatal_send_to_hc: 'shards',
     relationship: 'shards',
     resource: 'shards',
     send_to_hc: 'shards',

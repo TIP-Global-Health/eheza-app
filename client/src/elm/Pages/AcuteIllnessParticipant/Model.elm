@@ -17,7 +17,6 @@ emptyModel =
 
 type Msg
     = MsgBackend Backend.Model.MsgIndexedDb
-    | RecordIllnessOutcome IndividualEncounterParticipantId
     | SetViewMode AcuteIllnessParticipantViewMode
     | SetActivePage Page
 

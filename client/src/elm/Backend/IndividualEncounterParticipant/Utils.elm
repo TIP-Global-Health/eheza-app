@@ -15,6 +15,9 @@ encodeIndividualEncounterTypeAsString encounterType =
         AntenatalEncounter ->
             "antenatal"
 
+        HomeVisitEncounter ->
+            "home-visit"
+
         InmmunizationEncounter ->
             "inmmunization"
 
@@ -31,6 +34,9 @@ decodeIndividualEncounterTypeFromString string =
         "antenatal" ->
             Just AntenatalEncounter
 
+        "home-visit" ->
+            Just HomeVisitEncounter
+
         "inmmunization" ->
             Just InmmunizationEncounter
 
@@ -44,8 +50,3 @@ decodeIndividualEncounterTypeFromString string =
 isDailyEncounterActive : NominalDate -> { a | startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
 isDailyEncounterActive currentDate encounter =
     encounter.startDate == currentDate && isNothing encounter.endDate
-
-
-emptyIndividualEncounterParticipant : NominalDate -> PersonId -> IndividualEncounterType -> HealthCenterId -> IndividualEncounterParticipant
-emptyIndividualEncounterParticipant currentDate personId type_ healthCenterId =
-    IndividualEncounterParticipant personId type_ currentDate Nothing Nothing Nothing Nothing Nothing False (Just healthCenterId)
