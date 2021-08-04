@@ -2060,6 +2060,9 @@ generateNextDateForImmunisationVisit currentDate isChw assembled db =
         futureVaccines =
             List.map Tuple.first futureVaccinationsData
 
+        all6MonthsInrervalVaccines =
+            List.all (\vaccineType -> List.member vaccineType [ VaccineMR, VaccineHPV ]) futureVaccines
+
         -- This is how far we look forward looking for a vaccine to administer.
         -- If there're only 6 month interval vaccines, we'll check 6 months forward.
         -- Otherwise, there's a vaccine with 28 days interval, so we look only 1 month forward.
@@ -2068,25 +2071,39 @@ generateNextDateForImmunisationVisit currentDate isChw assembled db =
         -- However, we do not want to wait 6 months, if we need to administer a vaccine
         -- that needs only 28 days interval.
         intervalMonths =
-            if List.all (\vaccineType -> List.member vaccineType [ VaccineMR, VaccineHPV ]) futureVaccines then
+            if all6MonthsInrervalVaccines then
                 6
 
             else
                 1
+
+        nextVisistDate =
+            List.filter
+                (\( vaccineType, _ ) ->
+                    expectVaccineForPerson
+                        (Date.add Months intervalMonths currentDate)
+                        assembled.person
+                        vaccineType
+                )
+                futureVaccinationsData
+                |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
+                |> List.sortWith Date.compare
+                -- Get the latest of all dates.
+                |> List.reverse
+                |> List.head
     in
-    List.filter
-        (\( vaccineType, _ ) ->
-            expectVaccineForPerson
-                (Date.add Months intervalMonths currentDate)
-                assembled.person
-                vaccineType
+    -- If we see that next suggested date already passed, or is set for today,
+    -- set next visit to an interval months from current date. Interval is calculated
+    -- based on suggested vaccinations.
+    Maybe.andThen
+        (\nextDate ->
+            if Date.compare nextDate currentDate /= GT then
+                Just <| Date.add Months intervalMonths currentDate
+
+            else
+                Just nextDate
         )
-        futureVaccinationsData
-        |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
-        |> List.sortWith Date.compare
-        -- Get the latest of all dates.
-        |> List.reverse
-        |> List.head
+        nextVisistDate
 
 
 fromNextVisitValue : Maybe NextVisitValue -> NextVisitForm
