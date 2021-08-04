@@ -850,6 +850,56 @@ getVaccinationDatesFromVaccinationHistoryValue vaccineType =
             .hpvVaccinationDate
 
 
+doseAdministrationQuestionAnswered : VaccineType -> ImmunisationForm -> Bool
+doseAdministrationQuestionAnswered vaccineType form =
+    let
+        questionAnswered getAnswerFunc getNoteFunc getDateFunc =
+            getAnswerFunc form
+                |> Maybe.map
+                    (\answer ->
+                        case answer of
+                            True ->
+                                True
+
+                            False ->
+                                case getNoteFunc form of
+                                    Just AdministeredPreviously ->
+                                        isJust (getDateFunc form)
+
+                                    Just _ ->
+                                        True
+
+                                    Nothing ->
+                                        False
+                    )
+                |> Maybe.withDefault False
+    in
+    case vaccineType of
+        VaccineBCG ->
+            questionAnswered .bcgVaccinationAdministered .bcgVaccinationNote .bcgVaccinationDate
+
+        VaccineOPV ->
+            questionAnswered .opvVaccinationAdministered .opvVaccinationNote .opvVaccinationDate
+
+        VaccineDTP ->
+            questionAnswered .dtpVaccinationAdministered .dtpVaccinationNote .dtpVaccinationDate
+
+        VaccinePCV13 ->
+            questionAnswered .pcv13VaccinationAdministered .pcv13VaccinationNote .pcv13VaccinationDate
+
+        VaccineRotarix ->
+            questionAnswered .rotarixVaccinationAdministered .rotarixVaccinationNote .rotarixVaccinationDate
+
+        VaccineIPV ->
+            questionAnswered .ipvVaccinationAdministered .ipvVaccinationNote .ipvVaccinationDate
+
+        VaccineMR ->
+            questionAnswered .mrVaccinationAdministered .mrVaccinationNote .mrVaccinationDate
+
+        VaccineHPV ->
+            questionAnswered .hpvVaccinationAdministered .hpvVaccinationNote .hpvVaccinationDate
+
+
 getVaccinationDateFromImmunisationForm : VaccineType -> (ImmunisationForm -> Maybe NominalDate)
 getVaccinationDateFromImmunisationForm vaccineType =
     case vaccineType of

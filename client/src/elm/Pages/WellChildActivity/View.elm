@@ -1251,15 +1251,31 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
         futureVaccines =
             List.filterMap
                 (\( vaccineType, dose ) ->
-                    -- If the date is not set in form, we know that either answer
-                    -- was not provided yet, or answer notified that vaccine was
-                    -- not administered (today, or previously).
-                    -- In this case, we do not show data of future vaccination.
-                    getVaccinationDateFromImmunisationForm vaccineType form
-                        |> Maybe.map
-                            (\administationDate ->
-                                ( vaccineType, nextVaccinationDataForVaccine administationDate dose vaccineType )
-                            )
+                    if doseAdministrationQuestionAnswered vaccineType form then
+                        case getVaccinationDateFromImmunisationForm vaccineType form of
+                            Just administationDate ->
+                                -- If date was set, we show the date for next dose.
+                                Just ( vaccineType, nextVaccinationDataForVaccine administationDate dose vaccineType )
+
+                            Nothing ->
+                                -- Otherwise, we pull last dose administration date from vaccination history.
+                                Dict.get vaccineType assembled.vaccinationHistory
+                                    |> Maybe.andThen
+                                        (Dict.toList
+                                            >> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+                                            >> List.reverse
+                                            >> List.head
+                                            >> Maybe.map Tuple.second
+                                        )
+                                    |> Maybe.map
+                                        (\lastAdministationDate ->
+                                            Just ( vaccineType, nextVaccinationDataForVaccine lastAdministationDate dose vaccineType )
+                                        )
+                                    |> Maybe.withDefault (Just ( vaccineType, Just ( VaccineDoseFirst, currentDate ) ))
+
+                    else
+                        -- Question(s) at form are not yet completed, so we do not show an entry.
+                        Nothing
                 )
                 -- We only show next doses due date for vaccines offered today.
                 suggestedVaccines
