@@ -449,6 +449,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'date_concluded',
           'expected_date_concluded',
           'appointment_confirmation',
+          'immunisation_date',
+          'pediatric_visit_date',
+        ];
+
+        $multiDateFields = [
           'bcg_vaccination_date',
           'opv_vaccination_date',
           'dtp_vaccination_date',
@@ -457,8 +462,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'ipv_vaccination_date',
           'mr_vaccination_date',
           'hpv_vaccination_date',
-          'immunisation_date',
-          'pediatric_visit_date',
         ];
 
         $data = [];
@@ -471,9 +474,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             $data[$key] = hedley_restful_uuid_to_nid($value);
           }
           elseif (in_array($key, $dateFields) && !empty($value)) {
-            // Restful seems to want date values as timestamps -- should
-            // investigate if there are other possibilities.
+            // Restful wants date values as timestamps.
             $data[$key] = strtotime($value);
+          }
+          elseif (in_array($key, $multiDateFields) && !empty($value)) {
+            foreach ($value as $date) {
+              // Restful wants date values as timestamps.
+              $data[$key][] = strtotime($date);
+            }
           }
           else {
             $data[$key] = $value;

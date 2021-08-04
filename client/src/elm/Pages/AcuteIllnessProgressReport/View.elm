@@ -5,7 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
@@ -322,7 +322,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                     let
                         treatmentReview =
                             dataFirst.measurements.treatmentReview
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
 
                         viewTreatmentSignInfo sign signHelped signTransId =
                             treatmentReview
@@ -727,7 +727,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                                     |> List.map
                                         (.measurements
                                             >> .muac
-                                            >> Maybe.map (Tuple.second >> .value)
+                                            >> getMeasurementValueFunc
                                         )
 
                             tableHead =
@@ -774,7 +774,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
         nutrition =
             -- We show nutrition data of current encounter.
             data.measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
 
         nutritionSignsTable =
             nutrition
@@ -1102,7 +1102,7 @@ viewActionsTakenSendToHC : Language -> NominalDate -> AcuteIllnessMeasurements -
 viewActionsTakenSendToHC language date measurements =
     let
         sendToHCSigns =
-            Maybe.map (Tuple.second >> .value) measurements.sendToHC
+            getMeasurementValueFunc measurements.sendToHC
 
         completedForm =
             Maybe.map (.signs >> EverySet.member HandReferrerForm) sendToHCSigns

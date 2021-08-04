@@ -47,6 +47,12 @@ type Msg
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssessmentTask)
     | SetWeight String
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
+      -- VACCINATION HISTORY
+    | SetCatchUpRequired Bool
+    | SetVaccinationHistoryBoolInput VaccineType VaccineDose Bool
+    | SetVaccinationHistoryDateInput VaccineType VaccineDose Date
+    | ToggleVaccinationHistoryDateSelectorInput VaccineType VaccineDose
+    | SaveVaccinationHistory PersonId (Dict VaccineType (EverySet VaccineDose)) (Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory ))
       -- IMMUNISATION
     | SetImmunisationBoolInput (Bool -> ImmunisationForm -> ImmunisationForm) Bool
     | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
@@ -89,6 +95,7 @@ type alias Model =
     { pregnancySummaryForm : PregnancySummaryForm
     , dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
+    , vaccinationHistoryForm : VaccinationHistoryForm
     , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
@@ -102,6 +109,7 @@ emptyModel =
     { pregnancySummaryForm = emptyPregnancySummaryForm
     , dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
+    , vaccinationHistoryForm = emptyVaccinationHistoryForm
     , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
@@ -114,6 +122,7 @@ type WarningPopupType
     = PopupNutritionAssessment (List NutritionAssessment)
     | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupVaccinationHistory (Dict VaccineType (Dict VaccineDose NominalDate))
 
 
 type alias PregnancySummaryForm =
@@ -215,27 +224,39 @@ type NutritionAssessmentTask
     | TaskWeight
 
 
-allNutritionAssessmentTasks : List NutritionAssessmentTask
-allNutritionAssessmentTasks =
-    [ TaskHeight
-    , TaskHeadCircumference
-    , TaskMuac
-    , TaskNutrition
-    , TaskPhoto
-    , TaskWeight
-    ]
+type alias VaccinationHistoryForm =
+    { catchUpRequired : Maybe Bool
+    , suggestedVaccines : Dict VaccineType (EverySet VaccineDose)
+    , administeredVaccines : Dict VaccineType (Dict VaccineDose (Maybe Bool))
+    , administeredVaccinesDirty : Bool
+    , vaccinationDates : Dict VaccineType (Dict VaccineDose (Maybe NominalDate))
+    , vaccinationDatesDirty : Bool
+    , dateSelectorsState : Dict ( VaccineType, VaccineDose ) Bool
+    }
+
+
+emptyVaccinationHistoryForm : VaccinationHistoryForm
+emptyVaccinationHistoryForm =
+    { catchUpRequired = Nothing
+    , suggestedVaccines = Dict.empty
+    , administeredVaccines = Dict.empty
+    , administeredVaccinesDirty = False
+    , vaccinationDates = Dict.empty
+    , vaccinationDatesDirty = False
+    , dateSelectorsState = Dict.empty
+    }
 
 
 type alias ImmunisationForm =
     { suggestedVaccines : Dict VaccineType VaccineDose
-    , bcgVaccinationGiven : Maybe Bool
-    , opvVaccinationGiven : Maybe Bool
-    , dtpVaccinationGiven : Maybe Bool
-    , pcv13VaccinationGiven : Maybe Bool
-    , rotarixVaccinationGiven : Maybe Bool
-    , ipvVaccinationGiven : Maybe Bool
-    , mrVaccinationGiven : Maybe Bool
-    , hpvVaccinationGiven : Maybe Bool
+    , bcgVaccinationAdministered : Maybe Bool
+    , opvVaccinationAdministered : Maybe Bool
+    , dtpVaccinationAdministered : Maybe Bool
+    , pcv13VaccinationAdministered : Maybe Bool
+    , rotarixVaccinationAdministered : Maybe Bool
+    , ipvVaccinationAdministered : Maybe Bool
+    , mrVaccinationAdministered : Maybe Bool
+    , hpvVaccinationAdministered : Maybe Bool
     , bcgVaccinationNote : Maybe AdministrationNote
     , opvVaccinationNote : Maybe AdministrationNote
     , dtpVaccinationNote : Maybe AdministrationNote
@@ -266,14 +287,14 @@ type alias ImmunisationForm =
 emptyImmunisationForm : ImmunisationForm
 emptyImmunisationForm =
     { suggestedVaccines = Dict.empty
-    , bcgVaccinationGiven = Nothing
-    , opvVaccinationGiven = Nothing
-    , dtpVaccinationGiven = Nothing
-    , pcv13VaccinationGiven = Nothing
-    , rotarixVaccinationGiven = Nothing
-    , ipvVaccinationGiven = Nothing
-    , mrVaccinationGiven = Nothing
-    , hpvVaccinationGiven = Nothing
+    , bcgVaccinationAdministered = Nothing
+    , opvVaccinationAdministered = Nothing
+    , dtpVaccinationAdministered = Nothing
+    , pcv13VaccinationAdministered = Nothing
+    , rotarixVaccinationAdministered = Nothing
+    , ipvVaccinationAdministered = Nothing
+    , mrVaccinationAdministered = Nothing
+    , hpvVaccinationAdministered = Nothing
     , bcgVaccinationNote = Nothing
     , opvVaccinationNote = Nothing
     , dtpVaccinationNote = Nothing

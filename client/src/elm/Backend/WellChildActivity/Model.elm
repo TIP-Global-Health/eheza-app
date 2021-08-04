@@ -9,3 +9,4 @@ type WellChildActivity
     | WellChildPregnancySummary
     | WellChildImmunisation
     | WellChildNextSteps
+    | WellChildVaccinationHistory

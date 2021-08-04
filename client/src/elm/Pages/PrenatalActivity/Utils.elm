@@ -2,7 +2,7 @@ module Pages.PrenatalActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
@@ -41,7 +41,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
     let
         form =
             assembled.measurements.healthEducation
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> healthEducationFormWithDefault healthEducationForm
 
         healthEducationCompletedAtEncounter encounterType =
@@ -255,7 +255,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.appointmentConfirmation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
             in
             ( taskCompleted form.appointmentDate
@@ -266,7 +266,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option
@@ -277,7 +277,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentActive, reasonForNotSentCompleted ) =
@@ -304,7 +304,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 tasksCompleted =
@@ -1017,7 +1017,7 @@ historyTasksCompletedFromTotal assembled data task =
                     let
                         formStep1_ =
                             assembled.measurements.obstetricHistory
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
 
                         intInputs =
@@ -1041,7 +1041,7 @@ historyTasksCompletedFromTotal assembled data task =
                     let
                         formStep2_ =
                             assembled.measurements.obstetricHistoryStep2
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
 
                         boolInputs =
@@ -1074,7 +1074,7 @@ historyTasksCompletedFromTotal assembled data task =
             let
                 medicalForm =
                     assembled.measurements.medicalHistory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicalHistoryFormWithDefault data.medicalForm
 
                 boolInputs =
@@ -1100,7 +1100,7 @@ historyTasksCompletedFromTotal assembled data task =
             let
                 socialForm =
                     assembled.measurements.socialHistory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> socialHistoryFormWithDefault data.socialForm
 
                 showCounselingQuestion =
@@ -1171,7 +1171,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.vitals
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> vitalsFormWithDefault data.vitalsForm
             in
             ( taskAllCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
@@ -1192,7 +1192,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
 
                 form_ =
                     assembled.measurements.nutrition
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                 form =
@@ -1231,7 +1231,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.corePhysicalExam
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
 
                 extremitiesTaskCompleted =
@@ -1259,7 +1259,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.obstetricalExam
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> obstetricalExamFormWithDefault data.obstetricalExamForm
             in
             ( taskCompleted form.fetalPresentation
@@ -1276,7 +1276,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.breastExam
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> breastExamFormWithDefault data.breastExamForm
             in
             ( taskCompleted form.breast + taskCompleted form.selfGuidance
@@ -1291,7 +1291,7 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
             let
                 form =
                     assembled.measurements.medication
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicationFormWithDefault data.medicationForm
 
                 questions =
@@ -1311,7 +1311,7 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
             let
                 form =
                     assembled.measurements.resource
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> resourceFormWithDefault data.resourcesForm
             in
             ( taskCompleted form.receivedMosquitoNet

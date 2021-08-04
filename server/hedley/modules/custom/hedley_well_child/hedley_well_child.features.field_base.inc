@@ -11,6 +11,46 @@
 function hedley_well_child_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_administered_vaccines'.
+  $field_bases['field_administered_vaccines'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_administered_vaccines',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'bcg-1' => 'BCG-1',
+        'opv-1' => 'OPV-1',
+        'opv-2' => 'OPV-2',
+        'opv-3' => 'OPV-3',
+        'opv-4' => 'OPV-4',
+        'dtp-1' => 'DTP-1',
+        'dtp-2' => 'DTP-2',
+        'pcv13-1' => 'PCV13-1',
+        'pcv13-2' => 'PCV13-2',
+        'pcv13-3' => 'PCV13-3',
+        'rotarix-1' => 'Rotarix-1',
+        'rotarix-2' => 'Rotarix-2',
+        'ipv-1' => 'IPV-1',
+        'mr-1' => 'MR-1',
+        'mr-2' => 'MR-2',
+        'hpv-1' => 'HPV-1',
+        'hpv-2' => 'HPV-2',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_administration_note'.
   $field_bases['field_administration_note'] = array(
     'active' => 1,
@@ -73,7 +113,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_bcg_vaccination_date'.
   $field_bases['field_bcg_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_bcg_vaccination_date',
@@ -136,7 +176,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_dtp_vaccination_date'.
   $field_bases['field_dtp_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_dtp_vaccination_date',
@@ -251,7 +291,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_hpv_vaccination_date'.
   $field_bases['field_hpv_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_hpv_vaccination_date',
@@ -317,7 +357,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_ipv_vaccination_date'.
   $field_bases['field_ipv_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_ipv_vaccination_date',
@@ -350,7 +390,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_mr_vaccination_date'.
   $field_bases['field_mr_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_mr_vaccination_date',
@@ -383,7 +423,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_opv_vaccination_date'.
   $field_bases['field_opv_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_opv_vaccination_date',
@@ -416,7 +456,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_pcv13_vaccination_date'.
   $field_bases['field_pcv13_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_pcv13_vaccination_date',
@@ -482,7 +522,7 @@ function hedley_well_child_field_default_field_bases() {
   // Exported field_base: 'field_rotarix_vaccination_date'.
   $field_bases['field_rotarix_vaccination_date'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_rotarix_vaccination_date',

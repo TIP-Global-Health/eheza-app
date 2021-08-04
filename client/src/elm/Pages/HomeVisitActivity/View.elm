@@ -6,6 +6,7 @@ import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolveAllWeightMeasurementsForChild)
 import EverySet
@@ -110,7 +111,7 @@ viewFeedingContent language currentDate assembled db feedingForm =
     let
         form =
             assembled.measurements.feeding
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> nutritionFeedingFormWithDefault feedingForm
 
         totalTasks =
@@ -362,7 +363,7 @@ viewCaringContent language currentDate assembled db caringForm =
     let
         form =
             assembled.measurements.caring
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> nutritionCaringFormWithDefault caringForm
 
         totalTasks =
@@ -431,7 +432,7 @@ viewHygieneContent language currentDate assembled db hygieneForm =
     let
         form =
             assembled.measurements.hygiene
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> nutritionHygieneFormWithDefault hygieneForm
 
         totalTasks =
@@ -535,7 +536,7 @@ viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
     let
         form =
             assembled.measurements.foodSecurity
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> nutritionFoodSecurityFormWithDefault foodSecurityForm
 
         totalTasks =

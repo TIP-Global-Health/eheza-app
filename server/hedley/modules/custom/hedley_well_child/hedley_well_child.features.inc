@@ -155,6 +155,14 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_vaccination_history' => array(
+      'name' => t('Well Child Vaccination History'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_vitals' => array(
       'name' => t('Well Child Vitals'),
       'base' => 'node_content',

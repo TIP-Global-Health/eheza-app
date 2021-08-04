@@ -16,7 +16,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData, weightValueFunc)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, getMeasurementValueFunc, mapMeasurementData, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -43,10 +43,10 @@ generateNutritionAssessment currentDate zscores childId db offlineSession =
                 offlineSession.measurements
 
         muacValue =
-            Maybe.andThen (.muac >> Maybe.map (Tuple.second >> .value)) measurements
+            Maybe.andThen (.muac >> getMeasurementValueFunc) measurements
 
         nutritionValue =
-            Maybe.andThen (.nutrition >> Maybe.map (Tuple.second >> .value)) measurements
+            Maybe.andThen (.nutrition >> getMeasurementValueFunc) measurements
 
         weightValue =
             Maybe.andThen (.weight >> Maybe.map (Tuple.second >> .value >> weightValueFunc)) measurements
@@ -942,7 +942,7 @@ motherIsCheckedIn motherId session =
     let
         explicitlyCheckedIn =
             getMotherMeasurementData2 motherId session
-                |> LocalData.map (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
+                |> LocalData.map (.current >> .attendance >> getMeasurementValueFunc >> (==) (Just True))
                 |> LocalData.withDefault False
 
         hasCompletedActivity =

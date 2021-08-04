@@ -224,3 +224,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveNextVisit = data }
             , Cmd.none
             )
+
+        SaveVaccinationHistory personId valueId value ->
+            ( { model | saveVaccinationHistory = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildVaccinationHistoryEndpoint HandleSavedVaccinationHistory
+            )
+
+        HandleSavedVaccinationHistory data ->
+            ( { model | saveVaccinationHistory = data }
+            , Cmd.none
+            )

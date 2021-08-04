@@ -21,6 +21,9 @@ encodeActivityAsString activity =
         WellChildPregnancySummary ->
             "well-child-pregnancy-summary"
 
+        WellChildVaccinationHistory ->
+            "well-child-vaccination-history"
+
         WellChildImmunisation ->
             "well-child-immunisation"
 
@@ -47,6 +50,9 @@ decodeActivityFromString s =
 
         "well-child-pregnancy-summary" ->
             Just WellChildPregnancySummary
+
+        "well-child-vaccination-history" ->
+            Just WellChildVaccinationHistory
 
         "well-child-immunisation" ->
             Just WellChildImmunisation
@@ -79,6 +85,9 @@ getActivityIcon activity =
         WellChildPregnancySummary ->
             "history"
 
+        WellChildVaccinationHistory ->
+            "vaccination-history"
+
         WellChildImmunisation ->
             "immunisation"
 
@@ -92,4 +101,4 @@ getAllActivities isChw =
         [ WellChildPregnancySummary, WellChildImmunisation, WellChildNutritionAssessment, WellChildNextSteps ]
 
     else
-        [ WellChildDangerSigns, WellChildNutritionAssessment, WellChildImmunisation, WellChildECD, WellChildMedication, WellChildNextSteps ]
+        [ WellChildVaccinationHistory, WellChildDangerSigns, WellChildNutritionAssessment, WellChildImmunisation, WellChildECD, WellChildMedication, WellChildNextSteps ]

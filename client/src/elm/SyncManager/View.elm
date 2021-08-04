@@ -657,6 +657,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildSymptomsReview identifier ->
                 viewMeasurement identifier "Well Child Symptoms Review"
 
+            BackendAuthorityWellChildVaccinationHistory identifier ->
+                viewMeasurement identifier "Well Child Vaccination History"
+
             BackendAuthorityWellChildVitals identifier ->
                 viewMeasurement identifier "Well Child Vitals"
 

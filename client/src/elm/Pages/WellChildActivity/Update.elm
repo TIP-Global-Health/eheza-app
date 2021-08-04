@@ -6,8 +6,10 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildEncounter.Model
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -43,7 +45,7 @@ update currentDate id db msg model =
                 |> RemoteData.toMaybe
                 |> Maybe.map
                     (getMeasurementFunc
-                        >> Maybe.map (Tuple.second >> .value)
+                        >> getMeasurementValueFunc
                         >> formWithDefaultsFunc form
                     )
                 |> Maybe.withDefault form
@@ -184,7 +186,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.pregnancySummaryForm
@@ -242,7 +244,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateDangerSignsMsgs nextTask_
@@ -304,7 +306,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateDangerSignsMsgs nextTask_
@@ -368,7 +370,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -454,7 +456,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -499,7 +501,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -529,7 +531,7 @@ update currentDate id db msg model =
                         |> RemoteData.toMaybe
                         |> Maybe.map
                             (.nutrition
-                                >> Maybe.map (Tuple.second >> .value)
+                                >> getMeasurementValueFunc
                                 >> nutritionFormWithDefault model.nutritionAssessmentData.nutritionForm
                             )
                         |> Maybe.withDefault model.nutritionAssessmentData.nutritionForm
@@ -556,7 +558,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -637,7 +639,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask_
@@ -658,6 +660,131 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetCatchUpRequired value ->
+            let
+                form =
+                    model.vaccinationHistoryForm
+
+                updatedForm =
+                    { form | catchUpRequired = Just value }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationHistoryBoolInput type_ dose vaccineAdministered ->
+            let
+                form =
+                    resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
+
+                administeredVaccines =
+                    Dict.get type_ form.administeredVaccines
+                        |> Maybe.map
+                            (\doses ->
+                                Dict.insert type_ (Dict.insert dose (Just vaccineAdministered) doses) form.administeredVaccines
+                            )
+                        |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just vaccineAdministered)) form.administeredVaccines)
+
+                ( vaccinationDates, vaccinationDatesDirty ) =
+                    if vaccineAdministered then
+                        ( form.vaccinationDates, form.vaccinationDatesDirty )
+
+                    else
+                        let
+                            updatedDatesData =
+                                Dict.get type_ form.vaccinationDates
+                                    |> Maybe.map
+                                        (\datesData ->
+                                            ( Dict.remove dose datesData, True )
+                                        )
+                        in
+                        Maybe.map
+                            (\( datesData, updated ) ->
+                                ( Dict.insert type_ datesData form.vaccinationDates, updated )
+                            )
+                            updatedDatesData
+                            |> Maybe.withDefault ( form.vaccinationDates, form.vaccinationDatesDirty )
+
+                updatedForm =
+                    { form
+                        | administeredVaccines = administeredVaccines
+                        , administeredVaccinesDirty = True
+                        , vaccinationDates = vaccinationDates
+                        , vaccinationDatesDirty = vaccinationDatesDirty
+                    }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationHistoryDateInput type_ dose date ->
+            let
+                form =
+                    resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
+
+                vaccinationDates =
+                    Dict.get type_ form.vaccinationDates
+                        |> Maybe.map
+                            (\dates ->
+                                Dict.insert type_ (Dict.insert dose (Just date) dates) form.vaccinationDates
+                            )
+                        |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just date)) form.vaccinationDates)
+
+                updatedForm =
+                    { form | vaccinationDates = vaccinationDates, vaccinationDatesDirty = True }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        ToggleVaccinationHistoryDateSelectorInput type_ dose ->
+            let
+                form =
+                    model.vaccinationHistoryForm
+
+                dateSelectorsState =
+                    Dict.get ( type_, dose ) form.dateSelectorsState
+                        |> Maybe.map (\value -> Dict.insert ( type_, dose ) (not value) form.dateSelectorsState)
+                        |> Maybe.withDefault (Dict.insert ( type_, dose ) True form.dateSelectorsState)
+
+                updatedForm =
+                    { form | dateSelectorsState = dateSelectorsState }
+            in
+            ( { model | vaccinationHistoryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveVaccinationHistory personId suggestedVaccines saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.vaccinationHistoryForm
+                        |> (\form -> { form | suggestedVaccines = suggestedVaccines })
+                        |> toVaccinationHistoryValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveVaccinationHistory personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
 
         SetImmunisationBoolInput formUpdateFunc value ->
             let
@@ -705,7 +832,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.immunisationForm
@@ -742,7 +869,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.ecdForm
@@ -809,7 +936,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateMedicationMsgs nextTask_
@@ -867,7 +994,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateMedicationMsgs nextTask_
@@ -925,7 +1052,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateMedicationMsgs nextTask_
@@ -1049,7 +1176,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1111,7 +1238,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1141,7 +1268,7 @@ update currentDate id db msg model =
                         |> RemoteData.toMaybe
                         |> Maybe.map
                             (.contributingFactors
-                                >> Maybe.map (Tuple.second >> .value)
+                                >> getMeasurementValueFunc
                                 >> contributingFactorsFormWithDefault model.nextStepsData.contributingFactorsForm
                             )
                         |> Maybe.withDefault model.nextStepsData.contributingFactorsForm
@@ -1168,7 +1295,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1213,7 +1340,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_
@@ -1242,7 +1369,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 extraMsgs =
                     generateNextStepsMsgs nextTask_

@@ -16,7 +16,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (muacIndication, muacValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isPersonAFertileWoman)
@@ -166,7 +166,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             vitalsValue =
                 measurements.vitals
-                    |> Maybe.map (Tuple.second >> .value)
+                    |> getMeasurementValueFunc
 
             viewBodyTemperature =
                 vitalsValue
@@ -281,7 +281,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             symptomsGIValue =
                 measurements.symptomsGI
-                    |> Maybe.map (Tuple.second >> .value)
+                    |> getMeasurementValueFunc
 
             symptomsGI =
                 symptomsGIValue
@@ -321,7 +321,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             acuteFindingsValue =
                 measurements.acuteFindings
-                    |> Maybe.map (Tuple.second >> .value)
+                    |> getMeasurementValueFunc
 
             acuteFindingsGeneral =
                 acuteFindingsValue
@@ -486,19 +486,19 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
             case data.activeTask of
                 SymptomsGeneral ->
                     measurements.symptomsGeneral
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
                         |> viewSymptomsGeneralForm language currentDate measurements
 
                 SymptomsRespiratory ->
                     measurements.symptomsRespiratory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
                         |> viewSymptomsRespiratoryForm language currentDate measurements
 
                 SymptomsGI ->
                     measurements.symptomsGI
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsGIFormWithDefault data.symptomsGIForm
                         |> viewSymptomsGIForm language currentDate measurements
 
@@ -714,7 +714,7 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                             resolvePreviousValue assembled .vitals .bodyTemperature
                     in
                     measurements.vitals
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> basicVitalsFormWithDefault data.vitalsForm
                         |> viewBasicVitalsForm language
                             currentDate
@@ -730,19 +730,19 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                             resolvePreviousValue assembled .muac muacValueFunc
                     in
                     measurements.muac
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
                         |> viewMuacForm language currentDate assembled.person previousValue SetMuac
 
                 PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
                         |> viewAcuteFindingsForm language currentDate
 
                 PhysicalExamNutrition ->
                     measurements.nutrition
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate
 
@@ -905,7 +905,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             case data.activeTask of
                 LaboratoryMalariaTesting ->
                     measurements.malariaTesting
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
 
@@ -1048,13 +1048,13 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
             case data.activeTask of
                 ExposureTravel ->
                     measurements.travelHistory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> travelHistoryFormWithDefault data.travelHistoryForm
                         |> viewTravelHistoryForm language currentDate measurements
 
                 ExposureExposure ->
                     measurements.exposure
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> exposureFormWithDefault data.exposureForm
                         |> viewExposureForm language currentDate measurements
 
@@ -1213,7 +1213,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
             case data.activeTask of
                 TreatmentReview ->
                     measurements.treatmentReview
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewTreatmentReviewForm language currentDate measurements
 
@@ -1481,31 +1481,31 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             case activeTask of
                 Just NextStepsIsolation ->
                     measurements.isolation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> isolationFormWithDefault data.isolationForm
                         |> viewIsolationForm language currentDate measurements
 
                 Just NextStepsContactHC ->
                     measurements.hcContact
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> hcContactFormWithDefault data.hcContactForm
                         |> viewHCContactForm language currentDate isFirstEncounter measurements
 
                 Just NextStepsCall114 ->
                     measurements.call114
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> call114FormWithDefault data.call114Form
                         |> viewCall114Form language currentDate measurements
 
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language currentDate person diagnosis
 
                 Just NextStepsSendToHC ->
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHCForm language
                             currentDate
@@ -1516,13 +1516,13 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate diagnosis
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate
 
@@ -1538,7 +1538,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                         let
                             call114Form =
                                 measurements.call114
-                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> getMeasurementValueFunc
                                     |> call114FormWithDefault data.call114Form
                         in
                         if call114Form.called114 == Just False then
@@ -1563,7 +1563,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                         let
                             hcContactForm =
                                 measurements.hcContact
-                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> getMeasurementValueFunc
                                     |> hcContactFormWithDefault data.hcContactForm
                         in
                         if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
@@ -1581,7 +1581,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     let
                         medicationDistributionForm =
                             measurements.medicationDistribution
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> medicationDistributionFormWithDefault data.medicationDistributionForm
 
                         medicationOutOfStockOrPatientAlergic =
@@ -2215,7 +2215,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
             case data.activeTask of
                 OngoingTreatmentReview ->
                     measurements.treatmentOngoing
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses measurements
 
@@ -2470,7 +2470,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
             case data.activeTask of
                 ReviewDangerSigns ->
                     measurements.dangerSigns
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
                         |> viewReviewDangerSignsForm language currentDate measurements
 

@@ -129,6 +129,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'well_child_pregnancy_summary' => 'well-child-pregnancy-summary',
   'well_child_send_to_hc' => 'well-child-send-to-hc',
   'well_child_symptoms_review' => 'well-child-symptoms-review',
+  'well_child_vaccination_history' => 'well-child-vaccination-history',
   'well_child_vitals' => 'well-child-vitals',
   'well_child_vitamin_a' => 'well-child-vitamin-a',
   'well_child_weight' => 'well-child-weight',

@@ -1,8 +1,9 @@
 module Pages.WellChildEncounter.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (WellChildMeasurements)
+import Backend.Measurement.Model exposing (VaccineDose, VaccineType, WellChildMeasurements)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildEncounter.Model exposing (..)
@@ -54,4 +55,8 @@ type alias AssembledData =
     , person : Person
     , measurements : WellChildMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    , vaccinationHistory : Dict VaccineType (Dict VaccineDose NominalDate)
+
+    -- Similar to vaccinationHistory, but includes immunisation data of current encounter.
+    , vaccinationProgress : Dict VaccineType (Dict VaccineDose NominalDate)
     }

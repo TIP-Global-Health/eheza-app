@@ -2,20 +2,20 @@
 
 /**
  * @file
- * Contains HedleyRestfulWellChildImmunisation.
+ * Contains HedleyRestfulWellChildVaccinationHistory.
  */
 
 /**
- * Class HedleyRestfulWellChildImmunisation.
+ * Class HedleyRestfulWellChildVaccinationHistory.
  */
-class HedleyRestfulWellChildImmunisation extends HedleyRestfulWellChildActivityBase {
+class HedleyRestfulWellChildVaccinationHistory extends HedleyRestfulWellChildActivityBase {
 
   /**
    * {@inheritdoc}
    */
   protected $multiFields = [
     'field_suggested_vaccines',
-    'field_vaccination_notes',
+    'field_administered_vaccines',
     'field_bcg_vaccination_date',
     'field_opv_vaccination_date',
     'field_dtp_vaccination_date',

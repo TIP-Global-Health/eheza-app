@@ -55,6 +55,7 @@ type alias Model =
     , saveMebendezole : WebData ()
     , saveVitaminA : WebData ()
     , saveNextVisit : WebData ()
+    , saveVaccinationHistory : WebData ()
     }
 
 
@@ -80,6 +81,7 @@ emptyModel =
     , saveMebendezole = NotAsked
     , saveVitaminA = NotAsked
     , saveNextVisit = NotAsked
+    , saveVaccinationHistory = NotAsked
     }
 
 
@@ -124,3 +126,5 @@ type Msg
     | HandleSavedVitaminA (WebData ())
     | SaveNextVisit PersonId (Maybe WellChildNextVisitId) NextVisitValue
     | HandleSavedNextVisit (WebData ())
+    | SaveVaccinationHistory PersonId (Maybe WellChildVaccinationHistoryId) VaccinationHistoryValue
+    | HandleSavedVaccinationHistory (WebData ())

@@ -816,6 +816,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildSymptomsReview
                             BackendAuthorityWellChildSymptomsReview
 
+                    "well_child_vaccination_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildVaccinationHistory
+                            BackendAuthorityWellChildVaccinationHistory
+
                     "well_child_vitals" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildVitals

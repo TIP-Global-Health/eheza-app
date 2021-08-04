@@ -14,7 +14,7 @@ import Backend.Measurement.Model
         , NutritionMeasurements
         , WeightInKg(..)
         )
-import Backend.Measurement.Utils exposing (weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
@@ -42,10 +42,10 @@ generateNutritionAssessment currentDate zscores db assembled =
             assembled.measurements
 
         muacValue =
-            Maybe.map (Tuple.second >> .value) measurements.muac
+            getMeasurementValueFunc measurements.muac
 
         nutritionValue =
-            Maybe.map (Tuple.second >> .value) measurements.nutrition
+            getMeasurementValueFunc measurements.nutrition
 
         weightValue =
             Maybe.map
@@ -141,7 +141,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentActive, reasonForNotSentCompleted ) =
@@ -168,7 +168,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
@@ -195,7 +195,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.contributingFactors
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
             in
             ( taskCompleted form.signs
@@ -206,7 +206,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option

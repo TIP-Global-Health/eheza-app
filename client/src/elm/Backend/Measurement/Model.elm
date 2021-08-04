@@ -1444,6 +1444,24 @@ type alias NextVisitValue =
     }
 
 
+type alias WellChildVaccinationHistory =
+    WellChildMeasurement VaccinationHistoryValue
+
+
+type alias VaccinationHistoryValue =
+    { suggestedVaccines : Dict VaccineType (EverySet VaccineDose)
+    , administeredVaccines : Dict VaccineType (EverySet VaccineDose)
+    , bcgVaccinationDate : EverySet NominalDate
+    , opvVaccinationDate : EverySet NominalDate
+    , dtpVaccinationDate : EverySet NominalDate
+    , pcv13VaccinationDate : EverySet NominalDate
+    , rotarixVaccinationDate : EverySet NominalDate
+    , ipvVaccinationDate : EverySet NominalDate
+    , mrVaccinationDate : EverySet NominalDate
+    , hpvVaccinationDate : EverySet NominalDate
+    }
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -1663,6 +1681,7 @@ type alias WellChildMeasurements =
     , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
     , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
     , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
+    , vaccinationHistory : Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory )
     }
 
 
