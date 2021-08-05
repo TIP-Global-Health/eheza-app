@@ -43,6 +43,7 @@ import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.WellChildActivity.Model
 import Pages.WellChildEncounter.Model
+import Pages.WellChildProgressReport.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
@@ -259,6 +260,7 @@ type alias LoggedInModel =
     , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity ) Pages.HomeVisitActivity.Model.Model
     , wellChildEncounterPages : Dict WellChildEncounterId Pages.WellChildEncounter.Model.Model
     , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChildActivity.Model.Model
+    , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChildProgressReport.Model.Model
     }
 
 
@@ -289,6 +291,7 @@ emptyLoggedInModel villageId nurse =
     , homeVisitActivityPages = Dict.empty
     , wellChildEncounterPages = Dict.empty
     , wellChildActivityPages = Dict.empty
+    , wellChildProgressReportPages = Dict.empty
     }
 
 
@@ -350,6 +353,7 @@ type MsgLoggedIn
     | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChildActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg
+    | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChildProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
 
 

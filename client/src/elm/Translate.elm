@@ -8698,6 +8698,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildProgressReportPage _ ->
+                    { english = "Progress Report"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

@@ -71,6 +71,8 @@ import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.Update
 import Pages.WellChildEncounter.Model
 import Pages.WellChildEncounter.Update
+import Pages.WellChildProgressReport.Model
+import Pages.WellChildProgressReport.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
@@ -522,6 +524,19 @@ update msg model =
                             in
                             ( { data | acuteIllnessProgressReportPages = Dict.insert id subModel data.acuteIllnessProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageWellChildProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.wellChildProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.WellChildProgressReport.Model.emptyModel
+                                        |> Pages.WellChildProgressReport.Update.update subMsg
+                            in
+                            ( { data | wellChildProgressReportPages = Dict.insert id subModel data.wellChildProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageWellChildProgressReport id) subCmd
                             , extraMsgs
                             )
 

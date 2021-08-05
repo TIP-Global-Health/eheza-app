@@ -153,6 +153,7 @@ viewMainPageContent language currentDate zscores id isChw db assembeld model =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (WellChildProgressReportPage id)))
                 ]
 
         viewCard activity =
@@ -179,6 +180,9 @@ viewMainPageContent language currentDate zscores id isChw db assembeld model =
 
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                Reports ->
+                    ( [], "" )
 
         viewReportLink labelTransId redirectPage =
             div

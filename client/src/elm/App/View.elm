@@ -67,6 +67,8 @@ import Pages.WellChildActivity.View
 import Pages.WellChildEncounter.Model
 import Pages.WellChildEncounter.View
 import Pages.WellChildParticipant.View
+import Pages.WellChildProgressReport.Model
+import Pages.WellChildProgressReport.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import SyncManager.View
@@ -596,6 +598,16 @@ viewUserPage page deviceName model configured =
                         Pages.WellChildActivity.View.view model.language currentDate model.zscores id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildActivity id activity)
                             |> flexPageWrapper model
+
+                    WellChildProgressReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.wellChildProgressReportPages
+                                    |> Maybe.withDefault Pages.WellChildProgressReport.Model.emptyModel
+                        in
+                        Pages.WellChildProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
+                            |> oldPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language

@@ -38,6 +38,7 @@ import Pages.Session.Fetch
 import Pages.WellChildActivity.Fetch
 import Pages.WellChildEncounter.Fetch
 import Pages.WellChildParticipant.Fetch
+import Pages.WellChildProgressReport.Fetch
 import Time
 
 
@@ -246,6 +247,10 @@ fetch model =
 
             UserPage (AcuteIllnessProgressReportPage id) ->
                 Pages.AcuteIllnessProgressReport.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (WellChildProgressReportPage id) ->
+                Pages.WellChildProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (AcuteIllnessOutcomePage id) ->
