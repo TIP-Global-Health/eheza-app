@@ -504,7 +504,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   // Pull data of recorded fever at vitals.
   $query->leftJoin('field_data_field_body_temperature', 'body_temperature', 'body_temperature.entity_id = ai_encounter.entity_id');
   $query->addField('body_temperature', 'field_body_temperature_value');
-  $query->addExpression("body_temperature.field_body_temperature_value", 'body_temperature');
+  $query->addExpression("GROUP_CONCAT(body_temperature.field_body_temperature_value)", 'body_temperature');
 
   // Pull data of isolations - COVID suspect.
   $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
