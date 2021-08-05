@@ -2459,6 +2459,39 @@ div.page-report.acute-illness {
 
 div.page-report.well-child {
   background: unset;
+
+  .pane-heading {
+    background: $color-primary;
+    color: $color-white;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px 15px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .pane-content {
+    background: $color-white;
+    display: flex;
+    padding: 30px 40px;
+
+    .details {
+      padding-left: 25px;
+
+      .ui.header {
+        color: $color-primary;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      p {
+        color: $color-text;
+        font-size: 22px;
+        font-weight: 300;
+        margin-bottom: 5px;
+      }
+    }
+  }
 }
 
 div.page-case-management {

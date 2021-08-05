@@ -36,26 +36,26 @@ import Utils.WebData exposing (viewWebData)
 
 thumbnailDimensions : { width : Int, height : Int }
 thumbnailDimensions =
-    { width = 180
-    , height = 180
+    { width = 140
+    , height = 140
     }
 
 
 view : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
-        data =
+        assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewContent language currentDate id model) identity data
+    viewWebData language (viewContent language currentDate id model) identity assembled
 
 
 viewContent : Language -> NominalDate -> WellChildEncounterId -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id model data =
+viewContent language currentDate id model assembled =
     div [ class "page-report well-child" ]
         [ viewHeader language id
         , div [ class "ui report unstackable items" ]
-            []
+            [ viewPersonInfo language currentDate assembled.person ]
 
         -- , viewModal endEncounterDialog
         ]
@@ -78,8 +78,8 @@ viewHeader language id =
         ]
 
 
-viewPersonInfo : Language -> NominalDate -> Person -> WellChildMeasurements -> Html Msg
-viewPersonInfo language currentDate person measurements =
+viewPersonInfo : Language -> NominalDate -> Person -> Html Msg
+viewPersonInfo language currentDate person =
     let
         isAdult =
             isPersonAnAdult currentDate person
@@ -121,15 +121,18 @@ viewPersonInfo language currentDate person measurements =
                     )
                 |> Maybe.withDefault emptyNode
     in
-    div
-        [ class "item person-details" ]
-        [ div [ class "ui image" ]
-            [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width
-            ]
-        , div [ class "content" ]
-            [ h2 [ class "ui header" ]
-                [ text person.name ]
-            , viewAge
-            , viewVillage
+    div [ class "pane person-details" ]
+        [ div [ class <| "pane-heading" ]
+            [ text <| translate language <| Translate.PatientInformation ]
+        , div
+            [ class "pane-content" ]
+            [ div [ class "ui image" ]
+                [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
+            , div [ class "details" ]
+                [ h2 [ class "ui header" ]
+                    [ text person.name ]
+                , viewAge
+                , viewVillage
+                ]
             ]
         ]
