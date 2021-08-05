@@ -795,11 +795,25 @@ countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
+
+        dateLastDayOfSelectedMonth =
+            Date.ceiling Date.Month selectedDate
+                |> Date.add Date.Days -1
     in
     itemsList
         |> List.filter
             (\item ->
                 let
+                    -- Either pregnanacy is not concluded, or, it was concluded
+                    -- after selected months has ended.
+                    dateConcludedFilter =
+                        case item.dateConcluded of
+                            Just dateConcluded ->
+                                Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+
+                            Nothing ->
+                                True
+
                     -- Expected date exists, is within selected month or
                     -- latter than that, and within 120 days from the
                     -- beginning of selected month.
@@ -816,7 +830,7 @@ countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
                                 )
                             |> Maybe.withDefault False
                 in
-                isNothing item.dateConcluded && expectedDateConcludedFilter
+                dateConcludedFilter && expectedDateConcludedFilter
             )
         |> List.length
 
