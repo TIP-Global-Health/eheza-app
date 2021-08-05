@@ -2262,7 +2262,7 @@ translationSet trans =
 
                 NormalChildNutrition ->
                     { english = "None of these"
-                    , kinyarwanda = Just "Nta bimenyetso "
+                    , kinyarwanda = Just "Nta bimenyetso"
                     }
 
                 PoorAppetite ->
@@ -2588,7 +2588,7 @@ translationSet trans =
 
                 NoDeliveryComplications ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         DeliveryComplicationsPresentQuestion ->
@@ -2988,12 +2988,12 @@ translationSet trans =
                     }
 
                 MoveArmsAndLegs ->
-                    { english = " Does the child move their arms and legs"
+                    { english = "Does the child move their arms and legs"
                     , kinyarwanda = Nothing
                     }
 
                 RaiseHandsUp ->
-                    { english = " Does the child raise their hands up"
+                    { english = "Does the child raise their hands up"
                     , kinyarwanda = Nothing
                     }
 
@@ -3008,7 +3008,7 @@ translationSet trans =
                     }
 
                 BringHandsToMouth ->
-                    { english = " Does the child bring their hands to their mouth"
+                    { english = "Does the child bring their hands to their mouth"
                     , kinyarwanda = Nothing
                     }
 
@@ -3189,7 +3189,7 @@ translationSet trans =
 
                 NoECDSigns ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabyo"
                     }
 
         Edd ->
@@ -5454,7 +5454,7 @@ translationSet trans =
 
                 NoNutritionAssessment ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabyo"
                     }
 
         NutritionAssessmentTask task ->
@@ -5658,7 +5658,7 @@ translationSet trans =
 
                 NoNutritionSupplementType ->
                     { english = "None"
-                    , kinyarwanda = Just "None of these"
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         ObstetricalDiagnosis ->
@@ -7917,7 +7917,7 @@ translationSet trans =
                     }
 
                 VaccineIPV ->
-                    { english = "Did the child receive the  Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
+                    { english = "Did the child receive the Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
@@ -7959,7 +7959,7 @@ translationSet trans =
                     }
 
                 VaccineIPV ->
-                    { english = " Inactivated Polio Vaccine"
+                    { english = "Inactivated Polio Vaccine"
                     , kinyarwanda = Nothing
                     }
 
@@ -8045,7 +8045,7 @@ translationSet trans =
                     }
 
                 WellChildNutritionAssessment ->
-                    { english = "Nutrition Assesmen"
+                    { english = "Nutrition Assessment"
                     , kinyarwanda = Nothing
                     }
 
@@ -8301,7 +8301,7 @@ translationSet trans =
 
                 NoWellChildSymptoms ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         WhatDoYouWantToDo ->

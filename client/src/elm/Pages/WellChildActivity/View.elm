@@ -125,7 +125,7 @@ viewWarningPopup language currentDate warningPopupState =
         |> Maybe.andThen
             (\popupType ->
                 case popupType of
-                    PopupNutritionAssesment assessment ->
+                    PopupNutritionAssessment assessment ->
                         warningPopup language
                             currentDate
                             (SetWarningPopupState Nothing)
