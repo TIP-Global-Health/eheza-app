@@ -1,0 +1,4 @@
+id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_hc_contact,field_hc_recommendation,field_hc_response_time,field_ambulance_arrival_time
+194,74,2020-06-19,188,1592244289,1,none,n-a,n-a,n-a
+195,35,2017-12-16,188,1592244289,1,contact-hc,come-to-hc,less-than-30m|2h-1d,n-a
+196,81,2020-08-07,188,1592244289,1,contact-hc,chw-monitoring,1h-2h,n-a

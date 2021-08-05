@@ -23,20 +23,32 @@ class HedleyMigrateClinics extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'title',
-    'field_group_type',
-    'field_health_center',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'title',
+        'field_group_type',
+        'field_health_center',
+        'created',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_group_type',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_group_type',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateClinics constructor.

@@ -13,7 +13,7 @@ class HedleyMigrateUsers extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  public $entityType = 'user';
+  protected $entityType = 'user';
 
   /**
    * UnioMigrateUsers constructor.

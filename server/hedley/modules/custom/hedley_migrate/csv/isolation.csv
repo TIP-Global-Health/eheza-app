@@ -1,0 +1,4 @@
+id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_isolation,field_reason_for_not_isolating
+194,74,2020-06-19,188,1592244289,1,none,no-space|can-not-separate|
+195,35,2017-12-16,188,1592244289,1,patient-isolated|sign-on-door,n-a
+196,81,2020-08-07,188,1592244289,1,sign-on-door|health-education,too-ill

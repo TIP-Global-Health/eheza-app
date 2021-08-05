@@ -23,27 +23,39 @@ class HedleyMigrateVillages extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_province',
-    'field_district',
-    'field_sector',
-    'field_cell',
-    'field_village',
-    'field_health_center',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_province',
+        'field_district',
+        'field_sector',
+        'field_cell',
+        'field_village',
+        'field_health_center',
+        'created',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_province',
-    'field_district',
-    'field_sector',
-    'field_cell',
-    'field_village',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_province',
+        'field_district',
+        'field_sector',
+        'field_cell',
+        'field_village',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateVillages constructor.
