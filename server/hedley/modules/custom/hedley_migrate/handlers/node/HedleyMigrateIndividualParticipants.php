@@ -23,19 +23,38 @@ class HedleyMigrateIndividualParticipants extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_expected',
-    'field_encounter_type',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_person',
+        'field_expected',
+        'field_encounter_type',
+        'field_date_concluded',
+        'field_outcome',
+        'field_outcome_location',
+        'field_expected_date_concluded',
+        'created',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_encounter_type',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_encounter_type',
+        'field_outcome',
+        'field_outcome_location',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateRelationships constructor.
@@ -55,35 +74,15 @@ class HedleyMigrateIndividualParticipants extends HedleyMigrateBase {
 
     $this
       ->addFieldMapping('field_expected', 'field_expected')
+      ->callbacks([$this, 'date2Process']);
+
+    $this
+      ->addFieldMapping('field_date_concluded', 'field_date_concluded')
       ->callbacks([$this, 'dateProcess']);
-  }
 
-  /**
-   * Convert a date string to a timestamp.
-   *
-   * @param string $date
-   *   A string containing a date.
-   *
-   * @return array
-   *   A start date.
-   */
-  public function dateProcess($date) {
-    $trimmed = trim($date);
-
-    if (empty($trimmed)) {
-      return $trimmed;
-    }
-
-    if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-      $stamp = DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
-
-      return [
-        'value' => $stamp,
-        'value2' => NULL,
-      ];
-    }
-
-    throw new Exception("$date was not a recognized date format.");
+    $this
+      ->addFieldMapping('field_expected_date_concluded', 'field_expected_date_concluded')
+      ->callbacks([$this, 'dateProcess']);
   }
 
 }
