@@ -1,12 +1,4 @@
-module Utils.Json exposing
-    ( decodeArray2
-    , decodeEmptyArrayAsEmptyDict
-    , decodeError
-    , decodeEverySet
-    , decodeNullAsEmptyArray
-    , decodeWithDefault
-    , encodeIfExists
-    )
+module Utils.Json exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Date exposing (Date)
@@ -80,3 +72,8 @@ encodeIfExists name maybeVal encoder =
     maybeVal
         |> Maybe.map (\val -> [ ( name, encoder val ) ])
         |> Maybe.withDefault []
+
+
+decodeWithFallback : a -> Decoder a -> Decoder a
+decodeWithFallback fallback decoder =
+    oneOf [ decoder, succeed fallback ]
