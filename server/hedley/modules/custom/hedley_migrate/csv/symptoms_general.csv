@@ -1,0 +1,4 @@
+id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_fever_period,field_chills_period,field_night_sweats_period,field_body_aches_period,field_headache_period,field_lethargy_period,field_poor_suck_period,field_unable_to_drink_period,field_unable_to_eat_period,field_increased_thirst_period,field_dry_mouth_period,field_severe_weakness_period,field_yellow_eyes_period,field_coke_colored_urine_period,field_convulsions_period,field_spontaneos_bleeding_period
+194,74,2020-06-19,188,1592244289,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+195,35,2017-12-16,188,1592244289,1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+196,81,2020-08-07,188,1592244289,1,0,2,0,4,0,2,0,4,0,2,0,4,0,1,0,3

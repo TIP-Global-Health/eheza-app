@@ -23,22 +23,34 @@ class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_adult',
-    'field_adult_activities',
-    'field_expected',
-    'field_clinic',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_person',
+        'field_adult',
+        'field_adult_activities',
+        'field_expected',
+        'field_clinic',
+        'created',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_adult_activities',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_adult_activities',
+      ]
+    );
+  }
 
   /**
    * HedleyMigratePmtctParticipants constructor.
