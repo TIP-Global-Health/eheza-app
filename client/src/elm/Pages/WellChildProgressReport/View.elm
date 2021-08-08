@@ -19,6 +19,7 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
+import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
@@ -143,7 +144,7 @@ viewPersonInfoPane language currentDate person =
 viewActiveDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewActiveDiagnosisPane language currentDate id db model assembled =
     let
-        sessions =
+        ( activeIllnesses, completedIllnesses ) =
             Dict.get assembled.participant.person db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
@@ -154,9 +155,13 @@ viewActiveDiagnosisPane language currentDate id db model assembled =
                             )
                     )
                 |> Maybe.withDefault []
+                |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
 
         _ =
-            Debug.log "sessions" sessions
+            Debug.log "activeIllnesses" activeIllnesses
+
+        _ =
+            Debug.log "completedIllnesses" completedIllnesses
     in
     div [ class "pane active-diagnosis" ]
         [ viewPaneHeading language Translate.ActiveDiagnosis
