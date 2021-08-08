@@ -19,6 +19,7 @@ features[features_api][] = api:2
 features[field_base][] = field_acute_illness_diagnosis
 features[field_base][] = field_adult
 features[field_base][] = field_adult_activities
+features[field_base][] = field_ai_encounter_type
 features[field_base][] = field_closed
 features[field_base][] = field_date_concluded
 features[field_base][] = field_encounter_type
