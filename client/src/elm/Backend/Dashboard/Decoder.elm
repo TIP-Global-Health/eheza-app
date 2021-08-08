@@ -16,7 +16,7 @@ import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
-import Utils.Json exposing (decodeEverySet)
+import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
 
 decodeDashboardStatsRaw : Decoder DashboardStatsRaw
@@ -333,8 +333,3 @@ decodePrenatalEncounterDataItem =
 decodeDangerSignWithFallback : Decoder DangerSign
 decodeDangerSignWithFallback =
     decodeWithFallback NoDangerSign decodeDangerSign
-
-
-decodeWithFallback : a -> Decoder a -> Decoder a
-decodeWithFallback fallback decoder =
-    oneOf [ decoder, succeed fallback ]

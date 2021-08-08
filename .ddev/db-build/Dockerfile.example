@@ -3,4 +3,4 @@
 # or packages or anything else to your dbimage
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
-RUN echo "Built from drud/ddev-dbserver-mariadb-10.2:v1.17.0" >/var/tmp/built-from.txt
+RUN echo "Built from drud/ddev-dbserver-mariadb-10.2:v1.17.7" >/var/tmp/built-from.txt

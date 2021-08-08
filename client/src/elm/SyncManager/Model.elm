@@ -320,7 +320,6 @@ We can have the `a` replaced with BackendGeneralEntity or BackendAuthorityEntity
 -}
 type alias DownloadSyncResponse a =
     { entities : List a
-    , lastTimestampOfLastRevision : Time.Posix
     , revisionCount : Int
     , deviceName : String
     }
