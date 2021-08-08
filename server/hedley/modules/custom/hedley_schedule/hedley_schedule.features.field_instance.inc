@@ -50,6 +50,44 @@ function hedley_schedule_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-acute_illness_encounter-field_ai_encounter_type'.
+  $field_instances['node-acute_illness_encounter-field_ai_encounter_type'] = array(
+    'bundle' => 'acute_illness_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ai_encounter_type',
+    'label' => 'Acute Illness Encounter Type',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-acute_illness_encounter-field_individual_participant'.
   $field_instances['node-acute_illness_encounter-field_individual_participant'] = array(
     'bundle' => 'acute_illness_encounter',
