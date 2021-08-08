@@ -3,6 +3,7 @@ module Pages.WellChildProgressReport.View exposing (view)
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
@@ -47,15 +48,17 @@ view language currentDate id db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewContent language currentDate id model) identity assembled
+    viewWebData language (viewContent language currentDate id db model) identity assembled
 
 
-viewContent : Language -> NominalDate -> WellChildEncounterId -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id model assembled =
+viewContent : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id db model assembled =
     div [ class "page-report well-child" ]
         [ viewHeader language id
         , div [ class "ui report unstackable items" ]
-            [ viewPersonInfo language currentDate assembled.person ]
+            [ viewPersonInfoPane language currentDate assembled.person
+            , viewActiveDiagnosisPane language currentDate id db model assembled
+            ]
 
         -- , viewModal endEncounterDialog
         ]
@@ -78,8 +81,8 @@ viewHeader language id =
         ]
 
 
-viewPersonInfo : Language -> NominalDate -> Person -> Html Msg
-viewPersonInfo language currentDate person =
+viewPersonInfoPane : Language -> NominalDate -> Person -> Html Msg
+viewPersonInfoPane language currentDate person =
     let
         isAdult =
             isPersonAnAdult currentDate person
@@ -122,8 +125,7 @@ viewPersonInfo language currentDate person =
                 |> Maybe.withDefault emptyNode
     in
     div [ class "pane person-details" ]
-        [ div [ class <| "pane-heading" ]
-            [ text <| translate language <| Translate.PatientInformation ]
+        [ viewPaneHeading language Translate.PatientInformation
         , div
             [ class "pane-content" ]
             [ div [ class "ui image" ]
@@ -136,3 +138,32 @@ viewPersonInfo language currentDate person =
                 ]
             ]
         ]
+
+
+viewActiveDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewActiveDiagnosisPane language currentDate id db model assembled =
+    let
+        sessions =
+            Dict.get assembled.participant.person db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (Dict.toList
+                        >> List.filter
+                            (\( sessionId, session ) ->
+                                session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                            )
+                    )
+                |> Maybe.withDefault []
+
+        _ =
+            Debug.log "sessions" sessions
+    in
+    div [ class "pane active-diagnosis" ]
+        [ viewPaneHeading language Translate.ActiveDiagnosis
+        ]
+
+
+viewPaneHeading : Language -> TranslationId -> Html Msg
+viewPaneHeading language label =
+    div [ class <| "pane-heading" ]
+        [ text <| translate language label ]

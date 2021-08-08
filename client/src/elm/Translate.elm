@@ -292,6 +292,7 @@ type TranslationId
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
+    | ActiveDiagnosis
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -1403,6 +1404,11 @@ translationSet trans =
         AcuteIllnessOutcomeLabel ->
             { english = "Acute Illness Outcome"
             , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho\n"
+            }
+
+        ActiveDiagnosis ->
+            { english = "Active Diagnosis"
+            , kinyarwanda = Nothing
             }
 
         AcuteIllnessOutcome outcome ->
