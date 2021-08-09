@@ -204,7 +204,7 @@ viewDiagnosisPane language currentDate id db model assembled =
                     )
 
                 ModeCompletedDiagnosis ->
-                    ( Translate.ReviewPriorDiagnosis
+                    ( Translate.PriorDiagnosis
                     , emptyNode
                     , completedIllnesses
                     )
@@ -212,7 +212,7 @@ viewDiagnosisPane language currentDate id db model assembled =
         entries =
             List.map (Tuple.first >> viewDaignosisEntry language id db) selectedEntries
     in
-    div [ class "pane active-diagnosis" ]
+    div [ class "pane diagnosis" ]
         [ viewPaneHeading language label
         , div [ class "pane-content" ] <|
             entriesHeading
