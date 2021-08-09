@@ -813,6 +813,7 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | PriorDiagnosis
     | ProvideHealthEducation
     | ProvideHealthEducationShort
     | ProvidedHealthEducationAction
@@ -6466,6 +6467,11 @@ translationSet trans =
         PreTermPregnancy ->
             { english = "Number of Pre-term Pregnancies (Live Birth)"
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
+            }
+
+        PriorDiagnosis ->
+            { english = "Prior Diagnosis"
+            , kinyarwanda = Nothing
             }
 
         ProvidedHealthEducationAction ->
