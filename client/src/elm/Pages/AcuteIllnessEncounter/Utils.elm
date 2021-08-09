@@ -211,16 +211,22 @@ that was set in most recent encounter.
 getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
 getAcuteIllnessDiagnosisForParticipant db participantId =
     getAcuteIllnessEncountersForParticipant db participantId
-        |> List.filterMap
-            (\( _, encounter ) ->
-                if encounter.diagnosis /= NoAcuteIllnessDiagnosis then
-                    Just ( encounter.startDate, encounter.diagnosis )
+        |> getAcuteIllnessDiagnosisForEncounters
 
-                else
-                    Nothing
-            )
+
+getAcuteIllnessDiagnosisForEncounters : List ( AcuteIllnessEncounterId, AcuteIllnessEncounter ) -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
+getAcuteIllnessDiagnosisForEncounters encounters =
+    List.filterMap
+        (\( _, encounter ) ->
+            if encounter.diagnosis /= NoAcuteIllnessDiagnosis then
+                Just ( encounter.startDate, encounter.diagnosis )
+
+            else
+                Nothing
+        )
+        encounters
         -- We know that encounters are sorted DESC, so the one at
-        -- head is the most recent one.
+        -- head is the most recent.
         |> List.head
 
 

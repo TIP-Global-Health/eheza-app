@@ -2,6 +2,7 @@ module Pages.WellChildProgressReport.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
@@ -19,7 +20,12 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
-import Pages.AcuteIllnessEncounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
+import Pages.AcuteIllnessEncounter.Utils
+    exposing
+        ( getAcuteIllnessDiagnosisForEncounters
+        , getAcuteIllnessDiagnosisForParticipant
+        , getAcuteIllnessEncountersForParticipant
+        )
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -159,10 +165,11 @@ viewActiveDiagnosisPane language currentDate id db model assembled =
                 |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
 
         activeEntries =
-            List.map (Tuple.first >> viewDaignosisEntry language db) activeIllnesses
+            List.map (Tuple.first >> viewDaignosisEntry language id db) activeIllnesses
 
+        -- @todo: veiw at separate page?
         completedEntries =
-            List.map (Tuple.first >> viewDaignosisEntry language db) completedIllnesses
+            List.map (Tuple.first >> viewDaignosisEntry language id db) completedIllnesses
 
         entriesHeading =
             div [ class "entries-heading" ]
@@ -179,22 +186,38 @@ viewActiveDiagnosisPane language currentDate id db model assembled =
         ]
 
 
-viewDaignosisEntry : Language -> ModelIndexedDb -> IndividualEncounterParticipantId -> Html Msg
-viewDaignosisEntry language db participantId =
-    getAcuteIllnessDiagnosisForParticipant db participantId
-        |> Maybe.map
-            (\( date, diagnosis ) ->
-                div [ class "diagnosis-entry" ]
-                    [ div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
-                    , div [ class "date" ] [ text <| formatDDMMYY date ]
-                    , div
-                        [ class "icon-forward"
+viewDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Html Msg
+viewDaignosisEntry language id db participantId =
+    let
+        encounters =
+            getAcuteIllnessEncountersForParticipant db participantId
 
-                        -- , onClick <| SetDialogState <| Just popupData
-                        ]
-                        []
+        maybeLastEncounterId =
+            List.head encounters
+                |> Maybe.map Tuple.first
+
+        diagnosisData =
+            getAcuteIllnessDiagnosisForEncounters encounters
+    in
+    Maybe.map2
+        (\( date, diagnosis ) lastEncounterId ->
+            div [ class "diagnosis-entry" ]
+                [ div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                , div [ class "date" ] [ text <| formatDDMMYY date ]
+                , div
+                    [ class "icon-forward"
+                    , onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                AcuteIllnessProgressReportPage
+                                    (InitiatorWellChildProgressReport id)
+                                    lastEncounterId
                     ]
-            )
+                    []
+                ]
+        )
+        diagnosisData
+        maybeLastEncounterId
         |> Maybe.withDefault emptyNode
 
 

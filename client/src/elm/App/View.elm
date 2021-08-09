@@ -539,13 +539,13 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
                             |> flexPageWrapper model
 
-                    AcuteIllnessProgressReportPage encounterId ->
+                    AcuteIllnessProgressReportPage initiator encounterId ->
                         let
                             page_ =
                                 Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
                                     |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
                         in
-                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
+                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> oldPageWrapper model
 

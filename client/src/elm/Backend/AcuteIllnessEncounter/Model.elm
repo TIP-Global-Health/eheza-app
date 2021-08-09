@@ -105,6 +105,11 @@ type AcuteIllnessDiagnosis
     | NoAcuteIllnessDiagnosis
 
 
+type AcuteIllnessProgressReportInitiator
+    = InitiatorEncounterPage
+    | InitiatorWellChildProgressReport WellChildEncounterId
+
+
 type Msg
     = CloseAcuteIllnessEncounter
     | SetAcuteIllnessDiagnosis AcuteIllnessDiagnosis

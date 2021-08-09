@@ -8681,7 +8681,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Igikorwa cyo kuvura uburwayi butunguranye"
                     }
 
-                AcuteIllnessProgressReportPage _ ->
+                AcuteIllnessProgressReportPage _ _ ->
                     { english = "Acute Illness Progress Report"
                     , kinyarwanda = Just "Raporo y’ibyakozwe ku ndwara zifatiyeho"
                     }

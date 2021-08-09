@@ -4,6 +4,8 @@ import Activity.Model exposing (Activity)
 import Activity.Utils
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessActivity.Utils
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.AcuteIllnessEncounter.Utils
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
@@ -239,8 +241,12 @@ pageToFragment current =
                 AcuteIllnessActivityPage id activity ->
                     Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.AcuteIllnessActivity.Utils.encodeActivityAsString activity
 
-                AcuteIllnessProgressReportPage id ->
-                    Just <| "acute-illness-progress-report/" ++ fromEntityUuid id
+                AcuteIllnessProgressReportPage initiator id ->
+                    Just <|
+                        "acute-illness-progress-report/"
+                            ++ fromEntityUuid id
+                            ++ "/"
+                            ++ Backend.AcuteIllnessEncounter.Utils.progressReportInitiatorToUrlFragmemt initiator
 
                 AcuteIllnessOutcomePage id ->
                     Just <| "acute-illness-outcome/" ++ fromEntityUuid id
@@ -297,7 +303,7 @@ parser =
         , map (\id -> UserPage <| NutritionProgressReportPage id) (s "nutrition-progress-report" </> parseUuid)
         , map (\id -> UserPage <| AcuteIllnessEncounterPage id) (s "acute-illness-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| AcuteIllnessActivityPage id activity) (s "acute-illness-activity" </> parseUuid </> parseAcuteIllnessActivity)
-        , map (\id -> UserPage <| AcuteIllnessProgressReportPage id) (s "acute-illness-progress-report" </> parseUuid)
+        , map (\id initiator -> UserPage <| AcuteIllnessProgressReportPage initiator id) (s "acute-illness-progress-report" </> parseUuid </> parseAcuteIllnessProgressReportInitiator)
         , map (\id -> UserPage <| AcuteIllnessOutcomePage id) (s "acute-illness-outcome" </> parseUuid)
         , map (\id -> UserPage <| HomeVisitEncounterPage id) (s "home-visit-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| HomeVisitActivityPage id activity) (s "home-visit-activity" </> parseUuid </> parseHomeVisitActivity)
@@ -392,3 +398,8 @@ parseRecordPreganancyInitiator =
 parseClinicalProgressReportInitiator : Parser (ClinicalProgressReportInitiator -> c) c
 parseClinicalProgressReportInitiator =
     custom "ClinicalProgressReportInitiator" progressReportInitiatorFromUrlFragmemt
+
+
+parseAcuteIllnessProgressReportInitiator : Parser (AcuteIllnessProgressReportInitiator -> c) c
+parseAcuteIllnessProgressReportInitiator =
+    custom "AcuteIllnessProgressReportInitiator" Backend.AcuteIllnessEncounter.Utils.progressReportInitiatorFromUrlFragmemt
