@@ -65,7 +65,7 @@ viewContent language currentDate id db model assembled =
         [ viewHeader language id model
         , div [ class "ui report unstackable items" ]
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewActiveDiagnosisPane language currentDate id db model assembled
+            , viewDiagnosisPane language currentDate id db model assembled
             ]
 
         -- , viewModal endEncounterDialog
@@ -156,8 +156,8 @@ viewPersonInfoPane language currentDate person =
         ]
 
 
-viewActiveDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewActiveDiagnosisPane language currentDate id db model assembled =
+viewDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewDiagnosisPane language currentDate id db model assembled =
     let
         ( activeIllnesses, completedIllnesses ) =
             Dict.get assembled.participant.person db.individualParticipantsByPerson
