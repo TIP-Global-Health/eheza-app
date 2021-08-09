@@ -61,12 +61,22 @@ view language currentDate id db model =
 
 viewContent : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id db model assembled =
+    let
+        derrivedContent =
+            case model.diagnosisMode of
+                ModeActiveDiagnosis ->
+                    [ viewVaccinationHistoryPane language currentDate id db model assembled ]
+
+                ModeCompletedDiagnosis ->
+                    []
+    in
     div [ class "page-report well-child" ]
         [ viewHeader language id model
-        , div [ class "ui report unstackable items" ]
+        , div [ class "ui report unstackable items" ] <|
             [ viewPersonInfoPane language currentDate assembled.person
             , viewDiagnosisPane language currentDate id db model assembled
             ]
+                ++ derrivedContent
 
         -- , viewModal endEncounterDialog
         ]
@@ -244,6 +254,13 @@ viewDaignosisEntry language id db participantId =
         diagnosisData
         maybeLastEncounterId
         |> Maybe.withDefault emptyNode
+
+
+viewVaccinationHistoryPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewVaccinationHistoryPane language currentDate id db model assembled =
+    div [ class "pane vaccination-history" ]
+        [ viewPaneHeading language Translate.ImmunisationHistory
+        ]
 
 
 viewPaneHeading : Language -> TranslationId -> Html Msg
