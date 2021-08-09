@@ -867,6 +867,7 @@ type TranslationId
     | Retry
     | ReviewCaseWith144Respondent
     | Reviewed
+    | ReviewPriorDiagnosis
     | ReviewVaccinationHistory
     | ReviewVaccinationHistoryLabel
     | RhNegative
@@ -6961,6 +6962,11 @@ translationSet trans =
         Reviewed ->
             { english = "Reviewed"
             , kinyarwanda = Just "Byarebwe"
+            }
+
+        ReviewPriorDiagnosis ->
+            { english = "Review Prior Diagnosis"
+            , kinyarwanda = Nothing
             }
 
         ReviewVaccinationHistory ->

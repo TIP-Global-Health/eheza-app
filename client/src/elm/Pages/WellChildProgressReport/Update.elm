@@ -25,3 +25,6 @@ update msg model =
 
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounetrDialog = isOpen }, Cmd.none, [] )
+
+        SetDiagnosisMode mode ->
+            ( { model | diagnosisMode = mode }, Cmd.none, [] )

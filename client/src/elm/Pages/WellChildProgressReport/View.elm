@@ -62,7 +62,7 @@ view language currentDate id db model =
 viewContent : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id db model assembled =
     div [ class "page-report well-child" ]
-        [ viewHeader language id
+        [ viewHeader language id model
         , div [ class "ui report unstackable items" ]
             [ viewPersonInfoPane language currentDate assembled.person
             , viewActiveDiagnosisPane language currentDate id db model assembled
@@ -72,16 +72,24 @@ viewContent language currentDate id db model assembled =
         ]
 
 
-viewHeader : Language -> WellChildEncounterId -> Html Msg
-viewHeader language id =
-    div
-        [ class "ui basic segment head" ]
+viewHeader : Language -> WellChildEncounterId -> Model -> Html Msg
+viewHeader language id model =
+    let
+        goBackAction =
+            case model.diagnosisMode of
+                ModeActiveDiagnosis ->
+                    SetActivePage (UserPage (WellChildEncounterPage id))
+
+                ModeCompletedDiagnosis ->
+                    SetDiagnosisMode ModeActiveDiagnosis
+    in
+    div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
             [ text <| translate language <| Translate.ProgressReport
             ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage (UserPage (WellChildEncounterPage id))
+            , onClick goBackAction
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -164,25 +172,42 @@ viewActiveDiagnosisPane language currentDate id db model assembled =
                 |> Maybe.withDefault []
                 |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
 
-        activeEntries =
-            List.map (Tuple.first >> viewDaignosisEntry language id db) activeIllnesses
-
-        -- @todo: veiw at separate page?
-        completedEntries =
-            List.map (Tuple.first >> viewDaignosisEntry language id db) completedIllnesses
-
         entriesHeading =
             div [ class "entries-heading" ]
                 [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
                 , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
                 , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
                 ]
+
+        ( label, priorDiagniosisButton, selectedEntries ) =
+            case model.diagnosisMode of
+                ModeActiveDiagnosis ->
+                    ( Translate.ActiveDiagnosis
+                    , div [ class "pane-action" ]
+                        [ button
+                            [ class "ui primary button"
+                            , onClick <| SetDiagnosisMode ModeCompletedDiagnosis
+                            ]
+                            [ text <| translate language Translate.ReviewPriorDiagnosis ]
+                        ]
+                    , activeIllnesses
+                    )
+
+                ModeCompletedDiagnosis ->
+                    ( Translate.ReviewPriorDiagnosis
+                    , emptyNode
+                    , completedIllnesses
+                    )
+
+        entries =
+            List.map (Tuple.first >> viewDaignosisEntry language id db) selectedEntries
     in
     div [ class "pane active-diagnosis" ]
-        [ viewPaneHeading language Translate.ActiveDiagnosis
+        [ viewPaneHeading language label
         , div [ class "pane-content" ] <|
             entriesHeading
-                :: activeEntries
+                :: entries
+        , priorDiagniosisButton
         ]
 
 

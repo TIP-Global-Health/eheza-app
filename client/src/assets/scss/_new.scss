@@ -2553,6 +2553,14 @@ div.page-report.well-child {
       }
     }
   }
+
+  .pane-action {
+    border-top: 1px solid $color-text;
+    background: $color-white;
+    padding-bottom: 30px;
+    padding-top: 25px;
+    text-align: center;
+  }
 }
 
 div.page-case-management {
