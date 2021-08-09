@@ -127,6 +127,14 @@ viewContent language currentDate id initiator model data =
 
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
+
+        endEncounterButton =
+            case initiator of
+                InitiatorEncounterPage ->
+                    viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
+
+                InitiatorWellChildProgressReport _ ->
+                    emptyNode
     in
     div [ class "page-report acute-illness" ]
         [ div
@@ -137,7 +145,7 @@ viewContent language currentDate id initiator model data =
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
-            , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
+            , endEncounterButton
             ]
         , viewModal endEncounterDialog
         ]
