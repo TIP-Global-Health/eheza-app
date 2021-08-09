@@ -208,13 +208,13 @@ getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId
 {-| Since there can be multiple encounters, resolved diagnosis is the one
 that was set in most recent encounter.
 -}
-getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
 getAcuteIllnessDiagnosisForParticipant db participantId =
     getAcuteIllnessEncountersForParticipant db participantId
         |> List.filterMap
             (\( _, encounter ) ->
                 if encounter.diagnosis /= NoAcuteIllnessDiagnosis then
-                    Just encounter.diagnosis
+                    Just ( encounter.startDate, encounter.diagnosis )
 
                 else
                     Nothing

@@ -475,6 +475,7 @@ type TranslationId
     | DeviceStatus
     | Diabetes
     | Diagnosis
+    | DiagnosisDate
     | DifferenceBetweenDates
     | Disabled
     | DistributionNotice DistributionNotice
@@ -886,6 +887,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
     | SelectPostpartumChildDangerSigns
@@ -2927,6 +2929,11 @@ translationSet trans =
         Diagnosis ->
             { english = "Diagnosis"
             , kinyarwanda = Just "Uburwayi bwabonetse"
+            }
+
+        DiagnosisDate ->
+            { english = "Diagnosis Date"
+            , kinyarwanda = Nothing
             }
 
         DifferenceBetweenDates ->
@@ -7137,6 +7144,11 @@ translationSet trans =
         Sector ->
             { english = "Sector"
             , kinyarwanda = Just "Umurenge"
+            }
+
+        SeeMore ->
+            { english = "See More"
+            , kinyarwanda = Nothing
             }
 
         SelectAntenatalVisit ->

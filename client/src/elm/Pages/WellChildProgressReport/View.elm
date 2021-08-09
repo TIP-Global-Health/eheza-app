@@ -19,6 +19,7 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
+import Pages.AcuteIllnessEncounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -128,7 +129,7 @@ viewPersonInfoPane language currentDate person =
     div [ class "pane person-details" ]
         [ viewPaneHeading language Translate.PatientInformation
         , div
-            [ class "pane-content" ]
+            [ class "patient-info" ]
             [ div [ class "ui image" ]
                 [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
             , div [ class "details" ]
@@ -157,15 +158,44 @@ viewActiveDiagnosisPane language currentDate id db model assembled =
                 |> Maybe.withDefault []
                 |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
 
-        _ =
-            Debug.log "activeIllnesses" activeIllnesses
+        activeEntries =
+            List.map (Tuple.first >> viewDaignosisEntry language db) activeIllnesses
 
-        _ =
-            Debug.log "completedIllnesses" completedIllnesses
+        completedEntries =
+            List.map (Tuple.first >> viewDaignosisEntry language db) completedIllnesses
+
+        entriesHeading =
+            div [ class "entries-heading" ]
+                [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
+                , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
+                , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
+                ]
     in
     div [ class "pane active-diagnosis" ]
         [ viewPaneHeading language Translate.ActiveDiagnosis
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: activeEntries
         ]
+
+
+viewDaignosisEntry : Language -> ModelIndexedDb -> IndividualEncounterParticipantId -> Html Msg
+viewDaignosisEntry language db participantId =
+    getAcuteIllnessDiagnosisForParticipant db participantId
+        |> Maybe.map
+            (\( date, diagnosis ) ->
+                div [ class "diagnosis-entry" ]
+                    [ div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                    , div [ class "date" ] [ text <| formatDDMMYY date ]
+                    , div
+                        [ class "icon-forward"
+
+                        -- , onClick <| SetDialogState <| Just popupData
+                        ]
+                        []
+                    ]
+            )
+        |> Maybe.withDefault emptyNode
 
 
 viewPaneHeading : Language -> TranslationId -> Html Msg
