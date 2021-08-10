@@ -2067,7 +2067,7 @@ generateNextDateForImmunisationVisit currentDate isChw assembled db =
         -- If there're only 6 month interval vaccines, we'll check 6 months forward.
         -- Otherwise, there's a vaccine with 28 days interval, so we look only 1 month forward.
         -- We do this, because per requirements, if we have several vaccines, we
-        -- select the latest date - to be able to administer all in single encounter.
+        -- select the latest date - to be able to administer all in a single encounter.
         -- However, we do not want to wait 6 months, if we need to administer a vaccine
         -- that needs only 28 days interval.
         intervalMonths =
