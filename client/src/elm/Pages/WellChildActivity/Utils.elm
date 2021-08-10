@@ -627,8 +627,8 @@ generateSuggestedVaccinations currentDate isChw assembled =
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> Person -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate person vaccinationProgress =
+generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
     List.map
         (\vaccineType ->
             let
@@ -644,8 +644,15 @@ generateFutureVaccinationsData currentDate person vaccinationProgress =
                                 initialDate =
                                     Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst )) person.birthDate
                                         |> Maybe.withDefault currentDate
+
+                                vaccinationDate =
+                                    if scheduleFirstDoseForToday then
+                                        Date.max initialDate currentDate
+
+                                    else
+                                        initialDate
                             in
-                            Just ( VaccineDoseFirst, Date.max initialDate currentDate )
+                            Just ( VaccineDoseFirst, vaccinationDate )
             in
             -- Getting Nothing at nextVaccinationData indicates that
             -- vacination cycle is completed for this vaccine.
@@ -2055,7 +2062,7 @@ generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> M
 generateNextDateForImmunisationVisit currentDate isChw assembled db =
     let
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate assembled.person assembled.vaccinationProgress
+            generateFutureVaccinationsData currentDate assembled.person True assembled.vaccinationProgress
 
         futureVaccines =
             List.map Tuple.first futureVaccinationsData

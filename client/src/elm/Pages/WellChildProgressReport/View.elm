@@ -269,7 +269,7 @@ viewVaccinationHistoryPane language currentDate id db model assembled =
                 ]
 
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate assembled.person assembled.vaccinationProgress
+            generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationProgress
                 |> Dict.fromList
 
         entries =
