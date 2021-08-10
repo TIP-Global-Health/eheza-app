@@ -1254,7 +1254,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
                     if doseAdministrationQuestionAnswered vaccineType form then
                         case getVaccinationDateFromImmunisationForm vaccineType form of
                             Just administationDate ->
-                                -- If date was set, we show the date for next dose.
+                                -- If the date was set, we show the date for the next dose.
                                 Just ( vaccineType, nextVaccinationDataForVaccine administationDate dose vaccineType )
 
                             Nothing ->
