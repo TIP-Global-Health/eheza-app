@@ -682,7 +682,7 @@ expectVaccineForPerson limitDate person vaccineType =
     expectVaccineDoseForPerson limitDate person ( vaccineType, VaccineDoseFirst )
 
 
-{-| Check if a dose of vaccine may be administerd to person on limit date.
+{-| Check if a dose of vaccine may be administered to a person on the limit date.
 For example, to check if dose of vaccine may be administerd today, we set
 limit date to current date. If we want to check in one year, we set limit date
 to current date + 1 year.
