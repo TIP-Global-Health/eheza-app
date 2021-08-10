@@ -7,6 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (headCircumferenceValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
@@ -201,27 +202,29 @@ generateNutritionAssessmentByWeight currentDate zscores childId child weightValu
 
 generateIndividualNutritionMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
 generateIndividualNutritionMeasurementsForChild childId db =
-    resolveIndividualParticipantForPerson childId NutritionEncounter db
+    resolveIndividualParticipantForPerson childId Backend.IndividualEncounterParticipant.Model.NutritionEncounter db
         |> Maybe.map
-            (\participantId ->
-                Dict.get participantId db.nutritionEncountersByParticipant
-                    |> Maybe.withDefault NotAsked
-                    |> RemoteData.map
-                        (Dict.toList
-                            >> List.filterMap
-                                (\( encounterId, encounter ) ->
-                                    case Dict.get encounterId db.nutritionMeasurements of
-                                        Just (Success data) ->
-                                            Just ( encounter.startDate, ( encounterId, data ) )
+            (getNutritionEncountersForParticipant db
+                >> List.filterMap
+                    (\( encounterId, encounter ) ->
+                        case Dict.get encounterId db.nutritionMeasurements of
+                            Just (Success data) ->
+                                Just ( encounter.startDate, ( encounterId, data ) )
 
-                                        _ ->
-                                            Nothing
-                                )
-                            -- Most recent date to least recent date.
-                            >> List.sortWith sortTuplesByDateDesc
-                        )
-                    |> RemoteData.withDefault []
+                            _ ->
+                                Nothing
+                    )
+                -- Most recent date to least recent date.
+                >> List.sortWith sortTuplesByDateDesc
             )
+        |> Maybe.withDefault []
+
+
+getNutritionEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NutritionEncounterId, NutritionEncounter )
+getNutritionEncountersForParticipant db participantId =
+    Dict.get participantId db.nutritionEncountersByParticipant
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map Dict.toList
         |> Maybe.withDefault []
 
 

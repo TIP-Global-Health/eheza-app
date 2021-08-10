@@ -28,6 +28,7 @@ import Pages.AcuteIllnessEncounter.Utils
         )
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
+import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
 import Pages.WellChildActivity.Model
@@ -170,18 +171,70 @@ viewPersonInfoPane language currentDate person =
 viewDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewDiagnosisPane language currentDate id db model assembled =
     let
-        ( activeIllnesses, completedIllnesses ) =
+        individualParticipants =
             Dict.get assembled.participant.person db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (Dict.toList
-                        >> List.filter
-                            (\( sessionId, session ) ->
-                                session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                            )
+                |> Maybe.map Dict.toList
+
+        ( activeIllnesses, completedIllnesses ) =
+            Maybe.map
+                (List.filter
+                    (\( sessionId, session ) ->
+                        session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
                     )
+                )
+                individualParticipants
                 |> Maybe.withDefault []
                 |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
+
+        individualNutritionMeasurements =
+            Maybe.andThen
+                (List.filter
+                    (\( sessionId, session ) ->
+                        session.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                    )
+                    >> List.head
+                )
+                individualParticipants
+                |> Maybe.map
+                    (\( participantId, _ ) ->
+                        Pages.NutritionEncounter.Utils.generatePreviousMeasurements Nothing participantId db
+                    )
+                |> Maybe.withDefault []
+
+        _ =
+            Debug.log "groupNutritionAssessments" groupNutritionAssessments
+
+        groupNutritionMeasurements =
+            Dict.get assembled.participant.person db.childMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
+        groupNutritionAssessments =
+            Maybe.map
+                (\measurements ->
+                    let
+                        followUps =
+                            Dict.values measurements.followUp
+
+                        nutritions =
+                            Dict.values measurements.nutritions
+                                |> List.map
+                                    (\nutrition ->
+                                        ( nutrition.participantId, nutrition.value )
+                                    )
+                                |> Dict.fromList
+                    in
+                    Dict.values measurements.followUp
+                        |> List.filterMap
+                            (\followUp ->
+                                Dict.get followUp.participantId nutritions
+                                    |> Maybe.map
+                                        (\nutritionValue ->
+                                            ( followUp.dateMeasured, followUp.value.assesment, nutritionValue )
+                                        )
+                            )
+                )
+                groupNutritionMeasurements
 
         entriesHeading =
             div [ class "heading diagnosis" ]
