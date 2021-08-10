@@ -684,7 +684,7 @@ expectVaccineForPerson limitDate person vaccineType =
 
 {-| Check if a dose of vaccine may be administered to a person on the limit date.
 For example, to check if the dose of vaccine may be administered today, we set
-limit date to current date. If we want to check in one year, we set limit date
+limit date to current date. If we want to check in one year, we set the limit date
 to current date + 1 year.
 -}
 expectVaccineDoseForPerson : NominalDate -> Person -> ( VaccineType, VaccineDose ) -> Bool
