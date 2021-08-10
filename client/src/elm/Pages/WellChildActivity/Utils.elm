@@ -675,7 +675,7 @@ filterExpextedDosesForPerson currentDate person ( vaccine, doses ) =
         Just ( vaccine, expectedDoses )
 
 
-{-| Check if first dose of vaccine may be administerd to person on limit date.
+{-| Check if the first dose of vaccine may be administered to the person on the limit date.
 -}
 expectVaccineForPerson : NominalDate -> Person -> VaccineType -> Bool
 expectVaccineForPerson limitDate person vaccineType =
