@@ -96,6 +96,7 @@ import Pages.PrenatalActivity.Model
         )
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
+import Pages.WellChildProgressReport.Model exposing (VaccinationStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -687,6 +688,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextDue
     | NextDoseDue
     | NextImmunisationVisit
     | NextPediatricVisit
@@ -996,6 +998,7 @@ type TranslationId
     | Uploading
     | UterineMyoma
     | VaccinationCatchUpRequiredQuestion
+    | VaccinationStatus VaccinationStatus
     | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
@@ -5120,6 +5123,11 @@ translationSet trans =
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 
+        NextDue ->
+            { english = "Next Due"
+            , kinyarwanda = Nothing
+            }
+
         NextDoseDue ->
             { english = "Next Dose Due"
             , kinyarwanda = Nothing
@@ -7884,6 +7892,23 @@ translationSet trans =
             { english = "Are there previous immunizations that are not in E-Heza that need to be recorded"
             , kinyarwanda = Nothing
             }
+
+        VaccinationStatus status ->
+            case status of
+                StatusBehind ->
+                    { english = "Behind"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusDone ->
+                    { english = "Done"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusUpToDate ->
+                    { english = "Up To Date"
+                    , kinyarwanda = Nothing
+                    }
 
         VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->
             let

@@ -627,8 +627,8 @@ generateSuggestedVaccinations currentDate isChw assembled =
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> Bool -> Person -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate isChw person vaccinationProgress =
+generateFutureVaccinationsData : NominalDate -> Person -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate person vaccinationProgress =
     List.map
         (\vaccineType ->
             let
@@ -2055,7 +2055,7 @@ generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> M
 generateNextDateForImmunisationVisit currentDate isChw assembled db =
     let
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate isChw assembled.person assembled.vaccinationProgress
+            generateFutureVaccinationsData currentDate assembled.person assembled.vaccinationProgress
 
         futureVaccines =
             List.map Tuple.first futureVaccinationsData
