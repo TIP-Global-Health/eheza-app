@@ -8,10 +8,10 @@ import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortEncounterTuplesDesc, sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
-import Backend.WellChildEncounter.Model exposing (ecdMilestoneWarnings, headCircumferenceWarnings)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings, headCircumferenceWarnings)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -245,7 +245,7 @@ viewDiagnosisPane language currentDate id db model assembled =
                 , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
                 ]
 
-        ( label, priorDiagniosisButton, selectedEntries ) =
+        ( label, priorDiagniosisButton ) =
             case model.diagnosisMode of
                 ModeActiveDiagnosis ->
                     ( Translate.ActiveDiagnosis
@@ -256,13 +256,23 @@ viewDiagnosisPane language currentDate id db model assembled =
                             ]
                             [ text <| translate language Translate.ReviewPriorDiagnosis ]
                         ]
-                    , activeIllnesses
                     )
 
                 ModeCompletedDiagnosis ->
                     ( Translate.PriorDiagnosis
                     , emptyNode
-                    , completedIllnesses
+                    )
+
+        ( selectedDiagnosisEntries, selectedWarningEntries ) =
+            case model.diagnosisMode of
+                ModeActiveDiagnosis ->
+                    ( activeIllnesses
+                    , activeWarnings
+                    )
+
+                ModeCompletedDiagnosis ->
+                    ( completedIllnesses
+                    , completedWarnings
                     )
 
         wellChildEncounters =
@@ -270,13 +280,33 @@ viewDiagnosisPane language currentDate id db model assembled =
                 -- Sort DESC
                 |> List.sortWith sortEncounterTuplesDesc
 
+        allWarnings =
+            List.filterMap
+                (\( _, encounter ) ->
+                    let
+                        warnings =
+                            EverySet.toList encounter.encounterWarnings
+                                |> List.filter
+                                    (\warning ->
+                                        not (List.member warning [ NoECDMilstoneWarning, NoHeadCircumferenceWarning, NoEncounterWarnings ])
+                                    )
+                    in
+                    if List.isEmpty warnings then
+                        Nothing
+
+                    else
+                        Just <| List.map (\warning -> ( encounter.startDate, encounter.encounterType, warning )) warnings
+                )
+                wellChildEncounters
+                |> List.concat
+
         lastECDActivityDate =
-            lastEncounterWithWarningFromWarningsSetOn ecdMilestoneWarnings
+            dateOfLastEncounterWithWarningFrom ecdMilestoneWarnings
 
         lastHeadCircumferenceActivityDate =
-            lastEncounterWithWarningFromWarningsSetOn headCircumferenceWarnings
+            dateOfLastEncounterWithWarningFrom headCircumferenceWarnings
 
-        lastEncounterWithWarningFromWarningsSetOn warningsSet =
+        dateOfLastEncounterWithWarningFrom warningsSet =
             List.filterMap
                 (\( _, encounter ) ->
                     if List.any (\warning -> EverySet.member warning encounter.encounterWarnings) warningsSet then
@@ -288,17 +318,36 @@ viewDiagnosisPane language currentDate id db model assembled =
                 wellChildEncounters
                 |> List.head
 
-        _ =
-            Debug.log "wellChildEncounters" wellChildEncounters
+        ( activeWarnings, completedWarnings ) =
+            List.partition
+                (\( date, _, warning ) ->
+                    if List.member warning ecdMilestoneWarnings then
+                        Maybe.map (\lastAtivityDate -> Date.compare date lastAtivityDate == EQ) lastECDActivityDate
+                            |> Maybe.withDefault True
+
+                    else
+                        Maybe.map (\lastAtivityDate -> Date.compare date lastAtivityDate == EQ) lastHeadCircumferenceActivityDate
+                            |> Maybe.withDefault True
+                )
+                allWarnings
 
         _ =
-            Debug.log "lastECDActivityDate" lastECDActivityDate
+            Debug.log "activeWarnings" activeWarnings
 
         _ =
-            Debug.log "lastHeadCircumferenceActivityDate" lastHeadCircumferenceActivityDate
+            Debug.log "completedWarnings" completedWarnings
 
         entries =
-            List.map (Tuple.first >> viewDaignosisEntry language id db) selectedEntries
+            (daignosisEntries ++ warningEntries)
+                |> List.sortWith sortTuplesByDateDesc
+                |> List.map Tuple.second
+
+        daignosisEntries =
+            List.map (Tuple.first >> viewDaignosisEntry language id db) selectedDiagnosisEntries
+                |> Maybe.Extra.values
+
+        warningEntries =
+            List.map (viewWarningEntry language) selectedWarningEntries
     in
     div [ class "pane diagnosis" ]
         [ viewPaneHeading language label
@@ -309,7 +358,7 @@ viewDiagnosisPane language currentDate id db model assembled =
         ]
 
 
-viewDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Html Msg
+viewDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe ( NominalDate, Html Msg )
 viewDaignosisEntry language id db participantId =
     let
         encounters =
@@ -324,7 +373,8 @@ viewDaignosisEntry language id db participantId =
     in
     Maybe.map2
         (\( date, diagnosis ) lastEncounterId ->
-            div [ class "entry diagnosis" ]
+            ( date
+            , div [ class "entry diagnosis" ]
                 [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                 , div [ class "cell date" ] [ text <| formatDDMMYY date ]
                 , div
@@ -338,10 +388,20 @@ viewDaignosisEntry language id db participantId =
                     ]
                     []
                 ]
+            )
         )
         diagnosisData
         maybeLastEncounterId
-        |> Maybe.withDefault emptyNode
+
+
+viewWarningEntry : Language -> ( NominalDate, WellChildEncounterType, EncounterWarning ) -> ( NominalDate, Html Msg )
+viewWarningEntry language ( date, encounterType, warning ) =
+    ( date
+    , div [ class "entry diagnosis" ]
+        [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning ]
+        , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+        ]
+    )
 
 
 viewVaccinationHistoryPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg

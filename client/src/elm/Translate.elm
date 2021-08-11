@@ -57,7 +57,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -499,6 +499,7 @@ type TranslationId
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterTypeFollowUpLabel IndividualEncounterType
+    | EncounterWarningForDiagnosisPane EncounterWarning
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
@@ -3377,6 +3378,33 @@ translationSet trans =
 
                 WellChildEncounter ->
                     { english = "Standard Pediatric Visit Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+        EncounterWarningForDiagnosisPane warning ->
+            case warning of
+                WarningECDMilestoneBehind ->
+                    { english = "Missed ECD Milestone"
+                    , kinyarwanda = Nothing
+                    }
+
+                WarningECDMilestoneReferToSpecialist ->
+                    { english = "Missed ECD Milestone"
+                    , kinyarwanda = Nothing
+                    }
+
+                WarningHeadCircumferenceMicrocephaly ->
+                    { english = "Microcephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                WarningHeadCircumferenceMacrocephaly ->
+                    { english = "Macrocephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
