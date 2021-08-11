@@ -984,6 +984,44 @@ function hedley_well_child_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-well_child_encounter-field_encounter_warnings'.
+  $field_instances['node-well_child_encounter-field_encounter_warnings'] = array(
+    'bundle' => 'well_child_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_encounter_warnings',
+    'label' => 'Encounter warnings',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-well_child_encounter-field_individual_participant'.
   $field_instances['node-well_child_encounter-field_individual_participant'] = array(
     'bundle' => 'well_child_encounter',
@@ -1124,7 +1162,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 6,
+      'weight' => 7,
     ),
   );
 
@@ -1164,7 +1202,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -8350,6 +8388,7 @@ function hedley_well_child_field_default_field_instances() {
   t('Delivery Complications');
   t('ECD Signs');
   t('Encounter notes');
+  t('Encounter warnings');
   t('Expected date concluded');
   t('Follow up options');
   t('HPV Vaccination Date');
