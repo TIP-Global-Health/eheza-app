@@ -13,6 +13,7 @@ type alias WellChildEncounter =
     , endDate : Maybe NominalDate
     , encounterType : WellChildEncounterType
     , encounterNote : EncounterNote
+    , encounterWarnings : EverySet EncounterWarning
     , shard : Maybe HealthCenterId
     }
 
@@ -24,6 +25,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
     , endDate = Nothing
     , encounterType = encounterType
     , encounterNote = NoEncounterNotes
+    , encounterWarnings = EverySet.singleton NoEncounterWarnings
     , shard = shard
     }
 
@@ -48,6 +50,25 @@ type WellChildEncounterType
 type EncounterNote
     = NoteTriggeredAcuteIllnessEncounter
     | NoEncounterNotes
+
+
+type
+    EncounterWarning
+    -- ECD related warnings.
+    = WarningECDMilestoneBehind
+    | WarningECDMilestoneReferToSpecialist
+      -- We use this option when ECD activity was completed,
+      -- and no warnings were generated.
+    | NoECDMilstoneWarning
+      -- Head Circumference related warnings.
+    | WarningHeadCircumferenceMicrocephaly
+    | WarningHeadCircumferenceMacrocephaly
+      -- We use this option when Head Circumference activity was
+      -- completed, and no warnings were generated.
+    | NoHeadCircumferenceWarning
+      -- This option is set when neither ECD nor
+      -- Head Circumference activity were completed.
+    | NoEncounterWarnings
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
