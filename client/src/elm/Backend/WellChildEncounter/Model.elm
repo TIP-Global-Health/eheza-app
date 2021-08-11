@@ -71,6 +71,16 @@ type
     | NoEncounterWarnings
 
 
+ecdMilestoneWarnings : List EncounterWarning
+ecdMilestoneWarnings =
+    [ WarningECDMilestoneBehind, WarningECDMilestoneReferToSpecialist, NoECDMilstoneWarning ]
+
+
+headCircumferenceWarnings : List EncounterWarning
+headCircumferenceWarnings =
+    [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly, NoECDMilstoneWarning ]
+
+
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
 to peform the updates indicated by the `Msg` type below.
 -}

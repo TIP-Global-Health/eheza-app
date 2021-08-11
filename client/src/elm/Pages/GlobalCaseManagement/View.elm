@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
@@ -559,7 +560,7 @@ generatePrenatalFollowUpEntryData language currentDate db ( participantId, perso
                     |> Maybe.map Dict.toList
                     |> Maybe.withDefault []
                     -- Sort DESC
-                    |> List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e2.startDate e1.startDate)
+                    |> List.sortWith sortEncounterTuplesDesc
 
             allChwEncountersWithIds =
                 List.filter (Tuple.second >> .encounterType >> (/=) NurseEncounter) allEncountersWithIds

@@ -56,12 +56,6 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                             warnings =
                                 EverySet.toList encounter.encounterWarnings
 
-                            ecdMilestoneWarnings =
-                                [ WarningECDMilestoneBehind, WarningECDMilestoneReferToSpecialist, NoECDMilstoneWarning ]
-
-                            headCircumferenceWarnings =
-                                [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly, NoECDMilstoneWarning ]
-
                             updatedWarnings =
                                 if List.member warning ecdMilestoneWarnings then
                                     List.filter (\item -> not (List.member item (NoEncounterWarnings :: ecdMilestoneWarnings))) warnings

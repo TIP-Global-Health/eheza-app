@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.PrenatalEncounter.Model
     exposing
         ( PrenatalEncounter
@@ -100,7 +101,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                                     |> RemoteData.map
                                         (Dict.toList
                                             >> -- Sort DESC
-                                               List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e2.startDate e1.startDate)
+                                               List.sortWith sortEncounterTuplesDesc
                                         )
                                     |> RemoteData.withDefault []
                            )

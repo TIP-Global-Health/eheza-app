@@ -8,8 +8,10 @@ import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortEncounterTuplesDesc)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.WellChildEncounter.Model exposing (ecdMilestoneWarnings, headCircumferenceWarnings)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -262,6 +264,38 @@ viewDiagnosisPane language currentDate id db model assembled =
                     , emptyNode
                     , completedIllnesses
                     )
+
+        wellChildEncounters =
+            getWellChildEncountersForParticipant db assembled.encounter.participant
+                -- Sort DESC
+                |> List.sortWith sortEncounterTuplesDesc
+
+        lastECDActivityDate =
+            lastEncounterWithWarningFromWarningsSetOn ecdMilestoneWarnings
+
+        lastHeadCircumferenceActivityDate =
+            lastEncounterWithWarningFromWarningsSetOn headCircumferenceWarnings
+
+        lastEncounterWithWarningFromWarningsSetOn warningsSet =
+            List.filterMap
+                (\( _, encounter ) ->
+                    if List.any (\warning -> EverySet.member warning encounter.encounterWarnings) warningsSet then
+                        Just encounter.startDate
+
+                    else
+                        Nothing
+                )
+                wellChildEncounters
+                |> List.head
+
+        _ =
+            Debug.log "wellChildEncounters" wellChildEncounters
+
+        _ =
+            Debug.log "lastECDActivityDate" lastECDActivityDate
+
+        _ =
+            Debug.log "lastHeadCircumferenceActivityDate" lastHeadCircumferenceActivityDate
 
         entries =
             List.map (Tuple.first >> viewDaignosisEntry language id db) selectedEntries
