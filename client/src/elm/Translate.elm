@@ -499,7 +499,7 @@ type TranslationId
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterTypeFollowUpLabel IndividualEncounterType
-    | EncounterWarningForDiagnosisPane EncounterWarning
+    | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
@@ -1016,6 +1016,7 @@ type TranslationId
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
     | WellChildEncounterType WellChildEncounterType
+    | WellChildEncounterTypeForDiagnosisPane WellChildEncounterType
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
@@ -3381,15 +3382,23 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        EncounterWarningForDiagnosisPane warning ->
+        EncounterWarningForDiagnosisPane warning suffix ->
+            let
+                suffix_ =
+                    if not (String.isEmpty suffix) then
+                        " - " ++ suffix
+
+                    else
+                        ""
+            in
             case warning of
                 WarningECDMilestoneBehind ->
-                    { english = "Missed ECD Milestone"
+                    { english = "Missed ECD Milestone" ++ suffix_
                     , kinyarwanda = Nothing
                     }
 
                 WarningECDMilestoneReferToSpecialist ->
-                    { english = "Missed ECD Milestone"
+                    { english = "Missed ECD Milestone" ++ suffix_
                     , kinyarwanda = Nothing
                     }
 
@@ -8247,6 +8256,43 @@ translationSet trans =
 
                 PediatricCareRecurrent ->
                     { english = "Recurrent visit (from 2 years)"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildEncounterTypeForDiagnosisPane encounterType ->
+            case encounterType of
+                PediatricCare14Weeks ->
+                    { english = "3.5 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare6Months ->
+                    { english = "6 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare9Months ->
+                    { english = "9 Mon"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare12Months ->
+                    { english = "12 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare15Months ->
+                    { english = "15 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                PediatricCare18Months ->
+                    { english = "18 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 

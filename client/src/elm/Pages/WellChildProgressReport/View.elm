@@ -402,9 +402,13 @@ generatePartitionedWarnings db assembled =
 
 viewWarningEntry : Language -> ( NominalDate, WellChildEncounterType, EncounterWarning ) -> ( NominalDate, Html Msg )
 viewWarningEntry language ( date, encounterType, warning ) =
+    let
+        encounterTypeForDaignosisPane =
+            translate language <| Translate.WellChildEncounterTypeForDiagnosisPane encounterType
+    in
     ( date
     , div [ class "entry diagnosis" ]
-        [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning ]
+        [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning encounterTypeForDaignosisPane ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]
         ]
     )
