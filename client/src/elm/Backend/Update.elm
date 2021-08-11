@@ -57,7 +57,7 @@ import Backend.Utils
         )
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Backend.WellChildActivity.Model
-import Backend.WellChildEncounter.Model exposing (emptyWellChildEncounter)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
 import EverySet
@@ -1140,25 +1140,41 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                                             )
                                                                 )
                                                             |> Maybe.withDefault []
+
+                                                    warning =
+                                                        if List.member Pages.WellChildEncounter.Model.ReferToSpecialist warningsList then
+                                                            WarningECDMilestoneReferToSpecialist
+
+                                                        else if List.member Pages.WellChildEncounter.Model.ChildBehind warningsList then
+                                                            WarningECDMilestoneBehind
+
+                                                        else
+                                                            NoECDMilstoneWarning
+
+                                                    setPopUpStateMsg popupType =
+                                                        Pages.WellChildEncounter.Model.PopupECD popupType
+                                                            |> Just
+                                                            |> Pages.WellChildEncounter.Model.SetWarningPopupState
+                                                            |> App.Model.MsgPageWellChildEncounter id
+                                                            |> App.Model.MsgLoggedIn
+
+                                                    popUpMsg =
+                                                        case warning of
+                                                            WarningECDMilestoneReferToSpecialist ->
+                                                                [ setPopUpStateMsg Pages.WellChildEncounter.Model.ReferToSpecialist ]
+
+                                                            WarningECDMilestoneBehind ->
+                                                                [ setPopUpStateMsg Pages.WellChildEncounter.Model.ChildBehind ]
+
+                                                            _ ->
+                                                                []
+
+                                                    setEncounterWarningMsg =
+                                                        Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
+                                                            |> Backend.Model.MsgWellChildEncounter id
+                                                            |> App.Model.MsgIndexedDb
                                                 in
-                                                if List.member Pages.WellChildEncounter.Model.ReferToSpecialist warningsList then
-                                                    Pages.WellChildEncounter.Model.PopupECD Pages.WellChildEncounter.Model.ReferToSpecialist
-                                                        |> Just
-                                                        |> Pages.WellChildEncounter.Model.SetWarningPopupState
-                                                        |> App.Model.MsgPageWellChildEncounter id
-                                                        |> App.Model.MsgLoggedIn
-                                                        |> List.singleton
-
-                                                else if List.member Pages.WellChildEncounter.Model.ChildBehind warningsList then
-                                                    Pages.WellChildEncounter.Model.PopupECD Pages.WellChildEncounter.Model.ChildBehind
-                                                        |> Just
-                                                        |> Pages.WellChildEncounter.Model.SetWarningPopupState
-                                                        |> App.Model.MsgPageWellChildEncounter id
-                                                        |> App.Model.MsgLoggedIn
-                                                        |> List.singleton
-
-                                                else
-                                                    []
+                                                setEncounterWarningMsg :: popUpMsg
                                             )
                                 )
                             |> Maybe.withDefault []
