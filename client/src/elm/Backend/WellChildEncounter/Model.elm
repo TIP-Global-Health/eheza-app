@@ -127,9 +127,9 @@ emptyModel =
 
 type Msg
     = CloseWellChildEncounter
-    | HandleClosedWellChildEncounter (WebData ())
-    | MarkWellChildEncounterAsAITrigger
-    | HandleMarkedWellChildEncounterAsAITrigger (WebData ())
+    | HandleWellChildEncounterEdited (WebData ())
+    | SetWellChildEncounterNote EncounterNote
+    | SetWellChildEncounterWarning EncounterWarning
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
     | HandleSavedPregnancySummary (WebData ())
     | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)
