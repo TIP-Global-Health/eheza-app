@@ -275,67 +275,8 @@ viewDiagnosisPane language currentDate id db model assembled =
                     , completedWarnings
                     )
 
-        wellChildEncounters =
-            getWellChildEncountersForParticipant db assembled.encounter.participant
-                -- Sort DESC
-                |> List.sortWith sortEncounterTuplesDesc
-
-        allWarnings =
-            List.filterMap
-                (\( _, encounter ) ->
-                    let
-                        warnings =
-                            EverySet.toList encounter.encounterWarnings
-                                |> List.filter
-                                    (\warning ->
-                                        not (List.member warning [ NoECDMilstoneWarning, NoHeadCircumferenceWarning, NoEncounterWarnings ])
-                                    )
-                    in
-                    if List.isEmpty warnings then
-                        Nothing
-
-                    else
-                        Just <| List.map (\warning -> ( encounter.startDate, encounter.encounterType, warning )) warnings
-                )
-                wellChildEncounters
-                |> List.concat
-
-        lastECDActivityDate =
-            dateOfLastEncounterWithWarningFrom ecdMilestoneWarnings
-
-        lastHeadCircumferenceActivityDate =
-            dateOfLastEncounterWithWarningFrom headCircumferenceWarnings
-
-        dateOfLastEncounterWithWarningFrom warningsSet =
-            List.filterMap
-                (\( _, encounter ) ->
-                    if List.any (\warning -> EverySet.member warning encounter.encounterWarnings) warningsSet then
-                        Just encounter.startDate
-
-                    else
-                        Nothing
-                )
-                wellChildEncounters
-                |> List.head
-
         ( activeWarnings, completedWarnings ) =
-            List.partition
-                (\( date, _, warning ) ->
-                    if List.member warning ecdMilestoneWarnings then
-                        Maybe.map (\lastAtivityDate -> Date.compare date lastAtivityDate == EQ) lastECDActivityDate
-                            |> Maybe.withDefault True
-
-                    else
-                        Maybe.map (\lastAtivityDate -> Date.compare date lastAtivityDate == EQ) lastHeadCircumferenceActivityDate
-                            |> Maybe.withDefault True
-                )
-                allWarnings
-
-        _ =
-            Debug.log "activeWarnings" activeWarnings
-
-        _ =
-            Debug.log "completedWarnings" completedWarnings
+            generatePartitionedWarnings db assembled
 
         entries =
             (daignosisEntries ++ warningEntries)
@@ -392,6 +333,71 @@ viewDaignosisEntry language id db participantId =
         )
         diagnosisData
         maybeLastEncounterId
+
+
+generatePartitionedWarnings :
+    ModelIndexedDb
+    -> AssembledData
+    ->
+        ( List ( NominalDate, WellChildEncounterType, EncounterWarning )
+        , List ( NominalDate, WellChildEncounterType, EncounterWarning )
+        )
+generatePartitionedWarnings db assembled =
+    let
+        wellChildEncounters =
+            getWellChildEncountersForParticipant db assembled.encounter.participant
+                -- Sort DESC
+                |> List.sortWith sortEncounterTuplesDesc
+
+        allWarnings =
+            List.filterMap
+                (\( _, encounter ) ->
+                    let
+                        warnings =
+                            EverySet.toList encounter.encounterWarnings
+                                |> List.filter
+                                    (\warning ->
+                                        not (List.member warning [ NoECDMilstoneWarning, NoHeadCircumferenceWarning, NoEncounterWarnings ])
+                                    )
+                    in
+                    if List.isEmpty warnings then
+                        Nothing
+
+                    else
+                        Just <| List.map (\warning -> ( encounter.startDate, encounter.encounterType, warning )) warnings
+                )
+                wellChildEncounters
+                |> List.concat
+
+        lastECDActivityDate =
+            dateOfLastEncounterWithWarningFrom ecdMilestoneWarnings
+
+        lastHeadCircumferenceActivityDate =
+            dateOfLastEncounterWithWarningFrom headCircumferenceWarnings
+
+        dateOfLastEncounterWithWarningFrom warningsSet =
+            List.filterMap
+                (\( _, encounter ) ->
+                    if List.any (\warning -> EverySet.member warning encounter.encounterWarnings) warningsSet then
+                        Just encounter.startDate
+
+                    else
+                        Nothing
+                )
+                wellChildEncounters
+                |> List.head
+    in
+    List.partition
+        (\( date, _, warning ) ->
+            if List.member warning ecdMilestoneWarnings then
+                Maybe.map (\lastAtivityDate -> Date.compare date lastAtivityDate == EQ) lastECDActivityDate
+                    |> Maybe.withDefault True
+
+            else
+                Maybe.map (\lastAtivityDate -> Date.compare date lastAtivityDate == EQ) lastHeadCircumferenceActivityDate
+                    |> Maybe.withDefault True
+        )
+        allWarnings
 
 
 viewWarningEntry : Language -> ( NominalDate, WellChildEncounterType, EncounterWarning ) -> ( NominalDate, Html Msg )
