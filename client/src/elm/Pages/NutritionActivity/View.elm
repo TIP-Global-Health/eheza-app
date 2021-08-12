@@ -545,7 +545,7 @@ viewWeightContent language currentDate zscores assembled data previousValue =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewWeightForm language currentDate zscores assembled.person heightValue previousValue SetWeight form
+            viewWeightForm language currentDate zscores assembled.person heightValue previousValue True SetWeight form
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
@@ -564,10 +564,11 @@ viewWeightForm :
     -> Person
     -> Maybe HeightInCm
     -> Maybe Float
+    -> Bool
     -> (String -> msg)
     -> WeightForm
     -> List (Html msg)
-viewWeightForm language currentDate zscores person heightValue previousValue setWeightMsg form =
+viewWeightForm language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form =
     let
         activity =
             Weight
@@ -630,12 +631,13 @@ viewWeightForm language currentDate zscores person heightValue previousValue set
         , span [ class "sub header" ]
             [ text zScoreForAgeText ]
         ]
-    , div [ class "ui large header z-score height" ]
-        [ text <| translate language Translate.ZScoreWeightForHeight
-        , span [ class "sub header" ]
-            [ text zScoreForHeightText
+    , showIf showWeightForHeightZScore <|
+        div [ class "ui large header z-score height" ]
+            [ text <| translate language Translate.ZScoreWeightForHeight
+            , span [ class "sub header" ]
+                [ text zScoreForHeightText
+                ]
             ]
-        ]
     ]
 
 

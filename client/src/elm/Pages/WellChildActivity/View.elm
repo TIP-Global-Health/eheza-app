@@ -737,11 +737,14 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         heightValue =
                             assembled.measurements.height
                                 |> getMeasurementValueFunc
+
+                        showWeightForHeightZScore =
+                            not isChw
                     in
                     measurements.weight
                         |> getMeasurementValueFunc
                         |> weightFormWithDefault data.weightForm
-                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight SetWeight
+                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
 
                 Nothing ->
                     []
