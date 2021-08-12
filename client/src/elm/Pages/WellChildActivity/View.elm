@@ -935,15 +935,49 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 |> Maybe.withDefault []
 
         isVaccineCompleted ( vaccineType, doses ) =
-            List.all
-                (\dose ->
-                    (wasVaccineAdministered vaccineType dose == Just True)
-                        && wasDateSet vaccineType dose
-                )
-                doses
-                || List.any
-                    (\dose -> wasVaccineAdministered vaccineType dose == Just False)
-                    doses
+            let
+                allDosesAdministeredAndDateSet =
+                    List.all
+                        (\dose ->
+                            (wasVaccineAdministered vaccineType dose == Just True)
+                                && wasDateSet vaccineType dose
+                        )
+                        doses
+
+                doseWasNotAdministered =
+                    List.any
+                        (\dose -> wasVaccineAdministered vaccineType dose == Just False)
+                        doses
+
+                -- Since doses are given within interval, if there's a dose
+                -- that was given at date X, and X + interval is in future,
+                -- we know that next dose is not required, and vaccination
+                -- for this vaccine type is complete.
+                doseAdministeredOnDateWhichBlocksNextDose =
+                    List.any
+                        (\dose ->
+                            (wasVaccineAdministered vaccineType dose == Just True)
+                                && wasDateSet vaccineType dose
+                                && (getSetDate vaccineType dose
+                                        |> Maybe.map
+                                            (\setDate ->
+                                                let
+                                                    ( interval, unit ) =
+                                                        getIntervalForVaccine vaccineType
+
+                                                    nextDoseDate =
+                                                        Date.add unit interval setDate
+                                                in
+                                                Date.compare nextDoseDate currentDate == GT
+                                            )
+                                        |> Maybe.withDefault False
+                                   )
+                        )
+                        doses
+            in
+            allDosesAdministeredAndDateSet
+                || doseWasNotAdministered
+                || doseAdministeredOnDateWhichBlocksNextDose
 
         ( dosesCompleted, dosesToProcess ) =
             vaccineToProcess
@@ -989,6 +1023,11 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
             Dict.get vaccineType form.suggestedVaccines
                 |> Maybe.map (EverySet.member dose)
                 |> Maybe.withDefault False
+
+        getSetDate vaccineType dose =
+            Dict.get vaccineType form.vaccinationDates
+                |> Maybe.andThen (Dict.get dose)
+                |> Maybe.Extra.join
 
         wasDateSet vaccineType dose =
             Dict.get vaccineType form.vaccinationDates
@@ -1045,6 +1084,8 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                     }
                 )
                 suggested
+                -- Filter  out doses that are planned for future.
+                |> List.filter (\item -> not (Date.compare item.startDate currentDate == GT))
 
         catchUpRequired =
             form.catchUpRequired == Just True
