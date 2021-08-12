@@ -1432,19 +1432,39 @@ expectedECDSignsByAge currentDate assembled =
 groupedECDSigns : Int -> AssembledData -> List (List ECDSign)
 groupedECDSigns ageMonths assembled =
     let
-        sixMonthsAssessmentPerformed =
-            sixMonthsECDAssessmentPerformed assembled
+        ageMonthsAtLastAssessment =
+            ageInMonthsAtLastAssessment assembled
 
         ( from5Weeks, from13Weeks ) =
-            if sixMonthsAssessmentPerformed then
-                ( [], [] )
+            Maybe.map
+                (\ageMonthsLastAssessment ->
+                    if ageMonthsLastAssessment >= 6 then
+                        ( [], [] )
 
-            else
-                ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
+                    else
+                        ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
+                )
+                ageMonthsAtLastAssessment
+                |> Maybe.withDefault ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
+
+        ecdSigns6To12Months =
+            Maybe.map
+                (\ageMonthsLastAssessment ->
+                    if ageMonthsLastAssessment > 12 then
+                        []
+
+                    else if ageMonthsLastAssessment >= 9 then
+                        ecdSigns6To12MonthsMajors
+
+                    else
+                        ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
+                )
+                ageMonthsAtLastAssessment
+                |> Maybe.withDefault (ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors)
     in
     [ from5Weeks
     , from13Weeks
-    , ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed
+    , ecdSigns6To12Months
     , ecdSignsFrom15Months
     , ecdSignsFrom18Months
     , ecdSignsFrom2Years
@@ -1453,8 +1473,8 @@ groupedECDSigns ageMonths assembled =
     ]
 
 
-sixMonthsECDAssessmentPerformed : AssembledData -> Bool
-sixMonthsECDAssessmentPerformed assembled =
+ageInMonthsAtLastAssessment : AssembledData -> Maybe Int
+ageInMonthsAtLastAssessment assembled =
     assembled.person.birthDate
         |> Maybe.andThen
             (\birthDate ->
@@ -1472,10 +1492,9 @@ sixMonthsECDAssessmentPerformed assembled =
                             |> List.head
                 in
                 Maybe.map
-                    (\assessmentDate -> Date.diff Months birthDate assessmentDate >= 6)
+                    (Date.diff Months birthDate)
                     lastECDAssessmentDate
             )
-        |> Maybe.withDefault False
 
 
 ecdSignsFrom5Weeks : List ECDSign
@@ -1491,18 +1510,6 @@ ecdSignsFrom13Weeks =
     , Smile
     , RollSideways
     ]
-
-
-ecdSigns6To12Months : Int -> Bool -> List ECDSign
-ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed =
-    if ageMonths > 12 then
-        []
-
-    else if sixMonthsAssessmentPerformed then
-        ecdSigns6To12MonthsMajors
-
-    else
-        ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
 
 
 ecdSigns6To12MonthsMinors : List ECDSign
