@@ -2074,7 +2074,7 @@ viewMedicationContent language currentDate isChw assembled data =
             assembled.measurements
 
         tasks =
-            allMedicationTasks
+            medicationTasks
                 |> List.filter (expectMedicationTask currentDate isChw assembled)
 
         activeTask =

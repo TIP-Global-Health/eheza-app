@@ -78,7 +78,7 @@ activityCompleted currentDate zscores isChw assembled db activity =
 
         WellChildMedication ->
             (not <| activityExpected WellChildMedication)
-                || (isJust measurements.mebendezole && isJust measurements.vitaminA)
+                || List.all (medicationTaskCompleted currentDate isChw assembled) medicationTasks
 
         WellChildVaccinationHistory ->
             (not <| activityExpected WellChildVaccinationHistory) || isJust measurements.vaccinationHistory
@@ -133,7 +133,7 @@ expectActivity currentDate zscores isChw assembled db activity =
                 False
 
             else
-                allMedicationTasks
+                medicationTasks
                     |> List.filter (expectMedicationTask currentDate isChw assembled)
                     |> List.isEmpty
                     |> not
@@ -1576,6 +1576,26 @@ ecdSignsFrom4Years =
     ]
 
 
+medicationTaskCompleted : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted currentDate isChw assembled task =
+    let
+        measurements =
+            assembled.measurements
+
+        taskExpected =
+            expectMedicationTask currentDate isChw assembled
+    in
+    case task of
+        TaskAlbendazole ->
+            (not <| taskExpected TaskAlbendazole) || isJust measurements.albendazole
+
+        TaskMebendezole ->
+            (not <| taskExpected TaskMebendezole) || isJust measurements.mebendezole
+
+        TaskVitaminA ->
+            (not <| taskExpected TaskVitaminA) || isJust measurements.vitaminA
+
+
 expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
 expectMedicationTask currentDate isChw assembled task =
     let
@@ -1606,7 +1626,7 @@ nextMedicationAdmnistrationData currentDate person measurements =
             List.filterMap .mebendezole measurements
                 |> latestAdministrationDateForMedicine
     in
-    List.filter (expectMedicationByAge currentDate person) allMedicationTasks
+    List.filter (expectMedicationByAge currentDate person) medicationTasks
         |> List.map
             (\medication ->
                 case medication of
