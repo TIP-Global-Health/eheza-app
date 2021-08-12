@@ -686,7 +686,22 @@ update currentDate id db msg model =
                     Dict.get type_ form.administeredVaccines
                         |> Maybe.map
                             (\doses ->
-                                Dict.insert type_ (Dict.insert dose (Just vaccineAdministered) doses) form.administeredVaccines
+                                let
+                                    updatedDoses_ =
+                                        Dict.insert dose (Just vaccineAdministered) doses
+
+                                    updatedDoses =
+                                        if vaccineAdministered then
+                                            updatedDoses_
+
+                                        else
+                                            Dict.filter
+                                                (\dose_ _ ->
+                                                    vaccineDoseToComparable dose_ <= vaccineDoseToComparable dose
+                                                )
+                                                updatedDoses_
+                                in
+                                Dict.insert type_ updatedDoses form.administeredVaccines
                             )
                         |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just vaccineAdministered)) form.administeredVaccines)
 
@@ -700,7 +715,9 @@ update currentDate id db msg model =
                                 Dict.get type_ form.vaccinationDates
                                     |> Maybe.map
                                         (\datesData ->
-                                            ( Dict.remove dose datesData, True )
+                                            ( Dict.filter (\dose_ _ -> vaccineDoseToComparable dose_ < vaccineDoseToComparable dose) datesData
+                                            , True
+                                            )
                                         )
                         in
                         Maybe.map

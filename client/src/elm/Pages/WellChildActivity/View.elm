@@ -1073,14 +1073,11 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                         Maybe.Extra.or dateRecorded dateFromHistory
                                     )
                     in
-                    { type_ = vaccineType
+                    { vaccineType = vaccineType
                     , dose = dose
 
                     -- The date from which this vaccine dose can be administered.
                     , startDate = startDate
-
-                    -- Only last 2 questions will have active inputs
-                    , active = index + 2 >= totalItemsforView
                     }
                 )
                 suggested
@@ -1096,41 +1093,74 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
 
             else
                 itemsForView
-                    |> List.map
-                        (\item ->
+                    |> List.indexedMap
+                        (\index item ->
                             let
-                                type_ =
-                                    item.type_
+                                vaccineType =
+                                    item.vaccineType
 
                                 dose =
                                     item.dose
 
+                                itemActive =
+                                    itemActiveByPrev && itemActiveByNext
+
+                                itemActiveByPrev =
+                                    List.Extra.getAt (index - 1) itemsForView
+                                        |> Maybe.map
+                                            (\prevItem ->
+                                                -- Either previous item is for another vaccine, or
+                                                -- it's administered field is not set to False.
+                                                (prevItem.vaccineType /= vaccineType)
+                                                    || (wasVaccineAdministered prevItem.vaccineType prevItem.dose /= Just False)
+                                            )
+                                        |> Maybe.withDefault True
+
+                                itemActiveByNext =
+                                    List.Extra.getAt (index + 1) itemsForView
+                                        |> Maybe.map
+                                            (\nextItem ->
+                                                -- Either this item is last for vaccine, or
+                                                -- next item is last for vaccine.
+                                                (nextItem.vaccineType /= vaccineType)
+                                                    || subsequentIsLastForVaccine (index + 1) vaccineType
+                                            )
+                                        |> Maybe.withDefault True
+
+                                subsequentIsLastForVaccine index_ vaccineType_ =
+                                    List.Extra.getAt (index_ + 1) itemsForView
+                                        |> Maybe.map
+                                            (\nextItem_ ->
+                                                nextItem_.vaccineType /= vaccineType_
+                                            )
+                                        |> Maybe.withDefault True
+
                                 setBoolInputAction =
-                                    if item.active then
-                                        SetVaccinationHistoryBoolInput type_ dose
+                                    if itemActive then
+                                        SetVaccinationHistoryBoolInput vaccineType dose
 
                                     else
                                         always NoOp
 
                                 vaccineAdministered =
-                                    wasVaccineAdministered type_ dose
+                                    wasVaccineAdministered vaccineType dose
 
                                 ( derrivedInput, derrivedTask ) =
                                     if vaccineAdministered == Just True then
                                         let
                                             selectorState =
-                                                Dict.get ( type_, dose ) form.dateSelectorsState
+                                                Dict.get ( vaccineType, dose ) form.dateSelectorsState
                                                     |> Maybe.withDefault False
 
                                             vaccinationDate =
-                                                Dict.get type_ form.vaccinationDates
+                                                Dict.get vaccineType form.vaccinationDates
                                                     |> Maybe.andThen (Dict.get dose)
                                                     |> Maybe.withDefault Nothing
 
                                             ( setDateAction, toggleAction ) =
-                                                if item.active then
-                                                    ( SetVaccinationHistoryDateInput type_ dose
-                                                    , ToggleVaccinationHistoryDateSelectorInput type_ dose
+                                                if itemActive then
+                                                    ( SetVaccinationHistoryDateInput vaccineType dose
+                                                    , ToggleVaccinationHistoryDateSelectorInput vaccineType dose
                                                     )
 
                                                 else
@@ -1153,7 +1183,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                     else
                                         ( [], Nothing )
                             in
-                            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion type_ dose False False
+                            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion vaccineType dose False False
                               , viewBoolInput
                                     language
                                     vaccineAdministered
