@@ -426,7 +426,7 @@ update currentDate id db msg model =
                         Nothing
 
                 updatedForm =
-                    { form | headCircumference = headCircumference, headCircumferenceDirty = isJust headCircumference, measurementNotTaken = Just notTaken }
+                    { form | headCircumference = headCircumference, headCircumferenceDirty = True, measurementNotTaken = Just notTaken }
 
                 updatedData =
                     model.nutritionAssessmentData
