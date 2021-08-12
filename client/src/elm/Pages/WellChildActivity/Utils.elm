@@ -257,6 +257,12 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
 expectNutritionAssessmentTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
 expectNutritionAssessmentTask currentDate isChw data db task =
     case task of
+        -- Show for children that are up to 3 years old.
+        TaskHeadCircumference ->
+            ageInMonths currentDate data.person
+                |> Maybe.map (\ageMonths -> ageMonths < 36)
+                |> Maybe.withDefault False
+
         -- Show for children that are at least 6 month old.
         TaskMuac ->
             ageInMonths currentDate data.person
