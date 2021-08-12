@@ -1135,13 +1135,15 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
 
                 reasonForNotSendingToHCInput =
                     if not sentToHealthCenter then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
-                            []
-                            form.reasonForNotSendingToHC
-                            setReasonForNotSendingToHCMsg
-                            Translate.ReasonForNotSendingToHC
+                        [ div [ class "why-not" ]
+                            [ viewQuestionLabel language Translate.WhyNot
+                            , viewCheckBoxSelectInput language
+                                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                                []
+                                form.reasonForNotSendingToHC
+                                setReasonForNotSendingToHCMsg
+                                Translate.ReasonForNotSendingToHC
+                            ]
                         ]
 
                     else

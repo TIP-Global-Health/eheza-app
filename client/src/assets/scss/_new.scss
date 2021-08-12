@@ -100,6 +100,17 @@
       display: flex;
     }
   }
+
+  .why-not {
+    margin-bottom: 30px;
+    margin-left: 20px;
+
+    .ui.checkbox.activity {
+      margin-bottom: 15px;
+      margin-top: 0;
+    }
+
+  }
 }
 
 @mixin recommendation-label {
