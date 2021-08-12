@@ -29,7 +29,7 @@ type Msg
     | SetActivePage Page
     | SetSelectedTab Tab
     | SetWarningPopupState (Maybe WarningPopupType)
-    | NavigateToAcuteIllnessParticipantPage PersonId WellChildEncounterId
+    | TriggerAcuteIllnessEncounter PersonId WellChildEncounterId
     | NavigateToActivity WellChildEncounterId WellChildActivity
 
 
@@ -55,8 +55,12 @@ type alias AssembledData =
     , person : Person
     , measurements : WellChildMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-    , vaccinationHistory : Dict VaccineType (Dict VaccineDose NominalDate)
+    , vaccinationHistory : VaccinationProgressDict
 
     -- Similar to vaccinationHistory, but includes immunisation data of current encounter.
-    , vaccinationProgress : Dict VaccineType (Dict VaccineDose NominalDate)
+    , vaccinationProgress : VaccinationProgressDict
     }
+
+
+type alias VaccinationProgressDict =
+    Dict VaccineType (Dict VaccineDose NominalDate)

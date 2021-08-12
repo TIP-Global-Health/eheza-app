@@ -57,7 +57,7 @@ import Pages.Utils
         )
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
-import Pages.WellChildEncounter.Model exposing (AssembledData)
+import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -167,7 +167,7 @@ headCircumferencePopup language ( personId, saved, nextTask_ ) message =
             ]
 
 
-vaccinationHistoryPopup : Language -> NominalDate -> Dict VaccineType (Dict VaccineDose NominalDate) -> Maybe (Html Msg)
+vaccinationHistoryPopup : Language -> NominalDate -> VaccinationProgressDict -> Maybe (Html Msg)
 vaccinationHistoryPopup language currentDate vaccinationHistory =
     let
         entries =
@@ -1227,7 +1227,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
             )
 
         suggestedVaccines =
-            generateSuggestedVaccines currentDate isChw assembled
+            generateSuggestedVaccinations currentDate isChw assembled
 
         inputsAndTasks =
             List.map (inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form) suggestedVaccines
@@ -1249,7 +1249,36 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
             List.filterMap .vaccinationNoteTask tasks
 
         futureVaccines =
-            generateFutureVaccines currentDate isChw assembled
+            List.filterMap
+                (\( vaccineType, dose ) ->
+                    if doseAdministrationQuestionAnswered vaccineType form then
+                        case getVaccinationDateFromImmunisationForm vaccineType form of
+                            Just administationDate ->
+                                -- If the date was set, we show the date for the next dose.
+                                Just ( vaccineType, nextVaccinationDataForVaccine administationDate dose vaccineType )
+
+                            Nothing ->
+                                -- Otherwise, we pull last dose administration date from vaccination history.
+                                Dict.get vaccineType assembled.vaccinationHistory
+                                    |> Maybe.andThen
+                                        (Dict.toList
+                                            >> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+                                            >> List.reverse
+                                            >> List.head
+                                            >> Maybe.map Tuple.second
+                                        )
+                                    |> Maybe.map
+                                        (\lastAdministationDate ->
+                                            Just ( vaccineType, nextVaccinationDataForVaccine lastAdministationDate dose vaccineType )
+                                        )
+                                    |> Maybe.withDefault (Just ( vaccineType, Just ( VaccineDoseFirst, currentDate ) ))
+
+                    else
+                        -- Question(s) at form are not yet completed, so we do not show an entry.
+                        Nothing
+                )
+                -- We only show next doses due date for vaccines offered today.
+                suggestedVaccines
                 |> List.map viewNextDoseForVaccine
 
         viewNextDoseForVaccine ( vaccineType, nextVaccinationData ) =

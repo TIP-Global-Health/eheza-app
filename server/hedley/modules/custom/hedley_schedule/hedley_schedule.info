@@ -22,6 +22,7 @@ features[field_base][] = field_adult_activities
 features[field_base][] = field_ai_encounter_type
 features[field_base][] = field_closed
 features[field_base][] = field_date_concluded
+features[field_base][] = field_encounter_notes
 features[field_base][] = field_encounter_type
 features[field_base][] = field_expected
 features[field_base][] = field_expected_date_concluded

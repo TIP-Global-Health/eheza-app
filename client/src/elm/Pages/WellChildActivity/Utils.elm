@@ -18,7 +18,7 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCompleted, taskCompleted, valueConsideringIsDirtyField)
 import Pages.WellChildActivity.Model exposing (..)
-import Pages.WellChildEncounter.Model exposing (AssembledData)
+import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import RemoteData exposing (RemoteData(..))
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
@@ -115,7 +115,7 @@ expectActivity currentDate zscores isChw assembled db activity =
         WellChildImmunisation ->
             let
                 suggestedVaccines =
-                    generateSuggestedVaccines currentDate isChw assembled
+                    generateSuggestedVaccinations currentDate isChw assembled
             in
             (not <| List.isEmpty suggestedVaccines) && activityCompleted currentDate zscores isChw assembled db WellChildVaccinationHistory
 
@@ -602,8 +602,8 @@ dangerSignsTasksCompletedFromTotal measurements data task =
             )
 
 
-generateSuggestedVaccines : NominalDate -> Bool -> AssembledData -> List ( VaccineType, VaccineDose )
-generateSuggestedVaccines currentDate isChw assembled =
+generateSuggestedVaccinations : NominalDate -> Bool -> AssembledData -> List ( VaccineType, VaccineDose )
+generateSuggestedVaccinations currentDate isChw assembled =
     if isChw then
         [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
 
@@ -624,31 +624,34 @@ generateSuggestedVaccines currentDate isChw assembled =
                 )
 
 
-generateFutureVaccines : NominalDate -> Bool -> AssembledData -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccines currentDate isChw assembled =
-    List.filter (expectVaccineForPerson currentDate assembled.person) allVaccineTypes
-        |> List.map
-            (\vaccineType ->
-                let
-                    nextVaccinationData =
-                        case latestVaccinationDataForVaccine assembled.vaccinationProgress vaccineType of
-                            Just ( lastDoseAdministered, lastDoseDate ) ->
-                                nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
+{-| For each type of vaccine, we generate next dose and administration date.
+If there's no need for future vaccination, Nothing is returned.
+-}
+generateFutureVaccinationsData : NominalDate -> Bool -> Person -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate isChw person vaccinationProgress =
+    List.map
+        (\vaccineType ->
+            let
+                nextVaccinationData =
+                    case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
+                        Just ( lastDoseAdministered, lastDoseDate ) ->
+                            nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
 
-                            Nothing ->
-                                -- There were no vaccination so far, so
-                                -- we offer first dose for today.
-                                Just ( VaccineDoseFirst, currentDate )
-                in
-                -- Getting Nothing at nextVaccinationData indicates that
-                -- vacination cycle is completed for this vaccine.
-                ( vaccineType, nextVaccinationData )
-            )
-
-
-expectVaccineForPerson : NominalDate -> Person -> VaccineType -> Bool
-expectVaccineForPerson currentDate person vaccineType =
-    expectVaccineDoseForPerson currentDate person ( vaccineType, VaccineDoseFirst )
+                        Nothing ->
+                            -- There were no vaccination so far, so
+                            -- we offer first dose for today.
+                            let
+                                initialDate =
+                                    Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst )) person.birthDate
+                                        |> Maybe.withDefault currentDate
+                            in
+                            Just ( VaccineDoseFirst, Date.max initialDate currentDate )
+            in
+            -- Getting Nothing at nextVaccinationData indicates that
+            -- vacination cycle is completed for this vaccine.
+            ( vaccineType, nextVaccinationData )
+        )
+        allVaccineTypes
 
 
 filterExpextedDosesForPerson : NominalDate -> Person -> ( VaccineType, List VaccineDose ) -> Maybe ( VaccineType, List VaccineDose )
@@ -672,8 +675,20 @@ filterExpextedDosesForPerson currentDate person ( vaccine, doses ) =
         Just ( vaccine, expectedDoses )
 
 
+{-| Check if the first dose of vaccine may be administered to the person on the limit date.
+-}
+expectVaccineForPerson : NominalDate -> Person -> VaccineType -> Bool
+expectVaccineForPerson limitDate person vaccineType =
+    expectVaccineDoseForPerson limitDate person ( vaccineType, VaccineDoseFirst )
+
+
+{-| Check if a dose of vaccine may be administered to a person on the limit date.
+For example, to check if the dose of vaccine may be administered today, we set
+limit date to current date. If we want to check in one year, we set the limit date
+to current date + 1 year.
+-}
 expectVaccineDoseForPerson : NominalDate -> Person -> ( VaccineType, VaccineDose ) -> Bool
-expectVaccineDoseForPerson currentDate person ( vaccineType, vaccineDose ) =
+expectVaccineDoseForPerson limitDate person ( vaccineType, vaccineDose ) =
     person.birthDate
         |> Maybe.map
             (\birthDate ->
@@ -682,7 +697,7 @@ expectVaccineDoseForPerson currentDate person ( vaccineType, vaccineDose ) =
                         initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose )
 
                     compared =
-                        Date.compare expectedDate currentDate
+                        Date.compare expectedDate limitDate
 
                     genderCondition =
                         if vaccineType == VaccineHPV then
@@ -738,7 +753,7 @@ initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose ) =
                 |> Date.add unit (dosesInterval * interval)
 
 
-latestVaccinationDataForVaccine : Dict VaccineType (Dict VaccineDose NominalDate) -> VaccineType -> Maybe ( VaccineDose, NominalDate )
+latestVaccinationDataForVaccine : VaccinationProgressDict -> VaccineType -> Maybe ( VaccineDose, NominalDate )
 latestVaccinationDataForVaccine vaccinationsData vaccineType =
     Dict.get vaccineType vaccinationsData
         |> Maybe.andThen
@@ -809,6 +824,84 @@ getVaccinationDateFromImmunisationValue vaccineType =
 
 getVaccinationDatesFromVaccinationHistoryValue : VaccineType -> (VaccinationHistoryValue -> EverySet NominalDate)
 getVaccinationDatesFromVaccinationHistoryValue vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            .bcgVaccinationDate
+
+        VaccineOPV ->
+            .opvVaccinationDate
+
+        VaccineDTP ->
+            .dtpVaccinationDate
+
+        VaccinePCV13 ->
+            .pcv13VaccinationDate
+
+        VaccineRotarix ->
+            .rotarixVaccinationDate
+
+        VaccineIPV ->
+            .ipvVaccinationDate
+
+        VaccineMR ->
+            .mrVaccinationDate
+
+        VaccineHPV ->
+            .hpvVaccinationDate
+
+
+doseAdministrationQuestionAnswered : VaccineType -> ImmunisationForm -> Bool
+doseAdministrationQuestionAnswered vaccineType form =
+    let
+        questionAnswered getAnswerFunc getNoteFunc getDateFunc =
+            getAnswerFunc form
+                |> Maybe.map
+                    (\answer ->
+                        case answer of
+                            True ->
+                                True
+
+                            False ->
+                                case getNoteFunc form of
+                                    Just AdministeredPreviously ->
+                                        isJust (getDateFunc form)
+
+                                    Just _ ->
+                                        True
+
+                                    Nothing ->
+                                        False
+                    )
+                |> Maybe.withDefault False
+    in
+    case vaccineType of
+        VaccineBCG ->
+            questionAnswered .bcgVaccinationAdministered .bcgVaccinationNote .bcgVaccinationDate
+
+        VaccineOPV ->
+            questionAnswered .opvVaccinationAdministered .opvVaccinationNote .opvVaccinationDate
+
+        VaccineDTP ->
+            questionAnswered .dtpVaccinationAdministered .dtpVaccinationNote .dtpVaccinationDate
+
+        VaccinePCV13 ->
+            questionAnswered .pcv13VaccinationAdministered .pcv13VaccinationNote .pcv13VaccinationDate
+
+        VaccineRotarix ->
+            questionAnswered .rotarixVaccinationAdministered .rotarixVaccinationNote .rotarixVaccinationDate
+
+        VaccineIPV ->
+            questionAnswered .ipvVaccinationAdministered .ipvVaccinationNote .ipvVaccinationDate
+
+        VaccineMR ->
+            questionAnswered .mrVaccinationAdministered .mrVaccinationNote .mrVaccinationDate
+
+        VaccineHPV ->
+            questionAnswered .hpvVaccinationAdministered .hpvVaccinationNote .hpvVaccinationDate
+
+
+getVaccinationDateFromImmunisationForm : VaccineType -> (ImmunisationForm -> Maybe NominalDate)
+getVaccinationDateFromImmunisationForm vaccineType =
     case vaccineType of
         VaccineBCG ->
             .bcgVaccinationDate
@@ -1960,11 +2053,57 @@ generateNextDateForMedicationVisit currentDate assembled db =
 
 generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
 generateNextDateForImmunisationVisit currentDate isChw assembled db =
-    generateFutureVaccines currentDate isChw assembled
-        |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
-        |> List.sortWith Date.compare
-        |> List.reverse
-        |> List.head
+    let
+        futureVaccinationsData =
+            generateFutureVaccinationsData currentDate isChw assembled.person assembled.vaccinationProgress
+
+        futureVaccines =
+            List.map Tuple.first futureVaccinationsData
+
+        all6MonthsInrervalVaccines =
+            List.all (\vaccineType -> List.member vaccineType [ VaccineMR, VaccineHPV ]) futureVaccines
+
+        -- This is how far we look forward looking for a vaccine to administer.
+        -- If there're only 6 month interval vaccines, we'll check 6 months forward.
+        -- Otherwise, there's a vaccine with 28 days interval, so we look only 1 month forward.
+        -- We do this, because per requirements, if we have several vaccines, we
+        -- select the latest date - to be able to administer all in a single encounter.
+        -- However, we do not want to wait 6 months, if we need to administer a vaccine
+        -- that needs only 28 days interval.
+        intervalMonths =
+            if all6MonthsInrervalVaccines then
+                6
+
+            else
+                1
+
+        nextVisistDate =
+            List.filter
+                (\( vaccineType, _ ) ->
+                    expectVaccineForPerson
+                        (Date.add Months intervalMonths currentDate)
+                        assembled.person
+                        vaccineType
+                )
+                futureVaccinationsData
+                |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
+                |> List.sortWith Date.compare
+                -- Get the latest of all dates.
+                |> List.reverse
+                |> List.head
+    in
+    -- If we see that next suggested date already passed, or is set for today,
+    -- set next visit to an interval months from current date. Interval is calculated
+    -- based on suggested vaccinations.
+    Maybe.andThen
+        (\nextDate ->
+            if Date.compare nextDate currentDate /= GT then
+                Just <| Date.add Months intervalMonths currentDate
+
+            else
+                Just nextDate
+        )
+        nextVisistDate
 
 
 fromNextVisitValue : Maybe NextVisitValue -> NextVisitForm
@@ -2178,7 +2317,7 @@ toVaccinationHistoryValue form =
         }
 
 
-generateVaccinationProgress : List ImmunisationValue -> List VaccinationHistoryValue -> Dict VaccineType (Dict VaccineDose NominalDate)
+generateVaccinationProgress : List ImmunisationValue -> List VaccinationHistoryValue -> VaccinationProgressDict
 generateVaccinationProgress immunisations vaccinationHistories =
     List.map (\vaccineType -> ( vaccineType, generateVaccinationProgressForVaccine immunisations vaccinationHistories vaccineType )) allVaccineTypes
         |> Dict.fromList

@@ -22,7 +22,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             maybeEncounter
                 |> unwrap ( model, Cmd.none )
                     (\encounter ->
-                        ( { model | closeWellChildEncounter = Loading }
+                        ( { model | editWellChildEncounter = Loading }
                         , { encounter | endDate = Just currentDate }
                             |> sw.patchFull wellChildEncounterEndpoint encounterId
                             |> withoutDecoder
@@ -31,7 +31,24 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                     )
 
         HandleClosedWellChildEncounter data ->
-            ( { model | closeWellChildEncounter = data }
+            ( { model | editWellChildEncounter = data }
+            , Cmd.none
+            )
+
+        MarkWellChildEncounterAsAITrigger ->
+            maybeEncounter
+                |> unwrap ( model, Cmd.none )
+                    (\encounter ->
+                        ( { model | editWellChildEncounter = Loading }
+                        , { encounter | encounterNote = NoteTriggeredAcuteIllnessEncounter }
+                            |> sw.patchFull wellChildEncounterEndpoint encounterId
+                            |> withoutDecoder
+                            |> toCmd (RemoteData.fromResult >> HandleClosedWellChildEncounter)
+                        )
+                    )
+
+        HandleMarkedWellChildEncounterAsAITrigger data ->
+            ( { model | editWellChildEncounter = data }
             , Cmd.none
             )
 
