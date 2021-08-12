@@ -3043,7 +3043,7 @@ translationSet trans =
                     }
 
                 SitWithoutSupport ->
-                    { english = "Can the child sit without support for a short while"
+                    { english = "Can the child sit without support for a short while, for example sit on the floor on their own"
                     , kinyarwanda = Nothing
                     }
 
@@ -3053,12 +3053,12 @@ translationSet trans =
                     }
 
                 RollTummyToBack ->
-                    { english = "Can the child roll from tummy to back on their own"
+                    { english = "Can the child roll from their tummy to their back on their own"
                     , kinyarwanda = Nothing
                     }
 
                 ReachForToys ->
-                    { english = "Does the child reach for nearby toys"
+                    { english = "Does the child reach for nearby toys on their own"
                     , kinyarwanda = Nothing
                     }
 
