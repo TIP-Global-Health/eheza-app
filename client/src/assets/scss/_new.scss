@@ -1462,6 +1462,10 @@ div.page-activity.well-child {
 
       .ui.form {
         min-height: 140px;
+
+        .separator {
+          margin: 30px 0;
+        }
       }
 
       .date {
@@ -1506,6 +1510,9 @@ div.page-activity.well-child {
           width: 50%;
         }
 
+        &.measurement {
+          margin-bottom: 10px;
+        }
       }
 
       .why-not {
