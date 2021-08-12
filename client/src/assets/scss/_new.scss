@@ -1460,6 +1460,10 @@ div.page-activity.well-child {
 
       @include next-steps;
 
+      .ui.form {
+        min-height: 140px;
+      }
+
       .date {
         margin-bottom: 20px;
       }
