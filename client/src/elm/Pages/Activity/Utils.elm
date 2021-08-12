@@ -46,7 +46,7 @@ viewChildMeasurements language currentDate zscores isChw db childId activity pag
                 getChild childId session.offlineSession
                     |> Maybe.map
                         (\child ->
-                            resolvePreviousValuesSetForChild childId db
+                            resolvePreviousValuesSetForChild currentDate childId db
                                 |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
                                 |> Html.map MsgMeasurement
                         )

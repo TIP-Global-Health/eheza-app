@@ -175,7 +175,7 @@ viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncount
 viewActivity language currentDate zscores id activity isChw assembled db model =
     let
         previousValuesSet =
-            resolvePreviousValuesSetForChild assembled.participant.person db
+            resolvePreviousValuesSetForChild currentDate assembled.participant.person db
     in
     case activity of
         Height ->
