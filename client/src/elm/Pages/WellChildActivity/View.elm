@@ -677,21 +677,25 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                 |> headCircumferenceFormWithDefault data.headCircumferenceForm
 
         headCircumferenceZScore =
-            let
-                maybeAgeInDays =
-                    Maybe.map
-                        (\birthDate -> diffDays birthDate currentDate)
-                        person.birthDate
-            in
-            headCircumferenceForm.headCircumference
-                |> Maybe.andThen
-                    (\headCircumference ->
-                        Maybe.andThen
-                            (\ageInDays ->
-                                zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
-                            )
-                            maybeAgeInDays
-                    )
+            if headCircumferenceForm.measurementNotTaken == Just True then
+                Nothing
+
+            else
+                let
+                    maybeAgeInDays =
+                        Maybe.map
+                            (\birthDate -> diffDays birthDate currentDate)
+                            person.birthDate
+                in
+                headCircumferenceForm.headCircumference
+                    |> Maybe.andThen
+                        (\headCircumference ->
+                            Maybe.andThen
+                                (\ageInDays ->
+                                    zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
+                                )
+                                maybeAgeInDays
+                        )
 
         viewForm =
             case activeTask of
