@@ -3,7 +3,7 @@ module Pages.AcuteIllnessEncounter.View exposing (splitActivities, view, viewEnd
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements)
@@ -320,7 +320,7 @@ viewMainPageContent language currentDate id data model =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (AcuteIllnessProgressReportPage id)))
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (AcuteIllnessProgressReportPage InitiatorEncounterPage id)))
                 ]
 
         viewCard activity =
@@ -366,7 +366,7 @@ viewMainPageContent language currentDate id data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| AcuteIllnessProgressReportPage data.id)
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| AcuteIllnessProgressReportPage InitiatorEncounterPage data.id)
                     ]
 
             else

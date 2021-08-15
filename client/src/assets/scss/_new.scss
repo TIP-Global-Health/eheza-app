@@ -2470,7 +2470,7 @@ div.page-report.well-child {
     text-transform: uppercase;
   }
 
-  .pane-content {
+  .patient-info {
     background: $color-white;
     display: flex;
     padding: 30px 40px;
@@ -2491,6 +2491,140 @@ div.page-report.well-child {
         margin-bottom: 5px;
       }
     }
+  }
+
+  .pane-content {
+    background: $color-white;
+
+    .heading {
+      border-bottom: 1px solid $color-text;
+      color: $color-dark-gray;
+      display: flex;
+      font-size: 20px;
+      font-weight: 600;
+      padding: 15px 30px;
+      width: 100%;
+    }
+
+    .heading.diagnosis {
+
+      .assesment {
+        width: 50%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
+    .heading.vaccination {
+
+      .name {
+        width: 35%;
+      }
+
+      .date {
+        width: 25%;
+      }
+
+      .next-due {
+        width: 20%;
+      }
+
+      .status {
+        width: 20%;
+      }
+    }
+
+    .entry {
+      border-bottom: 1px solid $color-text;
+      color: $color-dark-gray;
+      display: flex;
+      font-size: 22px;
+      padding: 15px 30px;
+      width: 100%;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .entry .cell {
+      align-self: center;
+      text-align: left;
+      padding-right: 20px;
+    }
+
+    .entry.diagnosis {
+
+      .assesment {
+        width: 50%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .date {
+        width: 35%;
+      }
+
+      .icon-forward {
+        align-self: center;
+        background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        margin-left: 20px;
+        width: 50px;
+      }
+    }
+
+    .entry.vaccination {
+      .name {
+        width: 35%;
+      }
+
+      .date {
+        width: 25%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .next-due {
+        width: 20%;
+      }
+
+      .status {
+        border-radius: 10px;
+        color: $color-white;
+        font-size: 17px;
+        margin: 3px 5px;
+        padding: 0 10px;
+        text-transform: uppercase;
+
+        &.done {
+          background: $color-blue;
+        }
+
+        &.behind {
+          background: $color-velvet;
+        }
+
+        &.up-to-date {
+          background: $color-cyan;
+        }
+      }
+    }
+  }
+
+  .pane-action {
+    border-top: 1px solid $color-text;
+    background: $color-white;
+    padding-bottom: 30px;
+    padding-top: 25px;
+    text-align: center;
   }
 }
 

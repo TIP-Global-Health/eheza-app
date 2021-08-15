@@ -3791,7 +3791,7 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate after id =
             (\data ->
                 let
                     navigateToProgressReportMsg =
-                        App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage id))
+                        App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
 
                     isFirstEncounter =
                         List.isEmpty data.previousEncountersData

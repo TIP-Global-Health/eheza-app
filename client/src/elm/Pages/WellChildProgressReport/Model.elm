@@ -1,21 +1,35 @@
-module Pages.WellChildProgressReport.Model exposing (Model, Msg(..), emptyModel)
+module Pages.WellChildProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { showEndEncounetrDialog : Bool
+    { diagnosisMode : DiagnosisMode
+    , showEndEncounetrDialog : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
-    { showEndEncounetrDialog = False
+    { diagnosisMode = ModeActiveDiagnosis
+    , showEndEncounetrDialog = False
     }
+
+
+type DiagnosisMode
+    = ModeActiveDiagnosis
+    | ModeCompletedDiagnosis
+
+
+type VaccinationStatus
+    = StatusBehind
+    | StatusDone
+    | StatusUpToDate
 
 
 type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
+    | SetDiagnosisMode DiagnosisMode

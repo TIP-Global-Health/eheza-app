@@ -96,6 +96,7 @@ import Pages.PrenatalActivity.Model
         )
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
+import Pages.WellChildProgressReport.Model exposing (VaccinationStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -292,6 +293,7 @@ type TranslationId
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
+    | ActiveDiagnosis
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -474,6 +476,7 @@ type TranslationId
     | DeviceStatus
     | Diabetes
     | Diagnosis
+    | DiagnosisDate
     | DifferenceBetweenDates
     | Disabled
     | DistributionNotice DistributionNotice
@@ -685,6 +688,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextDue
     | NextDoseDue
     | NextImmunisationVisit
     | NextPediatricVisit
@@ -811,6 +815,7 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | PriorDiagnosis
     | ProvideHealthEducation
     | ProvideHealthEducationShort
     | ProvidedHealthEducationAction
@@ -865,6 +870,7 @@ type TranslationId
     | Retry
     | ReviewCaseWith144Respondent
     | Reviewed
+    | ReviewPriorDiagnosis
     | ReviewVaccinationHistory
     | ReviewVaccinationHistoryLabel
     | RhNegative
@@ -885,6 +891,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
     | SelectPostpartumChildDangerSigns
@@ -991,6 +998,7 @@ type TranslationId
     | Uploading
     | UterineMyoma
     | VaccinationCatchUpRequiredQuestion
+    | VaccinationStatus VaccinationStatus
     | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
@@ -1403,6 +1411,11 @@ translationSet trans =
         AcuteIllnessOutcomeLabel ->
             { english = "Acute Illness Outcome"
             , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho\n"
+            }
+
+        ActiveDiagnosis ->
+            { english = "Active Diagnosis"
+            , kinyarwanda = Nothing
             }
 
         AcuteIllnessOutcome outcome ->
@@ -2921,6 +2934,11 @@ translationSet trans =
         Diagnosis ->
             { english = "Diagnosis"
             , kinyarwanda = Just "Uburwayi bwabonetse"
+            }
+
+        DiagnosisDate ->
+            { english = "Diagnosis Date"
+            , kinyarwanda = Nothing
             }
 
         DifferenceBetweenDates ->
@@ -5105,6 +5123,11 @@ translationSet trans =
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 
+        NextDue ->
+            { english = "Next Due"
+            , kinyarwanda = Nothing
+            }
+
         NextDoseDue ->
             { english = "Next Dose Due"
             , kinyarwanda = Nothing
@@ -6454,6 +6477,11 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
+        PriorDiagnosis ->
+            { english = "Prior Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         ProvidedHealthEducationAction ->
             { english = "Provided health education and anticipatory guidance"
             , kinyarwanda = Nothing
@@ -6950,6 +6978,11 @@ translationSet trans =
             , kinyarwanda = Just "Byarebwe"
             }
 
+        ReviewPriorDiagnosis ->
+            { english = "Review Prior Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         ReviewVaccinationHistory ->
             { english = "Review Vaccination History"
             , kinyarwanda = Nothing
@@ -7131,6 +7164,11 @@ translationSet trans =
         Sector ->
             { english = "Sector"
             , kinyarwanda = Just "Umurenge"
+            }
+
+        SeeMore ->
+            { english = "See More"
+            , kinyarwanda = Nothing
             }
 
         SelectAntenatalVisit ->
@@ -7854,6 +7892,23 @@ translationSet trans =
             { english = "Are there previous immunizations that are not in E-Heza that need to be recorded"
             , kinyarwanda = Nothing
             }
+
+        VaccinationStatus status ->
+            case status of
+                StatusBehind ->
+                    { english = "Behind"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusDone ->
+                    { english = "Done"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusUpToDate ->
+                    { english = "Up To Date"
+                    , kinyarwanda = Nothing
+                    }
 
         VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->
             let
@@ -8663,7 +8718,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Igikorwa cyo kuvura uburwayi butunguranye"
                     }
 
-                AcuteIllnessProgressReportPage _ ->
+                AcuteIllnessProgressReportPage _ _ ->
                     { english = "Acute Illness Progress Report"
                     , kinyarwanda = Just "Raporo y’ibyakozwe ku ndwara zifatiyeho"
                     }

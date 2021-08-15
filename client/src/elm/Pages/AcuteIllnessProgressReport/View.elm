@@ -2,7 +2,7 @@ module Pages.AcuteIllnessProgressReport.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
@@ -56,17 +56,17 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id initiator db model =
     let
         data =
             generateAssembledData currentDate id db
     in
-    viewWebData language (viewContent language currentDate id model) identity data
+    viewWebData language (viewContent language currentDate id initiator model) identity data
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id model data =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id initiator model data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
@@ -127,28 +127,45 @@ viewContent language currentDate id model data =
 
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
+
+        endEncounterButton =
+            case initiator of
+                InitiatorEncounterPage ->
+                    viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
+
+                InitiatorWellChildProgressReport _ ->
+                    emptyNode
     in
     div [ class "page-report acute-illness" ]
         [ div
             [ class "ui report unstackable items" ]
-            [ viewHeader language illnessBeganDate id
+            [ viewHeader language illnessBeganDate id initiator
             , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
-            , viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
+            , endEncounterButton
             ]
         , viewModal endEncounterDialog
         ]
 
 
-viewHeader : Language -> NominalDate -> AcuteIllnessEncounterId -> Html Msg
-viewHeader language date id =
+viewHeader : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> Html Msg
+viewHeader language date id initiator =
+    let
+        goBackPage =
+            case initiator of
+                InitiatorEncounterPage ->
+                    AcuteIllnessEncounterPage id
+
+                InitiatorWellChildProgressReport wellChildEncounterId ->
+                    WellChildProgressReportPage wellChildEncounterId
+    in
     div [ class "report-header" ]
         [ a
             [ class "icon-back"
-            , onClick <| SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+            , onClick <| SetActivePage (UserPage goBackPage)
             ]
             []
         , h1 [ class "ui report header" ]

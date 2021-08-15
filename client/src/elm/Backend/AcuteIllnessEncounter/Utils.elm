@@ -1,7 +1,8 @@
 module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
 acuteIllnessDiagnosisToString : AcuteIllnessDiagnosis -> String
@@ -85,3 +86,30 @@ acuteIllnessDiagnosisFromString diagnosis =
 
         _ ->
             Nothing
+
+
+progressReportInitiatorToUrlFragmemt : AcuteIllnessProgressReportInitiator -> String
+progressReportInitiatorToUrlFragmemt initiator =
+    case initiator of
+        InitiatorEncounterPage ->
+            "encounter-page"
+
+        InitiatorWellChildProgressReport encounterId ->
+            "well-child-progress-report-" ++ fromEntityUuid encounterId
+
+
+progressReportInitiatorFromUrlFragmemt : String -> Maybe AcuteIllnessProgressReportInitiator
+progressReportInitiatorFromUrlFragmemt s =
+    case s of
+        "encounter-page" ->
+            Just InitiatorEncounterPage
+
+        _ ->
+            if String.startsWith "well-child-progress-report" s then
+                String.dropLeft (String.length "well-child-progress-report-") s
+                    |> toEntityUuid
+                    |> InitiatorWellChildProgressReport
+                    |> Just
+
+            else
+                Nothing

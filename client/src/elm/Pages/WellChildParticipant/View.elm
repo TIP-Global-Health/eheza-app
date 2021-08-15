@@ -248,7 +248,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                     Maybe.map
                         (\person ->
                             generateVaccinationProgress immunisations vaccinationHistories
-                                |> generateFutureVaccinationsData currentDate isChw person
+                                |> generateFutureVaccinationsData currentDate person True
                         )
                         maybePerson
                         |> Maybe.withDefault []
