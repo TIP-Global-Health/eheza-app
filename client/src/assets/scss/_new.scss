@@ -2496,7 +2496,7 @@ div.page-report.well-child {
   .pane-content {
     background: $color-white;
 
-    .entries-heading {
+    .heading {
       border-bottom: 1px solid $color-text;
       color: $color-dark-gray;
       display: flex;
@@ -2504,6 +2504,9 @@ div.page-report.well-child {
       font-weight: 600;
       padding: 15px 30px;
       width: 100%;
+    }
+
+    .heading.diagnosis {
 
       .assesment {
         width: 50%;
@@ -2514,7 +2517,26 @@ div.page-report.well-child {
       }
     }
 
-    .diagnosis-entry {
+    .heading.vaccination {
+
+      .name {
+        width: 35%;
+      }
+
+      .date {
+        width: 25%;
+      }
+
+      .next-due {
+        width: 20%;
+      }
+
+      .status {
+        width: 20%;
+      }
+    }
+
+    .entry {
       border-bottom: 1px solid $color-text;
       color: $color-dark-gray;
       display: flex;
@@ -2525,10 +2547,17 @@ div.page-report.well-child {
       &:last-child {
         border-bottom: none;
       }
+    }
+
+    .entry .cell {
+      align-self: center;
+      text-align: left;
+      padding-right: 20px;
+    }
+
+    .entry.diagnosis {
 
       .assesment {
-        align-self: center;
-        text-align: left;
         width: 50%;
 
         p {
@@ -2537,9 +2566,6 @@ div.page-report.well-child {
       }
 
       .date {
-        align-self: center;
-        font-size: 20px;
-        text-align: left;
         width: 35%;
       }
 
@@ -2550,6 +2576,45 @@ div.page-report.well-child {
         height: 50px;
         margin-left: 20px;
         width: 50px;
+      }
+    }
+
+    .entry.vaccination {
+      .name {
+        width: 35%;
+      }
+
+      .date {
+        width: 25%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .next-due {
+        width: 20%;
+      }
+
+      .status {
+        border-radius: 10px;
+        color: $color-white;
+        font-size: 17px;
+        margin: 3px 5px;
+        padding: 0 10px;
+        text-transform: uppercase;
+
+        &.done {
+          background: $color-blue;
+        }
+
+        &.behind {
+          background: $color-velvet;
+        }
+
+        &.up-to-date {
+          background: $color-cyan;
+        }
       }
     }
   }

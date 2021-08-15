@@ -22,6 +22,12 @@ type DiagnosisMode
     | ModeCompletedDiagnosis
 
 
+type VaccinationStatus
+    = StatusBehind
+    | StatusDone
+    | StatusUpToDate
+
+
 type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page

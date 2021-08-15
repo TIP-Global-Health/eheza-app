@@ -13,7 +13,7 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -31,6 +31,7 @@ import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
 import Pages.WellChildActivity.Model
+import Pages.WellChildActivity.Utils exposing (generateFutureVaccinationsData)
 import Pages.WellChildEncounter.Model exposing (AssembledData)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import Pages.WellChildProgressReport.Model exposing (..)
@@ -61,12 +62,22 @@ view language currentDate id db model =
 
 viewContent : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id db model assembled =
+    let
+        derrivedContent =
+            case model.diagnosisMode of
+                ModeActiveDiagnosis ->
+                    [ viewVaccinationHistoryPane language currentDate id db model assembled ]
+
+                ModeCompletedDiagnosis ->
+                    []
+    in
     div [ class "page-report well-child" ]
         [ viewHeader language id model
-        , div [ class "ui report unstackable items" ]
+        , div [ class "ui report unstackable items" ] <|
             [ viewPersonInfoPane language currentDate assembled.person
             , viewDiagnosisPane language currentDate id db model assembled
             ]
+                ++ derrivedContent
 
         -- , viewModal endEncounterDialog
         ]
@@ -173,7 +184,7 @@ viewDiagnosisPane language currentDate id db model assembled =
                 |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
 
         entriesHeading =
-            div [ class "entries-heading" ]
+            div [ class "heading diagnosis" ]
                 [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
                 , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
                 , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
@@ -226,9 +237,9 @@ viewDaignosisEntry language id db participantId =
     in
     Maybe.map2
         (\( date, diagnosis ) lastEncounterId ->
-            div [ class "diagnosis-entry" ]
-                [ div [ class "assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
-                , div [ class "date" ] [ text <| formatDDMMYY date ]
+            div [ class "entry diagnosis" ]
+                [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                , div [ class "cell date" ] [ text <| formatDDMMYY date ]
                 , div
                     [ class "icon-forward"
                     , onClick <|
@@ -244,6 +255,68 @@ viewDaignosisEntry language id db participantId =
         diagnosisData
         maybeLastEncounterId
         |> Maybe.withDefault emptyNode
+
+
+viewVaccinationHistoryPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewVaccinationHistoryPane language currentDate id db model assembled =
+    let
+        entriesHeading =
+            div [ class "heading vaccination" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                ]
+
+        futureVaccinationsData =
+            generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationProgress
+                |> Dict.fromList
+
+        entries =
+            Dict.toList assembled.vaccinationProgress
+                |> List.map viewVaccinationEntry
+
+        viewVaccinationEntry ( vaccineType, doses ) =
+            let
+                nextDue =
+                    Dict.get vaccineType futureVaccinationsData
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.second
+
+                nextDueText =
+                    Maybe.map formatDDMMYY nextDue
+                        |> Maybe.withDefault ""
+
+                ( status, statusClass ) =
+                    Maybe.map
+                        (\dueDate ->
+                            if Date.compare dueDate currentDate == LT then
+                                ( StatusBehind, "behind" )
+
+                            else
+                                ( StatusUpToDate, "up-to-date" )
+                        )
+                        nextDue
+                        |> Maybe.withDefault ( StatusDone, "done" )
+            in
+            div [ class "entry vaccination" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
+                , Dict.values doses
+                    |> List.sortWith Date.compare
+                    |> List.map (formatDDMMYY >> text >> List.singleton >> p [])
+                    |> div [ class "cell date" ]
+                , div [ class "cell next-due" ]
+                    [ text nextDueText ]
+                , div [ class <| "cell status " ++ statusClass ]
+                    [ text <| translate language <| Translate.VaccinationStatus status ]
+                ]
+    in
+    div [ class "pane vaccination-history" ] <|
+        [ viewPaneHeading language Translate.ImmunisationHistory
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: entries
+        ]
 
 
 viewPaneHeading : Language -> TranslationId -> Html Msg
