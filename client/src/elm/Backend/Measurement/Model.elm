@@ -192,6 +192,13 @@ type alias NutritionValue =
     }
 
 
+emptyNutritionValue : NutritionValue
+emptyNutritionValue =
+    { signs = EverySet.empty
+    , assesment = EverySet.empty
+    }
+
+
 type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
 

@@ -46,6 +46,7 @@ generateNutritionAssessment currentDate zscores db assembled =
 
         nutritionValue =
             getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .signs
 
         weightValue =
             Maybe.map

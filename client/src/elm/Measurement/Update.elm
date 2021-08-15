@@ -56,7 +56,10 @@ updateChild msg model =
 
         SelectNutritionSign selected sign ->
             let
-                nutritionSignsUpdated =
+                nutrition =
+                    model.nutrition
+
+                updatedSigns =
                     if selected then
                         case sign of
                             NormalChildNutrition ->
@@ -67,7 +70,7 @@ updateChild msg model =
                             _ ->
                                 -- If the user checks something else, then also
                                 -- make sure that `None` is unchecekd
-                                model.nutritionSigns
+                                nutrition.signs
                                     |> EverySet.insert sign
                                     |> EverySet.remove NormalChildNutrition
 
@@ -79,9 +82,12 @@ updateChild msg model =
                         -- whereas `NoFamilyPlanning` being checked means that
                         -- we do know the answer, and it's that there aren't
                         -- any signs.
-                        EverySet.remove sign model.nutritionSigns
+                        EverySet.remove sign nutrition.signs
+
+                updatedNutrition =
+                    { nutrition | signs = updatedSigns }
             in
-            ( { model | nutritionSigns = nutritionSignsUpdated }
+            ( { model | nutrition = updatedNutrition }
             , Cmd.none
             , Nothing
             )

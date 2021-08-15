@@ -47,6 +47,7 @@ generateNutritionAssessment currentDate zscores childId db offlineSession =
 
         nutritionValue =
             Maybe.andThen (.nutrition >> getMeasurementValueFunc) measurements
+                |> Maybe.map .signs
 
         weightValue =
             Maybe.andThen (.weight >> Maybe.map (Tuple.second >> .value >> weightValueFunc)) measurements

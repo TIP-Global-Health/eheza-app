@@ -63,9 +63,9 @@ fromChildMeasurementData data =
     , muac =
         fromData .muac (.value >> muacValueFunc >> String.fromFloat)
             |> Maybe.withDefault ""
-    , nutritionSigns =
+    , nutrition =
         fromData .nutrition .value
-            |> Maybe.withDefault EverySet.empty
+            |> Maybe.withDefault emptyNutritionValue
     , counseling =
         fromData .counselingSession .value
     , photo =
@@ -315,30 +315,39 @@ toMuacValue form =
     Maybe.map MuacInCm form.muac
 
 
-fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> NutritionForm
+fromNutritionValue : Maybe NutritionValue -> NutritionForm
 fromNutritionValue saved =
-    { signs = Maybe.map EverySet.toList saved }
+    { signs = Maybe.map (.signs >> EverySet.toList) saved
+    , assesment = Maybe.map .assesment saved
+    }
 
 
-nutritionFormWithDefault : NutritionForm -> Maybe (EverySet ChildNutritionSign) -> NutritionForm
+nutritionFormWithDefault : NutritionForm -> Maybe NutritionValue -> NutritionForm
 nutritionFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
+                { signs = or form.signs (EverySet.toList value.signs |> Just)
+                , assesment = or form.assesment (Just value.assesment)
+                }
             )
 
 
-toNutritionValueWithDefault : Maybe (EverySet ChildNutritionSign) -> NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValueWithDefault : Maybe NutritionValue -> NutritionForm -> Maybe NutritionValue
 toNutritionValueWithDefault saved form =
     nutritionFormWithDefault form saved
         |> toNutritionValue
 
 
-toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValue : NutritionForm -> Maybe NutritionValue
 toNutritionValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+    let
+        signs =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+    in
+    Maybe.map NutritionValue signs
+        |> andMap form.assesment
 
 
 fromWeightValue : Maybe WeightInKg -> WeightForm

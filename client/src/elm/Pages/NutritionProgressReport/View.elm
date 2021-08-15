@@ -94,6 +94,7 @@ viewContent language currentDate zscores db data =
         currentNutritionSigns =
             data.measurements.nutrition
                 |> getMeasurementValueFunc
+                |> Maybe.map .signs
                 |> Maybe.withDefault EverySet.empty
 
         defaultLastAssessmentDate =

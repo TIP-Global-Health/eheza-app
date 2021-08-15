@@ -38,7 +38,7 @@ issues) since the data itself would encapsulate an editor state.
 type alias ModelChild =
     { height : String
     , muac : String
-    , nutritionSigns : EverySet ChildNutritionSign
+    , nutrition : NutritionValue
     , photo : Maybe PhotoUrl
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
@@ -62,7 +62,7 @@ emptyModelChild : ModelChild
 emptyModelChild =
     { height = ""
     , muac = ""
-    , nutritionSigns = EverySet.empty
+    , nutrition = emptyNutritionValue
     , photo = Nothing
     , weight = ""
     , counseling = Nothing
@@ -263,7 +263,7 @@ type OutMsgChild
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
-    | SaveChildNutritionSigns (Maybe ChildNutritionId) (EverySet ChildNutritionSign)
+    | SaveChildNutritionSigns (Maybe ChildNutritionId) NutritionValue
     | SavePhoto (Maybe PhotoId) PhotoUrl
     | SaveChildFbf (Maybe ChildFbfId) FbfValue
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign)
@@ -311,12 +311,15 @@ emptyMuacForm =
 
 type alias NutritionForm =
     { signs : Maybe (List ChildNutritionSign)
+
+    -- We do not display this. Using it when saving.
+    , assesment : Maybe (EverySet NutritionAssessment)
     }
 
 
 emptyNutritionForm : NutritionForm
 emptyNutritionForm =
-    NutritionForm Nothing
+    NutritionForm Nothing Nothing
 
 
 type alias PhotoForm =

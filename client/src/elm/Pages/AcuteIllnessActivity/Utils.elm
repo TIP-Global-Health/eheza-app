@@ -1534,6 +1534,32 @@ toFollowUpValue form =
     Maybe.map (List.singleton >> EverySet.fromList) form.option
 
 
+fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm
+fromNutritionValue saved =
+    { signs = Maybe.map EverySet.toList saved }
+
+
+nutritionFormWithDefault : AcuteIllnessNutritionForm -> Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm
+nutritionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toNutritionValueWithDefault : Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValueWithDefault saved form =
+    nutritionFormWithDefault form saved
+        |> toNutritionValue
+
+
+toNutritionValue : AcuteIllnessNutritionForm -> Maybe (EverySet ChildNutritionSign)
+toNutritionValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+
+
 
 -- HELPER FUNCTIONS
 

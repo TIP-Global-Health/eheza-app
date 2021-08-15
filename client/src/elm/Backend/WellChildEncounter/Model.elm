@@ -152,7 +152,7 @@ type Msg
     | HandleSavedHeight (WebData ())
     | SaveMuac PersonId (Maybe WellChildMuacId) MuacInCm
     | HandleSavedMuac (WebData ())
-    | SaveNutrition PersonId (Maybe WellChildNutritionId) (EverySet ChildNutritionSign)
+    | SaveNutrition PersonId (Maybe WellChildNutritionId) NutritionValue
     | HandleSavedNutrition (WebData ())
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
     | HandleSavedPhoto (WebData ())

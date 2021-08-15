@@ -97,7 +97,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
+            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutrition
 
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
@@ -593,8 +593,8 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> EverySet ChildNutritionSign -> Html MsgChild
-viewNutritionSigns language measurement signs =
+viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> NutritionValue -> Html MsgChild
+viewNutritionSigns language measurement value =
     let
         activity =
             ChildActivity NutritionSigns
@@ -603,11 +603,7 @@ viewNutritionSigns language measurement signs =
             Maybe.map Tuple.first measurement.current
 
         saveMsg =
-            if EverySet.isEmpty signs then
-                Nothing
-
-            else
-                Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
+            Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId value
     in
     div
         [ class "ui full segment nutrition"
@@ -620,7 +616,7 @@ viewNutritionSigns language measurement signs =
             , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
                 p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
-                    :: viewNutritionSignsSelector language signs
+                    :: viewNutritionSignsSelector language value.signs
             ]
         , div [ class "actions" ] <|
             saveButton
