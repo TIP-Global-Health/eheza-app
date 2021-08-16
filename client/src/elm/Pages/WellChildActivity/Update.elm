@@ -601,7 +601,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveNutrition personId saved nextTask_ ->
+        SaveNutrition personId saved assessment nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -614,6 +614,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.nutritionAssessmentData.nutritionForm
+                        |> (\form -> { form | assesment = Just assessment })
                         |> toNutritionValueWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveNutrition personId measurementId

@@ -185,7 +185,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewMuacContent language currentDate assembled model.muacData previousValuesSet.muac
 
         Nutrition ->
-            viewNutritionContent language currentDate ( assembled.participant.person, assembled.measurements ) model.nutritionData
+            viewNutritionContent language currentDate zscores assembled db model.nutritionData
 
         Photo ->
             viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
@@ -381,11 +381,11 @@ viewMuacForm language currentDate person previousValue setMuacMsg form =
     ]
 
 
-viewNutritionContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> NutritionData -> List (Html Msg)
-viewNutritionContent language currentDate ( personId, measurements ) data =
+viewNutritionContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> NutritionData -> List (Html Msg)
+viewNutritionContent language currentDate zscores assembled db data =
     let
         form =
-            measurements.nutrition
+            assembled.measurements.nutrition
                 |> getMeasurementValueFunc
                 |> nutritionFormWithDefault data.form
 
@@ -394,6 +394,10 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
 
         tasksCompleted =
             taskCompleted form.signs
+
+        assessment =
+            generateNutritionAssessment currentDate zscores db assembled
+                |> nutritionAssessmentForBackend
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -402,7 +406,7 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveNutrition personId measurements.nutrition
+                , onClick <| SaveNutrition assembled.participant.person assembled.measurements.nutrition assessment
                 ]
                 [ text <| translate language Translate.Save ]
             ]

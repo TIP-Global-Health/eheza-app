@@ -97,7 +97,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutrition
+            viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
 
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
@@ -593,14 +593,27 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> NutritionValue -> Html MsgChild
-viewNutritionSigns language measurement value =
+viewNutritionSigns :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> PersonId
+    -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition ))
+    -> OfflineSession
+    -> ModelIndexedDb
+    -> NutritionValue
+    -> Html MsgChild
+viewNutritionSigns language currentDate zscores childId measurement offlineSession db value =
     let
         activity =
             ChildActivity NutritionSigns
 
         existingId =
             Maybe.map Tuple.first measurement.current
+
+        assesment =
+            generateNutritionAssessment currentDate zscores childId db offlineSession
+                |> nutritionAssessmentForBackend
 
         saveMsg =
             Just <| SendOutMsgChild <| SaveNutrition existingId value
