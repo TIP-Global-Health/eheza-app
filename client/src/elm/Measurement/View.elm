@@ -603,7 +603,7 @@ viewNutritionSigns language measurement value =
             Maybe.map Tuple.first measurement.current
 
         saveMsg =
-            Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId value
+            Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
     div
         [ class "ui full segment nutrition"

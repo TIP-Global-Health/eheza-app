@@ -263,7 +263,7 @@ type OutMsgChild
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
-    | SaveChildNutritionSigns (Maybe ChildNutritionId) NutritionValue
+    | SaveNutrition (Maybe ChildNutritionId) NutritionValue
     | SavePhoto (Maybe PhotoId) PhotoUrl
     | SaveChildFbf (Maybe ChildFbfId) FbfValue
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign)

@@ -3483,16 +3483,38 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
                     assesmentAfter =
                         Pages.NutritionActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
 
-                    updateFollowUpAssesmentMsg =
+                    assessmentForBackend =
+                        nutritionAssessmentForBackend assesmentAfter
+
+                    updateAssesmentMsgs =
+                        updateAssesmentOnFollowUpMsg ++ updateAssesmentOnNutritionMsg
+
+                    updateAssesmentOnFollowUpMsg =
                         assembledAfter.measurements.followUp
                             |> Maybe.map
                                 (\( measurementId, measurement ) ->
                                     let
                                         updatedValue =
                                             measurement.value
-                                                |> (\value -> { value | assesment = nutritionAssessmentForBackend assesmentAfter })
+                                                |> (\value -> { value | assesment = assessmentForBackend })
                                     in
                                     Backend.NutritionEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
+                                )
+                            |> Maybe.withDefault []
+
+                    updateAssesmentOnNutritionMsg =
+                        assembledAfter.measurements.nutrition
+                            |> Maybe.map
+                                (\( measurementId, measurement ) ->
+                                    let
+                                        updatedValue =
+                                            measurement.value
+                                                |> (\value -> { value | assesment = assessmentForBackend })
+                                    in
+                                    Backend.NutritionEncounter.Model.SaveNutrition assembledAfter.participant.person (Just measurementId) updatedValue
                                         |> Backend.Model.MsgNutritionEncounter id
                                         |> App.Model.MsgIndexedDb
                                         |> List.singleton
@@ -3501,11 +3523,12 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
                 in
                 if List.isEmpty assesmentAfter then
                     -- No assesment, so, only thing we want to update is the
-                    -- assesment field on Follow Up measurement, if it exists already.
-                    updateFollowUpAssesmentMsg
+                    -- assesment field on Nutrition measurement and FollowUp
+                    -- measurement (if it exists already).
+                    updateAssesmentMsgs
 
                 else
-                    updateFollowUpAssesmentMsg
+                    updateAssesmentMsgs
                         ++ [ -- Navigate to Nutrition encounter page.
                              App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
 
@@ -3561,7 +3584,10 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                 db
                                 offlineSession
 
-                        updateFollowUpAssesmentMsg =
+                        assessmentForBackend =
+                            nutritionAssessmentForBackend assesment
+
+                        updateAssesmentMsgs =
                             getChildMeasurementData2 childId offlineSession
                                 |> LocalData.unwrap
                                     []
@@ -3576,25 +3602,54 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
 
                                             followUpValue =
                                                 getMeasurementValueFunc followUp
+
+                                            updateAssesmentOnFollowUpMsg =
+                                                Maybe.map
+                                                    (\value ->
+                                                        let
+                                                            updatedValue =
+                                                                { value | assesment = assessmentForBackend }
+                                                        in
+                                                        Measurement.Model.SaveFollowUp followUpId updatedValue
+                                                            |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            |> Backend.Model.MsgSession sessionId
+                                                            |> App.Model.MsgIndexedDb
+                                                            |> List.singleton
+                                                    )
+                                                    followUpValue
+                                                    |> Maybe.withDefault []
+
+                                            nutrition =
+                                                mapMeasurementData .nutrition measurements
+                                                    |> .current
+
+                                            nutritionId =
+                                                Maybe.map Tuple.first nutrition
+
+                                            nutritionValue =
+                                                getMeasurementValueFunc nutrition
+
+                                            updateAssesmentOnNutritionMsg =
+                                                Maybe.map
+                                                    (\value ->
+                                                        let
+                                                            updatedValue =
+                                                                { value | assesment = assessmentForBackend }
+                                                        in
+                                                        Measurement.Model.SaveNutrition nutritionId updatedValue
+                                                            |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            |> Backend.Model.MsgSession sessionId
+                                                            |> App.Model.MsgIndexedDb
+                                                            |> List.singleton
+                                                    )
+                                                    nutritionValue
+                                                    |> Maybe.withDefault []
                                         in
-                                        followUpValue
-                                            |> Maybe.map
-                                                (\value ->
-                                                    let
-                                                        updatedValue =
-                                                            { value | assesment = nutritionAssessmentForBackend assesment }
-                                                    in
-                                                    Measurement.Model.SaveFollowUp followUpId updatedValue
-                                                        |> Backend.Session.Model.MeasurementOutMsgChild childId
-                                                        |> Backend.Model.MsgSession sessionId
-                                                        |> App.Model.MsgIndexedDb
-                                                        |> List.singleton
-                                                )
-                                            |> Maybe.withDefault []
+                                        updateAssesmentOnFollowUpMsg ++ updateAssesmentOnNutritionMsg
                                     )
 
                         personByPersonMsgs =
-                            updateFollowUpAssesmentMsg
+                            updateAssesmentMsgs
                                 ++ [ Pages.Participant.Model.SetWarningPopupState assesment
                                         |> Pages.Session.Model.MsgChild childId
                                         |> App.Model.MsgPageSession sessionId
@@ -3602,7 +3657,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                    ]
 
                         activityByActivityMsgs childActivity =
-                            updateFollowUpAssesmentMsg
+                            updateAssesmentMsgs
                                 ++ [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
                                    , Pages.NextSteps.Model.SetWarningPopupState assesment
                                         |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
@@ -3612,8 +3667,9 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                     in
                     if List.isEmpty assesment then
                         -- No assesment, so, only thing we want to update is the
-                        -- assesment field on Follow Up measurement, if it exists already.
-                        updateFollowUpAssesmentMsg
+                        -- assesment field on Nutrition measurement and FollowUp
+                        -- measurement (if it exists already).
+                        updateAssesmentMsgs
 
                     else
                         case activePage of
@@ -3655,24 +3711,45 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw after id =
 
                 else
                     let
-                        assesmentAfter =
+                        assessmentForBackend =
                             Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+                                |> nutritionAssessmentForBackend
+
+                        -- Update the assesment field on Follow Up measurement (if it exists already).
+                        updateAssesmentOnFollowUpMsg =
+                            assembledAfter.measurements.followUp
+                                |> Maybe.map
+                                    (\( measurementId, measurement ) ->
+                                        let
+                                            updatedValue =
+                                                measurement.value
+                                                    |> (\value -> { value | assesment = assessmentForBackend })
+                                        in
+                                        Backend.WellChildEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                            |> Backend.Model.MsgWellChildEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                            |> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+
+                        -- Update the assesment field on Nutrition measurement.
+                        updateAssesmentOnNutritionMsg =
+                            assembledAfter.measurements.nutrition
+                                |> Maybe.map
+                                    (\( measurementId, measurement ) ->
+                                        let
+                                            updatedValue =
+                                                measurement.value
+                                                    |> (\value -> { value | assesment = assessmentForBackend })
+                                        in
+                                        Backend.WellChildEncounter.Model.SaveNutrition assembledAfter.participant.person (Just measurementId) updatedValue
+                                            |> Backend.Model.MsgWellChildEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                            |> List.singleton
+                                    )
+                                |> Maybe.withDefault []
                     in
-                    -- Update the assesment field on Follow Up measurement, if it exists already.
-                    assembledAfter.measurements.followUp
-                        |> Maybe.map
-                            (\( measurementId, measurement ) ->
-                                let
-                                    updatedValue =
-                                        measurement.value
-                                            |> (\value -> { value | assesment = nutritionAssessmentForBackend assesmentAfter })
-                                in
-                                Backend.WellChildEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
-                                    |> Backend.Model.MsgWellChildEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                    |> List.singleton
-                            )
-                        |> Maybe.withDefault []
+                    updateAssesmentOnFollowUpMsg ++ updateAssesmentOnNutritionMsg
             )
         |> Maybe.withDefault []
 
