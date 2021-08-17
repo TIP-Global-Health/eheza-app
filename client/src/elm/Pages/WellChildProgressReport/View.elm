@@ -296,17 +296,8 @@ viewDiagnosisPane language currentDate id isChw db model assembled =
 
         assessmentEntries =
             List.map
-                (\( dateMeasured, value ) ->
-                    EverySet.toList value.assesment
-                        |> List.map
-                            (\assessment ->
-                                case assessment of
-                                    AssesmentMalnutritionSigns _ ->
-                                        ( dateMeasured, AssesmentMalnutritionSigns (EverySet.toList value.signs) )
-
-                                    _ ->
-                                        ( dateMeasured, assessment )
-                            )
+                (\( dateMeasured, assessments ) ->
+                    List.map (\assessment -> ( dateMeasured, assessment )) assessments
                 )
                 selectedAssessmentEntries
                 |> List.concat
@@ -336,7 +327,7 @@ generateIndividualNutritionAssessmentEntries :
                       }
                     )
         }
-    -> List ( NominalDate, NutritionValue )
+    -> List ( NominalDate, List NutritionAssessment )
 generateIndividualNutritionAssessmentEntries measurementList =
     List.map
         (\measurements ->
@@ -349,24 +340,38 @@ generateIndividualNutritionAssessmentEntries measurementList =
         |> Maybe.Extra.values
 
 
-filterNutritionAssessments : NominalDate -> NutritionValue -> Maybe ( NominalDate, NutritionValue )
+filterNutritionAssessments : NominalDate -> NutritionValue -> Maybe ( NominalDate, List NutritionAssessment )
 filterNutritionAssessments dateMeasured value =
     let
         assesments =
             EverySet.toList value.assesment
-                |> List.filter
+                |> List.filterMap
                     (\assesment ->
-                        not (List.member assesment [ NoNutritionAssessment, AssesmentDangerSignsNotPresent, AssesmentDangerSignsPresent ])
+                        case assesment of
+                            NoNutritionAssessment ->
+                                Nothing
+
+                            AssesmentDangerSignsNotPresent ->
+                                Nothing
+
+                            AssesmentDangerSignsPresent ->
+                                Nothing
+
+                            AssesmentMalnutritionSigns _ ->
+                                Just <| AssesmentMalnutritionSigns (EverySet.toList value.signs)
+
+                            _ ->
+                                Just assesment
                     )
     in
     if List.isEmpty assesments then
         Nothing
 
     else
-        Just ( dateMeasured, value )
+        Just ( dateMeasured, assesments )
 
 
-generateGroupNutritionAssessmentEntries : Maybe ChildMeasurementList -> List ( NominalDate, NutritionValue )
+generateGroupNutritionAssessmentEntries : Maybe ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )
 generateGroupNutritionAssessmentEntries measurementList =
     Maybe.map
         (\measurements ->
