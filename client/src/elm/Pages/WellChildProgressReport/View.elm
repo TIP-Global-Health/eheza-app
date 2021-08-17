@@ -249,6 +249,7 @@ viewDiagnosisPane language currentDate id isChw db model assembled =
         entriesHeading =
             div [ class "heading diagnosis" ]
                 [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
                 , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
                 , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
                 ]
@@ -274,15 +275,15 @@ viewDiagnosisPane language currentDate id isChw db model assembled =
         ( selectedDiagnosisEntries, selectedAssessmentEntries, selectedWarningEntries ) =
             case model.diagnosisMode of
                 ModeActiveDiagnosis ->
-                    ( activeIllnesses
-                    , activeAssessmentEntries
-                    , activeWarningEntries
+                    ( List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
+                    , List.map (\( date, data ) -> ( date, ( data, StatusOngoing ) )) activeAssessmentEntries
+                    , List.map (\( date, encounterType, data ) -> ( date, ( encounterType, data, StatusOngoing ) )) activeWarningEntries
                     )
 
                 ModeCompletedDiagnosis ->
-                    ( completedIllnesses
-                    , completedAssessmentEntries
-                    , completedWarningEntries
+                    ( List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
+                    , List.map (\( date, data ) -> ( date, ( data, StatusResolved ) )) completedAssessmentEntries
+                    , List.map (\( date, encounterType, data ) -> ( date, ( encounterType, data, StatusResolved ) )) completedWarningEntries
                     )
 
         entries =
@@ -296,8 +297,8 @@ viewDiagnosisPane language currentDate id isChw db model assembled =
 
         assessmentEntries =
             List.map
-                (\( dateMeasured, assessments ) ->
-                    List.map (\assessment -> ( dateMeasured, assessment )) assessments
+                (\( dateMeasured, ( assessments, status ) ) ->
+                    List.map (\assessment -> ( dateMeasured, ( assessment, status ) )) assessments
                 )
                 selectedAssessmentEntries
                 |> List.concat
@@ -496,8 +497,8 @@ generatePartitionedWarningEntries db assembled =
         allWarnings
 
 
-viewAcuteIllnessDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe ( NominalDate, Html Msg )
-viewAcuteIllnessDaignosisEntry language id db participantId =
+viewAcuteIllnessDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> ( IndividualEncounterParticipantId, DiagnosisEntryStatus ) -> Maybe ( NominalDate, Html Msg )
+viewAcuteIllnessDaignosisEntry language id db ( participantId, status ) =
     let
         encounters =
             getAcuteIllnessEncountersForParticipant db participantId
@@ -514,6 +515,8 @@ viewAcuteIllnessDaignosisEntry language id db participantId =
             ( date
             , div [ class "entry diagnosis" ]
                 [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+                    [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
                 , div [ class "cell date" ] [ text <| formatDDMMYY date ]
                 , div
                     [ class "icon-forward"
@@ -532,18 +535,30 @@ viewAcuteIllnessDaignosisEntry language id db participantId =
         maybeLastEncounterId
 
 
-viewNutritionAssessmentEntry : Language -> ( NominalDate, NutritionAssessment ) -> ( NominalDate, Html Msg )
-viewNutritionAssessmentEntry language ( date, assessment ) =
+diagnosisEntryStatusToString : DiagnosisEntryStatus -> String
+diagnosisEntryStatusToString status =
+    case status of
+        StatusOngoing ->
+            "ongoing"
+
+        StatusResolved ->
+            "resolved"
+
+
+viewNutritionAssessmentEntry : Language -> ( NominalDate, ( NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html Msg )
+viewNutritionAssessmentEntry language ( date, ( assessment, status ) ) =
     ( date
     , div [ class "entry diagnosis" ]
         [ div [ class "cell assesment" ] [ translateNutritionAssement language assessment ]
+        , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]
         ]
     )
 
 
-viewWarningEntry : Language -> ( NominalDate, WellChildEncounterType, EncounterWarning ) -> ( NominalDate, Html Msg )
-viewWarningEntry language ( date, encounterType, warning ) =
+viewWarningEntry : Language -> ( NominalDate, ( WellChildEncounterType, EncounterWarning, DiagnosisEntryStatus ) ) -> ( NominalDate, Html Msg )
+viewWarningEntry language ( date, ( encounterType, warning, status ) ) =
     let
         encounterTypeForDaignosisPane =
             translate language <| Translate.WellChildEncounterTypeForDiagnosisPane encounterType
@@ -551,6 +566,8 @@ viewWarningEntry language ( date, encounterType, warning ) =
     ( date
     , div [ class "entry diagnosis" ]
         [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning encounterTypeForDaignosisPane ]
+        , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]
         ]
     )

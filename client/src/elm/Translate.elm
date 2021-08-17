@@ -96,7 +96,7 @@ import Pages.PrenatalActivity.Model
         )
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (VaccinationStatus(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), VaccinationStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -477,6 +477,7 @@ type TranslationId
     | Diabetes
     | Diagnosis
     | DiagnosisDate
+    | DiagnosisEntryStatus DiagnosisEntryStatus
     | DifferenceBetweenDates
     | Disabled
     | DistributionNotice DistributionNotice
@@ -2942,6 +2943,18 @@ translationSet trans =
             { english = "Diagnosis Date"
             , kinyarwanda = Nothing
             }
+
+        DiagnosisEntryStatus status ->
+            case status of
+                StatusOngoing ->
+                    { english = "Ongoing"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusResolved ->
+                    { english = "Resolved"
+                    , kinyarwanda = Nothing
+                    }
 
         DifferenceBetweenDates ->
             { english = "Difference between dates"
