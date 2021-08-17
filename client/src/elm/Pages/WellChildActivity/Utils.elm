@@ -2402,6 +2402,6 @@ resolvePreviousValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-getPreviousMeasurements : List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) ) -> List WellChildMeasurements
+getPreviousMeasurements : List ( NominalDate, ( is, a ) ) -> List a
 getPreviousMeasurements =
     List.map (Tuple.second >> Tuple.second)

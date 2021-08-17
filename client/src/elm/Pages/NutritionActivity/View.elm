@@ -1,4 +1,13 @@
-module Pages.NutritionActivity.View exposing (view, viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
+module Pages.NutritionActivity.View exposing
+    ( translateNutritionAssement
+    , view
+    , viewHeightForm
+    , viewMuacForm
+    , viewNutritionForm
+    , viewPhotoForm
+    , viewWeightForm
+    , warningPopup
+    )
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -139,20 +148,7 @@ warningPopup language currentDate closePopupMsg state =
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
 
             assessments =
-                List.map (\assessment -> p [] [ translateAssement assessment ]) state
-
-            translateAssement assessment =
-                case assessment of
-                    AssesmentMalnutritionSigns signs ->
-                        let
-                            translatedSigns =
-                                List.map (Translate.ChildNutritionSignLabel >> translate language) signs
-                                    |> String.join ", "
-                        in
-                        text <| translate language (Translate.NutritionAssessment assessment) ++ ": " ++ translatedSigns
-
-                    _ ->
-                        text <| translate language <| Translate.NutritionAssessment assessment
+                List.map (\assessment -> p [] [ translateNutritionAssement language assessment ]) state
         in
         Just <|
             div [ class "ui active modal diagnosis-popup" ]
@@ -169,6 +165,21 @@ warningPopup language currentDate closePopupMsg state =
                         [ text <| translate language Translate.Continue ]
                     ]
                 ]
+
+
+translateNutritionAssement : Language -> NutritionAssessment -> Html any
+translateNutritionAssement language assessment =
+    case assessment of
+        AssesmentMalnutritionSigns signs ->
+            let
+                translatedSigns =
+                    List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                        |> String.join ", "
+            in
+            text <| translate language (Translate.NutritionAssessment assessment) ++ ": " ++ translatedSigns
+
+        _ ->
+            text <| translate language <| Translate.NutritionAssessment assessment
 
 
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
