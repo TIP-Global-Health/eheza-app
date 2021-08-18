@@ -553,6 +553,7 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | Growth
     | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
@@ -3890,6 +3891,11 @@ translationSet trans =
 
         GroupEncounter ->
             { english = "Group Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        Growth ->
+            { english = "Growth"
             , kinyarwanda = Nothing
             }
 

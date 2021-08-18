@@ -77,7 +77,9 @@ viewContent language currentDate id isChw db model assembled =
         derrivedContent =
             case model.diagnosisMode of
                 ModeActiveDiagnosis ->
-                    [ viewVaccinationHistoryPane language currentDate id db model assembled ]
+                    [ viewVaccinationHistoryPane language currentDate id db model assembled
+                    , viewGrowthPane language currentDate id isChw db model assembled
+                    ]
 
                 ModeCompletedDiagnosis ->
                     []
@@ -633,6 +635,12 @@ viewVaccinationHistoryPane language currentDate id db model assembled =
             entriesHeading
                 :: entries
         ]
+
+
+viewGrowthPane : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewGrowthPane language currentDate id isChw db model assembled =
+    div [ class "pane growth" ] <|
+        [ viewPaneHeading language Translate.Growth ]
 
 
 viewPaneHeading : Language -> TranslationId -> Html Msg
