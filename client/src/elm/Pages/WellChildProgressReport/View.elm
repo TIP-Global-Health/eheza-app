@@ -78,11 +78,65 @@ view language currentDate zscores id isChw db model =
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id isChw db model assembled =
     let
+        childId =
+            assembled.participant.person
+
+        expectedSessions =
+            Dict.get childId db.expectedSessions
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.withDefault Dict.empty
+
+        groupNutritionMeasurements =
+            Dict.get childId db.childMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.withDefault emptyChildMeasurementList
+
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        acuteIllnesses =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                )
+                individualParticipants
+
+        individualNutritionParticipant =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        individualNutritionMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Pages.NutritionEncounter.Utils.generatePreviousMeasurements Nothing participantId db
+                )
+                individualNutritionParticipant
+                |> Maybe.withDefault []
+
+        individualWellChildMeasurements =
+            ( currentDate, ( id, assembled.measurements ) )
+                :: assembled.previousMeasurementsWithDates
+
         derrivedContent =
             case model.diagnosisMode of
                 ModeActiveDiagnosis ->
                     [ viewVaccinationHistoryPane language currentDate id db model assembled
-                    , viewGrowthPane language currentDate id isChw db model assembled
+                    , viewGrowthPane language
+                        currentDate
+                        zscores
+                        ( childId, assembled.person )
+                        expectedSessions
+                        groupNutritionMeasurements
+                        individualNutritionMeasurements
+                        individualWellChildMeasurements
                     ]
 
                 ModeCompletedDiagnosis ->
@@ -92,7 +146,18 @@ viewContent language currentDate zscores id isChw db model assembled =
         [ viewHeader language id model
         , div [ class "ui report unstackable items" ] <|
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewDiagnosisPane language currentDate id isChw db model assembled
+            , viewDiagnosisPane language
+                currentDate
+                id
+                isChw
+                acuteIllnesses
+                individualNutritionParticipant
+                groupNutritionMeasurements
+                (getPreviousMeasurements individualNutritionMeasurements)
+                (getPreviousMeasurements individualWellChildMeasurements)
+                db
+                model
+                assembled
             ]
                 ++ derrivedContent
 
@@ -184,55 +249,33 @@ viewPersonInfoPane language currentDate person =
         ]
 
 
-viewDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewDiagnosisPane language currentDate id isChw db model assembled =
+viewDiagnosisPane :
+    Language
+    -> NominalDate
+    -> WellChildEncounterId
+    -> Bool
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Maybe IndividualEncounterParticipantId
+    -> ChildMeasurementList
+    -> List NutritionMeasurements
+    -> List WellChildMeasurements
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewDiagnosisPane language currentDate id isChw acuteIllnesses individualNutritionParticipantId groupNutritionMeasurements individualNutritionMeasurements individuaWellChild db model assembled =
     let
-        individualParticipants =
-            Dict.get assembled.participant.person db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
         ( activeIllnesses, completedIllnesses ) =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                )
-                individualParticipants
-                |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
-
-        individualNutritionParticipant =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
-
-        individualNutritionMeasurements =
-            Maybe.map
-                (\participantId ->
-                    Pages.NutritionEncounter.Utils.generatePreviousMeasurements Nothing participantId db
-                        |> getPreviousMeasurements
-                )
-                individualNutritionParticipant
-                |> Maybe.withDefault []
-
-        groupNutritionMeasurements =
-            Dict.get assembled.participant.person db.childMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-
-        individualNutritionEntries =
-            generateIndividualNutritionAssessmentEntries individualNutritionMeasurements
+            List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
 
         groupNutritionEntries =
             generateGroupNutritionAssessmentEntries groupNutritionMeasurements
 
+        individualNutritionEntries =
+            generateIndividualNutritionAssessmentEntries individualNutritionMeasurements
+
         individuaWellChildEntries =
-            assembled.measurements
-                :: getPreviousMeasurements assembled.previousMeasurementsWithDates
-                |> generateIndividualNutritionAssessmentEntries
+            generateIndividualNutritionAssessmentEntries individuaWellChild
 
         allNutritionAssessmentEntries =
             individualNutritionEntries ++ groupNutritionEntries ++ individuaWellChildEntries
@@ -241,7 +284,7 @@ viewDiagnosisPane language currentDate id isChw db model assembled =
             generatePartitionedWarningEntries db assembled
 
         ( activeAssessmentEntries, completedAssessmentEntries ) =
-            resolveDateOfLastNutritionAssessment currentDate isChw individualNutritionParticipant groupNutritionMeasurements assembled db
+            resolveDateOfLastNutritionAssessment currentDate isChw individualNutritionParticipantId groupNutritionMeasurements assembled db
                 |> Maybe.map
                     (\lastNutritionAssessmentDate ->
                         List.partition
@@ -378,27 +421,22 @@ filterNutritionAssessments dateMeasured value =
         Just ( dateMeasured, assesments )
 
 
-generateGroupNutritionAssessmentEntries : Maybe ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )
+generateGroupNutritionAssessmentEntries : ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )
 generateGroupNutritionAssessmentEntries measurementList =
-    Maybe.map
-        (\measurements ->
-            Dict.values measurements.nutritions
-                |> List.filterMap
-                    (\nutrition -> filterNutritionAssessments nutrition.dateMeasured nutrition.value)
-        )
-        measurementList
-        |> Maybe.withDefault []
+    Dict.values measurementList.nutritions
+        |> List.filterMap
+            (\nutrition -> filterNutritionAssessments nutrition.dateMeasured nutrition.value)
 
 
 resolveDateOfLastNutritionAssessment :
     NominalDate
     -> Bool
     -> Maybe IndividualEncounterParticipantId
-    -> Maybe ChildMeasurementList
+    -> ChildMeasurementList
     -> AssembledData
     -> ModelIndexedDb
     -> Maybe NominalDate
-resolveDateOfLastNutritionAssessment currentDate isChw individualNutritionParticipant childGroupMeasurements assembled db =
+resolveDateOfLastNutritionAssessment currentDate isChw individualNutritionParticipant groupNutritionMeasurements assembled db =
     if mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db then
         Just currentDate
 
@@ -416,14 +454,10 @@ resolveDateOfLastNutritionAssessment currentDate isChw individualNutritionPartic
                     individualNutritionParticipant
 
             lastAssessmentDatePerGroupNutrition =
-                Maybe.andThen
-                    (\measurements ->
-                        Dict.values measurements.nutritions
-                            |> List.map .dateMeasured
-                            |> List.sortWith sortDatesDesc
-                            |> List.head
-                    )
-                    childGroupMeasurements
+                Dict.values groupNutritionMeasurements.nutritions
+                    |> List.map .dateMeasured
+                    |> List.sortWith sortDatesDesc
+                    |> List.head
 
             lastAssessmentDatePerWellChild =
                 getWellChildEncountersForParticipant db assembled.encounter.participant
@@ -641,22 +675,17 @@ viewVaccinationHistoryPane language currentDate id db model assembled =
         ]
 
 
-viewGrowthPane : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewGrowthPane language currentDate id isChw db model assembled =
-    div [ class "pane growth" ] <|
-        [ viewPaneHeading language Translate.Growth ]
-
-
-viewGrowthPane2 :
+viewGrowthPane :
     Language
     -> NominalDate
     -> ZScore.Model.Model
     -> ( PersonId, Person )
+    -> Dict SessionId Session
+    -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-    -> ( Dict SessionId Session, ChildMeasurementList )
     -> Html Msg
-viewGrowthPane2 language currentDate zscores ( childId, child ) nutritionMeasurements wellChildMeasurements ( expected, historical ) =
+viewGrowthPane language currentDate zscores ( childId, child ) expected historical nutritionMeasurements wellChildMeasurements =
     let
         --
         -- GROUP CONTEXT
