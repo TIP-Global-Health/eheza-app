@@ -931,8 +931,10 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
     in
     div [ class "pane growth" ]
         [ viewPaneHeading language Translate.Growth
-        , photos
-        , charts
+        , div [ class "pane-content" ]
+            [ charts
+            , photos
+            ]
         ]
 
 
