@@ -122,7 +122,7 @@ foreach ($config as $type => $data) {
   }
 
   drush_print('');
-  drush_print("Updated Assessment for $updated nodes of type $type.");
+  drush_print("Updated Assessment for $updated nodes of type $target_type.");
   drush_print('');
 }
 
