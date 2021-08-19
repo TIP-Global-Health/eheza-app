@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortTuplesByDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (..)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
@@ -46,10 +47,9 @@ generateAssembledData id db =
                     )
 
         previousMeasurementsWithDates =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
-                |> RemoteData.withDefault []
+            RemoteData.toMaybe encounter
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
+                |> Maybe.withDefault []
 
         previousMeasurements =
             getPreviousMeasurements previousMeasurementsWithDates
@@ -95,30 +95,25 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success vaccinationProgress)
 
 
-generatePreviousMeasurements : Maybe WellChildEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) ))
+generatePreviousMeasurements : Maybe WellChildEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
 generatePreviousMeasurements currentEncounterId participantId db =
-    Dict.get participantId db.wellChildEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.map
-            (Dict.toList
-                >> List.filterMap
-                    (\( encounterId, encounter ) ->
-                        -- We do not want to get data of current encounter.
-                        if currentEncounterId == Just encounterId then
+    getWellChildEncountersForParticipant db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId db.wellChildMeasurements of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
                             Nothing
-
-                        else
-                            case Dict.get encounterId db.wellChildMeasurements of
-                                Just (Success data) ->
-                                    Just ( encounter.startDate, ( encounterId, data ) )
-
-                                _ ->
-                                    Nothing
-                    )
-                -- Most recent date to least recent date.
-                >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> Date.compare date2 date1)
             )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc
 
 
 resolveEncounterTypeOnDate : Bool -> NominalDate -> NominalDate -> WellChildEncounterType

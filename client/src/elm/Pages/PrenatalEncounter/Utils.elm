@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
 import Date exposing (Unit(..))
@@ -569,7 +570,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         -- We do not want to get data of current encounter.
                         id /= currentEncounterId
                     )
-                >> List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e1.startDate e2.startDate)
+                >> List.sortWith sortEncounterTuples
                 >> (\previousEncounters ->
                         let
                             ( nurseEncounters, chwEncounters ) =

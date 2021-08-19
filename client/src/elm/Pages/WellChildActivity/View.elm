@@ -762,27 +762,7 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                         SaveHeight personId measurements.height nextTask
 
                                     TaskHeadCircumference ->
-                                        let
-                                            saveHeadCircumferenceMsg =
-                                                SaveHeadCircumference personId measurements.headCircumference nextTask
-                                        in
-                                        headCircumferenceZScore
-                                            |> Maybe.map
-                                                (\zscore ->
-                                                    if zscore > 3 then
-                                                        PopupMacrocephaly personId measurements.headCircumference nextTask
-                                                            |> Just
-                                                            |> SetWarningPopupState
-
-                                                    else if zscore < -3 then
-                                                        PopupMicrocephaly personId measurements.headCircumference nextTask
-                                                            |> Just
-                                                            |> SetWarningPopupState
-
-                                                    else
-                                                        saveHeadCircumferenceMsg
-                                                )
-                                            |> Maybe.withDefault saveHeadCircumferenceMsg
+                                        PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
 
                                     TaskMuac ->
                                         SaveMuac personId measurements.muac nextTask

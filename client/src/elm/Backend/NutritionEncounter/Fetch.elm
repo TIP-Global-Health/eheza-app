@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
@@ -58,15 +59,9 @@ fetchForWellChild id db =
             resolveIndividualParticipantForPerson id WellChildEncounter db
 
         encountersIds =
-            participantId
-                |> Maybe.map
-                    (\participantId_ ->
-                        Dict.get participantId_ db.wellChildEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map Dict.keys
-                            |> RemoteData.withDefault []
-                    )
+            Maybe.map (getWellChildEncountersForParticipant db) participantId
                 |> Maybe.withDefault []
+                |> List.map Tuple.first
 
         -- We fetch measurements of all encounters.
         fetchMeasurements =

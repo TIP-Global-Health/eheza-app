@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -80,6 +81,5 @@ generatePreviousMeasurements currentEncounterId participantId db =
                                     Nothing
                     )
                 -- Most recent date to least recent date.
-                >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> Date.compare date2 date1)
+                >> List.sortWith sortTuplesByDateDesc
             )

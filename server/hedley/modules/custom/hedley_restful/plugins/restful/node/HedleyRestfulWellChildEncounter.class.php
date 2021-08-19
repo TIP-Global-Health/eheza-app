@@ -27,6 +27,7 @@ class HedleyRestfulWellChildEncounter extends HedleyRestfulIndividualEncounter {
    */
   protected $multiFields = [
     'field_encounter_notes',
+    'field_encounter_warnings',
   ];
 
   /**
@@ -41,6 +42,10 @@ class HedleyRestfulWellChildEncounter extends HedleyRestfulIndividualEncounter {
 
     $public_fields['encounter_notes'] = [
       'property' => 'field_encounter_notes',
+    ];
+
+    $public_fields['encounter_warnings'] = [
+      'property' => 'field_encounter_warnings',
     ];
 
     return $public_fields;

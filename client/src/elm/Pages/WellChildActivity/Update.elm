@@ -8,7 +8,7 @@ import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -447,6 +447,55 @@ update currentDate id db msg model =
             ( model
             , Cmd.none
             , []
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        PreSaveHeadCircumference personId maybeZscore saved nextTask ->
+            let
+                warning =
+                    Maybe.map
+                        (\zscore ->
+                            if zscore > 3 then
+                                WarningHeadCircumferenceMacrocephaly
+
+                            else if zscore < -3 then
+                                WarningHeadCircumferenceMicrocephaly
+
+                            else
+                                NoHeadCircumferenceWarning
+                        )
+                        maybeZscore
+                        |> Maybe.withDefault NoHeadCircumferenceWarning
+
+                setEncounterWarningMsg =
+                    [ Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
+                        |> Backend.Model.MsgWellChildEncounter id
+                        |> App.Model.MsgIndexedDb
+                    ]
+
+                extraMsgs =
+                    -- If there's a warning, we show warning popup.
+                    -- Head Circumference will be saved once popup is closed.
+                    -- If there's no warning, we execute Save here.
+                    case warning of
+                        WarningHeadCircumferenceMacrocephaly ->
+                            [ PopupMacrocephaly personId saved nextTask
+                                |> Just
+                                |> SetWarningPopupState
+                            ]
+
+                        WarningHeadCircumferenceMicrocephaly ->
+                            [ PopupMicrocephaly personId saved nextTask
+                                |> Just
+                                |> SetWarningPopupState
+                            ]
+
+                        _ ->
+                            [ SaveHeadCircumference personId saved nextTask ]
+            in
+            ( model
+            , Cmd.none
+            , setEncounterWarningMsg
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
