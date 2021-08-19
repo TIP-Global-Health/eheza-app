@@ -999,7 +999,7 @@ viewPhotos language child photos =
                 ]
                 [ img [ src url, class "orientation" ] [] ]
     in
-    List.sortWith (\m1 m2 -> Date.compare m1.dateMeasured m2.dateMeasured) (photos ++ photos ++ photos)
+    List.sortWith (\m1 m2 -> Date.compare m1.dateMeasured m2.dateMeasured) photos
         |> List.map
             (\photo ->
                 div
