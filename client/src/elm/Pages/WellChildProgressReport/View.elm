@@ -903,37 +903,33 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
             -- groups at the age of 26 month. Therefore, we will show
             -- 0-2 graph for all children that are less than 26 month old.
             if childAgeInMonths < graduatingAgeInMonth then
-                div
-                    [ class "image-report" ]
-                    [ ZScore.View.viewMarkers
-                    , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
-                    , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
-                    , zScoreViewCharts.weightForHeight language zscores weightForLengthData
-                    ]
+                [ ZScore.View.viewMarkers
+                , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
+                , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
+                , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                ]
 
             else if childAgeInMonths < 60 then
-                div
-                    [ class "image-report" ]
-                    [ ZScore.View.viewMarkers
-                    , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
-                    , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
-                    , zScoreViewCharts.weightForHeight0To5 language zscores weightForHeightData
-                    ]
+                [ ZScore.View.viewMarkers
+                , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
+                , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
+                , zScoreViewCharts.weightForHeight0To5 language zscores weightForHeightData
+                ]
 
             else
                 -- Child is older than 5 years.
-                div
-                    [ class "image-report" ]
-                    [ ZScore.View.viewMarkers
-                    , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData
-                    , zScoreViewCharts.weightForAge5To10 language zscores weightForAgeMonthsData
-                    ]
+                [ ZScore.View.viewMarkers
+                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData
+                , zScoreViewCharts.weightForAge5To10 language zscores weightForAgeMonthsData
+                ]
     in
     div [ class "pane growth" ]
         [ viewPaneHeading language Translate.Growth
         , div [ class "pane-content" ]
-            [ charts
-            , photos
+            [ div [ class "growth-charts" ]
+                charts
+            , div [ class "growth-photos" ]
+                photos
             ]
         ]
 
@@ -991,7 +987,7 @@ chartWeightForLengthAndHeight heights weight =
             )
 
 
-viewPhotos : Language -> Person -> List { a | dateMeasured : NominalDate, value : PhotoUrl } -> Html Msg
+viewPhotos : Language -> Person -> List { a | dateMeasured : NominalDate, value : PhotoUrl } -> List (Html Msg)
 viewPhotos language child photos =
     let
         viewPhotoUrl (PhotoUrl url) =
@@ -1003,22 +999,18 @@ viewPhotos language child photos =
                 ]
                 [ img [ src url, class "orientation" ] [] ]
     in
-    photos
-        |> List.sortWith (\m1 m2 -> Date.compare m1.dateMeasured m2.dateMeasured)
+    List.sortWith (\m1 m2 -> Date.compare m1.dateMeasured m2.dateMeasured) (photos ++ photos ++ photos)
         |> List.map
             (\photo ->
                 div
                     [ class "report card" ]
-                    [ div
-                        [ class "content" ]
-                        [ child.birthDate
-                            |> Maybe.map (\birthDate -> text <| renderAgeMonthsDays language birthDate photo.dateMeasured)
-                            |> Maybe.withDefault emptyNode
-                        ]
+                    [ div [ class "content" ]
+                        [ text <| formatDDMMYY photo.dateMeasured ]
                     , viewPhotoUrl photo.value
                     ]
             )
-        |> div [ class "ui five report cards" ]
+        |> div [ class "ui cards" ]
+        |> List.singleton
 
 
 viewPaneHeading : Language -> TranslationId -> Html Msg
