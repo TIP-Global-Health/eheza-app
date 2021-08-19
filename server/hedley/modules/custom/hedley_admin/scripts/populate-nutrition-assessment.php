@@ -2,11 +2,12 @@
 
 /**
  * @file
- * Copies the assessment from Follow Up measurement to Nutrition
- * measurement at Group and Individual Nutrition encounters.
+ * Copies the assessment from Follow Up to Nutrition measurement.
+ *
+ * Handles Group and Individual Nutrition encounters.
  *
  * Execution:
- *   drush scr profiles/hedley/modules/custom/hedley_admin/scripts/populate-nutrition-assessment.php
+ *   drush scr profiles/hedley/modules/custom/hedley_admin/scripts/populate-nutrition-assessment.php.
  */
 
 if (!drupal_is_cli()) {
