@@ -34,7 +34,6 @@ $config = [
 ];
 
 foreach ($config as $type => $data) {
-  // Get the last node id.
   $nid = drush_get_option('nid', 0);
 
   $session_field = $data['session_field'];
@@ -54,7 +53,7 @@ foreach ($config as $type => $data) {
   drush_print("$count nodes of type $type located.");
   drush_print('');
 
-  $processed = 0;
+  $processed = $updated = 0;
   while (TRUE) {
     // Free up memory.
     drupal_static_reset();
@@ -105,9 +104,9 @@ foreach ($config as $type => $data) {
       $target_wrapper = entity_metadata_wrapper('node', $nutrition_id);
       $target_wrapper->field_nutrition_assesment->set($assessment);
       $target_wrapper->save();
-      $processed++;
+      $updated++;
 
-      drush_print("Follow Up ID: $node->nid => Nutrition ID: $nutrition_id ");
+      wlog("Follow Up ID: $node->nid => Nutrition ID: $nutrition_id");
     }
 
     $nid = end($ids);
@@ -116,10 +115,14 @@ foreach ($config as $type => $data) {
       drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
       return;
     }
+
+    $count = count($ids);
+    $processed += $count;
+    drush_print("$processed nodes processed.");
   }
 
   drush_print('');
-  drush_print("Updated Assessment for $processed nodes of type $type.");
+  drush_print("Updated Assessment for $updated nodes of type $type.");
   drush_print('');
 }
 
@@ -134,4 +137,16 @@ function base_query_for_bundle($bundle) {
     ->propertyOrderBy('nid');
 
   return $base_query;
+}
+
+/**
+ * Prints log based on verbosity option.
+ */
+function wlog($message) {
+  // Get the option that will determine if output should be verbose or not.
+  $verbose = drush_get_option('verbose', FALSE);
+
+  if ($verbose !== FALSE) {
+    drush_print($message);
+  }
 }
