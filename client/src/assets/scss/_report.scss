@@ -59,17 +59,17 @@ svg.z-score {
 
   .neg-two-to-neg-three {
     opacity: 0.5;
-    fill: #F9E100;
+    fill: $color-yellow2;
   }
 
   .below-neg-three {
     opacity: 0.5;
-    fill: #E31837;
+    fill: $color-velvet;
   }
 
   .above-neg-two {
     opacity: 0.5;
-    fill: #00853F;
+    fill: $color-green;
   }
 
   .month-line {
