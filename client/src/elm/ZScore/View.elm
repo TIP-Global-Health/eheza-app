@@ -684,12 +684,7 @@ plotChildData config data =
 
 viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeBoys language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male ZeroYears)
         , yAxisLinesAndText heightForAgeConfig
@@ -705,12 +700,7 @@ viewHeightForAgeBoys language model data =
 
 viewHeightForAgeBoys0To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeBoys0To5 language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male TwoYears)
         , yAxisLinesAndText heightForAgeConfig0To5
@@ -726,12 +716,7 @@ viewHeightForAgeBoys0To5 language model data =
 
 viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeBoys5To19 language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male FiveYears)
         , yAxisLinesAndText heightForAgeConfig5To19
@@ -747,12 +732,7 @@ viewHeightForAgeBoys5To19 language model data =
 
 viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeGirls language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female ZeroYears)
         , yAxisLinesAndText heightForAgeConfig
@@ -768,12 +748,7 @@ viewHeightForAgeGirls language model data =
 
 viewHeightForAgeGirls0To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeGirls0To5 language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female TwoYears)
         , yAxisLinesAndText heightForAgeConfig0To5
@@ -789,12 +764,7 @@ viewHeightForAgeGirls0To5 language model data =
 
 viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeGirls5To19 language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female FiveYears)
         , yAxisLinesAndText heightForAgeConfig5To19
@@ -810,12 +780,7 @@ viewHeightForAgeGirls5To19 language model data =
 
 viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male ZeroYears)
         , yAxisLinesAndText weightForAgeConfig
@@ -831,12 +796,7 @@ viewWeightForAgeBoys language model data =
 
 viewWeightForAgeBoys0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys0To5 language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male TwoYears)
         , yAxisLinesAndText weightForAge0To5Config
@@ -852,12 +812,7 @@ viewWeightForAgeBoys0To5 language model data =
 
 viewWeightForAgeBoys5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
 viewWeightForAgeBoys5To10 language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male FiveYears)
         , yAxisLinesAndText weightForAge5To10Config
@@ -873,12 +828,7 @@ viewWeightForAgeBoys5To10 language model data =
 
 viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeGirls language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female ZeroYears)
         , yAxisLinesAndText weightForAgeConfig
@@ -894,12 +844,7 @@ viewWeightForAgeGirls language model data =
 
 viewWeightForAgeGirls0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeGirls0To5 language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female TwoYears)
         , yAxisLinesAndText weightForAge0To5Config
@@ -915,12 +860,7 @@ viewWeightForAgeGirls0To5 language model data =
 
 viewWeightForAgeGirls5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
 viewWeightForAgeGirls5To10 language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female FiveYears)
         , yAxisLinesAndText weightForAge5To10Config
@@ -936,12 +876,7 @@ viewWeightForAgeGirls5To10 language model data =
 
 viewWeightForHeightBoys : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightBoys language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Male ZeroYears)
         , yAxisLinesAndText weightForHeightConfig
@@ -957,12 +892,7 @@ viewWeightForHeightBoys language model data =
 
 viewWeightForHeight0To5Boys : Language -> Model -> List ( Height, Kilograms ) -> Html any
 viewWeightForHeight0To5Boys language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Male TwoYears)
         , yAxisLinesAndText weightForHeight0To5Config
@@ -978,12 +908,7 @@ viewWeightForHeight0To5Boys language model data =
 
 viewWeightForHeightGirls : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightGirls language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Female ZeroYears)
         , yAxisLinesAndText weightForHeightConfig
@@ -999,12 +924,7 @@ viewWeightForHeightGirls language model data =
 
 viewWeightForHeight0To5Girls : Language -> Model -> List ( Height, Kilograms ) -> Html any
 viewWeightForHeight0To5Girls language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
+    svg chartFrameAttributes
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Female TwoYears)
         , yAxisLinesAndText weightForHeight0To5Config
@@ -1016,6 +936,15 @@ viewWeightForHeight0To5Girls language model data =
             |> plotReferenceData weightForHeight0To5Config
         , plotChildData weightForHeight0To5Config data
         ]
+
+
+chartFrameAttributes : List (Attribute any)
+chartFrameAttributes =
+    [ class "z-score"
+    , x "0"
+    , y "0"
+    , viewBox "0 0 841.9 560"
+    ]
 
 
 zScoreLabelsWeightForHeightBoys : Svg any
@@ -1504,24 +1433,11 @@ labels language config =
             , height "386.8"
             ]
             []
-        , rect
-            [ x "12.9"
-            , y "72"
+        , text_
+            [ transform "matrix(1 0 0 1 60 72.5)"
             , class "gender"
-            , width "379.4"
-            , height "1"
             ]
-            []
-        , text_
-            [ transform "matrix(1 0 0 1 109.2567 62.4895)"
-            , class "gender st12 st13"
-            ]
-            [ text <| translate language (ChartPhrase config.title) ]
-        , text_
-            [ transform "matrix(1 0 0 1 109.7767 86.491)"
-            , class "gender z-score-semibold st15"
-            ]
-            [ text <| translate language (ChartPhrase config.subtitle) ]
+            [ text <| translate language (ChartPhrase config.title) ++ " | " ++ translate language (ChartPhrase config.subtitle) ]
         , text_
             [ transform "matrix(1 0 0 1 62.3622 513.5461)"
             , class "z-score-white z-score-semibold st16"
@@ -1548,19 +1464,7 @@ frame : Language -> String -> Svg any
 frame language color =
     g
         []
-        [ a
-            [ xlinkHref "http://www.who.int/childgrowth/en/"
-            , target "_blank"
-            ]
-            [ text_
-                [ transform "matrix(1 0 0 1 500 566.1733)"
-                , class "z-score-frame z-score-semibold z-score-font-sm"
-                ]
-                [ text <| translate language (Translate.ChartPhrase Translate.ZScoreChartsAvailableAt)
-                , text " http://www.who.int/childgrowth/en/"
-                ]
-            ]
-        , rect
+        [ rect
             [ class color
             , height "447.9"
             , width "728.5"

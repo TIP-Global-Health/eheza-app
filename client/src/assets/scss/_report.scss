@@ -1,17 +1,6 @@
 // These are from the SVG conversion for the Z-score charts.  I'm gradually
 // converting the `st...` to more meaningful names.
 svg.z-score {
-  &.boys {
-    .gender {
-      fill: #0297D6;
-    }
-  }
-
-  &.girls {
-    .gender {
-      fill: #E37EB3;
-    }
-  }
 
   .z-score-frame {
     fill: #231F20;
@@ -26,7 +15,7 @@ svg.z-score {
   }
 
   .z-score-gray {
-    fill: #424242;
+    fill: $color-text;
   }
 
   .z-score-white {
@@ -84,12 +73,11 @@ svg.z-score {
     stroke-width: 0.2;
   }
 
-  .st12 {
-    font-family: 'Nunito-Bold';
-  }
-
-  .st13 {
-    font-size: 26.5px;
+  .gender {
+    fill: $color-text;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 22px;
   }
 
   .st14 {
