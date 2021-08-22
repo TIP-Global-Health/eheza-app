@@ -361,7 +361,7 @@ viewDiagnosisPane language currentDate id isChw acuteIllnesses individualNutriti
         [ viewPaneHeading language label
         , div [ class "pane-content" ] <|
             entriesHeading
-                :: entries
+                :: viewEntries language entries
         , priorDiagniosisButton
         ]
 
@@ -1014,7 +1014,7 @@ viewNutritionSigns language child measurements =
                                     |> Just
                     )
     in
-    entriesHeading :: entries
+    entriesHeading :: viewEntries language entries
 
 
 viewPhotos : Language -> Person -> List { a | dateMeasured : NominalDate, value : PhotoUrl } -> List (Html Msg)
@@ -1047,3 +1047,12 @@ viewPaneHeading : Language -> TranslationId -> Html Msg
 viewPaneHeading language label =
     div [ class <| "pane-heading" ]
         [ text <| translate language label ]
+
+
+viewEntries : Language -> List (Html Msg) -> List (Html Msg)
+viewEntries language entries =
+    if List.isEmpty entries then
+        [ div [ class "entry no-matches" ] [ text <| translate language Translate.NoMatchesFound ] ]
+
+    else
+        entries

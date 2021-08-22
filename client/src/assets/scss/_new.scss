@@ -2593,6 +2593,12 @@ div.page-report.well-child {
       }
     }
 
+    .entry.no-matches {
+      border-bottom: none;
+      display: block;
+      text-align: center;
+    }
+
     .entry.diagnosis {
 
       .assesment {
