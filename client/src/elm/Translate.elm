@@ -448,6 +448,7 @@ type TranslationId
     | DangerSignsLabel
     | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
+    | Date
     | DateConcludedActualQuestion
     | DateConcludedEstimatedQuestion
     | DateOfLastAssessment
@@ -704,6 +705,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoGroupsFound
     | NoMatchesFound
+    | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
     | NoParticipantsPending
@@ -2822,6 +2824,11 @@ translationSet trans =
                     { english = "Review Danger Signs"
                     , kinyarwanda = Just "Kureba ibimenyetso mpuruza"
                     }
+
+        Date ->
+            { english = "Date"
+            , kinyarwanda = Nothing
+            }
 
         DateConcludedActualQuestion ->
             { english = "What was the actual delivery date for the child"
@@ -5274,6 +5281,11 @@ translationSet trans =
         NoMatchesFound ->
             { english = "No matches found"
             , kinyarwanda = Just "Ibyo wifuza ntibiboneste"
+            }
+
+        NutritionSigns ->
+            { english = "Nutrition Signs"
+            , kinyarwanda = Just "Ibimenyetso by'imirire"
             }
 
         ReasonForNotSendingToHC reason ->

@@ -12,6 +12,7 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNutritionEncountersForParticipant
         , getWellChildEncountersForParticipant
+        , sortByDateDesc
         , sortDatesDesc
         , sortEncounterTuplesDesc
         , sortTuplesByDateDesc
@@ -809,29 +810,20 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                 |> List.sortWith (\s1 s2 -> Date.compare (Tuple.second s1) (Tuple.second s2))
                 |> List.reverse
 
-        heightValuesIndexed =
-            Dict.union heightValuesBySession heightValuesByEncounter
-
-        muacValuesIndexed =
-            Dict.union muacValuesBySession muacValuesByEncounter
-
-        weightValuesIndexed =
-            Dict.union weightValuesBySession weightValuesByEncounter
-
         heightValues =
-            Dict.values heightValuesIndexed
+            Dict.values heightValuesBySession ++ Dict.values heightValuesByEncounter
 
         muacValues =
-            Dict.values muacValuesIndexed
+            Dict.values muacValuesBySession ++ Dict.values muacValuesByEncounter
 
         weightValues =
-            Dict.values weightValuesIndexed
+            Dict.values weightValuesBySession ++ Dict.values weightValuesByEncounter
+
+        nutritionValues =
+            Dict.values nutritionValuesBySession ++ Dict.values nutritionValuesByEncounter
 
         photoValues =
             Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
-
-        photos =
-            viewPhotos language child photoValues
 
         zScoreViewCharts =
             case child.gender of
@@ -926,10 +918,12 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
     div [ class "pane growth" ]
         [ viewPaneHeading language Translate.Growth
         , div [ class "pane-content" ]
-            [ div [ class "growth-charts" ]
+            [ div [ class "growth-nutrition-signs" ] <|
+                viewNutritionSigns language child nutritionValues
+            , div [ class "growth-charts" ]
                 charts
-            , div [ class "growth-photos" ]
-                photos
+            , div [ class "growth-photos" ] <|
+                viewPhotos language child photoValues
             ]
         ]
 
@@ -987,8 +981,44 @@ chartWeightForLengthAndHeight heights weight =
             )
 
 
+viewNutritionSigns : Language -> Person -> List { a | dateMeasured : NominalDate, value : NutritionValue } -> List (Html Msg)
+viewNutritionSigns language child measurements =
+    let
+        entriesHeading =
+            div [ class "heading nutrition-signs" ]
+                [ div [ class "name" ] [ text <| translate language Translate.NutritionSigns ]
+                , div [ class "date" ] [ text <| translate language Translate.Date ]
+                ]
+
+        entries =
+            List.sortWith (sortByDateDesc .dateMeasured) measurements
+                |> List.filterMap
+                    (\measurement ->
+                        case EverySet.toList measurement.value.signs of
+                            [] ->
+                                Nothing
+
+                            [ NormalChildNutrition ] ->
+                                Nothing
+
+                            signs ->
+                                div [ class "entry nutrition-signs" ]
+                                    [ List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                                        |> String.join ", "
+                                        |> text
+                                        |> List.singleton
+                                        |> div [ class "cell name" ]
+                                    , div [ class "cell date" ]
+                                        [ text <| formatDDMMYY measurement.dateMeasured ]
+                                    ]
+                                    |> Just
+                    )
+    in
+    entriesHeading :: entries
+
+
 viewPhotos : Language -> Person -> List { a | dateMeasured : NominalDate, value : PhotoUrl } -> List (Html Msg)
-viewPhotos language child photos =
+viewPhotos language child measurements =
     let
         viewPhotoUrl (PhotoUrl url) =
             div
@@ -999,7 +1029,7 @@ viewPhotos language child photos =
                 ]
                 [ img [ src url, class "orientation" ] [] ]
     in
-    List.sortWith (\m1 m2 -> Date.compare m1.dateMeasured m2.dateMeasured) photos
+    List.sortWith (sortByDateDesc .dateMeasured) measurements
         |> List.map
             (\photo ->
                 div

@@ -2541,6 +2541,16 @@ div.page-report.well-child {
       }
     }
 
+    .heading.nutrition-signs {
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
     .entry {
       border-bottom: 1px solid $color-text;
       color: $color-dark-gray;
@@ -2628,6 +2638,16 @@ div.page-report.well-child {
 
       .next-due {
         width: 20%;
+      }
+    }
+
+    .entry.nutrition-signs {
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
       }
     }
 
