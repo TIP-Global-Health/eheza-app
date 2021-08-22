@@ -76,6 +76,43 @@ view language currentDate zscores id isChw db model =
     viewWebData language (viewContent language currentDate zscores id isChw db model) identity assembled
 
 
+viewContent2 : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person ) -> Bool -> ModelIndexedDb -> Model -> Html Msg
+viewContent2 language currentDate zscores ( childId, child ) isChw db model =
+    let
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        individualWellChildParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        lastWellChildEncounterId =
+            Maybe.andThen
+                (getWellChildEncountersForParticipant db
+                    >> List.map Tuple.first
+                    >> List.head
+                )
+                individualWellChildParticipantId
+
+        assembled =
+            Maybe.andThen
+                (\id ->
+                    generateAssembledData id db
+                        |> RemoteData.toMaybe
+                )
+                lastWellChildEncounterId
+    in
+    emptyNode
+
+
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id isChw db model assembled =
     let
@@ -129,7 +166,7 @@ viewContent language currentDate zscores id isChw db model assembled =
         derrivedContent =
             case model.diagnosisMode of
                 ModeActiveDiagnosis ->
-                    [ viewVaccinationHistoryPane language currentDate id db model assembled
+                    [ viewVaccinationHistoryPane language currentDate db model assembled
                     , viewGrowthPane language
                         currentDate
                         zscores
@@ -342,7 +379,7 @@ viewDiagnosisPane language currentDate id isChw acuteIllnesses individualNutriti
                 |> List.map Tuple.second
 
         daignosisEntries =
-            List.map (Tuple.first >> viewAcuteIllnessDaignosisEntry language id db) selectedDiagnosisEntries
+            List.map (Tuple.first >> viewAcuteIllnessDiagnosisEntry language id db) selectedDiagnosisEntries
                 |> Maybe.Extra.values
 
         assessmentEntries =
@@ -538,8 +575,8 @@ generatePartitionedWarningEntries db assembled =
         allWarnings
 
 
-viewAcuteIllnessDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> ( IndividualEncounterParticipantId, DiagnosisEntryStatus ) -> Maybe ( NominalDate, Html Msg )
-viewAcuteIllnessDaignosisEntry language id db ( participantId, status ) =
+viewAcuteIllnessDiagnosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> ( IndividualEncounterParticipantId, DiagnosisEntryStatus ) -> Maybe ( NominalDate, Html Msg )
+viewAcuteIllnessDiagnosisEntry language id db ( participantId, status ) =
     let
         encounters =
             getAcuteIllnessEncountersForParticipant db participantId
@@ -614,8 +651,8 @@ viewWarningEntry language ( date, ( encounterType, warning, status ) ) =
     )
 
 
-viewVaccinationHistoryPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewVaccinationHistoryPane language currentDate id db model assembled =
+viewVaccinationHistoryPane : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewVaccinationHistoryPane language currentDate db model assembled =
     let
         entriesHeading =
             div [ class "heading vaccination" ]
