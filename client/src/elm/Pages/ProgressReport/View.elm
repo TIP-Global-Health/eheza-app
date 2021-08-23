@@ -1,6 +1,7 @@
 module Pages.ProgressReport.View exposing (view, viewFoundChild)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
+import Activity.Utils exposing (mandatoryActivitiesCompleted)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -24,7 +25,10 @@ import LocalData
 import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
+import Pages.ProgressReport.Model exposing (..)
 import Pages.Session.Model
+import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
@@ -37,8 +41,28 @@ import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
-view language currentDate zscores childId ( sessionId, session ) db =
+view : Language -> NominalDate -> ZScore.Model.Model -> Bool -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores isChw childId ( sessionId, session ) db model =
+    let
+        childData =
+            getChild childId session.offlineSession
+                |> Maybe.map (\child -> Success ( childId, child ))
+                |> Maybe.withDefault NotAsked
+
+        initiator =
+            InitiatorNutritionGroup sessionId childId
+
+        mandatoryNutritionAssessmentMeasurementsTaken =
+            mandatoryActivitiesCompleted currentDate zscores session.offlineSession childId isChw db
+    in
+    viewWebData language
+        (viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db model.diagnosisMode SetActivePage SetDiagnosisMode)
+        identity
+        childData
+
+
+view2 : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
+view2 language currentDate zscores childId ( sessionId, session ) db =
     case getChild childId session.offlineSession of
         Just child ->
             let

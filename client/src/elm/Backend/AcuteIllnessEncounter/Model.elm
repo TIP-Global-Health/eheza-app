@@ -107,7 +107,9 @@ type AcuteIllnessDiagnosis
 
 type AcuteIllnessProgressReportInitiator
     = InitiatorEncounterPage
+    | InitiatorIndividualNutritionProgressReport NutritionEncounterId
     | InitiatorWellChildProgressReport WellChildEncounterId
+    | InitiatorGroupNutritionProgressReport SessionId PersonId
 
 
 type Msg

@@ -33,6 +33,12 @@ type DiagnosisEntryStatus
     | StatusResolved
 
 
+type WellChildProgressReportInitiator
+    = InitiatorWellChild WellChildEncounterId
+    | InitiatorNutritionIndividual NutritionEncounterId
+    | InitiatorNutritionGroup SessionId PersonId
+
+
 type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page
