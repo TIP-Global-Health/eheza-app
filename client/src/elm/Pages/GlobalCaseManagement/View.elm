@@ -259,8 +259,13 @@ viewItemHeading language encounterType =
 viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
 viewNutritionPane language currentDate itemsDict db model =
     let
+        limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
+            Date.add Days 1 currentDate
+
         entries =
-            generateNutritionFollowUpEntries language currentDate itemsDict db
+            generateNutritionFollowUpEntries language currentDate limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -275,15 +280,15 @@ viewNutritionPane language currentDate itemsDict db model =
         ]
 
 
-generateNutritionFollowUpEntries : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> List NutritionFollowUpEntry
-generateNutritionFollowUpEntries language currentDate itemsDict db =
-    Dict.map (generateNutritionFollowUpEntryData language currentDate db) itemsDict
+generateNutritionFollowUpEntries : Language -> NominalDate -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> List NutritionFollowUpEntry
+generateNutritionFollowUpEntries language currentDate limitDate itemsDict db =
+    Dict.map (generateNutritionFollowUpEntryData language currentDate limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
-generateNutritionFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Maybe NutritionFollowUpEntry
-generateNutritionFollowUpEntryData language currentDate db personId item =
+generateNutritionFollowUpEntryData : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Maybe NutritionFollowUpEntry
+generateNutritionFollowUpEntryData language currentDate limitDate db personId item =
     let
         lastHomeVisitEncounter =
             resolveIndividualParticipantForPerson personId HomeVisitEncounter db
@@ -291,7 +296,10 @@ generateNutritionFollowUpEntryData language currentDate db personId item =
                     (\participantId ->
                         Dict.get participantId db.homeVisitEncountersByParticipant
                             |> Maybe.andThen RemoteData.toMaybe
-                            |> Maybe.map Dict.values
+                            |> Maybe.map
+                                (Dict.values
+                                    >> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
+                                )
                             |> Maybe.withDefault []
                     )
                 |> Maybe.withDefault []
@@ -377,8 +385,13 @@ viewAcuteIllnessPane :
     -> Html Msg
 viewAcuteIllnessPane language currentDate itemsDict db model =
     let
+        limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
+            Date.add Days 1 currentDate
+
         entries =
-            generateAcuteIllnessFollowUpEntries language currentDate itemsDict db
+            generateAcuteIllnessFollowUpEntries language currentDate limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -397,11 +410,12 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
 generateAcuteIllnessFollowUpEntries :
     Language
     -> NominalDate
+    -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
     -> ModelIndexedDb
     -> List AcuteIllnessFollowUpEntry
-generateAcuteIllnessFollowUpEntries language currentDate itemsDict db =
-    Dict.map (generateAcuteIllnessFollowUpEntryData language currentDate db) itemsDict
+generateAcuteIllnessFollowUpEntries language currentDate limitDate itemsDict db =
+    Dict.map (generateAcuteIllnessFollowUpEntryData language currentDate limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
@@ -409,19 +423,21 @@ generateAcuteIllnessFollowUpEntries language currentDate itemsDict db =
 generateAcuteIllnessFollowUpEntryData :
     Language
     -> NominalDate
+    -> NominalDate
     -> ModelIndexedDb
     -> ( IndividualEncounterParticipantId, PersonId )
     -> AcuteIllnessFollowUpItem
     -> Maybe AcuteIllnessFollowUpEntry
-generateAcuteIllnessFollowUpEntryData language currentDate db ( participantId, personId ) item =
+generateAcuteIllnessFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
     let
-        outcome =
+        dateConcludedCriteria =
             Dict.get participantId db.individualParticipants
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.andThen .outcome
+                |> Maybe.andThen .dateConcluded
+                |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
     in
-    if isJust outcome then
-        -- Illness was concluded, so we do not need to follow up on it.
+    if dateConcludedCriteria == Just LT then
+        -- Illness was concluded before limit date, so we do not need to follow up on it.
         Nothing
 
     else
@@ -429,7 +445,10 @@ generateAcuteIllnessFollowUpEntryData language currentDate db ( participantId, p
             allEncountersWithIds =
                 Dict.get participantId db.acuteIllnessEncountersByParticipant
                     |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map Dict.toList
+                    |> Maybe.map
+                        (Dict.toList
+                            >> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
+                        )
                     |> Maybe.withDefault []
                     -- Sort DESC, by date and sequence number.
                     |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
@@ -504,8 +523,13 @@ viewPrenatalPane :
     -> Html Msg
 viewPrenatalPane language currentDate itemsDict db model =
     let
+        limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
+            Date.add Days 1 currentDate
+
         entries =
-            generatePrenatalFollowUpEntries language currentDate itemsDict db
+            generatePrenatalFollowUpEntries language currentDate limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -524,11 +548,12 @@ viewPrenatalPane language currentDate itemsDict db model =
 generatePrenatalFollowUpEntries :
     Language
     -> NominalDate
+    -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
     -> ModelIndexedDb
     -> List PrenatalFollowUpEntry
-generatePrenatalFollowUpEntries language currentDate itemsDict db =
-    Dict.map (generatePrenatalFollowUpEntryData language currentDate db) itemsDict
+generatePrenatalFollowUpEntries language currentDate limitDate itemsDict db =
+    Dict.map (generatePrenatalFollowUpEntryData language currentDate limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
@@ -536,19 +561,21 @@ generatePrenatalFollowUpEntries language currentDate itemsDict db =
 generatePrenatalFollowUpEntryData :
     Language
     -> NominalDate
+    -> NominalDate
     -> ModelIndexedDb
     -> ( IndividualEncounterParticipantId, PersonId )
     -> PrenatalFollowUpItem
     -> Maybe PrenatalFollowUpEntry
-generatePrenatalFollowUpEntryData language currentDate db ( participantId, personId ) item =
+generatePrenatalFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
     let
-        outcome =
+        dateConcludedCriteria =
             Dict.get participantId db.individualParticipants
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.andThen .outcome
+                |> Maybe.andThen .dateConcluded
+                |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
     in
-    if isJust outcome then
-        -- Pregnancy was concluded, so we do not need to follow up on it.
+    if dateConcludedCriteria == Just LT then
+        -- Pregnancy was concluded before limit date, so we do not need to follow up on it.
         Nothing
 
     else
@@ -556,7 +583,10 @@ generatePrenatalFollowUpEntryData language currentDate db ( participantId, perso
             allEncountersWithIds =
                 Dict.get participantId db.prenatalEncountersByParticipant
                     |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map Dict.toList
+                    |> Maybe.map
+                        (Dict.toList
+                            >> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
+                        )
                     |> Maybe.withDefault []
                     -- Sort DESC
                     |> List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e2.startDate e1.startDate)

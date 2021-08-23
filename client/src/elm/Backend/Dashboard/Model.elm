@@ -7,7 +7,18 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
-import Backend.Measurement.Model exposing (Call114Sign, DangerSign, FamilyPlanningSign, FollowUpMeasurements, IsolationSign, SendToHCSign)
+import Backend.Measurement.Model
+    exposing
+        ( Call114Sign
+        , DangerSign
+        , FamilyPlanningSign
+        , FollowUpMeasurements
+        , HCContactSign
+        , HCRecommendation
+        , IsolationSign
+        , Recommendation114
+        , SendToHCSign
+        )
 import Backend.Person.Model exposing (Gender)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -212,6 +223,7 @@ type ProgramType
     | ProgramIndividual
     | ProgramPmtct
     | ProgramSorwathe
+    | ProgramChw
     | ProgramUnknown
 
 
@@ -253,7 +265,10 @@ type alias AcuteIllnessEncounterDataItem =
     , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , feverRecorded : Bool
-    , call114Signs : EverySet Call114Sign
     , isolationSigns : EverySet IsolationSign
     , sendToHCSigns : EverySet SendToHCSign
+    , call114Signs : EverySet Call114Sign
+    , recommendation114 : EverySet Recommendation114
+    , hcContactSigns : EverySet HCContactSign
+    , hcRecommendation : EverySet HCRecommendation
     }

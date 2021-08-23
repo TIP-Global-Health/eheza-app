@@ -190,8 +190,8 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
-        ( sentToHC, managedLocally ) =
-            countAcuteIllnessCasesByHCReferrals encountersForSelectedMonth
+        diagnosedCases =
+            countAcuteIllnessDiagnosedCases encountersForSelectedMonth
 
         -- Prenatal
         currentlyPregnant =
@@ -200,9 +200,12 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         totalNewborn =
             countNewbornForSelectedMonth selectedDate assembled.prenatalData
 
+        limitDate =
+            Date.ceiling Date.Month selectedDate
+
         -- Case Management
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
-            Maybe.map2 (getFollowUpsTotals language currentDate db)
+            Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
                 model.selectedVillageFilter
                 assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
@@ -211,7 +214,7 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     , monthSelector language selectedDate model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt <| sentToHC + managedLocally)
+            [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt diagnosedCases)
             , chwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant)
             , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
             ]
@@ -225,190 +228,6 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
             ]
         ]
     ]
-
-
-applyProgramTypeAndResidentsFilters :
-    Dict VillageId (List PersonIdentifier)
-    -> Dict ProgramType (List { a | identifier : PersonIdentifier })
-    -> Model
-    -> List { a | identifier : PersonIdentifier }
-applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
-    case model.programTypeFilter of
-        FilterAllPrograms ->
-            let
-                achi =
-                    Dict.get ProgramAchi dict
-                        |> Maybe.withDefault []
-
-                fbf =
-                    Dict.get ProgramFbf dict
-                        |> Maybe.withDefault []
-
-                pmtct =
-                    Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault []
-
-                sorwathe =
-                    Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault []
-
-                individual =
-                    Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault []
-            in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
-
-        FilterProgramAchi ->
-            Dict.get ProgramAchi dict
-                |> Maybe.withDefault []
-
-        FilterProgramFbf ->
-            Dict.get ProgramFbf dict
-                |> Maybe.withDefault []
-
-        FilterProgramPmtct ->
-            Dict.get ProgramPmtct dict
-                |> Maybe.withDefault []
-
-        FilterProgramSorwathe ->
-            Dict.get ProgramSorwathe dict
-                |> Maybe.withDefault []
-
-        FilterProgramCommunity ->
-            let
-                villageResidents =
-                    model.selectedVillageFilter
-                        |> Maybe.andThen (\village -> Dict.get village villagesWithResidents)
-                        |> Maybe.withDefault []
-
-                villageFilterFunc caseManagement =
-                    if isJust model.selectedVillageFilter then
-                        List.member caseManagement.identifier villageResidents
-
-                    else
-                        -- Do not filter by village, if village is not selected.
-                        True
-
-                achi =
-                    Dict.get ProgramAchi dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                fbf =
-                    Dict.get ProgramFbf dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                pmtct =
-                    Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                sorwathe =
-                    Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-
-                individual =
-                    Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
-            in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
-
-
-totalEncountersApplyBreakdownFilters : TotalEncountersData -> Model -> Periods
-totalEncountersApplyBreakdownFilters data model =
-    let
-        emptyPeriods =
-            Periods 0 0
-    in
-    case model.programTypeFilter of
-        FilterAllPrograms ->
-            let
-                achi =
-                    Dict.get ProgramAchi data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                fbf =
-                    Dict.get ProgramFbf data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                pmtct =
-                    Dict.get ProgramPmtct data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                sorwathe =
-                    Dict.get ProgramSorwathe data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                individual =
-                    Dict.get ProgramIndividual data.global
-                        |> Maybe.withDefault emptyPeriods
-
-                sumPeriods p1 p2 =
-                    Periods (p1.lastYear + p2.lastYear) (p1.thisYear + p2.thisYear)
-            in
-            sumPeriods achi fbf
-                |> sumPeriods pmtct
-                |> sumPeriods sorwathe
-                |> sumPeriods individual
-
-        FilterProgramAchi ->
-            Dict.get ProgramAchi data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramFbf ->
-            Dict.get ProgramFbf data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramPmtct ->
-            Dict.get ProgramPmtct data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramSorwathe ->
-            Dict.get ProgramSorwathe data.global
-                |> Maybe.withDefault emptyPeriods
-
-        FilterProgramCommunity ->
-            let
-                dict =
-                    case model.selectedVillageFilter of
-                        Just village ->
-                            Dict.get village data.villages
-                                |> Maybe.withDefault Dict.empty
-
-                        -- When village is not selected, we show global data.
-                        Nothing ->
-                            data.global
-
-                achi =
-                    Dict.get ProgramAchi dict
-                        |> Maybe.withDefault emptyPeriods
-
-                fbf =
-                    Dict.get ProgramFbf dict
-                        |> Maybe.withDefault emptyPeriods
-
-                pmtct =
-                    Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault emptyPeriods
-
-                sorwathe =
-                    Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault emptyPeriods
-
-                individual =
-                    Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault emptyPeriods
-
-                sumPeriods p1 p2 =
-                    Periods (p1.lastYear + p2.lastYear) (p1.thisYear + p2.thisYear)
-            in
-            sumPeriods achi fbf
-                |> sumPeriods pmtct
-                |> sumPeriods sorwathe
-                |> sumPeriods individual
 
 
 applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
@@ -1031,8 +850,11 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
+        limitDate =
+            Date.ceiling Date.Month selectedDate
+
         ( managedCovid, managedMalaria, managedGI ) =
-            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db)
+            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db)
                 model.selectedVillageFilter
                 assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
@@ -1064,7 +886,7 @@ viewAcuteIllnessOverviewPage language encounters model =
             countAcuteIllnessAssesments encounters
 
         ( sentToHC, managedLocally ) =
-            countAcuteIllnessCasesByHCReferrals encounters
+            countAcuteIllnessCasesByTreatmentApproach encounters
 
         undeterminedCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
@@ -1273,7 +1095,7 @@ viewNutritionPage language currentDate isChw nurse stats db model =
             [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
             ]
         , div [ class "eight wide column" ]
-            [ totalEncountersApplyBreakdownFilters currentPeriodStats.totalEncounters model
+            [ generateTotalEncounters currentPeriodStats.totalEncounters model
                 |> viewTotalEncounters language
             ]
         , div [ class "sixteen wide column" ]

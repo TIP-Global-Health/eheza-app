@@ -7,16 +7,31 @@ import Backend.Dashboard.Model
         ( AcuteIllnessDataItem
         , AcuteIllnessEncounterDataItem
         , AssembledData
+        , CaseManagement
         , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
+        , NutritionStatus(..)
+        , NutritionValue
+        , Periods
         , PersonIdentifier
         , PrenatalDataItem
         , ProgramType(..)
+        , TotalEncountersData
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
-import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), FollowUpMeasurements, IsolationSign(..), SendToHCSign(..))
+import Backend.Measurement.Model
+    exposing
+        ( Call114Sign(..)
+        , DangerSign(..)
+        , FollowUpMeasurements
+        , HCContactSign(..)
+        , HCRecommendation(..)
+        , IsolationSign(..)
+        , Recommendation114(..)
+        , SendToHCSign(..)
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet exposing (EverySet)
@@ -90,10 +105,21 @@ generateAssembledData healthCenterId stats db model =
 generateFilteredDashboardStats : DashboardStatsRaw -> Model -> DashboardStats
 generateFilteredDashboardStats stats model =
     { caseManagement =
-        { thisYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.thisYear model
-        , lastYear = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.caseManagement.lastYear model
+        { thisYear =
+            applyProgramTypeAndResidentsFilters stats.villagesWithResidents
+                model.programTypeFilter
+                model.selectedVillageFilter
+                stats.caseManagement.thisYear
+                |> caseManagementMergeDuplicates
+        , lastYear =
+            applyProgramTypeAndResidentsFilters
+                stats.villagesWithResidents
+                model.programTypeFilter
+                model.selectedVillageFilter
+                stats.caseManagement.lastYear
+                |> caseManagementMergeDuplicates
         }
-    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents stats.childrenBeneficiaries model
+    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents model.programTypeFilter model.selectedVillageFilter stats.childrenBeneficiaries
     , completedPrograms = stats.completedPrograms
     , familyPlanning = stats.familyPlanning
     , missedSessions = stats.missedSessions
@@ -125,11 +151,12 @@ generateFilteredPrenatalData stats model =
 
 applyProgramTypeAndResidentsFilters :
     Dict VillageId (List PersonIdentifier)
+    -> FilterProgramType
+    -> Maybe VillageId
     -> Dict ProgramType (List { a | identifier : PersonIdentifier })
-    -> Model
     -> List { a | identifier : PersonIdentifier }
-applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
-    case model.programTypeFilter of
+applyProgramTypeAndResidentsFilters villagesWithResidents programTypeFilter selectedVillageFilter dict =
+    case programTypeFilter of
         FilterAllPrograms ->
             let
                 achi =
@@ -148,11 +175,15 @@ applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
                     Dict.get ProgramSorwathe dict
                         |> Maybe.withDefault []
 
+                chw =
+                    Dict.get ProgramChw dict
+                        |> Maybe.withDefault []
+
                 individual =
                     Dict.get ProgramIndividual dict
                         |> Maybe.withDefault []
             in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
+            achi ++ fbf ++ pmtct ++ sorwathe ++ chw ++ individual
 
         FilterProgramAchi ->
             Dict.get ProgramAchi dict
@@ -171,46 +202,195 @@ applyProgramTypeAndResidentsFilters villagesWithResidents dict model =
                 |> Maybe.withDefault []
 
         FilterProgramCommunity ->
-            let
-                villageResidents =
-                    model.selectedVillageFilter
-                        |> Maybe.andThen (\village -> Dict.get village villagesWithResidents)
-                        |> Maybe.withDefault []
+            selectedVillageFilter
+                |> Maybe.map
+                    (\selectedVillage ->
+                        let
+                            villageResidents =
+                                Dict.get selectedVillage villagesWithResidents
+                                    |> Maybe.withDefault []
+                        in
+                        applyProgramTypeAndResidentsFilters villagesWithResidents FilterAllPrograms selectedVillageFilter dict
+                            |> List.filter (\item -> List.member item.identifier villageResidents)
+                    )
+                |> Maybe.withDefault []
 
-                villageFilterFunc caseManagement =
-                    if isJust model.selectedVillageFilter then
-                        List.member caseManagement.identifier villageResidents
+
+mergeNutritionValueDicts : Dict Int NutritionValue -> Dict Int NutritionValue -> Dict Int NutritionValue
+mergeNutritionValueDicts dict1 dict2 =
+    Dict.merge
+        (\key nutritionCase -> Dict.insert key nutritionCase)
+        (\key nutritionCase1 nutritionCase2 -> Dict.insert key (mergeNutritionValues nutritionCase1 nutritionCase2))
+        (\key nutritionCase -> Dict.insert key nutritionCase)
+        dict1
+        dict2
+        Dict.empty
+
+
+caseManagementMergeDuplicates : List CaseManagement -> List CaseManagement
+caseManagementMergeDuplicates cases =
+    List.foldl
+        (\candidate accum ->
+            Dict.get candidate.identifier accum
+                |> Maybe.map
+                    (\current ->
+                        let
+                            mergedNutrition =
+                                { stunting = mergeNutritionValueDicts candidate.nutrition.stunting candidate.nutrition.stunting
+                                , underweight = mergeNutritionValueDicts candidate.nutrition.underweight candidate.nutrition.underweight
+                                , wasting = mergeNutritionValueDicts candidate.nutrition.wasting candidate.nutrition.wasting
+                                , muac = mergeNutritionValueDicts candidate.nutrition.muac candidate.nutrition.muac
+                                , nutritionSigns = mergeNutritionValueDicts candidate.nutrition.nutritionSigns candidate.nutrition.nutritionSigns
+                                }
+
+                            merged =
+                                { current | nutrition = mergedNutrition }
+                        in
+                        Dict.insert current.identifier merged accum
+                    )
+                |> Maybe.withDefault (Dict.insert candidate.identifier candidate accum)
+        )
+        Dict.empty
+        cases
+        |> Dict.values
+
+
+mergeNutritionValues : NutritionValue -> NutritionValue -> NutritionValue
+mergeNutritionValues first second =
+    case compareNutritionStatus first.class second.class of
+        GT ->
+            first
+
+        EQ ->
+            let
+                firstValue =
+                    String.toFloat first.value
+
+                secondValue =
+                    String.toFloat second.value
+            in
+            case ( firstValue, secondValue ) of
+                ( Just value1, Just value2 ) ->
+                    if compare value1 value2 == GT then
+                        first
 
                     else
-                        -- Do not filter by village, if village is not selected.
-                        True
+                        second
 
+                ( Just value1, Nothing ) ->
+                    first
+
+                ( Nothing, Just value2 ) ->
+                    second
+
+                ( Nothing, Nothing ) ->
+                    second
+
+        LT ->
+            second
+
+
+compareNutritionStatus : NutritionStatus -> NutritionStatus -> Order
+compareNutritionStatus first second =
+    let
+        numericValue status =
+            case status of
+                Backend.Dashboard.Model.Neutral ->
+                    0
+
+                Backend.Dashboard.Model.Good ->
+                    1
+
+                Backend.Dashboard.Model.Moderate ->
+                    2
+
+                Backend.Dashboard.Model.Severe ->
+                    3
+    in
+    compare (numericValue first) (numericValue second)
+
+
+generateTotalEncounters : TotalEncountersData -> Model -> Periods
+generateTotalEncounters data model =
+    let
+        ( dict, programTypeFilter ) =
+            case model.selectedVillageFilter of
+                Just village ->
+                    ( Dict.get village data.villages
+                        |> Maybe.withDefault Dict.empty
+                    , FilterAllPrograms
+                    )
+
+                -- When village is not selected, we show global data.
+                Nothing ->
+                    ( data.global, model.programTypeFilter )
+    in
+    generateTotalEncountersFromPeriodsDict programTypeFilter dict
+
+
+generateTotalEncountersFromPeriodsDict : FilterProgramType -> Dict ProgramType Periods -> Periods
+generateTotalEncountersFromPeriodsDict programTypeFilter dict =
+    let
+        emptyPeriods =
+            Periods 0 0
+    in
+    case programTypeFilter of
+        FilterAllPrograms ->
+            let
                 achi =
                     Dict.get ProgramAchi dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
 
                 fbf =
                     Dict.get ProgramFbf dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
 
                 pmtct =
                     Dict.get ProgramPmtct dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
 
                 sorwathe =
                     Dict.get ProgramSorwathe dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
+
+                chw =
+                    Dict.get ProgramChw dict
+                        |> Maybe.withDefault emptyPeriods
 
                 individual =
                     Dict.get ProgramIndividual dict
-                        |> Maybe.withDefault []
-                        |> List.filter villageFilterFunc
+                        |> Maybe.withDefault emptyPeriods
+
+                sumPeriods p1 p2 =
+                    Periods (p1.lastYear + p2.lastYear) (p1.thisYear + p2.thisYear)
             in
-            achi ++ fbf ++ pmtct ++ sorwathe ++ individual
+            sumPeriods achi fbf
+                |> sumPeriods pmtct
+                |> sumPeriods sorwathe
+                |> sumPeriods chw
+                |> sumPeriods individual
+
+        FilterProgramAchi ->
+            Dict.get ProgramAchi dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramFbf ->
+            Dict.get ProgramFbf dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramPmtct ->
+            Dict.get ProgramPmtct dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramSorwathe ->
+            Dict.get ProgramSorwathe dict
+                |> Maybe.withDefault emptyPeriods
+
+        FilterProgramCommunity ->
+            -- This type requires village to be selected, and when it is,
+            -- generateTotalEncounters() will invoke this function with
+            -- FilterAllPrograms for village data.
+            emptyPeriods
 
 
 
@@ -232,14 +412,75 @@ countAcuteIllnessAssesments encounters =
     List.length encounters
 
 
-countAcuteIllnessCasesByHCReferrals : List AcuteIllnessEncounterDataItem -> ( Int, Int )
-countAcuteIllnessCasesByHCReferrals encounters =
+countAcuteIllnessDiagnosedCases : List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessDiagnosedCases encounters =
+    List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
+        |> List.length
+
+
+countAcuteIllnessCasesByTreatmentApproach : List AcuteIllnessEncounterDataItem -> ( Int, Int )
+countAcuteIllnessCasesByTreatmentApproach encounters =
     let
-        ( sentToHC, managedLocally ) =
+        diagnosedEncounters =
             List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) encounters
-                |> List.partition (\encounter -> EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+
+        sentToHC =
+            List.filter wasSentToHCByDiagnosis diagnosedEncounters
+
+        managedAtHome =
+            List.filter wasManagedAtHomeByDiagnosis diagnosedEncounters
     in
-    ( List.length sentToHC, List.length managedLocally )
+    ( List.length sentToHC, List.length managedAtHome )
+
+
+{-| There's a difference betweeen non Covid and Covid cases, when making
+a decision if to send patient to health center.
+Covid case has a specific set of parameters, while non Covid has a simple logic -
+only those that Yes answered to quesiton about patien being refered to HC.
+-}
+wasSentToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
+wasSentToHCByDiagnosis encounter =
+    case encounter.diagnosis of
+        DiagnosisCovid19 ->
+            let
+                sentToHCBy114 =
+                    EverySet.member Call114 encounter.call114Signs
+                        && EverySet.member SendToHealthCenter encounter.recommendation114
+
+                sentToHCByHC =
+                    EverySet.member ContactedHealthCenter encounter.hcContactSigns
+                        && EverySet.member ComeToHealthCenter encounter.hcRecommendation
+            in
+            sentToHCBy114 || sentToHCByHC
+
+        -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
+        -- should be taking care of this.
+        _ ->
+            -- All that were refered sent to HC.
+            EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+
+
+{-| There's a difference betweeen non Covid and Covid cases, when making
+a decision if to manage illness at home.
+Covid case has a specific set of parameters, while non Covid has a simple logic -
+if patient was not sent to HC, then it was managed at home.
+-}
+wasManagedAtHomeByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
+wasManagedAtHomeByDiagnosis encounter =
+    case encounter.diagnosis of
+        DiagnosisCovid19 ->
+            -- HC was contacted, and it suggested home isolation
+            -- or CHW monitoring.
+            EverySet.member ContactedHealthCenter encounter.hcContactSigns
+                && (EverySet.member HomeIsolation encounter.hcRecommendation
+                        || EverySet.member ChwMonitoring encounter.hcRecommendation
+                   )
+
+        -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
+        -- should be taking care of this.
+        _ ->
+            -- All that were not refered to HC are managed at home.
+            not <| wasSentToHCByDiagnosis encounter
 
 
 countAcuteIllnessCasesByPossibleDiagnosises : List AcuteIllnessDiagnosis -> Bool -> List AcuteIllnessEncounterDataItem -> Int
@@ -282,27 +523,19 @@ countDiagnosedWithCovidCallsTo114 encounters =
 
 countDiagnosedWithCovidSentToHC : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidSentToHC encounters =
-    List.filter
-        (\encounter ->
-            -- Encounter which has produced Covid19 diagnosis,
-            -- and patient was sent to health center.
-            (encounter.diagnosis == DiagnosisCovid19)
-                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
-        )
-        encounters
+    -- Encounters which has produced Covid19 diagnosis,
+    -- and patient was sent to health center.
+    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+        |> List.filter wasSentToHCByDiagnosis
         |> List.length
 
 
 countDiagnosedWithCovidManagedAtHome : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidManagedAtHome encounters =
-    List.filter
-        (\encounter ->
-            -- Encounter which has produced Covid19 diagnosis,
-            -- and patient was isolated at home.
-            (encounter.diagnosis == DiagnosisCovid19)
-                && EverySet.member PatientIsolated encounter.isolationSigns
-        )
-        encounters
+    -- Encounter which has produced Covid19 diagnosis,
+    -- and it was decided to manage illness at home.
+    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+        |> List.filter wasManagedAtHomeByDiagnosis
         |> List.length
 
 
@@ -442,8 +675,9 @@ countResolvedGICasesForSelectedMonth selectedDate itemsList =
 
                 Just dateConcluded ->
                     -- Illness that was resolved at selected month,
-                    -- and had a GI diagnosis.
+                    -- has outcome set, and had a GI diagnosis.
                     withinSelectedMonth selectedDate dateConcluded
+                        && isJust item.outcome
                         && List.member item.diagnosis
                             [ DiagnosisGastrointestinalInfectionComplicated
                             , DiagnosisGastrointestinalInfectionUncomplicated
@@ -477,11 +711,18 @@ getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
+
+        dateFirstDayOfNextMonth =
+            Date.ceiling Date.Month selectedDate
     in
     itemsList
         |> List.filter
             (\item ->
                 let
+                    -- Pregnancy was tracked during current month, or before.
+                    createdDateFilter =
+                        Date.compare item.created dateFirstDayOfNextMonth == LT
+
                     -- Expected date exists, and is set to 3 weeks or less,
                     -- before the beggining of the range.
                     expectedDateConcludedFilter =
@@ -505,7 +746,7 @@ getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
                             Nothing ->
                                 True
                 in
-                expectedDateConcludedFilter && actualDateConcludedFilter
+                createdDateFilter && expectedDateConcludedFilter && actualDateConcludedFilter
             )
 
 
@@ -554,11 +795,25 @@ countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
+
+        dateLastDayOfSelectedMonth =
+            Date.ceiling Date.Month selectedDate
+                |> Date.add Date.Days -1
     in
     itemsList
         |> List.filter
             (\item ->
                 let
+                    -- Either pregnanacy is not concluded, or, it was concluded
+                    -- after selected months has ended.
+                    dateConcludedFilter =
+                        case item.dateConcluded of
+                            Just dateConcluded ->
+                                Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+
+                            Nothing ->
+                                True
+
                     -- Expected date exists, is within selected month or
                     -- latter than that, and within 120 days from the
                     -- beginning of selected month.
@@ -575,7 +830,7 @@ countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
                                 )
                             |> Maybe.withDefault False
                 in
-                isNothing item.dateConcluded && expectedDateConcludedFilter
+                dateConcludedFilter && expectedDateConcludedFilter
             )
         |> List.length
 
@@ -600,33 +855,36 @@ countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
 
 
 --
--- Case management  functions.
+-- Case management functions.
 --
 
 
-getFollowUpsTotals : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
-getFollowUpsTotals language currentDate db villageId followUps =
+getFollowUpsTotals : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getFollowUpsTotals language currentDate limitDate db villageId followUps =
     let
+        followUpsToLimitDate =
+            filterFollowUpMeasurementsByLimitDate limitDate followUps
+
         nutritionFollowUps =
-            generateNutritionFollowUps db followUps
+            generateNutritionFollowUps db followUpsToLimitDate
                 |> filterVillageResidents villageId identity db
 
         nutritionEntries =
-            generateNutritionFollowUpEntries language currentDate nutritionFollowUps db
+            generateNutritionFollowUpEntries language currentDate limitDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps db followUps
+            generateAcuteIllnessFollowUps db followUpsToLimitDate
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =
-            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
-            generatePrenatalFollowUps db followUps
+            generatePrenatalFollowUps db followUpsToLimitDate
                 |> filterVillageResidents villageId Tuple.second db
 
         prenatalEntries =
-            generatePrenatalFollowUpEntries language currentDate prenatalFollowUps db
+            generatePrenatalFollowUpEntries language currentDate limitDate prenatalFollowUps db
     in
     ( List.length nutritionEntries
     , List.length acuteIllnessEntries
@@ -634,15 +892,16 @@ getFollowUpsTotals language currentDate db villageId followUps =
     )
 
 
-getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
-getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db villageId followUps =
+getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db villageId followUps =
     let
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps db followUps
+            filterFollowUpMeasurementsByLimitDate limitDate followUps
+                |> generateAcuteIllnessFollowUps db
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =
-            generateAcuteIllnessFollowUpEntries language currentDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         covidEntries =
             List.filter (.diagnosis >> (==) DiagnosisCovid19) acuteIllnessEntries
@@ -674,6 +933,16 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate db villageId f
     )
 
 
+filterFollowUpMeasurementsByLimitDate : NominalDate -> FollowUpMeasurements -> FollowUpMeasurements
+filterFollowUpMeasurementsByLimitDate limitDate followUpMeasurements =
+    { followUpMeasurements
+        | nutritionGroup = filterByLimitDate limitDate followUpMeasurements.nutritionGroup
+        , nutritionIndividual = filterByLimitDate limitDate followUpMeasurements.nutritionIndividual
+        , acuteIllness = filterByLimitDate limitDate followUpMeasurements.acuteIllness
+        , prenatal = filterByLimitDate limitDate followUpMeasurements.prenatal
+    }
+
+
 
 --
 -- Helper functions.
@@ -702,3 +971,8 @@ childrenBeneficiariesByProgramType : ProgramType -> Dict ProgramType (List Child
 childrenBeneficiariesByProgramType programType childrenBeneficiaries =
     Dict.get programType childrenBeneficiaries
         |> Maybe.withDefault []
+
+
+filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }
+filterByLimitDate limitDate followUps =
+    Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT) followUps

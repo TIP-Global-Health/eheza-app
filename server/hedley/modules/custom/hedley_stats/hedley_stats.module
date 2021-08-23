@@ -197,8 +197,9 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
     HEDLEY_ACTIVITY_SEND_TO_HC_CONTENT_TYPE,
     HEDLEY_ACTIVITY_ACUTE_ILLNESS_VITALS_CONTENT_TYPE,
     HEDLEY_ACTIVITY_SYMPTOMS_GENERAL_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE,
     HEDLEY_ACTIVITY_ISOLATION_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HC_CONTAC_CONTENT_TYPE,
   ];
 
   $bundle = $wrapper->getBundle();
@@ -225,9 +226,6 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
  *   Possible options: Nutrition, Prenatal and Acute illness.
  */
 function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recalculation) {
-  // First, clear the stats hash cache of health center.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $nid);
-
   switch ($cache_type_for_recalculation) {
     case HEDLEY_STATS_PRENATAL:
       hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_PRENATAL_DATA, $nid);
@@ -451,13 +449,11 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   $fields_to_join = [
     'field_person',
     'field_outcome',
+    'field_date_concluded',
   ];
   foreach ($fields_to_join as $field) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
-
-  // We need this to understand if and when illness was resolved.
-  hedley_general_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
 
   $result = $query
     ->execute()
@@ -468,8 +464,13 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   foreach ($result as $index => $row) {
     $items[$index] = [
       'id' => $row->field_person,
-      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'date_concluded' => empty($row->field_expected_field_expected_value2) ? NULL : date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
+      // We use the 'end date' of expected fields here, because the
+      // 'date concluded' field is not set when illness is resolved.
+      // While we could do that for illness, 'date concluded' field was meant
+      // to capture the date when pregnancy has ended - some date in past.
+      'date_concluded' => !empty($row->field_expected_field_expected_value2) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
       'outcome' => $row->field_outcome,
       'encounters' => [],
     ];
@@ -503,17 +504,32 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   // Pull data of recorded fever at vitals.
   $query->leftJoin('field_data_field_body_temperature', 'body_temperature', 'body_temperature.entity_id = ai_encounter.entity_id');
   $query->addField('body_temperature', 'field_body_temperature_value');
-  $query->addExpression("body_temperature.field_body_temperature_value", 'body_temperature');
+  $query->addExpression("GROUP_CONCAT(body_temperature.field_body_temperature_value)", 'body_temperature');
+
+  // Pull data of isolations - COVID suspect.
+  $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
+  $query->addField('isolation', 'field_isolation_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT isolation.field_isolation_value)", 'isolation');
 
   // Pull data of 114 calls - COVID suspect.
   $query->leftJoin('field_data_field_114_contact', '114_contact', '114_contact.entity_id = ai_encounter.entity_id');
   $query->addField('114_contact', 'field_114_contact_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT 114_contact.field_114_contact_value)", 'contact_114');
 
-  // Pull data of isolations - COVID suspect.
-  $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
-  $query->addField('isolation', 'field_isolation_value');
-  $query->addExpression("GROUP_CONCAT(DISTINCT isolation.field_isolation_value)", 'isolation');
+  // Pull data of 114 recommendations - COVID suspect.
+  $query->leftJoin('field_data_field_114_recommendation', '114_recommendation', '114_recommendation.entity_id = ai_encounter.entity_id');
+  $query->addField('114_recommendation', 'field_114_recommendation_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT 114_recommendation.field_114_recommendation_value)", 'recommendation_114');
+
+  // Pull data of HC contact - COVID suspect.
+  $query->leftJoin('field_data_field_hc_contact', 'hc_contact', 'hc_contact.entity_id = ai_encounter.entity_id');
+  $query->addField('hc_contact', 'field_hc_contact_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT hc_contact.field_hc_contact_value)", 'contact_hc');
+
+  // Pull data of HC recommendations - COVID suspect.
+  $query->leftJoin('field_data_field_hc_recommendation', 'hc_recommendation', 'hc_recommendation.entity_id = ai_encounter.entity_id');
+  $query->addField('hc_recommendation', 'field_hc_recommendation_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT hc_recommendation.field_hc_recommendation_value)", 'recommendation_hc');
 
   $query->groupBy('node.nid');
 
@@ -527,13 +543,17 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
 
     $items[$row->field_individual_participant]['encounters'][] = [
-      'start_date' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'sequence_number' => $row->field_sequence_number,
       'diagnosis' => $row->field_acute_illness_diagnosis,
       'fever' => $fever_by_signs || $fever_by_vitals,
       'send_to_hc' => empty($row->send_to_hc) ? [] : explode(',', $row->send_to_hc),
-      'call_114' => empty($row->contact_114) ? [] : explode(',', $row->contact_114),
       'isolation' => empty($row->isolation) ? [] : explode(',', $row->isolation),
+      'call_114' => empty($row->contact_114) ? [] : explode(',', $row->contact_114),
+      'recommendation_114' => empty($row->recommendation_114) ? [] : explode(',', $row->recommendation_114),
+      'contact_hc' => empty($row->contact_hc) ? [] : explode(',', $row->contact_hc),
+      'recommendation_hc' => empty($row->recommendation_hc) ? [] : explode(',', $row->recommendation_hc),
     ];
   }
 
@@ -597,9 +617,10 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   foreach ($result as $index => $row) {
     $items[$index] = [
       'id' => $row->field_person,
-      'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
       'expected_date_concluded' => !empty($row->field_expected_date_concluded) ? date_format(date_create($row->field_expected_date_concluded), 'Y-m-d') : NULL,
-      'date_concluded' => empty($row->field_date_concluded) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
+      'date_concluded' => !empty($row->field_date_concluded) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
       'outcome' => $row->field_outcome,
       'delivery_location' => $row->field_outcome_location,
       'encounters' => [],
@@ -634,7 +655,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   foreach ($result as $row) {
     $items[$row->field_individual_participant]['encounters'][] = [
-      'start_date' => empty($row->field_scheduled_date) ? NULL : date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'danger_signs' => explode(',', $row->danger_signs),
     ];
   }
@@ -1401,6 +1423,7 @@ function hedley_stats_get_all_clinic_types() {
     HEDLEY_PERSON_CLINIC_TYPE_PMTCT,
     HEDLEY_PERSON_CLINIC_TYPE_SORWATHE,
     HEDLEY_PERSON_CLINIC_TYPE_ACHI,
+    HEDLEY_PERSON_CLINIC_TYPE_CHW,
   ];
 }
 

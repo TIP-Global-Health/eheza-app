@@ -11,7 +11,10 @@ import Backend.Measurement.Encoder
         , encodeDangerSign
         , encodeEverySet
         , encodeFamilyPlanningSign
+        , encodeHCContactSign
+        , encodeHCRecommendation
         , encodeIsolationSign
+        , encodeRecommendation114
         , encodeSendToHCSign
         )
 import Backend.Person.Encoder exposing (encodeGender)
@@ -214,6 +217,9 @@ programTypeToString programType =
         ProgramSorwathe ->
             "sorwathe"
 
+        ProgramChw ->
+            "chw"
+
         ProgramUnknown ->
             "unknown"
 
@@ -267,9 +273,12 @@ encodeAcuteIllnessEncounterDataItem item =
         , ( "sequence_number", int item.sequenceNumber )
         , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
         , ( "fever", bool item.feverRecorded )
-        , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
         , ( "isolation", encodeEverySet encodeIsolationSign item.isolationSigns )
         , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
+        , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
+        , ( "recommendation_114", encodeEverySet encodeRecommendation114 item.recommendation114 )
+        , ( "contact_hc", encodeEverySet encodeHCContactSign item.hcContactSigns )
+        , ( "recommendation_hc", encodeEverySet encodeHCRecommendation item.hcRecommendation )
         ]
 
 
