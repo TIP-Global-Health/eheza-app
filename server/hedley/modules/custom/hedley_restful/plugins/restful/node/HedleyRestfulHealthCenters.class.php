@@ -38,11 +38,11 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     // Get the UUID of the catchment area.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_catchment_area.field_catchment_area_target_id", 'uuid_catchment_area');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_catchment_area.field_catchment_area_target_id", 'uuid_catchment_area');
   }
 
   /**

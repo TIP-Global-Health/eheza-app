@@ -3,6 +3,7 @@ module Pages.HomeVisitActivity.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Maybe.Extra
 import Pages.HomeVisitEncounter.Fetch
 import RemoteData exposing (RemoteData(..))
 
@@ -26,5 +27,5 @@ fetch id db =
     Pages.HomeVisitEncounter.Fetch.fetch id db
         ++ -- We pull data of all Group measuments, to be able to
            -- determine latest weight measurement that was taken for child.
-           List.filterMap identity
+           Maybe.Extra.values
             [ Maybe.map Backend.Model.FetchChildMeasurements personId ]

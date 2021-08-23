@@ -1,11 +1,4 @@
-module Backend.IndividualEncounterParticipant.Encoder exposing
-    ( acuteIllnessOutcomeToString
-    , encodeAcuteIllnessOutcome
-    , encodeDeliveryLocation
-    , encodeIndividualEncounterParticipant
-    , encodePregnancyOutcome
-    , pregnancyOutcomeToString
-    )
+module Backend.IndividualEncounterParticipant.Encoder exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Backend.IndividualEncounterParticipant.Utils exposing (encodeIndividualEncounterTypeAsString)

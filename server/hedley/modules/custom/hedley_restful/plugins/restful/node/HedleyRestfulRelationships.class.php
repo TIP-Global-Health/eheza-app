@@ -59,12 +59,12 @@ class HedleyRestfulRelationships extends HedleyRestfulSyncBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     // Get the UUIDs of the Person and 'Related to' person.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_related_to.field_related_to_target_id", 'uuid_related_to');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_related_to.field_related_to_target_id", 'uuid_related_to');
 
   }
 

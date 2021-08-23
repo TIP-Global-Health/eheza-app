@@ -523,18 +523,19 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 
   table.bulkPut(entities)
       .then(function() {
-          return sendIndexedDbSaveResult('Success', info.table);
+          return sendIndexedDbSaveResult('Success', info.table, info.timestamp);
       }).catch(Dexie.BulkError, function (e) {
-          return sendIndexedDbSaveResult('Failure', info.table);
+          return sendIndexedDbSaveResult('Failure', info.table, info.timestamp);
       });
 
   /**
    * Report that save operation was successful.
    */
-  function sendIndexedDbSaveResult(status, table) {
+  function sendIndexedDbSaveResult(status, table, timestamp) {
     const dataForSend = {
       'status': status,
-      'table': table
+      'table': table,
+      'timestamp': timestamp
     }
 
     elmApp.ports.savedAtIndexedDb.send(dataForSend);

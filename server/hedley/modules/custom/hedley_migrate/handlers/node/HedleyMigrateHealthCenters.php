@@ -23,12 +23,18 @@ class HedleyMigrateHealthCenters extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'title_field',
-    'field_catchment_area',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'title_field',
+        'field_catchment_area',
+        'created',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateHealthCenters constructor.

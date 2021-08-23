@@ -684,7 +684,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "statistics" ->
                         doDecode
-                            Backend.Dashboard.Decoder.decodeDashboardStats
+                            Backend.Dashboard.Decoder.decodeDashboardStatsRaw
                             BackendAuthorityDashboardStats
 
                     "symptoms_general" ->
@@ -737,6 +737,7 @@ decodeIndexDbSaveResult =
     succeed IndexDbSaveResult
         |> required "table" decodeIndexDbSaveResultTable
         |> required "status" decodeIndexDbSaveStatus
+        |> required "timestamp" string
 
 
 decodeIndexDbSaveResultTable : Decoder IndexDbSaveResultTable

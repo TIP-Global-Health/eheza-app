@@ -85,17 +85,17 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     // Get the UUID of the Nurse.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nurse.field_nurse_target_id", 'uuid_nurse');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nurse.field_nurse_target_id", 'uuid_nurse');
 
     // Get the UUID of the Person.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_person.field_person_target_id", 'uuid_person');
+    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_person.field_person_target_id", 'uuid_person');
 
     foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     foreach ($this->multiFields as $field_name) {

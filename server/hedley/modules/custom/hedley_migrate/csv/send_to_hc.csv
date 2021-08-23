@@ -1,0 +1,4 @@
+id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_send_to_hc
+194,74,2020-06-19,188,1592244289,1,refer-to-hc
+195,35,2017-12-16,188,1592244289,1,refer-to-hc|referral-form
+196,81,2020-08-07,188,1592244289,1,none

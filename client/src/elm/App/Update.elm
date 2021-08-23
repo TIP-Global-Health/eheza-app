@@ -587,7 +587,22 @@ update msg model =
                                                 )
 
                                             Pages.PinCode.Model.SetActivePage page ->
-                                                ( [ SetActivePage page ], [] )
+                                                let
+                                                    resetDashboardMsg =
+                                                        case page of
+                                                            -- When accessing Dashboard page, reset
+                                                            -- the page to initial state - selected month,
+                                                            -- for example will be set to current month.
+                                                            UserPage (DashboardPage MainPage) ->
+                                                                Pages.Dashboard.Model.Reset model.villageId
+                                                                    |> MsgPageDashboard MainPage
+                                                                    |> MsgLoggedIn
+                                                                    |> List.singleton
+
+                                                            _ ->
+                                                                []
+                                                in
+                                                ( SetActivePage page :: resetDashboardMsg, [] )
 
                                             Pages.PinCode.Model.SetHealthCenter id ->
                                                 ( [ SetHealthCenter (Just id) ], [] )

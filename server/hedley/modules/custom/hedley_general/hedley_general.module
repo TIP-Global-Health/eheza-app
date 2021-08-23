@@ -37,7 +37,7 @@ function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_
 }
 
 /**
- * Check whether a specific task exist and not processed yet.
+ * Check whether a specific task exists, and not yet / being processed.
  *
  * @param string $queue_machine_name
  *   The machine name of the queue.
@@ -47,20 +47,40 @@ function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_
  *   The statuses to filter by.
  *
  * @return bool
- *   TRUE if the task exist and not processed yet, otherwise returns FALSE.
+ *   TRUE if the task exists and not and not yet / being processed.
  */
 function hedley_general_advanced_queue_task_exists($queue_machine_name, $title, array $statuses = [
   ADVANCEDQUEUE_STATUS_QUEUED,
   ADVANCEDQUEUE_STATUS_PROCESSING,
 ]) {
-  return (bool) db_select('advancedqueue', 'a')
-    ->fields('a')
-    ->condition('name', $queue_machine_name)
+  $tasks = db_select('advancedqueue', 'aq')
+    ->fields('aq', ['item_id', 'status', 'created'])
     ->condition('title', $title)
+    ->condition('name', $queue_machine_name)
     ->condition('status', $statuses, 'IN')
-    ->countQuery()
+    ->range(0, 100)
     ->execute()
-    ->fetchField();
+    ->fetchAll();
+
+  foreach ($tasks as $task) {
+    if ($task->status == ADVANCEDQUEUE_STATUS_QUEUED) {
+      // Task did not start processing.
+      return TRUE;
+    }
+
+    if ($task->status == ADVANCEDQUEUE_STATUS_PROCESSING) {
+      if (time() - $task->created < variable_get('hedley_aq_task_max_processing_period', 20 * 60)) {
+        // Task is being processed, and did not exceed allowed time period,
+        // which is set to 20 minutes, by default.
+        return TRUE;
+      }
+      else {
+        watchdog('hedley_aq', "AQ task suspected as stuck: $task->item_id");
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 /**
@@ -211,6 +231,7 @@ function hedley_general_get_measurement_types() {
       'field_prenatal_encounter',
       'field_acute_illness_encounter',
       'field_home_visit_encounter',
+      'field_well_child_visit_encounter',
     ];
 
     foreach ($measurement_indicator_fields as $indicator) {
@@ -253,4 +274,120 @@ function hedley_general_query_exclude_deleted_alter(QueryAlterableInterface $que
     ->isNull('fd.field_deleted_value')
     ->condition('fd.field_deleted_value', FALSE);
   $query->condition($or);
+}
+
+/**
+ * Join a field to a DB Select query, and add its main value.
+ *
+ * @param SelectQuery $query
+ *   Query to join to.
+ * @param string $entity_type
+ *   Type of the host entity of the field. Or NULL to avoid filtering the field
+ *   table by entity type.
+ * @param string $field_name
+ *   Field name.
+ * @param bool $require
+ *   Whether filter out rows where this field would be NULL.
+ * @param string $entity_id_selector
+ *   SQL selector for the column by which the field is joined. The entity ID is
+ *   used by default.
+ * @param string $field_alias
+ *   The field alias.
+ *
+ * @throws Exception
+ */
+function hedley_general_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL, $field_alias = NULL, $second_value = FALSE) {
+  $field = field_info_field($field_name);
+  $table_name = _field_sql_storage_tablename($field);
+
+  if (!$entity_id_selector) {
+    if (!$entity_type) {
+      throw new Exception('Entity type is required when ID selector is not specified');
+    }
+    // Set default entity ID selector.
+    switch ($entity_type) {
+      case 'user':
+        $entity_id_selector = 'users.uid';
+        break;
+
+      case 'node':
+        $entity_id_selector = 'node.nid';
+        break;
+
+      default:
+        throw new Exception(format_string(' hedley_general_join_field_to_query() is not implemented for entity_type: "@type"', ['@type' => $entity_type]));
+    }
+  }
+
+  switch ($field['type']) {
+    case 'entityreference':
+      $column_suffix = 'target_id';
+      break;
+
+    case 'image':
+    case 'file':
+      $column_suffix = 'fid';
+      break;
+
+    default:
+      $column_suffix = 'value';
+  }
+
+  $field_alias = $field_alias ?: $field_name;
+  $query->addField($field_alias, $field_name . '_' . $column_suffix, $field_alias);
+  if ($second_value) {
+    $column_suffix = 'value2';
+    $query->addField($field_alias, $field_name . '_' . $column_suffix, $field_alias);
+  }
+
+  $join = $require ? 'innerJoin' : 'leftJoin';
+  $arguments = [':type' => $entity_type];
+  $conditions[] = "$entity_id_selector = $field_alias.entity_id";
+  if ($entity_type) {
+    $conditions[] = "$field_alias.entity_type = :type";
+  }
+
+  $query->$join($table_name, $field_alias, implode(' AND ', $conditions), $arguments);
+}
+
+/**
+ * Resolve a shard based on HC field of the node.
+ *
+ * @param int $nid
+ *   The node ID.
+ *
+ * @return int|bool
+ *   Node ID of the shard. False, if shard wasn't successfully resolved.
+ */
+function hedley_general_shard_by_health_center($nid) {
+  // We have this check to allow SimpleTest to pass.
+  if (!$nid) {
+    return FALSE;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $shard = $wrapper->field_health_center->getIdentifier();
+
+  return !empty($shard) ? $shard : FALSE;
+}
+
+/**
+ * Resolve shards based on Person field of the node.
+ *
+ * @param int $nid
+ *   The node ID.
+ *
+ * @return array
+ *   List of shards node IDs. Empty array, if none are found.
+ */
+function hedley_general_shards_by_person($nid) {
+  // We have this check to allow SimpleTest to pass.
+  if (!$nid) {
+    return [];
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
+
+  return !empty($shards) ? $shards : [];
 }

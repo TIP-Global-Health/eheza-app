@@ -4,7 +4,7 @@ import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
-import Backend.Dashboard.Model exposing (DashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -65,7 +65,7 @@ type BackendAuthorityEntity
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
-    | BackendAuthorityDashboardStats (BackendEntity DashboardStats)
+    | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityFollowUp (BackendEntity FollowUp)
@@ -450,6 +450,7 @@ type UploadPhotoError
 type alias IndexDbSaveResult =
     { table : IndexDbSaveResultTable
     , status : IndexDbSaveStatus
+    , timestamp : String
     }
 
 
@@ -543,6 +544,7 @@ type Msg
     | RefreshPage
     | BackendAuthorityFetch
     | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityFetchedDataSavedHandle String
     | BackendAuthorityDashboardStatsFetch
     | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
       -- This is the main entry point for the Sync loop. This will dispatch a call
@@ -551,6 +553,7 @@ type Msg
     | BackendFetchPhotos
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | BackendGeneralFetchedDataSavedHandle String
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
@@ -561,10 +564,8 @@ type Msg
     | BackendPhotoUploadAuthority
     | BackendUploadAuthority (Maybe IndexDbQueryUploadAuthorityResultRecord)
     | BackendUploadAuthorityHandle IndexDbQueryUploadAuthorityResultRecord (WebData ())
-    | BackendAuthorityFetchedDataSavedHandle
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
-    | BackendGeneralFetchedDataSavedHandle
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | BackendReportState Int
     | BackendReportSyncIncident SyncIncidentType

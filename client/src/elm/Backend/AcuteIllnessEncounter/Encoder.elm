@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
+module Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis, encodeAcuteIllnessEncounter)
 
 import Backend.AcuteIllnessEncounter.Model exposing (..)
 import Backend.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisToString)
