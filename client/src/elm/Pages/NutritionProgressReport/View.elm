@@ -1,6 +1,5 @@
 module Pages.NutritionProgressReport.View exposing (view)
 
-import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), NutritionHeight, NutritionWeight, WeightInKg(..))
@@ -15,10 +14,13 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
+import Pages.NutritionActivity.Utils exposing (mandatoryActivitiesCompleted)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
+import Pages.NutritionProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.ProgressReport.View exposing (viewFoundChild)
+import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDaysHtml, renderDate)
@@ -27,85 +29,50 @@ import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate zscores id db =
-    generateAssembledData id db
-        |> viewWebData language (viewContent language currentDate zscores db) identity
-
-
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> Html Msg
-viewContent language currentDate zscores db data =
+view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw db model =
     let
-        childId =
-            data.participant.person
-
-        child =
-            data.person
-
-        childMeasurements =
-            Dict.get childId db.childMeasurements
+        encounter =
+            Dict.get id db.nutritionEncounters
                 |> Maybe.withDefault NotAsked
 
-        expectedSessions =
-            Dict.get childId db.expectedSessions
-                |> Maybe.withDefault NotAsked
+        participant =
+            RemoteData.andThen
+                (\encounter_ ->
+                    Dict.get encounter_.participant db.individualParticipants
+                        |> Maybe.withDefault NotAsked
+                )
+                encounter
 
-        individualChildMeasurements =
-            ( currentDate, ( data.id, data.measurements ) )
-                :: data.previousMeasurementsWithDates
-
-        maybeRelationship =
-            Dict.get data.participant.person db.relationshipsByPerson
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.andThen (Dict.values >> List.head)
-
-        mother =
-            maybeRelationship
-                |> Maybe.andThen
-                    (\relationship ->
-                        Dict.get relationship.relatedTo db.people
-                            |> Maybe.andThen RemoteData.toMaybe
+        childData =
+            participant
+                |> RemoteData.andThen
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map (\child_ -> ( participant_.person, child_ ))
                     )
 
-        relation =
-            maybeRelationship
-                |> Maybe.map
-                    (\relationship ->
-                        case relationship.relatedBy of
-                            MyParent ->
-                                Translate.ChildOf
+        initiator =
+            InitiatorNutritionIndividual id
 
-                            MyCaregiver ->
-                                Translate.TakenCareOfBy
-
-                            -- Other 2 options will never occur, as we deal with child here.
-                            _ ->
-                                Translate.ChildOf
-                    )
-                |> Maybe.withDefault Translate.ChildOf
-
-        -- We're using nutrition value from the current session here, at
-        -- least for now. So, we're ignoring any later sessions, and we're just
-        -- leaving it blank if it wasn't entered in this session (rather than looking
-        -- back to a previous session when it was entered).
-        --
-        -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
-        currentNutritionSigns =
-            data.measurements.nutrition
-                |> getMeasurementValueFunc
-                |> Maybe.map .signs
-                |> Maybe.withDefault EverySet.empty
-
-        defaultLastAssessmentDate =
-            currentDate
-
-        goBackAction =
-            NutritionEncounterPage data.id
-                |> UserPage
-                |> App.Model.SetActivePage
+        mandatoryNutritionAssessmentMeasurementsTaken =
+            Maybe.map2 (\assembled ( _, child ) -> mandatoryActivitiesCompleted currentDate zscores child isChw assembled db)
+                (generateAssembledData id db |> RemoteData.toMaybe)
+                (RemoteData.toMaybe childData)
+                |> Maybe.withDefault False
     in
     viewWebData language
-        (viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
+        (viewProgressReport language
+            currentDate
+            zscores
+            isChw
+            initiator
+            mandatoryNutritionAssessmentMeasurementsTaken
+            db
+            model.diagnosisMode
+            SetActivePage
+            SetDiagnosisMode
+        )
         identity
-        (RemoteData.append expectedSessions childMeasurements)
+        childData
