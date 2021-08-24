@@ -1,7 +1,7 @@
 module Pages.Dashboard.Model exposing (..)
 
-import AssocList exposing (Dict)
-import Backend.Dashboard.Model exposing (ParticipantStats)
+import AssocList as Dict exposing (Dict)
+import Backend.Dashboard.Model exposing (AssembledData, DashboardStats, ParticipantStats)
 import Backend.Entities exposing (HealthCenterId, VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
@@ -121,6 +121,7 @@ type alias Model =
     -- the gap from current month. We allow to go back
     -- 6 months, so, valid values are between 0 and 5.
     , monthGap : MonthGap
+    , assembledDict : Dict ( FilterProgramType, Maybe VillageId ) AssembledData
     }
 
 
@@ -150,6 +151,7 @@ emptyModel maybeSelectedVillage =
     , latestPage = MainPage
     , modalState = Nothing
     , monthGap = 0
+    , assembledDict = Dict.empty
     }
 
 
@@ -256,3 +258,4 @@ type Msg
     | SetFilterProgramType String
     | SetSelectedVillage String
     | SetActivePage Page
+    | GenerateAssembled

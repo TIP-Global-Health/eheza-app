@@ -93,6 +93,10 @@ filterProgramTypeFromString string =
 
 generateAssembledData : HealthCenterId -> DashboardStatsRaw -> ModelIndexedDb -> Model -> AssembledData
 generateAssembledData healthCenterId stats db model =
+    let
+        _ =
+            Debug.log "generateAssembledData" ""
+    in
     { stats = generateFilteredDashboardStats stats model
     , acuteIllnessData = generateFilteredAcuteIllnessData stats model
     , prenatalData = generateFilteredPrenatalData stats model

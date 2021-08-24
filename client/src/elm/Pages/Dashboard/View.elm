@@ -108,13 +108,10 @@ view language page currentDate healthCenterId isChw nurse model db =
                     viewHeader language Translate.DashboardLabel goBackPage
 
         content =
-            Dict.get healthCenterId db.computedDashboard
+            Dict.get ( model.programTypeFilter, model.selectedVillageFilter ) model.assembledDict
                 |> Maybe.map
-                    (\stats ->
+                    (\assembled ->
                         let
-                            assembled =
-                                generateAssembledData healthCenterId stats db model
-
                             ( pageContent, pageClass ) =
                                 case page of
                                     MainPage ->
