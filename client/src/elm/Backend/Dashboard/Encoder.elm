@@ -89,8 +89,8 @@ dictToLegacyDict dict =
 
 encodeNutritionValue : NutritionValue -> List ( String, Value )
 encodeNutritionValue value =
-    [ ( "class", encodeNutritionStatus value.class )
-    , ( "value", string value.value )
+    [ ( "c", encodeNutritionStatus value.class )
+    , ( "v", string value.value )
     ]
 
 

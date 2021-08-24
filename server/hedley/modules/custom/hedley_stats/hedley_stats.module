@@ -1246,8 +1246,8 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
   $data_per_month = [];
   for ($i = 1; $i <= $total_month; $i++) {
     $data_per_month[$i] = [
-      'class' => 'neutral',
-      'value' => 'X',
+      'c' => 'neutral',
+      'v' => 'X',
     ];
   }
 
@@ -1319,10 +1319,10 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
             // the 'class' field.
             if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
               if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
-                $people[$id]['nutrition']['nutrition_signs'][$month]['class'] = HEDLEY_STATS_SEVERE;
+                $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_SEVERE;
               }
               else {
-                $people[$id]['nutrition']['nutrition_signs'][$month]['class'] = HEDLEY_STATS_GOOD;
+                $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_GOOD;
               }
               // Move on to next measurement.
               continue;
@@ -1335,16 +1335,16 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               case 'height':
               case 'nutrition_height':
                 // The value to display in the table.
-                $people[$id]['nutrition']['stunting'][$month]['value'] = $formatted_value;
+                $people[$id]['nutrition']['stunting'][$month]['v'] = $formatted_value;
 
                 if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                  $people[$id]['nutrition']['stunting'][$month]['class'] = HEDLEY_STATS_SEVERE;
+                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_SEVERE;
                 }
                 elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                  $people[$id]['nutrition']['stunting'][$month]['class'] = HEDLEY_STATS_MODERATE;
+                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_MODERATE;
                 }
                 else {
-                  $people[$id]['nutrition']['stunting'][$month]['class'] = HEDLEY_STATS_GOOD;
+                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_GOOD;
                 }
                 break;
 
@@ -1352,31 +1352,31 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               case 'nutrition_weight':
                 if ($field_name == 'field_zscore_age') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['underweight'][$month]['value'] = $formatted_value;
+                  $people[$id]['nutrition']['underweight'][$month]['v'] = $formatted_value;
 
                   if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                    $people[$id]['nutrition']['underweight'][$month]['class'] = HEDLEY_STATS_SEVERE;
+                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_SEVERE;
                   }
                   elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                    $people[$id]['nutrition']['underweight'][$month]['class'] = HEDLEY_STATS_MODERATE;
+                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_MODERATE;
                   }
                   else {
-                    $people[$id]['nutrition']['underweight'][$month]['class'] = HEDLEY_STATS_GOOD;
+                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_GOOD;
                   }
                 }
 
                 if ($field_name == 'field_zscore_length') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['wasting'][$month]['value'] = $formatted_value;
+                  $people[$id]['nutrition']['wasting'][$month]['v'] = $formatted_value;
 
                   if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
-                    $people[$id]['nutrition']['wasting'][$month]['class'] = HEDLEY_STATS_SEVERE;
+                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_SEVERE;
                   }
                   elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
-                    $people[$id]['nutrition']['wasting'][$month]['class'] = HEDLEY_STATS_MODERATE;
+                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_MODERATE;
                   }
                   else {
-                    $people[$id]['nutrition']['wasting'][$month]['class'] = HEDLEY_STATS_GOOD;
+                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_GOOD;
                   }
                 }
                 break;
@@ -1384,16 +1384,16 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               case 'muac':
               case 'nutrition_muac':
                 // The value to display in the table.
-                $people[$id]['nutrition']['muac'][$month]['value'] = $formatted_value;
+                $people[$id]['nutrition']['muac'][$month]['v'] = $formatted_value;
 
                 if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
-                  $people[$id]['nutrition']['muac'][$month]['class'] = HEDLEY_STATS_SEVERE;
+                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_SEVERE;
                 }
                 elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
-                  $people[$id]['nutrition']['muac'][$month]['class'] = HEDLEY_STATS_MODERATE;
+                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_MODERATE;
                 }
                 else {
-                  $people[$id]['nutrition']['muac'][$month]['class'] = HEDLEY_STATS_GOOD;
+                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_GOOD;
                 }
                 break;
             }
