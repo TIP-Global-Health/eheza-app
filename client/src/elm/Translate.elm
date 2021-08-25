@@ -692,6 +692,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextAppointment
     | NextDue
     | NextDoseDue
     | NextImmunisationVisit
@@ -5184,6 +5185,11 @@ translationSet trans =
         Next ->
             { english = "Next"
             , kinyarwanda = Just "Ibikurikiyeho"
+            }
+
+        NextAppointment ->
+            { english = "Next Appointment"
+            , kinyarwanda = Nothing
             }
 
         NextDue ->

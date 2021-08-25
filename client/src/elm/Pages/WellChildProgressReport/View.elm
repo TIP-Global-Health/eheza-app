@@ -1206,6 +1206,24 @@ viewPhotos language child measurements =
         |> List.singleton
 
 
+viewNextAppointmentPane : Language -> NominalDate -> Person -> ModelIndexedDb -> Html any
+viewNextAppointmentPane language currentDate child db =
+    let
+        entriesHeading =
+            div [ class "heading vaccination" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                ]
+    in
+    div [ class "pane next-appointment" ] <|
+        [ viewPaneHeading language Translate.NextAppointment
+        , div [ class "pane-content" ]
+            [ entriesHeading ]
+        ]
+
+
 viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
     div [ class <| "pane-heading" ]
