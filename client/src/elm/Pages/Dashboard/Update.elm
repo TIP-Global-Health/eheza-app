@@ -4,14 +4,16 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Model exposing (ModelIndexedDb)
+import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
 import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Restful.Endpoint exposing (toEntityUuid)
 
 
-update : Maybe HealthCenterId -> Msg -> DashboardPage -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update healthCenterId msg subPage db model =
+update : NominalDate -> Maybe HealthCenterId -> DashboardPage -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate healthCenterId subPage db msg model =
     case msg of
         SetModalState state ->
             ( { model | modalState = state }
@@ -20,7 +22,11 @@ update healthCenterId msg subPage db model =
             )
 
         Reset villageId ->
-            ( emptyModel villageId
+            let
+                empty =
+                    emptyModel villageId
+            in
+            ( { empty | assembledDict = model.assembledDict }
             , Cmd.none
             , []
             )
@@ -43,8 +49,11 @@ update healthCenterId msg subPage db model =
             )
 
         NavigateToStuntingTable filter ->
-            { model | currentCaseManagementSubFilter = filter }
-                |> update healthCenterId (SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage)))) subPage db
+            ( { model | currentCaseManagementSubFilter = filter }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate healthCenterId subPage db) [ SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage))) ]
 
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
@@ -98,6 +107,7 @@ update healthCenterId msg subPage db model =
             , Cmd.none
             , []
             )
+                |> sequenceExtra (update currentDate healthCenterId subPage db) [ GenerateAssembled ]
 
         SetSelectedVillage string ->
             let
@@ -112,6 +122,7 @@ update healthCenterId msg subPage db model =
             , Cmd.none
             , []
             )
+                |> sequenceExtra (update currentDate healthCenterId subPage db) [ GenerateAssembled ]
 
         SetActivePage page ->
             let
@@ -149,7 +160,7 @@ update healthCenterId msg subPage db model =
                                             (\stats ->
                                                 let
                                                     assembled =
-                                                        Pages.Dashboard.Utils.generateAssembledData id stats db model
+                                                        Pages.Dashboard.Utils.generateAssembledData currentDate id stats db model
                                                 in
                                                 Dict.insert key assembled model.assembledDict
                                             )

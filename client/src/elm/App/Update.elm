@@ -266,7 +266,7 @@ update msg model =
                         MsgPageDashboard subPage subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Dashboard.Update.update model.healthCenterId subMsg subPage model.indexedDb data.dashboardPage
+                                    Pages.Dashboard.Update.update currentDate model.healthCenterId subPage model.indexedDb subMsg data.dashboardPage
                             in
                             ( { data | dashboardPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd

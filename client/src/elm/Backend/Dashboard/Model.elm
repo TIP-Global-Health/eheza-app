@@ -29,6 +29,16 @@ type alias AssembledData =
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
     , caseManagementData : Maybe FollowUpMeasurements
+    , nutritionPageData : NutritionPageData
+    }
+
+
+type alias NutritionPageData =
+    { caseNutritionTotalsLastYear : List CaseNutritionTotal
+    , caseNutritionTotalsThisYear : List CaseNutritionTotal
+    , totalEncounters : Periods
+    , newCasesGraphData : Dict Int TotalBeneficiaries
+    , totalsGraphData : Dict Int TotalBeneficiaries
     }
 
 
