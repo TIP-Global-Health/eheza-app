@@ -933,7 +933,9 @@ update msg model =
 
                 extraMsgs =
                     case activePage of
-                        -- When navigating to Device page (which is used for Sync management), trigger Sync.
+                        -- When navigating to Dashboards page, trigger
+                        -- generation of assembled data which is required to
+                        -- view that page.
                         UserPage (DashboardPage MainPage) ->
                             Pages.Dashboard.Model.GenerateAssembled
                                 |> MsgPageDashboard MainPage
