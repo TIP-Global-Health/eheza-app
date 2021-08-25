@@ -10,6 +10,3 @@ fetch healthCenterId =
     , FetchClinics
     , FetchVillages
     ]
-        ++ (Maybe.map (FetchComputedDashboard >> List.singleton) healthCenterId
-                |> Maybe.withDefault []
-           )

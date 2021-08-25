@@ -36,6 +36,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.Village.Model exposing (Village)
+import Pages.Dashboard.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
@@ -134,7 +135,7 @@ type alias ModelIndexedDb =
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
 
     -- Dashboard Statistics.
-    , computedDashboard : Dict HealthCenterId DashboardStatsRaw
+    , computedDashboard : Dict HealthCenterId ComputedDashboard
     , computedDashboardLastFetched : Time.Posix
     }
 
@@ -189,6 +190,12 @@ emptyModelIndexedDb =
     , followUpMeasurements = Dict.empty
     , computedDashboard = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
+    }
+
+
+type alias ComputedDashboard =
+    { statsRaw : Backend.Dashboard.Model.DashboardStatsRaw
+    , assembledPermutations : Dict ( Pages.Dashboard.Model.FilterProgramType, Maybe VillageId ) Backend.Dashboard.Model.AssembledData
     }
 
 

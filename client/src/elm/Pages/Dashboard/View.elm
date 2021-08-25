@@ -109,7 +109,8 @@ view language page currentDate healthCenterId isChw nurse model db =
                     viewHeader language Translate.DashboardLabel goBackPage
 
         content =
-            Dict.get ( model.programTypeFilter, model.selectedVillageFilter ) model.assembledDict
+            Dict.get healthCenterId db.computedDashboard
+                |> Maybe.andThen (.assembledPermutations >> Dict.get ( model.programTypeFilter, model.selectedVillageFilter ))
                 |> Maybe.map
                     (\assembled ->
                         let
@@ -247,10 +248,10 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
                     ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth currentMonth )
 
             currentPeriodStats =
-                filterStatsWithinPeriod currentDate model stats
+                filterStatsWithinPeriod currentDate model.period stats
 
             monthBeforeStats =
-                filterStatsWithinPeriod currentDate modelWithLastMonth stats
+                filterStatsWithinPeriod currentDate modelWithLastMonth.period stats
 
             malnourishedCurrentMonth =
                 mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement.thisYear

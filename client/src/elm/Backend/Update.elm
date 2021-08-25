@@ -66,6 +66,8 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
         )
+import Pages.Dashboard.Model
+import Pages.Dashboard.Utils
 import Pages.NextSteps.Model
 import Pages.NutritionActivity.Model
 import Pages.NutritionActivity.Utils
@@ -167,7 +169,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         FetchComputedDashboard healthCenterId_ ->
             ( { model | computedDashboardLastFetched = currentTime }
-            , sw.select computedDashboardEndpoint ()
+            , sw.select computedDashboardEndpoint (ComputedDashboardParams healthCenterId_)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId_)
             , []
             )
@@ -176,7 +178,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 modelUpdated =
                     RemoteData.toMaybe webData
-                        |> Maybe.map (\data -> { model | computedDashboard = data })
+                        |> Maybe.andThen (Dict.values >> List.head)
+                        |> Maybe.map
+                            (\statsRaw ->
+                                { model
+                                    | computedDashboard =
+                                        Dict.insert healthCenterId_
+                                            (generateInitialComputedDashboard currentDate healthCenterId_ villageId statsRaw model)
+                                            model.computedDashboard
+                                }
+                            )
                         |> Maybe.withDefault model
             in
             ( modelUpdated
@@ -873,7 +884,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     |> RemoteData.toMaybe
 
                             ( newModel, _ ) =
-                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
                                 Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate model newModel)
@@ -895,7 +906,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     |> RemoteData.toMaybe
 
                             ( newModel, _ ) =
-                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
                                 Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
@@ -917,7 +928,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
 
                             ( newModel, _ ) =
-                                List.foldl (handleRevision healthCenterId) ( model, True ) revisions
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, True ) revisions
                         in
                         Maybe.map
                             (\sessionId_ ->
@@ -962,7 +973,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     |> RemoteData.toMaybe
 
                             ( newModel, _ ) =
-                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
                                 Maybe.map (generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment newModel)
@@ -1144,7 +1155,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ IsolationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1159,7 +1170,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ Call114Revision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1174,7 +1185,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ HCContactRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1189,7 +1200,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ MedicationDistributionRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1204,7 +1215,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ SendToHCRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1219,7 +1230,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ HealthEducationRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1234,7 +1245,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ AcuteIllnessFollowUpRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
@@ -1361,7 +1372,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         withRecalc =
                             -- If needed, we recalculate all editable sessions that we
@@ -2077,8 +2088,8 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
 -}
-handleRevision : Maybe HealthCenterId -> Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
-handleRevision healthCenterId revision (( model, recalc ) as noChange) =
+handleRevision : NominalDate -> Maybe HealthCenterId -> Maybe VillageId -> Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
+handleRevision currentDate healthCenterId villageId revision (( model, recalc ) as noChange) =
     case revision of
         AcuteFindingsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
@@ -2261,8 +2272,44 @@ handleRevision healthCenterId revision (( model, recalc ) as noChange) =
             , recalc
             )
 
-        DashboardStatsRevision uuid data ->
-            ( { model | computedDashboard = Dict.insert uuid data model.computedDashboard }, recalc )
+        DashboardStatsRevision uuid statsRaw ->
+            let
+                updatedComputedDashboard =
+                    Dict.get uuid model.computedDashboard
+                        |> Maybe.map
+                            (\computedDashboard ->
+                                { statsRaw = statsRaw
+                                , assembledPermutations =
+                                    Dict.map
+                                        (\( programTypeFilter, selectedVillage ) _ ->
+                                            Pages.Dashboard.Utils.generateAssembledData currentDate uuid statsRaw model programTypeFilter selectedVillage
+                                        )
+                                        computedDashboard.assembledPermutations
+                                }
+                            )
+                        |> Maybe.withDefault
+                            (let
+                                ( programTypeFilter, selectedVillage ) =
+                                    if isJust villageId then
+                                        -- This is CHW Nurse, as on CHW work with villages.
+                                        ( Pages.Dashboard.Model.FilterProgramCommunity
+                                        , villageId
+                                        )
+
+                                    else
+                                        ( Pages.Dashboard.Model.FilterAllPrograms
+                                        , Nothing
+                                        )
+                             in
+                             { statsRaw = statsRaw
+                             , assembledPermutations =
+                                Dict.singleton
+                                    ( programTypeFilter, selectedVillage )
+                                    (Pages.Dashboard.Utils.generateAssembledData currentDate uuid statsRaw model programTypeFilter selectedVillage)
+                             }
+                            )
+            in
+            ( { model | computedDashboard = Dict.insert uuid updatedComputedDashboard model.computedDashboard }, recalc )
 
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
@@ -3539,3 +3586,25 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
         currentMeasurementData
         previousMeasurementData
         |> RemoteData.withDefault NotNeeded
+
+
+generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw db =
+    let
+        ( programTypeFilter, selectedVillage ) =
+            if isJust villageId then
+                -- This is CHW Nurse, as on CHW work with villages.
+                ( Pages.Dashboard.Model.FilterProgramCommunity
+                , villageId
+                )
+
+            else
+                ( Pages.Dashboard.Model.FilterAllPrograms
+                , Nothing
+                )
+    in
+    { statsRaw = statsRaw
+    , assembledPermutations =
+        Dict.singleton
+            ( programTypeFilter, selectedVillage )
+            (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId statsRaw db programTypeFilter selectedVillage)
+    }

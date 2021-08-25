@@ -99,40 +99,40 @@ filterProgramTypeFromString string =
             Nothing
 
 
-generateAssembledData : NominalDate -> HealthCenterId -> DashboardStatsRaw -> ModelIndexedDb -> Model -> AssembledData
-generateAssembledData currentDate healthCenterId stats db model =
+generateAssembledData : NominalDate -> HealthCenterId -> DashboardStatsRaw -> ModelIndexedDb -> FilterProgramType -> Maybe VillageId -> AssembledData
+generateAssembledData currentDate healthCenterId stats db programTypeFilter selectedVillageFilter =
     let
         filteredStats =
-            generateFilteredDashboardStats stats model
+            generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter
     in
     { stats = filteredStats
-    , acuteIllnessData = generateFilteredAcuteIllnessData stats model
-    , prenatalData = generateFilteredPrenatalData stats model
+    , acuteIllnessData = generateFilteredAcuteIllnessData stats selectedVillageFilter
+    , prenatalData = generateFilteredPrenatalData stats selectedVillageFilter
     , caseManagementData =
         Dict.get healthCenterId db.followUpMeasurements
             |> Maybe.andThen RemoteData.toMaybe
-    , nutritionPageData = generateNutritionPageData currentDate filteredStats db model
+    , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
 
-generateFilteredDashboardStats : DashboardStatsRaw -> Model -> DashboardStats
-generateFilteredDashboardStats stats model =
+generateFilteredDashboardStats : DashboardStatsRaw -> FilterProgramType -> Maybe VillageId -> DashboardStats
+generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     { caseManagement =
         { thisYear =
             applyProgramTypeAndResidentsFilters stats.villagesWithResidents
-                model.programTypeFilter
-                model.selectedVillageFilter
+                programTypeFilter
+                selectedVillageFilter
                 stats.caseManagement.thisYear
                 |> caseManagementMergeDuplicates
         , lastYear =
             applyProgramTypeAndResidentsFilters
                 stats.villagesWithResidents
-                model.programTypeFilter
-                model.selectedVillageFilter
+                programTypeFilter
+                selectedVillageFilter
                 stats.caseManagement.lastYear
                 |> caseManagementMergeDuplicates
         }
-    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents model.programTypeFilter model.selectedVillageFilter stats.childrenBeneficiaries
+    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents programTypeFilter selectedVillageFilter stats.childrenBeneficiaries
     , completedPrograms = stats.completedPrograms
     , familyPlanning = stats.familyPlanning
     , missedSessions = stats.missedSessions
@@ -142,9 +142,9 @@ generateFilteredDashboardStats stats model =
     }
 
 
-generateFilteredAcuteIllnessData : DashboardStatsRaw -> Model -> List AcuteIllnessDataItem
-generateFilteredAcuteIllnessData stats model =
-    model.selectedVillageFilter
+generateFilteredAcuteIllnessData : DashboardStatsRaw -> Maybe VillageId -> List AcuteIllnessDataItem
+generateFilteredAcuteIllnessData stats selectedVillageFilter =
+    selectedVillageFilter
         |> Maybe.andThen
             (\villageId -> Dict.get villageId stats.villagesWithResidents)
         |> Maybe.map
@@ -152,9 +152,9 @@ generateFilteredAcuteIllnessData stats model =
         |> Maybe.withDefault []
 
 
-generateFilteredPrenatalData : DashboardStatsRaw -> Model -> List PrenatalDataItem
-generateFilteredPrenatalData stats model =
-    model.selectedVillageFilter
+generateFilteredPrenatalData : DashboardStatsRaw -> Maybe VillageId -> List PrenatalDataItem
+generateFilteredPrenatalData stats selectedVillageFilter =
+    selectedVillageFilter
         |> Maybe.andThen
             (\villageId -> Dict.get villageId stats.villagesWithResidents)
         |> Maybe.map
@@ -323,11 +323,11 @@ compareNutritionStatus first second =
     compare (numericValue first) (numericValue second)
 
 
-generateTotalEncounters : TotalEncountersData -> Model -> Periods
-generateTotalEncounters data model =
+generateTotalEncounters : TotalEncountersData -> FilterProgramType -> Maybe VillageId -> Periods
+generateTotalEncounters data programTypeFilter selectedVillageFilter =
     let
-        ( dict, programTypeFilter ) =
-            case model.selectedVillageFilter of
+        ( dict, programTypeFilter_ ) =
+            case selectedVillageFilter of
                 Just village ->
                     ( Dict.get village data.villages
                         |> Maybe.withDefault Dict.empty
@@ -336,9 +336,9 @@ generateTotalEncounters data model =
 
                 -- When village is not selected, we show global data.
                 Nothing ->
-                    ( data.global, model.programTypeFilter )
+                    ( data.global, programTypeFilter )
     in
-    generateTotalEncountersFromPeriodsDict programTypeFilter dict
+    generateTotalEncountersFromPeriodsDict programTypeFilter_ dict
 
 
 generateTotalEncountersFromPeriodsDict : FilterProgramType -> Dict ProgramType Periods -> Periods
@@ -956,14 +956,14 @@ filterFollowUpMeasurementsByLimitDate limitDate followUpMeasurements =
     }
 
 
-generateNutritionPageData : NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> NutritionPageData
-generateNutritionPageData currentDate stats db model =
+generateNutritionPageData : NominalDate -> DashboardStats -> ModelIndexedDb -> FilterProgramType -> Maybe VillageId -> NutritionPageData
+generateNutritionPageData currentDate stats db programTypeFilter selectedVillageFilter =
     let
         currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
+            filterStatsWithinPeriod currentDate OneYear stats
 
         totalBeneficiariesMonthlyDuringPastYear =
-            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model
+            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats
 
         emptyTotalBeneficiariesDict =
             List.repeat 12 emptyTotalBeneficiaries
@@ -991,7 +991,7 @@ generateNutritionPageData currentDate stats db model =
     in
     { caseNutritionTotalsThisYear = caseNutritionTotalsThisYear
     , caseNutritionTotalsLastYear = caseNutritionTotalsLastYear
-    , totalEncounters = generateTotalEncounters currentPeriodStats.totalEncounters model
+    , totalEncounters = generateTotalEncounters currentPeriodStats.totalEncounters programTypeFilter selectedVillageFilter
     , totalsGraphData = totalsGraphData
     , newCasesGraphData = newCasesGraphData
     }
@@ -1000,9 +1000,8 @@ generateNutritionPageData currentDate stats db model =
 generateTotalBeneficiariesMonthlyDuringPastYear :
     NominalDate
     -> DashboardStats
-    -> Model
     -> Dict Int Int
-generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model =
+generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
     let
         currentMonth =
             Date.month currentDate
@@ -1217,27 +1216,27 @@ applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiarie
             )
 
 
-filterStatsWithinPeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsWithinPeriod currentDate model stats =
-    filterStatsByPeriod isBetween currentDate model stats
+filterStatsWithinPeriod : NominalDate -> FilterPeriod -> DashboardStats -> DashboardStats
+filterStatsWithinPeriod currentDate period stats =
+    filterStatsByPeriod isBetween currentDate period stats
 
 
-filterStatsOutsidePeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsOutsidePeriod currentDate model stats =
+filterStatsOutsidePeriod : NominalDate -> FilterPeriod -> DashboardStats -> DashboardStats
+filterStatsOutsidePeriod currentDate period stats =
     let
         outside start end date =
             isBetween start end date |> not
     in
-    filterStatsByPeriod outside currentDate model stats
+    filterStatsByPeriod outside currentDate period stats
 
 
 {-| Filter stats to match the selected period.
 -}
-filterStatsByPeriod : (NominalDate -> NominalDate -> NominalDate -> Bool) -> NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsByPeriod fiterFunc currentDate model stats =
+filterStatsByPeriod : (NominalDate -> NominalDate -> NominalDate -> Bool) -> NominalDate -> FilterPeriod -> DashboardStats -> DashboardStats
+filterStatsByPeriod fiterFunc currentDate period stats =
     let
         ( startDate, endDate ) =
-            case model.period of
+            case period of
                 OneYear ->
                     ( Date.add Years -1 currentDate, Date.add Days 1 currentDate )
 

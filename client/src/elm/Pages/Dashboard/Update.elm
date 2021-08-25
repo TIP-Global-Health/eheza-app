@@ -143,31 +143,31 @@ update currentDate healthCenterId subPage db msg model =
             ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )
 
         GenerateAssembled ->
-            let
-                key =
-                    ( model.programTypeFilter, model.selectedVillageFilter )
-
-                updatedAssembledDict =
-                    if Dict.member key model.assembledDict then
-                        model.assembledDict
-
-                    else
-                        healthCenterId
-                            |> Maybe.andThen
-                                (\id ->
-                                    Dict.get id db.computedDashboard
-                                        |> Maybe.map
-                                            (\stats ->
-                                                let
-                                                    assembled =
-                                                        Pages.Dashboard.Utils.generateAssembledData currentDate id stats db model
-                                                in
-                                                Dict.insert key assembled model.assembledDict
-                                            )
-                                )
-                            |> Maybe.withDefault model.assembledDict
-            in
-            ( { model | assembledDict = updatedAssembledDict }
+            -- let
+            --     key =
+            --         ( model.programTypeFilter, model.selectedVillageFilter )
+            --
+            --     updatedAssembledDict =
+            --         if Dict.member key model.assembledDict then
+            --             model.assembledDict
+            --
+            --         else
+            --             healthCenterId
+            --                 |> Maybe.andThen
+            --                     (\id ->
+            --                         Dict.get id db.computedDashboard
+            --                             |> Maybe.map
+            --                                 (\stats ->
+            --                                     let
+            --                                         assembled =
+            --                                             Pages.Dashboard.Utils.generateAssembledData currentDate id stats db model.programTypeFilter model.selectedVillageFilter
+            --                                     in
+            --                                     Dict.insert key assembled model.assembledDict
+            --                                 )
+            --                     )
+            --                 |> Maybe.withDefault model.assembledDict
+            -- in
+            ( model
             , Cmd.none
             , []
             )
