@@ -121,17 +121,6 @@ type alias Model =
     -- the gap from current month. We allow to go back
     -- 6 months, so, valid values are between 0 and 5.
     , monthGap : MonthGap
-
-    -- As there're some very large HCs, we face a performnce issue:
-    -- Every time page gets regenerated (App.view() is triggered),
-    -- which happens very often (on every App.Model change) we need to
-    -- recalculate page data.
-    -- When there're thouthands of entities in stats, this operation
-    -- takes several seconds to complete, and by the time it's over, next
-    -- change is triggered.
-    -- To resolve this, we store a dict for different permutations of generated
-    -- data, so every permutation is calculated only once.
-    , assembledDict : Dict ( FilterProgramType, Maybe VillageId ) AssembledData
     }
 
 
@@ -161,7 +150,6 @@ emptyModel maybeSelectedVillage =
     , latestPage = MainPage
     , modalState = Nothing
     , monthGap = 0
-    , assembledDict = Dict.empty
     }
 
 
