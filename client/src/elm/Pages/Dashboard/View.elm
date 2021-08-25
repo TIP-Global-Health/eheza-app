@@ -109,7 +109,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                     viewHeader language Translate.DashboardLabel goBackPage
 
         content =
-            Dict.get healthCenterId db.computedDashboard
+            Dict.get healthCenterId db.computedDashboards
                 |> Maybe.andThen (.assembledPermutations >> Dict.get ( model.programTypeFilter, model.selectedVillageFilter ))
                 |> Maybe.map
                     (\assembled ->

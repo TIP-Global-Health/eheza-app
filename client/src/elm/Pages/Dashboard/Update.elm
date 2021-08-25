@@ -22,11 +22,7 @@ update currentDate healthCenterId subPage db msg model =
             )
 
         Reset villageId ->
-            let
-                empty =
-                    emptyModel villageId
-            in
-            ( { empty | assembledDict = model.assembledDict }
+            ( emptyModel villageId
             , Cmd.none
             , []
             )
@@ -105,9 +101,8 @@ update currentDate healthCenterId subPage db msg model =
             in
             ( updatedModel
             , Cmd.none
-            , []
+            , generateAssembledPermutationMsg healthCenterId updatedModel
             )
-                |> sequenceExtra (update currentDate healthCenterId subPage db) [ GenerateAssembled ]
 
         SetSelectedVillage string ->
             let
@@ -120,9 +115,8 @@ update currentDate healthCenterId subPage db msg model =
             in
             ( updatedModel
             , Cmd.none
-            , []
+            , generateAssembledPermutationMsg healthCenterId updatedModel
             )
-                |> sequenceExtra (update currentDate healthCenterId subPage db) [ GenerateAssembled ]
 
         SetActivePage page ->
             let
@@ -142,32 +136,14 @@ update currentDate healthCenterId subPage db msg model =
             in
             ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )
 
-        GenerateAssembled ->
-            -- let
-            --     key =
-            --         ( model.programTypeFilter, model.selectedVillageFilter )
-            --
-            --     updatedAssembledDict =
-            --         if Dict.member key model.assembledDict then
-            --             model.assembledDict
-            --
-            --         else
-            --             healthCenterId
-            --                 |> Maybe.andThen
-            --                     (\id ->
-            --                         Dict.get id db.computedDashboard
-            --                             |> Maybe.map
-            --                                 (\stats ->
-            --                                     let
-            --                                         assembled =
-            --                                             Pages.Dashboard.Utils.generateAssembledData currentDate id stats db model.programTypeFilter model.selectedVillageFilter
-            --                                     in
-            --                                     Dict.insert key assembled model.assembledDict
-            --                                 )
-            --                     )
-            --                 |> Maybe.withDefault model.assembledDict
-            -- in
-            ( model
-            , Cmd.none
-            , []
-            )
+
+generateAssembledPermutationMsg : Maybe HealthCenterId -> Model -> List App.Model.Msg
+generateAssembledPermutationMsg healthCenterId model =
+    Maybe.map
+        (\healthCenterId_ ->
+            Backend.Model.FetchComputedDashboardPermutation healthCenterId_ model.programTypeFilter model.selectedVillageFilter
+                |> App.Model.MsgIndexedDb
+                |> List.singleton
+        )
+        healthCenterId
+        |> Maybe.withDefault []

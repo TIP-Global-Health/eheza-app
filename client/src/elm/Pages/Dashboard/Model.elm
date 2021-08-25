@@ -268,4 +268,3 @@ type Msg
     | SetFilterProgramType String
     | SetSelectedVillage String
     | SetActivePage Page
-    | GenerateAssembled

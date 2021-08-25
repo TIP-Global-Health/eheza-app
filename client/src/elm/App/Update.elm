@@ -930,25 +930,10 @@ update msg model =
 
                         _ ->
                             Cmd.none
-
-                extraMsgs =
-                    case activePage of
-                        -- When navigating to Dashboards page, trigger
-                        -- generation of assembled data which is required to
-                        -- view that page.
-                        UserPage (DashboardPage MainPage) ->
-                            Pages.Dashboard.Model.GenerateAssembled
-                                |> MsgPageDashboard MainPage
-                                |> MsgLoggedIn
-                                |> List.singleton
-
-                        _ ->
-                            []
             in
             ( { model | url = url, activePage = activePage }
             , cmd
             )
-                |> sequence update extraMsgs
 
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.

@@ -135,7 +135,7 @@ type alias ModelIndexedDb =
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
 
     -- Dashboard Statistics.
-    , computedDashboard : Dict HealthCenterId ComputedDashboard
+    , computedDashboards : Dict HealthCenterId ComputedDashboard
     , computedDashboardLastFetched : Time.Posix
     }
 
@@ -188,7 +188,7 @@ emptyModelIndexedDb =
     , sessions = Dict.empty
     , sessionsByClinic = Dict.empty
     , followUpMeasurements = Dict.empty
-    , computedDashboard = Dict.empty
+    , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
     }
 
@@ -208,6 +208,7 @@ type MsgIndexedDb
     | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
     | FetchComputedDashboard HealthCenterId
+    | FetchComputedDashboardPermutation HealthCenterId Pages.Dashboard.Model.FilterProgramType (Maybe VillageId)
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
     | FetchEditableSession SessionId (List MsgIndexedDb)

@@ -182,11 +182,41 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         |> Maybe.map
                             (\statsRaw ->
                                 { model
-                                    | computedDashboard =
+                                    | computedDashboards =
                                         Dict.insert healthCenterId_
                                             (generateInitialComputedDashboard currentDate healthCenterId_ villageId statsRaw model)
-                                            model.computedDashboard
+                                            model.computedDashboards
                                 }
+                            )
+                        |> Maybe.withDefault model
+            in
+            ( modelUpdated
+            , Cmd.none
+            , []
+            )
+
+        FetchComputedDashboardPermutation healthCenterId_ programTypeFilter selectedVillage ->
+            let
+                modelUpdated =
+                    Dict.get healthCenterId_ model.computedDashboards
+                        |> Maybe.map
+                            (\computedDashboard ->
+                                if Dict.member ( programTypeFilter, selectedVillage ) computedDashboard.assembledPermutations then
+                                    model
+
+                                else
+                                    let
+                                        assembledPermutationsUpdated =
+                                            Dict.insert ( programTypeFilter, selectedVillage )
+                                                (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId_ computedDashboard.statsRaw model programTypeFilter selectedVillage)
+                                                computedDashboard.assembledPermutations
+
+                                        computedDashboardUpdated =
+                                            { computedDashboard
+                                                | assembledPermutations = assembledPermutationsUpdated
+                                            }
+                                    in
+                                    { model | computedDashboards = Dict.insert healthCenterId_ computedDashboardUpdated model.computedDashboards }
                             )
                         |> Maybe.withDefault model
             in
@@ -2275,7 +2305,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         DashboardStatsRevision uuid statsRaw ->
             let
                 updatedComputedDashboard =
-                    Dict.get uuid model.computedDashboard
+                    Dict.get uuid model.computedDashboards
                         |> Maybe.map
                             (\computedDashboard ->
                                 { statsRaw = statsRaw
@@ -2287,29 +2317,9 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                                         computedDashboard.assembledPermutations
                                 }
                             )
-                        |> Maybe.withDefault
-                            (let
-                                ( programTypeFilter, selectedVillage ) =
-                                    if isJust villageId then
-                                        -- This is CHW Nurse, as on CHW work with villages.
-                                        ( Pages.Dashboard.Model.FilterProgramCommunity
-                                        , villageId
-                                        )
-
-                                    else
-                                        ( Pages.Dashboard.Model.FilterAllPrograms
-                                        , Nothing
-                                        )
-                             in
-                             { statsRaw = statsRaw
-                             , assembledPermutations =
-                                Dict.singleton
-                                    ( programTypeFilter, selectedVillage )
-                                    (Pages.Dashboard.Utils.generateAssembledData currentDate uuid statsRaw model programTypeFilter selectedVillage)
-                             }
-                            )
+                        |> Maybe.withDefault (generateInitialComputedDashboard currentDate uuid villageId statsRaw model)
             in
-            ( { model | computedDashboard = Dict.insert uuid updatedComputedDashboard model.computedDashboard }, recalc )
+            ( { model | computedDashboards = Dict.insert uuid updatedComputedDashboard model.computedDashboards }, recalc )
 
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
