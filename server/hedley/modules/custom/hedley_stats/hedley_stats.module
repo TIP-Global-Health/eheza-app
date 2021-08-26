@@ -748,7 +748,7 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
 
     if (empty($birth_date)) {
       // Child got no birthdate set. We can't process
-      // it's data on client, so we skip it.
+      // its data on client, so we skip it.
       continue;
     }
 
@@ -805,7 +805,7 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
 
     if (empty($birth_date)) {
       // Child got no birthdate set. We can't process
-      // it's data on client, so we skip it.
+      // its data on client, so we skip it.
       continue;
     }
 
@@ -820,7 +820,7 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
       'gender' => $child_wrapper->field_gender->value(),
       'graduation_date' => hedley_stats_convert_timestamp_to_nominal($graduation_date),
       // No need to provide mother details, because we do not present
-      // it anywhere, when it comes to individual participants data.
+      // it anywhere, when it comes to individual participant data.
       'mother_name' => '',
       'phone_number' => '',
     ];
@@ -1509,10 +1509,28 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
 
   // Filter by clinic type.
   $query->condition('field_group_type.field_group_type_value', $clinic_type);
+  $query->orderBy('node.nid');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = [];
+  $nid = 0;
+  $batch = 1000;
+
+  while (TRUE) {
+    $batch_query = clone $query;
+    $batch_query->condition('nid', $nid, '>');
+
+    $batch_result = $batch_query
+      ->range(0, $batch)
+      ->execute()
+      ->fetchAllAssoc('nid');
+
+    if (empty($batch_result)) {
+      break;
+    }
+
+    $result = array_merge($result, $batch_result);
+    $nid = end($batch_result)->nid;
+  }
 
   // Group measurements by person.
   $people = [];
@@ -1564,9 +1582,28 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $query->orderBy('node.nid');
+
+  $result = [];
+  $nid = 0;
+  $batch = 1000;
+
+  while (TRUE) {
+    $batch_query = clone $query;
+    $batch_query->condition('nid', $nid, '>');
+
+    $batch_result = $batch_query
+      ->range(0, $batch)
+      ->execute()
+      ->fetchAllAssoc('nid');
+
+    if (empty($batch_result)) {
+      break;
+    }
+
+    $result = array_merge($result, $batch_result);
+    $nid = end($batch_result)->nid;
+  }
 
   // Group measurements by person.
   $people = [];
