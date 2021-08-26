@@ -1246,7 +1246,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
   $data_per_month = [];
   for ($i = 1; $i <= $total_month; $i++) {
     // If not changed bellow, NULL will indicate to client that
-    //  there was no data for current month.
+    // there was no data for current month.
     $data_per_month[$i] = NULL;
   }
 
