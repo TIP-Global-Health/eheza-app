@@ -1312,8 +1312,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               continue;
             }
 
-            // When working with nutrition signs, we only need to set
-            // the 'class' field.
             if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
               if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
                 $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_SEVERE;
@@ -1321,6 +1319,9 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               else {
                 $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_GOOD;
               }
+
+              $people[$id]['nutrition']['nutrition_signs'][$month]['v'] = 'X';
+
               // Move on to next measurement.
               continue;
             }
