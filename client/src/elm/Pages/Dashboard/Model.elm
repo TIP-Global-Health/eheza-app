@@ -1,7 +1,7 @@
 module Pages.Dashboard.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (AssembledData, DashboardStats, ParticipantStats)
+import Backend.Dashboard.Model exposing (ParticipantStats)
 import Backend.Entities exposing (HealthCenterId, VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
