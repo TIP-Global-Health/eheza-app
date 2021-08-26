@@ -1518,8 +1518,13 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
   $nid = 0;
   $batch = 1000;
 
+  // This query can produce, 30K, 50K, or even 100K rows of result.
+  // This size may cause 'out of memory' exception.
+  // Therefore, we run this query with batches, accumulation
+  // the result with every batch.
   while (TRUE) {
     $batch_query = clone $query;
+    // We want to get results for nodes we did not process before.
     $batch_query->condition('nid', $nid, '>');
 
     $batch_result = $batch_query
@@ -1528,10 +1533,14 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
       ->fetchAllAssoc('nid');
 
     if (empty($batch_result)) {
+      // There's no more results, so we know that no more
+      // batches are needed, and we can exit the WHILE loop.
       break;
     }
 
+    // Accumulate results.
     $result = array_merge($result, $batch_result);
+    // Locate latest node processed, for the next batch.
     $nid = end($batch_result)->nid;
   }
 
@@ -1591,6 +1600,10 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   $nid = 0;
   $batch = 1000;
 
+  // This query can produce, 30K, 50K, or even 100K rows of result.
+  // This size may cause 'out of memory' exception.
+  // Therefore, we run this query with batches, accumulation
+  // the result with every batch.
   while (TRUE) {
     $batch_query = clone $query;
     $batch_query->condition('nid', $nid, '>');
