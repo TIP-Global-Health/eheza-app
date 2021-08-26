@@ -221,6 +221,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         groupNutritionMeasurements
                         individualNutritionMeasurements
                         individualWellChildMeasurements
+                    , viewNextAppointmentPane language currentDate child db
                     ]
 
                 ModeCompletedDiagnosis ->
@@ -1210,11 +1211,10 @@ viewNextAppointmentPane : Language -> NominalDate -> Person -> ModelIndexedDb ->
 viewNextAppointmentPane language currentDate child db =
     let
         entriesHeading =
-            div [ class "heading vaccination" ]
-                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
-                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
-                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
-                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+            div [ class "heading next-appointment" ]
+                [ div [ class "type" ] [ text <| translate language Translate.Type ]
+                , div [ class "location" ] [ text <| translate language Translate.Location ]
+                , div [ class "date" ] [ text <| translate language Translate.Date ]
                 ]
     in
     div [ class "pane next-appointment" ] <|

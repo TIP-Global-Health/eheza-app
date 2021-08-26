@@ -2542,12 +2542,28 @@ div.page-report.well-child {
     }
 
     .heading.nutrition-signs {
+
       .name {
         width: 65%;
       }
 
       .date {
         width: 35%;
+      }
+    }
+
+    .heading.next-appointment {
+
+      .type {
+        width: 35%;
+      }
+
+      .location {
+        width: 40%;
+      }
+
+      .date {
+        width: 25%;
       }
     }
 
@@ -2658,6 +2674,7 @@ div.page-report.well-child {
     }
 
     .growth-charts {
+      margin-bottom: 60px;
       margin-left: -30px;
       margin-right: -30px;
     }

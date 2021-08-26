@@ -624,6 +624,7 @@ type TranslationId
     | LmpDateHeader
     | LmpRangeHeader
     | LmpRange LmpRange
+    | Location
     | LoginPhrase LoginPhrase
     | Low
     | LowRiskCase
@@ -997,6 +998,7 @@ type TranslationId
     | TuberculosisPast
     | TuberculosisPresent
     | TwoVisits
+    | Type
     | UbudeheLabel
     | Unknown
     | Update
@@ -4593,6 +4595,11 @@ translationSet trans =
                     , kinyarwanda = Just "Mu mezi atandatu"
                     }
 
+        Location ->
+            { english = "Location"
+            , kinyarwanda = Nothing
+            }
+
         LoginPhrase phrase ->
             translateLoginPhrase phrase
 
@@ -7930,6 +7937,11 @@ translationSet trans =
         TwoVisits ->
             { english = "Two visits"
             , kinyarwanda = Just "Inshuro ebyiri"
+            }
+
+        Type ->
+            { english = "Type"
+            , kinyarwanda = Nothing
             }
 
         UbudeheLabel ->
