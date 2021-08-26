@@ -129,7 +129,7 @@ emptyModel maybeSelectedVillage =
     let
         ( programTypeFilter, selectedVillage ) =
             if isJust maybeSelectedVillage then
-                -- This is CHW Nurse, as on CHW work with villages.
+                -- This is CHW Nurse, as only CHW work with villages.
                 ( FilterProgramCommunity
                 , maybeSelectedVillage
                 )

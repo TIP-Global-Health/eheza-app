@@ -1,4 +1,4 @@
-module Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
+module Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -193,6 +193,22 @@ emptyModelIndexedDb =
     }
 
 
+{-| This is the data type we store for single health center statistics.
+It consist of raw statistics that we get from the backend, and a dictionary
+of assembeled data permutations we may need.
+We need this to avoid making heavy calculations (repeated every few seconds),
+that are need to present the dashboards page.
+We have different options for displaying data on page:
+
+  - Overall Statistics
+  - Statistics for single group type (FBF, PMTCT, ...)
+  - Statistics for selected village.
+
+To support this, each permutation of assembeled data is combination of
+selected program type and village (optional). This combinations serves
+as key of assembled data permutations dictionary).
+
+-}
 type alias ComputedDashboard =
     { statsRaw : Backend.Dashboard.Model.DashboardStatsRaw
     , assembledPermutations : Dict ( Pages.Dashboard.Model.FilterProgramType, Maybe VillageId ) Backend.Dashboard.Model.AssembledData
@@ -208,7 +224,9 @@ type MsgIndexedDb
     | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
     | FetchComputedDashboard HealthCenterId
-    | FetchComputedDashboardPermutation HealthCenterId Pages.Dashboard.Model.FilterProgramType (Maybe VillageId)
+      -- Request to generate assembled daya needed to display Dashboards
+      -- page for selected program type and village (optional).
+    | FetchComputedDashboardAssembledPermutation HealthCenterId Pages.Dashboard.Model.FilterProgramType (Maybe VillageId)
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
     | FetchEditableSession SessionId (List MsgIndexedDb)

@@ -101,7 +101,7 @@ update currentDate healthCenterId subPage db msg model =
             in
             ( updatedModel
             , Cmd.none
-            , generateAssembledPermutationMsg healthCenterId updatedModel
+            , getAssembledPermutationMsg healthCenterId updatedModel
             )
 
         SetSelectedVillage string ->
@@ -115,7 +115,7 @@ update currentDate healthCenterId subPage db msg model =
             in
             ( updatedModel
             , Cmd.none
-            , generateAssembledPermutationMsg healthCenterId updatedModel
+            , getAssembledPermutationMsg healthCenterId updatedModel
             )
 
         SetActivePage page ->
@@ -137,11 +137,11 @@ update currentDate healthCenterId subPage db msg model =
             ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )
 
 
-generateAssembledPermutationMsg : Maybe HealthCenterId -> Model -> List App.Model.Msg
-generateAssembledPermutationMsg healthCenterId model =
+getAssembledPermutationMsg : Maybe HealthCenterId -> Model -> List App.Model.Msg
+getAssembledPermutationMsg healthCenterId model =
     Maybe.map
         (\healthCenterId_ ->
-            Backend.Model.FetchComputedDashboardPermutation healthCenterId_ model.programTypeFilter model.selectedVillageFilter
+            Backend.Model.FetchComputedDashboardAssembledPermutation healthCenterId_ model.programTypeFilter model.selectedVillageFilter
                 |> App.Model.MsgIndexedDb
                 |> List.singleton
         )

@@ -9,6 +9,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), 
 import Backend.AcuteIllnessEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
+import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Fetch
@@ -195,7 +196,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
-        FetchComputedDashboardPermutation healthCenterId_ programTypeFilter selectedVillage ->
+        FetchComputedDashboardAssembledPermutation healthCenterId_ programTypeFilter selectedVillage ->
             let
                 modelUpdated =
                     Dict.get healthCenterId_ model.computedDashboards
@@ -3598,11 +3599,16 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
         |> RemoteData.withDefault NotNeeded
 
 
+{-| When we get dashboard data from backend, we store it, and
+generate a variation of assembled data needed to display Dashboar Main page.
+@see: ComputedDashboard definition.
+-}
+generateInitialComputedDashboard : NominalDate -> HealthCenterId -> Maybe VillageId -> DashboardStatsRaw -> ModelIndexedDb -> ComputedDashboard
 generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw db =
     let
         ( programTypeFilter, selectedVillage ) =
             if isJust villageId then
-                -- This is CHW Nurse, as on CHW work with villages.
+                -- This is CHW Nurse, as only CHW work with villages.
                 ( Pages.Dashboard.Model.FilterProgramCommunity
                 , villageId
                 )
