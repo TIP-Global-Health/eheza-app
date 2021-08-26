@@ -1245,10 +1245,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
   // Set the data for each month.
   $data_per_month = [];
   for ($i = 1; $i <= $total_month; $i++) {
-    $data_per_month[$i] = [
-      'c' => 'neutral',
-      'v' => 'X',
-    ];
+    $data_per_month[$i] = NULL;
   }
 
   // Set the nutrition for each person.

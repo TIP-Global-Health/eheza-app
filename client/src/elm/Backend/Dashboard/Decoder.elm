@@ -98,7 +98,7 @@ decodeCaseNutrition =
 
 decodeNutritionValueDict : Decoder (Dict Int NutritionValue)
 decodeNutritionValueDict =
-    dict decodeNutritionValue
+    dict (decodeWithFallback (NutritionValue Neutral "X") decodeNutritionValue)
         |> andThen
             (\dict ->
                 LegacyDict.toList dict
