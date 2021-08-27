@@ -33,7 +33,6 @@ define('HEDLEY_STATS_ACUTE_ILLNESS', 'sync_stats_acute_illness');
 
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
-define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'sync_measurements_query_grouped_by_person');
 define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'sync_session_attendance_stats');
 define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_stats');
 define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
@@ -252,7 +251,6 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
   // Clear cache for all the periods.
   foreach ($periods as $period) {
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_FAMILY_PLANNING, $nid, $period);
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $nid, $period);
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $nid, $period);
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $nid, $period);
   }
@@ -1430,13 +1428,6 @@ function hedley_stats_get_all_clinic_types() {
  * @throws \Exception
  */
 function hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, $extend = FALSE) {
-  $cache_name = HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON;
-
-  // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, $cache_name, $health_center_id, $period)) {
-    return $cache_data;
-  }
-
   $clinic_types = hedley_stats_get_all_clinic_types();
 
   $result = [];
@@ -1445,9 +1436,6 @@ function hedley_stats_get_nutrition_measurements_grouped_by_person($health_cente
   }
 
   $result['individual'] = hedley_stats_get_nutrition_measurements_for_individual_encounters_grouped_by_person($health_center_id, $period, $extend);
-
-  // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, $cache_name, $health_center_id, $period, $result);
 
   return $result;
 }
