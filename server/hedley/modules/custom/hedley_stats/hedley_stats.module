@@ -1567,18 +1567,31 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   return $people;
 }
 
+/**
+ * Executes query in batches, with constant number of results at each batch.
+ *
+ * Complex query can produce, 50K, 100K or even more rows of result.
+ * This size may cause 'out of memory' exception.
+ * To prevent this, we run these queries in batches. There will be more hits
+ * at the DB, but we don't end up running out of memory.
+ *
+ * @param SelectQuery $query
+ *   The query to execute.
+ * @param int $batch
+ *   Number of results we want to receive at each batch. Defaults to 5000.
+ *
+ * @return array
+ *   Query accumulated result.
+ */
 function hedley_stats_run_node_query_in_batches($query, $batch = 5000) {
   $query->orderBy('node.nid');
 
   $result = [];
   $nid = 0;
 
-  // This query can produce, 30K, 50K, or even 100K rows of result.
-  // This size may cause 'out of memory' exception.
-  // Therefore, we run this query with batches, accumulation
-  // the result with every batch.
   while (TRUE) {
     $batch_query = clone $query;
+    // We want to get results for nodes we did not process before.
     $batch_query->condition('nid', $nid, '>');
 
     $batch_result = $batch_query
@@ -1587,10 +1600,14 @@ function hedley_stats_run_node_query_in_batches($query, $batch = 5000) {
       ->fetchAllAssoc('nid');
 
     if (empty($batch_result)) {
+      // There's no more results, so we know that no more
+      // batches are needed, and we can exit the WHILE loop.
       break;
     }
 
+    // Accumulate result.
     $result = array_merge($result, $batch_result);
+    // Locate the latest node processed, for the next batch.
     $nid = end($batch_result)->nid;
   }
 
