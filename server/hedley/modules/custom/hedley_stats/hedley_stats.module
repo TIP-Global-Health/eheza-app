@@ -18,10 +18,9 @@ define('HEDLEY_STATS_PERIOD_LAST_YEAR', 'last_year');
 define('HEDLEY_STATS_PERIOD_480_DAYS', '480_days');
 define('HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS', 'past_six_month');
 
-
-define('HEDLEY_STATS_SEVERE', 'severe_nutrition');
-define('HEDLEY_STATS_MODERATE', 'moderate_nutrition');
-define('HEDLEY_STATS_GOOD', 'good_nutrition');
+define('HEDLEY_STATS_GOOD', '1');
+define('HEDLEY_STATS_MODERATE', '2');
+define('HEDLEY_STATS_SEVERE', '3');
 
 // Encounter types.
 define('HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE', 'antenatal');

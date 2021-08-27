@@ -99,16 +99,16 @@ encodeNutritionStatus status =
     string <|
         case status of
             Neutral ->
-                "neutral"
+                "0"
 
             Good ->
-                "good_nutrition"
+                "1"
 
             Moderate ->
-                "moderate_nutrition"
+                "2"
 
             Severe ->
-                "severe_nutrition"
+                "3"
 
 
 encodeChildrenBeneficiariesData : Dict ProgramType (List ChildrenBeneficiariesStats) -> ( String, Value )

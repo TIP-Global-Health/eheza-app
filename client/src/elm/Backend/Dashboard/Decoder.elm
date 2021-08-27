@@ -124,16 +124,16 @@ decodeNutritionStatus =
         |> andThen
             (\s ->
                 case s of
-                    "neutral" ->
+                    "0" ->
                         succeed Neutral
 
-                    "good_nutrition" ->
+                    "1" ->
                         succeed Good
 
-                    "moderate_nutrition" ->
+                    "2" ->
                         succeed Moderate
 
-                    "severe_nutrition" ->
+                    "3" ->
                         succeed Severe
 
                     _ ->
