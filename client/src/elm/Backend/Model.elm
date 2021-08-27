@@ -320,6 +320,8 @@ type MsgIndexedDb
     | HandlePostedNutritionEncounter IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
+      -- Operations we may want to perform when logout is clicked.
+    | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
