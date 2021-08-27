@@ -130,6 +130,10 @@ progressReportInitiatorFromUrlFragmemt s =
                         String.dropLeft (String.length "progress-report-") s
                             |> String.split "+++"
                 in
+                -- In case of Group Nutrition report we need to know Session ID
+                -- and Child ID. These 2 IDs are separated by '+++' string.
+                -- '+' char is not used for UUIDs, so we have no risk of getting
+                -- it wrong.
                 if List.length ids /= 2 then
                     Nothing
 
