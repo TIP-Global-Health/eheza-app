@@ -14,6 +14,7 @@ import Backend.Dashboard.Model
         , ChildrenBeneficiariesData
         , DashboardStats
         , Nutrition
+        , NutritionPageData
         , NutritionValue
         , ParticipantStats
         , Periods
@@ -108,13 +109,11 @@ view language page currentDate healthCenterId isChw nurse model db =
                     viewHeader language Translate.DashboardLabel goBackPage
 
         content =
-            Dict.get healthCenterId db.computedDashboard
+            Dict.get healthCenterId db.computedDashboards
+                |> Maybe.andThen (.assembledPermutations >> Dict.get ( model.programTypeFilter, model.selectedVillageFilter ))
                 |> Maybe.map
-                    (\stats ->
+                    (\assembled ->
                         let
-                            assembled =
-                                generateAssembledData healthCenterId stats db model
-
                             ( pageContent, pageClass ) =
                                 case page of
                                     MainPage ->
@@ -136,7 +135,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                                 ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, "acute-illness" )
 
                                             NutritionPage ->
-                                                ( viewNutritionPage language currentDate True nurse assembled.stats db model, "nutrition" )
+                                                ( viewNutritionPage language currentDate True nurse assembled.nutritionPageData db model, "nutrition" )
 
                                             AntenatalPage ->
                                                 ( viewAntenatalPage language currentDate assembled db model, "prenatal" )
@@ -177,7 +176,7 @@ viewMainPage language currentDate healthCenterId isChw nurse assembled db model 
         viewChwMainPage language currentDate healthCenterId assembled db model
 
     else
-        viewNutritionPage language currentDate False nurse assembled.stats db model
+        viewNutritionPage language currentDate False nurse assembled.nutritionPageData db model
 
 
 viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -230,226 +229,6 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     ]
 
 
-applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
-applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiariesDict =
-    let
-        applyDenomination number denominator =
-            ceiling (100 * toFloat number / toFloat denominator)
-    in
-    totalBeneficiariesDict
-        |> Dict.map
-            (\month totalBeneficiaries ->
-                Dict.get month beneficiariesPerMonthsDict
-                    |> Maybe.map
-                        (\total ->
-                            { stunting =
-                                Nutrition (applyDenomination totalBeneficiaries.stunting.severeNutrition total)
-                                    (applyDenomination totalBeneficiaries.stunting.moderateNutrition total)
-                            , underweight =
-                                Nutrition (applyDenomination totalBeneficiaries.underweight.severeNutrition total)
-                                    (applyDenomination totalBeneficiaries.underweight.moderateNutrition total)
-                            , wasting =
-                                Nutrition (applyDenomination totalBeneficiaries.wasting.severeNutrition total)
-                                    (applyDenomination totalBeneficiaries.wasting.moderateNutrition total)
-                            , muac =
-                                Nutrition (applyDenomination totalBeneficiaries.muac.severeNutrition total)
-                                    (applyDenomination totalBeneficiaries.muac.moderateNutrition total)
-                            }
-                        )
-                    |> Maybe.withDefault totalBeneficiaries
-            )
-
-
-generateTotalBeneficiariesMonthlyDuringPastYear :
-    NominalDate
-    -> DashboardStats
-    -> Model
-    -> Dict Int Int
-generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model =
-    let
-        currentMonth =
-            Date.month currentDate
-                |> Date.monthToNumber
-
-        ( thisYear, lastYear ) =
-            List.repeat 12 0
-                |> List.indexedMap (\index _ -> index + 1)
-                |> List.Extra.splitAt currentMonth
-
-        orderedList =
-            (lastYear ++ thisYear)
-                |> List.reverse
-                |> List.indexedMap
-                    (\index month ->
-                        let
-                            maxJoinDate =
-                                Date.add Months (-1 * index) currentDate
-                                    |> Date.ceiling Date.Month
-                                    |> Date.add Days -1
-
-                            minGraduationDate =
-                                Date.add Months (-1 * index) currentDate
-                                    |> Date.floor Date.Month
-
-                            totalBeneficiaries =
-                                stats.childrenBeneficiaries
-                                    |> List.filterMap
-                                        (\child ->
-                                            if
-                                                (Date.compare child.memberSince maxJoinDate == LT)
-                                                    && (Date.compare minGraduationDate child.graduationDate == LT)
-                                            then
-                                                Just child.identifier
-
-                                            else
-                                                Nothing
-                                        )
-                                    -- We want to get unique participants.
-                                    |> EverySet.fromList
-                                    |> EverySet.size
-                        in
-                        ( month, totalBeneficiaries )
-                    )
-                |> Dict.fromList
-    in
-    orderedList
-
-
-accumCaseNutritionTotals : CaseNutritionTotal -> Dict Int TotalBeneficiaries -> Dict Int TotalBeneficiaries
-accumCaseNutritionTotals totals dict =
-    Dict.toList dict
-        |> List.map
-            (\( key, accum ) ->
-                let
-                    stunting =
-                        Dict.get key totals.stunting
-                            |> Maybe.map
-                                (\totalsStunting ->
-                                    Nutrition (totalsStunting.severeNutrition + accum.stunting.severeNutrition) (totalsStunting.moderateNutrition + accum.stunting.moderateNutrition)
-                                )
-                            |> Maybe.withDefault accum.stunting
-
-                    underweight =
-                        Dict.get key totals.underweight
-                            |> Maybe.map
-                                (\totalsUnderweight ->
-                                    Nutrition (totalsUnderweight.severeNutrition + accum.underweight.severeNutrition) (totalsUnderweight.moderateNutrition + accum.underweight.moderateNutrition)
-                                )
-                            |> Maybe.withDefault accum.underweight
-
-                    wasting =
-                        Dict.get key totals.wasting
-                            |> Maybe.map
-                                (\totalsWasting ->
-                                    Nutrition (totalsWasting.severeNutrition + accum.wasting.severeNutrition) (totalsWasting.moderateNutrition + accum.wasting.moderateNutrition)
-                                )
-                            |> Maybe.withDefault accum.wasting
-
-                    muac =
-                        Dict.get key totals.muac
-                            |> Maybe.map
-                                (\totalsMuac ->
-                                    Nutrition (totalsMuac.severeNutrition + accum.muac.severeNutrition) (totalsMuac.moderateNutrition + accum.muac.moderateNutrition)
-                                )
-                            |> Maybe.withDefault accum.muac
-                in
-                ( key, TotalBeneficiaries stunting underweight wasting muac )
-            )
-        |> Dict.fromList
-
-
-generateCaseNutritionTotals : CaseNutrition -> CaseNutritionTotal
-generateCaseNutritionTotals caseNutrition =
-    let
-        generateTotals nutrition =
-            Dict.toList nutrition
-                |> List.filterMap
-                    (\( month, nutritionValue ) ->
-                        if month == 13 then
-                            Nothing
-
-                        else
-                            case nutritionValue.class of
-                                Backend.Dashboard.Model.Moderate ->
-                                    Just ( month, Backend.Dashboard.Model.Nutrition 0 1 )
-
-                                Backend.Dashboard.Model.Severe ->
-                                    Just ( month, Backend.Dashboard.Model.Nutrition 1 0 )
-
-                                _ ->
-                                    Just ( month, Backend.Dashboard.Model.Nutrition 0 0 )
-                    )
-                |> Dict.fromList
-    in
-    { stunting = generateTotals caseNutrition.stunting
-    , underweight = generateTotals caseNutrition.underweight
-    , wasting = generateTotals caseNutrition.wasting
-    , muac = generateTotals caseNutrition.muac
-    , nutritionSigns = generateTotals caseNutrition.nutritionSigns
-    }
-
-
-generateCaseNutritionNewCases : NominalDate -> CaseNutrition -> CaseNutritionTotal
-generateCaseNutritionNewCases currentDate caseNutrition =
-    let
-        currentMonth =
-            Date.month currentDate
-                |> Date.monthToNumber
-
-        generateTotals nutrition =
-            let
-                sorted =
-                    Dict.toList nutrition
-                        |> List.sortBy Tuple.first
-
-                oneBeforeFirst =
-                    List.reverse sorted
-                        |> List.head
-
-                ( thisYear, lastYear ) =
-                    List.take 12 sorted
-                        |> List.Extra.splitAt currentMonth
-
-                yearData =
-                    lastYear ++ thisYear
-
-                yearDataShiftedLeft =
-                    oneBeforeFirst
-                        |> Maybe.map (\beforeFirst -> beforeFirst :: List.take 11 yearData)
-                        |> Maybe.withDefault yearData
-            in
-            List.map2
-                (\( month, nutritionValue ) ( _, previousNutritionValue ) ->
-                    case nutritionValue.class of
-                        Backend.Dashboard.Model.Moderate ->
-                            if previousNutritionValue.class /= Backend.Dashboard.Model.Moderate then
-                                ( month, Backend.Dashboard.Model.Nutrition 0 1 )
-
-                            else
-                                ( month, Backend.Dashboard.Model.Nutrition 0 0 )
-
-                        Backend.Dashboard.Model.Severe ->
-                            if previousNutritionValue.class /= Backend.Dashboard.Model.Severe then
-                                ( month, Backend.Dashboard.Model.Nutrition 1 0 )
-
-                            else
-                                ( month, Backend.Dashboard.Model.Nutrition 0 0 )
-
-                        _ ->
-                            ( month, Backend.Dashboard.Model.Nutrition 0 0 )
-                )
-                yearData
-                yearDataShiftedLeft
-                |> Dict.fromList
-    in
-    { stunting = generateTotals caseNutrition.stunting
-    , underweight = generateTotals caseNutrition.underweight
-    , wasting = generateTotals caseNutrition.wasting
-    , muac = generateTotals caseNutrition.muac
-    , nutritionSigns = generateTotals caseNutrition.nutritionSigns
-    }
-
-
 viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> List (Html Msg)
 viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
     if model.programTypeFilter /= FilterProgramFbf then
@@ -469,10 +248,10 @@ viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
                     ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth currentMonth )
 
             currentPeriodStats =
-                filterStatsWithinPeriod currentDate model stats
+                filterStatsWithinPeriod currentDate model.period stats
 
             monthBeforeStats =
-                filterStatsWithinPeriod currentDate modelWithLastMonth stats
+                filterStatsWithinPeriod currentDate modelWithLastMonth.period stats
 
             malnourishedCurrentMonth =
                 mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement.thisYear
@@ -1047,39 +826,9 @@ viewGastroPage language selectedDate acuteIllnessData encountersForSelectedMonth
     ]
 
 
-viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> List (Html Msg)
-viewNutritionPage language currentDate isChw nurse stats db model =
+viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> NutritionPageData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewNutritionPage language currentDate isChw nurse data db model =
     let
-        currentPeriodStats =
-            filterStatsWithinPeriod currentDate model stats
-
-        totalBeneficiariesMonthlyDuringPastYear =
-            generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats model
-
-        emptyTotalBeneficiariesDict =
-            List.repeat 12 emptyTotalBeneficiaries
-                |> List.indexedMap (\index empty -> ( index + 1, empty ))
-                |> Dict.fromList
-
-        caseNutritionTotalsThisYear =
-            stats.caseManagement.thisYear
-                |> List.map (.nutrition >> generateCaseNutritionTotals)
-
-        caseNutritionTotalsLastYear =
-            stats.caseManagement.lastYear
-                |> List.map (.nutrition >> generateCaseNutritionTotals)
-
-        totalsGraphData =
-            caseNutritionTotalsThisYear
-                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
-                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
-
-        newCasesGraphData =
-            stats.caseManagement.thisYear
-                |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
-                |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
-                |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
-
         links =
             case model.programTypeFilter of
                 FilterProgramFbf ->
@@ -1092,17 +841,16 @@ viewNutritionPage language currentDate isChw nurse stats db model =
     in
     [ div [ class "ui grid" ]
         [ div [ class "eight wide column" ]
-            [ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYear
+            [ viewGoodNutrition language data.caseNutritionTotalsThisYear data.caseNutritionTotalsLastYear
             ]
         , div [ class "eight wide column" ]
-            [ generateTotalEncounters currentPeriodStats.totalEncounters model
-                |> viewTotalEncounters language
+            [ viewTotalEncounters language data.totalEncounters
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart totalsGraphData model.currentBeneficiariesChartsFilter
+            [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+            [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
             ]
         , links
         ]
@@ -2295,111 +2043,6 @@ filterStatsByAge currentDate func stats =
 applyAgeFilter : NominalDate -> ({ months : Int, days : Int } -> Bool) -> List { a | birthDate : NominalDate } -> List { a | birthDate : NominalDate }
 applyAgeFilter currentDate func list =
     List.filter (\item -> isDiffTruthy item.birthDate currentDate func) list
-
-
-filterStatsWithinPeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsWithinPeriod currentDate model stats =
-    filterStatsByPeriod isBetween currentDate model stats
-
-
-filterStatsOutsidePeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsOutsidePeriod currentDate model stats =
-    let
-        outside start end date =
-            isBetween start end date |> not
-    in
-    filterStatsByPeriod outside currentDate model stats
-
-
-{-| Filter stats to match the selected period.
--}
-filterStatsByPeriod : (NominalDate -> NominalDate -> NominalDate -> Bool) -> NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsByPeriod fiterFunc currentDate model stats =
-    let
-        ( startDate, endDate ) =
-            case model.period of
-                OneYear ->
-                    ( Date.add Years -1 currentDate, Date.add Days 1 currentDate )
-
-                ThisMonth ->
-                    -- From beginning of the month to this day.
-                    ( Date.floor Date.Month currentDate, Date.add Days 1 currentDate )
-
-                LastMonth ->
-                    -- From the beginning of last month to the end of last month.
-                    ( Date.add Months -1 currentDate
-                        |> Date.floor Date.Month
-                    , Date.add Months -1 currentDate
-                        |> Date.ceiling Date.Month
-                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
-                        -- first day of the next month.
-                        |> Date.add Days -1
-                    )
-
-                ThreeMonthsAgo ->
-                    -- From the beginning of 3 months ago to the end of 3 months ago.
-                    ( Date.add Months -2 currentDate
-                        |> Date.floor Date.Month
-                    , Date.add Months -2 currentDate
-                        |> Date.ceiling Date.Month
-                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
-                        -- first day of the next month.
-                        |> Date.add Days -1
-                    )
-
-        filterPartial =
-            fiterFunc startDate endDate
-
-        childrenBeneficiariesUpdated =
-            stats.childrenBeneficiaries
-                |> List.filter (\child -> filterPartial child.memberSince)
-
-        familyPlanningUpdated =
-            stats.familyPlanning
-                |> List.filter (\familyPlanning -> filterPartial familyPlanning.created)
-
-        completedPrograms =
-            stats.completedPrograms
-                |> List.filter (\completedProgram -> filterPartial completedProgram.expectedDate)
-
-        missedSessions =
-            stats.missedSessions
-                |> List.filter (\missedSession -> filterPartial missedSession.expectedDate)
-    in
-    { stats
-        | childrenBeneficiaries = childrenBeneficiariesUpdated
-        , familyPlanning = familyPlanningUpdated
-        , completedPrograms = completedPrograms
-        , missedSessions = missedSessions
-    }
-
-
-{-| Filter stats to match the selected gender.
--}
-filterStatsByGender : NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsByGender currentDate model stats =
-    { stats
-        | childrenBeneficiaries = applyGenderFilter model stats.childrenBeneficiaries
-        , completedPrograms = applyGenderFilter model stats.completedPrograms
-        , missedSessions = applyGenderFilter model stats.missedSessions
-    }
-
-
-applyGenderFilter : Model -> List { a | gender : Backend.Person.Model.Gender } -> List { a | gender : Backend.Person.Model.Gender }
-applyGenderFilter model list =
-    List.filter
-        (\item ->
-            case ( item.gender, model.beneficiariesGender ) of
-                ( Backend.Person.Model.Male, Pages.Dashboard.Model.Boys ) ->
-                    True
-
-                ( Backend.Person.Model.Female, Pages.Dashboard.Model.Girls ) ->
-                    True
-
-                _ ->
-                    False
-        )
-        list
 
 
 getFamilyPlanningSignsCounter : DashboardStats -> FamilyPlanningSignsCounter

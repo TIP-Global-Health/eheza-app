@@ -98,7 +98,7 @@ decodeCaseNutrition =
 
 decodeNutritionValueDict : Decoder (Dict Int NutritionValue)
 decodeNutritionValueDict =
-    dict decodeNutritionValue
+    dict (decodeWithFallback (NutritionValue Neutral "X") decodeNutritionValue)
         |> andThen
             (\dict ->
                 LegacyDict.toList dict
@@ -114,8 +114,8 @@ decodeNutritionValueDict =
 decodeNutritionValue : Decoder NutritionValue
 decodeNutritionValue =
     succeed NutritionValue
-        |> required "class" decodeNutritionStatus
-        |> required "value" string
+        |> required "c" decodeNutritionStatus
+        |> required "v" string
 
 
 decodeNutritionStatus : Decoder NutritionStatus
@@ -325,7 +325,7 @@ decodeAcuteIllnessEncounterDataItem : Decoder AcuteIllnessEncounterDataItem
 decodeAcuteIllnessEncounterDataItem =
     succeed AcuteIllnessEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
-        |> required "sequence_number" decodeInt
+        |> required "sequence_number" (decodeWithFallback 1 decodeInt)
         |> required "diagnosis" decodeAcuteIllnessDiagnosis
         |> required "fever" bool
         |> required "isolation" (decodeEverySet (decodeWithFallback NoIsolationSigns decodeIsolationSign))

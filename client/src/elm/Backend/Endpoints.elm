@@ -107,9 +107,20 @@ encodeRelationshipParams params =
         ]
 
 
-computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStatsRaw ()
+computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStatsRaw ComputedDashboardParams
 computedDashboardEndpoint =
     swEndpoint "statistics" decodeDashboardStatsRaw
+        |> withParamsEncoder encodeComputedDashboardParams
+
+
+type alias ComputedDashboardParams =
+    { healthCenter : HealthCenterId
+    }
+
+
+encodeComputedDashboardParams : ComputedDashboardParams -> List ( String, String )
+encodeComputedDashboardParams params =
+    [ ( "healthCenter", fromEntityUuid params.healthCenter ) ]
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()
