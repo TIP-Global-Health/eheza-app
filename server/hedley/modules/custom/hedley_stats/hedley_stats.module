@@ -1583,7 +1583,7 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
  * @return array
  *   Query accumulated result.
  */
-function hedley_stats_run_node_query_in_batches($query, $batch = 5000) {
+function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 5000) {
   $query->orderBy('node.nid');
 
   $result = [];
