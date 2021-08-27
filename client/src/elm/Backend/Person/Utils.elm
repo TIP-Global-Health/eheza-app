@@ -1,6 +1,7 @@
 module Backend.Person.Utils exposing (..)
 
 import AssocList as Dict
+import Backend.Entities exposing (HealthCenterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
 import Backend.Model exposing (ModelIndexedDb)
@@ -175,13 +176,13 @@ graduatingAgeInMonth =
     26
 
 
-getPersonHealthCenterName : Person -> ModelIndexedDb -> Maybe String
-getPersonHealthCenterName person db =
+getHealthCenterName : Maybe HealthCenterId -> ModelIndexedDb -> Maybe String
+getHealthCenterName healthCenterId db =
     Maybe.map2
-        (\healthCenterId healthCenters ->
-            Dict.get healthCenterId healthCenters
+        (\healthCenterId_ healthCenters ->
+            Dict.get healthCenterId_ healthCenters
                 |> Maybe.map .name
         )
-        person.healthCenterId
+        healthCenterId
         (RemoteData.toMaybe db.healthCenters)
         |> Maybe.Extra.join

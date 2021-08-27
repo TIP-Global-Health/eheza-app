@@ -18,7 +18,7 @@ import Backend.NutritionEncounter.Utils
         , sortTuplesByDateDesc
         )
 import Backend.Person.Model exposing (Gender(..), Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, getPersonHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings, headCircumferenceWarnings)
 import Date
@@ -1229,7 +1229,7 @@ viewNextAppointmentPane language currentDate child individualWellChildMeasuremen
                     (\value ->
                         let
                             healthCenter =
-                                getPersonHealthCenterName child db
+                                getHealthCenterName child.healthCenterId db
                                     |> Maybe.withDefault ""
 
                             immunisationEntry =
