@@ -33,6 +33,12 @@ type DiagnosisEntryStatus
     | StatusResolved
 
 
+type ECDStatus
+    = StatusOnTrack
+    | StatusECDBehind
+    | StatusOffTrack
+
+
 type WellChildProgressReportInitiator
     = InitiatorWellChild WellChildEncounterId
     | InitiatorNutritionIndividual NutritionEncounterId
