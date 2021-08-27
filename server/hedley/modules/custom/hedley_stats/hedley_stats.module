@@ -459,8 +459,8 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 
   $items = [];
   // Prepare illnesses data to be consumed by client side.
-  foreach ($result as $index => $row) {
-    $items[$index] = [
+  foreach ($result as $row) {
+    $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
@@ -608,8 +608,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   $items = [];
   // Prepare data to be consumed by client side.
-  foreach ($result as $index => $row) {
-    $items[$index] = [
+  foreach ($result as $row) {
+    $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
