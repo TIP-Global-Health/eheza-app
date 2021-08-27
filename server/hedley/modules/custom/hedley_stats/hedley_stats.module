@@ -455,9 +455,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
   // Prepare illnesses data to be consumed by client side.
@@ -533,9 +531,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 
   $query->groupBy('node.nid');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   // Populate data of the encounters.
   foreach ($result as $row) {
@@ -604,9 +600,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   // Get only participants of Antenatal type.
   $query->condition('field_encounter_type.field_encounter_type_value', HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE);
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   if (empty($result)) {
     return [];
@@ -649,9 +643,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   $query->groupBy('node.nid');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   foreach ($result as $row) {
     $items[$row->field_individual_participant]['encounters'][] = [
@@ -732,9 +724,7 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
   // defined period.
   $query->condition('field_expected.field_expected_value2', $date['start'], '>');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
   foreach (hedley_stats_get_all_clinic_types() as $clinic_type) {
@@ -794,9 +784,7 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
 
   $query->condition('field_encounter_type.field_encounter_type_value', 'nutrition');
 
-  $result = $query
-    ->execute()
-    ->fetchAll();
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
   foreach ($result as $row) {
@@ -865,9 +853,7 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
   $query->groupBy('node.nid');
   $query->addExpression('GROUP_CONCAT(field_family_planning_signs.field_family_planning_signs_value)', 'signs');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   // Prepare data to be consumed by client side.
   foreach ($result as &$row) {
@@ -1512,37 +1498,8 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
 
   // Filter by clinic type.
   $query->condition('field_group_type.field_group_type_value', $clinic_type);
-  $query->orderBy('node.nid');
 
-  $result = [];
-  $nid = 0;
-  $batch = 1000;
-
-  // This query can produce, 30K, 50K, or even 100K rows of result.
-  // This size may cause 'out of memory' exception.
-  // Therefore, we run this query with batches, accumulation
-  // the result with every batch.
-  while (TRUE) {
-    $batch_query = clone $query;
-    // We want to get results for nodes we did not process before.
-    $batch_query->condition('nid', $nid, '>');
-
-    $batch_result = $batch_query
-      ->range(0, $batch)
-      ->execute()
-      ->fetchAllAssoc('nid');
-
-    if (empty($batch_result)) {
-      // There's no more results, so we know that no more
-      // batches are needed, and we can exit the WHILE loop.
-      break;
-    }
-
-    // Accumulate results.
-    $result = array_merge($result, $batch_result);
-    // Locate latest node processed, for the next batch.
-    $nid = end($batch_result)->nid;
-  }
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   // Group measurements by person.
   $people = [];
@@ -1594,11 +1551,27 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  // Group measurements by person.
+  $people = [];
+  foreach ($result as $measurement) {
+    // Get fields for current node type.
+    $measurement_fields = $node_types[$measurement->type];
+
+    foreach ($measurement_fields as $measurement_field) {
+      $people[$measurement->field_person][$measurement->type][$measurement->field_date_measured][$measurement_field] = $measurement->{$measurement_field};
+    }
+  }
+
+  return $people;
+}
+
+function hedley_stats_run_node_query_in_batches($query, $batch = 5000) {
   $query->orderBy('node.nid');
 
   $result = [];
   $nid = 0;
-  $batch = 1000;
 
   // This query can produce, 30K, 50K, or even 100K rows of result.
   // This size may cause 'out of memory' exception.
@@ -1621,18 +1594,7 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
     $nid = end($batch_result)->nid;
   }
 
-  // Group measurements by person.
-  $people = [];
-  foreach ($result as $measurement) {
-    // Get fields for current node type.
-    $measurement_fields = $node_types[$measurement->type];
-
-    foreach ($measurement_fields as $measurement_field) {
-      $people[$measurement->field_person][$measurement->type][$measurement->field_date_measured][$measurement_field] = $measurement->{$measurement_field};
-    }
-  }
-
-  return $people;
+  return $result;
 }
 
 /**
