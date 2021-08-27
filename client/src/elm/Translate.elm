@@ -775,6 +775,7 @@ type TranslationId
     | PatientIsolatedQuestion
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
+    | PediatricVisit
     | People
     | PersistentStorage Bool
     | Person
@@ -6020,6 +6021,11 @@ translationSet trans =
                     { english = "Resources"
                     , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
                     }
+
+        PediatricVisit ->
+            { english = "Pediatric Visit"
+            , kinyarwanda = Nothing
+            }
 
         People ->
             { english = "People"

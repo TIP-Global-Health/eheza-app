@@ -18,7 +18,7 @@ import Backend.NutritionEncounter.Utils
         , sortTuplesByDateDesc
         )
 import Backend.Person.Model exposing (Gender(..), Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, getPersonHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings, headCircumferenceWarnings)
 import Date
@@ -221,7 +221,11 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         groupNutritionMeasurements
                         individualNutritionMeasurements
                         individualWellChildMeasurements
-                    , viewNextAppointmentPane language currentDate child db
+                    , viewNextAppointmentPane language
+                        currentDate
+                        child
+                        (getPreviousMeasurements individualWellChildMeasurements)
+                        db
                     ]
 
                 ModeCompletedDiagnosis ->
@@ -368,7 +372,7 @@ viewDiagnosisPane :
     -> (DiagnosisMode -> msg)
     -> Maybe AssembledData
     -> Html msg
-viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId individualWellChildParticipantId groupNutritionMeasurements individualNutritionMeasurements individuaWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg maybeAssembled =
+viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId individualWellChildParticipantId groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg maybeAssembled =
     let
         ( activeIllnesses, completedIllnesses ) =
             List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
@@ -380,7 +384,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
             generateIndividualNutritionAssessmentEntries individualNutritionMeasurements
 
         individuaWellChildEntries =
-            generateIndividualNutritionAssessmentEntries individuaWellChildMeasurements
+            generateIndividualNutritionAssessmentEntries individualWellChildMeasurements
 
         allNutritionAssessmentEntries =
             individualNutritionEntries ++ groupNutritionEntries ++ individuaWellChildEntries
@@ -1207,8 +1211,8 @@ viewPhotos language child measurements =
         |> List.singleton
 
 
-viewNextAppointmentPane : Language -> NominalDate -> Person -> ModelIndexedDb -> Html any
-viewNextAppointmentPane language currentDate child db =
+viewNextAppointmentPane : Language -> NominalDate -> Person -> List WellChildMeasurements -> ModelIndexedDb -> Html any
+viewNextAppointmentPane language currentDate child individualWellChildMeasurements db =
     let
         entriesHeading =
             div [ class "heading next-appointment" ]
@@ -1216,11 +1220,42 @@ viewNextAppointmentPane language currentDate child db =
                 , div [ class "location" ] [ text <| translate language Translate.Location ]
                 , div [ class "date" ] [ text <| translate language Translate.Date ]
                 ]
+
+        entries =
+            List.head individualWellChildMeasurements
+                |> Maybe.andThen
+                    (.nextVisit >> getMeasurementValueFunc)
+                |> Maybe.map
+                    (\value ->
+                        let
+                            healthCenter =
+                                getPersonHealthCenterName child db
+                                    |> Maybe.withDefault ""
+
+                            immunisationEntry =
+                                Maybe.map (viewEntry Translate.Immunisation)
+                                    value.immunisationDate
+
+                            pediatricVisitDate =
+                                Maybe.map (viewEntry Translate.PediatricVisit)
+                                    value.pediatricVisitDate
+
+                            viewEntry label date =
+                                div [ class "entry next-appointment" ]
+                                    [ div [ class "cell type" ] [ text <| translate language label ]
+                                    , div [ class "cell location" ] [ text healthCenter ]
+                                    , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+                                    ]
+                        in
+                        Maybe.Extra.values [ immunisationEntry, pediatricVisitDate ]
+                    )
+                |> Maybe.withDefault []
     in
     div [ class "pane next-appointment" ] <|
         [ viewPaneHeading language Translate.NextAppointment
-        , div [ class "pane-content" ]
-            [ entriesHeading ]
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: viewEntries language entries
         ]
 
 
