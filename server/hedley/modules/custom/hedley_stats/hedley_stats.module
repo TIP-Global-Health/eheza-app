@@ -1251,10 +1251,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
       continue;
     }
 
-    $nutrition_signs = ($program_type == 'individual') ?
-      hedley_stats_nutrition_signs_individual_encounter() :
-      hedley_stats_nutrition_signs_group_encounter();
-
     $people = [];
     foreach ($people_data as $id => $person) {
       $wrapper = entity_metadata_wrapper('node', $id);
@@ -1267,10 +1263,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
       ];
 
       foreach ($person as $type => $measurement) {
-        // We are interested only with the nutrition signs that match the
-        // current type.
-        $current_nutrition_signs = $nutrition_signs[$type];
-
         $one_day = 24 * 60 * 60;
         foreach ($measurement as $date => $values) {
           // Get the date of the measurement in order to distribute them by
@@ -1280,7 +1272,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
 
           // When extend data flag is raised, meaning that we want
           // to add one more month for current year, and if
-          // if measurement was taken over a year ago,
+          // measurement was taken over a year ago,
           // we set it at month 13. It's used to calculate the changes
           // that took place at first month of current year period.
           if ($extend && $date_as_timestamp < strtotime("last day of -1 year") + $one_day) {
@@ -1298,86 +1290,43 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
             }
 
             if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
-              if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
-                $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_SEVERE;
+              if ($value != 'none') {
+                $people[$id]['nutrition']['nutrition_signs'][$month] = -3;
               }
               else {
-                $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_GOOD;
+                $people[$id]['nutrition']['nutrition_signs'][$month] = 3;
               }
-
-              $people[$id]['nutrition']['nutrition_signs'][$month]['v'] = 'X';
 
               // Move on to next measurement.
               continue;
             }
 
             // Round up the value, the class will indicate the zscore level.
-            $formatted_value = number_format((float) $value, 2);
+            $formatted_value = round($value, 2);
 
             switch ($type) {
               case 'height':
               case 'nutrition_height':
                 // The value to display in the table.
-                $people[$id]['nutrition']['stunting'][$month]['v'] = $formatted_value;
-
-                if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                }
-                elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                }
-                else {
-                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_GOOD;
-                }
+                $people[$id]['nutrition']['stunting'][$month] = $formatted_value;
                 break;
 
               case 'weight':
               case 'nutrition_weight':
                 if ($field_name == 'field_zscore_age') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['underweight'][$month]['v'] = $formatted_value;
-
-                  if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                  }
-                  elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                  }
-                  else {
-                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_GOOD;
-                  }
+                  $people[$id]['nutrition']['underweight'][$month] = $formatted_value;
                 }
-
-                if ($field_name == 'field_zscore_length') {
+                elseif ($field_name == 'field_zscore_length') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['wasting'][$month]['v'] = $formatted_value;
-
-                  if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
-                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                  }
-                  elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
-                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                  }
-                  else {
-                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_GOOD;
-                  }
+                  $people[$id]['nutrition']['wasting'][$month] = $formatted_value;
                 }
                 break;
 
               case 'muac':
               case 'nutrition_muac':
                 // The value to display in the table.
-                $people[$id]['nutrition']['muac'][$month]['v'] = $formatted_value;
-
-                if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
-                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                }
-                elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
-                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                }
-                else {
-                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_GOOD;
-                }
+                $people[$id]['nutrition']['muac'][$month] = $formatted_value;
                 break;
             }
           }
@@ -1481,7 +1430,6 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
-  hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
   // Filter by clinic type.
   $query->condition('field_group_type.field_group_type_value', $clinic_type);
@@ -1536,7 +1484,6 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
-  hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
   $result = hedley_stats_run_node_query_in_batches($query);
 
@@ -1808,7 +1755,6 @@ function heldey_stats_get_nutrition_measurements_mapping_for_group_encounter() {
     'weight' => [
       'field_zscore_age',
       'field_zscore_length',
-      'field_zscore_bmi',
     ],
   ];
 }
@@ -1833,101 +1779,6 @@ function heldey_stats_get_nutrition_measurements_mapping_for_individual_encounte
     'nutrition_weight' => [
       'field_zscore_age',
       'field_zscore_length',
-      'field_zscore_bmi',
-    ],
-  ];
-}
-
-/**
- * Get the info about nutrition signs at group encounter.
- *
- * @return array
- *   The detailed nutrition signs.
- */
-function hedley_stats_nutrition_signs_group_encounter() {
-  return [
-    'height' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-    ],
-    'nutrition' => [
-      'field_nutrition_signs' => [
-        HEDLEY_STATS_GOOD => 'none',
-      ],
-    ],
-    'muac' => [
-      'field_muac' => [
-        HEDLEY_STATS_SEVERE => 11.50,
-        HEDLEY_STATS_MODERATE => 12.50,
-        HEDLEY_STATS_GOOD => 12.51,
-      ],
-    ],
-    'weight' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_length' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_bmi' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-    ],
-  ];
-}
-
-/**
- * Get the info about nutrition signs at individual encounter.
- *
- * @return array
- *   The detailed nutrition signs.
- */
-function hedley_stats_nutrition_signs_individual_encounter() {
-  return [
-    'nutrition_height' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-    ],
-    'nutrition_nutrition' => [
-      'field_nutrition_signs' => [
-        HEDLEY_STATS_GOOD => 'none',
-      ],
-    ],
-    'nutrition_muac' => [
-      'field_muac' => [
-        HEDLEY_STATS_SEVERE => 11.50,
-        HEDLEY_STATS_MODERATE => 12.50,
-        HEDLEY_STATS_GOOD => 12.51,
-      ],
-    ],
-    'nutrition_weight' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_length' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_bmi' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
     ],
   ];
 }

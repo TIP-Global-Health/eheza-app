@@ -73,11 +73,11 @@ encodeCaseManagement caseManagement =
 
 encodeCaseNutrition : CaseNutrition -> List ( String, Value )
 encodeCaseNutrition caseNutrition =
-    [ ( "stunting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.stunting) )
-    , ( "underweight", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.underweight) )
-    , ( "wasting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.wasting) )
-    , ( "muac", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.muac) )
-    , ( "nutrition_signs", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.nutritionSigns) )
+    [ ( "stunting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.stunting) )
+    , ( "underweight", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.underweight) )
+    , ( "wasting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.wasting) )
+    , ( "muac", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.muac) )
+    , ( "nutrition_signs", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.nutritionSigns) )
     ]
 
 
@@ -87,11 +87,16 @@ dictToLegacyDict dict =
         |> LegacyDict.fromList
 
 
-encodeNutritionValue : NutritionValue -> List ( String, Value )
+encodeNutritionValue : NutritionValue -> Value
 encodeNutritionValue value =
-    [ ( "c", encodeNutritionStatus value.class )
-    , ( "v", string value.value )
-    ]
+    case value.class of
+        Neutral ->
+            null
+
+        _ ->
+            String.toFloat value.value
+                |> Maybe.map float
+                |> Maybe.withDefault null
 
 
 encodeNutritionStatus : NutritionStatus -> Value

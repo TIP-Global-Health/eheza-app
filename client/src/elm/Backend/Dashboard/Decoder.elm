@@ -29,7 +29,7 @@ import Backend.Measurement.Model
         )
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
-import Gizra.Json exposing (decodeInt)
+import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
@@ -89,16 +89,16 @@ decodeCaseManagement =
 decodeCaseNutrition : Decoder CaseNutrition
 decodeCaseNutrition =
     succeed CaseNutrition
-        |> required "stunting" decodeNutritionValueDict
-        |> required "underweight" decodeNutritionValueDict
-        |> required "wasting" decodeNutritionValueDict
-        |> required "muac" decodeNutritionValueDict
-        |> required "nutrition_signs" decodeNutritionValueDict
+        |> required "stunting" (decodeNutritionValueDict decodeZScoreNutritionValue)
+        |> required "underweight" (decodeNutritionValueDict decodeZScoreNutritionValue)
+        |> required "wasting" (decodeNutritionValueDict decodeZScoreNutritionValue)
+        |> required "muac" (decodeNutritionValueDict decodeMuacNutritionValue)
+        |> required "nutrition_signs" (decodeNutritionValueDict decodeZScoreNutritionValue)
 
 
-decodeNutritionValueDict : Decoder (Dict Int NutritionValue)
-decodeNutritionValueDict =
-    dict (decodeWithFallback (NutritionValue Neutral "X") decodeNutritionValue)
+decodeNutritionValueDict : Decoder NutritionValue -> Decoder (Dict Int NutritionValue)
+decodeNutritionValueDict decoder =
+    dict (decodeWithFallback (NutritionValue Neutral "X") decoder)
         |> andThen
             (\dict ->
                 LegacyDict.toList dict
@@ -108,6 +108,38 @@ decodeNutritionValueDict =
                         )
                     |> Dict.fromList
                     |> succeed
+            )
+
+
+decodeZScoreNutritionValue : Decoder NutritionValue
+decodeZScoreNutritionValue =
+    float
+        |> andThen
+            (\value ->
+                if value <= -3 then
+                    succeed <| NutritionValue Severe (String.fromFloat value)
+
+                else if value <= -2 then
+                    succeed <| NutritionValue Moderate (String.fromFloat value)
+
+                else
+                    succeed <| NutritionValue Good (String.fromFloat value)
+            )
+
+
+decodeMuacNutritionValue : Decoder NutritionValue
+decodeMuacNutritionValue =
+    decodeFloat
+        |> andThen
+            (\value ->
+                if value <= 11.5 then
+                    succeed <| NutritionValue Severe (String.fromFloat value)
+
+                else if value <= 12.5 then
+                    succeed <| NutritionValue Moderate (String.fromFloat value)
+
+                else
+                    succeed <| NutritionValue Good (String.fromFloat value)
             )
 
 
