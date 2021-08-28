@@ -82,9 +82,8 @@ encodeCaseNutrition caseNutrition =
 
 
 dictToLegacyDict : Dict comparable v -> LegacyDict.Dict comparable v
-dictToLegacyDict dict =
-    Dict.toList dict
-        |> LegacyDict.fromList
+dictToLegacyDict =
+    Dict.toList >> LegacyDict.fromList
 
 
 encodeNutritionValue : NutritionValue -> Value
@@ -97,23 +96,6 @@ encodeNutritionValue value =
             String.toFloat value.value
                 |> Maybe.map float
                 |> Maybe.withDefault null
-
-
-encodeNutritionStatus : NutritionStatus -> Value
-encodeNutritionStatus status =
-    string <|
-        case status of
-            Neutral ->
-                "0"
-
-            Good ->
-                "1"
-
-            Moderate ->
-                "2"
-
-            Severe ->
-                "3"
 
 
 encodeChildrenBeneficiariesData : Dict ProgramType (List ChildrenBeneficiariesStats) -> ( String, Value )

@@ -143,38 +143,6 @@ decodeMuacNutritionValue =
             )
 
 
-decodeNutritionValue : Decoder NutritionValue
-decodeNutritionValue =
-    succeed NutritionValue
-        |> required "c" decodeNutritionStatus
-        |> required "v" string
-
-
-decodeNutritionStatus : Decoder NutritionStatus
-decodeNutritionStatus =
-    string
-        |> andThen
-            (\s ->
-                case s of
-                    "0" ->
-                        succeed Neutral
-
-                    "1" ->
-                        succeed Good
-
-                    "2" ->
-                        succeed Moderate
-
-                    "3" ->
-                        succeed Severe
-
-                    _ ->
-                        fail <|
-                            s
-                                ++ " is not a recognized nutrition status."
-            )
-
-
 decodeBeneficiaries : Decoder Nutrition
 decodeBeneficiaries =
     succeed Nutrition
