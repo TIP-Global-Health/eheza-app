@@ -582,7 +582,11 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing, SetVillage Nothing ]
+                                                ( [ SetLoggedIn NotAsked
+                                                  , MsgIndexedDb Backend.Model.HandleLogout
+                                                  , SetHealthCenter Nothing
+                                                  , SetVillage Nothing
+                                                  ]
                                                 , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
                                                 )
 

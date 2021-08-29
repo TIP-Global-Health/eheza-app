@@ -73,42 +73,29 @@ encodeCaseManagement caseManagement =
 
 encodeCaseNutrition : CaseNutrition -> List ( String, Value )
 encodeCaseNutrition caseNutrition =
-    [ ( "stunting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.stunting) )
-    , ( "underweight", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.underweight) )
-    , ( "wasting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.wasting) )
-    , ( "muac", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.muac) )
-    , ( "nutrition_signs", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.nutritionSigns) )
+    [ ( "stunting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.stunting) )
+    , ( "underweight", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.underweight) )
+    , ( "wasting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.wasting) )
+    , ( "muac", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.muac) )
+    , ( "nutrition_signs", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.nutritionSigns) )
     ]
 
 
 dictToLegacyDict : Dict comparable v -> LegacyDict.Dict comparable v
-dictToLegacyDict dict =
-    Dict.toList dict
-        |> LegacyDict.fromList
+dictToLegacyDict =
+    Dict.toList >> LegacyDict.fromList
 
 
-encodeNutritionValue : NutritionValue -> List ( String, Value )
+encodeNutritionValue : NutritionValue -> Value
 encodeNutritionValue value =
-    [ ( "c", encodeNutritionStatus value.class )
-    , ( "v", string value.value )
-    ]
+    case value.class of
+        Neutral ->
+            null
 
-
-encodeNutritionStatus : NutritionStatus -> Value
-encodeNutritionStatus status =
-    string <|
-        case status of
-            Neutral ->
-                "neutral"
-
-            Good ->
-                "good_nutrition"
-
-            Moderate ->
-                "moderate_nutrition"
-
-            Severe ->
-                "severe_nutrition"
+        _ ->
+            String.toFloat value.value
+                |> Maybe.map float
+                |> Maybe.withDefault null
 
 
 encodeChildrenBeneficiariesData : Dict ProgramType (List ChildrenBeneficiariesStats) -> ( String, Value )

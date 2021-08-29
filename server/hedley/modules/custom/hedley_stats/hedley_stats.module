@@ -18,10 +18,9 @@ define('HEDLEY_STATS_PERIOD_LAST_YEAR', 'last_year');
 define('HEDLEY_STATS_PERIOD_480_DAYS', '480_days');
 define('HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS', 'past_six_month');
 
-
-define('HEDLEY_STATS_SEVERE', 'severe_nutrition');
-define('HEDLEY_STATS_MODERATE', 'moderate_nutrition');
-define('HEDLEY_STATS_GOOD', 'good_nutrition');
+define('HEDLEY_STATS_GOOD', '1');
+define('HEDLEY_STATS_MODERATE', '2');
+define('HEDLEY_STATS_SEVERE', '3');
 
 // Encounter types.
 define('HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE', 'antenatal');
@@ -34,7 +33,6 @@ define('HEDLEY_STATS_ACUTE_ILLNESS', 'sync_stats_acute_illness');
 
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
-define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'sync_measurements_query_grouped_by_person');
 define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'sync_session_attendance_stats');
 define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_stats');
 define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
@@ -253,7 +251,6 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
   // Clear cache for all the periods.
   foreach ($periods as $period) {
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_FAMILY_PLANNING, $nid, $period);
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $nid, $period);
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $nid, $period);
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $nid, $period);
   }
@@ -455,14 +452,12 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
   // Prepare illnesses data to be consumed by client side.
-  foreach ($result as $index => $row) {
-    $items[$index] = [
+  foreach ($result as $row) {
+    $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
@@ -533,9 +528,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 
   $query->groupBy('node.nid');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   // Populate data of the encounters.
   foreach ($result as $row) {
@@ -604,9 +597,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   // Get only participants of Antenatal type.
   $query->condition('field_encounter_type.field_encounter_type_value', HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE);
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   if (empty($result)) {
     return [];
@@ -614,8 +605,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   $items = [];
   // Prepare data to be consumed by client side.
-  foreach ($result as $index => $row) {
-    $items[$index] = [
+  foreach ($result as $row) {
+    $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
@@ -649,9 +640,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   $query->groupBy('node.nid');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   foreach ($result as $row) {
     $items[$row->field_individual_participant]['encounters'][] = [
@@ -732,9 +721,7 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
   // defined period.
   $query->condition('field_expected.field_expected_value2', $date['start'], '>');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
   foreach (hedley_stats_get_all_clinic_types() as $clinic_type) {
@@ -794,9 +781,7 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
 
   $query->condition('field_encounter_type.field_encounter_type_value', 'nutrition');
 
-  $result = $query
-    ->execute()
-    ->fetchAll();
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
   foreach ($result as $row) {
@@ -865,9 +850,7 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
   $query->groupBy('node.nid');
   $query->addExpression('GROUP_CONCAT(field_family_planning_signs.field_family_planning_signs_value)', 'signs');
 
-  $result = $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   // Prepare data to be consumed by client side.
   foreach ($result as &$row) {
@@ -1268,10 +1251,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
       continue;
     }
 
-    $nutrition_signs = ($program_type == 'individual') ?
-      hedley_stats_nutrition_signs_individual_encounter() :
-      hedley_stats_nutrition_signs_group_encounter();
-
     $people = [];
     foreach ($people_data as $id => $person) {
       $wrapper = entity_metadata_wrapper('node', $id);
@@ -1284,10 +1263,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
       ];
 
       foreach ($person as $type => $measurement) {
-        // We are interested only with the nutrition signs that match the
-        // current type.
-        $current_nutrition_signs = $nutrition_signs[$type];
-
         $one_day = 24 * 60 * 60;
         foreach ($measurement as $date => $values) {
           // Get the date of the measurement in order to distribute them by
@@ -1297,7 +1272,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
 
           // When extend data flag is raised, meaning that we want
           // to add one more month for current year, and if
-          // if measurement was taken over a year ago,
+          // measurement was taken over a year ago,
           // we set it at month 13. It's used to calculate the changes
           // that took place at first month of current year period.
           if ($extend && $date_as_timestamp < strtotime("last day of -1 year") + $one_day) {
@@ -1315,86 +1290,45 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
             }
 
             if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
-              if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
-                $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_SEVERE;
+              if ($value != 'none') {
+                // This indicates to front-end of a 'Severe nutrition' case.
+                $people[$id]['nutrition']['nutrition_signs'][$month] = -3;
               }
               else {
-                $people[$id]['nutrition']['nutrition_signs'][$month]['c'] = HEDLEY_STATS_GOOD;
+                // This indicates to front-end of a 'Good nutrition' case.
+                $people[$id]['nutrition']['nutrition_signs'][$month] = 3;
               }
-
-              $people[$id]['nutrition']['nutrition_signs'][$month]['v'] = 'X';
 
               // Move on to next measurement.
               continue;
             }
 
             // Round up the value, the class will indicate the zscore level.
-            $formatted_value = number_format((float) $value, 2);
+            $formatted_value = round($value, 2);
 
             switch ($type) {
               case 'height':
               case 'nutrition_height':
                 // The value to display in the table.
-                $people[$id]['nutrition']['stunting'][$month]['v'] = $formatted_value;
-
-                if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                }
-                elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                }
-                else {
-                  $people[$id]['nutrition']['stunting'][$month]['c'] = HEDLEY_STATS_GOOD;
-                }
+                $people[$id]['nutrition']['stunting'][$month] = $formatted_value;
                 break;
 
               case 'weight':
               case 'nutrition_weight':
                 if ($field_name == 'field_zscore_age') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['underweight'][$month]['v'] = $formatted_value;
-
-                  if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                  }
-                  elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                  }
-                  else {
-                    $people[$id]['nutrition']['underweight'][$month]['c'] = HEDLEY_STATS_GOOD;
-                  }
+                  $people[$id]['nutrition']['underweight'][$month] = $formatted_value;
                 }
-
-                if ($field_name == 'field_zscore_length') {
+                elseif ($field_name == 'field_zscore_length') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['wasting'][$month]['v'] = $formatted_value;
-
-                  if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
-                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                  }
-                  elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
-                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                  }
-                  else {
-                    $people[$id]['nutrition']['wasting'][$month]['c'] = HEDLEY_STATS_GOOD;
-                  }
+                  $people[$id]['nutrition']['wasting'][$month] = $formatted_value;
                 }
                 break;
 
               case 'muac':
               case 'nutrition_muac':
                 // The value to display in the table.
-                $people[$id]['nutrition']['muac'][$month]['v'] = $formatted_value;
-
-                if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
-                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_SEVERE;
-                }
-                elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
-                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_MODERATE;
-                }
-                else {
-                  $people[$id]['nutrition']['muac'][$month]['c'] = HEDLEY_STATS_GOOD;
-                }
+                $people[$id]['nutrition']['muac'][$month] = $formatted_value;
                 break;
             }
           }
@@ -1445,13 +1379,6 @@ function hedley_stats_get_all_clinic_types() {
  * @throws \Exception
  */
 function hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, $extend = FALSE) {
-  $cache_name = HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON;
-
-  // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, $cache_name, $health_center_id, $period)) {
-    return $cache_data;
-  }
-
   $clinic_types = hedley_stats_get_all_clinic_types();
 
   $result = [];
@@ -1460,9 +1387,6 @@ function hedley_stats_get_nutrition_measurements_grouped_by_person($health_cente
   }
 
   $result['individual'] = hedley_stats_get_nutrition_measurements_for_individual_encounters_grouped_by_person($health_center_id, $period, $extend);
-
-  // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, $cache_name, $health_center_id, $period, $result);
 
   return $result;
 }
@@ -1508,41 +1432,11 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
-  hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
   // Filter by clinic type.
   $query->condition('field_group_type.field_group_type_value', $clinic_type);
-  $query->orderBy('node.nid');
 
-  $result = [];
-  $nid = 0;
-  $batch = 1000;
-
-  // This query can produce, 30K, 50K, or even 100K rows of result.
-  // This size may cause 'out of memory' exception.
-  // Therefore, we run this query with batches, accumulation
-  // the result with every batch.
-  while (TRUE) {
-    $batch_query = clone $query;
-    // We want to get results for nodes we did not process before.
-    $batch_query->condition('nid', $nid, '>');
-
-    $batch_result = $batch_query
-      ->range(0, $batch)
-      ->execute()
-      ->fetchAllAssoc('nid');
-
-    if (empty($batch_result)) {
-      // There's no more results, so we know that no more
-      // batches are needed, and we can exit the WHILE loop.
-      break;
-    }
-
-    // Accumulate results.
-    $result = array_merge($result, $batch_result);
-    // Locate latest node processed, for the next batch.
-    $nid = end($batch_result)->nid;
-  }
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   // Group measurements by person.
   $people = [];
@@ -1592,34 +1486,8 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
-  hedley_general_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
 
-  $query->orderBy('node.nid');
-
-  $result = [];
-  $nid = 0;
-  $batch = 1000;
-
-  // This query can produce, 30K, 50K, or even 100K rows of result.
-  // This size may cause 'out of memory' exception.
-  // Therefore, we run this query with batches, accumulation
-  // the result with every batch.
-  while (TRUE) {
-    $batch_query = clone $query;
-    $batch_query->condition('nid', $nid, '>');
-
-    $batch_result = $batch_query
-      ->range(0, $batch)
-      ->execute()
-      ->fetchAllAssoc('nid');
-
-    if (empty($batch_result)) {
-      break;
-    }
-
-    $result = array_merge($result, $batch_result);
-    $nid = end($batch_result)->nid;
-  }
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   // Group measurements by person.
   $people = [];
@@ -1633,6 +1501,53 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
   }
 
   return $people;
+}
+
+/**
+ * Executes query in batches, with constant number of results at each batch.
+ *
+ * Complex query can produce, 50K, 100K or even more rows of result.
+ * This size may cause 'out of memory' exception.
+ * To prevent this, we run these queries in batches. There will be more hits
+ * at the DB, but we don't end up running out of memory.
+ *
+ * @param SelectQuery $query
+ *   The query to execute.
+ * @param int $batch
+ *   Number of results we want to receive at each batch. Defaults to 5000.
+ *
+ * @return array
+ *   Query accumulated result.
+ */
+function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 5000) {
+  $query->orderBy('node.nid');
+
+  $result = [];
+  $nid = 0;
+
+  while (TRUE) {
+    $batch_query = clone $query;
+    // We want to get results for nodes we did not process before.
+    $batch_query->condition('nid', $nid, '>');
+
+    $batch_result = $batch_query
+      ->range(0, $batch)
+      ->execute()
+      ->fetchAllAssoc('nid');
+
+    if (empty($batch_result)) {
+      // There's no more results, so we know that no more
+      // batches are needed, and we can exit the WHILE loop.
+      break;
+    }
+
+    // Accumulate result.
+    $result = array_merge($result, $batch_result);
+    // Locate the latest node processed, for the next batch.
+    $nid = end($batch_result)->nid;
+  }
+
+  return $result;
 }
 
 /**
@@ -1842,7 +1757,6 @@ function heldey_stats_get_nutrition_measurements_mapping_for_group_encounter() {
     'weight' => [
       'field_zscore_age',
       'field_zscore_length',
-      'field_zscore_bmi',
     ],
   ];
 }
@@ -1867,101 +1781,6 @@ function heldey_stats_get_nutrition_measurements_mapping_for_individual_encounte
     'nutrition_weight' => [
       'field_zscore_age',
       'field_zscore_length',
-      'field_zscore_bmi',
-    ],
-  ];
-}
-
-/**
- * Get the info about nutrition signs at group encounter.
- *
- * @return array
- *   The detailed nutrition signs.
- */
-function hedley_stats_nutrition_signs_group_encounter() {
-  return [
-    'height' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-    ],
-    'nutrition' => [
-      'field_nutrition_signs' => [
-        HEDLEY_STATS_GOOD => 'none',
-      ],
-    ],
-    'muac' => [
-      'field_muac' => [
-        HEDLEY_STATS_SEVERE => 11.50,
-        HEDLEY_STATS_MODERATE => 12.50,
-        HEDLEY_STATS_GOOD => 12.51,
-      ],
-    ],
-    'weight' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_length' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_bmi' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-    ],
-  ];
-}
-
-/**
- * Get the info about nutrition signs at individual encounter.
- *
- * @return array
- *   The detailed nutrition signs.
- */
-function hedley_stats_nutrition_signs_individual_encounter() {
-  return [
-    'nutrition_height' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-    ],
-    'nutrition_nutrition' => [
-      'field_nutrition_signs' => [
-        HEDLEY_STATS_GOOD => 'none',
-      ],
-    ],
-    'nutrition_muac' => [
-      'field_muac' => [
-        HEDLEY_STATS_SEVERE => 11.50,
-        HEDLEY_STATS_MODERATE => 12.50,
-        HEDLEY_STATS_GOOD => 12.51,
-      ],
-    ],
-    'nutrition_weight' => [
-      'field_zscore_age' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_length' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
-      'field_zscore_bmi' => [
-        HEDLEY_STATS_SEVERE => -3,
-        HEDLEY_STATS_MODERATE => -2,
-        HEDLEY_STATS_GOOD => -1.99,
-      ],
     ],
   ];
 }

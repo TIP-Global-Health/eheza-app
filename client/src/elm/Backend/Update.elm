@@ -112,6 +112,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             ( model, Cmd.none, [] )
     in
     case msg of
+        HandleLogout ->
+            let
+                -- On logout we want to clear the statistics dashboards loaded
+                -- for health center.
+                -- We do this to maintain proper loading rutine when switching
+                -- between nurse and chw.
+                updatedComputedDashboards =
+                    Maybe.map
+                        (\healthCenterId_ ->
+                            Dict.remove healthCenterId_ model.computedDashboards
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model.computedDashboards
+            in
+            ( { model | computedDashboards = updatedComputedDashboards }
+            , Cmd.none
+            , []
+            )
+
         FetchChildMeasurements childId ->
             ( { model | childMeasurements = Dict.insert childId Loading model.childMeasurements }
             , sw.get childMeasurementListEndpoint childId
