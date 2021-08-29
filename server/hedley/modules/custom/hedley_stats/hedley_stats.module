@@ -1291,11 +1291,11 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
 
             if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
               if ($value != 'none') {
-                // This indicates front-end to if a 'Severe' case.
+                // This indicates to front-end of a 'Severe nutrition' case.
                 $people[$id]['nutrition']['nutrition_signs'][$month] = -3;
               }
               else {
-                // This indicates front-end to if a 'Good nutrition' case.
+                // This indicates to front-end of a 'Good nutrition' case.
                 $people[$id]['nutrition']['nutrition_signs'][$month] = 3;
               }
 
