@@ -9,6 +9,8 @@ module ZScore.View exposing
     , plotChildData
     , plotData
     , plotReferenceData
+    , viewHeadCircumferenceForAge0To2Boys
+    , viewHeadCircumferenceForAge0To2Girls
     , viewHeightForAgeBoys
     , viewHeightForAgeBoys0To5
     , viewHeightForAgeBoys5To19
@@ -382,6 +384,33 @@ weightForHeight0To5Config =
     , yAxis =
         { yAxisIntervals = 2
         , innerLinesNumber = 2
+        , spaceType = SpaceAround
+        , decimalPointsForText = 0
+        }
+    }
+
+
+headCircumferenceForAge0To2Config : PlotConfig Days Centimetres
+headCircumferenceForAge0To2Config =
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 25, maxY = 55, minX = 0, maxX = 365 * 2 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = True
+    , xAxis =
+        { width = 908
+        , minYear = 0
+        , maxYear = 2
+        , monthsList = List.range 1 11
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = Age
+        }
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 29
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
@@ -935,6 +964,40 @@ viewWeightForHeight0To5Girls language model data =
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeight0To5Config
         , plotChildData weightForHeight0To5Config data
+        ]
+
+
+viewHeadCircumferenceForAge0To2Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To2Boys language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (heightForAgeLabels Male ZeroYears)
+        , yAxisLinesAndText headCircumferenceForAge0To2Config
+        , xAxisLinesAndText headCircumferenceForAge0To2Config
+        , zScoreLabelsHeightForAgeBoys
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To2Config
+
+        -- , plotChildData headCircumferenceForAge0To2Config data
+        ]
+
+
+viewHeadCircumferenceForAge0To2Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To2Girls language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (heightForAgeLabels Female ZeroYears)
+        , yAxisLinesAndText headCircumferenceForAge0To2Config
+        , xAxisLinesAndText headCircumferenceForAge0To2Config
+        , zScoreLabelsHeightForAgeGirls
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To2Config
+
+        -- , plotChildData headCircumferenceForAge0To2Config data
         ]
 
 

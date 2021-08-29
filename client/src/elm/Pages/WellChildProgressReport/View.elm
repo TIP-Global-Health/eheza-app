@@ -1123,6 +1123,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     , weightForAge5To10 = ZScore.View.viewWeightForAgeBoys5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
                     , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Boys
+                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Boys
                     }
 
                 Female ->
@@ -1134,6 +1135,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     , weightForAge5To10 = ZScore.View.viewWeightForAgeGirls5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
                     , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Girls
+                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Girls
                     }
 
         heightForAgeData =
@@ -1186,6 +1188,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                 , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
                 , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
                 , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                , zScoreViewCharts.headCircumferenceForAge0To2 language zscores []
                 ]
 
             else if childAgeInMonths < 60 then
