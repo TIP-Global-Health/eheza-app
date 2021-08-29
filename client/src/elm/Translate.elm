@@ -3262,6 +3262,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoECDStatus ->
+                    { english = "No Status"
+                    , kinyarwanda = Nothing
+                    }
+
         Edd ->
             { english = "EDD"
             , kinyarwanda = Nothing

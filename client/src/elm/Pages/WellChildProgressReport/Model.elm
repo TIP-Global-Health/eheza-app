@@ -37,6 +37,7 @@ type ECDStatus
     = StatusOnTrack
     | StatusECDBehind
     | StatusOffTrack
+    | NoECDStatus
 
 
 type WellChildProgressReportInitiator

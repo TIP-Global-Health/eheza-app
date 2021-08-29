@@ -899,6 +899,9 @@ viewECDPane language currentDate child wellChildEncounters db =
                                     else if EverySet.member WarningECDMilestoneBehind encounter.encounterWarnings then
                                         Just StatusECDBehind
 
+                                    else if EverySet.member NoECDMilstoneWarning encounter.encounterWarnings then
+                                        Just StatusOnTrack
+
                                     else
                                         Nothing
                             in
@@ -916,7 +919,7 @@ viewECDPane language currentDate child wellChildEncounters db =
                             let
                                 status =
                                     Dict.get milestone performedMilestonesWithStatus
-                                        |> Maybe.withDefault StatusOnTrack
+                                        |> Maybe.withDefault NoECDStatus
                             in
                             ( milestone, status )
                         )
@@ -934,6 +937,9 @@ viewECDPane language currentDate child wellChildEncounters db =
 
                                 StatusOffTrack ->
                                     "off-track"
+
+                                NoECDStatus ->
+                                    "no-status"
                     in
                     div [ class "milestone" ]
                         [ div [ class <| "status " ++ statusClass ]

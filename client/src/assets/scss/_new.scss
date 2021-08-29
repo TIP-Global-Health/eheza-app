@@ -2618,6 +2618,11 @@ div.page-report.well-child {
       &.ecd-behind {
         background: $color-yellow2;
       }
+
+      &.no-status {
+        color: $color-background;
+        background: $color-background;
+      }
     }
 
     .entry.no-matches {
