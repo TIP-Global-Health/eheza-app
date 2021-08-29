@@ -23,6 +23,7 @@ import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
+        , WellChildEncounter
         , WellChildEncounterType(..)
         , ecdMilestoneWarnings
         , headCircumferenceWarnings
@@ -203,6 +204,14 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 individualNutritionParticipantId
                 |> Maybe.withDefault []
 
+        wellChildEncounters =
+            Maybe.map
+                (\participantId ->
+                    getWellChildEncountersForParticipant db participantId
+                )
+                individualWellChildParticipantId
+                |> Maybe.withDefault []
+
         individualWellChildMeasurementsWithDates =
             Maybe.map
                 (\assembled ->
@@ -230,7 +239,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                     , viewECDPane language
                         currentDate
                         child
-                        individualWellChildMeasurements
+                        wellChildEncounters
                         db
                     , viewGrowthPane language
                         currentDate
@@ -261,7 +270,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 mandatoryNutritionAssessmentMeasurementsTaken
                 acuteIllnesses
                 individualNutritionParticipantId
-                individualWellChildParticipantId
+                wellChildEncounters
                 groupNutritionMeasurements
                 (getPreviousMeasurements individualNutritionMeasurementsWithDates)
                 individualWellChildMeasurements
@@ -381,7 +390,7 @@ viewDiagnosisPane :
     -> Bool
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> Maybe IndividualEncounterParticipantId
-    -> Maybe IndividualEncounterParticipantId
+    -> List ( WellChildEncounterId, WellChildEncounter )
     -> ChildMeasurementList
     -> List NutritionMeasurements
     -> List WellChildMeasurements
@@ -391,7 +400,7 @@ viewDiagnosisPane :
     -> (DiagnosisMode -> msg)
     -> Maybe AssembledData
     -> Html msg
-viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId individualWellChildParticipantId groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg maybeAssembled =
+viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg maybeAssembled =
     let
         ( activeIllnesses, completedIllnesses ) =
             List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
@@ -418,7 +427,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 initiator
                 mandatoryNutritionAssessmentMeasurementsTaken
                 individualNutritionParticipantId
-                individualWellChildParticipantId
+                wellChildEncounters
                 groupNutritionMeasurements
                 db
                 |> Maybe.map
@@ -570,11 +579,11 @@ resolveDateOfLastNutritionAssessment :
     -> WellChildProgressReportInitiator
     -> Bool
     -> Maybe IndividualEncounterParticipantId
-    -> Maybe IndividualEncounterParticipantId
+    -> List ( WellChildEncounterId, WellChildEncounter )
     -> ChildMeasurementList
     -> ModelIndexedDb
     -> Maybe NominalDate
-resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken individualNutritionParticipantId individualWellChilParticipantId groupNutritionMeasurements db =
+resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements db =
     if mandatoryNutritionAssessmentMeasurementsTaken then
         Just currentDate
 
@@ -613,16 +622,11 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
                     individualNutritionParticipantId
 
             lastAssessmentDatePerWellChild =
-                Maybe.andThen
-                    (\participantId ->
-                        getWellChildEncountersForParticipant db participantId
-                            |> List.filter individualWellChildFilter
-                            -- Sort DESC
-                            |> List.sortWith sortEncounterTuplesDesc
-                            |> List.head
-                            |> Maybe.map (Tuple.second >> .startDate)
-                    )
-                    individualWellChilParticipantId
+                List.filter individualWellChildFilter wellChildEncounters
+                    -- Sort DESC
+                    |> List.sortWith (sortByDateDesc (Tuple.second >> .startDate))
+                    |> List.head
+                    |> Maybe.map (Tuple.second >> .startDate)
 
             lastAssessmentDatePerGroupNutrition =
                 Dict.values groupNutritionMeasurements.nutritions
@@ -863,56 +867,94 @@ viewVaccinationHistoryPane language currentDate child vaccinationProgress db =
         ]
 
 
-viewECDPane : Language -> NominalDate -> Person -> List WellChildMeasurements -> ModelIndexedDb -> Html any
-viewECDPane language currentDate child individualWellChildMeasurements db =
-    let
-        milestoneForCurrentDateAsComparable =
-            Maybe.andThen
-                (resolvePediatricCareMilestoneOnDate currentDate >> Maybe.map pediatricCareMilestoneToComparable)
-                child.birthDate
-
-        milestonesToCurrentDate =
-            Maybe.map
-                (\currentMilestoneAsComparable ->
-                    List.filter
-                        (\milestone ->
-                            pediatricCareMilestoneToComparable milestone <= currentMilestoneAsComparable
-                        )
-                        pediatricCareMilestones
-                )
-                milestoneForCurrentDateAsComparable
-                |> Maybe.withDefault []
-
-        viewMilestone status milestone =
+viewECDPane : Language -> NominalDate -> Person -> List ( WellChildEncounterId, WellChildEncounter ) -> ModelIndexedDb -> Html any
+viewECDPane language currentDate child wellChildEncounters db =
+    Maybe.map
+        (\birthDate ->
             let
-                statusClass =
-                    case status of
-                        StatusOnTrack ->
-                            "on-track"
+                milestoneForCurrentDateAsComparable =
+                    resolvePediatricCareMilestoneOnDate currentDate birthDate
+                        |> Maybe.map pediatricCareMilestoneToComparable
 
-                        StatusECDBehind ->
-                            "ecd-behind"
+                milestonesToCurrentDate =
+                    Maybe.map
+                        (\currentMilestoneAsComparable ->
+                            List.filter
+                                (\milestone ->
+                                    pediatricCareMilestoneToComparable milestone <= currentMilestoneAsComparable
+                                )
+                                pediatricCareMilestones
+                        )
+                        milestoneForCurrentDateAsComparable
+                        |> Maybe.withDefault []
 
-                        StatusOffTrack ->
-                            "off-track"
+                performedMilestonesWithStatus =
+                    List.filterMap
+                        (\( _, encounter ) ->
+                            let
+                                milestoneStatus =
+                                    if EverySet.member WarningECDMilestoneReferToSpecialist encounter.encounterWarnings then
+                                        Just StatusOffTrack
+
+                                    else if EverySet.member WarningECDMilestoneBehind encounter.encounterWarnings then
+                                        Just StatusECDBehind
+
+                                    else
+                                        Nothing
+                            in
+                            Maybe.map2
+                                (\milestone status -> ( milestone, status ))
+                                (resolvePediatricCareMilestoneOnDate encounter.startDate birthDate)
+                                milestoneStatus
+                        )
+                        wellChildEncounters
+                        |> Dict.fromList
+
+                milestonesToCurrentDateWithStatus =
+                    List.map
+                        (\milestone ->
+                            let
+                                status =
+                                    Dict.get milestone performedMilestonesWithStatus
+                                        |> Maybe.withDefault StatusOnTrack
+                            in
+                            ( milestone, status )
+                        )
+                        milestonesToCurrentDate
+
+                viewMilestone ( milestone, status ) =
+                    let
+                        statusClass =
+                            case status of
+                                StatusOnTrack ->
+                                    "on-track"
+
+                                StatusECDBehind ->
+                                    "ecd-behind"
+
+                                StatusOffTrack ->
+                                    "off-track"
+                    in
+                    div [ class "milestone" ]
+                        [ div [ class <| "status " ++ statusClass ]
+                            [ text <| translate language <| Translate.ECDStatus status ]
+                        , div [ class "description" ]
+                            [ text <| translate language <| Translate.PediatricCareMilestone milestone ]
+                        ]
+
+                entries =
+                    List.map viewMilestone milestonesToCurrentDateWithStatus
             in
-            div [ class "milestone" ]
-                [ div [ class <| "status " ++ statusClass ]
-                    [ text <| translate language <| Translate.ECDStatus status ]
-                , div [ class "description" ]
-                    [ text <| translate language <| Translate.PediatricCareMilestone milestone ]
+            div [ class "pane ecd" ] <|
+                [ viewPaneHeading language Translate.EarlyChildhoodDevelopment
+                , div [ class "pane-content overflow" ]
+                    [ div [ class "ecd-milestones" ] <|
+                        viewEntries language entries
+                    ]
                 ]
-
-        entries =
-            List.map (viewMilestone StatusOnTrack) milestonesToCurrentDate
-    in
-    div [ class "pane ecd" ] <|
-        [ viewPaneHeading language Translate.EarlyChildhoodDevelopment
-        , div [ class "pane-content overflow" ]
-            [ div [ class "ecd-milestones" ] <|
-                viewEntries language entries
-            ]
-        ]
+        )
+        child.birthDate
+        |> Maybe.withDefault emptyNode
 
 
 viewGrowthPane :
