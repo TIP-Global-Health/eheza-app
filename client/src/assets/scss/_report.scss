@@ -138,12 +138,12 @@ svg.z-score {
   }
 
   .three-line-new {
-    stroke: black;
+    stroke: $color-black;
     fill: none;
   }
 
   .two-line-new {
-    stroke: #E31837;
+    stroke: $color-velvet;
     fill: none;
   }
 
@@ -153,7 +153,7 @@ svg.z-score {
   }
 
   .zero-line-new {
-    stroke: #00853F;
+    stroke: $color-green;
     fill: none;
   }
 
