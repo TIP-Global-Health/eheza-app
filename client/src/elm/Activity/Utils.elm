@@ -460,7 +460,7 @@ expectCounselingActivity session childId =
 
         -- In how many days (from the session date) will the child be 2 years
         -- old?
-        daysUntilTwoYearsOld =
+        daysUntilRangeBirthToFiveYearsOld =
             (365 * 2) - age
 
         -- In how many days (from the session date) will the child be 1 year
@@ -499,7 +499,7 @@ expectCounselingActivity session childId =
                 -- counseling now, even if it seems a bit early.
                 Just Exit
 
-            else if daysUntilTwoYearsOld < maximumSessionGap then
+            else if daysUntilRangeBirthToFiveYearsOld < maximumSessionGap then
                 -- If we can't be sure we'll have another session before the
                 -- baby is two, then show the exit counseling
                 Just Exit
@@ -513,7 +513,7 @@ expectCounselingActivity session childId =
                 -- If we have already done the MidPoint counseling, then the
                 -- only thing left to consider is whether to show the Exit
                 -- reminder
-                if daysUntilTwoYearsOld < twoMonthGap then
+                if daysUntilRangeBirthToFiveYearsOld < twoMonthGap then
                     Just BeforeExit
 
                 else

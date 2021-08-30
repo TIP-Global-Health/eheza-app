@@ -66,7 +66,6 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
 import Utils.AllDict as AllDict exposing (AllDict)
-import Utils.NominalDate exposing (Days(..), Months)
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (valueForZScore)
 
@@ -176,7 +175,7 @@ type YAxisSpaceType
 
 heightForAgeConfig : PlotConfig Days Centimetres
 heightForAgeConfig =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -203,7 +202,7 @@ heightForAgeConfig =
 
 heightForAgeConfig0To5 : PlotConfig Days Centimetres
 heightForAgeConfig0To5 =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 45, maxY = 125, minX = 0, maxX = 365 * 5 }
     , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -230,7 +229,7 @@ heightForAgeConfig0To5 =
 
 heightForAgeConfig5To19 : PlotConfig Months Centimetres
 heightForAgeConfig5To19 =
-    { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
+    { toFloatX = \(ZScore.Model.Months months) -> toFloat months
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 90, maxY = 200, minX = 61, maxX = 228 }
     , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -257,7 +256,7 @@ heightForAgeConfig5To19 =
 
 weightForAgeConfig : PlotConfig Days Kilograms
 weightForAgeConfig =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -284,7 +283,7 @@ weightForAgeConfig =
 
 weightForAge0To5Config : PlotConfig Days Kilograms
 weightForAge0To5Config =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 2, maxY = 30, minX = 0, maxX = 365 * 5 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -311,7 +310,7 @@ weightForAge0To5Config =
 
 weightForAge5To10Config : PlotConfig Months Kilograms
 weightForAge5To10Config =
-    { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
+    { toFloatX = \(ZScore.Model.Months months) -> toFloat months
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 10, maxY = 60, minX = 61, maxX = 120 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -392,7 +391,7 @@ weightForHeight0To5Config =
 
 headCircumferenceForAge0To2Config : PlotConfig Days Centimetres
 headCircumferenceForAge0To2Config =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 25, maxY = 55, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -417,112 +416,88 @@ headCircumferenceForAge0To2Config =
     }
 
 
-heightForAgeLabels : Gender -> ChartStartingAges -> LabelConfig
-heightForAgeLabels gender startAge =
+heightForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
+heightForAgeLabels gender ageRange =
     let
-        ( labelsTitle, labelsSubTitle ) =
-            case startAge of
-                ZeroYears ->
-                    let
-                        title =
-                            case gender of
-                                Male ->
-                                    Translate.LengthForAgeBoys
+        title =
+            if ageRange == RangeBirthToTwoYears then
+                case gender of
+                    Male ->
+                        Translate.LengthForAgeBoys
 
-                                Female ->
-                                    Translate.LengthForAgeGirls
-                    in
-                    ( title, Translate.BirthToTwoYears )
+                    Female ->
+                        Translate.LengthForAgeGirls
 
-                TwoYears ->
-                    let
-                        title =
-                            case gender of
-                                Male ->
-                                    Translate.HeightForAgeBoys
+            else
+                case gender of
+                    Male ->
+                        Translate.HeightForAgeBoys
 
-                                Female ->
-                                    Translate.HeightForAgeGirls
-                    in
-                    ( title, Translate.BirthToFiveYears )
-
-                FiveYears ->
-                    let
-                        title =
-                            case gender of
-                                Male ->
-                                    Translate.HeightForAgeBoys
-
-                                Female ->
-                                    Translate.HeightForAgeGirls
-                    in
-                    ( title, Translate.FiveToNineteenYears )
+                    Female ->
+                        Translate.HeightForAgeGirls
     in
-    { title = labelsTitle
-    , subtitle = labelsSubTitle
+    { title = title
+    , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.LengthCm
     }
 
 
-weightForAgeLabels : Gender -> ChartStartingAges -> LabelConfig
-weightForAgeLabels gender startAge =
+weightForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
+weightForAgeLabels gender ageRange =
     let
-        labelsTitle =
+        title =
             case gender of
                 Male ->
                     Translate.WeightForAgeBoys
 
                 Female ->
                     Translate.WeightForAgeGirls
-
-        labelsSubTitle =
-            case startAge of
-                ZeroYears ->
-                    Translate.BirthToTwoYears
-
-                TwoYears ->
-                    Translate.BirthToFiveYears
-
-                FiveYears ->
-                    Translate.FiveToTenYears
     in
-    { title = labelsTitle
-    , subtitle = labelsSubTitle
+    { title = title
+    , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.WeightKg
     }
 
 
-weightForHeightLabels : Gender -> ChartStartingAges -> LabelConfig
-weightForHeightLabels gender startAge =
+weightForHeightLabels : Gender -> ChartAgeRange -> LabelConfig
+weightForHeightLabels gender ageRange =
     let
-        labelsTitle =
+        title =
             case gender of
                 Male ->
                     Translate.WeightForLengthBoys
 
                 Female ->
                     Translate.WeightForLengthGirls
-
-        labelsSubTitle =
-            case startAge of
-                ZeroYears ->
-                    Translate.BirthToTwoYears
-
-                TwoYears ->
-                    Translate.BirthToFiveYears
-
-                FiveYears ->
-                    Translate.FiveToNineteenYears
     in
-    { title = labelsTitle
-    , subtitle = labelsSubTitle
+    { title = title
+    , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Nothing
     , xAxis2 = Translate.LengthCm
     , yAxis = Translate.WeightKg
+    }
+
+
+headCircumferenceForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
+headCircumferenceForAgeLabels gender ageRange =
+    let
+        title =
+            case gender of
+                Male ->
+                    Translate.HeadCircumferenceForAgeBoys
+
+                Female ->
+                    Translate.HeadCircumferenceForAgeGirls
+    in
+    { title = title
+    , subtitle = Translate.ChartAgeRange ageRange
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.LengthCm
     }
 
 
@@ -715,7 +690,7 @@ viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html a
 viewHeightForAgeBoys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Male ZeroYears)
+        , labels language (heightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeBoys
@@ -731,7 +706,7 @@ viewHeightForAgeBoys0To5 : Language -> Model -> List ( Days, Centimetres ) -> Ht
 viewHeightForAgeBoys0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Male TwoYears)
+        , labels language (heightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
         , xAxisLinesAndText heightForAgeConfig0To5
         , zScoreLabelsHeightForAgeBoys0To5
@@ -747,7 +722,7 @@ viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) ->
 viewHeightForAgeBoys5To19 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Male FiveYears)
+        , labels language (heightForAgeLabels Male RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
@@ -763,7 +738,7 @@ viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html 
 viewHeightForAgeGirls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Female ZeroYears)
+        , labels language (heightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeGirls
@@ -779,7 +754,7 @@ viewHeightForAgeGirls0To5 : Language -> Model -> List ( Days, Centimetres ) -> H
 viewHeightForAgeGirls0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Female TwoYears)
+        , labels language (heightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
         , xAxisLinesAndText heightForAgeConfig0To5
         , zScoreLabelsHeightForAgeGirls0To5
@@ -795,7 +770,7 @@ viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -
 viewHeightForAgeGirls5To19 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Female FiveYears)
+        , labels language (heightForAgeLabels Female RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeGirls5To19
@@ -811,7 +786,7 @@ viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Male ZeroYears)
+        , labels language (weightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeBoys
@@ -827,7 +802,7 @@ viewWeightForAgeBoys0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html
 viewWeightForAgeBoys0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Male TwoYears)
+        , labels language (weightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
         , xAxisLinesAndText weightForAge0To5Config
         , zScoreLabelsWeightForAge0To5Boys
@@ -843,7 +818,7 @@ viewWeightForAgeBoys5To10 : Language -> Model -> List ( Months, Kilograms ) -> H
 viewWeightForAgeBoys5To10 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Male FiveYears)
+        , labels language (weightForAgeLabels Male RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
         , xAxisLinesAndText weightForAge5To10Config
         , zScoreLabelsWeightForAge5To10Boys
@@ -859,7 +834,7 @@ viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html an
 viewWeightForAgeGirls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Female ZeroYears)
+        , labels language (weightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeGirls
@@ -875,7 +850,7 @@ viewWeightForAgeGirls0To5 : Language -> Model -> List ( Days, Kilograms ) -> Htm
 viewWeightForAgeGirls0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Female TwoYears)
+        , labels language (weightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
         , xAxisLinesAndText weightForAge0To5Config
         , zScoreLabelsWeightForAge0To5Girls
@@ -891,7 +866,7 @@ viewWeightForAgeGirls5To10 : Language -> Model -> List ( Months, Kilograms ) -> 
 viewWeightForAgeGirls5To10 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Female FiveYears)
+        , labels language (weightForAgeLabels Female RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
         , xAxisLinesAndText weightForAge5To10Config
         , zScoreLabelsWeightForAge5To10Girls
@@ -907,7 +882,7 @@ viewWeightForHeightBoys : Language -> Model -> List ( Length, Kilograms ) -> Htm
 viewWeightForHeightBoys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Male ZeroYears)
+        , labels language (weightForHeightLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightBoys
@@ -923,7 +898,7 @@ viewWeightForHeight0To5Boys : Language -> Model -> List ( Height, Kilograms ) ->
 viewWeightForHeight0To5Boys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Male TwoYears)
+        , labels language (weightForHeightLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
         , xAxisLinesAndText weightForHeight0To5Config
         , zScoreLabelsWeightForHeight0To5Boys
@@ -939,7 +914,7 @@ viewWeightForHeightGirls : Language -> Model -> List ( Length, Kilograms ) -> Ht
 viewWeightForHeightGirls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Female ZeroYears)
+        , labels language (weightForHeightLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightGirls
@@ -955,7 +930,7 @@ viewWeightForHeight0To5Girls : Language -> Model -> List ( Height, Kilograms ) -
 viewWeightForHeight0To5Girls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Female TwoYears)
+        , labels language (weightForHeightLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
         , xAxisLinesAndText weightForHeight0To5Config
         , zScoreLabelsWeightForHeight0To5Girls
@@ -971,7 +946,7 @@ viewHeadCircumferenceForAge0To2Boys : Language -> Model -> List ( Days, Centimet
 viewHeadCircumferenceForAge0To2Boys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Male ZeroYears)
+        , labels language (headCircumferenceForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
         , xAxisLinesAndText headCircumferenceForAge0To2Config
         , zScoreLabelsHeightForAgeBoys
@@ -988,7 +963,7 @@ viewHeadCircumferenceForAge0To2Girls : Language -> Model -> List ( Days, Centime
 viewHeadCircumferenceForAge0To2Girls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Female ZeroYears)
+        , labels language (headCircumferenceForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
         , xAxisLinesAndText headCircumferenceForAge0To2Config
         , zScoreLabelsHeightForAgeGirls

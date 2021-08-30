@@ -1,8 +1,4 @@
-module ZScore.Model exposing
-    ( Model, Msg(..), MaleAndFemale, ZScoreEntry, emptyModel
-    , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..), ZScore
-    , BmiForAgeTables, ByDaysAndMonths, ChartStartingAges(..), LengthHeightForAgeTables, WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
-    )
+module ZScore.Model exposing (..)
 
 {-| Models our ZScore tables.
 
@@ -20,7 +16,6 @@ module ZScore.Model exposing
 
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.AllDict exposing (AllDict)
-import Utils.NominalDate exposing (Days, Months)
 
 
 {-| This represents the data that we use to calculate ZScores.
@@ -95,6 +90,18 @@ type alias ZScore =
 -}
 
 
+{-| A wrapper for an integer representing days.
+-}
+type Days
+    = Days Int
+
+
+{-| A wrapper for an integer representing months.
+-}
+type Months
+    = Months Int
+
+
 type Length
     = Length Float
 
@@ -117,10 +124,12 @@ type BMI
     = BMI Float
 
 
-type ChartStartingAges
-    = ZeroYears
-    | TwoYears
-    | FiveYears
+type ChartAgeRange
+    = RangeBirthToThirteenWeeks
+    | RangeBirthToTwoYears
+    | RangeBirthToFiveYears
+    | RangeFiveToTenYears
+    | RangeFiveToNineteenYears
 
 
 type alias ByDaysAndMonths value =

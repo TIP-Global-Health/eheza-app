@@ -102,6 +102,7 @@ import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
+import ZScore.Model exposing (ChartAgeRange(..))
 
 
 {-| We re-export this one for convenience, so you don't have to import
@@ -156,10 +157,9 @@ type LoginPhrase
 type ChartPhrase
     = AgeCompletedMonthsYears
     | Birth
-    | BirthToTwoYears
-    | BirthToFiveYears
-    | FiveToNineteenYears
-    | FiveToTenYears
+    | ChartAgeRange ChartAgeRange
+    | HeadCircumferenceForAgeBoys
+    | HeadCircumferenceForAgeGirls
     | HeightCm
     | HeightForAgeBoys
     | HeightForAgeGirls
@@ -9036,24 +9036,41 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "kuvuka"
             }
 
-        BirthToTwoYears ->
-            { english = "Birth to 2-years (z-scores)"
-            , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+        ChartAgeRange range ->
+            case range of
+                RangeBirthToThirteenWeeks ->
+                    { english = "Birth to 13-weeks (z-scores)"
+                    , kinyarwanda = Nothing
+                    }
+
+                RangeBirthToTwoYears ->
+                    { english = "Birth to 2-years (z-scores)"
+                    , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+                    }
+
+                RangeBirthToFiveYears ->
+                    { english = "Birth to 5-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 0-5"
+                    }
+
+                RangeFiveToTenYears ->
+                    { english = "5 to 10-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-10"
+                    }
+
+                RangeFiveToNineteenYears ->
+                    { english = "5 to 19-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-19"
+                    }
+
+        HeadCircumferenceForAgeBoys ->
+            { english = "Head Circumference Boys"
+            , kinyarwanda = Nothing
             }
 
-        BirthToFiveYears ->
-            { english = "Birth to 5-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 0-5"
-            }
-
-        FiveToNineteenYears ->
-            { english = "5 to 19-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-19"
-            }
-
-        FiveToTenYears ->
-            { english = "5 to 10-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-10"
+        HeadCircumferenceForAgeGirls ->
+            { english = "Head Circumference Girls"
+            , kinyarwanda = Nothing
             }
 
         HeightCm ->

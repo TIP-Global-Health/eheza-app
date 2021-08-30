@@ -61,10 +61,10 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays)
+import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
-import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
+import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
