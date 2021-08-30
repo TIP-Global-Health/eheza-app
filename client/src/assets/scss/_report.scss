@@ -126,19 +126,19 @@ svg.z-score {
   }
 
   .zero-line {
-    fill: #00853F;
+    fill: $color-green;
   }
 
   .one-line {
-    fill: #E24301;
+    fill: $color-orange-light;
   }
 
   .two-line {
-     fill: #E31837;
+    fill: $color-velvet;
   }
 
   .three-line-new {
-    stroke: $color-black;
+    stroke: black;
     fill: none;
   }
 
