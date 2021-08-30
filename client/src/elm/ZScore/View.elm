@@ -1182,13 +1182,13 @@ zScoreLabelsHeadCircumferenceForAge0To2Girls : Svg any
 zScoreLabelsHeadCircumferenceForAge0To2Girls =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.4619 224.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.4619 290.8845)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 723.498 340.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9238 378.1916)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9238 406.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7002 429.9709)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 723.5 170.2)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 188.2)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 206.9)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 224.2)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 721 242.2)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 721 260.2)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 721 278.2)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
