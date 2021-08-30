@@ -421,20 +421,10 @@ heightForAgeLabels gender ageRange =
     let
         title =
             if ageRange == RangeBirthToTwoYears then
-                case gender of
-                    Male ->
-                        Translate.LengthForAgeBoys
-
-                    Female ->
-                        Translate.LengthForAgeGirls
+                Translate.LengthForAge gender
 
             else
-                case gender of
-                    Male ->
-                        Translate.HeightForAgeBoys
-
-                    Female ->
-                        Translate.HeightForAgeGirls
+                Translate.HeightForAge gender
     in
     { title = title
     , subtitle = Translate.ChartAgeRange ageRange
@@ -446,16 +436,7 @@ heightForAgeLabels gender ageRange =
 
 weightForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
 weightForAgeLabels gender ageRange =
-    let
-        title =
-            case gender of
-                Male ->
-                    Translate.WeightForAgeBoys
-
-                Female ->
-                    Translate.WeightForAgeGirls
-    in
-    { title = title
+    { title = Translate.WeightForAge gender
     , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
@@ -465,16 +446,7 @@ weightForAgeLabels gender ageRange =
 
 weightForHeightLabels : Gender -> ChartAgeRange -> LabelConfig
 weightForHeightLabels gender ageRange =
-    let
-        title =
-            case gender of
-                Male ->
-                    Translate.WeightForLengthBoys
-
-                Female ->
-                    Translate.WeightForLengthGirls
-    in
-    { title = title
+    { title = Translate.WeightForLength gender
     , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Nothing
     , xAxis2 = Translate.LengthCm
@@ -484,20 +456,11 @@ weightForHeightLabels gender ageRange =
 
 headCircumferenceForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
 headCircumferenceForAgeLabels gender ageRange =
-    let
-        title =
-            case gender of
-                Male ->
-                    Translate.HeadCircumferenceForAgeBoys
-
-                Female ->
-                    Translate.HeadCircumferenceForAgeGirls
-    in
-    { title = title
+    { title = Translate.HeadCircumferenceForAge gender
     , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.LengthCm
+    , yAxis = Translate.HeadCircumferenceCm
     }
 
 
@@ -949,7 +912,7 @@ viewHeadCircumferenceForAge0To2Boys language model data =
         , labels language (headCircumferenceForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
         , xAxisLinesAndText headCircumferenceForAge0To2Config
-        , zScoreLabelsHeightForAgeBoys
+        , zScoreLabelsHeadCircumferenceForAge0To2Boys
         , model.headCircumferenceForAge
             |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
@@ -966,7 +929,7 @@ viewHeadCircumferenceForAge0To2Girls language model data =
         , labels language (headCircumferenceForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
         , xAxisLinesAndText headCircumferenceForAge0To2Config
-        , zScoreLabelsHeightForAgeGirls
+        , zScoreLabelsHeadCircumferenceForAge0To2Girls
         , model.headCircumferenceForAge
             |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
@@ -1189,6 +1152,34 @@ zScoreLabelsWeightForAge0To5Girls =
 
 zScoreLabelsWeightForAge5To10Girls : Svg any
 zScoreLabelsWeightForAge5To10Girls =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 224.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 290.8845)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 723.498 340.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9238 378.1916)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9238 406.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 429.9709)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
+zScoreLabelsHeadCircumferenceForAge0To2Boys : Svg any
+zScoreLabelsHeadCircumferenceForAge0To2Boys =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 723.5 157.8)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 175.3)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 192.9)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 210.4)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 721 228)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 721 245.5)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 721 263.1)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
+zScoreLabelsHeadCircumferenceForAge0To2Girls : Svg any
+zScoreLabelsHeadCircumferenceForAge0To2Girls =
     g
         []
         [ text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]

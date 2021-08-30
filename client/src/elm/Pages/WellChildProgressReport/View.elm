@@ -1185,10 +1185,13 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
             -- 0-2 graph for all children that are less than 26 month old.
             if childAgeInMonths < graduatingAgeInMonth then
                 [ ZScore.View.viewMarkers
-                , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
-                , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
-                , zScoreViewCharts.weightForHeight language zscores weightForLengthData
-                , zScoreViewCharts.headCircumferenceForAge0To2 language zscores []
+
+                -- , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
+                -- , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
+                -- , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                -- , zScoreViewCharts.headCircumferenceForAge0To2 language zscores []
+                -- @todo: remove
+                , ZScore.View.viewHeadCircumferenceForAge0To2Boys language zscores []
                 ]
 
             else if childAgeInMonths < 60 then
