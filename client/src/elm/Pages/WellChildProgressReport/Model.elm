@@ -28,6 +28,11 @@ type VaccinationStatus
     | StatusUpToDate
 
 
+type DiagnosisEntryStatus
+    = StatusOngoing
+    | StatusResolved
+
+
 type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page

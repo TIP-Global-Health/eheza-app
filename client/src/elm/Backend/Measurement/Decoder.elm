@@ -342,9 +342,14 @@ decodeMuac =
 
 decodeNutrition : Decoder ChildNutrition
 decodeNutrition =
-    decodeEverySet decodeChildNutritionSign
-        |> field "nutrition_signs"
-        |> decodeGroupMeasurement
+    decodeGroupMeasurement decodeNutritionValue
+
+
+decodeNutritionValue : Decoder NutritionValue
+decodeNutritionValue =
+    succeed NutritionValue
+        |> required "nutrition_signs" (decodeEverySet decodeChildNutritionSign)
+        |> custom decodeNutritionAssessment
 
 
 decodePhoto : Decoder Photo
@@ -384,9 +389,7 @@ decodeNutritionMuac =
 
 decodeNutritionNutrition : Decoder NutritionNutrition
 decodeNutritionNutrition =
-    decodeEverySet decodeChildNutritionSign
-        |> field "nutrition_signs"
-        |> decodeNutritionMeasurement
+    decodeNutritionMeasurement decodeNutritionValue
 
 
 decodeNutritionPhoto : Decoder NutritionPhoto
@@ -419,9 +422,7 @@ decodeWellChildMuac =
 
 decodeWellChildNutrition : Decoder WellChildNutrition
 decodeWellChildNutrition =
-    decodeEverySet decodeChildNutritionSign
-        |> field "nutrition_signs"
-        |> decodeWellChildMeasurement
+    decodeWellChildMeasurement decodeNutritionValue
 
 
 decodeWellChildPhoto : Decoder WellChildPhoto

@@ -640,3 +640,8 @@ vaccineDoseToString dose =
 getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v
 getMeasurementValueFunc =
     Maybe.map (Tuple.second >> .value)
+
+
+getMeasurementDateMeasuredFunc : Maybe ( id, { measurement | dateMeasured : NominalDate } ) -> Maybe NominalDate
+getMeasurementDateMeasuredFunc =
+    Maybe.map (Tuple.second >> .dateMeasured)

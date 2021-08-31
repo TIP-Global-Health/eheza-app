@@ -15,6 +15,7 @@ class HedleyRestfulNutritionNutritions extends HedleyRestfulNutritionActivityBas
    */
   protected $multiFields = [
     'field_nutrition_signs',
+    'field_nutrition_assesment',
   ];
 
 }

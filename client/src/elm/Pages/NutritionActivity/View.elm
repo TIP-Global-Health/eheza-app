@@ -1,4 +1,13 @@
-module Pages.NutritionActivity.View exposing (view, viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
+module Pages.NutritionActivity.View exposing
+    ( translateNutritionAssement
+    , view
+    , viewHeightForm
+    , viewMuacForm
+    , viewNutritionForm
+    , viewPhotoForm
+    , viewWeightForm
+    , warningPopup
+    )
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -139,20 +148,7 @@ warningPopup language currentDate closePopupMsg state =
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
 
             assessments =
-                List.map (\assessment -> p [] [ translateAssement assessment ]) state
-
-            translateAssement assessment =
-                case assessment of
-                    AssesmentMalnutritionSigns signs ->
-                        let
-                            translatedSigns =
-                                List.map (Translate.ChildNutritionSignLabel >> translate language) signs
-                                    |> String.join ", "
-                        in
-                        text <| translate language (Translate.NutritionAssessment assessment) ++ ": " ++ translatedSigns
-
-                    _ ->
-                        text <| translate language <| Translate.NutritionAssessment assessment
+                List.map (\assessment -> p [] [ translateNutritionAssement language assessment ]) state
         in
         Just <|
             div [ class "ui active modal diagnosis-popup" ]
@@ -171,6 +167,21 @@ warningPopup language currentDate closePopupMsg state =
                 ]
 
 
+translateNutritionAssement : Language -> NutritionAssessment -> Html any
+translateNutritionAssement language assessment =
+    case assessment of
+        AssesmentMalnutritionSigns signs ->
+            let
+                translatedSigns =
+                    List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                        |> String.join ", "
+            in
+            text <| translate language (Translate.NutritionAssessment assessment) ++ ": " ++ translatedSigns
+
+        _ ->
+            text <| translate language <| Translate.NutritionAssessment assessment
+
+
 viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate zscores id activity isChw assembled db model =
     let
@@ -185,7 +196,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewMuacContent language currentDate assembled model.muacData previousValuesSet.muac
 
         Nutrition ->
-            viewNutritionContent language currentDate ( assembled.participant.person, assembled.measurements ) model.nutritionData
+            viewNutritionContent language currentDate zscores assembled db model.nutritionData
 
         Photo ->
             viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
@@ -381,11 +392,11 @@ viewMuacForm language currentDate person previousValue setMuacMsg form =
     ]
 
 
-viewNutritionContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> NutritionData -> List (Html Msg)
-viewNutritionContent language currentDate ( personId, measurements ) data =
+viewNutritionContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> NutritionData -> List (Html Msg)
+viewNutritionContent language currentDate zscores assembled db data =
     let
         form =
-            measurements.nutrition
+            assembled.measurements.nutrition
                 |> getMeasurementValueFunc
                 |> nutritionFormWithDefault data.form
 
@@ -394,6 +405,10 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
 
         tasksCompleted =
             taskCompleted form.signs
+
+        assessment =
+            generateNutritionAssessment currentDate zscores db assembled
+                |> nutritionAssessmentForBackend
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -402,7 +417,7 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveNutrition personId measurements.nutrition
+                , onClick <| SaveNutrition assembled.participant.person assembled.measurements.nutrition assessment
                 ]
                 [ text <| translate language Translate.Save ]
             ]

@@ -183,7 +183,20 @@ type ChildNutritionSign
 
 
 type alias ChildNutrition =
-    GroupMeasurement (EverySet ChildNutritionSign)
+    GroupMeasurement NutritionValue
+
+
+type alias NutritionValue =
+    { signs : EverySet ChildNutritionSign
+    , assesment : EverySet NutritionAssessment
+    }
+
+
+emptyNutritionValue : NutritionValue
+emptyNutritionValue =
+    { signs = EverySet.empty
+    , assesment = EverySet.empty
+    }
 
 
 type alias CounselingSession =
@@ -255,7 +268,7 @@ type alias NutritionHeight =
 
 
 type alias NutritionNutrition =
-    NutritionMeasurement (EverySet ChildNutritionSign)
+    NutritionMeasurement NutritionValue
 
 
 type alias NutritionPhoto =
@@ -1259,7 +1272,7 @@ type alias WellChildMuac =
 
 
 type alias WellChildNutrition =
-    WellChildMeasurement (EverySet ChildNutritionSign)
+    WellChildMeasurement NutritionValue
 
 
 type alias WellChildPhoto =

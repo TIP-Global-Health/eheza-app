@@ -768,7 +768,12 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                         SaveMuac personId measurements.muac nextTask
 
                                     TaskNutrition ->
-                                        SaveNutrition personId measurements.nutrition nextTask
+                                        let
+                                            assessment =
+                                                generateNutritionAssessment currentDate zscores db assembled
+                                                    |> nutritionAssessmentForBackend
+                                        in
+                                        SaveNutrition personId measurements.nutrition assessment nextTask
 
                                     TaskPhoto ->
                                         let

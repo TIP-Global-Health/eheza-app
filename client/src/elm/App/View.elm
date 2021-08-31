@@ -605,7 +605,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.wellChildProgressReportPages
                                     |> Maybe.withDefault Pages.WellChildProgressReport.Model.emptyModel
                         in
-                        Pages.WellChildProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
+                        Pages.WellChildProgressReport.View.view model.language currentDate encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
                             |> oldPageWrapper model
 

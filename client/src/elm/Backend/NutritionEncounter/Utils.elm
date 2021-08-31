@@ -496,7 +496,7 @@ nutritionAssessmentForBackend assesment =
 
 sortTuplesByDateDesc : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
 sortTuplesByDateDesc m1 m2 =
-    Date.compare (Tuple.first m2) (Tuple.first m1)
+    sortDatesDesc (Tuple.first m1) (Tuple.first m2)
 
 
 sortEncounterTuples : ( id, { e | startDate : NominalDate } ) -> ( id, { e | startDate : NominalDate } ) -> Order
@@ -506,4 +506,9 @@ sortEncounterTuples ( _, e1 ) ( _, e2 ) =
 
 sortEncounterTuplesDesc : ( id, { e | startDate : NominalDate } ) -> ( id, { e | startDate : NominalDate } ) -> Order
 sortEncounterTuplesDesc ( _, e1 ) ( _, e2 ) =
-    Date.compare e2.startDate e1.startDate
+    sortDatesDesc e1.startDate e2.startDate
+
+
+sortDatesDesc : NominalDate -> NominalDate -> Order
+sortDatesDesc date1 date2 =
+    Date.compare date2 date1

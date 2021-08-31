@@ -2509,11 +2509,16 @@ div.page-report.well-child {
     .heading.diagnosis {
 
       .assesment {
-        width: 50%;
+        width: 40%;
+      }
+
+      .status {
+        width: 15%;
       }
 
       .date {
-        width: 35%;
+        margin-left: 25px;
+        width: 28%;
       }
     }
 
@@ -2553,20 +2558,49 @@ div.page-report.well-child {
       align-self: center;
       text-align: left;
       padding-right: 20px;
+
+      &.status {
+        border-radius: 10px;
+        color: $color-white;
+        font-size: 17px;
+        margin: 3px 5px;
+        padding: 0 10px;
+        text-transform: uppercase;
+
+        &.done {
+          background: $color-blue;
+        }
+
+        &.behind,
+        &.ongoing {
+          background: $color-velvet;
+        }
+
+        &.up-to-date,
+        &.resolved {
+          background: $color-cyan;
+        }
+      }
     }
 
     .entry.diagnosis {
 
       .assesment {
-        width: 50%;
+        width: 40%;
 
         p {
           margin-bottom: 0;
         }
       }
 
+      .status {
+        width: 15%;
+        padding-right: 20px;
+      }
+
       .date {
-        width: 35%;
+        margin-left: 20px;
+        width: 30%;
       }
 
       .icon-forward {
@@ -2595,27 +2629,6 @@ div.page-report.well-child {
       .next-due {
         width: 20%;
       }
-
-      .status {
-        border-radius: 10px;
-        color: $color-white;
-        font-size: 17px;
-        margin: 3px 5px;
-        padding: 0 10px;
-        text-transform: uppercase;
-
-        &.done {
-          background: $color-blue;
-        }
-
-        &.behind {
-          background: $color-velvet;
-        }
-
-        &.up-to-date {
-          background: $color-cyan;
-        }
-      }
     }
   }
 
@@ -2625,6 +2638,12 @@ div.page-report.well-child {
     padding-bottom: 30px;
     padding-top: 25px;
     text-align: center;
+
+    button {
+      font-size: 20px;
+      font-weight: 600;
+      padding: 15px 10px;
+    }
   }
 }
 

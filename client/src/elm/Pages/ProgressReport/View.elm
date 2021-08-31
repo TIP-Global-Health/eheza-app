@@ -84,7 +84,7 @@ view language currentDate zscores childId ( sessionId, session ) db =
                         |> LocalData.map
                             (mapMeasurementData .nutrition
                                 >> currentValue
-                                >> Maybe.map .value
+                                >> Maybe.map (.value >> .signs)
                                 >> Maybe.withDefault EverySet.empty
                             )
                         |> LocalData.withDefault EverySet.empty

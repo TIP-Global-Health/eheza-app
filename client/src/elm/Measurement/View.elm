@@ -97,7 +97,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
+            viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
 
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
@@ -593,8 +593,17 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> EverySet ChildNutritionSign -> Html MsgChild
-viewNutritionSigns language measurement signs =
+viewNutritionSigns :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> PersonId
+    -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition ))
+    -> OfflineSession
+    -> ModelIndexedDb
+    -> NutritionValue
+    -> Html MsgChild
+viewNutritionSigns language currentDate zscores childId measurement offlineSession db value =
     let
         activity =
             ChildActivity NutritionSigns
@@ -602,12 +611,12 @@ viewNutritionSigns language measurement signs =
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        saveMsg =
-            if EverySet.isEmpty signs then
-                Nothing
+        assesment =
+            generateNutritionAssessment currentDate zscores childId db offlineSession
+                |> nutritionAssessmentForBackend
 
-            else
-                Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
+        saveMsg =
+            Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
     div
         [ class "ui full segment nutrition"
@@ -620,7 +629,7 @@ viewNutritionSigns language measurement signs =
             , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
                 p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
-                    :: viewNutritionSignsSelector language signs
+                    :: viewNutritionSignsSelector language value.signs
             ]
         , div [ class "actions" ] <|
             saveButton

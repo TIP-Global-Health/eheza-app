@@ -254,9 +254,16 @@ encodeWellChildNutrition =
     encodeWellChildMeasurement (encodeNutritionValueWithType "well_child_nutrition")
 
 
-encodeNutritionValueWithType : String -> EverySet ChildNutritionSign -> List ( String, Value )
-encodeNutritionValueWithType type_ nutritions =
-    [ ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritions )
+encodeNutritionValueWithType : String -> NutritionValue -> List ( String, Value )
+encodeNutritionValueWithType type_ value =
+    let
+        assesment =
+            EverySet.toList value.assesment
+                |> List.head
+                |> Maybe.withDefault NoNutritionAssessment
+    in
+    [ ( "nutrition_signs", encodeEverySet encodeNutritionSign value.signs )
+    , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
@@ -2377,7 +2384,10 @@ encodeAcuteIllnessNutrition =
 
 encodeAcuteIllnessNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeAcuteIllnessNutritionValue nutritions =
-    encodeNutritionValueWithType "acute_illness_nutrition" nutritions
+    [ ( "nutrition_signs", encodeEverySet encodeNutritionSign nutritions )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_nutrition" )
+    ]
 
 
 encodeHealthEducation : HealthEducation -> List ( String, Value )

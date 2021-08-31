@@ -15,6 +15,7 @@ import Backend.Measurement.Model
         , WellChildMeasurements
         )
 import Backend.Model exposing (..)
+import EverySet exposing (EverySet)
 import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, toEntityUuid, withoutDecoder)
@@ -176,3 +177,19 @@ resolveIndividualParticipantForPerson : PersonId -> IndividualEncounterType -> M
 resolveIndividualParticipantForPerson personId encounterType db =
     resolveIndividualParticipantsForPerson personId encounterType db
         |> List.head
+
+
+everySetsEqual : EverySet a -> EverySet a -> Bool
+everySetsEqual set1 set2 =
+    let
+        size1 =
+            EverySet.size set1
+
+        size2 =
+            EverySet.size set2
+
+        sizeIntersect =
+            EverySet.intersect set1 set2
+                |> EverySet.size
+    in
+    (size1 == size2) && (size1 == sizeIntersect)

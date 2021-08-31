@@ -4,11 +4,18 @@ import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortEncounterTuplesDesc, sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( getNutritionEncountersForParticipant
+        , getWellChildEncountersForParticipant
+        , sortDatesDesc
+        , sortEncounterTuplesDesc
+        , sortTuplesByDateDesc
+        )
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings, headCircumferenceWarnings)
@@ -30,11 +37,12 @@ import Pages.AcuteIllnessEncounter.Utils
         )
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
+import Pages.NutritionActivity.View exposing (translateNutritionAssement)
 import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
 import Pages.WellChildActivity.Model
-import Pages.WellChildActivity.Utils exposing (generateFutureVaccinationsData)
+import Pages.WellChildActivity.Utils exposing (generateFutureVaccinationsData, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildEncounter.Model exposing (AssembledData)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import Pages.WellChildProgressReport.Model exposing (..)
@@ -54,17 +62,17 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewContent language currentDate id db model) identity assembled
+    viewWebData language (viewContent language currentDate id isChw db model) identity assembled
 
 
-viewContent : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id db model assembled =
+viewContent : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw db model assembled =
     let
         derrivedContent =
             case model.diagnosisMode of
@@ -78,7 +86,7 @@ viewContent language currentDate id db model assembled =
         [ viewHeader language id model
         , div [ class "ui report unstackable items" ] <|
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewDiagnosisPane language currentDate id db model assembled
+            , viewDiagnosisPane language currentDate id isChw db model assembled
             ]
                 ++ derrivedContent
 
@@ -170,77 +178,78 @@ viewPersonInfoPane language currentDate person =
         ]
 
 
-viewDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewDiagnosisPane language currentDate id db model assembled =
+viewDiagnosisPane : Language -> NominalDate -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewDiagnosisPane language currentDate id isChw db model assembled =
     let
         individualParticipants =
             Dict.get assembled.participant.person db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
 
         ( activeIllnesses, completedIllnesses ) =
-            Maybe.map
-                (List.filter
-                    (\( sessionId, session ) ->
-                        session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                    )
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
                 )
                 individualParticipants
-                |> Maybe.withDefault []
                 |> List.partition (Tuple.second >> isAcuteIllnessActive currentDate)
 
-        individualNutritionMeasurements =
-            Maybe.andThen
-                (List.filter
-                    (\( sessionId, session ) ->
-                        session.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                    )
-                    >> List.head
+        individualNutritionParticipant =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
                 )
                 individualParticipants
-                |> Maybe.map
-                    (\( participantId, _ ) ->
-                        Pages.NutritionEncounter.Utils.generatePreviousMeasurements Nothing participantId db
-                    )
-                |> Maybe.withDefault []
+                |> List.head
+                |> Maybe.map Tuple.first
 
-        _ =
-            Debug.log "groupNutritionAssessments" groupNutritionAssessments
+        individualNutritionMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Pages.NutritionEncounter.Utils.generatePreviousMeasurements Nothing participantId db
+                        |> getPreviousMeasurements
+                )
+                individualNutritionParticipant
+                |> Maybe.withDefault []
 
         groupNutritionMeasurements =
             Dict.get assembled.participant.person db.childMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
 
-        groupNutritionAssessments =
-            Maybe.map
-                (\measurements ->
-                    let
-                        followUps =
-                            Dict.values measurements.followUp
+        individualNutritionEntries =
+            generateIndividualNutritionAssessmentEntries individualNutritionMeasurements
 
-                        nutritions =
-                            Dict.values measurements.nutritions
-                                |> List.map
-                                    (\nutrition ->
-                                        ( nutrition.participantId, nutrition.value )
-                                    )
-                                |> Dict.fromList
-                    in
-                    Dict.values measurements.followUp
-                        |> List.filterMap
-                            (\followUp ->
-                                Dict.get followUp.participantId nutritions
-                                    |> Maybe.map
-                                        (\nutritionValue ->
-                                            ( followUp.dateMeasured, followUp.value.assesment, nutritionValue )
-                                        )
+        groupNutritionEntries =
+            generateGroupNutritionAssessmentEntries groupNutritionMeasurements
+
+        individuaWellChildEntries =
+            assembled.measurements
+                :: getPreviousMeasurements assembled.previousMeasurementsWithDates
+                |> generateIndividualNutritionAssessmentEntries
+
+        allNutritionAssessmentEntries =
+            individualNutritionEntries ++ groupNutritionEntries ++ individuaWellChildEntries
+
+        ( activeWarningEntries, completedWarningEntries ) =
+            generatePartitionedWarningEntries db assembled
+
+        ( activeAssessmentEntries, completedAssessmentEntries ) =
+            resolveDateOfLastNutritionAssessment currentDate isChw individualNutritionParticipant groupNutritionMeasurements assembled db
+                |> Maybe.map
+                    (\lastNutritionAssessmentDate ->
+                        List.partition
+                            (\( date, _ ) ->
+                                Date.compare date lastNutritionAssessmentDate == EQ
                             )
-                )
-                groupNutritionMeasurements
+                            allNutritionAssessmentEntries
+                    )
+                |> Maybe.withDefault ( allNutritionAssessmentEntries, [] )
 
         entriesHeading =
             div [ class "heading diagnosis" ]
                 [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
                 , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
                 , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
                 ]
@@ -263,29 +272,37 @@ viewDiagnosisPane language currentDate id db model assembled =
                     , emptyNode
                     )
 
-        ( selectedDiagnosisEntries, selectedWarningEntries ) =
+        ( selectedDiagnosisEntries, selectedAssessmentEntries, selectedWarningEntries ) =
             case model.diagnosisMode of
                 ModeActiveDiagnosis ->
-                    ( activeIllnesses
-                    , activeWarnings
+                    ( List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
+                    , List.map (\( date, data ) -> ( date, ( data, StatusOngoing ) )) activeAssessmentEntries
+                    , List.map (\( date, encounterType, data ) -> ( date, ( encounterType, data, StatusOngoing ) )) activeWarningEntries
                     )
 
                 ModeCompletedDiagnosis ->
-                    ( completedIllnesses
-                    , completedWarnings
+                    ( List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
+                    , List.map (\( date, data ) -> ( date, ( data, StatusResolved ) )) completedAssessmentEntries
+                    , List.map (\( date, encounterType, data ) -> ( date, ( encounterType, data, StatusResolved ) )) completedWarningEntries
                     )
 
-        ( activeWarnings, completedWarnings ) =
-            generatePartitionedWarnings db assembled
-
         entries =
-            (daignosisEntries ++ warningEntries)
+            (daignosisEntries ++ assessmentEntries ++ warningEntries)
                 |> List.sortWith sortTuplesByDateDesc
                 |> List.map Tuple.second
 
         daignosisEntries =
-            List.map (Tuple.first >> viewDaignosisEntry language id db) selectedDiagnosisEntries
+            List.map (Tuple.first >> viewAcuteIllnessDaignosisEntry language id db) selectedDiagnosisEntries
                 |> Maybe.Extra.values
+
+        assessmentEntries =
+            List.map
+                (\( dateMeasured, ( assessments, status ) ) ->
+                    List.map (\assessment -> ( dateMeasured, ( assessment, status ) )) assessments
+                )
+                selectedAssessmentEntries
+                |> List.concat
+                |> List.map (viewNutritionAssessmentEntry language)
 
         warningEntries =
             List.map (viewWarningEntry language) selectedWarningEntries
@@ -299,50 +316,130 @@ viewDiagnosisPane language currentDate id db model assembled =
         ]
 
 
-viewDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe ( NominalDate, Html Msg )
-viewDaignosisEntry language id db participantId =
-    let
-        encounters =
-            getAcuteIllnessEncountersForParticipant db participantId
-
-        maybeLastEncounterId =
-            List.head encounters
-                |> Maybe.map Tuple.first
-
-        diagnosisData =
-            getAcuteIllnessDiagnosisForEncounters encounters
-    in
-    Maybe.map2
-        (\( date, diagnosis ) lastEncounterId ->
-            ( date
-            , div [ class "entry diagnosis" ]
-                [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
-                , div [ class "cell date" ] [ text <| formatDDMMYY date ]
-                , div
-                    [ class "icon-forward"
-                    , onClick <|
-                        SetActivePage <|
-                            UserPage <|
-                                AcuteIllnessProgressReportPage
-                                    (InitiatorWellChildProgressReport id)
-                                    lastEncounterId
-                    ]
-                    []
-                ]
-            )
+generateIndividualNutritionAssessmentEntries :
+    List
+        { c
+            | nutrition :
+                Maybe
+                    ( id
+                    , { b
+                        | dateMeasured : NominalDate
+                        , value : NutritionValue
+                      }
+                    )
+        }
+    -> List ( NominalDate, List NutritionAssessment )
+generateIndividualNutritionAssessmentEntries measurementList =
+    List.map
+        (\measurements ->
+            Maybe.map2 filterNutritionAssessments
+                (getMeasurementDateMeasuredFunc measurements.nutrition)
+                (getMeasurementValueFunc measurements.nutrition)
+                |> Maybe.Extra.join
         )
-        diagnosisData
-        maybeLastEncounterId
+        measurementList
+        |> Maybe.Extra.values
 
 
-generatePartitionedWarnings :
+filterNutritionAssessments : NominalDate -> NutritionValue -> Maybe ( NominalDate, List NutritionAssessment )
+filterNutritionAssessments dateMeasured value =
+    let
+        assesments =
+            EverySet.toList value.assesment
+                |> List.filterMap
+                    (\assesment ->
+                        case assesment of
+                            NoNutritionAssessment ->
+                                Nothing
+
+                            AssesmentDangerSignsNotPresent ->
+                                Nothing
+
+                            AssesmentDangerSignsPresent ->
+                                Nothing
+
+                            AssesmentMalnutritionSigns _ ->
+                                Just <| AssesmentMalnutritionSigns (EverySet.toList value.signs)
+
+                            _ ->
+                                Just assesment
+                    )
+    in
+    if List.isEmpty assesments then
+        Nothing
+
+    else
+        Just ( dateMeasured, assesments )
+
+
+generateGroupNutritionAssessmentEntries : Maybe ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )
+generateGroupNutritionAssessmentEntries measurementList =
+    Maybe.map
+        (\measurements ->
+            Dict.values measurements.nutritions
+                |> List.filterMap
+                    (\nutrition -> filterNutritionAssessments nutrition.dateMeasured nutrition.value)
+        )
+        measurementList
+        |> Maybe.withDefault []
+
+
+resolveDateOfLastNutritionAssessment :
+    NominalDate
+    -> Bool
+    -> Maybe IndividualEncounterParticipantId
+    -> Maybe ChildMeasurementList
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Maybe NominalDate
+resolveDateOfLastNutritionAssessment currentDate isChw individualNutritionParticipant childGroupMeasurements assembled db =
+    if mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db then
+        Just currentDate
+
+    else
+        let
+            lastAssessmentDatePerIndividualNutrition =
+                Maybe.andThen
+                    (\participantId ->
+                        getNutritionEncountersForParticipant db participantId
+                            -- Sort DESC
+                            |> List.sortWith sortEncounterTuplesDesc
+                            |> List.head
+                            |> Maybe.map (Tuple.second >> .startDate)
+                    )
+                    individualNutritionParticipant
+
+            lastAssessmentDatePerGroupNutrition =
+                Maybe.andThen
+                    (\measurements ->
+                        Dict.values measurements.nutritions
+                            |> List.map .dateMeasured
+                            |> List.sortWith sortDatesDesc
+                            |> List.head
+                    )
+                    childGroupMeasurements
+
+            lastAssessmentDatePerWellChild =
+                getWellChildEncountersForParticipant db assembled.encounter.participant
+                    -- Sort DESC
+                    |> List.sortWith sortEncounterTuplesDesc
+                    |> List.head
+                    |> Maybe.map (Tuple.second >> .startDate)
+        in
+        [ lastAssessmentDatePerIndividualNutrition, lastAssessmentDatePerGroupNutrition, lastAssessmentDatePerWellChild ]
+            |> Maybe.Extra.values
+            |> List.sortWith sortDatesDesc
+            |> List.head
+
+
+generatePartitionedWarningEntries :
     ModelIndexedDb
     -> AssembledData
     ->
         ( List ( NominalDate, WellChildEncounterType, EncounterWarning )
         , List ( NominalDate, WellChildEncounterType, EncounterWarning )
         )
-generatePartitionedWarnings db assembled =
+generatePartitionedWarningEntries db assembled =
     let
         wellChildEncounters =
             getWellChildEncountersForParticipant db assembled.encounter.participant
@@ -400,8 +497,68 @@ generatePartitionedWarnings db assembled =
         allWarnings
 
 
-viewWarningEntry : Language -> ( NominalDate, WellChildEncounterType, EncounterWarning ) -> ( NominalDate, Html Msg )
-viewWarningEntry language ( date, encounterType, warning ) =
+viewAcuteIllnessDaignosisEntry : Language -> WellChildEncounterId -> ModelIndexedDb -> ( IndividualEncounterParticipantId, DiagnosisEntryStatus ) -> Maybe ( NominalDate, Html Msg )
+viewAcuteIllnessDaignosisEntry language id db ( participantId, status ) =
+    let
+        encounters =
+            getAcuteIllnessEncountersForParticipant db participantId
+
+        maybeLastEncounterId =
+            List.head encounters
+                |> Maybe.map Tuple.first
+
+        diagnosisData =
+            getAcuteIllnessDiagnosisForEncounters encounters
+    in
+    Maybe.map2
+        (\( date, diagnosis ) lastEncounterId ->
+            ( date
+            , div [ class "entry diagnosis" ]
+                [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+                    [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+                , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+                , div
+                    [ class "icon-forward"
+                    , onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                AcuteIllnessProgressReportPage
+                                    (InitiatorWellChildProgressReport id)
+                                    lastEncounterId
+                    ]
+                    []
+                ]
+            )
+        )
+        diagnosisData
+        maybeLastEncounterId
+
+
+diagnosisEntryStatusToString : DiagnosisEntryStatus -> String
+diagnosisEntryStatusToString status =
+    case status of
+        StatusOngoing ->
+            "ongoing"
+
+        StatusResolved ->
+            "resolved"
+
+
+viewNutritionAssessmentEntry : Language -> ( NominalDate, ( NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html Msg )
+viewNutritionAssessmentEntry language ( date, ( assessment, status ) ) =
+    ( date
+    , div [ class "entry diagnosis" ]
+        [ div [ class "cell assesment" ] [ translateNutritionAssement language assessment ]
+        , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+        , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+        ]
+    )
+
+
+viewWarningEntry : Language -> ( NominalDate, ( WellChildEncounterType, EncounterWarning, DiagnosisEntryStatus ) ) -> ( NominalDate, Html Msg )
+viewWarningEntry language ( date, ( encounterType, warning, status ) ) =
     let
         encounterTypeForDaignosisPane =
             translate language <| Translate.WellChildEncounterTypeForDiagnosisPane encounterType
@@ -409,6 +566,8 @@ viewWarningEntry language ( date, encounterType, warning ) =
     ( date
     , div [ class "entry diagnosis" ]
         [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning encounterTypeForDaignosisPane ]
+        , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]
         ]
     )

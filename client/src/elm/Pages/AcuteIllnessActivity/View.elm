@@ -28,7 +28,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, MuacForm, NutritionForm, SendToHCForm)
+import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, MuacForm, SendToHCForm)
 import Measurement.Utils
     exposing
         ( basicVitalsFormWithDefault
@@ -743,7 +743,7 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                 PhysicalExamNutrition ->
                     measurements.nutrition
                         |> getMeasurementValueFunc
-                        |> nutritionFormWithDefault data.nutritionForm
+                        |> Pages.AcuteIllnessActivity.Utils.nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate
 
         getNextTask currentTask =
@@ -836,7 +836,7 @@ viewAcuteFindingsForm language currentDate form =
     ]
 
 
-viewNutritionForm : Language -> NominalDate -> NutritionForm -> List (Html Msg)
+viewNutritionForm : Language -> NominalDate -> AcuteIllnessNutritionForm -> List (Html Msg)
 viewNutritionForm language currentDate form =
     [ div [ class "ui form physical-exam nutrition" ]
         [ p [] [ text <| translate language Translate.NutritionHelper ]

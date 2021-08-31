@@ -35,6 +35,7 @@ generateNutritionAssessment currentDate zscores db assembled =
 
         nutritionValue =
             getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .signs
 
         weightValue =
             Maybe.map
@@ -2401,6 +2402,6 @@ resolvePreviousValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-getPreviousMeasurements : List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) ) -> List WellChildMeasurements
+getPreviousMeasurements : List ( NominalDate, ( is, a ) ) -> List a
 getPreviousMeasurements =
     List.map (Tuple.second >> Tuple.second)
