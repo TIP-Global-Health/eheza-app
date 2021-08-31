@@ -202,7 +202,7 @@ viewPersonInfoPane language currentDate person =
             if isAdult then
                 ( "mother"
                 , ageInYears currentDate person
-                    |> Maybe.map (\age -> translate language <| Translate.YearsOld age)
+                    |> Maybe.map (Translate.YearsOld >> translate language)
                 )
 
             else
@@ -212,27 +212,28 @@ viewPersonInfoPane language currentDate person =
                         (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
                 )
 
-        viewAge =
-            maybeAge
-                |> Maybe.map
-                    (\age ->
-                        p []
-                            [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ": " ]
-                            , span [] [ text age ]
-                            ]
+        ( dateOfBirthEntry, ageEntry ) =
+            Maybe.map
+                (\birthDate ->
+                    ( viewEntry Translate.DateOfBirth (formatDDMMYY birthDate)
+                    , viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate)
                     )
+                )
+                person.birthDate
+                |> Maybe.withDefault ( emptyNode, emptyNode )
+
+        genderEntry =
+            viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
+
+        villageEntry =
+            Maybe.map (viewEntry Translate.Village) person.village
                 |> Maybe.withDefault emptyNode
 
-        viewVillage =
-            person.village
-                |> Maybe.map
-                    (\village ->
-                        p []
-                            [ span [ class "label" ] [ text <| translate language Translate.Village ++ ": " ]
-                            , span [] [ text village ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
+        viewEntry labelTransId content =
+            p []
+                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
+                , span [] [ text content ]
+                ]
     in
     div [ class "pane person-details" ]
         [ viewPaneHeading language Translate.PatientInformation
@@ -243,8 +244,10 @@ viewPersonInfoPane language currentDate person =
             , div [ class "details" ]
                 [ h2 [ class "ui header" ]
                     [ text person.name ]
-                , viewAge
-                , viewVillage
+                , ageEntry
+                , dateOfBirthEntry
+                , genderEntry
+                , villageEntry
                 ]
             ]
         ]
