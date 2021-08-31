@@ -1087,6 +1087,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                 (valuesIndexedByEncounter .nutrition nutritionMeasurements)
                 (valuesIndexedByEncounter .nutrition wellChildMeasurements)
 
+        headCircumferenceValuesByEncounter =
+            valuesIndexedByEncounter .headCircumference wellChildMeasurements
+
         --
         -- COMMON CONTEXT
         --
@@ -1111,6 +1114,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
 
         photoValues =
             Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
+
+        headCircumferenceValues =
+            Dict.values headCircumferenceValuesByEncounter
 
         zScoreViewCharts =
             case child.gender of
@@ -1175,6 +1181,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
             weightForLengtAndHeighthData
                 |> List.map (\( length, height, weight ) -> ( height, weight ))
 
+        headCircumferenceForAgeData =
+            List.filterMap (chartHeadCircumferenceForAge child) headCircumferenceValues
+
         charts =
             Maybe.map
                 (\birthDate ->
@@ -1192,10 +1201,10 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                         let
                             headCircumferenceChart =
                                 if childAgeInWeeks < 13 then
-                                    zScoreViewCharts.viewHeadCircumferenceForAge0To13Weeks language zscores []
+                                    zScoreViewCharts.viewHeadCircumferenceForAge0To13Weeks language zscores headCircumferenceForAgeData
 
                                 else
-                                    zScoreViewCharts.headCircumferenceForAge0To2 language zscores []
+                                    zScoreViewCharts.headCircumferenceForAge0To2 language zscores headCircumferenceForAgeData
                         in
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
@@ -1209,7 +1218,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                         , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
                         , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
                         , zScoreViewCharts.weightForHeight0To5 language zscores weightForHeightData
-                        , zScoreViewCharts.headCircumferenceForAge0To5 language zscores []
+                        , zScoreViewCharts.headCircumferenceForAge0To5 language zscores headCircumferenceForAgeData
                         ]
 
                     else
@@ -1217,7 +1226,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData
                         , zScoreViewCharts.weightForAge5To10 language zscores weightForAgeMonthsData
-                        , zScoreViewCharts.headCircumferenceForAge0To5 language zscores []
+                        , zScoreViewCharts.headCircumferenceForAge0To5 language zscores headCircumferenceForAgeData
                         ]
                 )
                 child.birthDate
@@ -1260,6 +1269,19 @@ chartWeightForAge child weight =
                 , case weight.value of
                     WeightInKg kg ->
                         Kilograms kg
+                )
+            )
+
+
+chartHeadCircumferenceForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeadCircumferenceValue } -> Maybe ( Days, Centimetres )
+chartHeadCircumferenceForAge child headCircumference =
+    child.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                ( diffDays birthDate headCircumference.dateMeasured
+                , case headCircumference.value.headCircumference of
+                    HeadCircumferenceInCm cm ->
+                        Centimetres cm
                 )
             )
 
