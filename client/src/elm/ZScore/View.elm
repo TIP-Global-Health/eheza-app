@@ -1301,30 +1301,14 @@ zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys =
 
 zScoreLabelsHeadCircumferenceForAge0To2Boys : Svg any
 zScoreLabelsHeadCircumferenceForAge0To2Boys =
-    g
-        []
-        [ text_ [ transform "matrix(1 0 0 1 723.5 157.8)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 175.3)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 192.9)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 210.4)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 721 228)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 721 245.5)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 721 263.1)", class "z-score-semibold st23" ] [ text "-3" ]
-        ]
+    ZScoreValues 263.1 245.5 228 210.4 192.9 175.3 157.8
+        |> zScoreValuesLabel
 
 
 zScoreLabelsHeadCircumferenceForAge0To5Boys : Svg any
 zScoreLabelsHeadCircumferenceForAge0To5Boys =
-    g
-        []
-        [ text_ [ transform "matrix(1 0 0 1 723.5 176.2)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 192.8)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 209.3)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 225.8)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 721 242.3)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 721 258.8)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 721 275.3)", class "z-score-semibold st23" ] [ text "-3" ]
-        ]
+    ZScoreValues 275.3 258.8 242.3 225.8 209.3 192.8 176.2
+        |> zScoreValuesLabel
 
 
 zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls : Svg any
@@ -1335,40 +1319,24 @@ zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls =
 
 zScoreLabelsHeadCircumferenceForAge0To2Girls : Svg any
 zScoreLabelsHeadCircumferenceForAge0To2Girls =
-    g
-        []
-        [ text_ [ transform "matrix(1 0 0 1 723.5 170.2)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 188.2)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 206.9)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 224.2)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 721 242.2)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 721 260.2)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 721 278.2)", class "z-score-semibold st23" ] [ text "-3" ]
-        ]
+    ZScoreValues 278.2 260.2 242.2 224.2 206.9 188.2 170.2
+        |> zScoreValuesLabel
 
 
 zScoreLabelsHeadCircumferenceForAge0To5Girls : Svg any
 zScoreLabelsHeadCircumferenceForAge0To5Girls =
-    g
-        []
-        [ text_ [ transform "matrix(1 0 0 1 723.5 187.6)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 203.3)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 219.1)", class "one-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 723.5 234.8)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 721 250.5)", class "one-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 721 266.2)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 721 282)", class "z-score-semibold st23" ] [ text "-3" ]
-        ]
+    ZScoreValues 282 266.2 250.5 234.8 219.1 203.3 187.6
+        |> zScoreValuesLabel
 
 
 type alias ZScoreValues =
-    { pos3 : Float
-    , pos2 : Float
-    , pos1 : Float
-    , zero : Float
-    , neg1 : Float
+    { neg3 : Float
     , neg2 : Float
-    , neg3 : Float
+    , neg1 : Float
+    , zero : Float
+    , pos1 : Float
+    , pos2 : Float
+    , pos3 : Float
     }
 
 
