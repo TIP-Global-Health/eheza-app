@@ -156,6 +156,7 @@ type LoginPhrase
 
 type ChartPhrase
     = AgeCompletedMonthsYears
+    | AgeWeeks
     | Birth
     | ChartAgeRange ChartAgeRange
     | HeadCircumferenceCm
@@ -9025,6 +9026,11 @@ translateChartPhrase phrase =
         AgeCompletedMonthsYears ->
             { english = "Age (completed months and years)"
             , kinyarwanda = Just "Imyaka uzuza amezi n'imyaka"
+            }
+
+        AgeWeeks ->
+            { english = "Age (weeks)"
+            , kinyarwanda = Nothing
             }
 
         Birth ->

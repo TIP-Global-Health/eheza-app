@@ -9,6 +9,8 @@ module ZScore.View exposing
     , plotChildData
     , plotData
     , plotReferenceData
+    , viewHeadCircumferenceForAge0To13WeeksBoys
+    , viewHeadCircumferenceForAge0To13WeeksGirls
     , viewHeadCircumferenceForAge0To2Boys
     , viewHeadCircumferenceForAge0To2Girls
     , viewHeadCircumferenceForAge0To5Boys
@@ -136,9 +138,9 @@ type alias Bounds =
 
 type alias XAxisConfig =
     { width : Float
-    , minYear : Int
-    , maxYear : Int
-    , monthsList : List Int
+    , minAgeUnit : Int
+    , maxAgeUnit : Int
+    , ageUnitBreakdown : List Int
     , innerLinesNumber : Int
     , minLength : Int
     , maxLength : Int
@@ -164,7 +166,8 @@ type alias LabelConfig =
 
 
 type XAxisTypes
-    = Age
+    = AgeWeeks
+    | AgeYears
     | Height
 
 
@@ -185,13 +188,13 @@ heightForAgeConfig =
     , paintLevels = True
     , xAxis =
         { width = 908
-        , minYear = 0
-        , maxYear = 2
-        , monthsList = List.range 1 11
+        , minAgeUnit = 0
+        , maxAgeUnit = 2
+        , ageUnitBreakdown = List.range 1 11
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 5
@@ -212,13 +215,13 @@ heightForAgeConfig0To5 =
     , paintLevels = True
     , xAxis =
         { width = 725
-        , minYear = 0
-        , maxYear = 5
-        , monthsList = [ 2, 4, 6, 8, 10 ]
+        , minAgeUnit = 0
+        , maxAgeUnit = 5
+        , ageUnitBreakdown = [ 2, 4, 6, 8, 10 ]
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 5
@@ -239,13 +242,13 @@ heightForAgeConfig5To19 =
     , paintLevels = True
     , xAxis =
         { width = 647
-        , minYear = 5
-        , maxYear = 19
-        , monthsList = [ 3, 6, 9 ]
+        , minAgeUnit = 5
+        , maxAgeUnit = 19
+        , ageUnitBreakdown = [ 3, 6, 9 ]
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 10
@@ -266,13 +269,13 @@ weightForAgeConfig =
     , paintLevels = True
     , xAxis =
         { width = 908
-        , minYear = 0
-        , maxYear = 2
-        , monthsList = List.range 1 11
+        , minAgeUnit = 0
+        , maxAgeUnit = 2
+        , ageUnitBreakdown = List.range 1 11
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 1
@@ -293,13 +296,13 @@ weightForAge0To5Config =
     , paintLevels = True
     , xAxis =
         { width = 725
-        , minYear = 0
-        , maxYear = 5
-        , monthsList = [ 2, 4, 6, 8, 10 ]
+        , minAgeUnit = 0
+        , maxAgeUnit = 5
+        , ageUnitBreakdown = [ 2, 4, 6, 8, 10 ]
         , innerLinesNumber = 1
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 1
@@ -320,13 +323,13 @@ weightForAge5To10Config =
     , paintLevels = True
     , xAxis =
         { width = 725
-        , minYear = 5
-        , maxYear = 10
-        , monthsList = [ 3, 6, 9 ]
+        , minAgeUnit = 5
+        , maxAgeUnit = 10
+        , ageUnitBreakdown = [ 3, 6, 9 ]
         , innerLinesNumber = 2
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 5
@@ -347,9 +350,9 @@ weightForHeightConfig =
     , paintLevels = True
     , xAxis =
         { width = 650
-        , minYear = 0
-        , maxYear = 0
-        , monthsList = []
+        , minAgeUnit = 0
+        , maxAgeUnit = 0
+        , ageUnitBreakdown = []
         , innerLinesNumber = 4
         , minLength = 45
         , maxLength = 110
@@ -374,9 +377,9 @@ weightForHeight0To5Config =
     , paintLevels = True
     , xAxis =
         { width = 645
-        , minYear = 0
-        , maxYear = 0
-        , monthsList = []
+        , minAgeUnit = 0
+        , maxAgeUnit = 0
+        , ageUnitBreakdown = []
         , innerLinesNumber = 4
         , minLength = 45
         , maxLength = 120
@@ -385,6 +388,33 @@ weightForHeight0To5Config =
     , yAxis =
         { yAxisIntervals = 2
         , innerLinesNumber = 2
+        , spaceType = SpaceAround
+        , decimalPointsForText = 0
+        }
+    }
+
+
+headCircumferenceForAge0To13WeeksConfig : PlotConfig Days Centimetres
+headCircumferenceForAge0To13WeeksConfig =
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 27, maxY = 47, minX = 0, maxX = 7 * 13 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = True
+    , xAxis =
+        { width = 650
+        , minAgeUnit = 0
+        , maxAgeUnit = 13
+        , ageUnitBreakdown = List.range 1 6
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = AgeWeeks
+        }
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 19
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
@@ -401,13 +431,13 @@ headCircumferenceForAge0To2Config =
     , paintLevels = True
     , xAxis =
         { width = 908
-        , minYear = 0
-        , maxYear = 2
-        , monthsList = List.range 1 11
+        , minAgeUnit = 0
+        , maxAgeUnit = 2
+        , ageUnitBreakdown = List.range 1 11
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 1
@@ -428,13 +458,13 @@ headCircumferenceForAge0To5Config =
     , paintLevels = True
     , xAxis =
         { width = 908
-        , minYear = 0
-        , maxYear = 2
-        , monthsList = List.range 1 11
+        , minAgeUnit = 0
+        , maxAgeUnit = 2
+        , ageUnitBreakdown = List.range 1 11
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 1
@@ -485,10 +515,18 @@ weightForHeightLabels gender ageRange =
 
 headCircumferenceForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
 headCircumferenceForAgeLabels gender ageRange =
+    let
+        xAxis2 =
+            if ageRange == RangeBirthToThirteenWeeks then
+                Translate.AgeWeeks
+
+            else
+                Translate.AgeCompletedMonthsYears
+    in
     { title = Translate.HeadCircumferenceForAge gender
     , subtitle = Translate.ChartAgeRange ageRange
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , xAxis1 = Nothing
+    , xAxis2 = xAxis2
     , yAxis = Translate.HeadCircumferenceCm
     }
 
@@ -934,6 +972,22 @@ viewWeightForHeight0To5Girls language model data =
         ]
 
 
+viewHeadCircumferenceForAge0To13WeeksBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To13WeeksBoys language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Male RangeBirthToThirteenWeeks)
+        , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , xAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To13WeeksConfig
+        , plotChildData headCircumferenceForAge0To13WeeksConfig data
+        ]
+
+
 viewHeadCircumferenceForAge0To2Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To2Boys language model data =
     svg chartFrameAttributes
@@ -963,6 +1017,22 @@ viewHeadCircumferenceForAge0To5Boys language model data =
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To5Config
         , plotChildData headCircumferenceForAge0To5Config data
+        ]
+
+
+viewHeadCircumferenceForAge0To13WeeksGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To13WeeksGirls language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Female RangeBirthToThirteenWeeks)
+        , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , xAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To13WeeksConfig
+        , plotChildData headCircumferenceForAge0To13WeeksConfig data
         ]
 
 
@@ -1223,6 +1293,12 @@ zScoreLabelsWeightForAge5To10Girls =
         ]
 
 
+zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys : Svg any
+zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys =
+    ZScoreValues 317.7 294.8 272 248.1 226.2 203.4 180.5
+        |> zScoreValuesLabel
+
+
 zScoreLabelsHeadCircumferenceForAge0To2Boys : Svg any
 zScoreLabelsHeadCircumferenceForAge0To2Boys =
     g
@@ -1249,6 +1325,12 @@ zScoreLabelsHeadCircumferenceForAge0To5Boys =
         , text_ [ transform "matrix(1 0 0 1 721 258.8)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 721 275.3)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
+
+
+zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls : Svg any
+zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls =
+    ZScoreValues 340 316 292 268 244 220 196
+        |> zScoreValuesLabel
 
 
 zScoreLabelsHeadCircumferenceForAge0To2Girls : Svg any
@@ -1279,13 +1361,56 @@ zScoreLabelsHeadCircumferenceForAge0To5Girls =
         ]
 
 
+type alias ZScoreValues =
+    { pos3 : Float
+    , pos2 : Float
+    , pos1 : Float
+    , zero : Float
+    , neg1 : Float
+    , neg2 : Float
+    , neg3 : Float
+    }
+
+
+zScoreValuesLabel : ZScoreValues -> Svg any
+zScoreValuesLabel values =
+    let
+        viewText xPosition yPosition zscore extraClass =
+            let
+                class_ =
+                    if String.isEmpty extraClass then
+                        "z-score-semibold st23"
+
+                    else
+                        extraClass ++ " z-score-semibold st23"
+            in
+            text_
+                [ transform <| "matrix(1 0 0 1 " ++ String.fromFloat yPosition ++ " " ++ String.fromFloat xPosition ++ ")"
+                , class class_
+                ]
+                [ text <| String.fromInt zscore ]
+    in
+    g []
+        [ viewText values.pos3 723.5 3 ""
+        , viewText values.pos2 723.5 2 "two-line"
+        , viewText values.pos1 723.5 1 "one-line"
+        , viewText values.zero 723.5 0 "zero-line"
+        , viewText values.neg1 721.5 -1 "one-line"
+        , viewText values.neg2 721.5 -2 "two-line"
+        , viewText values.neg3 721.5 -3 ""
+        ]
+
+
 xAxisLinesAndText : PlotConfig x y -> Svg any
 xAxisLinesAndText config =
     let
-        ( xAxisList, monthList ) =
+        ( xAxisList, breakdownLines, breakdownText ) =
             case config.xAxis.xAxisType of
-                Age ->
-                    ( List.range config.xAxis.minYear config.xAxis.maxYear, True )
+                AgeWeeks ->
+                    ( List.range config.xAxis.minAgeUnit config.xAxis.maxAgeUnit, True, False )
+
+                AgeYears ->
+                    ( List.range config.xAxis.minAgeUnit config.xAxis.maxAgeUnit, True, True )
 
                 Height ->
                     ( List.range config.xAxis.minLength config.xAxis.maxLength
@@ -1299,6 +1424,7 @@ xAxisLinesAndText config =
                                     False
                             )
                     , False
+                    , False
                     )
 
         listCount =
@@ -1308,9 +1434,9 @@ xAxisLinesAndText config =
             config.xAxis.width / toFloat listCount
 
         spaceBetweenInnerLines =
-            if monthList then
-                -- We add one here because we want to give space before the next year.
-                spaceBetweenLines / toFloat (List.length config.xAxis.monthsList + 1)
+            if breakdownLines then
+                -- We add one here because we want to give space before the next unit.
+                spaceBetweenLines / toFloat (List.length config.xAxis.ageUnitBreakdown + 1)
 
             else
                 spaceBetweenLines / toFloat (config.xAxis.innerLinesNumber + 1)
@@ -1318,7 +1444,7 @@ xAxisLinesAndText config =
         -- Here we can define the lines as we want.
         lines =
             List.indexedMap
-                (\i year ->
+                (\i unit ->
                     let
                         index =
                             toFloat i
@@ -1331,7 +1457,7 @@ xAxisLinesAndText config =
                                 config.output.minX + (spaceBetweenLines * index)
 
                         lineTextPosition =
-                            if year < 10 then
+                            if unit < 10 then
                                 (linesMargin - 2)
                                     |> Round.round 4
 
@@ -1344,9 +1470,9 @@ xAxisLinesAndText config =
                                 |> Round.round 4
 
                         innerLinesAndText =
-                            if monthList then
+                            if breakdownLines then
                                 List.indexedMap
-                                    (\ii month ->
+                                    (\ii unitBreakdown ->
                                         let
                                             innerIndex =
                                                 toFloat ii
@@ -1355,7 +1481,7 @@ xAxisLinesAndText config =
                                                 linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
 
                                             innerTextPosition =
-                                                if month < 10 then
+                                                if unitBreakdown < 10 then
                                                     (innerMargin - 2)
                                                         |> Round.round 4
 
@@ -1365,16 +1491,22 @@ xAxisLinesAndText config =
 
                                             innerLinePosition =
                                                 Round.round 4 innerMargin
+
+                                            breakdownText_ =
+                                                if breakdownText then
+                                                    [ text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| fromInt unitBreakdown ]
+                                                    ]
+
+                                                else
+                                                    []
                                         in
-                                        if year < config.xAxis.maxYear then
-                                            [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] []
-                                            , text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| fromInt month ]
-                                            ]
+                                        if unit < config.xAxis.maxAgeUnit then
+                                            line [ class "unit-breakdown-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] :: breakdownText_
 
                                         else
                                             []
                                     )
-                                    config.xAxis.monthsList
+                                    config.xAxis.ageUnitBreakdown
                                     |> List.concat
 
                             else if config.xAxis.innerLinesNumber > 0 then
@@ -1390,8 +1522,8 @@ xAxisLinesAndText config =
                                                         + (spaceBetweenInnerLines * innerIndex)
                                                         |> Round.round 4
                                             in
-                                            if year < config.xAxis.maxLength then
-                                                [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] ]
+                                            if unit < config.xAxis.maxLength then
+                                                [ line [ class "unit-breakdown-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] ]
 
                                             else
                                                 []
@@ -1401,12 +1533,12 @@ xAxisLinesAndText config =
                             else
                                 []
                     in
-                    [ line [ class "year-line", x1 linePosition, y1 "514.5", x2 linePosition, y2 "119.5" ] []
+                    [ line [ class "unit-line", x1 linePosition, y1 "514.5", x2 linePosition, y2 "119.5" ] []
                     , text_
                         [ transform <| "matrix(1 0 0 1 " ++ lineTextPosition ++ " 525.9767)"
                         , class "z-score-white z-score-semibold st20"
                         ]
-                        [ text <| fromInt year ]
+                        [ text <| fromInt unit ]
                     ]
                         |> List.append innerLinesAndText
                 )
@@ -1544,7 +1676,7 @@ labels language config =
         [ rect
             [ x "110.9"
             , y "119.9"
-            , class "month-line"
+            , class "unit-breakdown-line"
             , width "626.8"
             , height "386.8"
             ]
