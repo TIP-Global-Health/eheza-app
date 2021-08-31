@@ -2541,6 +2541,16 @@ div.page-report.well-child {
       }
     }
 
+    .heading.nutrition-signs {
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
     .entry {
       border-bottom: 1px solid $color-text;
       color: $color-dark-gray;
@@ -2581,6 +2591,12 @@ div.page-report.well-child {
           background: $color-cyan;
         }
       }
+    }
+
+    .entry.no-matches {
+      border-bottom: none;
+      display: block;
+      text-align: center;
     }
 
     .entry.diagnosis {
@@ -2628,6 +2644,41 @@ div.page-report.well-child {
 
       .next-due {
         width: 20%;
+      }
+    }
+
+    .entry.nutrition-signs {
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
+    .growth-charts {
+      margin-left: -30px;
+      margin-right: -30px;
+    }
+
+    .growth-photos {
+      padding: 0 30px;
+
+      .ui.cards .report.card {
+        margin: 0 7px 15px;
+        width: calc(16% - 10px);
+      }
+
+      .ui.cards .report.card .content {
+        background: $color-white;
+        color: $color-dark-gray;
+        text-transform: uppercase;
+        font-size: 17px;
+        font-weight: 500;
+        text-align: center;
+        line-height: 35px;
+        width: 100px;
       }
     }
   }

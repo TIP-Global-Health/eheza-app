@@ -413,15 +413,15 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
             weightForAgeData
                 |> List.map (\( days, month, weight ) -> ( month, weight ))
 
-        weightForLengtAndHeighthData =
+        weightForLengthAndHeightData =
             List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
 
         weightForLengthData =
-            weightForLengtAndHeighthData
+            weightForLengthAndHeightData
                 |> List.map (\( length, height, weight ) -> ( length, weight ))
 
         weightForHeightData =
-            weightForLengtAndHeighthData
+            weightForLengthAndHeightData
                 |> List.map (\( length, height, weight ) -> ( height, weight ))
 
         childAgeInMonths =

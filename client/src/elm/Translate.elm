@@ -448,6 +448,7 @@ type TranslationId
     | DangerSignsLabel
     | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
+    | Date
     | DateConcludedActualQuestion
     | DateConcludedEstimatedQuestion
     | DateOfLastAssessment
@@ -553,6 +554,7 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | Growth
     | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
@@ -703,6 +705,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoGroupsFound
     | NoMatchesFound
+    | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
     | NoParticipantsPending
@@ -2822,6 +2825,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso mpuruza"
                     }
 
+        Date ->
+            { english = "Date"
+            , kinyarwanda = Nothing
+            }
+
         DateConcludedActualQuestion ->
             { english = "What was the actual delivery date for the child"
             , kinyarwanda = Nothing
@@ -3890,6 +3898,11 @@ translationSet trans =
 
         GroupEncounter ->
             { english = "Group Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        Growth ->
+            { english = "Growth"
             , kinyarwanda = Nothing
             }
 
@@ -5268,6 +5281,11 @@ translationSet trans =
         NoMatchesFound ->
             { english = "No matches found"
             , kinyarwanda = Just "Ibyo wifuza ntibiboneste"
+            }
+
+        NutritionSigns ->
+            { english = "Nutrition Signs"
+            , kinyarwanda = Just "Ibimenyetso by'imirire"
             }
 
         ReasonForNotSendingToHC reason ->
@@ -8913,22 +8931,22 @@ translateChartPhrase phrase =
             }
 
         BirthToTwoYears ->
-            { english = "Birth to 2 years (z-scores)"
+            { english = "Birth to 2-years (z-scores)"
             , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
             }
 
         BirthToFiveYears ->
-            { english = "0 to 5 years (z-scores)"
+            { english = "Birth to 5-years (z-scores)"
             , kinyarwanda = Just "Imyaka 0-5"
             }
 
         FiveToNineteenYears ->
-            { english = "5 to 19 years (z-scores)"
+            { english = "5 to 19-years (z-scores)"
             , kinyarwanda = Just "Imyaka 5-19"
             }
 
         FiveToTenYears ->
-            { english = "5 to 10 years (z-scores)"
+            { english = "5 to 10-years (z-scores)"
             , kinyarwanda = Just "Imyaka 5-10"
             }
 
@@ -8938,12 +8956,12 @@ translateChartPhrase phrase =
             }
 
         HeightForAgeBoys ->
-            { english = "Height-for-age BOYS"
+            { english = "Height-For-Age Boys"
             , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
             }
 
         HeightForAgeGirls ->
-            { english = "Height-for-age GIRLS"
+            { english = "Height-For-Age Girls"
             , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
             }
 
@@ -8953,12 +8971,12 @@ translateChartPhrase phrase =
             }
 
         LengthForAgeBoys ->
-            { english = "Length-for-age BOYS"
+            { english = "Length-For-Age Boys"
             , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
             }
 
         LengthForAgeGirls ->
-            { english = "Length-for-age GIRLS"
+            { english = "Length-For-Age Girls"
             , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
             }
 
@@ -8973,22 +8991,22 @@ translateChartPhrase phrase =
             }
 
         WeightForAgeBoys ->
-            { english = "Weight-for-age BOYS"
+            { english = "Weight-For-Age Boys"
             , kinyarwanda = Just "Ibiro ku myaka umuhungu"
             }
 
         WeightForAgeGirls ->
-            { english = "Weight-for-age GIRLS"
+            { english = "Weight-For-Age Girls"
             , kinyarwanda = Just "ibiro ku myaka umukobwa"
             }
 
         WeightForLengthBoys ->
-            { english = "Weight-for-height BOYS"
+            { english = "Weight-For-Height Boys"
             , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
             }
 
         WeightForLengthGirls ->
-            { english = "Weight-for-height GIRLS"
+            { english = "Weight-For-Height Girls"
             , kinyarwanda = Just "ibiro ku uburebure umukobwa"
             }
 
