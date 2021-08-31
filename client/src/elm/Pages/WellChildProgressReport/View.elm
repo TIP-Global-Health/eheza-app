@@ -1124,6 +1124,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
                     , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Boys
                     , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Boys
+                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Boys
                     }
 
                 Female ->
@@ -1136,6 +1137,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
                     , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Girls
                     , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Girls
+                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Girls
                     }
 
         heightForAgeData =
@@ -1185,14 +1187,10 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
             -- 0-2 graph for all children that are less than 26 month old.
             if childAgeInMonths < graduatingAgeInMonth then
                 [ ZScore.View.viewMarkers
-
-                -- , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
-                -- , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
-                -- , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
+                , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
+                , zScoreViewCharts.weightForHeight language zscores weightForLengthData
                 , zScoreViewCharts.headCircumferenceForAge0To2 language zscores []
-
-                -- @todo: remove
-                -- , ZScore.View.viewHeadCircumferenceForAge0To2Boys language zscores []
                 ]
 
             else if childAgeInMonths < 60 then
@@ -1200,6 +1198,7 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                 , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
                 , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
                 , zScoreViewCharts.weightForHeight0To5 language zscores weightForHeightData
+                , zScoreViewCharts.headCircumferenceForAge0To5 language zscores []
                 ]
 
             else

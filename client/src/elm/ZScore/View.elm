@@ -11,6 +11,8 @@ module ZScore.View exposing
     , plotReferenceData
     , viewHeadCircumferenceForAge0To2Boys
     , viewHeadCircumferenceForAge0To2Girls
+    , viewHeadCircumferenceForAge0To5Boys
+    , viewHeadCircumferenceForAge0To5Girls
     , viewHeightForAgeBoys
     , viewHeightForAgeBoys0To5
     , viewHeightForAgeBoys5To19
@@ -410,6 +412,33 @@ headCircumferenceForAge0To2Config =
     , yAxis =
         { yAxisIntervals = 1
         , innerLinesNumber = 29
+        , spaceType = SpaceAround
+        , decimalPointsForText = 0
+        }
+    }
+
+
+headCircumferenceForAge0To5Config : PlotConfig Days Centimetres
+headCircumferenceForAge0To5Config =
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 25, maxY = 60, minX = 0, maxX = 365 * 5 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = True
+    , xAxis =
+        { width = 908
+        , minYear = 0
+        , maxYear = 2
+        , monthsList = List.range 1 11
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = Age
+        }
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 34
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
@@ -917,8 +946,23 @@ viewHeadCircumferenceForAge0To2Boys language model data =
             |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To2Config
+        , plotChildData headCircumferenceForAge0To2Config data
+        ]
 
-        -- , plotChildData headCircumferenceForAge0To2Config data
+
+viewHeadCircumferenceForAge0To5Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To5Boys language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Male RangeBirthToFiveYears)
+        , yAxisLinesAndText headCircumferenceForAge0To5Config
+        , xAxisLinesAndText headCircumferenceForAge0To5Config
+        , zScoreLabelsHeadCircumferenceForAge0To5Boys
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To5Config
+        , plotChildData headCircumferenceForAge0To5Config data
         ]
 
 
@@ -934,8 +978,23 @@ viewHeadCircumferenceForAge0To2Girls language model data =
             |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To2Config
+        , plotChildData headCircumferenceForAge0To2Config data
+        ]
 
-        -- , plotChildData headCircumferenceForAge0To2Config data
+
+viewHeadCircumferenceForAge0To5Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To5Girls language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Female RangeBirthToFiveYears)
+        , yAxisLinesAndText headCircumferenceForAge0To5Config
+        , xAxisLinesAndText headCircumferenceForAge0To5Config
+        , zScoreLabelsHeadCircumferenceForAge0To5Girls
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To5Config
+        , plotChildData headCircumferenceForAge0To5Config data
         ]
 
 
@@ -1178,6 +1237,20 @@ zScoreLabelsHeadCircumferenceForAge0To2Boys =
         ]
 
 
+zScoreLabelsHeadCircumferenceForAge0To5Boys : Svg any
+zScoreLabelsHeadCircumferenceForAge0To5Boys =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 723.5 176.2)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 192.8)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 209.3)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 225.8)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 721 242.3)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 721 258.8)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 721 275.3)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
 zScoreLabelsHeadCircumferenceForAge0To2Girls : Svg any
 zScoreLabelsHeadCircumferenceForAge0To2Girls =
     g
@@ -1189,6 +1262,20 @@ zScoreLabelsHeadCircumferenceForAge0To2Girls =
         , text_ [ transform "matrix(1 0 0 1 721 242.2)", class "one-line z-score-semibold st23" ] [ text "-1" ]
         , text_ [ transform "matrix(1 0 0 1 721 260.2)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 721 278.2)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
+zScoreLabelsHeadCircumferenceForAge0To5Girls : Svg any
+zScoreLabelsHeadCircumferenceForAge0To5Girls =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 723.5 187.6)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 203.3)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 219.1)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 723.5 234.8)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 721 250.5)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 721 266.2)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 721 282)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
