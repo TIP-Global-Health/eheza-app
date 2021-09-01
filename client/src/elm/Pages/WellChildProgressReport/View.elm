@@ -1196,7 +1196,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     in
                     -- With exception of Sortwathe, children graduate from all
                     -- groups at the age of 26 month. Therefore, we will show
-                    -- 0-2 graph for all children that are less than 26 month old.
+                    -- 0-2 chart for all children that are less than 26 month old.
+                    -- For head circumference, we'll show 0 - 13 weeks chart for
+                    -- childern with age bellow 13 weeks.
                     if childAgeInMonths < graduatingAgeInMonth then
                         let
                             headCircumferenceChart =
