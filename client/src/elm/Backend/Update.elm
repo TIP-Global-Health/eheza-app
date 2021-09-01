@@ -1068,7 +1068,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     else
                         let
                             ( newModel, _ ) =
-                                List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
                                 Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw newModel)
@@ -1664,7 +1664,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ WellChildSymptomsReviewRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             processWellChildSymptomsReviewRevision data.participantId data.encounterId data.value
@@ -1677,7 +1677,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ WellChildVitalsRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             processWellChildVitalsRevision data.participantId data.encounterId data.value
@@ -1690,7 +1690,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ WellChildECDRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
-                            List.foldl (handleRevision healthCenterId) ( model, False ) revisions
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             processWellChildECDRevision data.participantId data.encounterId newModel
