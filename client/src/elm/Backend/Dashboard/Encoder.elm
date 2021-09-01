@@ -11,7 +11,10 @@ import Backend.Measurement.Encoder
         , encodeDangerSign
         , encodeEverySet
         , encodeFamilyPlanningSign
+        , encodeHCContactSign
+        , encodeHCRecommendation
         , encodeIsolationSign
+        , encodeRecommendation114
         , encodeSendToHCSign
         )
 import Backend.Person.Encoder exposing (encodeGender)
@@ -70,42 +73,29 @@ encodeCaseManagement caseManagement =
 
 encodeCaseNutrition : CaseNutrition -> List ( String, Value )
 encodeCaseNutrition caseNutrition =
-    [ ( "stunting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.stunting) )
-    , ( "underweight", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.underweight) )
-    , ( "wasting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.wasting) )
-    , ( "muac", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.muac) )
-    , ( "nutrition_signs", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.nutritionSigns) )
+    [ ( "stunting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.stunting) )
+    , ( "underweight", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.underweight) )
+    , ( "wasting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.wasting) )
+    , ( "muac", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.muac) )
+    , ( "nutrition_signs", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.nutritionSigns) )
     ]
 
 
 dictToLegacyDict : Dict comparable v -> LegacyDict.Dict comparable v
-dictToLegacyDict dict =
-    Dict.toList dict
-        |> LegacyDict.fromList
+dictToLegacyDict =
+    Dict.toList >> LegacyDict.fromList
 
 
-encodeNutritionValue : NutritionValue -> List ( String, Value )
+encodeNutritionValue : NutritionValue -> Value
 encodeNutritionValue value =
-    [ ( "class", encodeNutritionStatus value.class )
-    , ( "value", string value.value )
-    ]
+    case value.class of
+        Neutral ->
+            null
 
-
-encodeNutritionStatus : NutritionStatus -> Value
-encodeNutritionStatus status =
-    string <|
-        case status of
-            Neutral ->
-                "neutral"
-
-            Good ->
-                "good_nutrition"
-
-            Moderate ->
-                "moderate_nutrition"
-
-            Severe ->
-                "severe_nutrition"
+        _ ->
+            String.toFloat value.value
+                |> Maybe.map float
+                |> Maybe.withDefault null
 
 
 encodeChildrenBeneficiariesData : Dict ProgramType (List ChildrenBeneficiariesStats) -> ( String, Value )
@@ -214,6 +204,9 @@ programTypeToString programType =
         ProgramSorwathe ->
             "sorwathe"
 
+        ProgramChw ->
+            "chw"
+
         ProgramUnknown ->
             "unknown"
 
@@ -267,9 +260,12 @@ encodeAcuteIllnessEncounterDataItem item =
         , ( "sequence_number", int item.sequenceNumber )
         , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
         , ( "fever", bool item.feverRecorded )
-        , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
         , ( "isolation", encodeEverySet encodeIsolationSign item.isolationSigns )
         , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
+        , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
+        , ( "recommendation_114", encodeEverySet encodeRecommendation114 item.recommendation114 )
+        , ( "contact_hc", encodeEverySet encodeHCContactSign item.hcContactSigns )
+        , ( "recommendation_hc", encodeEverySet encodeHCRecommendation item.hcRecommendation )
         ]
 
 

@@ -1,14 +1,19 @@
 module Pages.Dashboard.Update exposing (update)
 
 import App.Model
+import AssocList as Dict
+import Backend.Entities exposing (HealthCenterId)
+import Backend.Model exposing (ModelIndexedDb)
+import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
 import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Restful.Endpoint exposing (toEntityUuid)
 
 
-update : Msg -> DashboardPage -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg subPage model =
+update : NominalDate -> Maybe HealthCenterId -> DashboardPage -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate healthCenterId subPage db msg model =
     case msg of
         SetModalState state ->
             ( { model | modalState = state }
@@ -40,8 +45,11 @@ update msg subPage model =
             )
 
         NavigateToStuntingTable filter ->
-            { model | currentCaseManagementSubFilter = filter }
-                |> update (SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage)))) subPage
+            ( { model | currentCaseManagementSubFilter = filter }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate healthCenterId subPage db) [ SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage))) ]
 
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
@@ -93,7 +101,7 @@ update msg subPage model =
             in
             ( updatedModel
             , Cmd.none
-            , []
+            , getAssembledPermutationMsg healthCenterId updatedModel
             )
 
         SetSelectedVillage string ->
@@ -107,7 +115,7 @@ update msg subPage model =
             in
             ( updatedModel
             , Cmd.none
-            , []
+            , getAssembledPermutationMsg healthCenterId updatedModel
             )
 
         SetActivePage page ->
@@ -127,3 +135,15 @@ update msg subPage model =
                             OneYear
             in
             ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )
+
+
+getAssembledPermutationMsg : Maybe HealthCenterId -> Model -> List App.Model.Msg
+getAssembledPermutationMsg healthCenterId model =
+    Maybe.map
+        (\healthCenterId_ ->
+            Backend.Model.FetchComputedDashboardAssembledPermutation healthCenterId_ model.programTypeFilter model.selectedVillageFilter
+                |> App.Model.MsgIndexedDb
+                |> List.singleton
+        )
+        healthCenterId
+        |> Maybe.withDefault []
