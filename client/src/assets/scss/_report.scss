@@ -46,19 +46,20 @@ svg.z-score {
     stroke: #DFF9DF;
   }
 
-  .neg-two-to-neg-three {
+  .area {
     opacity: 0.5;
+  }
+
+  .area.green {
+    fill: $color-green;
+  }
+
+  .area.orange {
     fill: $color-orange-light;
   }
 
-  .below-neg-three {
-    opacity: 0.5;
+  .area.red {
     fill: $color-velvet;
-  }
-
-  .above-neg-two {
-    opacity: 0.5;
-    fill: $color-green;
   }
 
   .unit-breakdown-line {

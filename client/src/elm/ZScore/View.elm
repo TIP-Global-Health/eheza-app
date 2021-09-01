@@ -125,6 +125,8 @@ type alias PlotConfig xAxis yAxis =
     , paintLevels : Bool
     , xAxis : XAxisConfig
     , yAxis : YAxisConfig
+    , neg2ToNeg3Color : AreaColor
+    , abovePos3Color : AreaColor
     }
 
 
@@ -178,6 +180,25 @@ type YAxisSpaceType
     | NoSpace
 
 
+type AreaColor
+    = AreaGreen
+    | AreaOrange
+    | AreaRed
+
+
+areaColorToClass : AreaColor -> String
+areaColorToClass areaColor =
+    case areaColor of
+        AreaGreen ->
+            "green"
+
+        AreaOrange ->
+            "orange"
+
+        AreaRed ->
+            "red"
+
+
 heightForAgeConfig : PlotConfig Days Centimetres
 heightForAgeConfig =
     { toFloatX = \(ZScore.Model.Days days) -> toFloat days
@@ -202,6 +223,8 @@ heightForAgeConfig =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -229,6 +252,8 @@ heightForAgeConfig0To5 =
         , spaceType = SpaceBelow
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -256,6 +281,8 @@ heightForAgeConfig5To19 =
         , spaceType = NoSpace
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -283,6 +310,8 @@ weightForAgeConfig =
         , spaceType = SpaceAround
         , decimalPointsForText = 2
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -310,6 +339,8 @@ weightForAge0To5Config =
         , spaceType = NoSpace
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -337,6 +368,8 @@ weightForAge5To10Config =
         , spaceType = NoSpace
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -364,6 +397,8 @@ weightForHeightConfig =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -391,6 +426,8 @@ weightForHeight0To5Config =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -418,6 +455,8 @@ headCircumferenceForAge0To13WeeksConfig =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaGreen
+    , abovePos3Color = AreaRed
     }
 
 
@@ -445,6 +484,8 @@ headCircumferenceForAge0To2Config =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaGreen
+    , abovePos3Color = AreaRed
     }
 
 
@@ -472,6 +513,8 @@ headCircumferenceForAge0To5Config =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaGreen
+    , abovePos3Color = AreaRed
     }
 
 
@@ -583,13 +626,14 @@ plotReferenceData config zscoreList =
                             Nothing
                     )
 
-        -- We need the neg3 and neg2 points both to draw a line and to draw a polygon
-        -- for fill ... so, we do them here.
         neg3points =
             getPoints -3
 
         neg2points =
             getPoints -2
+
+        pos3points =
+            getPoints 3
 
         makeLine dataPoints lineClass =
             dataPoints
@@ -614,33 +658,7 @@ plotReferenceData config zscoreList =
                     |> points
                     |> (\pointList ->
                             polygon
-                                [ class "below-neg-three"
-                                , pointList
-                                ]
-                                []
-                       )
-                    |> Just
-
-            else
-                Nothing
-
-        -- Points for a polygon from neg2 to the top of the chart
-        fillAboveNegativeTwo =
-            if config.paintLevels then
-                [ { x = config.input.maxX
-                  , y = config.input.maxY
-                  }
-                , { x = config.input.minX
-                  , y = config.input.maxY
-                  }
-                ]
-                    |> List.append neg2points
-                    |> plotData config
-                    |> String.join " "
-                    |> points
-                    |> (\pointList ->
-                            polygon
-                                [ class "above-neg-two"
+                                [ class <| "area below-neg-three " ++ areaColorToClass AreaRed
                                 , pointList
                                 ]
                                 []
@@ -660,7 +678,53 @@ plotReferenceData config zscoreList =
                     |> points
                     |> (\pointList ->
                             polygon
-                                [ class "neg-two-to-neg-three"
+                                [ class <| "area neg-two-to-neg-three " ++ areaColorToClass config.neg2ToNeg3Color
+                                , pointList
+                                ]
+                                []
+                       )
+                    |> Just
+
+            else
+                Nothing
+
+        -- Points for a polygon from neg2 to pos3
+        fillBetweenNegTwoAndPosThree =
+            if config.paintLevels then
+                neg2points
+                    |> List.append (List.reverse pos3points)
+                    |> plotData config
+                    |> String.join " "
+                    |> points
+                    |> (\pointList ->
+                            polygon
+                                [ class <| "area neg-two-to-pos-three " ++ areaColorToClass AreaGreen
+                                , pointList
+                                ]
+                                []
+                       )
+                    |> Just
+
+            else
+                Nothing
+
+        -- Points for a polygon from pos3 to the top of the chart
+        fillAbovePositiveThree =
+            if config.paintLevels then
+                [ { x = config.input.maxX
+                  , y = config.input.maxY
+                  }
+                , { x = config.input.minX
+                  , y = config.input.maxY
+                  }
+                ]
+                    |> List.append pos3points
+                    |> plotData config
+                    |> String.join " "
+                    |> points
+                    |> (\pointList ->
+                            polygon
+                                [ class <| "area above-pos-three " ++ areaColorToClass config.abovePos3Color
                                 , pointList
                                 ]
                                 []
@@ -671,8 +735,9 @@ plotReferenceData config zscoreList =
                 Nothing
     in
     [ fillBelowNegativeThree
-    , fillAboveNegativeTwo
     , fillBetweenNegTwoAndNegThree
+    , fillBetweenNegTwoAndPosThree
+    , fillAbovePositiveThree
     , Just <| makeLine neg3points "three-line-new"
     , Just <| makeLine neg2points "two-line-new"
     , if config.drawSD1 then
@@ -687,7 +752,7 @@ plotReferenceData config zscoreList =
       else
         Nothing
     , Just <| makeLine (getPoints 2) "two-line-new"
-    , Just <| makeLine (getPoints 3) "three-line-new"
+    , Just <| makeLine pos3points "three-line-new"
     ]
         |> Maybe.Extra.values
         |> g []
