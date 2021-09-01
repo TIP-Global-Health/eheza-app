@@ -330,16 +330,22 @@ resolvePreviousMeasurementsSetForChild childId db =
 
 
 resolvePreviousValuesSetForChild :
-    PersonId
+    NominalDate
+    -> PersonId
     -> ModelIndexedDb
     -> PreviousValuesSet
-resolvePreviousValuesSetForChild childId db =
+resolvePreviousValuesSetForChild currentDate childId db =
     let
         previousMeasurementsSet =
             resolvePreviousMeasurementsSetForChild childId db
 
         getLatestValue =
-            List.head >> Maybe.map Tuple.second
+            List.filter
+                (\( dateMeasured, _ ) ->
+                    Date.compare dateMeasured currentDate == LT
+                )
+                >> List.head
+                >> Maybe.map Tuple.second
     in
     PreviousValuesSet
         (getLatestValue previousMeasurementsSet.heights)

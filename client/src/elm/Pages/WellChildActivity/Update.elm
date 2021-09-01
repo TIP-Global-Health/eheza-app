@@ -69,6 +69,9 @@ update currentDate id db msg model =
             nextTask
                 |> Maybe.map (\task -> [ SetActiveNextStepsTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+
+        focusOnCalendar =
+            App.Model.ScrollToElement "dropdown--content-container"
     in
     case msg of
         SetActivePage page ->
@@ -105,7 +108,7 @@ update currentDate id db msg model =
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
-            , []
+            , [ focusOnCalendar ]
             )
 
         SetDateConcluded value ->
@@ -127,7 +130,7 @@ update currentDate id db msg model =
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
-            , []
+            , [ focusOnCalendar ]
             )
 
         SetApgarsOneMinute value ->
@@ -426,7 +429,7 @@ update currentDate id db msg model =
                         Nothing
 
                 updatedForm =
-                    { form | headCircumference = headCircumference, headCircumferenceDirty = isJust headCircumference, measurementNotTaken = Just notTaken }
+                    { form | headCircumference = headCircumference, headCircumferenceDirty = True, measurementNotTaken = Just notTaken }
 
                 updatedData =
                     model.nutritionAssessmentData
@@ -434,7 +437,7 @@ update currentDate id db msg model =
             in
             ( { model | nutritionAssessmentData = updatedData }
             , Cmd.none
-            , []
+            , [ focusOnCalendar ]
             )
 
         CloseHeadCircumferencePopup personId saved nextTask_ ->
@@ -733,7 +736,22 @@ update currentDate id db msg model =
                     Dict.get type_ form.administeredVaccines
                         |> Maybe.map
                             (\doses ->
-                                Dict.insert type_ (Dict.insert dose (Just vaccineAdministered) doses) form.administeredVaccines
+                                let
+                                    updatedDoses_ =
+                                        Dict.insert dose (Just vaccineAdministered) doses
+
+                                    updatedDoses =
+                                        if vaccineAdministered then
+                                            updatedDoses_
+
+                                        else
+                                            Dict.filter
+                                                (\dose_ _ ->
+                                                    vaccineDoseToComparable dose_ <= vaccineDoseToComparable dose
+                                                )
+                                                updatedDoses_
+                                in
+                                Dict.insert type_ updatedDoses form.administeredVaccines
                             )
                         |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just vaccineAdministered)) form.administeredVaccines)
 
@@ -747,7 +765,9 @@ update currentDate id db msg model =
                                 Dict.get type_ form.vaccinationDates
                                     |> Maybe.map
                                         (\datesData ->
-                                            ( Dict.remove dose datesData, True )
+                                            ( Dict.filter (\dose_ _ -> vaccineDoseToComparable dose_ < vaccineDoseToComparable dose) datesData
+                                            , True
+                                            )
                                         )
                         in
                         Maybe.map
@@ -806,7 +826,7 @@ update currentDate id db msg model =
             in
             ( { model | vaccinationHistoryForm = updatedForm }
             , Cmd.none
-            , []
+            , [ focusOnCalendar ]
             )
 
         SaveVaccinationHistory personId suggestedVaccines saved ->
@@ -873,7 +893,7 @@ update currentDate id db msg model =
             in
             ( { model | immunisationForm = updatedForm }
             , Cmd.none
-            , []
+            , [ focusOnCalendar ]
             )
 
         SaveImmunisation personId suggestedVaccines saved ->

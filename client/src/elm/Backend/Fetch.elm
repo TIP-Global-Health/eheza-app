@@ -37,7 +37,7 @@ shouldFetch currentTime model msg =
                 False
 
             else
-                Dict.member healthCenterId model.computedDashboard
+                Dict.member healthCenterId model.computedDashboards
                     |> not
 
         FetchChildrenMeasurements ids ->

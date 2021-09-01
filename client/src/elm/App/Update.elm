@@ -272,7 +272,7 @@ update msg model =
                         MsgPageDashboard subPage subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Dashboard.Update.update subMsg subPage data.dashboardPage
+                                    Pages.Dashboard.Update.update currentDate model.healthCenterId subPage model.indexedDb subMsg data.dashboardPage
                             in
                             ( { data | dashboardPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
@@ -627,7 +627,11 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing, SetVillage Nothing ]
+                                                ( [ SetLoggedIn NotAsked
+                                                  , MsgIndexedDb Backend.Model.HandleLogout
+                                                  , SetHealthCenter Nothing
+                                                  , SetVillage Nothing
+                                                  ]
                                                 , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
                                                 )
 
@@ -938,10 +942,6 @@ update msg model =
                 ( modelUpdated, cmd ) =
                     case urlRequest of
                         Browser.Internal url ->
-                            let
-                                activePage =
-                                    activePageByUrl url
-                            in
                             ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
 
                         -- As we use a tag in multiple places in HTML and CSS,

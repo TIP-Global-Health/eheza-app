@@ -449,8 +449,8 @@ type MedicationTask
     | TaskVitaminA
 
 
-allMedicationTasks : List MedicationTask
-allMedicationTasks =
+medicationTasks : List MedicationTask
+medicationTasks =
     [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]
 
 
