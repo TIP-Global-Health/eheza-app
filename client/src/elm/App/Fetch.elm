@@ -73,7 +73,8 @@ fetch model =
                 List.map MsgIndexedDb Pages.Device.Fetch.fetch
 
             PinCodePage ->
-                List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
+                Pages.PinCode.Fetch.fetch model.healthCenterId
+                    |> List.map MsgIndexedDb
 
             PageNotFound _ ->
                 []

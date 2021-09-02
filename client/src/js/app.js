@@ -450,12 +450,16 @@ elmApp.ports.setLanguage.subscribe(function(language) {
 });
 
 elmApp.ports.scrollToElement.subscribe(function(elementId) {
+  waitForElement(elementId, scrollToElement, null);
+});
+
+function scrollToElement(elementId) {
   var element = document.getElementById(elementId);
 
   if (element) {
     element.scrollIntoView(true);
   }
-});
+}
 
 elmApp.ports.refreshPage.subscribe(function() {
   location.reload();

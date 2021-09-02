@@ -3093,7 +3093,7 @@ translationSet trans =
                     }
 
                 SitWithoutSupport ->
-                    { english = "Can the child sit without support for a short while"
+                    { english = "Can the child sit without support for a short while, for example sit on the floor on their own"
                     , kinyarwanda = Nothing
                     }
 
@@ -3103,12 +3103,12 @@ translationSet trans =
                     }
 
                 RollTummyToBack ->
-                    { english = "Can the child roll from tummy to back on their own"
+                    { english = "Can the child roll from their tummy to their back on their own"
                     , kinyarwanda = Nothing
                     }
 
                 ReachForToys ->
-                    { english = "Does the child reach for nearby toys"
+                    { english = "Does the child reach for nearby toys on their own"
                     , kinyarwanda = Nothing
                     }
 
@@ -8344,47 +8344,47 @@ translationSet trans =
                     }
 
                 PediatricCareBirthTo6Weeks ->
-                    { english = "Birth to 6 Weeks visit"
+                    { english = "Birth to 6 Week visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare6Weeks ->
-                    { english = "6 Weeks visit"
+                    { english = "6 Week visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare10Weeks ->
-                    { english = "10 Weeks visit"
+                    { english = "10 Week visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare14Weeks ->
-                    { english = "14 Weeks visit"
+                    { english = "14 Week visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare6Months ->
-                    { english = "6 Months visit"
+                    { english = "6 Month visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare9Months ->
-                    { english = "9 Months visit"
+                    { english = "9 Month visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare12Months ->
-                    { english = "12 Months visit"
+                    { english = "12 Month visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare15Months ->
-                    { english = "15 Months visit"
+                    { english = "15 Month visit"
                     , kinyarwanda = Nothing
                     }
 
                 PediatricCare18Months ->
-                    { english = "18 Months visit"
+                    { english = "18 Month visit"
                     , kinyarwanda = Nothing
                     }
 

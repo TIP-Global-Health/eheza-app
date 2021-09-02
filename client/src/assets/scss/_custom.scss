@@ -2102,7 +2102,7 @@ input::placeholder {
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-hmedication-distribution-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-medication-distribution-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {

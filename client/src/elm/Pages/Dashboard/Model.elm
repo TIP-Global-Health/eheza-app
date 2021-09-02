@@ -1,6 +1,6 @@
 module Pages.Dashboard.Model exposing (..)
 
-import AssocList exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
 import Backend.Entities exposing (HealthCenterId, VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
@@ -129,7 +129,7 @@ emptyModel maybeSelectedVillage =
     let
         ( programTypeFilter, selectedVillage ) =
             if isJust maybeSelectedVillage then
-                -- This is CHW Nurse, as on CHW work with villages.
+                -- This is CHW Nurse, as only CHW work with villages.
                 ( FilterProgramCommunity
                 , maybeSelectedVillage
                 )

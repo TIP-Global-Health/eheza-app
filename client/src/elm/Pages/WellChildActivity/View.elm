@@ -669,7 +669,7 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                 |> Maybe.withDefault ( 0, 0 )
 
         previousValuesSet =
-            resolvePreviousValuesSetForChild assembled.participant.person db
+            resolvePreviousValuesSetForChild currentDate assembled.participant.person db
 
         headCircumferenceForm =
             measurements.headCircumference
@@ -677,21 +677,25 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                 |> headCircumferenceFormWithDefault data.headCircumferenceForm
 
         headCircumferenceZScore =
-            let
-                maybeAgeInDays =
-                    Maybe.map
-                        (\birthDate -> diffDays birthDate currentDate)
-                        person.birthDate
-            in
-            headCircumferenceForm.headCircumference
-                |> Maybe.andThen
-                    (\headCircumference ->
-                        Maybe.andThen
-                            (\ageInDays ->
-                                zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
-                            )
-                            maybeAgeInDays
-                    )
+            if headCircumferenceForm.measurementNotTaken == Just True then
+                Nothing
+
+            else
+                let
+                    maybeAgeInDays =
+                        Maybe.map
+                            (\birthDate -> diffDays birthDate currentDate)
+                            person.birthDate
+                in
+                headCircumferenceForm.headCircumference
+                    |> Maybe.andThen
+                        (\headCircumference ->
+                            Maybe.andThen
+                                (\ageInDays ->
+                                    zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
+                                )
+                                maybeAgeInDays
+                        )
 
         viewForm =
             case activeTask of
@@ -733,11 +737,14 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         heightValue =
                             assembled.measurements.height
                                 |> getMeasurementValueFunc
+
+                        showWeightForHeightZScore =
+                            not isChw
                     in
                     measurements.weight
                         |> getMeasurementValueFunc
                         |> weightFormWithDefault data.weightForm
-                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight SetWeight
+                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
 
                 Nothing ->
                     []
@@ -916,15 +923,49 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 |> Maybe.withDefault []
 
         isVaccineCompleted ( vaccineType, doses ) =
-            List.all
-                (\dose ->
-                    (wasVaccineAdministered vaccineType dose == Just True)
-                        && wasDateSet vaccineType dose
-                )
-                doses
-                || List.any
-                    (\dose -> wasVaccineAdministered vaccineType dose == Just False)
-                    doses
+            let
+                allDosesAdministeredAndDateSet =
+                    List.all
+                        (\dose ->
+                            (wasVaccineAdministered vaccineType dose == Just True)
+                                && wasDateSet vaccineType dose
+                        )
+                        doses
+
+                doseWasNotAdministered =
+                    List.any
+                        (\dose -> wasVaccineAdministered vaccineType dose == Just False)
+                        doses
+
+                -- Since doses are given within interval, if there's a dose
+                -- that was given at date X, and X + interval is in future,
+                -- we know that next dose is not required, and vaccination
+                -- for this vaccine type is complete.
+                doseAdministeredOnDateWhichBlocksNextDose =
+                    List.any
+                        (\dose ->
+                            (wasVaccineAdministered vaccineType dose == Just True)
+                                && wasDateSet vaccineType dose
+                                && (getSetDate vaccineType dose
+                                        |> Maybe.map
+                                            (\setDate ->
+                                                let
+                                                    ( interval, unit ) =
+                                                        getIntervalForVaccine vaccineType
+
+                                                    nextDoseDate =
+                                                        Date.add unit interval setDate
+                                                in
+                                                Date.compare nextDoseDate currentDate == GT
+                                            )
+                                        |> Maybe.withDefault False
+                                   )
+                        )
+                        doses
+            in
+            allDosesAdministeredAndDateSet
+                || doseWasNotAdministered
+                || doseAdministeredOnDateWhichBlocksNextDose
 
         ( dosesCompleted, dosesToProcess ) =
             vaccineToProcess
@@ -971,6 +1012,11 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 |> Maybe.map (EverySet.member dose)
                 |> Maybe.withDefault False
 
+        getSetDate vaccineType dose =
+            Dict.get vaccineType form.vaccinationDates
+                |> Maybe.andThen (Dict.get dose)
+                |> Maybe.Extra.join
+
         wasDateSet vaccineType dose =
             Dict.get vaccineType form.vaccinationDates
                 |> Maybe.andThen (Dict.get dose)
@@ -1015,17 +1061,16 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                         Maybe.Extra.or dateRecorded dateFromHistory
                                     )
                     in
-                    { type_ = vaccineType
+                    { vaccineType = vaccineType
                     , dose = dose
 
                     -- The date from which this vaccine dose can be administered.
                     , startDate = startDate
-
-                    -- Only last 2 questions will have active inputs
-                    , active = index + 2 >= totalItemsforView
                     }
                 )
                 suggested
+                -- Filter  out doses that are planned for future.
+                |> List.filter (\item -> not (Date.compare item.startDate currentDate == GT))
 
         catchUpRequired =
             form.catchUpRequired == Just True
@@ -1036,41 +1081,74 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
 
             else
                 itemsForView
-                    |> List.map
-                        (\item ->
+                    |> List.indexedMap
+                        (\index item ->
                             let
-                                type_ =
-                                    item.type_
+                                vaccineType =
+                                    item.vaccineType
 
                                 dose =
                                     item.dose
 
+                                itemActive =
+                                    itemActiveByPrev && itemActiveByNext
+
+                                itemActiveByPrev =
+                                    List.Extra.getAt (index - 1) itemsForView
+                                        |> Maybe.map
+                                            (\prevItem ->
+                                                -- Either previous item is for another vaccine, or
+                                                -- it's administered field is not set to False.
+                                                (prevItem.vaccineType /= vaccineType)
+                                                    || (wasVaccineAdministered prevItem.vaccineType prevItem.dose /= Just False)
+                                            )
+                                        |> Maybe.withDefault True
+
+                                itemActiveByNext =
+                                    List.Extra.getAt (index + 1) itemsForView
+                                        |> Maybe.map
+                                            (\nextItem ->
+                                                -- Either this item is last for vaccine, or
+                                                -- next item is last for vaccine.
+                                                (nextItem.vaccineType /= vaccineType)
+                                                    || subsequentIsLastForVaccine (index + 1) vaccineType
+                                            )
+                                        |> Maybe.withDefault True
+
+                                subsequentIsLastForVaccine index_ vaccineType_ =
+                                    List.Extra.getAt (index_ + 1) itemsForView
+                                        |> Maybe.map
+                                            (\nextItem_ ->
+                                                nextItem_.vaccineType /= vaccineType_
+                                            )
+                                        |> Maybe.withDefault True
+
                                 setBoolInputAction =
-                                    if item.active then
-                                        SetVaccinationHistoryBoolInput type_ dose
+                                    if itemActive then
+                                        SetVaccinationHistoryBoolInput vaccineType dose
 
                                     else
                                         always NoOp
 
                                 vaccineAdministered =
-                                    wasVaccineAdministered type_ dose
+                                    wasVaccineAdministered vaccineType dose
 
                                 ( derrivedInput, derrivedTask ) =
                                     if vaccineAdministered == Just True then
                                         let
                                             selectorState =
-                                                Dict.get ( type_, dose ) form.dateSelectorsState
+                                                Dict.get ( vaccineType, dose ) form.dateSelectorsState
                                                     |> Maybe.withDefault False
 
                                             vaccinationDate =
-                                                Dict.get type_ form.vaccinationDates
+                                                Dict.get vaccineType form.vaccinationDates
                                                     |> Maybe.andThen (Dict.get dose)
                                                     |> Maybe.withDefault Nothing
 
                                             ( setDateAction, toggleAction ) =
-                                                if item.active then
-                                                    ( SetVaccinationHistoryDateInput type_ dose
-                                                    , ToggleVaccinationHistoryDateSelectorInput type_ dose
+                                                if itemActive then
+                                                    ( SetVaccinationHistoryDateInput vaccineType dose
+                                                    , ToggleVaccinationHistoryDateSelectorInput vaccineType dose
                                                     )
 
                                                 else
@@ -1093,7 +1171,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                                     else
                                         ( [], Nothing )
                             in
-                            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion type_ dose False False
+                            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredQuestion vaccineType dose False False
                               , viewBoolInput
                                     language
                                     vaccineAdministered
@@ -1239,7 +1317,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
                     if doseAdministrationQuestionAnswered vaccineType form then
                         case getVaccinationDateFromImmunisationForm vaccineType form of
                             Just administationDate ->
-                                -- If date was set, we show the date for next dose.
+                                -- If the date was set, we show the date for the next dose.
                                 Just ( vaccineType, nextVaccinationDataForVaccine administationDate dose vaccineType )
 
                             Nothing ->
@@ -2055,7 +2133,7 @@ viewMedicationContent language currentDate isChw assembled data =
             assembled.measurements
 
         tasks =
-            allMedicationTasks
+            medicationTasks
                 |> List.filter (expectMedicationTask currentDate isChw assembled)
 
         activeTask =

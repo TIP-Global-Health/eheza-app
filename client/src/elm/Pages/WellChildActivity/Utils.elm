@@ -79,7 +79,7 @@ activityCompleted currentDate zscores isChw assembled db activity =
 
         WellChildMedication ->
             (not <| activityExpected WellChildMedication)
-                || (isJust measurements.mebendezole && isJust measurements.vitaminA)
+                || List.all (medicationTaskCompleted currentDate isChw assembled) medicationTasks
 
         WellChildVaccinationHistory ->
             (not <| activityExpected WellChildVaccinationHistory) || isJust measurements.vaccinationHistory
@@ -134,7 +134,7 @@ expectActivity currentDate zscores isChw assembled db activity =
                 False
 
             else
-                allMedicationTasks
+                medicationTasks
                     |> List.filter (expectMedicationTask currentDate isChw assembled)
                     |> List.isEmpty
                     |> not
@@ -258,6 +258,12 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
 expectNutritionAssessmentTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
 expectNutritionAssessmentTask currentDate isChw data db task =
     case task of
+        -- Show for children that are up to 3 years old.
+        TaskHeadCircumference ->
+            ageInMonths currentDate data.person
+                |> Maybe.map (\ageMonths -> ageMonths < 36)
+                |> Maybe.withDefault False
+
         -- Show for children that are at least 6 month old.
         TaskMuac ->
             ageInMonths currentDate data.person
@@ -683,16 +689,16 @@ filterExpextedDosesForPerson currentDate person ( vaccine, doses ) =
         Just ( vaccine, expectedDoses )
 
 
-{-| Check if first dose of vaccine may be administerd to person on limit date.
+{-| Check if the first dose of vaccine may be administered to the person on the limit date.
 -}
 expectVaccineForPerson : NominalDate -> Person -> VaccineType -> Bool
 expectVaccineForPerson limitDate person vaccineType =
     expectVaccineDoseForPerson limitDate person ( vaccineType, VaccineDoseFirst )
 
 
-{-| Check if a dose of vaccine may be administerd to person on limit date.
-For example, to check if dose of vaccine may be administerd today, we set
-limit date to current date. If we want to check in one year, we set limit date
+{-| Check if a dose of vaccine may be administered to a person on the limit date.
+For example, to check if the dose of vaccine may be administered today, we set
+limit date to current date. If we want to check in one year, we set the limit date
 to current date + 1 year.
 -}
 expectVaccineDoseForPerson : NominalDate -> Person -> ( VaccineType, VaccineDose ) -> Bool
@@ -1434,19 +1440,39 @@ expectedECDSignsByAge currentDate assembled =
 groupedECDSigns : Int -> AssembledData -> List (List ECDSign)
 groupedECDSigns ageMonths assembled =
     let
-        sixMonthsAssessmentPerformed =
-            sixMonthsECDAssessmentPerformed assembled
+        ageMonthsAtLastAssessment =
+            ageInMonthsAtLastAssessment assembled
 
         ( from5Weeks, from13Weeks ) =
-            if sixMonthsAssessmentPerformed then
-                ( [], [] )
+            Maybe.map
+                (\ageMonthsLastAssessment ->
+                    if ageMonthsLastAssessment >= 6 then
+                        ( [], [] )
 
-            else
-                ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
+                    else
+                        ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
+                )
+                ageMonthsAtLastAssessment
+                |> Maybe.withDefault ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
+
+        ecdSigns6To12Months =
+            Maybe.map
+                (\ageMonthsLastAssessment ->
+                    if ageMonthsLastAssessment > 12 then
+                        []
+
+                    else if ageMonthsLastAssessment >= 9 then
+                        ecdSigns6To12MonthsMajors
+
+                    else
+                        ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
+                )
+                ageMonthsAtLastAssessment
+                |> Maybe.withDefault (ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors)
     in
     [ from5Weeks
     , from13Weeks
-    , ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed
+    , ecdSigns6To12Months
     , ecdSignsFrom15Months
     , ecdSignsFrom18Months
     , ecdSignsFrom2Years
@@ -1455,8 +1481,8 @@ groupedECDSigns ageMonths assembled =
     ]
 
 
-sixMonthsECDAssessmentPerformed : AssembledData -> Bool
-sixMonthsECDAssessmentPerformed assembled =
+ageInMonthsAtLastAssessment : AssembledData -> Maybe Int
+ageInMonthsAtLastAssessment assembled =
     assembled.person.birthDate
         |> Maybe.andThen
             (\birthDate ->
@@ -1474,10 +1500,9 @@ sixMonthsECDAssessmentPerformed assembled =
                             |> List.head
                 in
                 Maybe.map
-                    (\assessmentDate -> Date.diff Months birthDate assessmentDate >= 6)
+                    (Date.diff Months birthDate)
                     lastECDAssessmentDate
             )
-        |> Maybe.withDefault False
 
 
 ecdSignsFrom5Weeks : List ECDSign
@@ -1493,18 +1518,6 @@ ecdSignsFrom13Weeks =
     , Smile
     , RollSideways
     ]
-
-
-ecdSigns6To12Months : Int -> Bool -> List ECDSign
-ecdSigns6To12Months ageMonths sixMonthsAssessmentPerformed =
-    if ageMonths > 12 then
-        []
-
-    else if sixMonthsAssessmentPerformed then
-        ecdSigns6To12MonthsMajors
-
-    else
-        ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
 
 
 ecdSigns6To12MonthsMinors : List ECDSign
@@ -1578,6 +1591,26 @@ ecdSignsFrom4Years =
     ]
 
 
+medicationTaskCompleted : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted currentDate isChw assembled task =
+    let
+        measurements =
+            assembled.measurements
+
+        taskExpected =
+            expectMedicationTask currentDate isChw assembled
+    in
+    case task of
+        TaskAlbendazole ->
+            (not <| taskExpected TaskAlbendazole) || isJust measurements.albendazole
+
+        TaskMebendezole ->
+            (not <| taskExpected TaskMebendezole) || isJust measurements.mebendezole
+
+        TaskVitaminA ->
+            (not <| taskExpected TaskVitaminA) || isJust measurements.vitaminA
+
+
 expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
 expectMedicationTask currentDate isChw assembled task =
     let
@@ -1608,7 +1641,7 @@ nextMedicationAdmnistrationData currentDate person measurements =
             List.filterMap .mebendezole measurements
                 |> latestAdministrationDateForMedicine
     in
-    List.filter (expectMedicationByAge currentDate person) allMedicationTasks
+    List.filter (expectMedicationByAge currentDate person) medicationTasks
         |> List.map
             (\medication ->
                 case medication of
@@ -2077,7 +2110,7 @@ generateNextDateForImmunisationVisit currentDate isChw assembled db =
         -- If there're only 6 month interval vaccines, we'll check 6 months forward.
         -- Otherwise, there's a vaccine with 28 days interval, so we look only 1 month forward.
         -- We do this, because per requirements, if we have several vaccines, we
-        -- select the latest date - to be able to administer all in single encounter.
+        -- select the latest date - to be able to administer all in a single encounter.
         -- However, we do not want to wait 6 months, if we need to administer a vaccine
         -- that needs only 28 days interval.
         intervalMonths =

@@ -70,10 +70,11 @@
 
     function index (url) {
         var params = url.searchParams;
+        var healthCenter = params.get('healthCenter');
 
         return dbSync.open().catch(databaseError).then(function () {
             var query = dbSync.statistics;
-            var getStats = query.toArray();
+            var getStats = query.where({uuid: healthCenter}).toArray();
 
             return getStats.catch(databaseError).then(function (stats) {
 

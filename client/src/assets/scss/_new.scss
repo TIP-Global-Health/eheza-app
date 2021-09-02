@@ -100,6 +100,17 @@
       display: flex;
     }
   }
+
+  .why-not {
+    margin-bottom: 30px;
+    margin-left: 20px;
+
+    .ui.checkbox.activity {
+      margin-bottom: 15px;
+      margin-top: 0;
+    }
+
+  }
 }
 
 @mixin recommendation-label {
@@ -1453,6 +1464,14 @@ div.page-activity.well-child {
         font-style: italic;
       }
 
+      .ui.form {
+        min-height: 140px;
+
+        .separator {
+          margin: 30px 0;
+        }
+      }
+
       .date {
         margin-bottom: 20px;
       }
@@ -1495,6 +1514,9 @@ div.page-activity.well-child {
           width: 50%;
         }
 
+        &.measurement {
+          margin-bottom: 10px;
+        }
       }
 
       .why-not {
@@ -2486,13 +2508,18 @@ div.page-report.well-child {
         color: $color-primary;
         font-size: 28px;
         font-weight: bold;
+        margin-bottom: 2px;
       }
 
       p {
         color: $color-text;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 300;
-        margin-bottom: 5px;
+        margin-bottom: 0;
+
+        .label {
+          font-weight: 600;
+        }
       }
     }
   }
