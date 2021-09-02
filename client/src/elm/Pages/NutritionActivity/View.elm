@@ -77,10 +77,9 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (Days(..), diffDays)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
+import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> Html Msg

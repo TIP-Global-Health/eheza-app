@@ -38,7 +38,7 @@ import Pages.AcuteIllnessEncounter.Utils
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -133,7 +133,7 @@ viewContent language currentDate id initiator model data =
                 InitiatorEncounterPage ->
                     viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
 
-                InitiatorWellChildProgressReport _ ->
+                _ ->
                     emptyNode
     in
     div [ class "page-report acute-illness" ]
@@ -159,8 +159,14 @@ viewHeader language date id initiator =
                 InitiatorEncounterPage ->
                     AcuteIllnessEncounterPage id
 
+                InitiatorIndividualNutritionProgressReport nutritionEncounterId ->
+                    NutritionProgressReportPage nutritionEncounterId
+
                 InitiatorWellChildProgressReport wellChildEncounterId ->
                     WellChildProgressReportPage wellChildEncounterId
+
+                InitiatorGroupNutritionProgressReport sessionId personId ->
+                    SessionPage sessionId (ProgressReportPage personId)
     in
     div [ class "report-header" ]
         [ a

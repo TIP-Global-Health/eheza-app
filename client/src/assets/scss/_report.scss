@@ -46,22 +46,23 @@ svg.z-score {
     stroke: #DFF9DF;
   }
 
-  .neg-two-to-neg-three {
+  .area {
     opacity: 0.5;
-    fill: $color-light-orange;
   }
 
-  .below-neg-three {
-    opacity: 0.5;
-    fill: $color-velvet;
-  }
-
-  .above-neg-two {
-    opacity: 0.5;
+  .area.green {
     fill: $color-green;
   }
 
-  .month-line {
+  .area.orange {
+    fill: $color-orange-light;
+  }
+
+  .area.red {
+    fill: $color-velvet;
+  }
+
+  .unit-breakdown-line {
     fill: none;
     stroke: #77787B;
     stroke-width: 0.8;
@@ -119,22 +120,22 @@ svg.z-score {
     font-size: 10px;
   }
 
-  .year-line {
+  .unit-line {
     fill: none;
     stroke: #77787B;
     stroke-width: 1.5;
   }
 
   .zero-line {
-    fill: #00853F;
+    fill: $color-green;
   }
 
   .one-line {
-    fill: #E24301;
+    fill: $color-orange-light;
   }
 
   .two-line {
-     fill: #E31837;
+    fill: $color-velvet;
   }
 
   .three-line-new {
@@ -143,17 +144,17 @@ svg.z-score {
   }
 
   .two-line-new {
-    stroke: #E31837;
+    stroke: $color-velvet;
     fill: none;
   }
 
   .one-line-new {
-    stroke: #E24301;
+    stroke: $color-orange-light;
     fill: none;
   }
 
   .zero-line-new {
-    stroke: #00853F;
+    stroke: $color-green;
     fill: none;
   }
 

@@ -12,6 +12,7 @@ import Pages.NextSteps.Model
 import Pages.Page exposing (Page, SessionPage, UserPage(..))
 import Pages.Participant.Model
 import Pages.Participants.Model
+import Pages.ProgressReport.Model
 
 
 {-| This is where we track all the UI state that relates to an EditableSession
@@ -50,6 +51,7 @@ type alias Model =
     -- Here we record Next Steps tasks, if required.
     -- App will direct to this page during 'Activity by Activity' flow
     , nextStepsPages : Dict PersonId Pages.NextSteps.Model.Model
+    , progressReportPages : Dict PersonId Pages.ProgressReport.Model.Model
     }
 
 
@@ -65,6 +67,7 @@ emptyModel =
     , motherForms = Dict.empty
     , participantsPage = Pages.Participants.Model.emptyModel
     , nextStepsPages = Dict.empty
+    , progressReportPages = Dict.empty
     }
 
 
@@ -79,6 +82,7 @@ type Msg
     | MsgMother PersonId (Pages.Participant.Model.Msg MotherActivity Measurement.Model.MsgMother)
     | MsgParticipants Pages.Participants.Model.Msg
     | MsgNextSteps PersonId Activity Pages.NextSteps.Model.Msg
+    | MsgProgressReport PersonId Pages.ProgressReport.Model.Msg
     | MsgSession Backend.Session.Model.Msg
     | SetActivePage Page
     | SetActiveSessionPage SessionPage

@@ -1,5 +1,6 @@
 module ZScore.Utils exposing
     ( compareZScore
+    , diffDays
     , valueForZScore
     , viewZScore
     , zScoreBmiForAge
@@ -14,11 +15,11 @@ module ZScore.Utils exposing
 -}
 
 import Backend.Person.Model exposing (Gender(..))
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (orElseLazy)
 import RemoteData
 import Round
 import Utils.AllDict as AllDict exposing (AllDict)
-import Utils.NominalDate exposing (Days(..), Months(..))
 import ZScore.Model exposing (..)
 
 
@@ -234,3 +235,21 @@ viewZScore =
 compareZScore : ZScore -> ZScore -> Order
 compareZScore =
     compare
+
+
+{-| Difference in whole days between two dates.
+
+The result is positive if the second parameter is after the first parameter.
+
+-}
+diffDays : NominalDate -> NominalDate -> Days
+diffDays low high =
+    -- delta gives us separate deltas for years, months and days ... so, for
+    -- instance, for a difference of 2 years and 1 month, you'd get
+    --
+    -- { years : 2
+    -- , months: 25
+    -- , days: 760 -- roughly, depending on which months are involved
+    -- }
+    Gizra.NominalDate.diffDays low high
+        |> Days

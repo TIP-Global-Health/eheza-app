@@ -33,6 +33,19 @@ type DiagnosisEntryStatus
     | StatusResolved
 
 
+type ECDStatus
+    = StatusOnTrack
+    | StatusECDBehind
+    | StatusOffTrack
+    | NoECDStatus
+
+
+type WellChildProgressReportInitiator
+    = InitiatorWellChild WellChildEncounterId
+    | InitiatorNutritionIndividual NutritionEncounterId
+    | InitiatorNutritionGroup SessionId PersonId
+
+
 type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page

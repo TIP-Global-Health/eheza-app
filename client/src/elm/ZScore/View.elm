@@ -9,6 +9,12 @@ module ZScore.View exposing
     , plotChildData
     , plotData
     , plotReferenceData
+    , viewHeadCircumferenceForAge0To13WeeksBoys
+    , viewHeadCircumferenceForAge0To13WeeksGirls
+    , viewHeadCircumferenceForAge0To2Boys
+    , viewHeadCircumferenceForAge0To2Girls
+    , viewHeadCircumferenceForAge0To5Boys
+    , viewHeadCircumferenceForAge0To5Girls
     , viewHeightForAgeBoys
     , viewHeightForAgeBoys0To5
     , viewHeightForAgeBoys5To19
@@ -64,7 +70,6 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
 import Utils.AllDict as AllDict exposing (AllDict)
-import Utils.NominalDate exposing (Days(..), Months)
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (valueForZScore)
 
@@ -120,6 +125,8 @@ type alias PlotConfig xAxis yAxis =
     , paintLevels : Bool
     , xAxis : XAxisConfig
     , yAxis : YAxisConfig
+    , neg2ToNeg3Color : AreaColor
+    , abovePos3Color : AreaColor
     }
 
 
@@ -133,9 +140,9 @@ type alias Bounds =
 
 type alias XAxisConfig =
     { width : Float
-    , minYear : Int
-    , maxYear : Int
-    , monthsList : List Int
+    , minAgeUnit : Int
+    , maxAgeUnit : Int
+    , ageUnitBreakdown : List Int
     , innerLinesNumber : Int
     , minLength : Int
     , maxLength : Int
@@ -161,7 +168,8 @@ type alias LabelConfig =
 
 
 type XAxisTypes
-    = Age
+    = AgeWeeks
+    | AgeYears
     | Height
 
 
@@ -172,9 +180,28 @@ type YAxisSpaceType
     | NoSpace
 
 
+type AreaColor
+    = AreaGreen
+    | AreaOrange
+    | AreaRed
+
+
+areaColorToClass : AreaColor -> String
+areaColorToClass areaColor =
+    case areaColor of
+        AreaGreen ->
+            "green"
+
+        AreaOrange ->
+            "orange"
+
+        AreaRed ->
+            "red"
+
+
 heightForAgeConfig : PlotConfig Days Centimetres
 heightForAgeConfig =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -182,13 +209,13 @@ heightForAgeConfig =
     , paintLevels = True
     , xAxis =
         { width = 908
-        , minYear = 0
-        , maxYear = 2
-        , monthsList = List.range 1 11
+        , minAgeUnit = 0
+        , maxAgeUnit = 2
+        , ageUnitBreakdown = List.range 1 11
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 5
@@ -196,12 +223,14 @@ heightForAgeConfig =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
 heightForAgeConfig0To5 : PlotConfig Days Centimetres
 heightForAgeConfig0To5 =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 45, maxY = 125, minX = 0, maxX = 365 * 5 }
     , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -209,13 +238,13 @@ heightForAgeConfig0To5 =
     , paintLevels = True
     , xAxis =
         { width = 725
-        , minYear = 0
-        , maxYear = 5
-        , monthsList = [ 2, 4, 6, 8, 10 ]
+        , minAgeUnit = 0
+        , maxAgeUnit = 5
+        , ageUnitBreakdown = [ 2, 4, 6, 8, 10 ]
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 5
@@ -223,12 +252,14 @@ heightForAgeConfig0To5 =
         , spaceType = SpaceBelow
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
 heightForAgeConfig5To19 : PlotConfig Months Centimetres
 heightForAgeConfig5To19 =
-    { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
+    { toFloatX = \(ZScore.Model.Months months) -> toFloat months
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 90, maxY = 200, minX = 61, maxX = 228 }
     , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -236,13 +267,13 @@ heightForAgeConfig5To19 =
     , paintLevels = True
     , xAxis =
         { width = 647
-        , minYear = 5
-        , maxYear = 19
-        , monthsList = [ 3, 6, 9 ]
+        , minAgeUnit = 5
+        , maxAgeUnit = 19
+        , ageUnitBreakdown = [ 3, 6, 9 ]
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 10
@@ -250,12 +281,14 @@ heightForAgeConfig5To19 =
         , spaceType = NoSpace
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
 weightForAgeConfig : PlotConfig Days Kilograms
 weightForAgeConfig =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -263,13 +296,13 @@ weightForAgeConfig =
     , paintLevels = True
     , xAxis =
         { width = 908
-        , minYear = 0
-        , maxYear = 2
-        , monthsList = List.range 1 11
+        , minAgeUnit = 0
+        , maxAgeUnit = 2
+        , ageUnitBreakdown = List.range 1 11
         , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 1
@@ -277,12 +310,14 @@ weightForAgeConfig =
         , spaceType = SpaceAround
         , decimalPointsForText = 2
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
 weightForAge0To5Config : PlotConfig Days Kilograms
 weightForAge0To5Config =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 2, maxY = 30, minX = 0, maxX = 365 * 5 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -290,13 +325,13 @@ weightForAge0To5Config =
     , paintLevels = True
     , xAxis =
         { width = 725
-        , minYear = 0
-        , maxYear = 5
-        , monthsList = [ 2, 4, 6, 8, 10 ]
+        , minAgeUnit = 0
+        , maxAgeUnit = 5
+        , ageUnitBreakdown = [ 2, 4, 6, 8, 10 ]
         , innerLinesNumber = 1
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 1
@@ -304,12 +339,14 @@ weightForAge0To5Config =
         , spaceType = NoSpace
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
 weightForAge5To10Config : PlotConfig Months Kilograms
 weightForAge5To10Config =
-    { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
+    { toFloatX = \(ZScore.Model.Months months) -> toFloat months
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 10, maxY = 60, minX = 61, maxX = 120 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -317,13 +354,13 @@ weightForAge5To10Config =
     , paintLevels = True
     , xAxis =
         { width = 725
-        , minYear = 5
-        , maxYear = 10
-        , monthsList = [ 3, 6, 9 ]
+        , minAgeUnit = 5
+        , maxAgeUnit = 10
+        , ageUnitBreakdown = [ 3, 6, 9 ]
         , innerLinesNumber = 2
         , minLength = 0
         , maxLength = 0
-        , xAxisType = Age
+        , xAxisType = AgeYears
         }
     , yAxis =
         { yAxisIntervals = 5
@@ -331,6 +368,8 @@ weightForAge5To10Config =
         , spaceType = NoSpace
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -344,9 +383,9 @@ weightForHeightConfig =
     , paintLevels = True
     , xAxis =
         { width = 650
-        , minYear = 0
-        , maxYear = 0
-        , monthsList = []
+        , minAgeUnit = 0
+        , maxAgeUnit = 0
+        , ageUnitBreakdown = []
         , innerLinesNumber = 4
         , minLength = 45
         , maxLength = 110
@@ -358,6 +397,8 @@ weightForHeightConfig =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
@@ -371,9 +412,9 @@ weightForHeight0To5Config =
     , paintLevels = True
     , xAxis =
         { width = 645
-        , minYear = 0
-        , maxYear = 0
-        , monthsList = []
+        , minAgeUnit = 0
+        , maxAgeUnit = 0
+        , ageUnitBreakdown = []
         , innerLinesNumber = 4
         , minLength = 45
         , maxLength = 120
@@ -385,115 +426,151 @@ weightForHeight0To5Config =
         , spaceType = SpaceAround
         , decimalPointsForText = 0
         }
+    , neg2ToNeg3Color = AreaOrange
+    , abovePos3Color = AreaGreen
     }
 
 
-heightForAgeLabels : Gender -> ChartStartingAges -> LabelConfig
-heightForAgeLabels gender startAge =
+headCircumferenceForAge0To13WeeksConfig : PlotConfig Days Centimetres
+headCircumferenceForAge0To13WeeksConfig =
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 27, maxY = 47, minX = 0, maxX = 7 * 13 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = True
+    , xAxis =
+        { width = 650
+        , minAgeUnit = 0
+        , maxAgeUnit = 13
+        , ageUnitBreakdown = List.range 1 6
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = AgeWeeks
+        }
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 19
+        , spaceType = SpaceAround
+        , decimalPointsForText = 0
+        }
+    , neg2ToNeg3Color = AreaGreen
+    , abovePos3Color = AreaRed
+    }
+
+
+headCircumferenceForAge0To2Config : PlotConfig Days Centimetres
+headCircumferenceForAge0To2Config =
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 25, maxY = 55, minX = 0, maxX = 365 * 2 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = True
+    , xAxis =
+        { width = 908
+        , minAgeUnit = 0
+        , maxAgeUnit = 2
+        , ageUnitBreakdown = List.range 1 11
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = AgeYears
+        }
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 29
+        , spaceType = SpaceAround
+        , decimalPointsForText = 0
+        }
+    , neg2ToNeg3Color = AreaGreen
+    , abovePos3Color = AreaRed
+    }
+
+
+headCircumferenceForAge0To5Config : PlotConfig Days Centimetres
+headCircumferenceForAge0To5Config =
+    { toFloatX = \(ZScore.Model.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 25, maxY = 60, minX = 0, maxX = 365 * 5 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = True
+    , xAxis =
+        { width = 725
+        , minAgeUnit = 0
+        , maxAgeUnit = 5
+        , ageUnitBreakdown = [ 2, 4, 6, 8, 10 ]
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = AgeYears
+        }
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 34
+        , spaceType = SpaceAround
+        , decimalPointsForText = 0
+        }
+    , neg2ToNeg3Color = AreaGreen
+    , abovePos3Color = AreaRed
+    }
+
+
+heightForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
+heightForAgeLabels gender ageRange =
     let
-        ( labelsTitle, labelsSubTitle ) =
-            case startAge of
-                ZeroYears ->
-                    let
-                        title =
-                            case gender of
-                                Male ->
-                                    Translate.LengthForAgeBoys
+        title =
+            if ageRange == RangeBirthToTwoYears then
+                Translate.LengthForAge gender
 
-                                Female ->
-                                    Translate.LengthForAgeGirls
-                    in
-                    ( title, Translate.BirthToTwoYears )
-
-                TwoYears ->
-                    let
-                        title =
-                            case gender of
-                                Male ->
-                                    Translate.HeightForAgeBoys
-
-                                Female ->
-                                    Translate.HeightForAgeGirls
-                    in
-                    ( title, Translate.BirthToFiveYears )
-
-                FiveYears ->
-                    let
-                        title =
-                            case gender of
-                                Male ->
-                                    Translate.HeightForAgeBoys
-
-                                Female ->
-                                    Translate.HeightForAgeGirls
-                    in
-                    ( title, Translate.FiveToNineteenYears )
+            else
+                Translate.HeightForAge gender
     in
-    { title = labelsTitle
-    , subtitle = labelsSubTitle
+    { title = title
+    , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.LengthCm
     }
 
 
-weightForAgeLabels : Gender -> ChartStartingAges -> LabelConfig
-weightForAgeLabels gender startAge =
-    let
-        labelsTitle =
-            case gender of
-                Male ->
-                    Translate.WeightForAgeBoys
-
-                Female ->
-                    Translate.WeightForAgeGirls
-
-        labelsSubTitle =
-            case startAge of
-                ZeroYears ->
-                    Translate.BirthToTwoYears
-
-                TwoYears ->
-                    Translate.BirthToFiveYears
-
-                FiveYears ->
-                    Translate.FiveToTenYears
-    in
-    { title = labelsTitle
-    , subtitle = labelsSubTitle
+weightForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
+weightForAgeLabels gender ageRange =
+    { title = Translate.WeightForAge gender
+    , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.WeightKg
     }
 
 
-weightForHeightLabels : Gender -> ChartStartingAges -> LabelConfig
-weightForHeightLabels gender startAge =
-    let
-        labelsTitle =
-            case gender of
-                Male ->
-                    Translate.WeightForLengthBoys
-
-                Female ->
-                    Translate.WeightForLengthGirls
-
-        labelsSubTitle =
-            case startAge of
-                ZeroYears ->
-                    Translate.BirthToTwoYears
-
-                TwoYears ->
-                    Translate.BirthToFiveYears
-
-                FiveYears ->
-                    Translate.FiveToNineteenYears
-    in
-    { title = labelsTitle
-    , subtitle = labelsSubTitle
+weightForHeightLabels : Gender -> ChartAgeRange -> LabelConfig
+weightForHeightLabels gender ageRange =
+    { title = Translate.WeightForLength gender
+    , subtitle = Translate.ChartAgeRange ageRange
     , xAxis1 = Nothing
     , xAxis2 = Translate.LengthCm
     , yAxis = Translate.WeightKg
+    }
+
+
+headCircumferenceForAgeLabels : Gender -> ChartAgeRange -> LabelConfig
+headCircumferenceForAgeLabels gender ageRange =
+    let
+        xAxis2 =
+            if ageRange == RangeBirthToThirteenWeeks then
+                Translate.AgeWeeks
+
+            else
+                Translate.AgeCompletedMonthsYears
+    in
+    { title = Translate.HeadCircumferenceForAge gender
+    , subtitle = Translate.ChartAgeRange ageRange
+    , xAxis1 = Nothing
+    , xAxis2 = xAxis2
+    , yAxis = Translate.HeadCircumferenceCm
     }
 
 
@@ -549,13 +626,14 @@ plotReferenceData config zscoreList =
                             Nothing
                     )
 
-        -- We need the neg3 and neg2 points both to draw a line and to draw a polygon
-        -- for fill ... so, we do them here.
         neg3points =
             getPoints -3
 
         neg2points =
             getPoints -2
+
+        pos3points =
+            getPoints 3
 
         makeLine dataPoints lineClass =
             dataPoints
@@ -580,33 +658,7 @@ plotReferenceData config zscoreList =
                     |> points
                     |> (\pointList ->
                             polygon
-                                [ class "below-neg-three"
-                                , pointList
-                                ]
-                                []
-                       )
-                    |> Just
-
-            else
-                Nothing
-
-        -- Points for a polygon from neg2 to the top of the chart
-        fillAboveNegativeTwo =
-            if config.paintLevels then
-                [ { x = config.input.maxX
-                  , y = config.input.maxY
-                  }
-                , { x = config.input.minX
-                  , y = config.input.maxY
-                  }
-                ]
-                    |> List.append neg2points
-                    |> plotData config
-                    |> String.join " "
-                    |> points
-                    |> (\pointList ->
-                            polygon
-                                [ class "above-neg-two"
+                                [ class <| "area below-neg-three " ++ areaColorToClass AreaRed
                                 , pointList
                                 ]
                                 []
@@ -626,7 +678,53 @@ plotReferenceData config zscoreList =
                     |> points
                     |> (\pointList ->
                             polygon
-                                [ class "neg-two-to-neg-three"
+                                [ class <| "area neg-two-to-neg-three " ++ areaColorToClass config.neg2ToNeg3Color
+                                , pointList
+                                ]
+                                []
+                       )
+                    |> Just
+
+            else
+                Nothing
+
+        -- Points for a polygon from neg2 to pos3
+        fillBetweenNegTwoAndPosThree =
+            if config.paintLevels then
+                neg2points
+                    |> List.append (List.reverse pos3points)
+                    |> plotData config
+                    |> String.join " "
+                    |> points
+                    |> (\pointList ->
+                            polygon
+                                [ class <| "area neg-two-to-pos-three " ++ areaColorToClass AreaGreen
+                                , pointList
+                                ]
+                                []
+                       )
+                    |> Just
+
+            else
+                Nothing
+
+        -- Points for a polygon from pos3 to the top of the chart
+        fillAbovePositiveThree =
+            if config.paintLevels then
+                [ { x = config.input.maxX
+                  , y = config.input.maxY
+                  }
+                , { x = config.input.minX
+                  , y = config.input.maxY
+                  }
+                ]
+                    |> List.append pos3points
+                    |> plotData config
+                    |> String.join " "
+                    |> points
+                    |> (\pointList ->
+                            polygon
+                                [ class <| "area above-pos-three " ++ areaColorToClass config.abovePos3Color
                                 , pointList
                                 ]
                                 []
@@ -637,8 +735,9 @@ plotReferenceData config zscoreList =
                 Nothing
     in
     [ fillBelowNegativeThree
-    , fillAboveNegativeTwo
     , fillBetweenNegTwoAndNegThree
+    , fillBetweenNegTwoAndPosThree
+    , fillAbovePositiveThree
     , Just <| makeLine neg3points "three-line-new"
     , Just <| makeLine neg2points "two-line-new"
     , if config.drawSD1 then
@@ -653,7 +752,7 @@ plotReferenceData config zscoreList =
       else
         Nothing
     , Just <| makeLine (getPoints 2) "two-line-new"
-    , Just <| makeLine (getPoints 3) "three-line-new"
+    , Just <| makeLine pos3points "three-line-new"
     ]
         |> Maybe.Extra.values
         |> g []
@@ -686,7 +785,7 @@ viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html a
 viewHeightForAgeBoys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Male ZeroYears)
+        , labels language (heightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeBoys
@@ -702,7 +801,7 @@ viewHeightForAgeBoys0To5 : Language -> Model -> List ( Days, Centimetres ) -> Ht
 viewHeightForAgeBoys0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Male TwoYears)
+        , labels language (heightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
         , xAxisLinesAndText heightForAgeConfig0To5
         , zScoreLabelsHeightForAgeBoys0To5
@@ -718,7 +817,7 @@ viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) ->
 viewHeightForAgeBoys5To19 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Male FiveYears)
+        , labels language (heightForAgeLabels Male RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
@@ -734,7 +833,7 @@ viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html 
 viewHeightForAgeGirls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Female ZeroYears)
+        , labels language (heightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeGirls
@@ -750,7 +849,7 @@ viewHeightForAgeGirls0To5 : Language -> Model -> List ( Days, Centimetres ) -> H
 viewHeightForAgeGirls0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Female TwoYears)
+        , labels language (heightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
         , xAxisLinesAndText heightForAgeConfig0To5
         , zScoreLabelsHeightForAgeGirls0To5
@@ -766,7 +865,7 @@ viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -
 viewHeightForAgeGirls5To19 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (heightForAgeLabels Female FiveYears)
+        , labels language (heightForAgeLabels Female RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeGirls5To19
@@ -782,7 +881,7 @@ viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Male ZeroYears)
+        , labels language (weightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeBoys
@@ -798,7 +897,7 @@ viewWeightForAgeBoys0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html
 viewWeightForAgeBoys0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Male TwoYears)
+        , labels language (weightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
         , xAxisLinesAndText weightForAge0To5Config
         , zScoreLabelsWeightForAge0To5Boys
@@ -814,7 +913,7 @@ viewWeightForAgeBoys5To10 : Language -> Model -> List ( Months, Kilograms ) -> H
 viewWeightForAgeBoys5To10 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Male FiveYears)
+        , labels language (weightForAgeLabels Male RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
         , xAxisLinesAndText weightForAge5To10Config
         , zScoreLabelsWeightForAge5To10Boys
@@ -830,7 +929,7 @@ viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html an
 viewWeightForAgeGirls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Female ZeroYears)
+        , labels language (weightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeGirls
@@ -846,7 +945,7 @@ viewWeightForAgeGirls0To5 : Language -> Model -> List ( Days, Kilograms ) -> Htm
 viewWeightForAgeGirls0To5 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Female TwoYears)
+        , labels language (weightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
         , xAxisLinesAndText weightForAge0To5Config
         , zScoreLabelsWeightForAge0To5Girls
@@ -862,7 +961,7 @@ viewWeightForAgeGirls5To10 : Language -> Model -> List ( Months, Kilograms ) -> 
 viewWeightForAgeGirls5To10 language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForAgeLabels Female FiveYears)
+        , labels language (weightForAgeLabels Female RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
         , xAxisLinesAndText weightForAge5To10Config
         , zScoreLabelsWeightForAge5To10Girls
@@ -878,7 +977,7 @@ viewWeightForHeightBoys : Language -> Model -> List ( Length, Kilograms ) -> Htm
 viewWeightForHeightBoys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Male ZeroYears)
+        , labels language (weightForHeightLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightBoys
@@ -894,7 +993,7 @@ viewWeightForHeight0To5Boys : Language -> Model -> List ( Height, Kilograms ) ->
 viewWeightForHeight0To5Boys language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Male TwoYears)
+        , labels language (weightForHeightLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
         , xAxisLinesAndText weightForHeight0To5Config
         , zScoreLabelsWeightForHeight0To5Boys
@@ -910,7 +1009,7 @@ viewWeightForHeightGirls : Language -> Model -> List ( Length, Kilograms ) -> Ht
 viewWeightForHeightGirls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Female ZeroYears)
+        , labels language (weightForHeightLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightGirls
@@ -926,7 +1025,7 @@ viewWeightForHeight0To5Girls : Language -> Model -> List ( Height, Kilograms ) -
 viewWeightForHeight0To5Girls language model data =
     svg chartFrameAttributes
         [ frame language "z-score-gray"
-        , labels language (weightForHeightLabels Female TwoYears)
+        , labels language (weightForHeightLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
         , xAxisLinesAndText weightForHeight0To5Config
         , zScoreLabelsWeightForHeight0To5Girls
@@ -935,6 +1034,102 @@ viewWeightForHeight0To5Girls language model data =
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeight0To5Config
         , plotChildData weightForHeight0To5Config data
+        ]
+
+
+viewHeadCircumferenceForAge0To13WeeksBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To13WeeksBoys language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Male RangeBirthToThirteenWeeks)
+        , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , xAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To13WeeksConfig
+        , plotChildData headCircumferenceForAge0To13WeeksConfig data
+        ]
+
+
+viewHeadCircumferenceForAge0To2Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To2Boys language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Male RangeBirthToTwoYears)
+        , yAxisLinesAndText headCircumferenceForAge0To2Config
+        , xAxisLinesAndText headCircumferenceForAge0To2Config
+        , zScoreLabelsHeadCircumferenceForAge0To2Boys
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To2Config
+        , plotChildData headCircumferenceForAge0To2Config data
+        ]
+
+
+viewHeadCircumferenceForAge0To5Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To5Boys language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Male RangeBirthToFiveYears)
+        , yAxisLinesAndText headCircumferenceForAge0To5Config
+        , xAxisLinesAndText headCircumferenceForAge0To5Config
+        , zScoreLabelsHeadCircumferenceForAge0To5Boys
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To5Config
+        , plotChildData headCircumferenceForAge0To5Config data
+        ]
+
+
+viewHeadCircumferenceForAge0To13WeeksGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To13WeeksGirls language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Female RangeBirthToThirteenWeeks)
+        , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , xAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
+        , zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To13WeeksConfig
+        , plotChildData headCircumferenceForAge0To13WeeksConfig data
+        ]
+
+
+viewHeadCircumferenceForAge0To2Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To2Girls language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Female RangeBirthToTwoYears)
+        , yAxisLinesAndText headCircumferenceForAge0To2Config
+        , xAxisLinesAndText headCircumferenceForAge0To2Config
+        , zScoreLabelsHeadCircumferenceForAge0To2Girls
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To2Config
+        , plotChildData headCircumferenceForAge0To2Config data
+        ]
+
+
+viewHeadCircumferenceForAge0To5Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeadCircumferenceForAge0To5Girls language model data =
+    svg chartFrameAttributes
+        [ frame language "z-score-gray"
+        , labels language (headCircumferenceForAgeLabels Female RangeBirthToFiveYears)
+        , yAxisLinesAndText headCircumferenceForAge0To5Config
+        , xAxisLinesAndText headCircumferenceForAge0To5Config
+        , zScoreLabelsHeadCircumferenceForAge0To5Girls
+        , model.headCircumferenceForAge
+            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData headCircumferenceForAge0To5Config
+        , plotChildData headCircumferenceForAge0To5Config data
         ]
 
 
@@ -1163,13 +1358,92 @@ zScoreLabelsWeightForAge5To10Girls =
         ]
 
 
+zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys : Svg any
+zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys =
+    ZScoreValues 317.7 294.8 272 248.1 226.2 203.4 180.5
+        |> zScoreValuesLabel
+
+
+zScoreLabelsHeadCircumferenceForAge0To2Boys : Svg any
+zScoreLabelsHeadCircumferenceForAge0To2Boys =
+    ZScoreValues 263.1 245.5 228 210.4 192.9 175.3 157.8
+        |> zScoreValuesLabel
+
+
+zScoreLabelsHeadCircumferenceForAge0To5Boys : Svg any
+zScoreLabelsHeadCircumferenceForAge0To5Boys =
+    ZScoreValues 275.3 258.8 242.3 225.8 209.3 192.8 176.2
+        |> zScoreValuesLabel
+
+
+zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls : Svg any
+zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls =
+    ZScoreValues 340 316 292 268 244 220 196
+        |> zScoreValuesLabel
+
+
+zScoreLabelsHeadCircumferenceForAge0To2Girls : Svg any
+zScoreLabelsHeadCircumferenceForAge0To2Girls =
+    ZScoreValues 278.2 260.2 242.2 224.2 206.9 188.2 170.2
+        |> zScoreValuesLabel
+
+
+zScoreLabelsHeadCircumferenceForAge0To5Girls : Svg any
+zScoreLabelsHeadCircumferenceForAge0To5Girls =
+    ZScoreValues 282 266.2 250.5 234.8 219.1 203.3 187.6
+        |> zScoreValuesLabel
+
+
+type alias ZScoreValues =
+    { neg3 : Float
+    , neg2 : Float
+    , neg1 : Float
+    , zero : Float
+    , pos1 : Float
+    , pos2 : Float
+    , pos3 : Float
+    }
+
+
+zScoreValuesLabel : ZScoreValues -> Svg any
+zScoreValuesLabel values =
+    let
+        viewText xPosition yPosition zscore extraClass =
+            let
+                class_ =
+                    if String.isEmpty extraClass then
+                        "z-score-semibold st23"
+
+                    else
+                        extraClass ++ " z-score-semibold st23"
+            in
+            text_
+                [ transform <| "matrix(1 0 0 1 " ++ String.fromFloat yPosition ++ " " ++ String.fromFloat xPosition ++ ")"
+                , class class_
+                ]
+                [ text <| String.fromInt zscore ]
+    in
+    g []
+        [ viewText values.pos3 723.5 3 ""
+        , viewText values.pos2 723.5 2 "two-line"
+        , viewText values.pos1 723.5 1 "one-line"
+        , viewText values.zero 723.5 0 "zero-line"
+        , viewText values.neg1 721.5 -1 "one-line"
+        , viewText values.neg2 721.5 -2 "two-line"
+        , viewText values.neg3 721.5 -3 ""
+        ]
+
+
 xAxisLinesAndText : PlotConfig x y -> Svg any
 xAxisLinesAndText config =
     let
-        ( xAxisList, monthList ) =
+        ( xAxisList, breakdownLines, breakdownText ) =
             case config.xAxis.xAxisType of
-                Age ->
-                    ( List.range config.xAxis.minYear config.xAxis.maxYear, True )
+                AgeWeeks ->
+                    ( List.range config.xAxis.minAgeUnit config.xAxis.maxAgeUnit, True, False )
+
+                AgeYears ->
+                    ( List.range config.xAxis.minAgeUnit config.xAxis.maxAgeUnit, True, True )
 
                 Height ->
                     ( List.range config.xAxis.minLength config.xAxis.maxLength
@@ -1183,6 +1457,7 @@ xAxisLinesAndText config =
                                     False
                             )
                     , False
+                    , False
                     )
 
         listCount =
@@ -1192,9 +1467,9 @@ xAxisLinesAndText config =
             config.xAxis.width / toFloat listCount
 
         spaceBetweenInnerLines =
-            if monthList then
-                -- We add one here because we want to give space before the next year.
-                spaceBetweenLines / toFloat (List.length config.xAxis.monthsList + 1)
+            if breakdownLines then
+                -- We add one here because we want to give space before the next unit.
+                spaceBetweenLines / toFloat (List.length config.xAxis.ageUnitBreakdown + 1)
 
             else
                 spaceBetweenLines / toFloat (config.xAxis.innerLinesNumber + 1)
@@ -1202,7 +1477,7 @@ xAxisLinesAndText config =
         -- Here we can define the lines as we want.
         lines =
             List.indexedMap
-                (\i year ->
+                (\i unit ->
                     let
                         index =
                             toFloat i
@@ -1215,7 +1490,7 @@ xAxisLinesAndText config =
                                 config.output.minX + (spaceBetweenLines * index)
 
                         lineTextPosition =
-                            if year < 10 then
+                            if unit < 10 then
                                 (linesMargin - 2)
                                     |> Round.round 4
 
@@ -1228,9 +1503,9 @@ xAxisLinesAndText config =
                                 |> Round.round 4
 
                         innerLinesAndText =
-                            if monthList then
+                            if breakdownLines then
                                 List.indexedMap
-                                    (\ii month ->
+                                    (\ii unitBreakdown ->
                                         let
                                             innerIndex =
                                                 toFloat ii
@@ -1239,7 +1514,7 @@ xAxisLinesAndText config =
                                                 linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
 
                                             innerTextPosition =
-                                                if month < 10 then
+                                                if unitBreakdown < 10 then
                                                     (innerMargin - 2)
                                                         |> Round.round 4
 
@@ -1249,16 +1524,22 @@ xAxisLinesAndText config =
 
                                             innerLinePosition =
                                                 Round.round 4 innerMargin
+
+                                            breakdownText_ =
+                                                if breakdownText then
+                                                    [ text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| fromInt unitBreakdown ]
+                                                    ]
+
+                                                else
+                                                    []
                                         in
-                                        if year < config.xAxis.maxYear then
-                                            [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] []
-                                            , text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| fromInt month ]
-                                            ]
+                                        if unit < config.xAxis.maxAgeUnit then
+                                            line [ class "unit-breakdown-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] :: breakdownText_
 
                                         else
                                             []
                                     )
-                                    config.xAxis.monthsList
+                                    config.xAxis.ageUnitBreakdown
                                     |> List.concat
 
                             else if config.xAxis.innerLinesNumber > 0 then
@@ -1274,8 +1555,8 @@ xAxisLinesAndText config =
                                                         + (spaceBetweenInnerLines * innerIndex)
                                                         |> Round.round 4
                                             in
-                                            if year < config.xAxis.maxLength then
-                                                [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] ]
+                                            if unit < config.xAxis.maxLength then
+                                                [ line [ class "unit-breakdown-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] ]
 
                                             else
                                                 []
@@ -1285,12 +1566,12 @@ xAxisLinesAndText config =
                             else
                                 []
                     in
-                    [ line [ class "year-line", x1 linePosition, y1 "514.5", x2 linePosition, y2 "119.5" ] []
+                    [ line [ class "unit-line", x1 linePosition, y1 "514.5", x2 linePosition, y2 "119.5" ] []
                     , text_
                         [ transform <| "matrix(1 0 0 1 " ++ lineTextPosition ++ " 525.9767)"
                         , class "z-score-white z-score-semibold st20"
                         ]
-                        [ text <| fromInt year ]
+                        [ text <| fromInt unit ]
                     ]
                         |> List.append innerLinesAndText
                 )
@@ -1428,7 +1709,7 @@ labels language config =
         [ rect
             [ x "110.9"
             , y "119.9"
-            , class "month-line"
+            , class "unit-breakdown-line"
             , width "626.8"
             , height "386.8"
             ]

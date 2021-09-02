@@ -61,9 +61,9 @@ import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (Days(..), diffDays, renderDate)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import Utils.NominalDate exposing (renderDate)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
+import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 {-| We need the current date in order to immediately construct a ZScore for the

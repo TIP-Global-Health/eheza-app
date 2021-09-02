@@ -2523,6 +2523,10 @@ div.page-report.well-child {
   .pane-content {
     background: $color-white;
 
+    &.overflow {
+      overflow-y: scroll;
+    }
+
     .heading {
       border-bottom: 1px solid $color-text;
       color: $color-dark-gray;
@@ -2569,12 +2573,28 @@ div.page-report.well-child {
     }
 
     .heading.nutrition-signs {
+
       .name {
         width: 65%;
       }
 
       .date {
         width: 35%;
+      }
+    }
+
+    .heading.next-appointment {
+
+      .type {
+        width: 35%;
+      }
+
+      .location {
+        width: 40%;
+      }
+
+      .date {
+        width: 25%;
       }
     }
 
@@ -2595,28 +2615,40 @@ div.page-report.well-child {
       align-self: center;
       text-align: left;
       padding-right: 20px;
+    }
 
-      &.status {
-        border-radius: 10px;
-        color: $color-white;
-        font-size: 17px;
-        margin: 3px 5px;
-        padding: 0 10px;
-        text-transform: uppercase;
+    .entry .cell.status,
+    .milestone .status {
+      border-radius: 10px;
+      color: $color-white;
+      font-size: 17px;
+      margin: 3px 5px;
+      padding: 0 10px;
+      text-transform: uppercase;
 
-        &.done {
-          background: $color-blue;
-        }
+      &.done {
+        background: $color-blue;
+      }
 
-        &.behind,
-        &.ongoing {
-          background: $color-velvet;
-        }
+      &.behind,
+      &.off-track,
+      &.ongoing {
+        background: $color-velvet;
+      }
 
-        &.up-to-date,
-        &.resolved {
-          background: $color-cyan;
-        }
+      &.up-to-date,
+      &.on-track,
+      &.resolved {
+        background: $color-cyan;
+      }
+
+      &.ecd-behind {
+        background: $color-orange-light;
+      }
+
+      &.no-status {
+        color: $color-background;
+        background: $color-background;
       }
     }
 
@@ -2684,7 +2716,44 @@ div.page-report.well-child {
       }
     }
 
+    .entry.next-appointment {
+
+      .type {
+        width: 35%;
+      }
+
+      .location {
+        width: 40%;
+      }
+
+      .date {
+        width: 25%;
+      }
+    }
+
+    .ecd-milestones {
+      align-items: stretch;
+      color: $color-dark-gray;
+      display: flex;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+
+      .milestone {
+        padding: 30px 0 20px;
+        text-align: center;
+
+        .status {
+          font-size: 13px;
+        }
+
+        .description {
+          font-size: 16px;
+        }
+      }
+    }
+
     .growth-charts {
+      margin-bottom: 60px;
       margin-left: -30px;
       margin-right: -30px;
     }

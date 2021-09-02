@@ -57,7 +57,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -96,12 +96,13 @@ import Pages.PrenatalActivity.Model
         )
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), VaccinationStatus(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..), VaccinationStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
+import ZScore.Model exposing (ChartAgeRange(..))
 
 
 {-| We re-export this one for convenience, so you don't have to import
@@ -155,23 +156,19 @@ type LoginPhrase
 
 type ChartPhrase
     = AgeCompletedMonthsYears
+    | AgeWeeks
     | Birth
-    | BirthToTwoYears
-    | BirthToFiveYears
-    | FiveToNineteenYears
-    | FiveToTenYears
+    | ChartAgeRange ChartAgeRange
+    | HeadCircumferenceCm
+    | HeadCircumferenceForAge Gender
     | HeightCm
-    | HeightForAgeBoys
-    | HeightForAgeGirls
+    | HeightForAge Gender
     | LengthCm
-    | LengthForAgeBoys
-    | LengthForAgeGirls
+    | LengthForAge Gender
     | Months
     | OneYear
-    | WeightForAgeBoys
-    | WeightForAgeGirls
-    | WeightForLengthBoys
-    | WeightForLengthGirls
+    | WeightForAge Gender
+    | WeightForLength Gender
     | WeightKg
     | YearsPlural Int
     | ZScoreChartsAvailableAt
@@ -488,7 +485,9 @@ type TranslationId
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
+    | EarlyChildhoodDevelopment
     | ECDSignQuestion ECDSign
+    | ECDStatus ECDStatus
     | Edd
     | EddHeader
     | Edema
@@ -624,6 +623,7 @@ type TranslationId
     | LmpDateHeader
     | LmpRangeHeader
     | LmpRange LmpRange
+    | Location
     | LoginPhrase LoginPhrase
     | Low
     | LowRiskCase
@@ -692,6 +692,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextAppointment
     | NextDue
     | NextDoseDue
     | NextImmunisationVisit
@@ -773,6 +774,8 @@ type TranslationId
     | PatientIsolatedQuestion
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
+    | PediatricCareMilestone PediatricCareMilestone
+    | PediatricVisit
     | People
     | PersistentStorage Bool
     | Person
@@ -996,6 +999,7 @@ type TranslationId
     | TuberculosisPast
     | TuberculosisPresent
     | TwoVisits
+    | Type
     | UbudeheLabel
     | Unknown
     | Update
@@ -3021,6 +3025,11 @@ translationSet trans =
             , kinyarwanda = Just "Itariki azabyariraho"
             }
 
+        EarlyChildhoodDevelopment ->
+            { english = "Early Childhood Development"
+            , kinyarwanda = Nothing
+            }
+
         ECDSignQuestion sign ->
             case sign of
                 FollowMothersEyes ->
@@ -3231,6 +3240,28 @@ translationSet trans =
                 NoECDSigns ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
+                    }
+
+        ECDStatus status ->
+            case status of
+                StatusOnTrack ->
+                    { english = "On Track"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusECDBehind ->
+                    { english = "Behind"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusOffTrack ->
+                    { english = "Off Track"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoECDStatus ->
+                    { english = "No Status"
+                    , kinyarwanda = Nothing
                     }
 
         Edd ->
@@ -4592,6 +4623,11 @@ translationSet trans =
                     , kinyarwanda = Just "Mu mezi atandatu"
                     }
 
+        Location ->
+            { english = "Location"
+            , kinyarwanda = Nothing
+            }
+
         LoginPhrase phrase ->
             translateLoginPhrase phrase
 
@@ -5184,6 +5220,11 @@ translationSet trans =
         Next ->
             { english = "Next"
             , kinyarwanda = Just "Ibikurikiyeho"
+            }
+
+        NextAppointment ->
+            { english = "Next Appointment"
+            , kinyarwanda = Nothing
             }
 
         NextDue ->
@@ -6006,6 +6047,63 @@ translationSet trans =
                 Resources ->
                     { english = "Resources"
                     , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
+                    }
+
+        PediatricVisit ->
+            { english = "Pediatric Visit"
+            , kinyarwanda = Nothing
+            }
+
+        PediatricCareMilestone milestone ->
+            case milestone of
+                Milestone6Weeks ->
+                    { english = "6 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone14Weeks ->
+                    { english = "14 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone6Months ->
+                    { english = "6 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone9Months ->
+                    { english = "9 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone12Months ->
+                    { english = "12 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone15Months ->
+                    { english = "15 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone18Months ->
+                    { english = "18 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone2Years ->
+                    { english = "2 years"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone3Years ->
+                    { english = "3 years"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone4Years ->
+                    { english = "4 years"
+                    , kinyarwanda = Nothing
                     }
 
         People ->
@@ -7926,6 +8024,11 @@ translationSet trans =
             , kinyarwanda = Just "Inshuro ebyiri"
             }
 
+        Type ->
+            { english = "Type"
+            , kinyarwanda = Nothing
+            }
+
         UbudeheLabel ->
             { english = "Ubudehe: "
             , kinyarwanda = Nothing
@@ -8925,60 +9028,93 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Imyaka uzuza amezi n'imyaka"
             }
 
+        AgeWeeks ->
+            { english = "Age (weeks)"
+            , kinyarwanda = Nothing
+            }
+
         Birth ->
             { english = "Birth"
             , kinyarwanda = Just "kuvuka"
             }
 
-        BirthToTwoYears ->
-            { english = "Birth to 2-years (z-scores)"
-            , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+        ChartAgeRange range ->
+            case range of
+                RangeBirthToThirteenWeeks ->
+                    { english = "Birth to 13-weeks (z-scores)"
+                    , kinyarwanda = Nothing
+                    }
+
+                RangeBirthToTwoYears ->
+                    { english = "Birth to 2-years (z-scores)"
+                    , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+                    }
+
+                RangeBirthToFiveYears ->
+                    { english = "Birth to 5-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 0-5"
+                    }
+
+                RangeFiveToTenYears ->
+                    { english = "5 to 10-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-10"
+                    }
+
+                RangeFiveToNineteenYears ->
+                    { english = "5 to 19-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-19"
+                    }
+
+        HeadCircumferenceCm ->
+            { english = "Head Circumference (cm)"
+            , kinyarwanda = Nothing
             }
 
-        BirthToFiveYears ->
-            { english = "Birth to 5-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 0-5"
-            }
+        HeadCircumferenceForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Head Circumference Boys"
+                    , kinyarwanda = Nothing
+                    }
 
-        FiveToNineteenYears ->
-            { english = "5 to 19-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-19"
-            }
-
-        FiveToTenYears ->
-            { english = "5 to 10-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-10"
-            }
+                Female ->
+                    { english = "Head Circumference Girls"
+                    , kinyarwanda = Nothing
+                    }
 
         HeightCm ->
             { english = "Height (cm)"
             , kinyarwanda = Just "Uburebure cm"
             }
 
-        HeightForAgeBoys ->
-            { english = "Height-For-Age Boys"
-            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
-            }
+        HeightForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Height-For-Age Boys"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
+                    }
 
-        HeightForAgeGirls ->
-            { english = "Height-For-Age Girls"
-            , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
-            }
+                Female ->
+                    { english = "Height-For-Age Girls"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
+                    }
 
         LengthCm ->
             { english = "Length (cm)"
             , kinyarwanda = Just "Uburebure cm"
             }
 
-        LengthForAgeBoys ->
-            { english = "Length-For-Age Boys"
-            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
-            }
+        LengthForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Length-For-Age Boys"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
+                    }
 
-        LengthForAgeGirls ->
-            { english = "Length-For-Age Girls"
-            , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
-            }
+                Female ->
+                    { english = "Length-For-Age Girls"
+                    , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
+                    }
 
         Months ->
             { english = "Months"
@@ -8990,25 +9126,29 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Umwaka umwe"
             }
 
-        WeightForAgeBoys ->
-            { english = "Weight-For-Age Boys"
-            , kinyarwanda = Just "Ibiro ku myaka umuhungu"
-            }
+        WeightForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Weight-For-Age Boys"
+                    , kinyarwanda = Just "Ibiro ku myaka umuhungu"
+                    }
 
-        WeightForAgeGirls ->
-            { english = "Weight-For-Age Girls"
-            , kinyarwanda = Just "ibiro ku myaka umukobwa"
-            }
+                Female ->
+                    { english = "Weight-For-Age Girls"
+                    , kinyarwanda = Just "ibiro ku myaka umukobwa"
+                    }
 
-        WeightForLengthBoys ->
-            { english = "Weight-For-Height Boys"
-            , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
-            }
+        WeightForLength gender ->
+            case gender of
+                Male ->
+                    { english = "Weight-For-Height Boys"
+                    , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
+                    }
 
-        WeightForLengthGirls ->
-            { english = "Weight-For-Height Girls"
-            , kinyarwanda = Just "ibiro ku uburebure umukobwa"
-            }
+                Female ->
+                    { english = "Weight-For-Height Girls"
+                    , kinyarwanda = Just "ibiro ku uburebure umukobwa"
+                    }
 
         WeightKg ->
             { english = "Weight (kg)"

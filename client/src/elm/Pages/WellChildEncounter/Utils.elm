@@ -8,7 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortTuplesByDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (..)
-import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
@@ -117,13 +117,13 @@ generatePreviousMeasurements currentEncounterId participantId db =
 
 
 resolveEncounterTypeOnDate : Bool -> NominalDate -> NominalDate -> WellChildEncounterType
-resolveEncounterTypeOnDate isChw duewDate birthDate =
+resolveEncounterTypeOnDate isChw dueDate birthDate =
     let
         ageWeeks =
-            Date.diff Weeks birthDate duewDate
+            Date.diff Weeks birthDate dueDate
 
         ageMonths =
-            Date.diff Months birthDate duewDate
+            Date.diff Months birthDate dueDate
     in
     if isChw then
         NewbornExam
@@ -193,6 +193,83 @@ encounterToComparable encounterType =
             9
 
         PediatricCareRecurrent ->
+            10
+
+
+resolvePediatricCareMilestoneOnDate : NominalDate -> NominalDate -> Maybe PediatricCareMilestone
+resolvePediatricCareMilestoneOnDate dueDate birthDate =
+    let
+        ageWeeks =
+            Date.diff Weeks birthDate dueDate
+
+        ageMonths =
+            Date.diff Months birthDate dueDate
+    in
+    if ageWeeks < 6 then
+        Nothing
+
+    else if ageWeeks < 14 then
+        Just Milestone6Weeks
+
+    else if ageMonths < 6 then
+        Just Milestone14Weeks
+
+    else if ageMonths < 9 then
+        Just Milestone6Months
+
+    else if ageMonths < 12 then
+        Just Milestone9Months
+
+    else if ageMonths < 15 then
+        Just Milestone12Months
+
+    else if ageMonths < 18 then
+        Just Milestone15Months
+
+    else if ageMonths < 24 then
+        Just Milestone18Months
+
+    else if ageMonths < 36 then
+        Just Milestone2Years
+
+    else if ageMonths < 48 then
+        Just Milestone3Years
+
+    else
+        Just Milestone4Years
+
+
+pediatricCareMilestoneToComparable : PediatricCareMilestone -> Int
+pediatricCareMilestoneToComparable milestone =
+    case milestone of
+        Milestone6Weeks ->
+            1
+
+        Milestone14Weeks ->
+            2
+
+        Milestone6Months ->
+            3
+
+        Milestone9Months ->
+            4
+
+        Milestone12Months ->
+            5
+
+        Milestone15Months ->
+            6
+
+        Milestone18Months ->
+            7
+
+        Milestone2Years ->
+            8
+
+        Milestone3Years ->
+            9
+
+        Milestone4Years ->
             10
 
 
