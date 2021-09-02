@@ -2504,7 +2504,7 @@ div.page-report.well-child {
       margin-bottom: 0;
 
       .label {
-        font-weight: 600;
+        font-weight: 700;
       }
     }
   }
@@ -2537,6 +2537,10 @@ div.page-report.well-child {
       p {
         color: $color-text;
         font-weight: 300;
+
+        .label {
+          font-weight: 600;
+        }
       }
     }
   }
