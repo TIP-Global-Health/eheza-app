@@ -23,9 +23,10 @@ import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInit
 import Pages.WellChildProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDaysHtml, renderDate)
+import Utils.NominalDate exposing (renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
+import ZScore.Utils exposing (diffDays)
 import ZScore.View
 
 

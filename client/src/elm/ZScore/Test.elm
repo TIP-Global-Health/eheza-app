@@ -7,7 +7,6 @@ import Http
 import Json.Decode exposing (Decoder, decodeString)
 import RemoteData exposing (WebData)
 import Test exposing (Test, describe, test)
-import Utils.NominalDate exposing (Days(..), Months(..))
 import ZScore.Decoder exposing (..)
 import ZScore.Fixture.Bfawho2007
 import ZScore.Fixture.Bmianthro

@@ -20,9 +20,8 @@ import Maybe.Extra exposing (isNothing)
 import Pages.Utils exposing (ifEverySetEmpty)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language)
-import Utils.NominalDate exposing (diffDays)
 import ZScore.Model exposing (Kilograms(..))
-import ZScore.Utils exposing (zScoreWeightForAge)
+import ZScore.Utils exposing (diffDays, zScoreWeightForAge)
 
 
 generateNutritionAssessment :

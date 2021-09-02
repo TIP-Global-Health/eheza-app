@@ -102,6 +102,7 @@ import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
+import ZScore.Model exposing (ChartAgeRange(..))
 
 
 {-| We re-export this one for convenience, so you don't have to import
@@ -155,23 +156,19 @@ type LoginPhrase
 
 type ChartPhrase
     = AgeCompletedMonthsYears
+    | AgeWeeks
     | Birth
-    | BirthToTwoYears
-    | BirthToFiveYears
-    | FiveToNineteenYears
-    | FiveToTenYears
+    | ChartAgeRange ChartAgeRange
+    | HeadCircumferenceCm
+    | HeadCircumferenceForAge Gender
     | HeightCm
-    | HeightForAgeBoys
-    | HeightForAgeGirls
+    | HeightForAge Gender
     | LengthCm
-    | LengthForAgeBoys
-    | LengthForAgeGirls
+    | LengthForAge Gender
     | Months
     | OneYear
-    | WeightForAgeBoys
-    | WeightForAgeGirls
-    | WeightForLengthBoys
-    | WeightForLengthGirls
+    | WeightForAge Gender
+    | WeightForLength Gender
     | WeightKg
     | YearsPlural Int
     | ZScoreChartsAvailableAt
@@ -9031,60 +9028,93 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Imyaka uzuza amezi n'imyaka"
             }
 
+        AgeWeeks ->
+            { english = "Age (weeks)"
+            , kinyarwanda = Nothing
+            }
+
         Birth ->
             { english = "Birth"
             , kinyarwanda = Just "kuvuka"
             }
 
-        BirthToTwoYears ->
-            { english = "Birth to 2-years (z-scores)"
-            , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+        ChartAgeRange range ->
+            case range of
+                RangeBirthToThirteenWeeks ->
+                    { english = "Birth to 13-weeks (z-scores)"
+                    , kinyarwanda = Nothing
+                    }
+
+                RangeBirthToTwoYears ->
+                    { english = "Birth to 2-years (z-scores)"
+                    , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+                    }
+
+                RangeBirthToFiveYears ->
+                    { english = "Birth to 5-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 0-5"
+                    }
+
+                RangeFiveToTenYears ->
+                    { english = "5 to 10-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-10"
+                    }
+
+                RangeFiveToNineteenYears ->
+                    { english = "5 to 19-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-19"
+                    }
+
+        HeadCircumferenceCm ->
+            { english = "Head Circumference (cm)"
+            , kinyarwanda = Nothing
             }
 
-        BirthToFiveYears ->
-            { english = "Birth to 5-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 0-5"
-            }
+        HeadCircumferenceForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Head Circumference Boys"
+                    , kinyarwanda = Nothing
+                    }
 
-        FiveToNineteenYears ->
-            { english = "5 to 19-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-19"
-            }
-
-        FiveToTenYears ->
-            { english = "5 to 10-years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-10"
-            }
+                Female ->
+                    { english = "Head Circumference Girls"
+                    , kinyarwanda = Nothing
+                    }
 
         HeightCm ->
             { english = "Height (cm)"
             , kinyarwanda = Just "Uburebure cm"
             }
 
-        HeightForAgeBoys ->
-            { english = "Height-For-Age Boys"
-            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
-            }
+        HeightForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Height-For-Age Boys"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
+                    }
 
-        HeightForAgeGirls ->
-            { english = "Height-For-Age Girls"
-            , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
-            }
+                Female ->
+                    { english = "Height-For-Age Girls"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
+                    }
 
         LengthCm ->
             { english = "Length (cm)"
             , kinyarwanda = Just "Uburebure cm"
             }
 
-        LengthForAgeBoys ->
-            { english = "Length-For-Age Boys"
-            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
-            }
+        LengthForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Length-For-Age Boys"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
+                    }
 
-        LengthForAgeGirls ->
-            { english = "Length-For-Age Girls"
-            , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
-            }
+                Female ->
+                    { english = "Length-For-Age Girls"
+                    , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
+                    }
 
         Months ->
             { english = "Months"
@@ -9096,25 +9126,29 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Umwaka umwe"
             }
 
-        WeightForAgeBoys ->
-            { english = "Weight-For-Age Boys"
-            , kinyarwanda = Just "Ibiro ku myaka umuhungu"
-            }
+        WeightForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Weight-For-Age Boys"
+                    , kinyarwanda = Just "Ibiro ku myaka umuhungu"
+                    }
 
-        WeightForAgeGirls ->
-            { english = "Weight-For-Age Girls"
-            , kinyarwanda = Just "ibiro ku myaka umukobwa"
-            }
+                Female ->
+                    { english = "Weight-For-Age Girls"
+                    , kinyarwanda = Just "ibiro ku myaka umukobwa"
+                    }
 
-        WeightForLengthBoys ->
-            { english = "Weight-For-Height Boys"
-            , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
-            }
+        WeightForLength gender ->
+            case gender of
+                Male ->
+                    { english = "Weight-For-Height Boys"
+                    , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
+                    }
 
-        WeightForLengthGirls ->
-            { english = "Weight-For-Height Girls"
-            , kinyarwanda = Just "ibiro ku uburebure umukobwa"
-            }
+                Female ->
+                    { english = "Weight-For-Height Girls"
+                    , kinyarwanda = Just "ibiro ku uburebure umukobwa"
+                    }
 
         WeightKg ->
             { english = "Weight (kg)"

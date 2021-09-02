@@ -32,7 +32,7 @@ import Backend.WellChildEncounter.Model
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDMMYY, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -61,10 +61,10 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays)
+import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
-import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
+import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
@@ -1090,6 +1090,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                 (valuesIndexedByEncounter .nutrition nutritionMeasurements)
                 (valuesIndexedByEncounter .nutrition wellChildMeasurements)
 
+        headCircumferenceValuesByEncounter =
+            valuesIndexedByEncounter .headCircumference wellChildMeasurements
+
         --
         -- COMMON CONTEXT
         --
@@ -1115,6 +1118,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
         photoValues =
             Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
 
+        headCircumferenceValues =
+            Dict.values headCircumferenceValuesByEncounter
+
         zScoreViewCharts =
             case child.gender of
                 Male ->
@@ -1126,6 +1132,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     , weightForAge5To10 = ZScore.View.viewWeightForAgeBoys5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
                     , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Boys
+                    , viewHeadCircumferenceForAge0To13Weeks = ZScore.View.viewHeadCircumferenceForAge0To13WeeksBoys
+                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Boys
+                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Boys
                     }
 
                 Female ->
@@ -1137,6 +1146,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     , weightForAge5To10 = ZScore.View.viewWeightForAgeGirls5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
                     , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Girls
+                    , viewHeadCircumferenceForAge0To13Weeks = ZScore.View.viewHeadCircumferenceForAge0To13WeeksGirls
+                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Girls
+                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Girls
                     }
 
         heightForAgeData =
@@ -1172,38 +1184,58 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
             weightForLengthAndHeightData
                 |> List.map (\( length, height, weight ) -> ( height, weight ))
 
-        childAgeInMonths =
-            case child.birthDate of
-                Just birthDate ->
-                    diffMonths birthDate currentDate
-
-                Nothing ->
-                    0
+        headCircumferenceForAgeData =
+            List.filterMap (chartHeadCircumferenceForAge child) headCircumferenceValues
 
         charts =
-            -- With exception of Sortwathe, children graduate from all
-            -- groups at the age of 26 month. Therefore, we will show
-            -- 0-2 graph for all children that are less than 26 month old.
-            if childAgeInMonths < graduatingAgeInMonth then
-                [ ZScore.View.viewMarkers
-                , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
-                , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
-                , zScoreViewCharts.weightForHeight language zscores weightForLengthData
-                ]
+            Maybe.map
+                (\birthDate ->
+                    let
+                        childAgeInWeeks =
+                            diffWeeks birthDate currentDate
 
-            else if childAgeInMonths < 60 then
-                [ ZScore.View.viewMarkers
-                , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
-                , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
-                , zScoreViewCharts.weightForHeight0To5 language zscores weightForHeightData
-                ]
+                        childAgeInMonths =
+                            diffMonths birthDate currentDate
+                    in
+                    -- With exception of Sortwathe, children graduate from all
+                    -- groups at the age of 26 month. Therefore, we will show
+                    -- 0-2 chart for all children that are less than 26 month old.
+                    -- For head circumference, we'll show 0 - 13 weeks chart for
+                    -- childern with age bellow 13 weeks.
+                    if childAgeInMonths < graduatingAgeInMonth then
+                        let
+                            headCircumferenceChart =
+                                if childAgeInWeeks < 13 then
+                                    zScoreViewCharts.viewHeadCircumferenceForAge0To13Weeks language zscores headCircumferenceForAgeData
 
-            else
-                -- Child is older than 5 years.
-                [ ZScore.View.viewMarkers
-                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData
-                , zScoreViewCharts.weightForAge5To10 language zscores weightForAgeMonthsData
-                ]
+                                else
+                                    zScoreViewCharts.headCircumferenceForAge0To2 language zscores headCircumferenceForAgeData
+                        in
+                        [ ZScore.View.viewMarkers
+                        , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
+                        , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
+                        , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                        , headCircumferenceChart
+                        ]
+
+                    else if childAgeInMonths < 60 then
+                        [ ZScore.View.viewMarkers
+                        , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
+                        , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
+                        , zScoreViewCharts.weightForHeight0To5 language zscores weightForHeightData
+                        , zScoreViewCharts.headCircumferenceForAge0To5 language zscores headCircumferenceForAgeData
+                        ]
+
+                    else
+                        -- Child is older than 5 years.
+                        [ ZScore.View.viewMarkers
+                        , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData
+                        , zScoreViewCharts.weightForAge5To10 language zscores weightForAgeMonthsData
+                        , zScoreViewCharts.headCircumferenceForAge0To5 language zscores headCircumferenceForAgeData
+                        ]
+                )
+                child.birthDate
+                |> Maybe.withDefault []
     in
     div [ class "pane growth" ]
         [ viewPaneHeading language Translate.Growth
@@ -1242,6 +1274,19 @@ chartWeightForAge child weight =
                 , case weight.value of
                     WeightInKg kg ->
                         Kilograms kg
+                )
+            )
+
+
+chartHeadCircumferenceForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeadCircumferenceValue } -> Maybe ( Days, Centimetres )
+chartHeadCircumferenceForAge child headCircumference =
+    child.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                ( diffDays birthDate headCircumference.dateMeasured
+                , case headCircumference.value.headCircumference of
+                    HeadCircumferenceInCm cm ->
+                        Centimetres cm
                 )
             )
 
