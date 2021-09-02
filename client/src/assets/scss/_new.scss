@@ -1449,6 +1449,10 @@ div.page-activity.well-child {
 
       @include next-steps;
 
+      .helper {
+        font-style: italic;
+      }
+
       .date {
         margin-bottom: 20px;
       }

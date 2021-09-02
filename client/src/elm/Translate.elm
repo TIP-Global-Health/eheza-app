@@ -8308,7 +8308,7 @@ translationSet trans =
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->
-                    { english = "Symptoms Review"
+                    { english = "Symptom Review"
                     , kinyarwanda = Nothing
                     }
 

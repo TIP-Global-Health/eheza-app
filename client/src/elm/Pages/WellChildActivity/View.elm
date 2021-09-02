@@ -547,7 +547,8 @@ viewDangerSignsContent language currentDate assembled data =
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
 viewSymptomsReviewForm language currentDate person form =
     [ div [ class "ui form symptoms-review" ]
-        [ viewLabel language Translate.SelectAllSigns
+        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
         , viewCheckBoxMultipleSelectInput language
             [ SymptomBreathingProblems
             , SymptomConvulsions
