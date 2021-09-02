@@ -2,7 +2,7 @@ module Pages.WellChildProgressReport.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Pages.AcuteIllnessParticipant.Fetch
 import Pages.WellChildEncounter.Fetch
 import RemoteData exposing (RemoteData(..))
@@ -32,5 +32,6 @@ fetch id db =
                 maybePersonId
                 |> Maybe.withDefault []
     in
-    Pages.WellChildEncounter.Fetch.fetch id db
+    FetchHealthCenters
+        :: Pages.WellChildEncounter.Fetch.fetch id db
         ++ fetchAcuteIllnessDataMsgs

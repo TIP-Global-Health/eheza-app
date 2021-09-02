@@ -47,6 +47,34 @@ type WellChildEncounterType
     | PediatricCareRecurrent
 
 
+type PediatricCareMilestone
+    = Milestone6Weeks
+    | Milestone14Weeks
+    | Milestone6Months
+    | Milestone9Months
+    | Milestone12Months
+    | Milestone15Months
+    | Milestone18Months
+    | Milestone2Years
+    | Milestone3Years
+    | Milestone4Years
+
+
+pediatricCareMilestones : List PediatricCareMilestone
+pediatricCareMilestones =
+    [ Milestone6Weeks
+    , Milestone14Weeks
+    , Milestone6Months
+    , Milestone9Months
+    , Milestone12Months
+    , Milestone15Months
+    , Milestone18Months
+    , Milestone2Years
+    , Milestone3Years
+    , Milestone4Years
+    ]
+
+
 type EncounterNote
     = NoteTriggeredAcuteIllnessEncounter
     | NoEncounterNotes

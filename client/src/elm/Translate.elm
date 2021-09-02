@@ -57,7 +57,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -96,7 +96,7 @@ import Pages.PrenatalActivity.Model
         )
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), VaccinationStatus(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..), VaccinationStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -488,7 +488,9 @@ type TranslationId
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
+    | EarlyChildhoodDevelopment
     | ECDSignQuestion ECDSign
+    | ECDStatus ECDStatus
     | Edd
     | EddHeader
     | Edema
@@ -624,6 +626,7 @@ type TranslationId
     | LmpDateHeader
     | LmpRangeHeader
     | LmpRange LmpRange
+    | Location
     | LoginPhrase LoginPhrase
     | Low
     | LowRiskCase
@@ -692,6 +695,7 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextAppointment
     | NextDue
     | NextDoseDue
     | NextImmunisationVisit
@@ -773,6 +777,8 @@ type TranslationId
     | PatientIsolatedQuestion
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
+    | PediatricCareMilestone PediatricCareMilestone
+    | PediatricVisit
     | People
     | PersistentStorage Bool
     | Person
@@ -996,6 +1002,7 @@ type TranslationId
     | TuberculosisPast
     | TuberculosisPresent
     | TwoVisits
+    | Type
     | UbudeheLabel
     | Unknown
     | Update
@@ -3021,6 +3028,11 @@ translationSet trans =
             , kinyarwanda = Just "Itariki azabyariraho"
             }
 
+        EarlyChildhoodDevelopment ->
+            { english = "Early Childhood Development"
+            , kinyarwanda = Nothing
+            }
+
         ECDSignQuestion sign ->
             case sign of
                 FollowMothersEyes ->
@@ -3231,6 +3243,28 @@ translationSet trans =
                 NoECDSigns ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
+                    }
+
+        ECDStatus status ->
+            case status of
+                StatusOnTrack ->
+                    { english = "On Track"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusECDBehind ->
+                    { english = "Behind"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusOffTrack ->
+                    { english = "Off Track"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoECDStatus ->
+                    { english = "No Status"
+                    , kinyarwanda = Nothing
                     }
 
         Edd ->
@@ -4592,6 +4626,11 @@ translationSet trans =
                     , kinyarwanda = Just "Mu mezi atandatu"
                     }
 
+        Location ->
+            { english = "Location"
+            , kinyarwanda = Nothing
+            }
+
         LoginPhrase phrase ->
             translateLoginPhrase phrase
 
@@ -5184,6 +5223,11 @@ translationSet trans =
         Next ->
             { english = "Next"
             , kinyarwanda = Just "Ibikurikiyeho"
+            }
+
+        NextAppointment ->
+            { english = "Next Appointment"
+            , kinyarwanda = Nothing
             }
 
         NextDue ->
@@ -6006,6 +6050,63 @@ translationSet trans =
                 Resources ->
                     { english = "Resources"
                     , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
+                    }
+
+        PediatricVisit ->
+            { english = "Pediatric Visit"
+            , kinyarwanda = Nothing
+            }
+
+        PediatricCareMilestone milestone ->
+            case milestone of
+                Milestone6Weeks ->
+                    { english = "6 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone14Weeks ->
+                    { english = "14 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone6Months ->
+                    { english = "6 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone9Months ->
+                    { english = "9 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone12Months ->
+                    { english = "12 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone15Months ->
+                    { english = "15 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone18Months ->
+                    { english = "18 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone2Years ->
+                    { english = "2 years"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone3Years ->
+                    { english = "3 years"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone4Years ->
+                    { english = "4 years"
+                    , kinyarwanda = Nothing
                     }
 
         People ->
@@ -7924,6 +8025,11 @@ translationSet trans =
         TwoVisits ->
             { english = "Two visits"
             , kinyarwanda = Just "Inshuro ebyiri"
+            }
+
+        Type ->
+            { english = "Type"
+            , kinyarwanda = Nothing
             }
 
         UbudeheLabel ->
