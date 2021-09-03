@@ -1221,8 +1221,11 @@ chartWeightForAge child weight =
 
 chartHeadCircumferenceForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeadCircumferenceValue } -> Maybe ( Days, Centimetres )
 chartHeadCircumferenceForAge child headCircumference =
-    child.birthDate
-        |> Maybe.map
+    if EverySet.member NoteNotTaken headCircumference.value.notes then
+        Nothing
+
+    else
+        Maybe.map
             (\birthDate ->
                 ( diffDays birthDate headCircumference.dateMeasured
                 , case headCircumference.value.headCircumference of
@@ -1230,6 +1233,7 @@ chartHeadCircumferenceForAge child headCircumference =
                         Centimetres cm
                 )
             )
+            child.birthDate
 
 
 chartWeightForLengthAndHeight :
