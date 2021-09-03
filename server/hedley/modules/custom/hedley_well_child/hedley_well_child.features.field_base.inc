@@ -724,17 +724,8 @@ function hedley_well_child_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'pediatric-care' => 'Pediatric Care',
         'newborn-exam' => 'Newborn Exam',
-        'pediatric-care-birth-to-6w' => 'Pediatric Care birth to 6 Weeks',
-        'pediatric-care-6w' => 'Pediatric Care 6 Weeks',
-        'pediatric-care-10w' => 'Pediatric Care 10 Weeks',
-        'pediatric-care-14w' => 'Pediatric Care 14 Weeks',
-        'pediatric-care-6m' => 'Pediatric Care 6 Months',
-        'pediatric-care-9m' => 'Pediatric Care 9 Months',
-        'pediatric-care-12m' => 'Pediatric Care 12 Months',
-        'pediatric-care-15m' => 'Pediatric Care 15 Months',
-        'pediatric-care-18m' => 'Pediatric Care 18 Months',
-        'pediatric-care' => 'Pediatric Care Recurrent',
       ),
       'allowed_values_function' => '',
     ),

@@ -57,7 +57,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -1023,8 +1023,7 @@ type TranslationId
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
-    | WellChildEncounterType WellChildEncounterType
-    | WellChildEncounterTypeForDiagnosisPane WellChildEncounterType
+    | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
@@ -8336,91 +8335,34 @@ translationSet trans =
                             , kinyarwanda = Nothing
                             }
 
-        WellChildEncounterType encounterType ->
+        WellChildECDMilestoneForDiagnosisPane encounterType ->
             case encounterType of
-                NewbornExam ->
-                    { english = "Newborn Exam"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCareBirthTo6Weeks ->
-                    { english = "Birth to 6 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare6Weeks ->
-                    { english = "6 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare10Weeks ->
-                    { english = "10 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare14Weeks ->
-                    { english = "14 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare6Months ->
-                    { english = "6 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare9Months ->
-                    { english = "9 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare12Months ->
-                    { english = "12 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare15Months ->
-                    { english = "15 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare18Months ->
-                    { english = "18 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCareRecurrent ->
-                    { english = "Recurrent visit (from 2 years)"
-                    , kinyarwanda = Nothing
-                    }
-
-        WellChildEncounterTypeForDiagnosisPane encounterType ->
-            case encounterType of
-                PediatricCare14Weeks ->
+                Milestone14Weeks ->
                     { english = "3.5 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare6Months ->
+                Milestone6Months ->
                     { english = "6 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare9Months ->
+                Milestone9Months ->
                     { english = "9 Mon"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare12Months ->
+                Milestone12Months ->
                     { english = "12 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare15Months ->
+                Milestone15Months ->
                     { english = "15 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare18Months ->
+                Milestone18Months ->
                     { english = "18 Mo"
                     , kinyarwanda = Nothing
                     }
