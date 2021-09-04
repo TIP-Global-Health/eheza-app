@@ -8337,6 +8337,11 @@ translationSet trans =
 
         WellChildECDMilestoneForDiagnosisPane encounterType ->
             case encounterType of
+                Milestone6Weeks ->
+                    { english = "1.5 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
                 Milestone14Weeks ->
                     { english = "3.5 Mo"
                     , kinyarwanda = Nothing
@@ -8367,8 +8372,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                _ ->
-                    { english = ""
+                Milestone2Years ->
+                    { english = "24 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone3Years ->
+                    { english = "36 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone4Years ->
+                    { english = "48 Mo"
                     , kinyarwanda = Nothing
                     }
 
