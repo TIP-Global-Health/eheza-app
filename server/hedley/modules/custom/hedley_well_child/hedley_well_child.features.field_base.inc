@@ -80,36 +80,6 @@ function hedley_well_child_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_apgars_five_minutes'.
-  $field_bases['field_apgars_five_minutes'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_apgars_five_minutes',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(),
-    'translatable' => 0,
-    'type' => 'number_integer',
-  );
-
-  // Exported field_base: 'field_apgars_one_minute'.
-  $field_bases['field_apgars_one_minute'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_apgars_one_minute',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(),
-    'translatable' => 0,
-    'type' => 'number_integer',
-  );
-
   // Exported field_base: 'field_bcg_vaccination_date'.
   $field_bases['field_bcg_vaccination_date'] = array(
     'active' => 1,
@@ -165,6 +135,7 @@ function hedley_well_child_field_default_field_bases() {
         'maternal-hemmorhage' => 'Maternal Hemmorhage',
         'hiv' => 'HIV',
         'maternal-death' => 'Maternal Death',
+        'other' => 'Other',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
