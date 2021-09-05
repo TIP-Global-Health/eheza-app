@@ -18,10 +18,6 @@ type Msg
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | ToggleExpectedDateConcluded
-    | SetDateConcluded Date
-    | ToggleDateConcluded
-    | SetApgarsOneMinute String
-    | SetApgarsFiveMinutes String
     | SetDeliveryComplicationsPresent Bool
     | SetDeliveryComplication DeliveryComplication
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
@@ -130,10 +126,6 @@ type WarningPopupType
 type alias PregnancySummaryForm =
     { expectedDateConcluded : Maybe Date
     , isExpectedDateConcludedSelectorOpen : Bool
-    , dateConcluded : Maybe Date
-    , isDateConcludedSelectorOpen : Bool
-    , apgarsOneMinute : Maybe Int
-    , apgarsFiveMinutes : Maybe Int
     , deliveryComplicationsPresent : Maybe Bool
     , deliveryComplications : Maybe (List DeliveryComplication)
     }
@@ -143,10 +135,6 @@ emptyPregnancySummaryForm : PregnancySummaryForm
 emptyPregnancySummaryForm =
     { expectedDateConcluded = Nothing
     , isExpectedDateConcludedSelectorOpen = False
-    , dateConcluded = Nothing
-    , isDateConcludedSelectorOpen = False
-    , apgarsOneMinute = Nothing
-    , apgarsFiveMinutes = Nothing
     , deliveryComplicationsPresent = Nothing
     , deliveryComplications = Nothing
     }

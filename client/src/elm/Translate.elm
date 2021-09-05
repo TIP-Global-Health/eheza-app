@@ -386,8 +386,6 @@ type TranslationId
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
-    | ChildOneMinuteApgarsQuestion
-    | ChildFiveMinutesApgarsQuestion
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -446,7 +444,6 @@ type TranslationId
     | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
     | Date
-    | DateConcludedActualQuestion
     | DateConcludedEstimatedQuestion
     | DateOfLastAssessment
     | DatePregnancyConcluded
@@ -476,7 +473,7 @@ type TranslationId
     | Diagnosis
     | DiagnosisDate
     | DiagnosisEntryStatus DiagnosisEntryStatus
-    | DifferenceBetweenDates
+    | DifferenceBetweenDueAndDeliveryDates
     | Disabled
     | DistributionNotice DistributionNotice
     | District
@@ -2345,16 +2342,6 @@ translationSet trans =
             , kinyarwanda = Just "Umwana wa"
             }
 
-        ChildOneMinuteApgarsQuestion ->
-            { english = "What are the child’s 1 minute apgars"
-            , kinyarwanda = Nothing
-            }
-
-        ChildFiveMinutesApgarsQuestion ->
-            { english = "What are the child’s 5 minute apgars"
-            , kinyarwanda = Nothing
-            }
-
         Clear ->
             { english = "Clear"
             , kinyarwanda = Just "Gukuraho"
@@ -2608,6 +2595,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                ComplicationOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoDeliveryComplications ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta na kimwe"
@@ -2833,11 +2825,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        DateConcludedActualQuestion ->
-            { english = "What was the actual delivery date for the child"
-            , kinyarwanda = Nothing
-            }
-
         DateConcludedEstimatedQuestion ->
             { english = "What was the estimated due date for the child"
             , kinyarwanda = Nothing
@@ -2967,8 +2954,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        DifferenceBetweenDates ->
-            { english = "Difference between dates"
+        DifferenceBetweenDueAndDeliveryDates ->
+            { english = "Difference between due date and delivery date"
             , kinyarwanda = Nothing
             }
 
