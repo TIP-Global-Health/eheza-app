@@ -2576,12 +2576,12 @@ translationSet trans =
                     }
 
                 ComplicationPreclampsia ->
-                    { english = "Preclampsia"
+                    { english = "Preeclampsia"
                     , kinyarwanda = Nothing
                     }
 
                 ComplicationMaternalHemmorhage ->
-                    { english = "Maternal Hemmorhage"
+                    { english = "Maternal Hemorrhage"
                     , kinyarwanda = Nothing
                     }
 
