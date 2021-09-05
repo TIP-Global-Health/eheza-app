@@ -545,11 +545,8 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
         measurements =
             assembled.measurements
 
-        ( mandatory, optional ) =
-            partitionNutritionAssessmentTasks isChw
-
         tasks =
-            (mandatory ++ optional)
+            resolveNutritionAssessmentTasks isChw
                 |> List.filter (expectNutritionAssessmentTask currentDate isChw assembled db)
 
         activeTask =
@@ -577,11 +574,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         TaskNutrition ->
                             ( "nutrition"
                             , isJust measurements.nutrition
-                            )
-
-                        TaskPhoto ->
-                            ( "photo"
-                            , isJust measurements.photo
                             )
 
                         TaskWeight ->
@@ -670,18 +662,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate SetNutritionSign
 
-                Just TaskPhoto ->
-                    let
-                        displayPhoto =
-                            case data.photoForm.url of
-                                Just url ->
-                                    Just url
-
-                                Nothing ->
-                                    getMeasurementValueFunc assembled.measurements.photo
-                    in
-                    viewPhotoForm language currentDate displayPhoto DropZoneComplete
-
                 Just TaskWeight ->
                     let
                         heightValue =
@@ -732,25 +712,11 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                         in
                                         SaveNutrition personId measurements.nutrition assessment nextTask
 
-                                    TaskPhoto ->
-                                        let
-                                            photoId =
-                                                Maybe.map Tuple.first measurements.photo
-                                        in
-                                        data.photoForm.url
-                                            |> Maybe.map (\url -> SavePhoto personId photoId url nextTask)
-                                            |> Maybe.withDefault NoOp
-
                                     TaskWeight ->
                                         SaveWeight personId measurements.weight nextTask
 
                             disabled =
-                                case task of
-                                    TaskPhoto ->
-                                        isNothing data.photoForm.url
-
-                                    _ ->
-                                        tasksCompleted /= totalTasks
+                                tasksCompleted /= totalTasks
                         in
                         viewAction language saveMsg disabled
                     )

@@ -210,7 +210,6 @@ type NutritionAssessmentTask
     | TaskHeadCircumference
     | TaskMuac
     | TaskNutrition
-    | TaskPhoto
     | TaskWeight
 
 

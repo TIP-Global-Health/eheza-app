@@ -67,11 +67,7 @@ activityCompleted currentDate zscores isChw assembled db activity =
                 || (isJust measurements.symptomsReview && isJust measurements.vitals)
 
         WellChildNutritionAssessment ->
-            let
-                ( mandatory, optional ) =
-                    partitionNutritionAssessmentTasks isChw
-            in
-            (mandatory ++ optional)
+            resolveNutritionAssessmentTasks isChw
                 |> List.all (nutritionAssessmentTaskCompleted currentDate isChw assembled db)
 
         WellChildECD ->
@@ -237,9 +233,6 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
         TaskNutrition ->
             (not <| taskExpected TaskNutrition) || isJust measurements.nutrition
 
-        TaskPhoto ->
-            (not <| taskExpected TaskPhoto) || isJust measurements.photo
-
         TaskWeight ->
             (not <| taskExpected TaskWeight) || isJust measurements.weight
 
@@ -266,23 +259,19 @@ expectNutritionAssessmentTask currentDate isChw data db task =
 
 mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
 mandatoryNutritionAssessmentTasksCompleted currentDate isChw data db =
-    partitionNutritionAssessmentTasks isChw
-        |> Tuple.first
+    resolveNutritionAssessmentTasks isChw
         |> List.filter (not << nutritionAssessmentTaskCompleted currentDate isChw data db)
         |> List.isEmpty
 
 
-{-| List of activities that need to be completed, in order to
-decide if to show Next Steps activity, or not.
--}
-partitionNutritionAssessmentTasks : Bool -> ( List NutritionAssessmentTask, List NutritionAssessmentTask )
-partitionNutritionAssessmentTasks isChw =
+resolveNutritionAssessmentTasks : Bool -> List NutritionAssessmentTask
+resolveNutritionAssessmentTasks isChw =
     if isChw then
         -- Muac is not here, because Newbor Exam is done for children that are less than 2 months old.
-        ( [ TaskHeadCircumference, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+        [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
     else
-        ( [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+        [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
@@ -329,15 +318,6 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
                         |> nutritionFormWithDefault data.nutritionForm
             in
             ( taskCompleted form.signs
-            , 1
-            )
-
-        TaskPhoto ->
-            ( if isNothing data.photoForm.url && isNothing measurements.photo then
-                0
-
-              else
-                1
             , 1
             )
 

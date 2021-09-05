@@ -5597,11 +5597,6 @@ translationSet trans =
                     , kinyarwanda = Just "Imirire"
                     }
 
-                TaskPhoto ->
-                    { english = "Photo"
-                    , kinyarwanda = Just "Ifoto"
-                    }
-
                 TaskWeight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"

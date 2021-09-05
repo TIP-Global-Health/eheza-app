@@ -289,20 +289,12 @@ update currentDate id db msg model =
 
         SetActiveNutritionAssessmentTask task ->
             let
-                cmd =
-                    case task of
-                        TaskPhoto ->
-                            bindDropZone ()
-
-                        _ ->
-                            Cmd.none
-
                 updatedData =
                     model.nutritionAssessmentData
                         |> (\data -> { data | activeTask = Just task })
             in
             ( { model | nutritionAssessmentData = updatedData }
-            , cmd
+            , Cmd.none
             , []
             )
 
