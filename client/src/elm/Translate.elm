@@ -8286,6 +8286,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Just "Ifoto"
+                    }
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->

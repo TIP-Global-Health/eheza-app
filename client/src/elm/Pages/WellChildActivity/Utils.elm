@@ -86,6 +86,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
         WellChildNextSteps ->
             List.all (nextStepsTaskCompleted currentDate zscores isChw assembled db) nextStepsTasks
 
+        WellChildPhoto ->
+            (not <| activityExpected WellChildPhoto) || isJust measurements.photo
+
 
 expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate zscores isChw assembled db activity =
@@ -140,6 +143,9 @@ expectActivity currentDate zscores isChw assembled db activity =
                 |> List.filter (expectNextStepsTask currentDate zscores isChw assembled db)
                 |> List.isEmpty
                 |> not
+
+        WellChildPhoto ->
+            True
 
 
 fromPregnancySummaryValue : Maybe PregnancySummaryValue -> PregnancySummaryForm
@@ -267,7 +273,8 @@ mandatoryNutritionAssessmentTasksCompleted currentDate isChw data db =
 resolveNutritionAssessmentTasks : Bool -> List NutritionAssessmentTask
 resolveNutritionAssessmentTasks isChw =
     if isChw then
-        -- Muac is not here, because Newbor Exam is done for children that are less than 2 months old.
+        -- Height and Muac are not here, because Newbor Exam
+        -- is done for children that are less than 2 months old.
         [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
     else

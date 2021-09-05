@@ -581,42 +581,6 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
-        DropZoneComplete result ->
-            let
-                updatedForm =
-                    model.nutritionAssessmentData.photoForm
-                        |> (\form -> { form | url = Just (PhotoUrl result.url) })
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | photoForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SavePhoto personId maybePhotoId url nextTask_ ->
-            let
-                extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
-
-                appMsgs =
-                    Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
-                        |> Backend.Model.MsgWellChildEncounter id
-                        |> App.Model.MsgIndexedDb
-                        >> List.singleton
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | photoForm = emptyPhotoForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate id db) extraMsgs
-
         SetWeight string ->
             let
                 updatedForm =
@@ -1409,3 +1373,27 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        DropZoneComplete result ->
+            let
+                updatedForm =
+                    model.photoForm
+                        |> (\form -> { form | url = Just (PhotoUrl result.url) })
+            in
+            ( { model | photoForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SavePhoto personId maybePhotoId url ->
+            let
+                appMsgs =
+                    Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
+                        |> Backend.Model.MsgWellChildEncounter id
+                        |> App.Model.MsgIndexedDb
+                        >> List.singleton
+            in
+            ( { model | photoForm = emptyPhotoForm }
+            , Cmd.none
+            , appMsgs
+            )

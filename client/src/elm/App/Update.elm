@@ -13,6 +13,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Browser
 import Browser.Navigation as Nav
 import Config
@@ -990,6 +991,9 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (NutritionActivityPage _ Photo) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (WellChildActivityPage _ WellChildPhoto) ->
                             App.Ports.bindDropZone ()
 
                         _ ->
