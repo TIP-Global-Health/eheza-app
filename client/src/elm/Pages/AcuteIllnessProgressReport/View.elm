@@ -40,6 +40,7 @@ import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
+import Pages.WellChildProgressReport.View exposing (viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
@@ -139,8 +140,10 @@ viewContent language currentDate id initiator model data =
     div [ class "page-report acute-illness" ]
         [ div
             [ class "ui report unstackable items" ]
-            [ viewHeader language illnessBeganDate id initiator
-            , viewPersonInfo language currentDate data.person data.measurements
+            [ viewPersonInfoPane language currentDate data.person
+            , viewHeader language illnessBeganDate id initiator
+
+            -- , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data

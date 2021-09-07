@@ -2222,6 +2222,7 @@ div.page-participant.acute-illness {
   }
 }
 
+// @todo: remove?
 div.page-report.acute-illness {
   background: $color-lighter-gray;
   padding: 20px;
@@ -2479,6 +2480,7 @@ div.page-report.acute-illness {
 
 }
 
+div.page-report.acute-illness,
 div.page-report.well-child {
   background: unset;
 
