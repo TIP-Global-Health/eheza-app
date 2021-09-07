@@ -2222,12 +2222,11 @@ div.page-participant.acute-illness {
   }
 }
 
-// @todo: remove?
 div.page-report.acute-illness {
   background: $color-lighter-gray;
   padding: 20px;
 
-  .ui.report.unstackable.items {s
+  .ui.report.unstackable.items {
 
     .item.person-details {
       background: $color-white;
@@ -2251,7 +2250,6 @@ div.page-report.acute-illness {
 
     div.pane {
       background: $color-white;
-      margin-bottom: 20px;
 
       .pane-heading {
         color: $color-white;
@@ -2310,6 +2308,10 @@ div.page-report.acute-illness {
       }
     }
 
+    div.pane.symptoms .symptoms-table {
+      padding-top: 20px;
+    }
+
     div.pane.symptoms .symptoms-table .symptoms-table-row {
       display: grid;
       grid-gap: 20px;
@@ -2347,7 +2349,7 @@ div.page-report.acute-illness {
         }
 
         &.blue {
-          border-left: 1px solid $color-lighter-blue;
+          border-left: 1px solid $color-primary;
         }
       }
     }
@@ -2355,8 +2357,12 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row ul {
       display: inline-block;
       list-style-type: none;
-      margin: 5px 0;
+      margin: 0;
       padding: 0;
+
+      &:last-child {
+        margin-bottom: 20px;
+      }
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row ul li {

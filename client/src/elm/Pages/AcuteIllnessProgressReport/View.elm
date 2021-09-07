@@ -40,7 +40,7 @@ import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
-import Pages.WellChildProgressReport.View exposing (viewPersonInfoPane)
+import Pages.WellChildProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
@@ -621,7 +621,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
                 |> Maybe.withDefault emptyNode
     in
     div [ class "pane symptoms" ]
-        [ viewItemHeading language headingTransId "blue"
+        [ viewPaneHeading language headingTransId
         , symptomsTable
         ]
 
