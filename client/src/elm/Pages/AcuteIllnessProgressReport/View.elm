@@ -138,12 +138,10 @@ viewContent language currentDate id initiator model data =
                     emptyNode
     in
     div [ class "page-report acute-illness" ]
-        [ div
+        [ viewHeader language id initiator
+        , div
             [ class "ui report unstackable items" ]
             [ viewPersonInfoPane language currentDate data.person
-            , viewHeader language illnessBeganDate id initiator
-
-            -- , viewPersonInfo language currentDate data.person data.measurements
             , viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
@@ -154,9 +152,17 @@ viewContent language currentDate id initiator model data =
         ]
 
 
-viewHeader : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> Html Msg
-viewHeader language date id initiator =
+viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> Html Msg
+viewHeader language id initiator =
     let
+        label =
+            case initiator of
+                InitiatorEncounterPage ->
+                    Translate.ProgressReport
+
+                _ ->
+                    Translate.AcuteIllnessHistory
+
         goBackPage =
             case initiator of
                 InitiatorEncounterPage ->
@@ -171,18 +177,16 @@ viewHeader language date id initiator =
                 InitiatorGroupNutritionProgressReport sessionId personId ->
                     SessionPage sessionId (ProgressReportPage personId)
     in
-    div [ class "report-header" ]
-        [ a
-            [ class "icon-back"
+    div [ class "ui basic segment head" ]
+        [ h1 [ class "ui header" ]
+            [ text <| translate language label
+            ]
+        , span
+            [ class "link-back"
             , onClick <| SetActivePage (UserPage goBackPage)
             ]
-            []
-        , h1 [ class "ui report header" ]
-            [ text <| translate language Translate.ProgressReport ]
-        , p [ class "date" ]
-            [ text <| translate language Translate.CurrentIllnessBegan
-            , text " - "
-            , text <| renderDate language date
+            [ span [ class "icon-back" ] []
+            , span [] []
             ]
         ]
 

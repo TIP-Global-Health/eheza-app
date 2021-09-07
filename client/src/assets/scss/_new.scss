@@ -2227,32 +2227,7 @@ div.page-report.acute-illness {
   background: $color-lighter-gray;
   padding: 20px;
 
-  .ui.report.unstackable.items {
-
-    .report-header {
-      background: $color-white;
-      border-top: 9px solid $color-primary;
-      color: $color-text;
-      padding: 20px 20px 0 25px;
-
-      .icon-back {
-        width: 34px;
-        height: 27px;
-        display: block;
-        background: url(#{$img-path}icon-back-dark.svg);
-        position: absolute;
-        background-size: 34px 27px;
-      }
-
-      .ui.report.header {
-        font-size: 30px;
-      }
-
-      .date {
-        font-size: 22px;
-        text-align: center;
-      }
-    }
+  .ui.report.unstackable.items {s
 
     .item.person-details {
       background: $color-white;

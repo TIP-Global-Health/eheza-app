@@ -287,6 +287,7 @@ type TranslationId
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
+    | AcuteIllnessHistory
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
@@ -1411,6 +1412,11 @@ translationSet trans =
         AcuteIllnessExisting ->
             { english = "Existing Acute Illness"
             , kinyarwanda = Just "Indwara ifatiyeho iheruka kuvurwa"
+            }
+
+        AcuteIllnessHistory ->
+            { english = "Acute Illness History"
+            , kinyarwanda = Nothing
             }
 
         AcuteIllnessNew ->
