@@ -1503,7 +1503,7 @@ translationSet trans =
             }
 
         AdministerAlbendazoleHelper ->
-            { english = "One tablet by mouth"
+            { english = "Give the child one tablet by mouth"
             , kinyarwanda = Nothing
             }
 
