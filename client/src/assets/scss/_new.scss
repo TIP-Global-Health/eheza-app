@@ -1460,6 +1460,10 @@ div.page-activity.well-child {
 
       @include next-steps;
 
+      .helper {
+        font-style: italic;
+      }
+
       .ui.form {
         min-height: 140px;
 
@@ -2479,6 +2483,33 @@ div.page-report.acute-illness {
 
 }
 
+div.page-encounter.well-child,
+div.page-activity.well-child,
+div.page-report.well-child {
+
+  .details {
+    padding-left: 25px;
+
+    .ui.header {
+      color: $color-white;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    p {
+      color: $color-white;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 0;
+
+      .label {
+        font-weight: 700;
+      }
+    }
+  }
+}
+
 div.page-report.well-child {
   background: unset;
 
@@ -2498,20 +2529,14 @@ div.page-report.well-child {
     padding: 30px 40px;
 
     .details {
-      padding-left: 25px;
 
       .ui.header {
         color: $color-primary;
-        font-size: 28px;
-        font-weight: bold;
-        margin-bottom: 2px;
       }
 
       p {
         color: $color-text;
-        font-size: 20px;
         font-weight: 300;
-        margin-bottom: 0;
 
         .label {
           font-weight: 600;
@@ -2753,13 +2778,13 @@ div.page-report.well-child {
     }
 
     .growth-charts {
-      margin-bottom: 60px;
+      margin-bottom: 30px;
       margin-left: -30px;
       margin-right: -30px;
     }
 
     .growth-photos {
-      padding: 0 30px;
+      padding: 20px 30px;
 
       .ui.cards .report.card {
         margin: 0 7px 15px;

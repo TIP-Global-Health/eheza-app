@@ -1867,6 +1867,8 @@ expectNextStepsTask currentDate zscores isChw assembled db task =
 
         TaskNextVisit ->
             not isChw
+                -- Activity that triggers Nutrition Assessment next steps is completed.
+                && activityCompleted currentDate zscores isChw assembled db WellChildNutritionAssessment
                 -- Activities that affect determinating next visit date are
                 -- either completed, or not shown at current visit.
                 && activityCompleted currentDate zscores isChw assembled db WellChildImmunisation

@@ -55,6 +55,7 @@ import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.Utils exposing (generateFutureVaccinationsData, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData, pediatricCareMilestoneToComparable, resolvePediatricCareMilestoneOnDate)
+import Pages.WellChildEncounter.View exposing (viewPersonDetails)
 import Pages.WellChildProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -66,13 +67,6 @@ import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
 import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 140
-    , height = 140
-    }
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
@@ -325,63 +319,10 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
 
 viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
 viewPersonInfoPane language currentDate person =
-    let
-        isAdult =
-            isPersonAnAdult currentDate person
-                |> Maybe.withDefault True
-
-        ( thumbnailClass, maybeAge ) =
-            if isAdult then
-                ( "mother"
-                , ageInYears currentDate person
-                    |> Maybe.map (Translate.YearsOld >> translate language)
-                )
-
-            else
-                ( "child"
-                , person.birthDate
-                    |> Maybe.map
-                        (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
-                )
-
-        ( dateOfBirthEntry, ageEntry ) =
-            Maybe.map
-                (\birthDate ->
-                    ( viewEntry Translate.DateOfBirth (formatDDMMYY birthDate)
-                    , viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate)
-                    )
-                )
-                person.birthDate
-                |> Maybe.withDefault ( emptyNode, emptyNode )
-
-        genderEntry =
-            viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
-
-        villageEntry =
-            Maybe.map (viewEntry Translate.Village) person.village
-                |> Maybe.withDefault emptyNode
-
-        viewEntry labelTransId content =
-            p []
-                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
-                , span [] [ text content ]
-                ]
-    in
     div [ class "pane person-details" ]
         [ viewPaneHeading language Translate.PatientInformation
-        , div
-            [ class "patient-info" ]
-            [ div [ class "ui image" ]
-                [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
-            , div [ class "details" ]
-                [ h2 [ class "ui header" ]
-                    [ text person.name ]
-                , ageEntry
-                , dateOfBirthEntry
-                , genderEntry
-                , villageEntry
-                ]
-            ]
+        , div [ class "patient-info" ] <|
+            viewPersonDetails language currentDate person
         ]
 
 
@@ -1280,8 +1221,11 @@ chartWeightForAge child weight =
 
 chartHeadCircumferenceForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeadCircumferenceValue } -> Maybe ( Days, Centimetres )
 chartHeadCircumferenceForAge child headCircumference =
-    child.birthDate
-        |> Maybe.map
+    if EverySet.member NoteNotTaken headCircumference.value.notes then
+        Nothing
+
+    else
+        Maybe.map
             (\birthDate ->
                 ( diffDays birthDate headCircumference.dateMeasured
                 , case headCircumference.value.headCircumference of
@@ -1289,6 +1233,7 @@ chartHeadCircumferenceForAge child headCircumference =
                         Centimetres cm
                 )
             )
+            child.birthDate
 
 
 chartWeightForLengthAndHeight :

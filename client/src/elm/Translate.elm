@@ -3213,7 +3213,7 @@ translationSet trans =
                     }
 
                 FollowThreeStepInstructions ->
-                    { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face"
+                    { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face“"
                     , kinyarwanda = Nothing
                     }
 
@@ -8308,7 +8308,7 @@ translationSet trans =
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->
-                    { english = "Symptoms Review"
+                    { english = "Symptom Review"
                     , kinyarwanda = Nothing
                     }
 

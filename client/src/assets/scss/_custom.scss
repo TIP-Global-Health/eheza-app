@@ -1948,7 +1948,7 @@ input::placeholder {
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-symptoms-general.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-general-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1962,7 +1962,7 @@ input::placeholder {
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-symptoms-respiratory.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
