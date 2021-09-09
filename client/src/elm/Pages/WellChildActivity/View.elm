@@ -22,6 +22,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Model exposing (PhotoForm)
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -207,7 +208,17 @@ vaccinationHistoryPopup language currentDate vaccinationHistory =
             ]
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
 viewActivity language currentDate zscores id isChw activity assembled db model =
     case activity of
         WellChildPregnancySummary ->
@@ -233,6 +244,9 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
 
         WellChildNextSteps ->
             viewNextStepsContent language currentDate zscores id isChw assembled db model.nextStepsData
+
+        WellChildPhoto ->
+            viewPhotoContent language currentDate assembled model.photoForm
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -545,11 +559,8 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
         measurements =
             assembled.measurements
 
-        ( mandatory, optional ) =
-            partitionNutritionAssessmentTasks isChw
-
         tasks =
-            (mandatory ++ optional)
+            resolveNutritionAssessmentTasks isChw
                 |> List.filter (expectNutritionAssessmentTask currentDate isChw assembled db)
 
         activeTask =
@@ -577,11 +588,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         TaskNutrition ->
                             ( "nutrition"
                             , isJust measurements.nutrition
-                            )
-
-                        TaskPhoto ->
-                            ( "photo"
-                            , isJust measurements.photo
                             )
 
                         TaskWeight ->
@@ -670,18 +676,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate SetNutritionSign
 
-                Just TaskPhoto ->
-                    let
-                        displayPhoto =
-                            case data.photoForm.url of
-                                Just url ->
-                                    Just url
-
-                                Nothing ->
-                                    getMeasurementValueFunc assembled.measurements.photo
-                    in
-                    viewPhotoForm language currentDate displayPhoto DropZoneComplete
-
                 Just TaskWeight ->
                     let
                         heightValue =
@@ -732,25 +726,11 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                         in
                                         SaveNutrition personId measurements.nutrition assessment nextTask
 
-                                    TaskPhoto ->
-                                        let
-                                            photoId =
-                                                Maybe.map Tuple.first measurements.photo
-                                        in
-                                        data.photoForm.url
-                                            |> Maybe.map (\url -> SavePhoto personId photoId url nextTask)
-                                            |> Maybe.withDefault NoOp
-
                                     TaskWeight ->
                                         SaveWeight personId measurements.weight nextTask
 
                             disabled =
-                                case task of
-                                    TaskPhoto ->
-                                        isNothing data.photoForm.url
-
-                                    _ ->
-                                        tasksCompleted /= totalTasks
+                                tasksCompleted /= totalTasks
                         in
                         viewAction language saveMsg disabled
                     )
@@ -2532,6 +2512,54 @@ resolveNextVisitDates currentDate isChw assembled db form =
     ( Maybe.Extra.or form.immunisationDate nextDateForImmunisationVisit
     , Maybe.Extra.or form.pediatricVisitDate nextDateForPediatricVisit
     )
+
+
+viewPhotoContent : Language -> NominalDate -> AssembledData -> PhotoForm -> List (Html Msg)
+viewPhotoContent language currentDate assembled form =
+    let
+        photoId =
+            Maybe.map Tuple.first assembled.measurements.photo
+
+        -- If we have a photo that we've just taken, but not saved, that is in
+        -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
+        -- measurement, if we have that.
+        ( displayPhoto, saveMsg, isDisabled ) =
+            case form.url of
+                Just url ->
+                    ( Just url
+                    , [ onClick <| SavePhoto assembled.participant.person photoId url ]
+                    , False
+                    )
+
+                Nothing ->
+                    ( getMeasurementValueFunc assembled.measurements.photo
+                    , []
+                    , True
+                    )
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted displayPhoto
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            viewPhotoForm language currentDate displayPhoto DropZoneComplete
+        , div [ class "actions" ]
+            [ button
+                ([ classList
+                    [ ( "ui fluid primary button", True )
+                    , ( "disabled", isDisabled )
+                    ]
+                 ]
+                    ++ saveMsg
+                )
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 

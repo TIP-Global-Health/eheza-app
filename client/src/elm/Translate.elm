@@ -5597,11 +5597,6 @@ translationSet trans =
                     , kinyarwanda = Just "Imirire"
                     }
 
-                TaskPhoto ->
-                    { english = "Photo"
-                    , kinyarwanda = Just "Ifoto"
-                    }
-
                 TaskWeight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
@@ -8289,6 +8284,11 @@ translationSet trans =
                 WellChildNextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Nothing
+                    }
+
+                WellChildPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Just "Ifoto"
                     }
 
         WellChildDangerSignsTask task ->

@@ -17,7 +17,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.WellChildActivity.Utils exposing (activityCompleted, expectActivity, mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChildActivity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChildEncounter.Model exposing (..)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -277,8 +277,8 @@ viewMainPageContent language currentDate zscores id isChw db assembeld model =
                 [] ->
                     True
 
-                [ WellChildNutritionAssessment ] ->
-                    mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembeld db
+                [ WellChildPhoto ] ->
+                    True
 
                 _ ->
                     False
