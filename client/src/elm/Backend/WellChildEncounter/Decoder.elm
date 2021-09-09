@@ -14,7 +14,7 @@ decodeWellChildEncounter =
         |> required "individual_participant" decodeEntityUuid
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
-        |> optional "well_child_encounter_type" decodeWellChildEncounterType PediatricCareRecurrent
+        |> optional "well_child_encounter_type" decodeWellChildEncounterType PediatricCare
         |> optional "encounter_notes"
             (map
                 (List.head >> Maybe.withDefault NoEncounterNotes)
@@ -44,38 +44,11 @@ decodeWellChildEncounterType =
         |> andThen
             (\encounterType ->
                 case encounterType of
+                    "pediatric-care" ->
+                        succeed PediatricCare
+
                     "newborn-exam" ->
                         succeed NewbornExam
-
-                    "pediatric-care-birth-to-6w" ->
-                        succeed PediatricCareBirthTo6Weeks
-
-                    "pediatric-care-6w" ->
-                        succeed PediatricCare6Weeks
-
-                    "pediatric-care-10w" ->
-                        succeed PediatricCare10Weeks
-
-                    "pediatric-care-14w" ->
-                        succeed PediatricCare14Weeks
-
-                    "pediatric-care-6m" ->
-                        succeed PediatricCare6Months
-
-                    "pediatric-care-9m" ->
-                        succeed PediatricCare9Months
-
-                    "pediatric-care-12m" ->
-                        succeed PediatricCare12Months
-
-                    "pediatric-care-15m" ->
-                        succeed PediatricCare15Months
-
-                    "pediatric-care-18m" ->
-                        succeed PediatricCare18Months
-
-                    "pediatric-care" ->
-                        succeed PediatricCareRecurrent
 
                     _ ->
                         fail <|
