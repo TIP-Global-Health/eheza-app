@@ -1064,6 +1064,12 @@ respiratoryRateElevated currentDate person measurements =
         |> Maybe.withDefault False
 
 
+respiratoryRateAbnormalForAge : Maybe Int -> Int -> Bool
+respiratoryRateAbnormalForAge maybeAgeMonths rate =
+    respiratoryRateElevatedForAge maybeAgeMonths rate
+        || respiratoryRateRecessedForAge maybeAgeMonths rate
+
+
 respiratoryRateElevatedForAge : Maybe Int -> Int -> Bool
 respiratoryRateElevatedForAge maybeAgeMonths rate =
     maybeAgeMonths
@@ -1077,6 +1083,26 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
 
                 else
                     rate > 30
+            )
+        |> Maybe.withDefault False
+
+
+respiratoryRateRecessedForAge : Maybe Int -> Int -> Bool
+respiratoryRateRecessedForAge maybeAgeMonths rate =
+    maybeAgeMonths
+        |> Maybe.map
+            (\ageMonths ->
+                if ageMonths < 12 then
+                    rate < 50
+
+                else if ageMonths < (5 * 12) then
+                    rate < 24
+
+                else if ageMonths < (13 * 12) then
+                    rate < 18
+
+                else
+                    rate < 12
             )
         |> Maybe.withDefault False
 

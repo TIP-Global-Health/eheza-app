@@ -67,7 +67,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveAcuteIllnessDiagnosis
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
-        , respiratoryRateElevatedForAge
+        , respiratoryRateAbnormalForAge
         )
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
@@ -1102,14 +1102,11 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 value.bodyTemperature < 35 || value.bodyTemperature >= 37.5
 
                             respiratoryRateAlert =
-                                (value.respiratoryRate < 12)
-                                    || (value.respiratoryRate > 49)
-                                    || (Dict.get participantId model.people
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.andThen (ageInMonths currentDate)
-                                            |> (\ageMonths -> respiratoryRateElevatedForAge ageMonths value.respiratoryRate)
-                                       )
+                                Dict.get participantId model.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.toMaybe
+                                    |> Maybe.andThen (ageInMonths currentDate)
+                                    |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths value.respiratoryRate)
                         in
                         if bodyTemperatureAlert || respiratoryRateAlert then
                             generateWellChildDangerSignsAlertMsgs currentDate encounterId
