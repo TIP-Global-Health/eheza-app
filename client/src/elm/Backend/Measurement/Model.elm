@@ -1430,9 +1430,6 @@ type alias WellChildPregnancySummary =
 
 type alias PregnancySummaryValue =
     { expectedDateConcluded : NominalDate
-    , dateConcluded : NominalDate
-    , apgarsOneMinute : Int
-    , apgarsFiveMinutes : Int
     , deliveryComplications : EverySet DeliveryComplication
     }
 
@@ -1444,6 +1441,7 @@ type DeliveryComplication
     | ComplicationMaternalHemmorhage
     | ComplicationHiv
     | ComplicationMaternalDeath
+    | ComplicationOther
     | NoDeliveryComplications
 
 

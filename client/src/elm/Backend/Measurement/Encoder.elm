@@ -2783,9 +2783,6 @@ encodeWellChildPregnancySummary =
 encodePregnancySummaryValue : PregnancySummaryValue -> List ( String, Value )
 encodePregnancySummaryValue value =
     [ ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.expectedDateConcluded )
-    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.dateConcluded )
-    , ( "apgars_one_minute", int value.apgarsOneMinute )
-    , ( "apgars_five_minutes", int value.apgarsFiveMinutes )
     , ( "delivery_complications", encodeEverySet encodeDeliveryComplication value.deliveryComplications )
     , ( "deleted", bool False )
     , ( "type", string "well_child_pregnancy_summary" )
@@ -2813,6 +2810,9 @@ encodeDeliveryComplication complication =
 
             ComplicationMaternalDeath ->
                 "maternal-death"
+
+            ComplicationOther ->
+                "other"
 
             NoDeliveryComplications ->
                 "none"

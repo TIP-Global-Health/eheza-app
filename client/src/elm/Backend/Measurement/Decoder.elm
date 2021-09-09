@@ -3215,9 +3215,6 @@ decodePregnancySummaryValue : Decoder PregnancySummaryValue
 decodePregnancySummaryValue =
     succeed PregnancySummaryValue
         |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "apgars_one_minute" decodeInt
-        |> required "apgars_five_minutes" decodeInt
         |> required "delivery_complications" (decodeEverySet decodeDeliveryComplication)
 
 
@@ -3244,6 +3241,9 @@ decodeDeliveryComplication =
 
                     "maternal-death" ->
                         succeed ComplicationMaternalDeath
+
+                    "other" ->
+                        succeed ComplicationOther
 
                     "none" ->
                         succeed NoDeliveryComplications

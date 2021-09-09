@@ -9,7 +9,7 @@ import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterAc
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter, WellChildEncounterType(..))
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)

@@ -111,50 +111,6 @@ update currentDate id db msg model =
             , [ focusOnCalendar ]
             )
 
-        SetDateConcluded value ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | dateConcluded = Just value })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
-        ToggleDateConcluded ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | isDateConcludedSelectorOpen = not form.isDateConcludedSelectorOpen })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , [ focusOnCalendar ]
-            )
-
-        SetApgarsOneMinute value ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | apgarsOneMinute = String.toInt value })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
-        SetApgarsFiveMinutes value ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | apgarsFiveMinutes = String.toInt value })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
         SetDeliveryComplicationsPresent value ->
             let
                 updatedForm =
