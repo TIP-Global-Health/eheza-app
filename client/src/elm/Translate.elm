@@ -8340,7 +8340,7 @@ translationSet trans =
                     }
 
                 Milestone9Months ->
-                    { english = "9 Mon"
+                    { english = "9 Mo"
                     , kinyarwanda = Nothing
                     }
 
