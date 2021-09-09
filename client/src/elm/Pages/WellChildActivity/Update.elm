@@ -1388,10 +1388,11 @@ update currentDate id db msg model =
         SavePhoto personId maybePhotoId url ->
             let
                 appMsgs =
-                    Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
+                    [ Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
                         |> Backend.Model.MsgWellChildEncounter id
                         |> App.Model.MsgIndexedDb
-                        >> List.singleton
+                    , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                    ]
             in
             ( { model | photoForm = emptyPhotoForm }
             , Cmd.none

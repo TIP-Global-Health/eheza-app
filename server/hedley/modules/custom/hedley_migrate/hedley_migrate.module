@@ -411,7 +411,7 @@ function hedley_migrate_generate_geolocation_structure_for_client() {
       // We know for sure that all other levels belong to same vocabulary.
       _hedley_migrate_get_children_by_parents($data[$index - 1]['tids']);
 
-    $data[$index]['structure'] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
+    $data[$index][$column] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
   }
 }
 
