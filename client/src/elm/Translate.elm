@@ -706,6 +706,7 @@ type TranslationId
     | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
+    | AdministrationNoteForWellChild AdministrationNote
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -5342,8 +5343,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        AdministrationNote reason ->
-            case reason of
+        AdministrationNote note ->
+            case note of
                 NonAdministrationLackOfStock ->
                     { english = "Lack of Stock"
                     , kinyarwanda = Just "Nta miti iri mu bubiko"
@@ -5366,6 +5367,58 @@ translationSet trans =
 
                 NonAdministrationHomeBirth ->
                     { english = "Home Birth"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationChildsCondition ->
+                    { english = "Childs Condition"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    }
+
+                AdministeredToday ->
+                    { english = "Administered Today"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdministeredPreviously ->
+                    { english = "Administered Previously"
+                    , kinyarwanda = Nothing
+                    }
+
+        AdministrationNoteForWellChild note ->
+            case note of
+                NonAdministrationLackOfStock ->
+                    { english = "Out of Stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationKnownAllergy ->
+                    { english = "Known Allergy or Reaction"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationPatientDeclined ->
+                    { english = "Mother / Caregiver Declined"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationPatientUnableToAfford ->
+                    { english = "Patient unable to afford"
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                NonAdministrationHomeBirth ->
+                    { english = "Home Birth"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationChildsCondition ->
+                    { english = "Childs Condition"
                     , kinyarwanda = Nothing
                     }
 
