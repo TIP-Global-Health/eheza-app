@@ -1608,15 +1608,6 @@ expectMedicationTask currentDate isChw assembled task =
 
 nextMedicationAdmnistrationData : NominalDate -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
 nextMedicationAdmnistrationData currentDate person measurements =
-    let
-        administeredMebendezole =
-            List.filterMap .mebendezole measurements
-                |> latestAdministrationDateForMedicine
-
-        administeredVitamineA =
-            List.filterMap .mebendezole measurements
-                |> latestAdministrationDateForMedicine
-    in
     List.filter (expectMedicationByAge currentDate person) medicationTasks
         |> List.map
             (\medication ->
@@ -1634,7 +1625,7 @@ nextMedicationAdmnistrationData currentDate person measurements =
                             |> Maybe.withDefault ( TaskMebendezole, currentDate )
 
                     TaskVitaminA ->
-                        List.filterMap .mebendezole measurements
+                        List.filterMap .vitaminA measurements
                             |> latestAdministrationDateForMedicine
                             |> Maybe.map (\date -> ( TaskVitaminA, Date.add Months 6 date ))
                             |> Maybe.withDefault ( TaskVitaminA, currentDate )
@@ -1650,15 +1641,15 @@ expectMedicationByAge currentDate person task =
                 case task of
                     -- 6 years to 12 years.
                     TaskAlbendazole ->
-                        ageMonths >= 60 && ageMonths < 120
+                        ageMonths >= (6 * 12) && ageMonths < (12 * 12)
 
                     -- 1 year to 6 years.
                     TaskMebendezole ->
-                        ageMonths >= 12 && ageMonths < 60
+                        ageMonths >= 12 && ageMonths < (6 * 12)
 
                     -- 6 months to 6 years.
                     TaskVitaminA ->
-                        ageMonths >= 6 && ageMonths < 60
+                        ageMonths >= 6 && ageMonths < (6 * 12)
             )
         |> Maybe.withDefault False
 
@@ -1765,7 +1756,7 @@ toAdministrationNote form =
 
 resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
 resolveAlbendazoleDosageAndIcon currentDate person =
-    Just ( "500 mg", "icon-pills" )
+    Just ( "400 mg", "icon-pills" )
 
 
 resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )

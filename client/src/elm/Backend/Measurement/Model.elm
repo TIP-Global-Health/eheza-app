@@ -1111,6 +1111,7 @@ type AdministrationNote
     | NonAdministrationPatientDeclined
     | NonAdministrationPatientUnableToAfford
     | NonAdministrationHomeBirth
+    | NonAdministrationChildsCondition
     | NonAdministrationOther
     | AdministeredToday
     | AdministeredPreviously
