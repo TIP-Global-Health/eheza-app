@@ -41,8 +41,6 @@ type Msg
     | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssessmentTask)
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
-    | DropZoneComplete DropZoneFile
-    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssessmentTask)
     | SetWeight String
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- VACCINATION HISTORY
@@ -87,6 +85,9 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe NextStepsTask)
     | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe NextStepsTask)
+      -- PHOTO
+    | DropZoneComplete DropZoneFile
+    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
 
 
 type alias Model =
@@ -98,6 +99,7 @@ type alias Model =
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
     , nextStepsData : NextStepsData
+    , photoForm : PhotoForm
     , warningPopupState : Maybe WarningPopupType
     }
 
@@ -112,6 +114,7 @@ emptyModel =
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
     , nextStepsData = emptyNextStepsData
+    , photoForm = emptyPhotoForm
     , warningPopupState = Nothing
     }
 
@@ -175,7 +178,6 @@ type alias NutritionAssessmentData =
     , headCircumferenceForm : HeadCircumferenceForm
     , muacForm : MuacForm
     , nutritionForm : NutritionForm
-    , photoForm : PhotoForm
     , weightForm : WeightForm
     , activeTask : Maybe NutritionAssessmentTask
     }
@@ -187,7 +189,6 @@ emptyNutritionAssessmentData =
     , headCircumferenceForm = emptyHeadCircumferenceForm
     , muacForm = emptyMuacForm
     , nutritionForm = emptyNutritionForm
-    , photoForm = emptyPhotoForm
     , weightForm = emptyWeightForm
     , activeTask = Nothing
     }
@@ -210,7 +211,6 @@ type NutritionAssessmentTask
     | TaskHeadCircumference
     | TaskMuac
     | TaskNutrition
-    | TaskPhoto
     | TaskWeight
 
 

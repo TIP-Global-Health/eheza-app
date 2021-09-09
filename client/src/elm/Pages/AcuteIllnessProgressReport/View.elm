@@ -31,8 +31,8 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveAcuteIllnessDiagnosis
         , resolveMedicationsNonAdministrationReasons
         , resolveNextStepFirstEncounter
+        , respiratoryRateAbnormalForAge
         , respiratoryRateElevated
-        , respiratoryRateElevatedForAge
         , sendToHCOnSubsequentVisitByNutrition
         )
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
@@ -691,7 +691,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
             maybeRespiratoryRate
                 |> Maybe.map
                     (\respiratoryRate_ ->
-                        if respiratoryRate_ < 12 || respiratoryRateElevatedForAge maybeAgeMonths respiratoryRate_ then
+                        if respiratoryRateAbnormalForAge maybeAgeMonths respiratoryRate_ then
                             td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
 
                         else
