@@ -74,6 +74,7 @@ import Pages.AcuteIllnessActivity.Model
         , PriorTreatmentTask(..)
         , SymptomsTask(..)
         )
+import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Dashboard.Model as Dashboard
     exposing
@@ -291,6 +292,7 @@ type TranslationId
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
+    | AcuteIllnessStatus AcuteIllnessStatus
     | ActiveDiagnosis
     | Activities
     | ActivitiesCompleted Int
@@ -1424,6 +1426,23 @@ translationSet trans =
             { english = "Acute Illness Outcome"
             , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho\n"
             }
+
+        AcuteIllnessStatus status ->
+            case status of
+                AcuteIllnessBegan ->
+                    { english = "Began"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessUpdated ->
+                    { english = "Updated"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessResolved ->
+                    { english = "Resolved"
+                    , kinyarwanda = Nothing
+                    }
 
         ActiveDiagnosis ->
             { english = "Active Diagnosis"

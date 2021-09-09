@@ -2224,26 +2224,6 @@ div.page-report.acute-illness {
 
   .ui.report.unstackable.items {
 
-    .item.person-details {
-      background: $color-white;
-      margin-top: 0;
-      padding: 30px;
-
-      .content {
-
-         h2 {
-           font-size: 27px;
-           font-weight: bold;
-         }
-
-         p {
-           color: $color-text;
-           font-size: 20px;
-           margin-bottom: 0;
-         }
-      }
-    }
-
     div.pane {
       background: $color-white;
 
@@ -2269,38 +2249,27 @@ div.page-report.acute-illness {
       }
     }
 
-    div.pane.assessment .pane-content {
+    div.pane.assessment .entry {
+      align-items: center;
+      color: $color-white;
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
 
-      .diagnosis {
-        color: $color-red-alert;
-        margin-bottom: 20px;
-
-        p {
-          margin-bottom: 5px;
-        }
-
-        .diagnosis-date {
-          color: $color-light-blue;
-        }
+      .assessment {
+        max-width: 360px;
       }
 
-      .visit-date {
-        color: $color-light-blue;
-        font-size: 20px;
-        margin-bottom: 5px;
+      &.red {
+        background: $color-velvet;
       }
 
-      .treatment-comment {
-        color: $color-text;
-        font-size: 20px;
-        font-weight: normal;
-        line-height: 22px;
-        margin-bottom: 7px;
-        text-transform: none;
+      &.orange {
+        background: $color-orange-light;
+      }
 
-        b {
-          margin-left: 5px;
-        }
+      &.green {
+        background: $color-cyan;
       }
     }
 

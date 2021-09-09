@@ -17,7 +17,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
@@ -257,84 +257,54 @@ viewAssessmentPane :
     -> AssembledData
     -> Html Msg
 viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data =
-    let
-        assessment =
-            data.diagnosis
-                |> Maybe.map
+    if isNothing data.diagnosis && isNothing data.previousDiagnosis then
+        emptyNode
+
+    else
+        let
+            viewAssessmentEntry date diagnosis status background =
+                div [ class <| "entry " ++ background ]
+                    [ div [ class "title" ] [ text <| translate language Translate.Assessment ++ ":" ]
+                    , div [ class "assessment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
+                    , div [ class "date" ] [ text <| (translate language <| Translate.AcuteIllnessStatus status) ++ ": " ++ formatDDMMYY date ]
+                    ]
+
+            currentAssessment =
+                Maybe.map
                     (\( date, diagnosis ) ->
-                        let
-                            diagnosisText =
-                                text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
+                        if isJust data.participant.outcome then
+                            viewAssessmentEntry date diagnosis AcuteIllnessResolved "green"
 
-                            ( diagnosisSuffix, additionalObservations, diagnosisDate ) =
-                                if isFirstEncounter then
-                                    ( [], [], emptyNode )
+                        else
+                            let
+                                status =
+                                    if isNothing data.previousDiagnosis then
+                                        AcuteIllnessBegan
 
-                                else
-                                    let
-                                        isImproving =
-                                            not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
-
-                                        respiratoryDistress =
-                                            if respiratoryRateElevated currentDate data.person data.measurements then
-                                                p [] [ text <| translate language Translate.RespiratoryDistress ]
-
-                                            else
-                                                emptyNode
-
-                                        severeAcuteMalnutrition =
-                                            if muacRedOnSubsequentVisit data.measurements then
-                                                p [] [ text <| translate language Translate.SevereAcuteMalnutrition ]
-
-                                            else
-                                                emptyNode
-
-                                        malnutritionWithComplications =
-                                            if sendToHCOnSubsequentVisitByNutrition data.measurements then
-                                                p [] [ text <| translate language Translate.MalnutritionWithComplications ]
-
-                                            else
-                                                emptyNode
-                                    in
-                                    ( [ text " - ["
-                                      , text <| translate language <| Translate.ConditionImproving isImproving
-                                      , text "]"
-                                      ]
-                                    , [ respiratoryDistress
-                                      , severeAcuteMalnutrition
-                                      , malnutritionWithComplications
-                                      ]
-                                    , p [ class "diagnosis-date" ] [ text <| formatDDMMYY date ++ ":" ]
-                                    )
-
-                            currentDiagnosisHtml =
-                                div [ class "diagnosis" ] <|
-                                    [ diagnosisDate
-                                    , p [] <| diagnosisText :: diagnosisSuffix
-                                    ]
-                                        ++ additionalObservations
-
-                            previousDiagnosisHtml =
-                                data.previousDiagnosis
-                                    |> Maybe.map
-                                        (\( datePrevious, previousDiagnosis ) ->
-                                            div [ class "diagnosis" ]
-                                                [ p [ class "diagnosis-date" ] [ text <| formatDDMMYY datePrevious ++ ":" ]
-                                                , p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning previousDiagnosis ]
-                                                ]
-                                        )
-                                    |> Maybe.withDefault emptyNode
-                        in
-                        [ previousDiagnosisHtml, currentDiagnosisHtml ]
+                                    else
+                                        AcuteIllnessUpdated
+                            in
+                            viewAssessmentEntry date diagnosis status "red"
                     )
-                |> Maybe.withDefault []
-    in
-    div [ class "pane assessment" ]
-        [ viewItemHeading language Translate.Assessment "blue"
-        , assessment
-            ++ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
-            |> div [ class "pane-content" ]
-        ]
+                    data.diagnosis
+                    |> Maybe.withDefault emptyNode
+
+            previousAssessment =
+                Maybe.map
+                    (\( date, diagnosis ) ->
+                        if isJust data.participant.outcome then
+                            emptyNode
+
+                        else
+                            viewAssessmentEntry date diagnosis AcuteIllnessBegan "orange"
+                    )
+                    data.previousDiagnosis
+                    |> Maybe.withDefault emptyNode
+        in
+        div [ class "pane assessment" ]
+            [ currentAssessment
+            , previousAssessment
+            ]
 
 
 viewTreatmentSigns :
