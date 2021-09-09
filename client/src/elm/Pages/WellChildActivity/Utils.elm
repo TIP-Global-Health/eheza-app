@@ -157,10 +157,6 @@ fromPregnancySummaryValue saved =
     in
     { expectedDateConcluded = Maybe.map .expectedDateConcluded saved
     , isExpectedDateConcludedSelectorOpen = False
-    , dateConcluded = Maybe.map .dateConcluded saved
-    , isDateConcludedSelectorOpen = False
-    , apgarsOneMinute = Maybe.map .apgarsOneMinute saved
-    , apgarsFiveMinutes = Maybe.map .apgarsFiveMinutes saved
     , deliveryComplicationsPresent = deliveryComplicationsPresent
     , deliveryComplications = deliveryComplications
     }
@@ -182,10 +178,6 @@ pregnancySummaryFormWithDefault form saved =
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , isExpectedDateConcludedSelectorOpen = form.isExpectedDateConcludedSelectorOpen
-                , dateConcluded = or form.dateConcluded (Just value.dateConcluded)
-                , isDateConcludedSelectorOpen = form.isDateConcludedSelectorOpen
-                , apgarsOneMinute = or form.apgarsOneMinute (Just value.apgarsOneMinute)
-                , apgarsFiveMinutes = or form.apgarsFiveMinutes (Just value.apgarsFiveMinutes)
                 , deliveryComplicationsPresent = or form.deliveryComplicationsPresent (complicationsPresent deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
                 }
@@ -207,9 +199,6 @@ toPregnancySummaryValue form =
                 |> Maybe.withDefault (EverySet.singleton NoDeliveryComplications)
     in
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
-        |> andMap form.dateConcluded
-        |> andMap form.apgarsOneMinute
-        |> andMap form.apgarsFiveMinutes
         |> andMap (Just deliveryComplications)
 
 
@@ -1867,6 +1856,8 @@ expectNextStepsTask currentDate zscores isChw assembled db task =
 
         TaskNextVisit ->
             not isChw
+                -- Activity that triggers Nutrition Assessment next steps is completed.
+                && activityCompleted currentDate zscores isChw assembled db WellChildNutritionAssessment
                 -- Activities that affect determinating next visit date are
                 -- either completed, or not shown at current visit.
                 && activityCompleted currentDate zscores isChw assembled db WellChildImmunisation

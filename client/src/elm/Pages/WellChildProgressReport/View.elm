@@ -23,6 +23,7 @@ import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
+        , PediatricCareMilestone
         , WellChildEncounter
         , WellChildEncounterType(..)
         , ecdMilestoneWarnings
@@ -55,6 +56,7 @@ import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.Utils exposing (generateFutureVaccinationsData, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData, pediatricCareMilestoneToComparable, resolvePediatricCareMilestoneOnDate)
+import Pages.WellChildEncounter.View exposing (viewPersonDetails)
 import Pages.WellChildProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -66,13 +68,6 @@ import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
 import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 140
-    , height = 140
-    }
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
@@ -325,63 +320,10 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
 
 viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
 viewPersonInfoPane language currentDate person =
-    let
-        isAdult =
-            isPersonAnAdult currentDate person
-                |> Maybe.withDefault True
-
-        ( thumbnailClass, maybeAge ) =
-            if isAdult then
-                ( "mother"
-                , ageInYears currentDate person
-                    |> Maybe.map (Translate.YearsOld >> translate language)
-                )
-
-            else
-                ( "child"
-                , person.birthDate
-                    |> Maybe.map
-                        (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
-                )
-
-        ( dateOfBirthEntry, ageEntry ) =
-            Maybe.map
-                (\birthDate ->
-                    ( viewEntry Translate.DateOfBirth (formatDDMMYY birthDate)
-                    , viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate)
-                    )
-                )
-                person.birthDate
-                |> Maybe.withDefault ( emptyNode, emptyNode )
-
-        genderEntry =
-            viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
-
-        villageEntry =
-            Maybe.map (viewEntry Translate.Village) person.village
-                |> Maybe.withDefault emptyNode
-
-        viewEntry labelTransId content =
-            p []
-                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
-                , span [] [ text content ]
-                ]
-    in
     div [ class "pane person-details" ]
         [ viewPaneHeading language Translate.PatientInformation
-        , div
-            [ class "patient-info" ]
-            [ div [ class "ui image" ]
-                [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
-            , div [ class "details" ]
-                [ h2 [ class "ui header" ]
-                    [ text person.name ]
-                , ageEntry
-                , dateOfBirthEntry
-                , genderEntry
-                , villageEntry
-                ]
-            ]
+        , div [ class "patient-info" ] <|
+            viewPersonDetails language currentDate person
         ]
 
 
@@ -474,13 +416,13 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 ModeActiveDiagnosis ->
                     ( List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
                     , List.map (\( date, data ) -> ( date, ( data, StatusOngoing ) )) activeAssessmentEntries
-                    , List.map (\( date, encounterType, data ) -> ( date, ( encounterType, data, StatusOngoing ) )) activeWarningEntries
+                    , List.map (\( date, milestone, data ) -> ( date, ( milestone, data, StatusOngoing ) )) activeWarningEntries
                     )
 
                 ModeCompletedDiagnosis ->
                     ( List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
                     , List.map (\( date, data ) -> ( date, ( data, StatusResolved ) )) completedAssessmentEntries
-                    , List.map (\( date, encounterType, data ) -> ( date, ( encounterType, data, StatusResolved ) )) completedWarningEntries
+                    , List.map (\( date, milestone, data ) -> ( date, ( milestone, data, StatusResolved ) )) completedWarningEntries
                     )
 
         entries =
@@ -648,8 +590,8 @@ generatePartitionedWarningEntries :
     ModelIndexedDb
     -> Maybe AssembledData
     ->
-        ( List ( NominalDate, WellChildEncounterType, EncounterWarning )
-        , List ( NominalDate, WellChildEncounterType, EncounterWarning )
+        ( List ( NominalDate, PediatricCareMilestone, EncounterWarning )
+        , List ( NominalDate, PediatricCareMilestone, EncounterWarning )
         )
 generatePartitionedWarningEntries db maybeAssembled =
     Maybe.map
@@ -666,16 +608,24 @@ generatePartitionedWarningEntries db maybeAssembled =
                             let
                                 warnings =
                                     EverySet.toList encounter.encounterWarnings
-                                        |> List.filter
+                                        |> List.filterMap
                                             (\warning ->
-                                                not (List.member warning [ NoECDMilstoneWarning, NoHeadCircumferenceWarning, NoEncounterWarnings ])
+                                                if List.member warning [ NoECDMilstoneWarning, NoHeadCircumferenceWarning, NoEncounterWarnings ] then
+                                                    Nothing
+
+                                                else
+                                                    Maybe.andThen (resolvePediatricCareMilestoneOnDate encounter.startDate) assembled.person.birthDate
+                                                        |> Maybe.map
+                                                            (\ecdMilestone ->
+                                                                ( encounter.startDate, ecdMilestone, warning )
+                                                            )
                                             )
                             in
                             if List.isEmpty warnings then
                                 Nothing
 
                             else
-                                Just <| List.map (\warning -> ( encounter.startDate, encounter.encounterType, warning )) warnings
+                                Just warnings
                         )
                         wellChildEncounters
                         |> List.concat
@@ -792,15 +742,15 @@ viewNutritionAssessmentEntry language ( date, ( assessment, status ) ) =
     )
 
 
-viewWarningEntry : Language -> ( NominalDate, ( WellChildEncounterType, EncounterWarning, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
-viewWarningEntry language ( date, ( encounterType, warning, status ) ) =
+viewWarningEntry : Language -> ( NominalDate, ( PediatricCareMilestone, EncounterWarning, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
+viewWarningEntry language ( date, ( milestone, warning, status ) ) =
     let
-        encounterTypeForDaignosisPane =
-            translate language <| Translate.WellChildEncounterTypeForDiagnosisPane encounterType
+        milestoneForDaignosisPane =
+            translate language <| Translate.WellChildECDMilestoneForDiagnosisPane milestone
     in
     ( date
     , div [ class "entry diagnosis" ]
-        [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning encounterTypeForDaignosisPane ]
+        [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning milestoneForDaignosisPane ]
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]
@@ -1280,8 +1230,11 @@ chartWeightForAge child weight =
 
 chartHeadCircumferenceForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeadCircumferenceValue } -> Maybe ( Days, Centimetres )
 chartHeadCircumferenceForAge child headCircumference =
-    child.birthDate
-        |> Maybe.map
+    if EverySet.member NoteNotTaken headCircumference.value.notes then
+        Nothing
+
+    else
+        Maybe.map
             (\birthDate ->
                 ( diffDays birthDate headCircumference.dateMeasured
                 , case headCircumference.value.headCircumference of
@@ -1289,6 +1242,7 @@ chartHeadCircumferenceForAge child headCircumference =
                         Centimetres cm
                 )
             )
+            child.birthDate
 
 
 chartWeightForLengthAndHeight :

@@ -39,7 +39,6 @@ import Measurement.View
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.NutritionActivity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -59,6 +58,7 @@ import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
+import Pages.WellChildEncounter.View exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -112,7 +112,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id isChw activity db model assembled =
-    ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
+    ((viewPersonDetails language currentDate assembled.person |> div [ class "item" ])
         :: viewActivity language currentDate zscores id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
@@ -252,12 +252,9 @@ viewPregnancySummaryForm language currentDate assembled form_ =
 
         ( tasksCompleted, totalTasks ) =
             ( taskCompleted form.expectedDateConcluded
-                + taskCompleted form.dateConcluded
-                + taskCompleted form.apgarsOneMinute
-                + taskCompleted form.apgarsFiveMinutes
                 + taskCompleted form.deliveryComplicationsPresent
                 + deliveryComplicationsCompleted
-            , 5 + deliveryComplicationsActive
+            , 2 + deliveryComplicationsActive
             )
 
         expectedDateConcludedInput =
@@ -268,15 +265,6 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 (Date.add Months -3 currentDate)
                 (Date.add Months 4 currentDate)
                 form.expectedDateConcluded
-
-        dateConcludedInput =
-            DateSelector.SelectorDropdown.view
-                ToggleDateConcluded
-                SetDateConcluded
-                form.isDateConcludedSelectorOpen
-                (Date.add Months -2 currentDate)
-                currentDate
-                form.dateConcluded
 
         viewDatesDiff =
             Maybe.map2
@@ -315,44 +303,13 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                 _ ->
                                     viewPart ( 0, Translate.DaySinglePlural )
                     in
-                    [ viewLabel language Translate.DifferenceBetweenDates
+                    [ viewLabel language Translate.DifferenceBetweenDueAndDeliveryDates
                     , div [ class "form-input" ] [ text viewDiff ]
                     ]
                 )
                 form.expectedDateConcluded
-                form.dateConcluded
+                assembled.person.birthDate
                 |> Maybe.withDefault []
-
-        apgarsOptions fromValue =
-            option
-                [ value ""
-                , selected (fromValue == Nothing)
-                ]
-                [ text "" ]
-                :: (List.repeat 11 ""
-                        |> List.indexedMap
-                            (\index _ ->
-                                option
-                                    [ value <| String.fromInt index
-                                    , selected <| fromValue == Just index
-                                    ]
-                                    [ text <| String.fromInt index ]
-                            )
-                   )
-
-        apgarsOneMinuteInput =
-            apgarsOptions form.apgarsOneMinute
-                |> select
-                    [ class "form-input apgars"
-                    , onInput SetApgarsOneMinute
-                    ]
-
-        apgarsFiveMinutesInput =
-            apgarsOptions form.apgarsFiveMinutes
-                |> select
-                    [ class "form-input apgars"
-                    , onInput SetApgarsFiveMinutes
-                    ]
 
         deliveryComplicationsPresentInput =
             viewBoolInput
@@ -366,7 +323,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
             if form.deliveryComplicationsPresent == Just True then
                 [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
                 , viewCheckBoxMultipleSelectInput language
-                    [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia ]
+                    [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia, ComplicationOther ]
                     [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
                     (form.deliveryComplications |> Maybe.withDefault [])
                     Nothing
@@ -387,16 +344,9 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
                 , div [ class "form-input date" ]
                     [ expectedDateConcludedInput ]
-                , viewQuestionLabel language Translate.DateConcludedActualQuestion
-                , div [ class "form-input date" ]
-                    [ dateConcludedInput ]
                 ]
                     ++ viewDatesDiff
-                    ++ [ viewQuestionLabel language Translate.ChildOneMinuteApgarsQuestion
-                       , apgarsOneMinuteInput
-                       , viewQuestionLabel language Translate.ChildFiveMinutesApgarsQuestion
-                       , apgarsFiveMinutesInput
-                       , viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
+                    ++ [ viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
                        , deliveryComplicationsPresentInput
                        ]
                     ++ deliveryComplicationsSection
@@ -547,7 +497,8 @@ viewDangerSignsContent language currentDate assembled data =
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
 viewSymptomsReviewForm language currentDate person form =
     [ div [ class "ui form symptoms-review" ]
-        [ viewLabel language Translate.SelectAllSigns
+        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
         , viewCheckBoxMultipleSelectInput language
             [ SymptomBreathingProblems
             , SymptomConvulsions

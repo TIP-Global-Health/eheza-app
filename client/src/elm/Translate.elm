@@ -57,7 +57,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -387,8 +387,6 @@ type TranslationId
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
-    | ChildOneMinuteApgarsQuestion
-    | ChildFiveMinutesApgarsQuestion
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -447,7 +445,6 @@ type TranslationId
     | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
     | Date
-    | DateConcludedActualQuestion
     | DateConcludedEstimatedQuestion
     | DateOfLastAssessment
     | DatePregnancyConcluded
@@ -477,7 +474,7 @@ type TranslationId
     | Diagnosis
     | DiagnosisDate
     | DiagnosisEntryStatus DiagnosisEntryStatus
-    | DifferenceBetweenDates
+    | DifferenceBetweenDueAndDeliveryDates
     | Disabled
     | DistributionNotice DistributionNotice
     | District
@@ -1024,8 +1021,7 @@ type TranslationId
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
-    | WellChildEncounterType WellChildEncounterType
-    | WellChildEncounterTypeForDiagnosisPane WellChildEncounterType
+    | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
@@ -2352,16 +2348,6 @@ translationSet trans =
             , kinyarwanda = Just "Umwana wa"
             }
 
-        ChildOneMinuteApgarsQuestion ->
-            { english = "What are the child’s 1 minute apgars"
-            , kinyarwanda = Nothing
-            }
-
-        ChildFiveMinutesApgarsQuestion ->
-            { english = "What are the child’s 5 minute apgars"
-            , kinyarwanda = Nothing
-            }
-
         Clear ->
             { english = "Clear"
             , kinyarwanda = Just "Gukuraho"
@@ -2596,12 +2582,12 @@ translationSet trans =
                     }
 
                 ComplicationPreclampsia ->
-                    { english = "Preclampsia"
+                    { english = "Preeclampsia"
                     , kinyarwanda = Nothing
                     }
 
                 ComplicationMaternalHemmorhage ->
-                    { english = "Maternal Hemmorhage"
+                    { english = "Maternal Hemorrhage"
                     , kinyarwanda = Nothing
                     }
 
@@ -2612,6 +2598,11 @@ translationSet trans =
 
                 ComplicationMaternalDeath ->
                     { english = "Maternal Death"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComplicationOther ->
+                    { english = "Other"
                     , kinyarwanda = Nothing
                     }
 
@@ -2840,11 +2831,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        DateConcludedActualQuestion ->
-            { english = "What was the actual delivery date for the child"
-            , kinyarwanda = Nothing
-            }
-
         DateConcludedEstimatedQuestion ->
             { english = "What was the estimated due date for the child"
             , kinyarwanda = Nothing
@@ -2974,8 +2960,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        DifferenceBetweenDates ->
-            { english = "Difference between dates"
+        DifferenceBetweenDueAndDeliveryDates ->
+            { english = "Difference between due date and delivery date"
             , kinyarwanda = Nothing
             }
 
@@ -3219,7 +3205,7 @@ translationSet trans =
                     }
 
                 FollowThreeStepInstructions ->
-                    { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face"
+                    { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face“"
                     , kinyarwanda = Nothing
                     }
 
@@ -8113,53 +8099,53 @@ translationSet trans =
             case vaccineType of
                 VaccineBCG ->
                     if isChw then
-                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) at birth"
+                        { english = "Did the child receive the Bacilius Calmette - Guérin (BCG) vaccine at birth"
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) - Dose " ++ doseNumber ++ " of 1" ++ suffix
+                        { english = "Did the child receive the  Bacilius Calmette - Guérin vaccine (BCG) - Dose " ++ doseNumber ++ " of 1" ++ suffix
                         , kinyarwanda = Nothing
                         }
 
                 VaccineOPV ->
                     if isChw then
-                        { english = "Did the child receive the Oral Polio Vaccine (OPV) at birth"
+                        { english = "Did the child receive the Oral Polio vaccine (OPV) at birth"
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Did the child receive the Oral Polio Vaccine (OPV) - Dose " ++ doseNumber ++ " of 4" ++ suffix
+                        { english = "Did the child receive the Oral Polio vaccine (OPV) - Dose " ++ doseNumber ++ " of 4" ++ suffix
                         , kinyarwanda = Nothing
                         }
 
                 VaccineDTP ->
-                    { english = "Did the child receive the DTP - HepB - Hib Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the DTP - HepB - Hib vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccinePCV13 ->
-                    { english = "Did the child receive the Pneumoccocal Vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3" ++ suffix
+                    { english = "Did the child receive the Pneumoccocal vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineRotarix ->
-                    { english = "Did the child receive the Rotavirus (Rotarix) Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the Rotavirus (Rotarix) vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineIPV ->
-                    { english = "Did the child receive the Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
+                    { english = "Did the child receive the Inactivated Polio vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineMR ->
-                    { english = "Did the child receive the Measles - Rubella Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the Measles - Rubella vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineHPV ->
-                    { english = "Did the child receive the HPV Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the HPV vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
@@ -8314,7 +8300,7 @@ translationSet trans =
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->
-                    { english = "Symptoms Review"
+                    { english = "Symptom Review"
                     , kinyarwanda = Nothing
                     }
 
@@ -8342,97 +8328,55 @@ translationSet trans =
                             , kinyarwanda = Nothing
                             }
 
-        WellChildEncounterType encounterType ->
+        WellChildECDMilestoneForDiagnosisPane encounterType ->
             case encounterType of
-                NewbornExam ->
-                    { english = "Newborn Exam"
+                Milestone6Weeks ->
+                    { english = "1.5 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCareBirthTo6Weeks ->
-                    { english = "Birth to 6 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare6Weeks ->
-                    { english = "6 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare10Weeks ->
-                    { english = "10 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare14Weeks ->
-                    { english = "14 Week visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare6Months ->
-                    { english = "6 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare9Months ->
-                    { english = "9 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare12Months ->
-                    { english = "12 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare15Months ->
-                    { english = "15 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCare18Months ->
-                    { english = "18 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCareRecurrent ->
-                    { english = "Recurrent visit (from 2 years)"
-                    , kinyarwanda = Nothing
-                    }
-
-        WellChildEncounterTypeForDiagnosisPane encounterType ->
-            case encounterType of
-                PediatricCare14Weeks ->
+                Milestone14Weeks ->
                     { english = "3.5 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare6Months ->
+                Milestone6Months ->
                     { english = "6 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare9Months ->
-                    { english = "9 Mon"
+                Milestone9Months ->
+                    { english = "9 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare12Months ->
+                Milestone12Months ->
                     { english = "12 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare15Months ->
+                Milestone15Months ->
                     { english = "15 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare18Months ->
+                Milestone18Months ->
                     { english = "18 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                _ ->
-                    { english = ""
+                Milestone2Years ->
+                    { english = "24 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone3Years ->
+                    { english = "36 Mo"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone4Years ->
+                    { english = "48 Mo"
                     , kinyarwanda = Nothing
                     }
 
