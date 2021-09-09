@@ -1255,18 +1255,18 @@ viewBasicVitalsForm language currentDate person previousRespiratoryRate previous
                         let
                             ( redCondition, yellowCondition ) =
                                 if ageMonths < 12 then
-                                    ( [ [ (>) 12 ], [ (<=) 50 ] ]
+                                    ( [ [ (>) 30 ], [ (<=) 50 ] ]
                                     , []
                                     )
 
                                 else if ageMonths < 60 then
-                                    ( [ [ (>) 12 ], [ (<=) 40 ] ]
+                                    ( [ [ (>) 24 ], [ (<=) 40 ] ]
                                     , []
                                     )
 
                                 else
-                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
-                                    , [ [ (<=) 21, (>=) 30 ] ]
+                                    ( [ [ (>) 18 ], [ (<) 30 ] ]
+                                    , []
                                     )
                         in
                         viewConditionalAlert form.respiratoryRate redCondition yellowCondition
