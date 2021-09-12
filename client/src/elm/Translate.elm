@@ -538,6 +538,8 @@ type TranslationId
     | FirstName
     | FiveVisits
     | ForIllustrativePurposesOnly
+    | FollowUpWithPatientIn
+    | FollowUpWithPatientOn
     | FollowUpLabel
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
@@ -3813,6 +3815,16 @@ translationSet trans =
 
         ForIllustrativePurposesOnly ->
             { english = "For illustrative purposes only"
+            , kinyarwanda = Nothing
+            }
+
+        FollowUpWithPatientIn ->
+            { english = "Follow up with patient in"
+            , kinyarwanda = Nothing
+            }
+
+        FollowUpWithPatientOn ->
+            { english = "Follow up with patient on"
             , kinyarwanda = Nothing
             }
 

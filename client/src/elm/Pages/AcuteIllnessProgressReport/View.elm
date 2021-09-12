@@ -12,7 +12,7 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -37,7 +37,7 @@ import Pages.AcuteIllnessEncounter.Utils
         )
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
-import Pages.DemographicsReport.View exposing (viewItemHeading)
+import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
 import Pages.WellChildProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
@@ -142,6 +142,7 @@ viewContent language currentDate id initiator model data =
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
+            , viewNextStepsPane language currentDate firstEncounterData subsequentEncountersData data
             , endEncounterButton
             ]
         , viewModal endEncounterDialog
@@ -843,7 +844,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                 |> div [ class "instructions" ]
     in
     div [ class "pane actions-taken" ]
-        [ viewItemHeading language Translate.ActionsTaken "blue"
+        [ viewPaneHeading language Translate.ActionsTaken
         , content
         ]
 
@@ -1164,3 +1165,52 @@ viewActionsTakenHealthEducation language date measurements =
 
     else
         []
+
+
+viewNextStepsPane :
+    Language
+    -> NominalDate
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
+    -> AssembledData
+    -> Html Msg
+viewNextStepsPane language currentDate firstEncounterData subsequentEncountersData data =
+    let
+        content =
+            data.measurements.followUp
+                |> getMeasurementValueFunc
+                |> Maybe.andThen (EverySet.toList >> List.head)
+                |> Maybe.map
+                    (\followUp ->
+                        let
+                            followUpDate =
+                                calculateDueDate data.encounter.startDate followUp
+
+                            diff =
+                                diffDays currentDate followUpDate
+                        in
+                        if diff > 0 then
+                            [ text <| translate language Translate.FollowUpWithPatientIn
+                            , text " "
+                            , span [ class "in-days" ] [ text <| String.toLower <| translate language <| Translate.DaySinglePlural diff ]
+                            , text " "
+                            , text <| String.toLower <| translate language Translate.On
+                            , text " "
+                            , text <| formatDDMMYY followUpDate
+                            , text "."
+                            ]
+
+                        else
+                            [ text <| translate language Translate.FollowUpWithPatientOn
+                            , text " "
+                            , text <| formatDDMMYY followUpDate
+                            , text "."
+                            ]
+                    )
+                |> Maybe.withDefault []
+    in
+    div [ class "pane actions-taken" ]
+        [ viewPaneHeading language Translate.NextSteps
+        , div [ class "instructions" ]
+            content
+        ]
