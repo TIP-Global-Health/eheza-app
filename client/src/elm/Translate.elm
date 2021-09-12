@@ -8591,7 +8591,7 @@ translationSet trans =
             }
 
         YearsOld int ->
-            { english = String.fromInt int ++ " Years old"
+            { english = String.fromInt int ++ " years old"
             , kinyarwanda = Just (String.fromInt int)
             }
 
