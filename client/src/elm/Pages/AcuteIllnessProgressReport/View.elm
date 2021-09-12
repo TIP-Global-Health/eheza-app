@@ -142,7 +142,7 @@ viewContent language currentDate id initiator model data =
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
-            , viewNextStepsPane language currentDate firstEncounterData subsequentEncountersData data
+            , viewNextStepsPane language currentDate data
             , endEncounterButton
             ]
         , viewModal endEncounterDialog
@@ -1170,47 +1170,51 @@ viewActionsTakenHealthEducation language date measurements =
 viewNextStepsPane :
     Language
     -> NominalDate
-    -> Maybe AcuteIllnessEncounterData
-    -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewNextStepsPane language currentDate firstEncounterData subsequentEncountersData data =
-    let
-        content =
-            data.measurements.followUp
-                |> getMeasurementValueFunc
-                |> Maybe.andThen (EverySet.toList >> List.head)
-                |> Maybe.map
-                    (\followUp ->
-                        let
-                            followUpDate =
-                                calculateDueDate data.encounter.startDate followUp
+viewNextStepsPane language currentDate data =
+    if isJust data.participant.outcome then
+        -- Illness resolved, therefore, we do not show
+        -- Next Steps pane.
+        emptyNode
 
-                            diff =
-                                diffDays currentDate followUpDate
-                        in
-                        if diff > 0 then
-                            [ text <| translate language Translate.FollowUpWithPatientIn
-                            , text " "
-                            , span [ class "in-days" ] [ text <| String.toLower <| translate language <| Translate.DaySinglePlural diff ]
-                            , text " "
-                            , text <| String.toLower <| translate language Translate.On
-                            , text " "
-                            , text <| formatDDMMYY followUpDate
-                            , text "."
-                            ]
+    else
+        let
+            instructions =
+                data.measurements.followUp
+                    |> getMeasurementValueFunc
+                    |> Maybe.andThen (EverySet.toList >> List.head)
+                    |> Maybe.map
+                        (\followUp ->
+                            let
+                                followUpDate =
+                                    calculateDueDate data.encounter.startDate followUp
 
-                        else
-                            [ text <| translate language Translate.FollowUpWithPatientOn
-                            , text " "
-                            , text <| formatDDMMYY followUpDate
-                            , text "."
-                            ]
-                    )
-                |> Maybe.withDefault []
-    in
-    div [ class "pane actions-taken" ]
-        [ viewPaneHeading language Translate.NextSteps
-        , div [ class "instructions" ]
-            content
-        ]
+                                diff =
+                                    diffDays currentDate followUpDate
+                            in
+                            if diff > 0 then
+                                [ text <| translate language Translate.FollowUpWithPatientIn
+                                , text " "
+                                , span [ class "in-days" ] [ text <| String.toLower <| translate language <| Translate.DaySinglePlural diff ]
+                                , text " "
+                                , text <| String.toLower <| translate language Translate.On
+                                , text " "
+                                , text <| formatDDMMYY followUpDate
+                                , text "."
+                                ]
+
+                            else
+                                [ text <| translate language Translate.FollowUpWithPatientOn
+                                , text " "
+                                , text <| formatDDMMYY followUpDate
+                                , text "."
+                                ]
+                        )
+                    |> Maybe.withDefault []
+        in
+        div [ class "pane actions-taken" ]
+            [ viewPaneHeading language Translate.NextSteps
+            , div [ class "instructions" ]
+                instructions
+            ]
