@@ -2354,11 +2354,12 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table {
-      border: 0;
+      border: none;
       color: $color-text;
       margin: 0;
-      padding: 5px 10px;
+      padding: 5px 0;
       text-align: center;
+      width: 100%;
     }
 
     div.pane.physical-exam .ui.table.nutrition-signs {
@@ -2366,35 +2367,44 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table thead th {
+      border: none;
+      border-bottom: 1px solid;
+      border-radius: 0;
       background-color: $color-white;
       color: $color-text;
-      width: 135px;
+    }
 
-      &.first {
-        text-align: left;
-        width: 190px;
-      }
+    div.pane.physical-exam .ui.table thead .muac {
+      width: 180px;
     }
 
     div.pane.physical-exam .ui.table tbody td {
+      border: none;
+      border-bottom: 1px solid;
+      border-radius: 0;
       font-weight: 600;
-      width: 135px;
 
-      &.first {
-        text-align: left;
-        width: 190px;
+      .alert {
+        border-radius: 50%;
+        display: inline-block;
+        height: 17px;
+        margin-left: 10px;
+        width: 17px;
+
+        &.red {
+          background: $color-velvet;
+        }
+
+        &.orange {
+          background: $color-orange-light;
+        }
       }
+    }
 
-      &.red {
-        color: $color-red-alert;
-      }
+    div.pane.physical-exam .ui.table tbody tr {
 
-      &.yellow {
-        color: $color-yellow;
-      }
-
-      &.green {
-        color: $color-green;
+      &:last-child td {
+        border-bottom: none;
       }
     }
 

@@ -470,13 +470,6 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
 viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe AcuteIllnessEncounterData -> Html Msg
 viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
     let
-        headingTransId =
-            if isFirstEncounter then
-                Translate.Symptoms
-
-            else
-                Translate.SymptomsAtFirstEncounter
-
         symptomsTable =
             firstEncounterData
                 |> Maybe.map
@@ -591,7 +584,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
                 |> Maybe.withDefault emptyNode
     in
     div [ class "pane symptoms" ]
-        [ viewPaneHeading language headingTransId
+        [ viewPaneHeading language Translate.Symptoms
         , symptomsTable
         ]
 
@@ -639,152 +632,157 @@ viewPhysicalExamPane :
     -> Html Msg
 viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data =
     let
-        viewDateCell date =
-            th [] [ text <| formatDDMMYY date ]
-
-        viewValueNormal =
-            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
-
-        viewBodyTemperatureCell maybeBodyTemperature =
-            maybeBodyTemperature
-                |> Maybe.map
-                    (\bodyTemperature_ ->
-                        if bodyTemperature_ < 35 || bodyTemperature_ >= 37.5 then
-                            td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
-
-                        else
-                            viewValueNormal
-                    )
-                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
-
-        viewRespiratoryRateCell maybeRespiratoryRate =
-            maybeRespiratoryRate
-                |> Maybe.map
-                    (\respiratoryRate_ ->
-                        if respiratoryRateAbnormalForAge maybeAgeMonths respiratoryRate_ then
-                            td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
-
-                        else
-                            viewValueNormal
-                    )
-                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
-
-        maybeAgeMonths =
-            ageInMonths currentDate data.person
-
-        viewMuacCell maybeMuac =
-            maybeMuac
-                |> Maybe.map
-                    (\(MuacInCm muac_) ->
-                        let
-                            muacColor =
-                                case muacIndication (MuacInCm muac_) of
-                                    ColorAlertRed ->
-                                        "red"
-
-                                    ColorAlertYellow ->
-                                        "yellow"
-
-                                    ColorAlertGreen ->
-                                        "green"
-                        in
-                        td [ class muacColor ] [ text <| String.fromFloat muac_ ]
-                    )
-                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
-
         allEncountersData =
             firstEncounterData
                 |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
                 |> Maybe.withDefault []
 
-        tables =
-            allEncountersData
-                |> greedyGroupsOf 4
-                |> List.map
-                    (\groupOfFour ->
-                        let
-                            dates =
-                                List.map .startDate groupOfFour
+        maybeAgeMonths =
+            ageInMonths currentDate data.person
 
-                            bodyTemperatures =
-                                groupOfFour
-                                    |> List.map
-                                        (.measurements
-                                            >> .vitals
-                                            >> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
-                                        )
+        showMuac =
+            isChildUnderAgeOf5 currentDate data.person
 
-                            respiratoryRates =
-                                groupOfFour
-                                    |> List.map
-                                        (.measurements
-                                            >> .vitals
-                                            >> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
-                                        )
+        muacHeader =
+            if showMuac then
+                th [ class "muac" ] [ text <| translate language Translate.MUAC ]
 
-                            muacs =
-                                groupOfFour
-                                    |> List.map
-                                        (.measurements
-                                            >> .muac
-                                            >> getMeasurementValueFunc
-                                        )
+            else
+                emptyNode
 
-                            tableHead =
-                                th [ class "first" ] []
-                                    :: List.map viewDateCell dates
-                                    |> tr []
-                                    |> List.singleton
+        header =
+            [ tr []
+                [ th [ class "date" ] [ text <| translate language Translate.Date ]
+                , th [ class "body-temperature" ] [ text <| translate language Translate.BodyTemperature ]
+                , th [ class "respiratory-rate" ] [ text <| translate language Translate.RespiratoryRate ]
+                , muacHeader
+                ]
+            ]
 
-                            feverRow =
-                                td [ class "first" ] [ text <| translate language Translate.BodyTemperature ]
-                                    :: List.map viewBodyTemperatureCell bodyTemperatures
-                                    |> tr []
+        rows =
+            List.map
+                (\encounterData ->
+                    let
+                        bodyTemperature =
+                            encounterData.measurements
+                                |> .vitals
+                                |> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
 
-                            tachypneaRow =
-                                td [ class "first" ] [ text <| translate language Translate.RespiratoryRate ]
-                                    :: List.map viewRespiratoryRateCell respiratoryRates
-                                    |> tr []
+                        bodyTemperatureValue =
+                            Maybe.map
+                                (\value ->
+                                    String.fromFloat value ++ " " ++ translate language Translate.CelsiusAbbrev
+                                )
+                                bodyTemperature
 
-                            muacRow =
-                                if isChildUnderAgeOf5 currentDate data.person then
-                                    td [ class "first" ] [ text <| translate language Translate.MUAC ]
-                                        :: List.map viewMuacCell muacs
-                                        |> tr []
+                        bodyTemperatureWarning =
+                            Maybe.andThen
+                                (\bodyTemperature_ ->
+                                    if bodyTemperature_ < 35 || bodyTemperature_ >= 37.5 then
+                                        Just "red"
 
-                                else
-                                    emptyNode
+                                    else
+                                        Nothing
+                                )
+                                bodyTemperature
 
-                            tableBody =
-                                [ feverRow
-                                , tachypneaRow
-                                , muacRow
-                                ]
-                        in
-                        table
-                            [ class "ui collapsing celled table" ]
-                            [ thead [] tableHead
-                            , tbody [] tableBody
-                            ]
-                    )
+                        respiratoryRate =
+                            encounterData.measurements
+                                |> .vitals
+                                |> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
 
-        heading =
-            viewItemHeading language Translate.PhysicalExam "blue"
+                        respiratoryRateValue =
+                            Maybe.map
+                                (\value ->
+                                    translate language <| Translate.BpmUnit value
+                                )
+                                respiratoryRate
 
-        nutrition =
-            -- We show nutrition data of current encounter.
-            data.measurements.nutrition
-                |> getMeasurementValueFunc
+                        respiratoryRateWarning =
+                            Maybe.andThen
+                                (\respiratoryRate_ ->
+                                    if respiratoryRateAbnormalForAge maybeAgeMonths respiratoryRate_ then
+                                        Just "red"
 
-        nutritionSignsTable =
-            nutrition
-                |> Maybe.map
-                    (viewNutritionSigns language currentDate)
-                |> Maybe.withDefault emptyNode
+                                    else
+                                        Nothing
+                                )
+                                respiratoryRate
+
+                        muac =
+                            encounterData.measurements
+                                |> .muac
+                                |> getMeasurementValueFunc
+                                |> Maybe.map (\(MuacInCm muac_) -> muac_)
+
+                        muacValue =
+                            Maybe.map String.fromFloat muac
+
+                        muacWarning =
+                            Maybe.map
+                                (\muac_ ->
+                                    case muacIndication (MuacInCm muac_) of
+                                        ColorAlertRed ->
+                                            "red"
+
+                                        ColorAlertYellow ->
+                                            "orange"
+
+                                        ColorAlertGreen ->
+                                            "green"
+                                )
+                                muac
+
+                        muacCell =
+                            if not showMuac then
+                                emptyNode
+
+                            else if isNothing muac then
+                                viewNotTaken
+
+                            else if muacWarning == Just "green" then
+                                td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+
+                            else
+                                viewValueWithAlert muacValue muacWarning "muac"
+                    in
+                    tr []
+                        [ td [ class "date" ] [ text <| formatDDMMYY encounterData.startDate ]
+                        , viewValueWithAlert bodyTemperatureValue bodyTemperatureWarning "body-temperature"
+                        , viewValueWithAlert respiratoryRateValue respiratoryRateWarning "respiratory-rate"
+                        , muacCell
+                        ]
+                )
+                allEncountersData
+
+        viewNotTaken =
+            td [] [ text <| translate language Translate.NotTaken ]
+
+        viewValueWithAlert maybeValue maybeAlert class_ =
+            Maybe.map
+                (\value ->
+                    let
+                        alert =
+                            Maybe.map
+                                (\color_ -> span [ class <| "alert " ++ color_ ] [])
+                                maybeAlert
+                                |> Maybe.withDefault emptyNode
+                    in
+                    td [ class class_ ]
+                        [ span [] [ text value ]
+                        , alert
+                        ]
+                )
+                maybeValue
+                |> Maybe.withDefault viewNotTaken
     in
-    (heading :: tables)
-        ++ [ nutritionSignsTable ]
-        |> div [ class "pane physical-exam" ]
+    div [ class "pane physical-exam" ]
+        [ viewPaneHeading language Translate.PhysicalExam
+        , table [ class "ui collapsing celled table" ]
+            [ thead [] header
+            , tbody [] rows
+            ]
+        ]
 
 
 viewNutritionSigns : Language -> NominalDate -> EverySet ChildNutritionSign -> Html any
