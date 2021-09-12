@@ -1078,7 +1078,7 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
                 if ageMonths < 12 then
                     rate >= 50
 
-                else if ageMonths < 60 then
+                else if ageMonths < 5 * 12 then
                     rate >= 40
 
                 else
@@ -1098,11 +1098,8 @@ respiratoryRateRecessedForAge maybeAgeMonths rate =
                 else if ageMonths < (5 * 12) then
                     rate < 24
 
-                else if ageMonths < (13 * 12) then
-                    rate < 18
-
                 else
-                    rate < 12
+                    rate < 18
             )
         |> Maybe.withDefault False
 
