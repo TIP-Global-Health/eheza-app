@@ -231,7 +231,7 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
             (not <| taskExpected TaskHeight) || isJust measurements.height
 
         TaskHeadCircumference ->
-            (not <| taskExpected TaskHeight) || isJust measurements.headCircumference
+            (not <| taskExpected TaskHeadCircumference) || isJust measurements.headCircumference
 
         TaskMuac ->
             (not <| taskExpected TaskMuac) || isJust measurements.muac
