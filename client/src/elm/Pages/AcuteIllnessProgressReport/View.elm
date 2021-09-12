@@ -90,10 +90,6 @@ viewContent language currentDate id initiator model data =
             else
                 List.head data.previousEncountersData
 
-        illnessBeganDate =
-            Maybe.map .startDate firstEncounterData
-                |> Maybe.withDefault currentDate
-
         subsequentEncountersData =
             if isFirstEncounter then
                 []
