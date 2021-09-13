@@ -2040,7 +2040,7 @@ generateNextDateForECDVisit currentDate assembled db =
                 else if ageYears < 4 then
                     Just <| Date.add Years 4 birthDate
 
-                else if List.isEmpty (generateRemianingECDSignsAfterCurrentEncounter currentDate assembled) then
+                else if not noRemainingSigns then
                     Just <| Date.add Months 6 currentDate
 
                 else
