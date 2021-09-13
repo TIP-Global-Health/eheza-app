@@ -23,9 +23,19 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, getMeasurementValueFunc, heightValueFunc, mapMeasurementData, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( currentValues
+        , getMeasurementValueFunc
+        , heightValueFunc
+        , mapMeasurementData
+        , muacIndication
+        , muacValueFunc
+        , nutritionSignToString
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Gender, Person)
@@ -672,7 +682,7 @@ viewNutritionSignsSelectorItem : Language -> EverySet ChildNutritionSign -> Chil
 viewNutritionSignsSelectorItem language nutritionSigns sign =
     let
         inputId =
-            encodeNutritionSignAsString sign
+            nutritionSignToString sign
 
         isChecked =
             EverySet.member sign nutritionSigns

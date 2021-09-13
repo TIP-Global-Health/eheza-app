@@ -4,7 +4,15 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (headCircumferenceValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( headCircumferenceValueFunc
+        , heightValueFunc
+        , muacIndication
+        , muacValueFunc
+        , nutritionSignToString
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (..)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
@@ -107,6 +115,9 @@ generateNutritionAssessment currentDate zscores childId muacValue nutritionValue
                 |> Maybe.map
                     (EverySet.toList
                         >> List.filter ((/=) NormalChildNutrition)
+                        -- Maintain constant order, to avoid problems
+                        -- when comparing 2 assessments.
+                        >> List.sortBy nutritionSignToString
                     )
                 |> Maybe.withDefault []
     in
