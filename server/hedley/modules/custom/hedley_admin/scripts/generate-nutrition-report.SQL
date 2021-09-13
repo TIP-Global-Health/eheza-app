@@ -50,11 +50,13 @@ SELECT CONCAT(description, ': ', COUNT((field_zscore_age_value >= zlower AND fie
     field_data_field_date_measured ms ON a.entity_id = ms.entity_id LEFT JOIN
     node n ON n.nid=a.entity_id LEFT JOIN
     field_data_field_person p ON n.nid=p.entity_id LEFT JOIN
+    field_data_field_birth_date bdate ON p.field_person_target_id = bdate.entity_id LEFT JOIN
     field_data_field_deleted del ON p.field_person_target_id = del.entity_id
 WHERE
   p.field_person_target_id is not null AND
   (del.field_deleted_value = 0 or del.field_deleted_value is null) AND
   (ms.field_date_measured_value + INTERVAL 1 YEAR > CURDATE()) AND
+  field_birth_date_value + INTERVAL 6 YEAR > CURDATE() AND
   n.type IN (type1, type2);
 END//
 DELIMITER ;
@@ -68,12 +70,14 @@ BEGIN
       field_data_field_date_measured ms ON a.entity_id = ms.entity_id LEFT JOIN
       node n ON n.nid=a.entity_id LEFT JOIN
       field_data_field_person p ON n.nid=p.entity_id LEFT JOIN
+      field_data_field_birth_date bdate ON p.field_person_target_id = bdate.entity_id LEFT JOIN
       field_data_field_deleted del ON p.field_person_target_id = del.entity_id LEFT JOIN
       measurement_weight_counts c ON c.entity_id = p.field_person_target_id
   WHERE
     p.field_person_target_id is not null AND
     (del.field_deleted_value = 0 or del.field_deleted_value is null) AND
     (ms.field_date_measured_value + INTERVAL 1 YEAR > CURDATE()) AND
+    field_birth_date_value + INTERVAL 6 YEAR > CURDATE() AND
     n.type IN (type1, type2) AND
     c.count >= min_visit_count;
 END//
