@@ -158,6 +158,73 @@ WHERE
                       status= 0 AND
                       type='person');
 
+# Impacted patients calculation.
+DROP TABLE IF EXISTS person_impacted;
+CREATE TABLE person_impacted
+(
+  `entity_id` int(10) UNSIGNED NOT NULL COMMENT 'The entity id this data is attached to'
+);
+ALTER TABLE person_impacted
+  ADD PRIMARY KEY entity_id (entity_id);
+
+INSERT
+INTO
+  person_impacted
+
+  # This would narrow down the set of people to the ones who
+  # completed at least two encounters.
+
+
+SELECT
+  DISTINCT p.field_person_target_id
+FROM
+  node ms
+    LEFT JOIN field_data_field_person p ON p.entity_id = ms.nid
+    LEFT JOIN field_data_field_session sess ON sess.entity_id = ms.nid
+    LEFT JOIN field_data_field_clinic clinic ON sess.field_session_target_id=clinic.entity_id
+    LEFT JOIN field_data_field_nutrition_encounter nutr ON nutr.entity_id = ms.nid
+    LEFT JOIN field_data_field_prenatal_encounter pren ON pren.entity_id = ms.nid
+    LEFT JOIN field_data_field_acute_illness_encounter acute ON acute.entity_id = ms.nid
+WHERE
+    # It's a measurement node.
+    ms.type IN ('attendance', 'birth_plan', 'breast_exam', 'child_fbf', 'contributing_factors',
+                'core_physical_exam',
+                'danger_signs', 'family_planning', 'follow_up', 'group_health_education',
+                'group_send_to_hc', 'height',
+                'lactation', 'last_menstrual_period', 'medical_history', 'medication',
+                'mother_fbf', 'muac', 'nutrition',
+                'nutrition_height', 'nutrition_muac', 'nutrition_nutrition', 'nutrition_photo',
+                'nutrition_weight',
+                'obstetric_history', 'obstetric_history_step2', 'obstetrical_exam', 'photo',
+                'pregnancy_testing',
+                'prenatal_family_planning', 'prenatal_health_education', 'prenatal_nutrition',
+                'prenatal_photo',
+                'resource', 'social_history', 'vitals', 'weight', 'acute_findings',
+                'acute_illness_danger_signs',
+                'acute_illness_follow_up', 'acute_illness_muac', 'acute_illness_nutrition',
+                'acute_illness_vitals',
+                'call_114', 'exposure', 'hc_contact', 'health_education', 'isolation',
+                'malaria_testing',
+                'medication_distribution', 'send_to_hc', 'symptoms_general', 'symptoms_gi',
+                'symptoms_respiratory',
+                'travel_history', 'treatment_history', 'treatment_ongoing',
+                'participant_consent', 'nutrition_caring',
+                'nutrition_contributing_factors', 'nutrition_feeding', 'nutrition_follow_up',
+                'nutrition_food_security',
+                'nutrition_health_education', 'nutrition_hygiene', 'nutrition_send_to_hc',
+                'appointment_confirmation',
+                'prenatal_follow_up', 'prenatal_send_to_hc', 'counseling_session')
+    # And either it's a group encounter (session with a valid clinic) or an individual one.
+AND ((sess.field_session_target_id IS NOT NULL AND clinic.field_clinic_target_id IS NOT NULL) OR nutr.field_nutrition_encounter_target_id IS NOT NULL OR
+     pren.field_prenatal_encounter_target_id IS NOT NULL OR
+     acute.field_acute_illness_encounter_target_id IS NOT NULL)
+GROUP BY
+  p.field_person_target_id,
+  IFNULL(field_session_target_id, IFNULL(field_prenatal_encounter_target_id, IFNULL(field_nutrition_encounter_target_id, IFNULL(field_acute_illness_encounter_target_id, 0))))
+  # We need more than one.
+HAVING
+    COUNT(IFNULL(field_session_target_id, IFNULL(field_prenatal_encounter_target_id, IFNULL(field_nutrition_encounter_target_id, IFNULL(field_acute_illness_encounter_target_id, 0))))) > 1;
+
 SELECT '----------------------' AS '';
 SELECT 'Groups report:' AS '';
 SELECT
@@ -300,62 +367,10 @@ BEGIN
   SELECT
     CONCAT(gender, ' - ', COUNT(*)) AS ''
   FROM
-    person_classified
+    person_classified cl INNER JOIN
+    person_impacted pi ON cl.entity_id = pi.entity_id
   WHERE
       age = age_group
-  AND entity_id IN (
-    # This would narrow down the set of people to the ones who
-    # completed at least two encounters.
-    SELECT
-      p.field_person_target_id
-    FROM
-      node ms
-        LEFT JOIN field_data_field_person p ON p.entity_id = ms.nid
-        LEFT JOIN field_data_field_session sess ON sess.entity_id = ms.nid
-        LEFT JOIN field_data_field_clinic clinic ON sess.field_session_target_id=clinic.entity_id
-        LEFT JOIN field_data_field_nutrition_encounter nutr ON nutr.entity_id = ms.nid
-        LEFT JOIN field_data_field_prenatal_encounter pren ON pren.entity_id = ms.nid
-        LEFT JOIN field_data_field_acute_illness_encounter acute ON acute.entity_id = ms.nid
-    WHERE
-      # It's a measurement node.
-        ms.type IN ('attendance', 'birth_plan', 'breast_exam', 'child_fbf', 'contributing_factors',
-                    'core_physical_exam',
-                    'danger_signs', 'family_planning', 'follow_up', 'group_health_education',
-                    'group_send_to_hc', 'height',
-                    'lactation', 'last_menstrual_period', 'medical_history', 'medication',
-                    'mother_fbf', 'muac', 'nutrition',
-                    'nutrition_height', 'nutrition_muac', 'nutrition_nutrition', 'nutrition_photo',
-                    'nutrition_weight',
-                    'obstetric_history', 'obstetric_history_step2', 'obstetrical_exam', 'photo',
-                    'pregnancy_testing',
-                    'prenatal_family_planning', 'prenatal_health_education', 'prenatal_nutrition',
-                    'prenatal_photo',
-                    'resource', 'social_history', 'vitals', 'weight', 'acute_findings',
-                    'acute_illness_danger_signs',
-                    'acute_illness_follow_up', 'acute_illness_muac', 'acute_illness_nutrition',
-                    'acute_illness_vitals',
-                    'call_114', 'exposure', 'hc_contact', 'health_education', 'isolation',
-                    'malaria_testing',
-                    'medication_distribution', 'send_to_hc', 'symptoms_general', 'symptoms_gi',
-                    'symptoms_respiratory',
-                    'travel_history', 'treatment_history', 'treatment_ongoing',
-                    'participant_consent', 'nutrition_caring',
-                    'nutrition_contributing_factors', 'nutrition_feeding', 'nutrition_follow_up',
-                    'nutrition_food_security',
-                    'nutrition_health_education', 'nutrition_hygiene', 'nutrition_send_to_hc',
-                    'appointment_confirmation',
-                    'prenatal_follow_up', 'prenatal_send_to_hc', 'counseling_session')
-    # And either it's a group encounter (session with a valid clinic) or an individual one.
-    AND ((sess.field_session_target_id IS NOT NULL AND clinic.field_clinic_target_id IS NOT NULL) OR nutr.field_nutrition_encounter_target_id IS NOT NULL OR
-         pren.field_prenatal_encounter_target_id IS NOT NULL OR
-         acute.field_acute_illness_encounter_target_id IS NOT NULL)
-    GROUP BY
-      field_person_target_id
-    # We need more than one.
-    HAVING
-      COUNT(*) > 1
-  )
-
   GROUP BY
     gender
   ORDER BY
