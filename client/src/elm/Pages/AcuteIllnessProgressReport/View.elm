@@ -40,7 +40,7 @@ import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
-import Pages.WellChildProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
+import Pages.WellChildProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
@@ -604,9 +604,9 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                 (\encounterData ->
                     let
                         bodyTemperature =
-                            encounterData.measurements
-                                |> .vitals
-                                |> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
+                            encounterData.measurements.vitals
+                                |> getMeasurementValueFunc
+                                |> Maybe.map .bodyTemperature
 
                         bodyTemperatureValue =
                             Maybe.map
@@ -627,9 +627,9 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                                 bodyTemperature
 
                         respiratoryRate =
-                            encounterData.measurements
-                                |> .vitals
-                                |> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
+                            encounterData.measurements.vitals
+                                |> getMeasurementValueFunc
+                                |> Maybe.map .respiratoryRate
 
                         respiratoryRateValue =
                             Maybe.map
@@ -725,30 +725,24 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
         ]
 
 
-viewNutritionSigns : Language -> NominalDate -> EverySet ChildNutritionSign -> Html any
-viewNutritionSigns language dateOfLastAssessment signs =
-    table
-        [ class "ui celled table nutrition-signs" ]
-        [ tbody []
-            [ tr []
-                [ td
-                    [ class "first" ]
-                    [ ChildActivity NutritionSigns
-                        |> Translate.ActivityProgressReport
-                        |> translate language
-                        |> text
-                    ]
-                , (signs
-                    |> EverySet.toList
-                    |> List.map (translate language << Translate.ChildNutritionSignReport)
-                    |> String.join ", "
-                    |> text
-                    |> List.singleton
-                  )
-                    |> td []
-                ]
-            ]
-        ]
+viewNutritionSignsPane :
+    Language
+    -> NominalDate
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
+    -> AssembledData
+    -> Html Msg
+viewNutritionSignsPane language currentDate firstEncounterData subsequentEncountersData data =
+    let
+        nutritions =
+            firstEncounterData
+                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
+                |> Maybe.withDefault []
+                |> List.filterMap (.measurements >> .nutrition >> Maybe.map Tuple.second)
+    in
+    div [ class "pane nutrition-signs" ] <|
+        viewPaneHeading language Translate.NitritionSigns
+            :: viewNutritionSigns language data.person nutritions
 
 
 viewActionsTakenPane :

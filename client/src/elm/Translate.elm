@@ -737,6 +737,7 @@ type TranslationId
     | NutritionHelper
     | NutritionHygieneSignQuestion NutritionHygieneSign
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
+    | NitritionSigns
     | NutritionSupplementType NutritionSupplementType
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
@@ -5810,6 +5811,11 @@ translationSet trans =
                     { english = "None"
                     , kinyarwanda = Just "Nta na kimwe"
                     }
+
+        NitritionSigns ->
+            { english = "Nitrition Signs"
+            , kinyarwanda = Nothing
+            }
 
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
