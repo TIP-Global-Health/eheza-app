@@ -309,7 +309,11 @@ BEGIN
     FROM
       node ms
         LEFT JOIN field_data_field_person p ON p.entity_id = ms.nid
-        LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
+        LEFT JOIN field_data_field_session sess ON sess.entity_id = ms.nid
+        LEFT JOIN field_data_field_clinic clinic ON sess.field_session_target_id=clinic.entity_id
+        LEFT JOIN field_data_field_nutrition_encounter nutr ON nutr.entity_id = ms.nid
+        LEFT JOIN field_data_field_prenatal_encounter pren ON pren.entity_id = ms.nid
+        LEFT JOIN field_data_field_acute_illness_encounter acute ON acute.entity_id = ms.nid
     WHERE
         ms.type IN ('attendance', 'birth_plan', 'breast_exam', 'child_fbf', 'contributing_factors',
                     'core_physical_exam',
@@ -338,9 +342,11 @@ BEGIN
                     'nutrition_health_education', 'nutrition_hygiene', 'nutrition_send_to_hc',
                     'appointment_confirmation',
                     'prenatal_follow_up', 'prenatal_send_to_hc', 'counseling_session')
-    AND class.entity_id IS NOT NULL
+    AND ((sess.field_session_target_id IS NOT NULL AND clinic.field_clinic_target_id IS NOT NULL) OR nutr.field_nutrition_encounter_target_id IS NOT NULL OR
+         pren.field_prenatal_encounter_target_id IS NOT NULL OR
+         acute.field_acute_illness_encounter_target_id IS NOT NULL)
     GROUP BY
-      p.field_person_target_id
+      field_person_target_id
     HAVING
       COUNT(*) > 1
   )
