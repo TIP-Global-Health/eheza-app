@@ -134,6 +134,7 @@ FROM
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
 WHERE
   field_birth_date_value + INTERVAL 50 YEAR < CURDATE();
+# Exclude deleted person.
 DELETE
 FROM
   person_classified
@@ -144,6 +145,18 @@ WHERE
                     field_data_field_deleted
                   WHERE
                     field_deleted_value = 1);
+# Exclude unpublished person.
+DELETE
+FROM
+  person_classified
+WHERE
+    entity_id IN (SELECT
+                   nid
+                  FROM
+                   node
+                  WHERE
+                      status= 0 AND
+                      type='person');
 
 SELECT '----------------------' AS '';
 SELECT 'Groups report:' AS '';
@@ -355,5 +368,42 @@ SELECT '* 20 years - 50 years:' AS '';
 CALL impacted_report('lt50y');
 SELECT '* Older than 50 years:' AS '';
 CALL impacted_report('mt50y');
+
+SELECT
+  CONCAT("Patiens with missing AGE: ", COUNT(DISTINCT nid)) AS ''
+FROM
+  node
+WHERE
+    type = 'person'
+AND nid NOT IN (SELECT
+                  entity_id
+                FROM
+                  field_data_field_birth_date
+                WHERE
+                  field_birth_date_value IS NOT NULL)
+AND nid NOT IN (SELECT
+                  entity_id
+                FROM
+                  field_data_field_deleted
+                WHERE
+                  field_deleted_value = 1);
+SELECT
+  CONCAT("Patiens with missing GENDER: ", COUNT(DISTINCT nid)) AS ''
+FROM
+  node
+WHERE
+    type = 'person'
+AND nid NOT IN (SELECT
+                  entity_id
+                FROM
+                  field_data_field_gender
+                WHERE
+                  field_gender_value IS NOT NULL)
+AND nid NOT IN (SELECT
+                  entity_id
+                FROM
+                  field_data_field_deleted
+                WHERE
+                  field_deleted_value = 1);
 
 DROP PROCEDURE IF EXISTS impacted_report;
