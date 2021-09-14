@@ -304,6 +304,8 @@ BEGIN
   WHERE
       age = age_group
   AND entity_id IN (
+    # This would narrow down the set of people to the ones who
+    # completed at least two encounters.
     SELECT
       p.field_person_target_id
     FROM
@@ -315,6 +317,7 @@ BEGIN
         LEFT JOIN field_data_field_prenatal_encounter pren ON pren.entity_id = ms.nid
         LEFT JOIN field_data_field_acute_illness_encounter acute ON acute.entity_id = ms.nid
     WHERE
+      # It's a measurement node.
         ms.type IN ('attendance', 'birth_plan', 'breast_exam', 'child_fbf', 'contributing_factors',
                     'core_physical_exam',
                     'danger_signs', 'family_planning', 'follow_up', 'group_health_education',
@@ -342,11 +345,13 @@ BEGIN
                     'nutrition_health_education', 'nutrition_hygiene', 'nutrition_send_to_hc',
                     'appointment_confirmation',
                     'prenatal_follow_up', 'prenatal_send_to_hc', 'counseling_session')
+    # And either it's a group encounter (session with a valid clinic) or an individual one.
     AND ((sess.field_session_target_id IS NOT NULL AND clinic.field_clinic_target_id IS NOT NULL) OR nutr.field_nutrition_encounter_target_id IS NOT NULL OR
          pren.field_prenatal_encounter_target_id IS NOT NULL OR
          acute.field_acute_illness_encounter_target_id IS NOT NULL)
     GROUP BY
       field_person_target_id
+    # We need more than one.
     HAVING
       COUNT(*) > 1
   )
