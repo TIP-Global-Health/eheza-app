@@ -2376,6 +2376,7 @@ div.page-report.acute-illness {
       border-radius: 0;
       background-color: $color-white;
       color: $color-text;
+      font-weight: 600;
     }
 
     div.pane.physical-exam .ui.table thead .muac {
@@ -2386,7 +2387,7 @@ div.page-report.acute-illness {
       border: none;
       border-bottom: 1px solid;
       border-radius: 0;
-      font-weight: 600;
+      font-weight: normal;
 
       .alert {
         border-radius: 50%;
@@ -2410,6 +2411,16 @@ div.page-report.acute-illness {
       &:last-child td {
         border-bottom: none;
       }
+    }
+
+    div.pane.nutrition-signs .pane-content {
+      font-weight: normal;
+      padding: 0;
+      text-transform: none;
+    }
+
+    div.pane.nutrition-signs .pane-content .heading {
+      font-size: 22px;
     }
 
     div.pane.actions-taken {

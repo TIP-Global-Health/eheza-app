@@ -141,6 +141,7 @@ viewContent language currentDate id initiator model data =
             , viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
+            , viewNutritionSignsPane language currentDate firstEncounterData subsequentEncountersData data
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
             , viewNextStepsPane language currentDate data
             , endEncounterButton
@@ -738,11 +739,23 @@ viewNutritionSignsPane language currentDate firstEncounterData subsequentEncount
             firstEncounterData
                 |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
                 |> Maybe.withDefault []
-                |> List.filterMap (.measurements >> .nutrition >> Maybe.map Tuple.second)
+                |> List.filterMap
+                    (.measurements
+                        >> .nutrition
+                        >> Maybe.map (\( _, measurement ) -> ( measurement.dateMeasured, measurement.value ))
+                    )
     in
-    div [ class "pane nutrition-signs" ] <|
-        viewPaneHeading language Translate.NitritionSigns
-            :: viewNutritionSigns language data.person nutritions
+    if List.isEmpty nutritions then
+        -- If there is no signs to display, we do not show the pane.
+        -- Note that we do not record nutrition signs for adults.
+        emptyNode
+
+    else
+        div [ class "pane nutrition-signs" ]
+            [ viewPaneHeading language Translate.NitritionSigns
+            , div [ class "pane-content" ] <|
+                viewNutritionSigns language data.person nutritions
+            ]
 
 
 viewActionsTakenPane :

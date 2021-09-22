@@ -1063,7 +1063,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
             Dict.values weightValuesBySession ++ Dict.values weightValuesByEncounter
 
         nutritionValues =
-            Dict.values nutritionValuesBySession ++ Dict.values nutritionValuesByEncounter
+            Dict.values nutritionValuesBySession
+                ++ Dict.values nutritionValuesByEncounter
+                |> List.map (\measurement -> ( measurement.dateMeasured, measurement.value.signs ))
 
         photoValues =
             Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
@@ -1270,7 +1272,7 @@ chartWeightForLengthAndHeight heights weight =
             )
 
 
-viewNutritionSigns : Language -> Person -> List { a | dateMeasured : NominalDate, value : NutritionValue } -> List (Html any)
+viewNutritionSigns : Language -> Person -> List ( NominalDate, EverySet ChildNutritionSign ) -> List (Html any)
 viewNutritionSigns language child measurements =
     let
         entriesHeading =
@@ -1280,25 +1282,25 @@ viewNutritionSigns language child measurements =
                 ]
 
         entries =
-            List.sortWith (sortByDateDesc .dateMeasured) measurements
+            List.sortWith (sortByDateDesc Tuple.first) measurements
                 |> List.filterMap
-                    (\measurement ->
-                        case EverySet.toList measurement.value.signs of
+                    (\( dateMeasured, signs ) ->
+                        case EverySet.toList signs of
                             [] ->
                                 Nothing
 
                             [ NormalChildNutrition ] ->
                                 Nothing
 
-                            signs ->
+                            signs_ ->
                                 div [ class "entry nutrition-signs" ]
-                                    [ List.map (Translate.ChildNutritionSignLabel >> translate language) signs
+                                    [ List.map (Translate.ChildNutritionSignLabel >> translate language) signs_
                                         |> String.join ", "
                                         |> text
                                         |> List.singleton
                                         |> div [ class "cell name" ]
                                     , div [ class "cell date" ]
-                                        [ text <| formatDDMMYY measurement.dateMeasured ]
+                                        [ text <| formatDDMMYY dateMeasured ]
                                     ]
                                     |> Just
                     )
