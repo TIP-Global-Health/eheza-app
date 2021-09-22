@@ -2423,11 +2423,31 @@ div.page-report.acute-illness {
       font-size: 22px;
     }
 
+    div.pane.treatment .pane-content {
+      color: $color-text;
+      font-weight: normal;
+      padding: 20px 10px 20px 40px;
+      text-transform: none;
+    }
+
+    div.pane.treatment .pane-content .treatment-comment:before {
+      background: $color-text;
+      border-radius: 4px;
+      content: " ";
+      display: inline-block;
+      height: 8px;
+      margin-bottom: 3px;
+      margin-left: -20px;
+      margin-right: 10px;
+      width: 8px;
+    }
+
     div.pane.actions-taken {
       @include next-steps;
     }
 
-    div.pane.actions-taken .instructions {
+    div.pane.actions-taken .instructions,
+    div.pane.next-steps .instructions {
       color: $color-text;
       margin-bottom: 0;
       padding: 20px;

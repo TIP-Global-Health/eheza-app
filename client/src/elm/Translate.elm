@@ -998,6 +998,7 @@ type TranslationId
     | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
+    | Treatment
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -8026,6 +8027,11 @@ translationSet trans =
         TravelHistory ->
             { english = "Travel History"
             , kinyarwanda = Just "Amukuru ku ngendo"
+            }
+
+        Treatment ->
+            { english = "Treatment"
+            , kinyarwanda = Nothing
             }
 
         TrySyncing ->
