@@ -216,6 +216,86 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveBCGImmunisation personId valueId value ->
+            ( { model | saveBCGImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildBCGImmunisationEndpoint HandleSavedBCGImmunisation
+            )
+
+        HandleSavedBCGImmunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveDTPImmunisation personId valueId value ->
+            ( { model | saveDTPImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildDTPImmunisationEndpoint HandleSavedDTPImmunisation
+            )
+
+        HandleSavedDTPImmunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveHPVImmunisation personId valueId value ->
+            ( { model | saveHPVImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildHPVImmunisationEndpoint HandleSavedHPVImmunisation
+            )
+
+        HandleSavedHPVImmunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveIPVImmunisation personId valueId value ->
+            ( { model | saveIPVImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildIPVImmunisationEndpoint HandleSavedIPVImmunisation
+            )
+
+        HandleSavedIPVImmunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveMRImmunisation personId valueId value ->
+            ( { model | saveMRImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildMRImmunisationEndpoint HandleSavedMRImmunisation
+            )
+
+        HandleSavedMRImmunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveOPVImmunisation personId valueId value ->
+            ( { model | saveOPVImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildOPVImmunisationEndpoint HandleSavedOPVImmunisation
+            )
+
+        HandleSavedOPVImmunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
+        SavePCV13Immunisation personId valueId value ->
+            ( { model | savePCV13Immunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildPCV13ImmunisationEndpoint HandleSavedPCV13Immunisation
+            )
+
+        HandleSavedPCV13Immunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveRotarixImmunisation personId valueId value ->
+            ( { model | saveRotarixImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildRotarixImmunisationEndpoint HandleSavedRotarixImmunisation
+            )
+
+        HandleSavedRotarixImmunisation data ->
+            ( { model | saveImmunisation = data }
+            , Cmd.none
+            )
+
         SaveECD personId valueId value ->
             ( { model | saveECD = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildECDEndpoint HandleSavedECD

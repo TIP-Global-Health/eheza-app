@@ -116,6 +116,14 @@ type alias Model =
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
     , saveImmunisation : WebData ()
+    , saveBCGImmunisation : WebData ()
+    , saveDTPImmunisation : WebData ()
+    , saveHPVImmunisation : WebData ()
+    , saveIPVImmunisation : WebData ()
+    , saveMRImmunisation : WebData ()
+    , saveOPVImmunisation : WebData ()
+    , savePCV13Immunisation : WebData ()
+    , saveRotarixImmunisation : WebData ()
     , saveECD : WebData ()
     , saveAlbendazole : WebData ()
     , saveMebendezole : WebData ()
@@ -142,6 +150,14 @@ emptyModel =
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
     , saveImmunisation = NotAsked
+    , saveBCGImmunisation = NotAsked
+    , saveDTPImmunisation = NotAsked
+    , saveHPVImmunisation = NotAsked
+    , saveIPVImmunisation = NotAsked
+    , saveMRImmunisation = NotAsked
+    , saveOPVImmunisation = NotAsked
+    , savePCV13Immunisation = NotAsked
+    , saveRotarixImmunisation = NotAsked
     , saveECD = NotAsked
     , saveAlbendazole = NotAsked
     , saveMebendezole = NotAsked
@@ -183,9 +199,25 @@ type Msg
     | SaveSendToHC PersonId (Maybe WellChildSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveECD PersonId (Maybe WellChildECDId) (EverySet ECDSign)
+    | HandleSavedECD (WebData ())
     | SaveImmunisation PersonId (Maybe WellChildImmunisationId) ImmunisationValue
     | HandleSavedImmunisation (WebData ())
-    | HandleSavedECD (WebData ())
+    | SaveBCGImmunisation PersonId (Maybe WellChildBCGImmunisationId) VaccinationValue
+    | HandleSavedBCGImmunisation (WebData ())
+    | SaveDTPImmunisation PersonId (Maybe WellChildDTPImmunisationId) VaccinationValue
+    | HandleSavedDTPImmunisation (WebData ())
+    | SaveHPVImmunisation PersonId (Maybe WellChildHPVImmunisationId) VaccinationValue
+    | HandleSavedHPVImmunisation (WebData ())
+    | SaveIPVImmunisation PersonId (Maybe WellChildIPVImmunisationId) VaccinationValue
+    | HandleSavedIPVImmunisation (WebData ())
+    | SaveMRImmunisation PersonId (Maybe WellChildMRImmunisationId) VaccinationValue
+    | HandleSavedMRImmunisation (WebData ())
+    | SaveOPVImmunisation PersonId (Maybe WellChildOPVImmunisationId) VaccinationValue
+    | HandleSavedOPVImmunisation (WebData ())
+    | SavePCV13Immunisation PersonId (Maybe WellChildPCV13ImmunisationId) VaccinationValue
+    | HandleSavedPCV13Immunisation (WebData ())
+    | SaveRotarixImmunisation PersonId (Maybe WellChildRotarixImmunisationId) VaccinationValue
+    | HandleSavedRotarixImmunisation (WebData ())
     | SaveAlbendazole PersonId (Maybe WellChildAlbendazoleId) AdministrationNote
     | HandleSavedAlbendazole (WebData ())
     | SaveMebendezole PersonId (Maybe WellChildMebendezoleId) AdministrationNote
