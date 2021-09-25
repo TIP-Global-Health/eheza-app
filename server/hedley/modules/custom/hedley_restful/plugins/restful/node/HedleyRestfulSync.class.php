@@ -383,6 +383,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         ];
 
         $multiDateFields = [
+          'administration_dates',
+          // @todo: remove all bellow.
           'bcg_vaccination_date',
           'opv_vaccination_date',
           'dtp_vaccination_date',
