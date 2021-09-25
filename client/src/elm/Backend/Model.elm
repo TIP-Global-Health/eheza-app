@@ -448,20 +448,28 @@ type Revision
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
     | WellChildAlbendazoleRevision WellChildAlbendazoleId WellChildAlbendazole
+    | WellChildBCGImmunisationRevision WellChildBCGImmunisationId WellChildBCGImmunisation
     | WellChildContributingFactorsRevision WellChildContributingFactorsId WellChildContributingFactors
+    | WellChildDTPImmunisationRevision WellChildDTPImmunisationId WellChildDTPImmunisation
     | WellChildECDRevision WellChildECDId WellChildECD
     | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
     | WellChildFollowUpRevision WellChildFollowUpId WellChildFollowUp
     | WellChildHeadCircumferenceRevision WellChildHeadCircumferenceId WellChildHeadCircumference
     | WellChildHealthEducationRevision WellChildHealthEducationId WellChildHealthEducation
     | WellChildHeightRevision WellChildHeightId WellChildHeight
+    | WellChildHPVImmunisationRevision WellChildHPVImmunisationId WellChildHPVImmunisation
     | WellChildImmunisationRevision WellChildImmunisationId WellChildImmunisation
+    | WellChildIPVImmunisationRevision WellChildIPVImmunisationId WellChildIPVImmunisation
     | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole
+    | WellChildMRImmunisationRevision WellChildMRImmunisationId WellChildMRImmunisation
     | WellChildMuacRevision WellChildMuacId WellChildMuac
     | WellChildNextVisitRevision WellChildNextVisitId WellChildNextVisit
     | WellChildNutritionRevision WellChildNutritionId WellChildNutrition
+    | WellChildOPVImmunisationRevision WellChildOPVImmunisationId WellChildOPVImmunisation
+    | WellChildPCV13ImmunisationRevision WellChildPCV13ImmunisationId WellChildPCV13Immunisation
     | WellChildPhotoRevision WellChildPhotoId WellChildPhoto
     | WellChildPregnancySummaryRevision WellChildPregnancySummaryId WellChildPregnancySummary
+    | WellChildRotarixImmunisationRevision WellChildRotarixImmunisationId WellChildRotarixImmunisation
     | WellChildSendToHCRevision WellChildSendToHCId WellChildSendToHC
     | WellChildSymptomsReviewRevision WellChildSymptomsReviewId WellChildSymptomsReview
     | WellChildVaccinationHistoryRevision WellChildVaccinationHistoryId WellChildVaccinationHistory

@@ -298,8 +298,14 @@ decodeRevision =
                     "well_child_albendazole" ->
                         decodeWithUuid WellChildAlbendazoleRevision decodeWellChildAlbendazole
 
+                    "well_child_bcg_immunisation" ->
+                        decodeWithUuid WellChildBCGImmunisationRevision decodeWellChildBCGImmunisation
+
                     "well_child_contributing_factors" ->
                         decodeWithUuid WellChildContributingFactorsRevision decodeWellChildContributingFactors
+
+                    "well_child_dtp_immunisation" ->
+                        decodeWithUuid WellChildDTPImmunisationRevision decodeWellChildDTPImmunisation
 
                     "well_child_ecd" ->
                         decodeWithUuid WellChildECDRevision decodeWellChildECD
@@ -319,11 +325,20 @@ decodeRevision =
                     "well_child_height" ->
                         decodeWithUuid WellChildHeightRevision decodeWellChildHeight
 
+                    "well_child_hpv_immunisation" ->
+                        decodeWithUuid WellChildHPVImmunisationRevision decodeWellChildHPVImmunisation
+
                     "well_child_immunisation" ->
                         decodeWithUuid WellChildImmunisationRevision decodeWellChildImmunisation
 
+                    "well_child_ipv_immunisation" ->
+                        decodeWithUuid WellChildIPVImmunisationRevision decodeWellChildIPVImmunisation
+
                     "well_child_mebendezole" ->
                         decodeWithUuid WellChildMebendezoleRevision decodeWellChildMebendezole
+
+                    "well_child_mr_immunisation" ->
+                        decodeWithUuid WellChildMRImmunisationRevision decodeWellChildMRImmunisation
 
                     "well_child_muac" ->
                         decodeWithUuid WellChildMuacRevision decodeWellChildMuac
@@ -334,11 +349,20 @@ decodeRevision =
                     "well_child_nutrition" ->
                         decodeWithUuid WellChildNutritionRevision decodeWellChildNutrition
 
+                    "well_child_opv_immunisation" ->
+                        decodeWithUuid WellChildOPVImmunisationRevision decodeWellChildOPVImmunisation
+
+                    "well_child_pcv13_immunisation" ->
+                        decodeWithUuid WellChildPCV13ImmunisationRevision decodeWellChildPCV13Immunisation
+
                     "well_child_photo" ->
                         decodeWithUuid WellChildPhotoRevision decodeWellChildPhoto
 
                     "well_child_pregnancy_summary" ->
                         decodeWithUuid WellChildPregnancySummaryRevision decodeWellChildPregnancySummary
+
+                    "well_child_rotarix_immunisation" ->
+                        decodeWithUuid WellChildRotarixImmunisationRevision decodeWellChildRotarixImmunisation
 
                     "well_child_send_to_hc" ->
                         decodeWithUuid WellChildSendToHCRevision decodeWellChildSendToHC
