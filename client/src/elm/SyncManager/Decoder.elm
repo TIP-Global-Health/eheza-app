@@ -733,10 +733,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildAlbendazole
                             BackendAuthorityWellChildAlbendazole
 
+                    "well_child_bcg_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildBCGImmunisation
+                            BackendAuthorityWellChildBCGImmunisation
+
                     "well_child_contributing_factors" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildContributingFactors
                             BackendAuthorityWellChildContributingFactors
+
+                    "well_child_dtp_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildDTPImmunisation
+                            BackendAuthorityWellChildDTPImmunisation
 
                     "well_child_ecd" ->
                         doDecode
@@ -768,15 +778,30 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildHeight
                             BackendAuthorityWellChildHeight
 
+                    "well_child_hpv_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHPVImmunisation
+                            BackendAuthorityWellChildHPVImmunisation
+
                     "well_child_immunisation" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildImmunisation
                             BackendAuthorityWellChildImmunisation
 
+                    "well_child_ipv_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildIPVImmunisation
+                            BackendAuthorityWellChildIPVImmunisation
+
                     "well_child_mebendezole" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildMebendezole
                             BackendAuthorityWellChildMebendezole
+
+                    "well_child_mr_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildMRImmunisation
+                            BackendAuthorityWellChildMRImmunisation
 
                     "well_child_muac" ->
                         doDecode
@@ -793,6 +818,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildNutrition
                             BackendAuthorityWellChildNutrition
 
+                    "well_child_opv_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildOPVImmunisation
+                            BackendAuthorityWellChildOPVImmunisation
+
+                    "well_child_pcv13_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildPCV13Immunisation
+                            BackendAuthorityWellChildPCV13Immunisation
+
                     "well_child_photo" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildPhoto
@@ -802,6 +837,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildPregnancySummary
                             BackendAuthorityWellChildPregnancySummary
+
+                    "well_child_rotarix_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildRotarixImmunisation
+                            BackendAuthorityWellChildRotarixImmunisation
 
                     "well_child_send_to_hc" ->
                         doDecode

@@ -609,8 +609,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildAlbendazole identifier ->
                 viewMeasurement identifier "Well Child Albendazole"
 
+            BackendAuthorityWellChildBCGImmunisation identifier ->
+                viewMeasurement identifier "Well Child BCG Immunisation"
+
             BackendAuthorityWellChildContributingFactors identifier ->
                 viewMeasurement identifier "Well Child Contributing Factors"
+
+            BackendAuthorityWellChildDTPImmunisation identifier ->
+                viewMeasurement identifier "Well Child DTP Immunisation"
 
             BackendAuthorityWellChildECD identifier ->
                 viewMeasurement identifier "Well Child ECD"
@@ -630,11 +636,20 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildHeight identifier ->
                 viewMeasurement identifier "Well Child Height"
 
+            BackendAuthorityWellChildHPVImmunisation identifier ->
+                viewMeasurement identifier "Well Child HPV Immunisation"
+
             BackendAuthorityWellChildImmunisation identifier ->
                 viewMeasurement identifier "Well Child Immunisation"
 
+            BackendAuthorityWellChildIPVImmunisation identifier ->
+                viewMeasurement identifier "Well Child IPV Immunisation"
+
             BackendAuthorityWellChildMebendezole identifier ->
                 viewMeasurement identifier "Well Child Mebendezole"
+
+            BackendAuthorityWellChildMRImmunisation identifier ->
+                viewMeasurement identifier "Well Child MR Immunisation"
 
             BackendAuthorityWellChildMuac identifier ->
                 viewMeasurement identifier "Well Child Muac"
@@ -645,11 +660,20 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildNutrition identifier ->
                 viewMeasurement identifier "Well Child Nutrition"
 
+            BackendAuthorityWellChildOPVImmunisation identifier ->
+                viewMeasurement identifier "Well Child OPV Immunisation"
+
+            BackendAuthorityWellChildPCV13Immunisation identifier ->
+                viewMeasurement identifier "Well Child PCV13 Immunisation"
+
             BackendAuthorityWellChildPhoto identifier ->
                 viewMeasurement identifier "Well Child Photo"
 
             BackendAuthorityWellChildPregnancySummary identifier ->
                 viewMeasurement identifier "Well Child Pregnancy Summary"
+
+            BackendAuthorityWellChildRotarixImmunisation identifier ->
+                viewMeasurement identifier "Well Child Rotarix Immunisation"
 
             BackendAuthorityWellChildSendToHC identifier ->
                 viewMeasurement identifier "Well Child Send to HC"
