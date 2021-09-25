@@ -1474,6 +1474,45 @@ type alias VaccinationHistoryValue =
     }
 
 
+type alias WellChildBCGImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildDTPImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildHPVImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildIPVImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildMRImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildOPVImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildPCV13Immunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildRotarixImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias VaccinationValue =
+    { administeredDoses : EverySet VaccineDose
+    , administrationDates : EverySet NominalDate
+    , administrationNote : AdministrationNote
+    }
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -1694,6 +1733,14 @@ type alias WellChildMeasurements =
     , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
     , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
     , vaccinationHistory : Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory )
+    , bcgImmunisation : Maybe ( WellChildBCGImmunisationId, WellChildBCGImmunisation )
+    , dtpImmunisation : Maybe ( WellChildDTPImmunisationId, WellChildDTPImmunisation )
+    , hpvImmunisation : Maybe ( WellChildHPVImmunisationId, WellChildHPVImmunisation )
+    , ipvImmunisation : Maybe ( WellChildIPVImmunisationId, WellChildIPVImmunisation )
+    , mrImmunisation : Maybe ( WellChildMRImmunisationId, WellChildMRImmunisation )
+    , opvImmunisation : Maybe ( WellChildOPVImmunisationId, WellChildOPVImmunisation )
+    , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
+    , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
     }
 
 
