@@ -129,6 +129,7 @@ function hedley_well_child_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'administered-today' => 'Administered Today',
+        'administered-previously' => 'Administered Previously',
         'lack-of-stock' => 'Not administered - Lack of stock',
         'known-allergy' => 'Not administered - Known allergy',
         'patient-declined' => 'Not administered - Patient declined',

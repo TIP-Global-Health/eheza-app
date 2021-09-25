@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'well_child_albendazole',
   'description' => t('Exports the Well Child Albendazole bundle.'),
-  'class' => 'HedleyRestfulWellChildAlbendazole',
+  'class' => 'HedleyRestfulWellChildMedication',
   'authentication_types' => TRUE,
 );
