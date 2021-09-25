@@ -2837,3 +2837,58 @@ encodeVaccinationHistoryValue value =
     , ( "deleted", bool False )
     , ( "type", string "well_child_vaccination_history" )
     ]
+
+
+encodeWellChildBCGImmunisation : WellChildBCGImmunisation -> List ( String, Value )
+encodeWellChildBCGImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_bcg_immunisation")
+
+
+encodeWellChildDTPImmunisation : WellChildDTPImmunisation -> List ( String, Value )
+encodeWellChildDTPImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_dtp_immunisation")
+
+
+encodeWellChildHPVImmunisation : WellChildHPVImmunisation -> List ( String, Value )
+encodeWellChildHPVImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_hpv_immunisation")
+
+
+encodeWellChildIPVImmunisation : WellChildIPVImmunisation -> List ( String, Value )
+encodeWellChildIPVImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_ipv_immunisation")
+
+
+encodeWellChildMRImmunisation : WellChildMRImmunisation -> List ( String, Value )
+encodeWellChildMRImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_mr_immunisation")
+
+
+encodeWellChildOPVImmunisation : WellChildOPVImmunisation -> List ( String, Value )
+encodeWellChildOPVImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_opv_immunisation")
+
+
+encodeWellChildPCV13Immunisation : WellChildPCV13Immunisation -> List ( String, Value )
+encodeWellChildPCV13Immunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_pcv13_immunisation")
+
+
+encodeWellChildRotarixImmunisation : WellChildRotarixImmunisation -> List ( String, Value )
+encodeWellChildRotarixImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_rotarix_immunisation")
+
+
+encodeVaccinationValueWithType : String -> VaccinationValue -> List ( String, Value )
+encodeVaccinationValueWithType type_ value =
+    [ ( "administered_doses", encodeEverySet encodeVaccinationDose value.administeredDoses )
+    , ( "administration_dates", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.administrationDates )
+    , ( "administration_note", encodeAdministrationNote value.administrationNote )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeVaccinationDose : VaccineDose -> Value
+encodeVaccinationDose dose =
+    vaccineDoseToString dose |> string
