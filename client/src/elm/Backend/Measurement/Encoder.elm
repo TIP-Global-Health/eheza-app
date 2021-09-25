@@ -389,32 +389,7 @@ encodeMeasurement encounterTag encoder measurement =
 
 encodeNutritionSign : ChildNutritionSign -> Value
 encodeNutritionSign =
-    encodeNutritionSignAsString >> string
-
-
-encodeNutritionSignAsString : ChildNutritionSign -> String
-encodeNutritionSignAsString sign =
-    case sign of
-        AbdominalDistension ->
-            "abdominal-distension"
-
-        Apathy ->
-            "apathy"
-
-        BrittleHair ->
-            "brittle-hair"
-
-        DrySkin ->
-            "dry-skin"
-
-        Edema ->
-            "edema"
-
-        NormalChildNutrition ->
-            "none"
-
-        PoorAppetite ->
-            "poor-appetite"
+    nutritionSignToString >> string
 
 
 encodeFamilyPlanningSign : FamilyPlanningSign -> Value

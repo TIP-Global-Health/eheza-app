@@ -12,6 +12,7 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNutritionEncountersForParticipant
         , getWellChildEncountersForParticipant
+        , sortByDate
         , sortByDateDesc
         , sortDatesDesc
         , sortEncounterTuplesDesc
@@ -1280,7 +1281,7 @@ viewNutritionSigns language child measurements =
                 ]
 
         entries =
-            List.sortWith (sortByDateDesc .dateMeasured) measurements
+            List.sortWith (sortByDate .dateMeasured) measurements
                 |> List.filterMap
                     (\measurement ->
                         case EverySet.toList measurement.value.signs of

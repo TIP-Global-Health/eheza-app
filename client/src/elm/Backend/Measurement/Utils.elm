@@ -651,3 +651,28 @@ getMeasurementValueFunc =
 getMeasurementDateMeasuredFunc : Maybe ( id, { measurement | dateMeasured : NominalDate } ) -> Maybe NominalDate
 getMeasurementDateMeasuredFunc =
     Maybe.map (Tuple.second >> .dateMeasured)
+
+
+nutritionSignToString : ChildNutritionSign -> String
+nutritionSignToString sign =
+    case sign of
+        AbdominalDistension ->
+            "abdominal-distension"
+
+        Apathy ->
+            "apathy"
+
+        BrittleHair ->
+            "brittle-hair"
+
+        DrySkin ->
+            "dry-skin"
+
+        Edema ->
+            "edema"
+
+        NormalChildNutrition ->
+            "none"
+
+        PoorAppetite ->
+            "poor-appetite"
