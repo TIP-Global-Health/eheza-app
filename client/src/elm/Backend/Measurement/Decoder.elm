@@ -196,6 +196,14 @@ decodeWellChildMeasurements =
         |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
         |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
         |> optional "well_child_vaccination_history" (decodeHead decodeWellChildVaccinationHistory) Nothing
+        |> optional "well_child_bcg_immunisation" (decodeHead decodeWellChildBCGImmunisation) Nothing
+        |> optional "well_child_dtp_immunisation" (decodeHead decodeWellChildDTPImmunisation) Nothing
+        |> optional "well_child_hpv_immunisation" (decodeHead decodeWellChildHPVImmunisation) Nothing
+        |> optional "well_child_ipv_immunisation" (decodeHead decodeWellChildIPVImmunisation) Nothing
+        |> optional "well_child_mr_immunisation" (decodeHead decodeWellChildMRImmunisation) Nothing
+        |> optional "well_child_opv_immunisation" (decodeHead decodeWellChildOPVImmunisation) Nothing
+        |> optional "well_child_pcv13_immunisation" (decodeHead decodeWellChildPCV13Immunisation) Nothing
+        |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -3176,23 +3184,23 @@ decodeVaccineDose =
 
 decodeWellChildAlbendazole : Decoder WellChildAlbendazole
 decodeWellChildAlbendazole =
-    decodeAdministrationNote
-        |> field "administration_note"
-        |> decodeWellChildMeasurement
+    decodeWellChildMeasurement decodeWellChildMedication
 
 
 decodeWellChildMebendezole : Decoder WellChildMebendezole
 decodeWellChildMebendezole =
-    decodeAdministrationNote
-        |> field "administration_note"
-        |> decodeWellChildMeasurement
+    decodeWellChildMeasurement decodeWellChildMedication
 
 
 decodeWellChildVitaminA : Decoder WellChildVitaminA
 decodeWellChildVitaminA =
+    decodeWellChildMeasurement decodeWellChildMedication
+
+
+decodeWellChildMedication : Decoder AdministrationNote
+decodeWellChildMedication =
     decodeAdministrationNote
         |> field "administration_note"
-        |> decodeWellChildMeasurement
 
 
 decodeAdministrationNote : Decoder AdministrationNote
@@ -3303,3 +3311,51 @@ decodeVaccinationHistoryValue =
         |> required "ipv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "mr_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "hpv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+
+
+decodeWellChildBCGImmunisation : Decoder WellChildBCGImmunisation
+decodeWellChildBCGImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildDTPImmunisation : Decoder WellChildDTPImmunisation
+decodeWellChildDTPImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildHPVImmunisation : Decoder WellChildHPVImmunisation
+decodeWellChildHPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildIPVImmunisation : Decoder WellChildIPVImmunisation
+decodeWellChildIPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildMRImmunisation : Decoder WellChildMRImmunisation
+decodeWellChildMRImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildOPVImmunisation : Decoder WellChildOPVImmunisation
+decodeWellChildOPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildPCV13Immunisation : Decoder WellChildPCV13Immunisation
+decodeWellChildPCV13Immunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildRotarixImmunisation : Decoder WellChildRotarixImmunisation
+decodeWellChildRotarixImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeVaccinationValue : Decoder VaccinationValue
+decodeVaccinationValue =
+    succeed VaccinationValue
+        |> required "administered_doses" (decodeEverySet decodeVaccineDose)
+        |> required "administration_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "administration_note" decodeAdministrationNote
