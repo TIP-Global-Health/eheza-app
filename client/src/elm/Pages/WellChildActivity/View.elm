@@ -828,7 +828,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
 
         ( vaccinesCompleted, vaccinesToProcess ) =
             Dict.toList allVaccinesWithDoses
-                |> List.filterMap (filterExpextedDosesForPerson currentDate assembled.person)
+                |> List.filterMap (filterExpectedDosesForPerson currentDate assembled.person)
                 |> List.partition isVaccineCompleted
 
         vaccinesForView =

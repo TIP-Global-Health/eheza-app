@@ -644,8 +644,8 @@ generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vacc
         allVaccineTypes
 
 
-filterExpextedDosesForPerson : NominalDate -> Person -> ( VaccineType, List VaccineDose ) -> Maybe ( VaccineType, List VaccineDose )
-filterExpextedDosesForPerson currentDate person ( vaccine, doses ) =
+filterExpectedDosesForPerson : NominalDate -> Person -> ( VaccineType, List VaccineDose ) -> Maybe ( VaccineType, List VaccineDose )
+filterExpectedDosesForPerson currentDate person ( vaccine, doses ) =
     let
         expectedDoses =
             List.filterMap
@@ -1063,6 +1063,49 @@ vaccineDoseToComparable dose =
 
         VaccineDoseFourth ->
             4
+
+
+fromVaccinationValue : Maybe VaccinationValue -> VaccinationForm
+fromVaccinationValue saved =
+    Maybe.map
+        (\value ->
+            { administeredDoses = Just value.administeredDoses
+            , administrationDates = Just value.administrationDates
+            , administrationNote = Just value.administrationNote
+            }
+        )
+        saved
+        |> Maybe.withDefault emptyVaccinationForm
+
+
+vaccinationFormWithDefault : VaccinationForm -> Maybe VaccinationValue -> VaccinationForm
+vaccinationFormWithDefault form saved =
+    unwrap
+        form
+        (\value ->
+            { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
+            , administrationDates = or form.administrationDates (Just value.administrationDates)
+            , administrationNote = or form.administrationNote (Just value.administrationNote)
+            }
+        )
+        saved
+
+
+toVaccinationValueWithDefault : Maybe VaccinationValue -> VaccinationForm -> Maybe VaccinationValue
+toVaccinationValueWithDefault saved form =
+    vaccinationFormWithDefault form saved
+        |> toVaccinationValue
+
+
+toVaccinationValue : VaccinationForm -> Maybe VaccinationValue
+toVaccinationValue form =
+    Maybe.map VaccinationValue form.administeredDoses
+        |> andMap form.administrationDates
+        |> andMap form.administrationNote
+
+
+
+-- @todo: remove
 
 
 fromImmunisationValue : Maybe ImmunisationValue -> ImmunisationForm
