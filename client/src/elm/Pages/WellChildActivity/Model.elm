@@ -95,6 +95,9 @@ type alias Model =
     , dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
     , vaccinationHistoryForm : VaccinationHistoryForm
+    , immunisationData : ImmunisationData
+
+    -- @todo: remove
     , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
@@ -110,6 +113,9 @@ emptyModel =
     , dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
     , vaccinationHistoryForm = emptyVaccinationHistoryForm
+    , immunisationData = emptyImmunisationData
+
+    -- @todo: remove
     , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
@@ -235,6 +241,63 @@ emptyVaccinationHistoryForm =
     , vaccinationDatesDirty = False
     , dateSelectorsState = Dict.empty
     }
+
+
+type alias ImmunisationData =
+    { bcgForm : VaccinationForm
+    , dtpForm : VaccinationForm
+    , hpvForm : VaccinationForm
+    , ipvForm : VaccinationForm
+    , mrForm : VaccinationForm
+    , opvForm : VaccinationForm
+    , pcv13Form : VaccinationForm
+    , rotarixForm : VaccinationForm
+    , activeTask : Maybe ImmunisationTask
+    }
+
+
+emptyImmunisationData : ImmunisationData
+emptyImmunisationData =
+    { bcgForm = emptyVaccinationForm
+    , dtpForm = emptyVaccinationForm
+    , hpvForm = emptyVaccinationForm
+    , ipvForm = emptyVaccinationForm
+    , mrForm = emptyVaccinationForm
+    , opvForm = emptyVaccinationForm
+    , pcv13Form = emptyVaccinationForm
+    , rotarixForm = emptyVaccinationForm
+    , activeTask = Nothing
+    }
+
+
+type alias VaccinationForm =
+    { administeredDoses : Maybe (EverySet VaccineDose)
+    , administrationDates : Maybe (EverySet NominalDate)
+    , administrationNote : Maybe AdministrationNote
+    }
+
+
+emptyVaccinationForm : VaccinationForm
+emptyVaccinationForm =
+    { administeredDoses = Nothing
+    , administrationDates = Nothing
+    , administrationNote = Nothing
+    }
+
+
+type ImmunisationTask
+    = TaskBCG
+    | TaskDTP
+    | TaskHPV
+    | TaskIPV
+    | TaskMR
+    | TaskOPV
+    | TaskPCV13
+    | TaskRotarix
+
+
+
+-- @todo: remove
 
 
 type alias ImmunisationForm =
