@@ -70,6 +70,11 @@ update currentDate id db msg model =
                 |> Maybe.map (\task -> [ SetActiveNextStepsTask task ])
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
 
+        generateImmunisationMsgs nextTask =
+            nextTask
+                |> Maybe.map (\task -> [ SetActiveImmunisationTask task ])
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+
         focusOnCalendar =
             App.Model.ScrollToElement "dropdown--content-container"
     in
@@ -767,6 +772,241 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveImmunisationTask task ->
+            let
+                updatedData =
+                    model.immunisationData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | immunisationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveBCGImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.bcgForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveBCGImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveDTPImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.dtpForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveDTPImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveHPVImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.hpvForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveHPVImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveIPVImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.ipvForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveIPVImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveMRImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.mrForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveMRImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveOPVImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.opvForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveOPVImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SavePCV13Immunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.pcv13Form
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SavePCV13Immunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveRotarixImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.rotarixForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveRotarixImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetImmunisationBoolInput formUpdateFunc value ->
             let

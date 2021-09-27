@@ -113,11 +113,9 @@ expectActivity currentDate zscores isChw assembled db activity =
             not isChw
 
         WellChildImmunisation ->
-            let
-                suggestedVaccines =
-                    generateSuggestedVaccinations currentDate isChw assembled
-            in
-            (not <| List.isEmpty suggestedVaccines) && activityCompleted currentDate zscores isChw assembled db WellChildVaccinationHistory
+            generateSuggestedVaccinations currentDate isChw assembled
+                |> List.isEmpty
+                |> not
 
         WellChildECD ->
             if isChw then
@@ -583,6 +581,120 @@ dangerSignsTasksCompletedFromTotal measurements data task =
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
             , 2
             )
+
+
+expectImmunisationTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.ImmunisationTask -> Bool
+expectImmunisationTask currentDate isChw assembled db task =
+    case task of
+        -- @todo: implement
+        _ ->
+            True
+
+
+immunisationTasksCompletedFromTotal : Bool -> WellChildMeasurements -> ImmunisationData -> Pages.WellChildActivity.Model.ImmunisationTask -> ( Int, Int )
+immunisationTasksCompletedFromTotal isChw measurements data task =
+    -- @todo: implement
+    case task of
+        TaskBCG ->
+            let
+                form =
+                    measurements.bcgImmunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.bcgForm
+            in
+            ( 0
+            , 1
+            )
+
+        TaskDTP ->
+            let
+                form =
+                    measurements.dtpImmunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.dtpForm
+            in
+            ( 0
+            , 1
+            )
+
+        TaskHPV ->
+            let
+                form =
+                    measurements.hpvImmunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.hpvForm
+            in
+            ( 0
+            , 1
+            )
+
+        TaskIPV ->
+            let
+                form =
+                    measurements.ipvImmunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.ipvForm
+            in
+            ( 0
+            , 1
+            )
+
+        TaskMR ->
+            let
+                form =
+                    measurements.mrImmunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.mrForm
+            in
+            ( 0
+            , 1
+            )
+
+        TaskOPV ->
+            let
+                form =
+                    measurements.opvImmunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.opvForm
+            in
+            ( 0
+            , 1
+            )
+
+        TaskPCV13 ->
+            let
+                form =
+                    measurements.pcv13Immunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.pcv13Form
+            in
+            ( 0
+            , 1
+            )
+
+        TaskRotarix ->
+            let
+                form =
+                    measurements.rotarixImmunisation
+                        |> getMeasurementValueFunc
+                        |> vaccinationFormWithDefault data.rotarixForm
+            in
+            ( 0
+            , 1
+            )
+
+
+immunisationTasks : List ImmunisationTask
+immunisationTasks =
+    [ TaskBCG
+    , TaskDTP
+    , TaskHPV
+    , TaskIPV
+    , TaskMR
+    , TaskOPV
+    , TaskPCV13
+    , TaskRotarix
+    ]
 
 
 generateSuggestedVaccinations : NominalDate -> Bool -> AssembledData -> List ( VaccineType, VaccineDose )

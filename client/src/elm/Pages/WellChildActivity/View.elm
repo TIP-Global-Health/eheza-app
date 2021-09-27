@@ -234,7 +234,7 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildImmunisation ->
-            viewImmunisationForm language currentDate isChw assembled model.immunisationForm
+            viewImmunisationContent language currentDate isChw assembled db model.immunisationData
 
         WellChildECD ->
             viewECDForm language currentDate assembled model.ecdForm
@@ -1200,6 +1200,181 @@ vacinationDateByPreviousDoseDate previousDoseDate birthDate ( vaccineType, dose 
         )
         previousDoseDate
         |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, dose ))
+
+
+viewImmunisationContent :
+    Language
+    -> NominalDate
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> ImmunisationData
+    -> List (Html Msg)
+viewImmunisationContent language currentDate isChw assembled db data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectImmunisationTask currentDate isChw assembled db) immunisationTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskBCG ->
+                            ( "bcg-vaccine"
+                            , isJust measurements.bcgImmunisation
+                            )
+
+                        TaskDTP ->
+                            ( "dtp-vaccine"
+                            , isJust measurements.dtpImmunisation
+                            )
+
+                        TaskHPV ->
+                            ( "hpv-vaccine"
+                            , isJust measurements.hpvImmunisation
+                            )
+
+                        TaskIPV ->
+                            ( "ipv-vaccine"
+                            , isJust measurements.ipvImmunisation
+                            )
+
+                        TaskMR ->
+                            ( "mr-vaccine"
+                            , isJust measurements.mrImmunisation
+                            )
+
+                        TaskOPV ->
+                            ( "opv-vaccine"
+                            , isJust measurements.opvImmunisation
+                            )
+
+                        TaskPCV13 ->
+                            ( "pcv13-vaccine"
+                            , isJust measurements.pcv13Immunisation
+                            )
+
+                        TaskRotarix ->
+                            ( "rotarix-vaccine"
+                            , isJust measurements.rotarixImmunisation
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveImmunisationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.WellChildImmunisationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, immunisationTasksCompletedFromTotal isChw measurements data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                -- @todo : implement
+                Just any ->
+                    -- Just TaskContributingFactors ->
+                    --     measurements.contributingFactors
+                    --         |> getMeasurementValueFunc
+                    --         |> contributingFactorsFormWithDefault data.contributingFactorsForm
+                    --         |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+                    --         |> List.singleton
+                    []
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskBCG ->
+                                        SaveBCGImmunisation personId measurements.bcgImmunisation nextTask
+
+                                    TaskDTP ->
+                                        SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
+
+                                    TaskHPV ->
+                                        SaveHPVImmunisation personId measurements.hpvImmunisation nextTask
+
+                                    TaskIPV ->
+                                        SaveIPVImmunisation personId measurements.ipvImmunisation nextTask
+
+                                    TaskMR ->
+                                        SaveMRImmunisation personId measurements.mrImmunisation nextTask
+
+                                    TaskOPV ->
+                                        SaveOPVImmunisation personId measurements.opvImmunisation nextTask
+
+                                    TaskPCV13 ->
+                                        SavePCV13Immunisation personId measurements.pcv13Immunisation nextTask
+
+                                    TaskRotarix ->
+                                        SaveRotarixImmunisation personId measurements.rotarixImmunisation nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+
+-- @todo: remove
 
 
 viewImmunisationForm : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationForm -> List (Html Msg)
