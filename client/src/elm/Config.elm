@@ -126,7 +126,7 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ehezaGlobal )
-        , ( "aos-backend-ihangane.pantheonsite.io", ***REMOVED*** )
+        , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
