@@ -2294,6 +2294,118 @@ input::placeholder {
   }
 }
 
+.icon-bcg-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-cough-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-cough-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-cough-gray.svg);
+  }
+}
+
+.icon-dtp-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-cough-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-cough-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-cough-gray.svg);
+  }
+}
+
+.icon-hpv-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hpv-vaccine-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hpv-vaccine-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hpv-vaccine-gray.svg);
+  }
+}
+
+.icon-ipv-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-immunisation-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-immunisation-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-immunisation-gray.svg);
+  }
+}
+
+.icon-mr-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-mr-vaccine-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-mr-vaccine-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-mr-vaccine-gray.svg);
+  }
+}
+
+.icon-opv-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-opv-vaccine-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-opv-vaccine-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-opv-vaccine-gray.svg);
+  }
+}
+
+.icon-pcv13-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-pneumonia-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-pneumonia-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-pneumonia-gray.svg);
+  }
+}
+
+.icon-rotarix-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-rotarix-vaccine-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-rotarix-vaccine-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-rotarix-vaccine-gray.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
