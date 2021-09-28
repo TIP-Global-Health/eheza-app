@@ -1030,6 +1030,34 @@ getVaccinationDateFromImmunisationForm vaccineType =
             .hpvVaccinationDate
 
 
+immunisationTaskToVaccineType : ImmunisationTask -> Maybe VaccineType
+immunisationTaskToVaccineType task =
+    case task of
+        TaskBCG ->
+            Just VaccineBCG
+
+        TaskDTP ->
+            Just VaccineDTP
+
+        TaskHPV ->
+            Just VaccineHPV
+
+        TaskIPV ->
+            Just VaccineIPV
+
+        TaskMR ->
+            Just VaccineMR
+
+        TaskOPV ->
+            Just VaccineOPV
+
+        TaskPCV13 ->
+            Just VaccinePCV13
+
+        TaskRotarix ->
+            Just VaccineRotarix
+
+
 allVaccineTypes : List VaccineType
 allVaccineTypes =
     [ VaccineBCG

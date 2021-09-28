@@ -94,9 +94,9 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
-import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
+import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..), VaccinationStatus(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -1027,6 +1027,7 @@ type TranslationId
     | WellChildImmunisationDescription Pages.WellChildActivity.Model.ImmunisationTask
     | WellChildImmunisationDosage Pages.WellChildActivity.Model.ImmunisationTask
     | WellChildImmunisationHeader Pages.WellChildActivity.Model.ImmunisationTask
+    | WellChildImmunisationHistory Pages.WellChildActivity.Model.ImmunisationTask
     | WellChildImmunisationTask Pages.WellChildActivity.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
@@ -8496,7 +8497,7 @@ translationSet trans =
                     }
 
                 Pages.WellChildActivity.Model.TaskHPV ->
-                    { english = "There are 2 doses of HPV - at 12 years and 12.5 years. "
+                    { english = "There are 2 doses of HPV - at 12 years and 12.5 years."
                     , kinyarwanda = Nothing
                     }
 
@@ -8564,6 +8565,48 @@ translationSet trans =
 
                 Pages.WellChildActivity.Model.TaskRotarix ->
                     { english = "Rotavirus Vaccine (Rotarix)"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildImmunisationHistory task ->
+            case task of
+                Pages.WellChildActivity.Model.TaskBCG ->
+                    { english = "BCG History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskDTP ->
+                    { english = "DTP - HepB - Hib History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskHPV ->
+                    { english = "HPV History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskIPV ->
+                    { english = "IPV History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskMR ->
+                    { english = "Measles - Rubella History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskOPV ->
+                    { english = "OPV History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskPCV13 ->
+                    { english = "PCV 13 History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskRotarix ->
+                    { english = "Rotarix History"
                     , kinyarwanda = Nothing
                     }
 

@@ -22,12 +22,6 @@ type DiagnosisMode
     | ModeCompletedDiagnosis
 
 
-type VaccinationStatus
-    = StatusBehind
-    | StatusDone
-    | StatusUpToDate
-
-
 type DiagnosisEntryStatus
     = StatusOngoing
     | StatusResolved

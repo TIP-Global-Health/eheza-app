@@ -142,6 +142,12 @@ type WarningPopupType
     | PopupVaccinationHistory VaccinationProgressDict
 
 
+type VaccinationStatus
+    = StatusBehind
+    | StatusDone
+    | StatusUpToDate
+
+
 type alias PregnancySummaryForm =
     { expectedDateConcluded : Maybe Date
     , isExpectedDateConcludedSelectorOpen : Bool

@@ -14,7 +14,7 @@ import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -1412,6 +1412,31 @@ viewImmunisationContent language currentDate isChw assembled db data =
 
 viewVaccinationForm : Language -> NominalDate -> ImmunisationTask -> VaccinationForm -> Html Msg
 viewVaccinationForm language currentDate immunisationTask form =
+    let
+        viewHistoryEntry dose status date updateAllowed =
+            let
+                dateForView =
+                    Maybe.map formatDDMMyyyy date
+                        |> Maybe.withDefault "--/--/----"
+
+                statusClass =
+                    case status of
+                        StatusDone ->
+                            "done"
+
+                        StatusBehind ->
+                            "behind"
+
+                        _ ->
+                            ""
+            in
+            div [ class "history-entry" ]
+                [ div [ class "dose" ] [ text <| String.fromInt <| vaccineDoseToComparable dose ]
+                , div [ class <| "status " ++ statusClass ] [ text <| translate language <| Translate.VaccinationStatus status ]
+                , div [ class "date" ] [ text dateForView ]
+                , showIf updateAllowed <| div [ class "update" ] [ text <| translate language Translate.Update ]
+                ]
+    in
     -- let
     --     healthEducationSection =
     --         let
@@ -1470,8 +1495,12 @@ viewVaccinationForm language currentDate immunisationTask form =
                     , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage immunisationTask ]
                     ]
                 ]
-
-            -- viewHealthEducationLabel language Translate.ProvideHealthEducation (Translate.AcuteIllnessDiagnosis diagnosis)  Nothing
+            , viewLabel language (Translate.WellChildImmunisationHistory immunisationTask)
+            , div [ class "history" ]
+                [ viewHistoryEntry VaccineDoseFirst StatusDone (Just currentDate) False
+                , viewHistoryEntry VaccineDoseSecond StatusBehind Nothing True
+                , viewHistoryEntry VaccineDoseThird StatusBehind Nothing False
+                ]
             ]
         ]
 

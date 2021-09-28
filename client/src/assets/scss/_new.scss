@@ -1515,8 +1515,61 @@ div.page-activity.well-child {
         align-items: flex-start;
         font-weight: 500;
 
-        .description {
+        .description,
+        .dosage {
           margin-bottom: 30px;
+        }
+      }
+
+      .ui.form.vaccination .history {
+        padding: 20px 0;
+      }
+
+      .ui.form.vaccination .history .history-entry {
+        align-items: flex-start;
+        display: flex;
+        font-weight: normal;
+        margin-left: 55px;
+
+        .dose {
+          background: $color-primary;
+          border-radius: 5px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 10px;
+        }
+
+        .status {
+          border-radius: 10px;
+          color: $color-white;
+          font-size: 17px;
+          margin-left: 30px;
+          padding: 0 10px;
+          text-align: center;
+          text-transform: uppercase;
+          width: 100px;
+
+          &.done {
+            background: $color-blue;
+          }
+
+          &.behind{
+            background: $color-velvet;
+          }
+        }
+
+        .date {
+          margin-left: 30px;
+          width: 150px;
+        }
+
+        .update {
+          background: $color-primary;
+          border-radius: 3px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 20px;
+          text-transform: uppercase;
         }
       }
 
