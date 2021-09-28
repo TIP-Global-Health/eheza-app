@@ -1511,6 +1511,15 @@ div.page-activity.well-child {
         }
       }
 
+      .ui.form.vaccination .header.icon-label {
+        align-items: flex-start;
+        font-weight: 500;
+
+        .description {
+          margin-bottom: 30px;
+        }
+      }
+
       .why-not {
         margin-bottom: 30px;
         margin-left: 20px;

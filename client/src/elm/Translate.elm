@@ -8501,7 +8501,7 @@ translationSet trans =
                     }
 
                 Pages.WellChildActivity.Model.TaskIPV ->
-                    { english = "There is only one does of the inactivated vaccine."
+                    { english = "There is only one dose of the inactivated vaccine."
                     , kinyarwanda = Nothing
                     }
 

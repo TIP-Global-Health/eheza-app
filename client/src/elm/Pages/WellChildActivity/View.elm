@@ -1300,19 +1300,56 @@ viewImmunisationContent language currentDate isChw assembled db data =
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case activeTask of
-                -- @todo : implement
-                Just any ->
-                    -- Just TaskContributingFactors ->
-                    --     measurements.contributingFactors
-                    --         |> getMeasurementValueFunc
-                    --         |> contributingFactorsFormWithDefault data.contributingFactorsForm
-                    --         |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
-                    --         |> List.singleton
-                    []
+            Maybe.map
+                (\activeTask_ ->
+                    let
+                        vaccinationForm =
+                            case activeTask_ of
+                                TaskBCG ->
+                                    measurements.bcgImmunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.bcgForm
 
-                Nothing ->
-                    []
+                                TaskDTP ->
+                                    measurements.dtpImmunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.dtpForm
+
+                                TaskHPV ->
+                                    measurements.hpvImmunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.hpvForm
+
+                                TaskIPV ->
+                                    measurements.ipvImmunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.ipvForm
+
+                                TaskMR ->
+                                    measurements.mrImmunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.mrForm
+
+                                TaskOPV ->
+                                    measurements.opvImmunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.opvForm
+
+                                TaskPCV13 ->
+                                    measurements.pcv13Immunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.pcv13Form
+
+                                TaskRotarix ->
+                                    measurements.rotarixImmunisation
+                                        |> getMeasurementValueFunc
+                                        |> vaccinationFormWithDefault data.rotarixForm
+                    in
+                    viewVaccinationForm language currentDate activeTask_ vaccinationForm
+                        |> List.singleton
+                )
+                activeTask
+                |> Maybe.withDefault []
 
         nextTask =
             List.filter
@@ -1373,7 +1410,74 @@ viewImmunisationContent language currentDate isChw assembled db data =
     ]
 
 
+viewVaccinationForm : Language -> NominalDate -> ImmunisationTask -> VaccinationForm -> Html Msg
+viewVaccinationForm language currentDate immunisationTask form =
+    -- let
+    --     healthEducationSection =
+    --         let
+    --             providedHealthEducation =
+    --                 form.educationForDiagnosis
+    --                     |> Maybe.withDefault True
+    --
+    --             reasonForNotProvidingHealthEducationOptions =
+    --                 [ PatientNeedsEmergencyReferral
+    --                 , ReceivedEmergencyCase
+    --                 , LackOfAppropriateEducationUserGuide
+    --                 , PatientRefused
+    --                 ]
+    --
+    --             reasonForNotProvidingHealthEducation =
+    --                 if not providedHealthEducation then
+    --                     [ viewQuestionLabel language Translate.WhyNot
+    --                     , viewCheckBoxSelectInput language
+    --                         reasonForNotProvidingHealthEducationOptions
+    --                         []
+    --                         form.reasonForNotProvidingHealthEducation
+    --                         SetReasonForNotProvidingHealthEducation
+    --                         Translate.ReasonForNotProvidingHealthEducation
+    --                     ]
+    --
+    --                 else
+    --                     []
+    --         in
+    --         maybeDiagnosis
+    --             |> Maybe.map
+    --                 (\diagnosis ->
+    --                     [ div [ class "label" ]
+    --                         [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+    --                         , text " "
+    --                         , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+    --                         , text "?"
+    --                         , viewBoolInput
+    --                             language
+    --                             form.educationForDiagnosis
+    --                             SetProvidedEducationForDiagnosis
+    --                             "education-for-diagnosis"
+    --                             Nothing
+    --                         ]
+    --                     ]
+    --                         ++ reasonForNotProvidingHealthEducation
+    --                 )
+    --             |> Maybe.withDefault [ emptyNode ]
+    -- in
+    div [ class "ui form vaccination" ] <|
+        [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader immunisationTask ]
+        , div [ class "instructions" ]
+            [ div [ class "header icon-label" ] <|
+                [ i [ class "icon-open-book" ] []
+                , div []
+                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription immunisationTask ]
+                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage immunisationTask ]
+                    ]
+                ]
 
+            -- viewHealthEducationLabel language Translate.ProvideHealthEducation (Translate.AcuteIllnessDiagnosis diagnosis)  Nothing
+            ]
+        ]
+
+
+
+-- ++ healthEducationSection
 -- @todo: remove
 
 
