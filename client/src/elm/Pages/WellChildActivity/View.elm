@@ -1345,7 +1345,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
                                         |> getMeasurementValueFunc
                                         |> vaccinationFormWithDefault data.rotarixForm
                     in
-                    viewVaccinationForm language currentDate activeTask_ vaccinationForm
+                    viewVaccinationForm language currentDate assembled activeTask_ vaccinationForm
                         |> List.singleton
                 )
                 activeTask
@@ -1410,56 +1410,84 @@ viewImmunisationContent language currentDate isChw assembled db data =
     ]
 
 
-viewVaccinationForm : Language -> NominalDate -> ImmunisationTask -> VaccinationForm -> Html Msg
-viewVaccinationForm language currentDate immunisationTask form =
-    let
-        viewHistoryEntry dose status date updateAllowed =
-            let
-                dateForView =
-                    Maybe.map formatDDMMyyyy date
-                        |> Maybe.withDefault "--/--/----"
+viewVaccinationForm : Language -> NominalDate -> AssembledData -> ImmunisationTask -> VaccinationForm -> Html Msg
+viewVaccinationForm language currentDate assembled immunisationTask form =
+    immunisationTaskToVaccineType immunisationTask
+        |> Maybe.map
+            (\vaccineType ->
+                let
+                    expectedDoses =
+                        getAllDosesForVaccine vaccineType
+                            |> List.filter
+                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person ( vaccineType, dose ))
 
-                statusClass =
-                    case status of
-                        StatusDone ->
-                            "done"
+                    dosesGivenPreviouslyData =
+                        Dict.get vaccineType assembled.vaccinationHistory
+                            |> Maybe.withDefault Dict.empty
+                            |> Dict.toList
 
-                        StatusBehind ->
-                            "behind"
+                    dosesGivenPreviously =
+                        List.map Tuple.first dosesGivenPreviouslyData
 
-                        _ ->
-                            ""
-            in
-            div [ class "history-entry" ]
-                [ div [ class "dose" ] [ text <| String.fromInt <| vaccineDoseToComparable dose ]
-                , div [ class <| "status " ++ statusClass ] [ text <| translate language <| Translate.VaccinationStatus status ]
-                , div [ class "date" ] [ text dateForView ]
-                , showIf updateAllowed <| div [ class "update" ] [ text <| translate language Translate.Update ]
-                ]
+                    dosesMissing =
+                        List.filter (\dose -> not <| List.member dose dosesGivenPreviously)
+                            expectedDoses
 
-        vaccineType =
-            translate language <| Translate.WellChildImmunisationTask immunisationTask
-    in
-    div [ class "ui form vaccination" ] <|
-        [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader immunisationTask ]
-        , div [ class "instructions" ]
-            [ div [ class "header icon-label" ] <|
-                [ i [ class "icon-open-book" ] []
-                , div []
-                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription immunisationTask ]
-                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage immunisationTask ]
+                    dosesGivenPreviouslyForView =
+                        List.map (\( dose, date ) -> viewHistoryEntry dose StatusDone (Just date) False)
+                            dosesGivenPreviouslyData
+
+                    dosesMissingForView =
+                        List.indexedMap (\index dose -> viewHistoryEntry dose StatusBehind Nothing (index == 0))
+                            dosesMissing
+
+                    viewHistoryEntry dose status date updateAllowed =
+                        let
+                            dateForView =
+                                Maybe.map formatDDMMyyyy date
+                                    |> Maybe.withDefault "--/--/----"
+
+                            statusClass =
+                                case status of
+                                    StatusDone ->
+                                        "done"
+
+                                    StatusBehind ->
+                                        "behind"
+
+                                    _ ->
+                                        ""
+                        in
+                        div [ class "history-entry" ]
+                            [ div [ class "dose" ] [ text <| String.fromInt <| vaccineDoseToComparable dose ]
+                            , div [ class <| "status " ++ statusClass ] [ text <| translate language <| Translate.VaccinationStatus status ]
+                            , div [ class "date" ] [ text dateForView ]
+                            , showIf updateAllowed <| div [ class "update" ] [ text <| translate language Translate.Update ]
+                            ]
+
+                    vaccineTypeLabel =
+                        translate language <| Translate.WellChildImmunisationTask immunisationTask
+                in
+                div [ class "ui form vaccination" ] <|
+                    [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader immunisationTask ]
+                    , div [ class "instructions" ]
+                        [ div [ class "header icon-label" ] <|
+                            [ i [ class "icon-open-book" ] []
+                            , div []
+                                [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription immunisationTask ]
+                                , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage immunisationTask ]
+                                ]
+                            ]
+                        , viewLabel language (Translate.WellChildImmunisationHistory immunisationTask)
+                        , div [ class "history" ] <|
+                            dosesGivenPreviouslyForView
+                                ++ dosesMissingForView
+                        , viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineTypeLabel
+                        , viewQuestionLabel language <| Translate.VaccineDoseAdministeredTodayQuestion vaccineTypeLabel
+                        ]
                     ]
-                ]
-            , viewLabel language (Translate.WellChildImmunisationHistory immunisationTask)
-            , div [ class "history" ]
-                [ viewHistoryEntry VaccineDoseFirst StatusDone (Just currentDate) False
-                , viewHistoryEntry VaccineDoseSecond StatusBehind Nothing True
-                , viewHistoryEntry VaccineDoseThird StatusBehind Nothing False
-                ]
-            , viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineType
-            , viewQuestionLabel language <| Translate.VaccineDoseAdministeredTodayQuestion vaccineType
-            ]
-        ]
+            )
+        |> Maybe.withDefault emptyNode
 
 
 
