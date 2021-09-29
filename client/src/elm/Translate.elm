@@ -1006,6 +1006,9 @@ type TranslationId
     | UterineMyoma
     | VaccinationCatchUpRequiredQuestion
     | VaccinationStatus VaccinationStatus
+    | VaccineDoseAdministeredPreviouslyQuestion String
+    | VaccineDoseAdministeredTodayQuestion String
+      -- @todo: remove
     | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
@@ -8119,6 +8122,16 @@ translationSet trans =
                     { english = "Up To Date"
                     , kinyarwanda = Nothing
                     }
+
+        VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
+            { english = "Did the child receive any " ++ vaccineType ++ " vaccines prior to today that are not recorded above"
+            , kinyarwanda = Nothing
+            }
+
+        VaccineDoseAdministeredTodayQuestion vaccineType ->
+            { english = "Will the child receive the " ++ vaccineType ++ " vaccine today"
+            , kinyarwanda = Nothing
+            }
 
         VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->
             let
