@@ -2550,6 +2550,7 @@ generateVaccinationProgressForVaccine vaccinations =
         )
         []
         vaccinations
+        |> List.sortBy (Tuple.first >> vaccineDoseToComparable)
         |> Dict.fromList
 
 
