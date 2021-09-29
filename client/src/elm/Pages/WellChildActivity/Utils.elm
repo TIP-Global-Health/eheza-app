@@ -896,62 +896,6 @@ nextDoseForVaccine currentDate lastDoseDate lastDoseAdministered vaccineType =
             )
 
 
-getVaccinationDateFromImmunisationValue : VaccineType -> (ImmunisationValue -> Maybe NominalDate)
-getVaccinationDateFromImmunisationValue vaccineType =
-    case vaccineType of
-        VaccineBCG ->
-            .bcgVaccinationDate
-
-        VaccineOPV ->
-            .opvVaccinationDate
-
-        VaccineDTP ->
-            .dtpVaccinationDate
-
-        VaccinePCV13 ->
-            .pcv13VaccinationDate
-
-        VaccineRotarix ->
-            .rotarixVaccinationDate
-
-        VaccineIPV ->
-            .ipvVaccinationDate
-
-        VaccineMR ->
-            .mrVaccinationDate
-
-        VaccineHPV ->
-            .hpvVaccinationDate
-
-
-getVaccinationDatesFromVaccinationHistoryValue : VaccineType -> (VaccinationHistoryValue -> EverySet NominalDate)
-getVaccinationDatesFromVaccinationHistoryValue vaccineType =
-    case vaccineType of
-        VaccineBCG ->
-            .bcgVaccinationDate
-
-        VaccineOPV ->
-            .opvVaccinationDate
-
-        VaccineDTP ->
-            .dtpVaccinationDate
-
-        VaccinePCV13 ->
-            .pcv13VaccinationDate
-
-        VaccineRotarix ->
-            .rotarixVaccinationDate
-
-        VaccineIPV ->
-            .ipvVaccinationDate
-
-        VaccineMR ->
-            .mrVaccinationDate
-
-        VaccineHPV ->
-            .hpvVaccinationDate
-
-
 doseAdministrationQuestionAnswered : VaccineType -> ImmunisationForm -> Bool
 doseAdministrationQuestionAnswered vaccineType form =
     let
@@ -2542,63 +2486,70 @@ toVaccinationHistoryValue form =
         }
 
 
-generateVaccinationProgress : List ImmunisationValue -> List VaccinationHistoryValue -> VaccinationProgressDict
-generateVaccinationProgress immunisations vaccinationHistories =
-    List.map (\vaccineType -> ( vaccineType, generateVaccinationProgressForVaccine immunisations vaccinationHistories vaccineType )) allVaccineTypes
-        |> Dict.fromList
-
-
-generateVaccinationProgressForVaccine : List ImmunisationValue -> List VaccinationHistoryValue -> VaccineType -> Dict VaccineDose NominalDate
-generateVaccinationProgressForVaccine immunisations vaccinationHistories vaccineType =
+generateVaccinationProgress : List WellChildMeasurements -> VaccinationProgressDict
+generateVaccinationProgress measurements =
     let
-        dataFromImmunisation =
-            generateVaccinationProgressFromImmunisationForVaccine immunisations vaccineType
+        bcgImmunisations =
+            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
+                measurements
 
-        dataFromVaccinationHistory =
-            generateVaccinationProgressFromVaccinationHistoryForVaccine vaccinationHistories vaccineType
+        dtpImmunisations =
+            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        hpvImmunisations =
+            List.filterMap (.hpvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        ipvImmunisations =
+            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        mrImmunisations =
+            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        opvImmunisations =
+            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        pcv13Immunisations =
+            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
+                measurements
+
+        rotarixImmunisations =
+            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
+                measurements
     in
-    Dict.union dataFromImmunisation dataFromVaccinationHistory
-
-
-generateVaccinationProgressFromImmunisationForVaccine : List ImmunisationValue -> VaccineType -> Dict VaccineDose NominalDate
-generateVaccinationProgressFromImmunisationForVaccine values vaccineType =
-    List.filterMap
-        (\value ->
-            let
-                suggestedDose =
-                    Dict.get vaccineType value.suggestedVaccines
-
-                vaccinationDate =
-                    getVaccinationDateFromImmunisationValue vaccineType value
-            in
-            Maybe.map2 (\dose date -> ( dose, date ))
-                suggestedDose
-                vaccinationDate
-        )
-        values
+    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
+    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
+    , ( VaccineHPV, generateVaccinationProgressForVaccine hpvImmunisations )
+    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
+    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
+    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
+    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
+    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
+    ]
         |> Dict.fromList
 
 
-generateVaccinationProgressFromVaccinationHistoryForVaccine : List VaccinationHistoryValue -> VaccineType -> Dict VaccineDose NominalDate
-generateVaccinationProgressFromVaccinationHistoryForVaccine values vaccineType =
-    List.filterMap
-        (\value ->
+generateVaccinationProgressForVaccine : List VaccinationValue -> Dict VaccineDose NominalDate
+generateVaccinationProgressForVaccine vaccinations =
+    List.foldl
+        (\vaccination accum ->
             let
-                administeredDoses =
-                    Dict.get vaccineType value.administeredVaccines
+                doses =
+                    EverySet.toList vaccination.administeredDoses
+                        |> List.sortBy vaccineDoseToComparable
 
-                vaccinationDates =
-                    getVaccinationDatesFromVaccinationHistoryValue vaccineType value
+                dates =
+                    EverySet.toList vaccination.administrationDates
+                        |> List.sortWith Date.compare
             in
-            Maybe.map
-                (\doses ->
-                    List.Extra.zip (EverySet.toList doses)
-                        (EverySet.toList vaccinationDates)
-                )
-                administeredDoses
+            accum ++ List.Extra.zip doses dates
         )
-        values
-        |> List.concat
+        []
+        vaccinations
         |> Dict.fromList
 
 
