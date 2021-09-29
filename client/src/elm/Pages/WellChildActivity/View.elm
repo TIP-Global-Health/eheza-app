@@ -1436,55 +1436,10 @@ viewVaccinationForm language currentDate immunisationTask form =
                 , div [ class "date" ] [ text dateForView ]
                 , showIf updateAllowed <| div [ class "update" ] [ text <| translate language Translate.Update ]
                 ]
+
+        vaccineType =
+            translate language <| Translate.WellChildImmunisationTask immunisationTask
     in
-    -- let
-    --     healthEducationSection =
-    --         let
-    --             providedHealthEducation =
-    --                 form.educationForDiagnosis
-    --                     |> Maybe.withDefault True
-    --
-    --             reasonForNotProvidingHealthEducationOptions =
-    --                 [ PatientNeedsEmergencyReferral
-    --                 , ReceivedEmergencyCase
-    --                 , LackOfAppropriateEducationUserGuide
-    --                 , PatientRefused
-    --                 ]
-    --
-    --             reasonForNotProvidingHealthEducation =
-    --                 if not providedHealthEducation then
-    --                     [ viewQuestionLabel language Translate.WhyNot
-    --                     , viewCheckBoxSelectInput language
-    --                         reasonForNotProvidingHealthEducationOptions
-    --                         []
-    --                         form.reasonForNotProvidingHealthEducation
-    --                         SetReasonForNotProvidingHealthEducation
-    --                         Translate.ReasonForNotProvidingHealthEducation
-    --                     ]
-    --
-    --                 else
-    --                     []
-    --         in
-    --         maybeDiagnosis
-    --             |> Maybe.map
-    --                 (\diagnosis ->
-    --                     [ div [ class "label" ]
-    --                         [ text <| translate language Translate.ProvidedPreventionEducationQuestion
-    --                         , text " "
-    --                         , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
-    --                         , text "?"
-    --                         , viewBoolInput
-    --                             language
-    --                             form.educationForDiagnosis
-    --                             SetProvidedEducationForDiagnosis
-    --                             "education-for-diagnosis"
-    --                             Nothing
-    --                         ]
-    --                     ]
-    --                         ++ reasonForNotProvidingHealthEducation
-    --                 )
-    --             |> Maybe.withDefault [ emptyNode ]
-    -- in
     div [ class "ui form vaccination" ] <|
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader immunisationTask ]
         , div [ class "instructions" ]
@@ -1501,12 +1456,13 @@ viewVaccinationForm language currentDate immunisationTask form =
                 , viewHistoryEntry VaccineDoseSecond StatusBehind Nothing True
                 , viewHistoryEntry VaccineDoseThird StatusBehind Nothing False
                 ]
+            , viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineType
+            , viewQuestionLabel language <| Translate.VaccineDoseAdministeredTodayQuestion vaccineType
             ]
         ]
 
 
 
--- ++ healthEducationSection
 -- @todo: remove
 
 
