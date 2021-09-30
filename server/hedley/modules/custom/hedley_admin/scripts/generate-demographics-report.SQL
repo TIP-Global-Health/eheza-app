@@ -204,7 +204,7 @@ WHERE
 AND ((sess.field_session_target_id IS NOT NULL AND clinic.field_clinic_target_id IS NOT NULL) OR
      nutr.field_nutrition_encounter_target_id IS NOT NULL OR pren.field_prenatal_encounter_target_id IS NOT NULL OR
      acute.field_acute_illness_encounter_target_id IS NOT NULL)
-AND (field_group_type_value IN ('pmtct', 'fbf', 'sorwathe', 'chw', 'achi') OR sess.field_session_target_id IS NULL)
+AND (field_group_type_value IN ('pmtct', 'fbf', 'sorwathe', 'chw') OR sess.field_session_target_id IS NULL)
 GROUP BY
   p.field_person_target_id
 HAVING
