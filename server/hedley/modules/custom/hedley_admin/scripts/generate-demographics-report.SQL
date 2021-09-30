@@ -382,7 +382,7 @@ SELECT '* Older than 50 years:' AS '';
 CALL impacted_report('mt50y');
 
 SELECT
-  CONCAT("Patiens with missing AGE: ", COUNT(DISTINCT nid)) AS ''
+  CONCAT("Patients with missing AGE: ", COUNT(DISTINCT nid)) AS ''
 FROM
   node
 WHERE
@@ -400,7 +400,7 @@ AND nid NOT IN (SELECT
                 WHERE
                   field_deleted_value = 1);
 SELECT
-  CONCAT("Patiens with missing GENDER: ", COUNT(DISTINCT nid)) AS ''
+  CONCAT("Patients with missing GENDER: ", COUNT(DISTINCT nid)) AS ''
 FROM
   node
 WHERE
