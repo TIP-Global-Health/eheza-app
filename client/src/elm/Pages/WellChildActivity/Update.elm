@@ -784,6 +784,19 @@ update currentDate id db msg model =
             , []
             )
 
+        SetVaccinationFormViewMode vaccineType mode ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | viewMode = mode }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
         SetAllowPreviousVaccinesUpdate vaccineType value ->
             let
                 form =

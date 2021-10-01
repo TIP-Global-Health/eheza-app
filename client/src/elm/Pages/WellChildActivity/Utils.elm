@@ -1212,6 +1212,7 @@ fromVaccinationValue saved =
             { administeredDoses = Just value.administeredDoses
             , administrationDates = Just value.administrationDates
             , administrationNote = Just value.administrationNote
+            , viewMode = ViewModeInitial
             , allowPreviousVaccinesUpdate = previousVaccinesUpdateAllowed value
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
             }
@@ -1228,6 +1229,7 @@ vaccinationFormWithDefault form saved =
             { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
             , administrationDates = or form.administrationDates (Just value.administrationDates)
             , administrationNote = or form.administrationNote (Just value.administrationNote)
+            , viewMode = form.viewMode
             , allowPreviousVaccinesUpdate = or form.allowPreviousVaccinesUpdate (previousVaccinesUpdateAllowed value)
             , willReceiveVaccineToday = or form.willReceiveVaccineToday (value.administrationNote == AdministeredToday |> Just)
             }

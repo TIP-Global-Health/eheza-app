@@ -1502,7 +1502,12 @@ viewVaccinationForm language currentDate assembled immunisationTask form =
                             [ div [ class "dose" ] [ text <| String.fromInt <| vaccineDoseToComparable dose ]
                             , div [ class <| "status " ++ statusClass ] [ text <| translate language <| Translate.VaccinationStatus status ]
                             , div [ class "date" ] [ text dateForView ]
-                            , showIf updateAllowed <| div [ class "update" ] [ text <| translate language Translate.Update ]
+                            , showIf updateAllowed <|
+                                div
+                                    [ class "update"
+                                    , onClick <| SetVaccinationFormViewMode vaccineType (ViewModeVaccinationUpdate dose)
+                                    ]
+                                    [ text <| translate language Translate.Update ]
                             ]
 
                     vaccineTypeLabel =
@@ -1550,6 +1555,47 @@ viewVaccinationForm language currentDate assembled immunisationTask form =
                             (Maybe.Extra.or doseGivenToday (List.head dosesMissing))
                             form.allowPreviousVaccinesUpdate
                             |> Maybe.withDefault []
+
+                    contentByViewMode =
+                        case form.viewMode of
+                            ViewModeInitial ->
+                                [ div [ class "history" ] <|
+                                    dosesFromPreviousEncountersForView
+                                        ++ dosesFromCurrentEncounterForView
+                                        ++ dosesMissingForView
+                                , viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineTypeLabel
+                                , viewBoolInput
+                                    language
+                                    form.allowPreviousVaccinesUpdate
+                                    (SetAllowPreviousVaccinesUpdate vaccineType)
+                                    ""
+                                    Nothing
+                                ]
+                                    ++ willReceiveVaccineTodaySection
+
+                            ViewModeVaccinationUpdate dose ->
+                                let
+                                    saveDisabled =
+                                        True
+                                in
+                                [ div [ class "history" ]
+                                    [ viewHistoryEntry dose StatusBehind Nothing False ]
+                                , div [ class "update actions" ]
+                                    [ div
+                                        [ class "ui primary button"
+                                        , onClick <| SetVaccinationFormViewMode vaccineType ViewModeInitial
+                                        ]
+                                        [ text <| translate language Translate.Cancel
+                                        ]
+                                    , div
+                                        [ classList
+                                            [ ( "ui primary button", True )
+                                            , ( "disabled", saveDisabled )
+                                            ]
+                                        ]
+                                        [ text <| translate language Translate.Save ]
+                                    ]
+                                ]
                 in
                 div [ class "ui form vaccination" ] <|
                     [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader immunisationTask ]
@@ -1562,19 +1608,8 @@ viewVaccinationForm language currentDate assembled immunisationTask form =
                                 ]
                             ]
                         , viewLabel language (Translate.WellChildImmunisationHistory immunisationTask)
-                        , div [ class "history" ] <|
-                            dosesFromPreviousEncountersForView
-                                ++ dosesFromCurrentEncounterForView
-                                ++ dosesMissingForView
-                        , viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineTypeLabel
-                        , viewBoolInput
-                            language
-                            form.allowPreviousVaccinesUpdate
-                            (SetAllowPreviousVaccinesUpdate vaccineType)
-                            ""
-                            Nothing
                         ]
-                            ++ willReceiveVaccineTodaySection
+                            ++ contentByViewMode
                     ]
             )
         |> Maybe.withDefault emptyNode

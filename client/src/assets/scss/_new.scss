@@ -1573,6 +1573,19 @@ div.page-activity.well-child {
         }
       }
 
+      .ui.form.vaccination .update.actions {
+        display: flex;
+        justify-content: space-evenly;
+        margin-bottom: 40px;
+
+        .button {
+          font-size: 18px;
+          font-weight: 600;
+          padding: 15px;
+          width: 250px;
+        }
+      }
+
       .why-not {
         margin-bottom: 30px;
         margin-left: 20px;

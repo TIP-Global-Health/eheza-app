@@ -51,6 +51,7 @@ type Msg
     | SaveVaccinationHistory PersonId (Dict VaccineType (EverySet VaccineDose)) (Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory ))
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
+    | SetVaccinationFormViewMode VaccineType VaccinationFormViewMode
     | SetAllowPreviousVaccinesUpdate VaccineType Bool
     | SetWillReceiveVaccineToday VaccineType VaccineDose Bool
     | SetAdministrationNote VaccineType AdministrationNote
@@ -295,6 +296,7 @@ type alias VaccinationForm =
     , administrationNote : Maybe AdministrationNote
 
     -- Form inner functionality inputs
+    , viewMode : VaccinationFormViewMode
     , allowPreviousVaccinesUpdate : Maybe Bool
     , willReceiveVaccineToday : Maybe Bool
     }
@@ -305,9 +307,15 @@ emptyVaccinationForm =
     { administeredDoses = Nothing
     , administrationDates = Nothing
     , administrationNote = Nothing
+    , viewMode = ViewModeInitial
     , allowPreviousVaccinesUpdate = Nothing
     , willReceiveVaccineToday = Nothing
     }
+
+
+type VaccinationFormViewMode
+    = ViewModeInitial
+    | ViewModeVaccinationUpdate VaccineDose
 
 
 type ImmunisationTask
