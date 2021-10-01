@@ -784,6 +784,85 @@ update currentDate id db msg model =
             , []
             )
 
+        SetAllowPreviousVaccinesUpdate vaccineType value ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | allowPreviousVaccinesUpdate = Just value }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetWillReceiveVaccineToday vaccineType dose willReceive ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                insertIntoSet value set =
+                    Maybe.map (EverySet.insert value) set
+                        |> Maybe.withDefault (EverySet.singleton value)
+                        |> Just
+
+                updatedForm =
+                    if willReceive then
+                        { form
+                            | willReceiveVaccineToday = Just True
+                            , administeredDoses = insertIntoSet dose form.administeredDoses
+                            , administrationDates = insertIntoSet currentDate form.administrationDates
+                            , administrationNote = Just AdministeredToday
+                        }
+
+                    else
+                        let
+                            updatedDoses =
+                                Maybe.map
+                                    (EverySet.toList
+                                        >> List.sortBy vaccineDoseToComparable
+                                        >> List.reverse
+                                        >> List.drop 1
+                                        >> EverySet.fromList
+                                    )
+                                    form.administeredDoses
+
+                            updatedDates =
+                                Maybe.map
+                                    (EverySet.toList
+                                        >> List.sortWith Date.compare
+                                        >> List.reverse
+                                        >> List.drop 1
+                                        >> EverySet.fromList
+                                    )
+                                    form.administrationDates
+                        in
+                        { form
+                            | willReceiveVaccineToday = Just False
+                            , administeredDoses = updatedDoses
+                            , administrationDates = updatedDates
+                            , administrationNote = Nothing
+                        }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetAdministrationNote vaccineType note ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | administrationNote = Just note }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
         SaveBCGImmunisation personId saved nextTask_ ->
             let
                 measurementId =

@@ -1002,6 +1002,62 @@ immunisationTaskToVaccineType task =
             Just VaccineRotarix
 
 
+getFormByVaccineTypeFunc : VaccineType -> (ImmunisationData -> VaccinationForm)
+getFormByVaccineTypeFunc vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            .bcgForm
+
+        VaccineDTP ->
+            .dtpForm
+
+        VaccineHPV ->
+            .hpvForm
+
+        VaccineIPV ->
+            .ipvForm
+
+        VaccineMR ->
+            .mrForm
+
+        VaccineOPV ->
+            .opvForm
+
+        VaccinePCV13 ->
+            .pcv13Form
+
+        VaccineRotarix ->
+            .rotarixForm
+
+
+updateVaccinationFormByVaccineType : VaccineType -> VaccinationForm -> ImmunisationData -> ImmunisationData
+updateVaccinationFormByVaccineType vaccineType form data =
+    case vaccineType of
+        VaccineBCG ->
+            { data | bcgForm = form }
+
+        VaccineDTP ->
+            { data | dtpForm = form }
+
+        VaccineHPV ->
+            { data | hpvForm = form }
+
+        VaccineIPV ->
+            { data | ipvForm = form }
+
+        VaccineMR ->
+            { data | mrForm = form }
+
+        VaccineOPV ->
+            { data | opvForm = form }
+
+        VaccinePCV13 ->
+            { data | pcv13Form = form }
+
+        VaccineRotarix ->
+            { data | rotarixForm = form }
+
+
 allVaccineTypes : List VaccineType
 allVaccineTypes =
     [ VaccineBCG
@@ -1156,6 +1212,8 @@ fromVaccinationValue saved =
             { administeredDoses = Just value.administeredDoses
             , administrationDates = Just value.administrationDates
             , administrationNote = Just value.administrationNote
+            , allowPreviousVaccinesUpdate = previousVaccinesUpdateAllowed value
+            , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
             }
         )
         saved
@@ -1170,6 +1228,8 @@ vaccinationFormWithDefault form saved =
             { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
             , administrationDates = or form.administrationDates (Just value.administrationDates)
             , administrationNote = or form.administrationNote (Just value.administrationNote)
+            , allowPreviousVaccinesUpdate = or form.allowPreviousVaccinesUpdate (previousVaccinesUpdateAllowed value)
+            , willReceiveVaccineToday = or form.willReceiveVaccineToday (value.administrationNote == AdministeredToday |> Just)
             }
         )
         saved
@@ -1186,6 +1246,24 @@ toVaccinationValue form =
     Maybe.map VaccinationValue form.administeredDoses
         |> andMap form.administrationDates
         |> andMap form.administrationNote
+
+
+previousVaccinesUpdateAllowed : VaccinationValue -> Maybe Bool
+previousVaccinesUpdateAllowed value =
+    Just <|
+        -- We know that previous vaccines were updated if:
+        -- 1. There's more than one dose administerd.
+        -- 2. There's one dose administered, and administration note says
+        --    that latest vaccine dose was not administered today.
+        case EverySet.size value.administeredDoses of
+            0 ->
+                False
+
+            1 ->
+                value.administrationNote /= AdministeredToday
+
+            _ ->
+                True
 
 
 
