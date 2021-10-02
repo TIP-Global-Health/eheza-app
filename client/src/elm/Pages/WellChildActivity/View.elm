@@ -1345,7 +1345,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
                                         |> getMeasurementValueFunc
                                         |> vaccinationFormWithDefault data.rotarixForm
                     in
-                    viewVaccinationForm language currentDate assembled activeTask_ vaccinationForm
+                    viewVaccinationForm language currentDate isChw assembled activeTask_ vaccinationForm
                         |> List.singleton
                 )
                 activeTask
@@ -1410,15 +1410,19 @@ viewImmunisationContent language currentDate isChw assembled db data =
     ]
 
 
-viewVaccinationForm : Language -> NominalDate -> AssembledData -> ImmunisationTask -> VaccinationForm -> Html Msg
-viewVaccinationForm language currentDate assembled immunisationTask form =
+viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationTask -> VaccinationForm -> Html Msg
+viewVaccinationForm language currentDate isChw assembled immunisationTask form =
     Maybe.map2
         (\vaccineType birthDate ->
             let
                 expectedDoses =
-                    getAllDosesForVaccine vaccineType
-                        |> List.filter
-                            (\dose -> expectVaccineDoseForPerson currentDate assembled.person ( vaccineType, dose ))
+                    if isChw then
+                        [ VaccineDoseFirst ]
+
+                    else
+                        getAllDosesForVaccine vaccineType
+                            |> List.filter
+                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person ( vaccineType, dose ))
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory

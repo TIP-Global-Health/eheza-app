@@ -585,10 +585,35 @@ dangerSignsTasksCompletedFromTotal measurements data task =
 
 expectImmunisationTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.ImmunisationTask -> Bool
 expectImmunisationTask currentDate isChw assembled db task =
-    case task of
-        -- @todo: implement
-        _ ->
-            True
+    if isChw then
+        case task of
+            TaskBCG ->
+                True
+
+            TaskOPV ->
+                True
+
+            _ ->
+                False
+
+    else
+        let
+            futureVaccinations =
+                generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationProgress
+                    |> Dict.fromList
+
+            isTaskExpected vaccineType =
+                Dict.get vaccineType futureVaccinations
+                    |> Maybe.Extra.join
+                    |> Maybe.map
+                        (\( dose, date ) ->
+                            not <| Date.compare date currentDate == GT
+                        )
+                    |> Maybe.withDefault False
+        in
+        immunisationTaskToVaccineType task
+            |> Maybe.map isTaskExpected
+            |> Maybe.withDefault False
 
 
 immunisationTasksCompletedFromTotal : Bool -> WellChildMeasurements -> ImmunisationData -> Pages.WellChildActivity.Model.ImmunisationTask -> ( Int, Int )
