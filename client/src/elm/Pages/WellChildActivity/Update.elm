@@ -815,11 +815,6 @@ update currentDate id db msg model =
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
 
-                insertIntoSet value set =
-                    Maybe.map (EverySet.insert value) set
-                        |> Maybe.withDefault (EverySet.singleton value)
-                        |> Just
-
                 updatedForm =
                     if willReceive then
                         { form
@@ -872,6 +867,59 @@ update currentDate id db msg model =
                     { form | administrationNote = Just note }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleDateSelectorInput vaccineType ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | dateSelectorOpen = not form.dateSelectorOpen }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationUpdateDate vaccineType date ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | vaccinationUpdateDate = Just date }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SaveVaccinationUpdateDate vaccineType dose ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedModel =
+                    Maybe.map
+                        (\date ->
+                            let
+                                updatedForm =
+                                    { form
+                                        | administeredDoses = insertIntoSet dose form.administeredDoses
+                                        , administrationDates = insertIntoSet date form.administrationDates
+                                        , vaccinationUpdateDate = Nothing
+                                        , viewMode = ViewModeInitial
+                                    }
+                            in
+                            { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+                        )
+                        form.vaccinationUpdateDate
+                        |> Maybe.withDefault model
+            in
+            ( updatedModel
             , Cmd.none
             , []
             )
@@ -1730,3 +1778,10 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+
+insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
+insertIntoSet value set =
+    Maybe.map (EverySet.insert value) set
+        |> Maybe.withDefault (EverySet.singleton value)
+        |> Just

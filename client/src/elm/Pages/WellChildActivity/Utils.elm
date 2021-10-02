@@ -1215,6 +1215,8 @@ fromVaccinationValue saved =
             , viewMode = ViewModeInitial
             , allowPreviousVaccinesUpdate = previousVaccinesUpdateAllowed value
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
+            , vaccinationUpdateDate = Nothing
+            , dateSelectorOpen = False
             }
         )
         saved
@@ -1232,6 +1234,8 @@ vaccinationFormWithDefault form saved =
             , viewMode = form.viewMode
             , allowPreviousVaccinesUpdate = or form.allowPreviousVaccinesUpdate (previousVaccinesUpdateAllowed value)
             , willReceiveVaccineToday = or form.willReceiveVaccineToday (value.administrationNote == AdministeredToday |> Just)
+            , vaccinationUpdateDate = form.vaccinationUpdateDate
+            , dateSelectorOpen = form.dateSelectorOpen
             }
         )
         saved

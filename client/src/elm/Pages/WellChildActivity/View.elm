@@ -1576,10 +1576,23 @@ viewVaccinationForm language currentDate assembled immunisationTask form =
                             ViewModeVaccinationUpdate dose ->
                                 let
                                     saveDisabled =
-                                        True
+                                        isNothing form.vaccinationUpdateDate
+
+                                    startDate =
+                                        Date.add Days -100 currentDate
                                 in
                                 [ div [ class "history" ]
                                     [ viewHistoryEntry dose StatusBehind Nothing False ]
+                                , div [ class "form-input date previous" ]
+                                    [ viewLabel language Translate.SelectDate
+                                    , DateSelector.SelectorDropdown.view
+                                        (ToggleDateSelectorInput vaccineType)
+                                        (SetVaccinationUpdateDate vaccineType)
+                                        form.dateSelectorOpen
+                                        startDate
+                                        (Date.add Days -1 currentDate)
+                                        form.vaccinationUpdateDate
+                                    ]
                                 , div [ class "update actions" ]
                                     [ div
                                         [ class "ui primary button"
@@ -1592,6 +1605,7 @@ viewVaccinationForm language currentDate assembled immunisationTask form =
                                             [ ( "ui primary button", True )
                                             , ( "disabled", saveDisabled )
                                             ]
+                                        , onClick <| SaveVaccinationUpdateDate vaccineType dose
                                         ]
                                         [ text <| translate language Translate.Save ]
                                     ]

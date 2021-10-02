@@ -55,6 +55,9 @@ type Msg
     | SetAllowPreviousVaccinesUpdate VaccineType Bool
     | SetWillReceiveVaccineToday VaccineType VaccineDose Bool
     | SetAdministrationNote VaccineType AdministrationNote
+    | ToggleDateSelectorInput VaccineType
+    | SetVaccinationUpdateDate VaccineType NominalDate
+    | SaveVaccinationUpdateDate VaccineType VaccineDose
     | SaveBCGImmunisation PersonId (Maybe ( WellChildBCGImmunisationId, WellChildBCGImmunisation )) (Maybe ImmunisationTask)
     | SaveDTPImmunisation PersonId (Maybe ( WellChildDTPImmunisationId, WellChildDTPImmunisation )) (Maybe ImmunisationTask)
     | SaveHPVImmunisation PersonId (Maybe ( WellChildHPVImmunisationId, WellChildHPVImmunisation )) (Maybe ImmunisationTask)
@@ -299,6 +302,8 @@ type alias VaccinationForm =
     , viewMode : VaccinationFormViewMode
     , allowPreviousVaccinesUpdate : Maybe Bool
     , willReceiveVaccineToday : Maybe Bool
+    , vaccinationUpdateDate : Maybe NominalDate
+    , dateSelectorOpen : Bool
     }
 
 
@@ -310,6 +315,8 @@ emptyVaccinationForm =
     , viewMode = ViewModeInitial
     , allowPreviousVaccinesUpdate = Nothing
     , willReceiveVaccineToday = Nothing
+    , vaccinationUpdateDate = Nothing
+    , dateSelectorOpen = False
     }
 
 
