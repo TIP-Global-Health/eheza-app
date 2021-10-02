@@ -924,6 +924,38 @@ update currentDate id db msg model =
             , []
             )
 
+        DeleteVaccinationUpdateDate vaccineType doseToDelete dateToDelete ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedDoses =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) doseToDelete)
+                            >> EverySet.fromList
+                        )
+                        form.administeredDoses
+
+                updatedDates =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) dateToDelete)
+                            >> EverySet.fromList
+                        )
+                        form.administrationDates
+
+                updatedForm =
+                    { form
+                        | administeredDoses = updatedDoses
+                        , administrationDates = updatedDates
+                    }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
         SaveBCGImmunisation personId saved nextTask_ ->
             let
                 measurementId =

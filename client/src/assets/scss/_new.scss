@@ -1563,13 +1563,21 @@ div.page-activity.well-child {
           width: 150px;
         }
 
-        .update {
-          background: $color-primary;
+        .update,
+        .delete {
           border-radius: 3px;
           color: $color-white;
           font-size: 17px;
           padding: 0 20px;
           text-transform: uppercase;
+        }
+
+        .update {
+          background: $color-primary;
+        }
+
+        .delete {
+          background: $color-velvet;
         }
       }
 
