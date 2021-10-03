@@ -297,6 +297,11 @@ emptyImmunisationData =
 type alias VaccinationForm =
     { administeredDoses : Maybe (EverySet VaccineDose)
     , administrationDates : Maybe (EverySet NominalDate)
+
+    -- This is the note for suggesed dose for encounter.
+    -- There are situations where there will be no suggested dose,
+    -- due to ability to uodate previous doses.
+    -- In this case, we'll set 'AdministeredPreviously' value.
     , administrationNote : Maybe AdministrationNote
 
     -- Form inner functionality inputs

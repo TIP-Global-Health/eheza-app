@@ -599,7 +599,7 @@ expectImmunisationTask currentDate isChw assembled db task =
     else
         let
             futureVaccinations =
-                generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationProgress
+                generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationHistory
                     |> Dict.fromList
 
             isTaskExpected vaccineType =
@@ -1274,9 +1274,14 @@ toVaccinationValueWithDefault saved form =
 
 toVaccinationValue : VaccinationForm -> Maybe VaccinationValue
 toVaccinationValue form =
+    let
+        administrationNote =
+            Maybe.withDefault AdministeredPreviously form.administrationNote
+                |> Just
+    in
     Maybe.map VaccinationValue form.administeredDoses
         |> andMap form.administrationDates
-        |> andMap form.administrationNote
+        |> andMap administrationNote
 
 
 previousVaccinesUpdateAllowed : VaccinationValue -> Maybe Bool
