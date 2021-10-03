@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulWellChildImmunisation.
+ * Contains HedleyRestfulWellChildVaccination.
  */
 
 /**
- * Class HedleyRestfulWellChildImmunisation.
+ * Class HedleyRestfulWellChildVaccination.
  */
-class HedleyRestfulWellChildImmunisation extends HedleyRestfulWellChildActivityBase {
+class HedleyRestfulWellChildVaccination extends HedleyRestfulWellChildActivityBase {
   /**
    * {@inheritdoc}
    */
