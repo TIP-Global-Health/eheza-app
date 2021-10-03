@@ -20,6 +20,7 @@ import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCom
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import RemoteData exposing (RemoteData(..))
+import Translate exposing (Language)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
@@ -614,99 +615,6 @@ expectImmunisationTask currentDate isChw assembled db task =
         immunisationTaskToVaccineType task
             |> Maybe.map isTaskExpected
             |> Maybe.withDefault False
-
-
-immunisationTasksCompletedFromTotal : Bool -> WellChildMeasurements -> ImmunisationData -> Pages.WellChildActivity.Model.ImmunisationTask -> ( Int, Int )
-immunisationTasksCompletedFromTotal isChw measurements data task =
-    -- @todo: implement
-    case task of
-        TaskBCG ->
-            let
-                form =
-                    measurements.bcgImmunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.bcgForm
-            in
-            ( 0
-            , 1
-            )
-
-        TaskDTP ->
-            let
-                form =
-                    measurements.dtpImmunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.dtpForm
-            in
-            ( 0
-            , 1
-            )
-
-        TaskHPV ->
-            let
-                form =
-                    measurements.hpvImmunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.hpvForm
-            in
-            ( 0
-            , 1
-            )
-
-        TaskIPV ->
-            let
-                form =
-                    measurements.ipvImmunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.ipvForm
-            in
-            ( 0
-            , 1
-            )
-
-        TaskMR ->
-            let
-                form =
-                    measurements.mrImmunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.mrForm
-            in
-            ( 0
-            , 1
-            )
-
-        TaskOPV ->
-            let
-                form =
-                    measurements.opvImmunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.opvForm
-            in
-            ( 0
-            , 1
-            )
-
-        TaskPCV13 ->
-            let
-                form =
-                    measurements.pcv13Immunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.pcv13Form
-            in
-            ( 0
-            , 1
-            )
-
-        TaskRotarix ->
-            let
-                form =
-                    measurements.rotarixImmunisation
-                        |> getMeasurementValueFunc
-                        |> vaccinationFormWithDefault data.rotarixForm
-            in
-            ( 0
-            , 1
-            )
 
 
 immunisationTasks : List ImmunisationTask

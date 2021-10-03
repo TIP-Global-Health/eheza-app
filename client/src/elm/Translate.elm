@@ -1035,6 +1035,7 @@ type TranslationId
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
     | WellChildSymptom WellChildSymptom
+    | WellChildVaccineLabel VaccineType
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -8790,6 +8791,48 @@ translationSet trans =
                 NoWellChildSymptoms ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta na kimwe"
+                    }
+
+        WellChildVaccineLabel vaccineType ->
+            case vaccineType of
+                VaccineBCG ->
+                    { english = "BCG"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "DTP - HepB - Hib"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "HPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "IPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Measles - Rubella"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "OPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "PCV 13"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Rotarix"
+                    , kinyarwanda = Nothing
                     }
 
         WhatDoYouWantToDo ->
