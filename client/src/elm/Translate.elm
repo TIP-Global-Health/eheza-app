@@ -1027,10 +1027,10 @@ type TranslationId
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
-    | WellChildImmunisationDescription Pages.WellChildActivity.Model.ImmunisationTask
-    | WellChildImmunisationDosage Pages.WellChildActivity.Model.ImmunisationTask
-    | WellChildImmunisationHeader Pages.WellChildActivity.Model.ImmunisationTask
-    | WellChildImmunisationHistory Pages.WellChildActivity.Model.ImmunisationTask
+    | WellChildImmunisationDescription VaccineType
+    | WellChildImmunisationDosage VaccineType
+    | WellChildImmunisationHeader VaccineType
+    | WellChildImmunisationHistory VaccineType
     | WellChildImmunisationTask Pages.WellChildActivity.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
@@ -8458,168 +8458,168 @@ translationSet trans =
 
         WellChildImmunisationDescription task ->
             case task of
-                Pages.WellChildActivity.Model.TaskBCG ->
+                VaccineBCG ->
                     { english = "BCG protects your child from getting the worst complications of tuberculosis, which can affect the lungs and could be deadly for young children."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskDTP ->
+                VaccineDTP ->
                     { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), liver failure (Hepatitis B), diarrhea (Diptheria)."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskHPV ->
+                VaccineHPV ->
                     { english = "HPV prevents certain types of cancer from developing in your child."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskIPV ->
+                VaccineIPV ->
                     { english = "Is the final vaccine to prevent Polio in children. IPV boosts the effects of the previous polio vaccines your child received."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskMR ->
+                VaccineMR ->
                     { english = "Prevents the child from contracting a highly contagious viral infection that causes a fever, lesions, and diarrhea. MR is very dangerous for pregnant women, causing miscarriage or birth defects. Vaccinating your child prevents the spread of the disease in the community."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskOPV ->
+                VaccineOPV ->
                     { english = "OPV prevents the child from contracting the Polio Virus, which affects the spinal cord and can cause paralysis."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskPCV13 ->
+                VaccinePCV13 ->
                     { english = "Protects against any disease caused by a specific bacteria that can lead to lung infections."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskRotarix ->
+                VaccineRotarix ->
                     { english = "Protects against diarrhea caused by the Rotavirus. Diarrhea is the 3rd leading cause of death of children in Rwanda."
                     , kinyarwanda = Nothing
                     }
 
         WellChildImmunisationDosage task ->
             case task of
-                Pages.WellChildActivity.Model.TaskBCG ->
+                VaccineBCG ->
                     { english = "There is one dose of BCG and it is given at birth."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskDTP ->
+                VaccineDTP ->
                     { english = "There are 3 doses of DTP-HepB-Hib - 6 weeks, 10 weeks, and 14 weeks."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskHPV ->
+                VaccineHPV ->
                     { english = "There are 2 doses of HPV - at 12 years and 12.5 years."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskIPV ->
+                VaccineIPV ->
                     { english = "There is only one dose of the inactivated vaccine."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskMR ->
+                VaccineMR ->
                     { english = "There are 2 doses of OPV - at 9 months and 15 months."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskOPV ->
+                VaccineOPV ->
                     { english = "There are 4 doses of OPV - at birth, 6 weeks, 10 weeks, and 14 weeks."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskPCV13 ->
+                VaccinePCV13 ->
                     { english = "There are 3 doses of PCV 13 - 6 weeks, 10 weeks, and 14 weeks."
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskRotarix ->
+                VaccineRotarix ->
                     { english = "There are 2 doses of Rotarix - 6 weeks and 10 weeks."
                     , kinyarwanda = Nothing
                     }
 
         WellChildImmunisationHeader task ->
             case task of
-                Pages.WellChildActivity.Model.TaskBCG ->
+                VaccineBCG ->
                     { english = "Bacillus Calmette - Guérin (BCG)"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskDTP ->
+                VaccineDTP ->
                     { english = "Diptheria, Hepatitis B, Tetanus, and Pertussis"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskHPV ->
+                VaccineHPV ->
                     { english = "Human Papillomavirus (HPV)"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskIPV ->
+                VaccineIPV ->
                     { english = "Inactivated Polio Vaccine (IPV)"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskMR ->
+                VaccineMR ->
                     { english = "Measles - Rubella (MR)"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskOPV ->
+                VaccineOPV ->
                     { english = "Oral Polio Vaccine (OPV)"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskPCV13 ->
+                VaccinePCV13 ->
                     { english = "Pneumococcal Vaccine (PCV 13)"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskRotarix ->
+                VaccineRotarix ->
                     { english = "Rotavirus Vaccine (Rotarix)"
                     , kinyarwanda = Nothing
                     }
 
         WellChildImmunisationHistory task ->
             case task of
-                Pages.WellChildActivity.Model.TaskBCG ->
+                VaccineBCG ->
                     { english = "BCG History"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskDTP ->
+                VaccineDTP ->
                     { english = "DTP - HepB - Hib History"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskHPV ->
+                VaccineHPV ->
                     { english = "HPV History"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskIPV ->
+                VaccineIPV ->
                     { english = "IPV History"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskMR ->
+                VaccineMR ->
                     { english = "Measles - Rubella History"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskOPV ->
+                VaccineOPV ->
                     { english = "OPV History"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskPCV13 ->
+                VaccinePCV13 ->
                     { english = "PCV 13 History"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskRotarix ->
+                VaccineRotarix ->
                     { english = "Rotarix History"
                     , kinyarwanda = Nothing
                     }
@@ -8663,6 +8663,11 @@ translationSet trans =
 
                 Pages.WellChildActivity.Model.TaskRotarix ->
                     { english = "Rotarix"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskOverview ->
+                    { english = "Overview"
                     , kinyarwanda = Nothing
                     }
 

@@ -55,6 +55,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
 import Pages.WellChildActivity.Model exposing (VaccinationStatus(..))
 import Pages.WellChildActivity.Utils exposing (generateFutureVaccinationsData, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChildActivity.View exposing (viewVaccinationOverview)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData, pediatricCareMilestoneToComparable, resolvePediatricCareMilestoneOnDate)
 import Pages.WellChildEncounter.View exposing (viewPersonDetails)
@@ -761,63 +762,10 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
 
 viewVaccinationHistoryPane : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
 viewVaccinationHistoryPane language currentDate child vaccinationProgress db =
-    let
-        entriesHeading =
-            div [ class "heading vaccination" ]
-                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
-                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
-                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
-                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
-                ]
-
-        futureVaccinationsData =
-            generateFutureVaccinationsData currentDate child False vaccinationProgress
-                |> Dict.fromList
-
-        entries =
-            Dict.toList vaccinationProgress
-                |> List.map viewVaccinationEntry
-
-        viewVaccinationEntry ( vaccineType, doses ) =
-            let
-                nextDue =
-                    Dict.get vaccineType futureVaccinationsData
-                        |> Maybe.Extra.join
-                        |> Maybe.map Tuple.second
-
-                nextDueText =
-                    Maybe.map formatDDMMYY nextDue
-                        |> Maybe.withDefault ""
-
-                ( status, statusClass ) =
-                    Maybe.map
-                        (\dueDate ->
-                            if Date.compare dueDate currentDate == LT then
-                                ( StatusBehind, "behind" )
-
-                            else
-                                ( StatusUpToDate, "up-to-date" )
-                        )
-                        nextDue
-                        |> Maybe.withDefault ( StatusDone, "done" )
-            in
-            div [ class "entry vaccination" ]
-                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
-                , Dict.values doses
-                    |> List.sortWith Date.compare
-                    |> List.map (formatDDMMYY >> text >> List.singleton >> p [])
-                    |> div [ class "cell date" ]
-                , div [ class "cell next-due" ]
-                    [ text nextDueText ]
-                , div [ class <| "cell status " ++ statusClass ]
-                    [ text <| translate language <| Translate.VaccinationStatus status ]
-                ]
-    in
     div [ class "pane vaccination-history" ] <|
         [ viewPaneHeading language Translate.ImmunisationHistory
         , div [ class "pane-content" ] <|
-            entriesHeading
-                :: entries
+            viewVaccinationOverview language currentDate child vaccinationProgress db
         ]
 
 

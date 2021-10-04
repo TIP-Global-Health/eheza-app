@@ -340,6 +340,7 @@ type ImmunisationTask
     | TaskOPV
     | TaskPCV13
     | TaskRotarix
+    | TaskOverview
 
 
 

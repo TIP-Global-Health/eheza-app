@@ -1454,6 +1454,10 @@ div.page-activity.home-visit {
 
 div.page-activity.well-child {
 
+  .tasks-count.full-screen {
+    color: $color-primary;
+  }
+
   .ui.full.segment {
 
     .full.content {
@@ -1594,6 +1598,10 @@ div.page-activity.well-child {
         }
       }
 
+      .ui.form.vaccination-overview .heading .date {
+        margin-bottom: 0;
+      }
+
       .why-not {
         margin-bottom: 30px;
         margin-left: 20px;
@@ -1639,6 +1647,16 @@ div.page-activity.well-child {
       .button.review-history {
         margin-bottom: 30px;
       }
+    }
+  }
+
+  .ui.full.segment.full-screen {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+
+    .actions {
+      margin: 2.5rem 0 -2.5rem 0;
     }
   }
 }
@@ -2585,6 +2603,118 @@ div.page-report.well-child {
   }
 }
 
+div.page-activity.well-child,
+div.page-report.well-child {
+
+  .heading {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px 30px;
+    width: 100%;
+  }
+
+  .heading.vaccination {
+
+    .name {
+      width: 35%;
+    }
+
+    .date {
+      width: 25%;
+    }
+
+    .next-due {
+      width: 20%;
+    }
+
+    .status {
+      width: 20%;
+    }
+  }
+
+  .entry {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 22px;
+    padding: 15px 30px;
+    width: 100%;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .entry .cell {
+    align-self: center;
+    text-align: left;
+    padding-right: 20px;
+  }
+
+  .entry .cell.status,
+  .milestone .status {
+    border-radius: 10px;
+    color: $color-white;
+    font-size: 17px;
+    margin: 3px 5px;
+    padding: 0 10px;
+    text-transform: uppercase;
+
+    &.done {
+      background: $color-blue;
+    }
+
+    &.behind,
+    &.off-track,
+    &.ongoing {
+      background: $color-velvet;
+    }
+
+    &.up-to-date,
+    &.on-track,
+    &.resolved {
+      background: $color-cyan;
+    }
+
+    &.ecd-behind {
+      background: $color-orange-light;
+    }
+
+    &.no-status {
+      color: $color-background;
+      background: $color-background;
+    }
+  }
+
+  .entry.no-matches {
+    border-bottom: none;
+    display: block;
+    text-align: center;
+  }
+
+  .entry.vaccination {
+    .name {
+      width: 35%;
+    }
+
+    .date {
+      width: 25%;
+
+      p {
+        margin-bottom: 0;
+      }
+    }
+
+    .next-due {
+      width: 20%;
+    }
+  }
+
+}
+
 div.page-report.well-child {
   background: unset;
 
@@ -2627,16 +2757,6 @@ div.page-report.well-child {
       overflow-y: scroll;
     }
 
-    .heading {
-      border-bottom: 1px solid $color-text;
-      color: $color-dark-gray;
-      display: flex;
-      font-size: 20px;
-      font-weight: 600;
-      padding: 15px 30px;
-      width: 100%;
-    }
-
     .heading.diagnosis {
 
       .assesment {
@@ -2650,25 +2770,6 @@ div.page-report.well-child {
       .date {
         margin-left: 25px;
         width: 28%;
-      }
-    }
-
-    .heading.vaccination {
-
-      .name {
-        width: 35%;
-      }
-
-      .date {
-        width: 25%;
-      }
-
-      .next-due {
-        width: 20%;
-      }
-
-      .status {
-        width: 20%;
       }
     }
 
@@ -2698,66 +2799,6 @@ div.page-report.well-child {
       }
     }
 
-    .entry {
-      border-bottom: 1px solid $color-text;
-      color: $color-dark-gray;
-      display: flex;
-      font-size: 22px;
-      padding: 15px 30px;
-      width: 100%;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    .entry .cell {
-      align-self: center;
-      text-align: left;
-      padding-right: 20px;
-    }
-
-    .entry .cell.status,
-    .milestone .status {
-      border-radius: 10px;
-      color: $color-white;
-      font-size: 17px;
-      margin: 3px 5px;
-      padding: 0 10px;
-      text-transform: uppercase;
-
-      &.done {
-        background: $color-blue;
-      }
-
-      &.behind,
-      &.off-track,
-      &.ongoing {
-        background: $color-velvet;
-      }
-
-      &.up-to-date,
-      &.on-track,
-      &.resolved {
-        background: $color-cyan;
-      }
-
-      &.ecd-behind {
-        background: $color-orange-light;
-      }
-
-      &.no-status {
-        color: $color-background;
-        background: $color-background;
-      }
-    }
-
-    .entry.no-matches {
-      border-bottom: none;
-      display: block;
-      text-align: center;
-    }
-
     .entry.diagnosis {
 
       .assesment {
@@ -2785,24 +2826,6 @@ div.page-report.well-child {
         height: 50px;
         margin-left: 20px;
         width: 50px;
-      }
-    }
-
-    .entry.vaccination {
-      .name {
-        width: 35%;
-      }
-
-      .date {
-        width: 25%;
-
-        p {
-          margin-bottom: 0;
-        }
-      }
-
-      .next-due {
-        width: 20%;
       }
     }
 

@@ -614,7 +614,9 @@ expectImmunisationTask currentDate isChw assembled db task =
         in
         immunisationTaskToVaccineType task
             |> Maybe.map isTaskExpected
-            |> Maybe.withDefault False
+            -- Only task that is not converted to vaccine type
+            -- is 'Overview', which we allways show.
+            |> Maybe.withDefault True
 
 
 immunisationTasks : List ImmunisationTask
@@ -627,6 +629,7 @@ immunisationTasks =
     , TaskOPV
     , TaskPCV13
     , TaskRotarix
+    , TaskOverview
     ]
 
 
@@ -933,6 +936,9 @@ immunisationTaskToVaccineType task =
 
         TaskRotarix ->
             Just VaccineRotarix
+
+        TaskOverview ->
+            Nothing
 
 
 getFormByVaccineTypeFunc : VaccineType -> (ImmunisationData -> VaccinationForm)

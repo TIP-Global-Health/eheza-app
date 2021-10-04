@@ -1,4 +1,4 @@
-module Pages.WellChildActivity.View exposing (view)
+module Pages.WellChildActivity.View exposing (view, viewVaccinationOverview)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -15,7 +15,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYY, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -165,6 +165,10 @@ headCircumferencePopup language ( personId, saved, nextTask_ ) message =
                     [ text <| translate language Translate.Continue ]
                 ]
             ]
+
+
+
+-- @todo: remove
 
 
 vaccinationHistoryPopup : Language -> NominalDate -> VaccinationProgressDict -> Maybe (Html Msg)
@@ -365,7 +369,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                        ]
                     ++ deliveryComplicationsSection
             ]
-        , viewAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
+        , viewSaveAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
         ]
     ]
 
@@ -492,7 +496,7 @@ viewDangerSignsContent language currentDate assembled data =
                             disabled =
                                 tasksCompleted /= totalTasks
                         in
-                        viewAction language saveMsg disabled
+                        viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
     in
@@ -732,7 +736,7 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                             disabled =
                                 tasksCompleted /= totalTasks
                         in
-                        viewAction language saveMsg disabled
+                        viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
     in
@@ -1182,7 +1186,7 @@ viewVaccinationHistoryForm language currentDate isChw assembled vaccinationHisto
                 ]
                     ++ catchUpInputs
             ]
-        , viewAction language (SaveVaccinationHistory assembled.participant.person suggestedVaccines assembled.measurements.vaccinationHistory) disabled
+        , viewSaveAction language (SaveVaccinationHistory assembled.participant.person suggestedVaccines assembled.measurements.vaccinationHistory) disabled
         ]
     ]
 
@@ -1271,6 +1275,11 @@ viewImmunisationContent language currentDate isChw assembled db data =
                             , isJust measurements.rotarixImmunisation
                             )
 
+                        TaskOverview ->
+                            ( "vaccination-overview"
+                            , False
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -1299,57 +1308,61 @@ viewImmunisationContent language currentDate isChw assembled db data =
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
-        viewForm =
-            Maybe.map
-                (\activeTask_ ->
-                    let
-                        vaccinationForm =
-                            case activeTask_ of
-                                TaskBCG ->
-                                    measurements.bcgImmunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.bcgForm
+        ( formForView, fullScreen ) =
+            Maybe.andThen immunisationTaskToVaccineType activeTask
+                |> Maybe.map
+                    (\vaccineType ->
+                        let
+                            vaccinationForm =
+                                case vaccineType of
+                                    VaccineBCG ->
+                                        measurements.bcgImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.bcgForm
 
-                                TaskDTP ->
-                                    measurements.dtpImmunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.dtpForm
+                                    VaccineDTP ->
+                                        measurements.dtpImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.dtpForm
 
-                                TaskHPV ->
-                                    measurements.hpvImmunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.hpvForm
+                                    VaccineHPV ->
+                                        measurements.hpvImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.hpvForm
 
-                                TaskIPV ->
-                                    measurements.ipvImmunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.ipvForm
+                                    VaccineIPV ->
+                                        measurements.ipvImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.ipvForm
 
-                                TaskMR ->
-                                    measurements.mrImmunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.mrForm
+                                    VaccineMR ->
+                                        measurements.mrImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.mrForm
 
-                                TaskOPV ->
-                                    measurements.opvImmunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.opvForm
+                                    VaccineOPV ->
+                                        measurements.opvImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.opvForm
 
-                                TaskPCV13 ->
-                                    measurements.pcv13Immunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.pcv13Form
+                                    VaccinePCV13 ->
+                                        measurements.pcv13Immunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.pcv13Form
 
-                                TaskRotarix ->
-                                    measurements.rotarixImmunisation
-                                        |> getMeasurementValueFunc
-                                        |> vaccinationFormWithDefault data.rotarixForm
-                    in
-                    viewVaccinationForm language currentDate isChw assembled activeTask_ vaccinationForm
-                        |> List.singleton
-                )
-                activeTask
-                |> Maybe.withDefault []
+                                    VaccineRotarix ->
+                                        measurements.rotarixImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.rotarixForm
+                        in
+                        ( viewVaccinationForm language currentDate isChw assembled vaccineType vaccinationForm
+                        , False
+                        )
+                    )
+                |> Maybe.withDefault
+                    ( viewVaccinationOverviewForm language currentDate assembled.person assembled.vaccinationProgress db
+                    , True
+                    )
 
         nextTask =
             List.filter
@@ -1391,10 +1404,13 @@ viewImmunisationContent language currentDate isChw assembled db data =
                                     TaskRotarix ->
                                         SaveRotarixImmunisation personId measurements.rotarixImmunisation nextTask
 
+                                    TaskOverview ->
+                                        SetActivePage <| UserPage <| WellChildEncounterPage assembled.id
+
                             disabled =
                                 tasksCompleted /= totalTasks
                         in
-                        viewAction language saveMsg disabled
+                        viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
     in
@@ -1402,10 +1418,23 @@ viewImmunisationContent language currentDate isChw assembled db data =
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-    , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+    , div
+        [ classList
+            [ ( "tasks-count", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div
+        [ classList
+            [ ( "ui full segment", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ div [ class "full content" ]
+            [ formForView
+            , actions
+            ]
         ]
     ]
 
@@ -1416,43 +1445,43 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
         (\vaccineType ->
             let
                 form =
-                    case task of
-                        TaskBCG ->
+                    case vaccineType of
+                        VaccineBCG ->
                             assembled.measurements.bcgImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.bcgForm
 
-                        TaskDTP ->
+                        VaccineDTP ->
                             assembled.measurements.dtpImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.dtpForm
 
-                        TaskHPV ->
+                        VaccineHPV ->
                             assembled.measurements.hpvImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.hpvForm
 
-                        TaskIPV ->
+                        VaccineIPV ->
                             assembled.measurements.ipvImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.ipvForm
 
-                        TaskMR ->
+                        VaccineMR ->
                             assembled.measurements.mrImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.mrForm
 
-                        TaskOPV ->
+                        VaccineOPV ->
                             assembled.measurements.opvImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.opvForm
 
-                        TaskPCV13 ->
+                        VaccinePCV13 ->
                             assembled.measurements.pcv13Immunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.pcv13Form
 
-                        TaskRotarix ->
+                        VaccineRotarix ->
                             assembled.measurements.rotarixImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.rotarixForm
@@ -1466,31 +1495,89 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
         |> Maybe.withDefault ( 0, 0 )
 
 
-viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationTask -> VaccinationForm -> Html Msg
-viewVaccinationForm language currentDate isChw assembled immunisationTask form =
-    Maybe.map
-        (\vaccineType ->
-            let
-                ( contentByViewMode, _, _ ) =
-                    vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form
-            in
-            div [ class "ui form vaccination" ] <|
-                [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader immunisationTask ]
-                , div [ class "instructions" ] <|
-                    [ div [ class "header icon-label" ] <|
-                        [ i [ class "icon-open-book" ] []
-                        , div []
-                            [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription immunisationTask ]
-                            , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage immunisationTask ]
-                            ]
-                        ]
-                    , viewLabel language (Translate.WellChildImmunisationHistory immunisationTask)
+viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> VaccineType -> VaccinationForm -> Html Msg
+viewVaccinationForm language currentDate isChw assembled vaccineType form =
+    let
+        ( contentByViewMode, _, _ ) =
+            vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form
+    in
+    div [ class "ui form vaccination" ] <|
+        [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
+        , div [ class "instructions" ] <|
+            [ div [ class "header icon-label" ] <|
+                [ i [ class "icon-open-book" ] []
+                , div []
+                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription vaccineType ]
+                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
                     ]
-                        ++ contentByViewMode
                 ]
-        )
-        (immunisationTaskToVaccineType immunisationTask)
-        |> Maybe.withDefault emptyNode
+            , viewLabel language (Translate.WellChildImmunisationHistory vaccineType)
+            ]
+                ++ contentByViewMode
+        ]
+
+
+viewVaccinationOverviewForm : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
+viewVaccinationOverviewForm language currentDate child vaccinationProgress db =
+    div [ class "ui form vaccination-overview" ] <|
+        viewVaccinationOverview language currentDate child vaccinationProgress db
+
+
+viewVaccinationOverview : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> List (Html any)
+viewVaccinationOverview language currentDate child vaccinationProgress db =
+    let
+        entriesHeading =
+            div [ class "heading vaccination" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                ]
+
+        futureVaccinationsData =
+            generateFutureVaccinationsData currentDate child False vaccinationProgress
+                |> Dict.fromList
+
+        entries =
+            Dict.toList vaccinationProgress
+                |> List.map viewVaccinationEntry
+
+        viewVaccinationEntry ( vaccineType, doses ) =
+            let
+                nextDue =
+                    Dict.get vaccineType futureVaccinationsData
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.second
+
+                nextDueText =
+                    Maybe.map formatDDMMYY nextDue
+                        |> Maybe.withDefault ""
+
+                ( status, statusClass ) =
+                    Maybe.map
+                        (\dueDate ->
+                            if Date.compare dueDate currentDate == LT then
+                                ( StatusBehind, "behind" )
+
+                            else
+                                ( StatusUpToDate, "up-to-date" )
+                        )
+                        nextDue
+                        |> Maybe.withDefault ( StatusDone, "done" )
+            in
+            div [ class "entry vaccination" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
+                , Dict.values doses
+                    |> List.sortWith Date.compare
+                    |> List.map (formatDDMMYY >> text >> List.singleton >> p [])
+                    |> div [ class "cell date" ]
+                , div [ class "cell next-due" ]
+                    [ text nextDueText ]
+                , div [ class <| "cell status " ++ statusClass ]
+                    [ text <| translate language <| Translate.VaccinationStatus status ]
+                ]
+    in
+    entriesHeading :: entries
 
 
 vaccinationFormDynamicContentAndTasks :
@@ -1916,7 +2003,7 @@ viewImmunisationForm language currentDate isChw assembled immunisationForm =
                 viewLabel language Translate.NextDoseDue
                     :: futureVaccines
             ]
-        , viewAction language (SaveImmunisation assembled.participant.person (Dict.fromList suggestedVaccines) assembled.measurements.immunisation) disabled
+        , viewSaveAction language (SaveImmunisation assembled.participant.person (Dict.fromList suggestedVaccines) assembled.measurements.immunisation) disabled
         ]
     ]
 
@@ -2257,7 +2344,7 @@ viewECDForm language currentDate assembled ecdForm =
             [ div [ class "ui form ecd" ]
                 inputs
             ]
-        , viewAction language (SaveECD assembled.participant.person assembled.measurements.ecd) disabled
+        , viewSaveAction language (SaveECD assembled.participant.person assembled.measurements.ecd) disabled
         ]
     ]
 
@@ -2814,7 +2901,7 @@ viewMedicationContent language currentDate isChw assembled data =
                             disabled =
                                 tasksCompleted /= totalTasks
                         in
-                        viewAction language saveMsg disabled
+                        viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
     in
@@ -3083,7 +3170,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                                 else
                                     tasksCompleted /= totalTasks
                         in
-                        viewAction language saveMsg disabled
+                        viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
     in
@@ -3185,8 +3272,8 @@ viewPhotoContent language currentDate assembled form =
 -- HELPER FUNCTIONS
 
 
-viewAction : Language -> Msg -> Bool -> Html Msg
-viewAction language saveMsg disabled =
+viewSaveAction : Language -> Msg -> Bool -> Html Msg
+viewSaveAction language saveMsg disabled =
     div [ class "actions" ]
         [ button
             [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
