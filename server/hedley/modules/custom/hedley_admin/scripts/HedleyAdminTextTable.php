@@ -1,41 +1,63 @@
 <?php
 
-
 /**
- * Creates a markdown document based on the parsed documentation
+ * Creates a markdown document based on the parsed documentation.
  *
- * @author Peter-Christoph Haider <peter.haider@zeyon.net>
  * @package Apidoc
  * @version 1.00 (2014-04-04)
  * @license GNU Lesser Public License
  */
+class HedleyAdminTextTable {
 
-class TextTable {
-
-  /** @var int The source path */
+  /**
+   * The source path.
+   *
+   * @var int
+   */
   public $maxlen = 50;
 
-  /** @var array The source path */
+  /**
+   * The source path.
+   *
+   * @var array
+   */
   private $data = [];
 
-  /** @var array The source path */
+  /**
+   * The source path.
+   *
+   * @var array
+   */
   private $header = [];
 
-  /** @var array The source path */
+  /**
+   * The source path.
+   *
+   * @var array
+   */
   private $len = [];
 
-  /** @var array The source path */
+  /**
+   * The source path.
+   *
+   * @var array
+   */
   private $align = [
     'name' => 'L',
     'type' => 'C',
   ];
 
   /**
-   * @param array $header The header array [key => label, ...]
-   * @param array $content Content
-   * @param array $align Alignment optios [key => L|R|C, ...]
+   * Constructor.
+   *
+   * @param array $header
+   *   The header array [key => label, ...].
+   * @param array $content
+   *   Content.
+   * @param array $align
+   *   Alignment options [key => L|R|C, ...].
    */
-  public function __construct($header = NULL, $content = [], $align = FALSE) {
+  public function __construct(array $header = NULL, array $content = [], array $align = []) {
     if ($header) {
       $this->header = $header;
     }
@@ -57,20 +79,22 @@ class TextTable {
   }
 
   /**
-   * Overwrite the alignment array
+   * Overwrite the alignment array.
    *
-   * @param array $align Alignment optios [key => L|R|C, ...]
+   * @param array $align
+   *   Alignment optios [key => L|R|C, ...].
    */
-  public function setAlgin($align) {
+  public function setAlgin(array $align) {
     $this->align = $align;
   }
 
   /**
-   * Add data to the table
+   * Add data to the table.
    *
-   * @param array $content Content
+   * @param array $content
+   *   Content.
    */
-  public function addData($content) {
+  public function addData(array $content) {
     foreach ($content as &$row) {
       foreach ($this->header as $key => $value) {
         if (!isset($row[$key])) {
@@ -91,13 +115,15 @@ class TextTable {
   }
 
   /**
-   * Render the table
+   * Render the table.
    *
-   * @param array $content Additional table content
+   * @param array $content
+   *   Additional table content.
    *
    * @return string
+   *   Markdown table.
    */
-  public function render($content = []) {
+  public function render(array $content = []): string {
     $this->addData($content);
 
     $res = $this->renderRow($this->header)
@@ -110,13 +136,15 @@ class TextTable {
   }
 
   /**
-   * Render a single row
+   * Render a single row.
    *
    * @param array $row
+   *   Data.
    *
    * @return string
+   *   Markdown table row.
    */
-  private function renderRow($row) {
+  private function renderRow(array $row): string {
     $res = '|';
     foreach ($this->len as $key => $l) {
       $res .= ' ' . $row[$key] . ($l > strlen($row[$key]) ? str_repeat(' ', $l - strlen($row[$key])) : '') . ' |';
@@ -126,11 +154,12 @@ class TextTable {
   }
 
   /**
-   * Add a delimiter
+   * Add a delimiter.
    *
    * @return string
+   *   Delimiter.
    */
-  private function renderDelimiter() {
+  private function renderDelimiter(): string {
     $res = '|';
     foreach ($this->len as $key => $l) {
       $res .= (isset($this->align[$key]) && ($this->align[$key] == 'C' || $this->align[$key] == 'L') ? ':' : ' ')
@@ -140,4 +169,5 @@ class TextTable {
     }
     return $res . "\r\n";
   }
+
 }

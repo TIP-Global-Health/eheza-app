@@ -147,7 +147,7 @@ drush_print('');
 
 $skeleton = [
   [
-    'Stunting Moderate'
+    'Stunting Moderate',
   ],
   [
     'Stunting Severe',
@@ -177,7 +177,7 @@ $data = $skeleton;
 // Assemble the table for prevalence.
 for ($i = 0; $i < 6; $i++) {
   $current_month = strtotime('- ' . $i . 'months');
-  $month_key = date('Y F',  $current_month);
+  $month_key = date('Y F', $current_month);
   $header[] = $month_key;
 
   if (isset($stunting[$month_key]['moderate'])) {
@@ -220,7 +220,7 @@ for ($i = 0; $i < 6; $i++) {
   }
 
 }
-$text_table = new TextTable($header);
+$text_table = new HedleyAdminTextTable($header);
 $text_table->addData($data);
 
 drush_print($text_table->render());
@@ -270,10 +270,10 @@ function base_query_for_bundle($bundle): EntityFieldQuery {
  *   Number of total items.
  */
 function progress_bar(int $done, int $total) {
-    $percentage = floor(($done / $total) * 100);
-    $left = 100 - $percentage;
-    $write = sprintf("\033[0G\033[2K[%'={$percentage}s>%-{$left}s] - $percentage%% - $done/$total", "", "");
-    fwrite(STDERR, $write);
+  $percentage = floor(($done / $total) * 100);
+  $left = 100 - $percentage;
+  $write = sprintf("\033[0G\033[2K[%'={$percentage}s>%-{$left}s] - $percentage%% - $done/$total", "", "");
+  fwrite(STDERR, $write);
 }
 
 /**
