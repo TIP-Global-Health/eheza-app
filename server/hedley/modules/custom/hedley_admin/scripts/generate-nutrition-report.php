@@ -15,6 +15,8 @@ if (!drupal_is_cli()) {
   return;
 }
 
+require_once __DIR__ . '/TextTable.php';
+
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -42,6 +44,7 @@ if ($total == 0) {
 drush_print("$total children with age below 6 years located.");
 
 $processed = 0;
+$total = 600;
 while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
@@ -120,8 +123,43 @@ drush_print('Done!');
 
 drush_print("# Nutrition report  - " . date('D/m/Y'));
 drush_print('');
+
+$skeleton = [
+  [
+    'Stunting Moderate'
+  ],
+  [
+    'Stunting Severe',
+  ],
+  [
+    'Underweight Moderate',
+  ],
+  [
+    'Underweight Severe',
+  ],
+  [
+    'Wasting Moderate',
+  ],
+  [
+    'Wasting Severe',
+  ],
+];
+
 drush_print('## Prevalence by month (period prevalence)');
-drush_print('One visit or more');
+drush_print('### One visit or more');
+
+$header = [
+  'Prevalence by Month',
+];
+$data = $skeleton;
+for ($i = 0; $i < 6; $i++) {
+  $current_month = strtotime('- ' . $i . 'months');
+  $header[] = date('Y F',  $current_month);
+}
+$text_table = new TextTable($header);
+$text_table->addData($data);
+
+drush_print($text_table->render());
 
 /**
  * Classifies measurement by it's malnutrition indicator (severe / moderate).
