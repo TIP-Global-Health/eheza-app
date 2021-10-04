@@ -44,7 +44,13 @@ if ($total == 0) {
 drush_print("$total children with age below 6 years located.");
 
 $processed = 0;
-$total = 600;
+$patients_per_month = [];
+$category_counters = [
+  'moderate' => 0,
+  'severe' => 0,
+];
+$stunting = $underweight = $wasting = [];
+
 while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
@@ -83,27 +89,42 @@ while ($processed < $total) {
       continue;
     }
 
-    $stunting = $underweight = $wasting = $tuple;
+
     $measurements = node_load_multiple($measurements_ids);
     foreach ($measurements as $measurement) {
+      $wrapper = entity_metadata_wrapper('node', $measurement);
+      $measurement_timestamp = $wrapper->field_date_measured->value();
+      $grouped_by_month_key = date('Y F', $measurement_timestamp);
+      if (!isset($patients_per_month[$grouped_by_month_key])) {
+        $patients_per_month[$grouped_by_month_key] = [];
+      }
+      $patients_per_month[$grouped_by_month_key][] = $child->nid;
+
       if (in_array($measurement->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
-        [$stunting_moderate, $stunting_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_age');
-        $stunting['moderate'] += $stunting_moderate;
-        $stunting['severe'] += $stunting_severe;
-        $stunting['any']++;
+        [$stunting_moderate, $stunting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
+        if (!isset($stunting[$grouped_by_month_key])) {
+          $stunting[$grouped_by_month_key] = $category_counters;
+        }
+
+        $stunting[$grouped_by_month_key]['moderate'] += $stunting_moderate;
+        $stunting[$grouped_by_month_key]['severe'] += $stunting_severe;
         continue;
       }
 
       // We know it's one of HEDLEY_ACTIVITY_WEIGHT_BUNDLES.
-      [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_age');
-      $underweight['moderate'] += $underweight_moderate;
-      $underweight['severe'] += $underweight_severe;
-      $underweight['any']++;
+      [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
+      if (!isset($underweight[$grouped_by_month_key])) {
+        $underweight[$grouped_by_month_key] = $category_counters;
+      }
+      $underweight[$grouped_by_month_key]['moderate'] += $underweight_moderate;
+      $underweight[$grouped_by_month_key]['severe'] += $underweight_severe;
 
-      [$wasting_moderate, $wasting_severe] = classify_by_malnutrition_type($measurement, 'field_zscore_length');
-      $wasting['moderate'] += $wasting_moderate;
-      $wasting['severe'] += $wasting_severe;
-      $wasting['any']++;
+      [$wasting_moderate, $wasting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_length');
+      if (!isset($wasting[$grouped_by_month_key])) {
+        $wasting[$grouped_by_month_key] = $category_counters;
+      }
+      $wasting[$grouped_by_month_key]['moderate'] += $wasting_moderate;
+      $wasting[$grouped_by_month_key]['severe'] += $wasting_severe;
     }
   }
 
@@ -152,9 +173,52 @@ $header = [
   'Prevalence by Month',
 ];
 $data = $skeleton;
+
+// Assemble the table for prevalence.
 for ($i = 0; $i < 6; $i++) {
   $current_month = strtotime('- ' . $i . 'months');
-  $header[] = date('Y F',  $current_month);
+  $month_key = date('Y F',  $current_month);
+  $header[] = $month_key;
+
+  if (isset($stunting[$month_key]['moderate'])) {
+    $data[0][] = format_prevalence($stunting[$month_key]['moderate'], $patients_per_month[$month_key]);
+  }
+  else {
+    $data[0][] = '-';
+  }
+  if (isset($stunting[$month_key]['severe'])) {
+    $data[1][] = format_prevalence($stunting[$month_key]['severe'], $patients_per_month[$month_key]);
+  }
+  else {
+    $data[1][] = '-';
+  }
+
+  if (isset($underweight[$month_key]['moderate'])) {
+    $data[2][] = format_prevalence($underweight[$month_key]['moderate'], $patients_per_month[$month_key]);
+  }
+  else {
+    $data[2][] = '-';
+  }
+  if (isset($underweight[$month_key]['severe'])) {
+    $data[3][] = format_prevalence($underweight[$month_key]['severe'], $patients_per_month[$month_key]);
+  }
+  else {
+    $data[3][] = '-';
+  }
+
+  if (isset($wasting[$month_key]['moderate'])) {
+    $data[4][] = format_prevalence($wasting[$month_key]['moderate'], $patients_per_month[$month_key]);
+  }
+  else {
+    $data[4][] = '-';
+  }
+  if (isset($wasting[$month_key]['severe'])) {
+    $data[5][] = format_prevalence($wasting[$month_key]['severe'], $patients_per_month[$month_key]);
+  }
+  else {
+    $data[5][] = '-';
+  }
+
 }
 $text_table = new TextTable($header);
 $text_table->addData($data);
@@ -166,8 +230,7 @@ drush_print($text_table->render());
  *
  * If measurement does not indicate malnutrition, 0 values are returned.
  */
-function classify_by_malnutrition_type($node, $field) {
-  $wrapper = entity_metadata_wrapper('node', $node);
+function classify_by_malnutrition_type($wrapper, $field): array {
   $z_score = $wrapper->{$field}->value();
 
   if (empty($z_score)) {
@@ -188,7 +251,7 @@ function classify_by_malnutrition_type($node, $field) {
 /**
  * Generate base query.
  */
-function base_query_for_bundle($bundle) {
+function base_query_for_bundle($bundle): EntityFieldQuery {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
@@ -206,9 +269,21 @@ function base_query_for_bundle($bundle) {
  * @param int $total
  *   Number of total items.
  */
-function progress_bar($done, $total) {
+function progress_bar(int $done, int $total) {
     $percentage = floor(($done / $total) * 100);
     $left = 100 - $percentage;
     $write = sprintf("\033[0G\033[2K[%'={$percentage}s>%-{$left}s] - $percentage%% - $done/$total", "", "");
     fwrite(STDERR, $write);
+}
+
+/**
+ * Formats prevalence data.
+ *
+ * @param int $cases
+ *   Number of cases.
+ * @param array $examined
+ *   Examined patients.
+ */
+function format_prevalence(int $cases, array $examined) {
+  return round((($cases / count(array_unique($examined))) * 100), 3) . ' %';
 }
