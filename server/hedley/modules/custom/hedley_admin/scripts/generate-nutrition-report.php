@@ -45,10 +45,9 @@ drush_print("$total children with age below 6 years located.");
 
 $processed = 0;
 $patients_per_month = [];
-$category_counters = [
-  'moderate' => 0,
-  'severe' => 0,
-];
+$patients_per_quarter = [];
+$patients_per_year = [];
+
 $stunting = $underweight = $wasting = [];
 
 while ($processed < $total) {
@@ -89,42 +88,39 @@ while ($processed < $total) {
       continue;
     }
 
-
     $measurements = node_load_multiple($measurements_ids);
     foreach ($measurements as $measurement) {
       $wrapper = entity_metadata_wrapper('node', $measurement);
       $measurement_timestamp = $wrapper->field_date_measured->value();
       $grouped_by_month_key = date('Y F', $measurement_timestamp);
+      $grouped_by_year_key = date('Y', $measurement_timestamp);
+      $grouped_by_quarter_key = format_quarter($measurement_timestamp);
+
       if (!isset($patients_per_month[$grouped_by_month_key])) {
         $patients_per_month[$grouped_by_month_key] = [];
       }
       $patients_per_month[$grouped_by_month_key][] = $child->nid;
+      if (!isset($patients_per_year[$grouped_by_year_key])) {
+        $patients_per_year[$grouped_by_year_key] = [];
+      }
+      $patients_per_year[$grouped_by_year_key][] = $child->nid;
+      if (!isset($patients_per_quarter[$grouped_by_quarter_key])) {
+        $patients_per_quarter[$grouped_by_quarter_key] = [];
+      }
+      $patients_per_quarter[$grouped_by_quarter_key][] = $child->nid;
 
       if (in_array($measurement->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
         [$stunting_moderate, $stunting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
-        if (!isset($stunting[$grouped_by_month_key])) {
-          $stunting[$grouped_by_month_key] = $category_counters;
-        }
-
-        $stunting[$grouped_by_month_key]['moderate'] += $stunting_moderate;
-        $stunting[$grouped_by_month_key]['severe'] += $stunting_severe;
+        $stunting = categorize_data($stunting, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $stunting_moderate, $stunting_severe, $child->nid);
         continue;
       }
 
       // We know it's one of HEDLEY_ACTIVITY_WEIGHT_BUNDLES.
       [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
-      if (!isset($underweight[$grouped_by_month_key])) {
-        $underweight[$grouped_by_month_key] = $category_counters;
-      }
-      $underweight[$grouped_by_month_key]['moderate'] += $underweight_moderate;
-      $underweight[$grouped_by_month_key]['severe'] += $underweight_severe;
+      $underweight = categorize_data($underweight, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $underweight_moderate, $underweight_severe, $child->nid);
 
       [$wasting_moderate, $wasting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_length');
-      if (!isset($wasting[$grouped_by_month_key])) {
-        $wasting[$grouped_by_month_key] = $category_counters;
-      }
-      $wasting[$grouped_by_month_key]['moderate'] += $wasting_moderate;
-      $wasting[$grouped_by_month_key]['severe'] += $wasting_severe;
+      $wasting = categorize_data($wasting, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $wasting_moderate, $wasting_severe, $child->nid);
     }
   }
 
@@ -175,7 +171,7 @@ $header = [
 $data = $skeleton;
 
 // Assemble the table for prevalence.
-for ($i = 0; $i < 6; $i++) {
+for ($i = 1; $i <= 12; $i++) {
   $current_month = strtotime('- ' . $i . 'months');
   $month_key = date('Y F', $current_month);
   $header[] = $month_key;
@@ -220,6 +216,87 @@ for ($i = 0; $i < 6; $i++) {
   }
 
 }
+$text_table = new HedleyAdminTextTable($header);
+$text_table->addData($data);
+
+drush_print($text_table->render());
+
+drush_print('## Incidence by month');
+drush_print('### One visit or more');
+
+$header = [
+  'Incidence by Month',
+];
+$data = $skeleton;
+
+for ($i = 1; $i <= 12; $i++) {
+  $current_month = strtotime('- ' . $i . 'months');
+  $previous_month = strtotime('- ' . ($i - 1) . 'months');
+  $month_key = date('Y F', $current_month);
+  $previous_month_key = date('Y F', $previous_month);
+  $header[] = $month_key;
+  $data[0][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'moderate', $patients_per_month[$month_key]);
+  $data[1][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'severe', $patients_per_month[$month_key]);
+  $data[2][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'moderate', $patients_per_month[$month_key]);
+  $data[3][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'severe', $patients_per_month[$month_key]);
+  $data[4][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'moderate', $patients_per_month[$month_key]);
+  $data[5][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'severe', $patients_per_month[$month_key]);
+}
+
+$text_table = new HedleyAdminTextTable($header);
+$text_table->addData($data);
+
+drush_print($text_table->render());
+
+drush_print('## Incidence by quarter');
+drush_print('### One visit or more');
+
+$header = [
+  'Incidence by quarter',
+];
+$data = $skeleton;
+
+for ($i = 1; $i <= 4; $i++) {
+  $current_quarter = strtotime('- ' . ($i * 3) . 'months');
+  $previous_quarter = strtotime('- ' . ($i * 6) . 'months');
+  $quarter_key = format_quarter($current_quarter);
+  $previous_quarter_key = date('Y F', $previous_quarter);
+  $header[] = $quarter_key;
+  $data[0][] = calculate_incidence($stunting, $quarter_key, $previous_quarter_key, 'moderate', $patients_per_quarter[$quarter_key]);
+  $data[1][] = calculate_incidence($stunting, $quarter_key, $previous_quarter_key, 'severe', $patients_per_quarter[$quarter_key]);
+  $data[2][] = calculate_incidence($underweight, $quarter_key, $previous_quarter_key, 'moderate', $patients_per_quarter[$quarter_key]);
+  $data[3][] = calculate_incidence($underweight, $quarter_key, $previous_quarter_key, 'severe', $patients_per_quarter[$quarter_key]);
+  $data[4][] = calculate_incidence($wasting, $quarter_key, $previous_quarter_key, 'moderate', $patients_per_quarter[$quarter_key]);
+  $data[5][] = calculate_incidence($wasting, $quarter_key, $previous_quarter_key, 'severe', $patients_per_quarter[$quarter_key]);
+}
+
+$text_table = new HedleyAdminTextTable($header);
+$text_table->addData($data);
+
+drush_print($text_table->render());
+
+drush_print('## Incidence by year');
+drush_print('### One visit or more');
+
+$header = [
+  'Incidence by year',
+];
+$data = $skeleton;
+
+for ($i = 1; $i <= 2; $i++) {
+  $current_year = strtotime('- ' . $i . ' years');
+  $previous_year = strtotime('- ' . ($i - 1) . ' years');
+  $year_key = date('Y', $current_year);
+  $previous_year_key = date('Y', $previous_year);
+  $header[] = $year_key;
+  $data[0][] = calculate_incidence($stunting, $year_key, $previous_year_key, 'moderate', $patients_per_year[$year_key]);
+  $data[1][] = calculate_incidence($stunting, $year_key, $previous_year_key, 'severe', $patients_per_year[$year_key]);
+  $data[2][] = calculate_incidence($underweight, $year_key, $previous_year_key, 'moderate', $patients_per_year[$year_key]);
+  $data[3][] = calculate_incidence($underweight, $year_key, $previous_year_key, 'severe', $patients_per_year[$year_key]);
+  $data[4][] = calculate_incidence($wasting, $year_key, $previous_year_key, 'moderate', $patients_per_year[$year_key]);
+  $data[5][] = calculate_incidence($wasting, $year_key, $previous_year_key, 'severe', $patients_per_year[$year_key]);
+}
+
 $text_table = new HedleyAdminTextTable($header);
 $text_table->addData($data);
 
@@ -279,11 +356,111 @@ function progress_bar(int $done, int $total) {
 /**
  * Formats prevalence data.
  *
- * @param int $cases
+ * @param array $cases
  *   Number of cases.
  * @param array $examined
  *   Examined patients.
  */
-function format_prevalence(int $cases, array $examined) {
-  return round((($cases / count(array_unique($examined))) * 100), 3) . ' %';
+function format_prevalence(array $cases, array $examined) {
+  return round(((count($cases) / count(array_unique($examined))) * 100), 3) . ' %';
+}
+
+/**
+ * Formats a Year quarter string.
+ *
+ * @param int $timestamp
+ *   UNIX timestamp.
+ *
+ * @return string
+ *   For example: 2021 Q1.
+ */
+function format_quarter(int $timestamp): string {
+  $month = date("n", $timestamp);
+  $quarter = ceil($month / 3);
+  return date('Y', $timestamp) . ' Q' . $quarter;
+}
+
+/**
+ * Categorize the data by keys.
+ *
+ * @param array $dataset
+ *   Dataset for the given malnutrition type.
+ * @param string $grouped_by_month_key
+ *   Month key.
+ * @param string $grouped_by_quarter_key
+ *   Quarter key.
+ * @param string $grouped_by_year_key
+ *   Year key.
+ * @param int $moderate
+ *   Indicated moderate.
+ * @param int $severe
+ *   Indicated severe.
+ * @param int $id
+ *   Child node ID.
+ *
+ * @return array
+ *   Updated dataset.
+ */
+function categorize_data(array $dataset, string $grouped_by_month_key, string $grouped_by_quarter_key, string $grouped_by_year_key, int $moderate, int $severe, int $id): array {
+  $category_ids = [
+    'moderate' => [],
+    'severe' => [],
+  ];
+  if (!isset($dataset[$grouped_by_month_key])) {
+    $dataset[$grouped_by_month_key] = $category_ids;
+  }
+  if (!isset($dataset[$grouped_by_quarter_key])) {
+    $dataset[$grouped_by_quarter_key] = $category_ids;
+  }
+  if (!isset($dataset[$grouped_by_year_key])) {
+    $dataset[$grouped_by_year_key] = $category_ids;
+  }
+  if ($moderate) {
+    $dataset[$grouped_by_month_key]['moderate'][] = $id;
+    $dataset[$grouped_by_quarter_key]['moderate'][] = $id;
+    $dataset[$grouped_by_year_key]['moderate'][] = $id;
+  }
+  if ($severe) {
+    $dataset[$grouped_by_month_key]['severe'][] = $id;
+    $dataset[$grouped_by_quarter_key]['severe'][] = $id;
+    $dataset[$grouped_by_year_key]['severe'][] = $id;
+  }
+
+  return $dataset;
+}
+
+/**
+ * Calculates incidence score.
+ *
+ * @param array $dataset
+ *   Data about the measurement type.
+ * @param string $current_period
+ *   Group key, like 2021 May, 2021 or 2020 Q4.
+ * @param string $previous_period
+ *   Group key, like 2021 May, 2021 or 2020 Q4.
+ * @param string $severity
+ *   Either 'moderate' or 'severe'.
+ * @param mixed $examined
+ *   Total examined people in the period.
+ */
+function calculate_incidence(array $dataset, string $current_period, string $previous_period, string $severity, $examined) {
+  $new_cases = 0;
+  if (!isset($dataset[$current_period][$severity])) {
+    return '-';
+  }
+  foreach ($dataset[$current_period][$severity] as $id) {
+    if (!isset($dataset[$previous_period][$severity])) {
+      $new_cases++;
+      continue;
+    }
+    if (!in_array($id, $dataset[$previous_period][$severity])) {
+      $new_cases++;
+    }
+  }
+
+  if (empty($examined)) {
+    return '-';
+  }
+
+  return round((($new_cases / count(array_unique($examined))) * 100), 3) . ' %';
 }
