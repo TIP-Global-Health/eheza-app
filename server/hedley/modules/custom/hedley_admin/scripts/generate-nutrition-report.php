@@ -15,7 +15,7 @@ if (!drupal_is_cli()) {
   return;
 }
 
-require_once __DIR__ . '/TextTable.php';
+require_once __DIR__ . '/HedleyAdminTextTable.php';
 
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
