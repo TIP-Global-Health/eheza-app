@@ -126,3 +126,15 @@ ddev robo deploy:pantheon
 
 See https://github.com/Gizra/ihangane/wiki/Deployment for more details.
 To generate the release notes, use `ddev robo generate:release-notes prev-tag`.
+
+## Generate reports
+
+```
+ddev robo report:demographics
+```
+
+And
+
+```
+ddev robo report:nutrition
+```
