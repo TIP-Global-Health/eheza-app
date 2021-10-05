@@ -121,16 +121,6 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create well_child_immunisation content'.
-  $permissions['create well_child_immunisation content'] = array(
-    'name' => 'create well_child_immunisation content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'create well_child_ipv_immunisation content'.
   $permissions['create well_child_ipv_immunisation content'] = array(
     'name' => 'create well_child_ipv_immunisation content',
@@ -254,16 +244,6 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'create well_child_symptoms_review content'.
   $permissions['create well_child_symptoms_review content'] = array(
     'name' => 'create well_child_symptoms_review content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'create well_child_vaccination_history content'.
-  $permissions['create well_child_vaccination_history content'] = array(
-    'name' => 'create well_child_vaccination_history content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -400,15 +380,6 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any well_child_immunisation content'.
-  $permissions['delete any well_child_immunisation content'] = array(
-    'name' => 'delete any well_child_immunisation content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete any well_child_ipv_immunisation content'.
   $permissions['delete any well_child_ipv_immunisation content'] = array(
     'name' => 'delete any well_child_ipv_immunisation content',
@@ -520,15 +491,6 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'delete any well_child_symptoms_review content'.
   $permissions['delete any well_child_symptoms_review content'] = array(
     'name' => 'delete any well_child_symptoms_review content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete any well_child_vaccination_history content'.
-  $permissions['delete any well_child_vaccination_history content'] = array(
-    'name' => 'delete any well_child_vaccination_history content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -661,15 +623,6 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own well_child_immunisation content'.
-  $permissions['delete own well_child_immunisation content'] = array(
-    'name' => 'delete own well_child_immunisation content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete own well_child_ipv_immunisation content'.
   $permissions['delete own well_child_ipv_immunisation content'] = array(
     'name' => 'delete own well_child_ipv_immunisation content',
@@ -781,15 +734,6 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'delete own well_child_symptoms_review content'.
   $permissions['delete own well_child_symptoms_review content'] = array(
     'name' => 'delete own well_child_symptoms_review content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own well_child_vaccination_history content'.
-  $permissions['delete own well_child_vaccination_history content'] = array(
-    'name' => 'delete own well_child_vaccination_history content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -933,16 +877,6 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any well_child_immunisation content'.
-  $permissions['edit any well_child_immunisation content'] = array(
-    'name' => 'edit any well_child_immunisation content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'edit any well_child_ipv_immunisation content'.
   $permissions['edit any well_child_ipv_immunisation content'] = array(
     'name' => 'edit any well_child_ipv_immunisation content',
@@ -1066,16 +1000,6 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'edit any well_child_symptoms_review content'.
   $permissions['edit any well_child_symptoms_review content'] = array(
     'name' => 'edit any well_child_symptoms_review content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit any well_child_vaccination_history content'.
-  $permissions['edit any well_child_vaccination_history content'] = array(
-    'name' => 'edit any well_child_vaccination_history content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1223,16 +1147,6 @@ function hedley_well_child_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own well_child_immunisation content'.
-  $permissions['edit own well_child_immunisation content'] = array(
-    'name' => 'edit own well_child_immunisation content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'edit own well_child_ipv_immunisation content'.
   $permissions['edit own well_child_ipv_immunisation content'] = array(
     'name' => 'edit own well_child_ipv_immunisation content',
@@ -1356,16 +1270,6 @@ function hedley_well_child_user_default_permissions() {
   // Exported permission: 'edit own well_child_symptoms_review content'.
   $permissions['edit own well_child_symptoms_review content'] = array(
     'name' => 'edit own well_child_symptoms_review content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own well_child_vaccination_history content'.
-  $permissions['edit own well_child_vaccination_history content'] = array(
-    'name' => 'edit own well_child_vaccination_history content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
