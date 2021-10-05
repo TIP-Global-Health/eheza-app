@@ -384,15 +384,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
         $multiDateFields = [
           'administration_dates',
-          // @todo: remove all bellow.
-          'bcg_vaccination_date',
-          'opv_vaccination_date',
-          'dtp_vaccination_date',
-          'pcv13_vaccination_date',
-          'rotarix_vaccination_date',
-          'ipv_vaccination_date',
-          'mr_vaccination_date',
-          'hpv_vaccination_date',
         ];
 
         $data = [];
@@ -426,13 +417,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'type',
           'status',
           'shard',
-          // When creating a session, we provide clinic_type so it is
+          // When creating a session, we provide clinic_type, so it is
           // recorded on client. We don't actually need to pass this through,
           // so, we filter it out here.
           'clinic_type',
           // We do not support marking content as deleted from client,
           // therefore, we do not want to pass 'deleted' indication.
-          // Also, not most content types do not have 'field_deleted, and
+          // Also, most content types do not have 'field_deleted, and
           // passing 'deleted' indicator will cause error.
           'deleted',
         ];

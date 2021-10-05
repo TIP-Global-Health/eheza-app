@@ -1111,13 +1111,16 @@ toVaccinationValueWithDefault saved form =
 toVaccinationValue : VaccinationForm -> Maybe VaccinationValue
 toVaccinationValue form =
     let
+        administeredDoses =
+            Maybe.withDefault EverySet.empty form.administeredDoses
+
+        administrationDates =
+            Maybe.withDefault EverySet.empty form.administrationDates
+
         administrationNote =
             Maybe.withDefault AdministeredPreviously form.administrationNote
-                |> Just
     in
-    Maybe.map VaccinationValue form.administeredDoses
-        |> andMap form.administrationDates
-        |> andMap administrationNote
+    Just <| VaccinationValue administeredDoses administrationDates administrationNote
 
 
 previousVaccinesUpdateAllowed : VaccinationValue -> Maybe Bool
