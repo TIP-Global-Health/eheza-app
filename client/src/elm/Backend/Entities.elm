@@ -895,14 +895,6 @@ type WellChildVitalsUuidType
     = WellChildVitalsUuidType
 
 
-type alias WellChildImmunisationId =
-    EntityUuid WellChildImmunisationUuidType
-
-
-type WellChildImmunisationUuidType
-    = WellChildImmunisationUuidType
-
-
 type alias WellChildMebendezoleId =
     EntityUuid WellChildMebendezoleUuidType
 
@@ -941,14 +933,6 @@ type alias WellChildNextVisitId =
 
 type WellChildNextVisitUuidType
     = WellChildNextVisitUuidType
-
-
-type alias WellChildVaccinationHistoryId =
-    EntityUuid WellChildVaccinationHistoryUuidType
-
-
-type WellChildVaccinationHistoryUuidType
-    = WellChildVaccinationHistoryUuidType
 
 
 type alias WellChildBCGImmunisationId =

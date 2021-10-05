@@ -1377,24 +1377,6 @@ type ECDSign
     | NoECDSigns
 
 
-type alias WellChildImmunisation =
-    WellChildMeasurement ImmunisationValue
-
-
-type alias ImmunisationValue =
-    { suggestedVaccines : Dict VaccineType VaccineDose
-    , vacinationNotes : Dict VaccineType AdministrationNote
-    , bcgVaccinationDate : Maybe NominalDate
-    , opvVaccinationDate : Maybe NominalDate
-    , dtpVaccinationDate : Maybe NominalDate
-    , pcv13VaccinationDate : Maybe NominalDate
-    , rotarixVaccinationDate : Maybe NominalDate
-    , ipvVaccinationDate : Maybe NominalDate
-    , mrVaccinationDate : Maybe NominalDate
-    , hpvVaccinationDate : Maybe NominalDate
-    }
-
-
 type VaccineType
     = VaccineBCG
     | VaccineOPV
@@ -1453,24 +1435,6 @@ type alias WellChildNextVisit =
 type alias NextVisitValue =
     { immunisationDate : Maybe NominalDate
     , pediatricVisitDate : Maybe NominalDate
-    }
-
-
-type alias WellChildVaccinationHistory =
-    WellChildMeasurement VaccinationHistoryValue
-
-
-type alias VaccinationHistoryValue =
-    { suggestedVaccines : Dict VaccineType (EverySet VaccineDose)
-    , administeredVaccines : Dict VaccineType (EverySet VaccineDose)
-    , bcgVaccinationDate : EverySet NominalDate
-    , opvVaccinationDate : EverySet NominalDate
-    , dtpVaccinationDate : EverySet NominalDate
-    , pcv13VaccinationDate : EverySet NominalDate
-    , rotarixVaccinationDate : EverySet NominalDate
-    , ipvVaccinationDate : EverySet NominalDate
-    , mrVaccinationDate : EverySet NominalDate
-    , hpvVaccinationDate : EverySet NominalDate
     }
 
 
@@ -1726,13 +1690,11 @@ type alias WellChildMeasurements =
     , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
     , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
     , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
-    , immunisation : Maybe ( WellChildImmunisationId, WellChildImmunisation )
     , ecd : Maybe ( WellChildECDId, WellChildECD )
     , albendazole : Maybe ( WellChildAlbendazoleId, WellChildAlbendazole )
     , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
     , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
     , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
-    , vaccinationHistory : Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory )
     , bcgImmunisation : Maybe ( WellChildBCGImmunisationId, WellChildBCGImmunisation )
     , dtpImmunisation : Maybe ( WellChildDTPImmunisationId, WellChildDTPImmunisation )
     , hpvImmunisation : Maybe ( WellChildHPVImmunisationId, WellChildHPVImmunisation )

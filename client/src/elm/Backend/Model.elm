@@ -458,7 +458,6 @@ type Revision
     | WellChildHealthEducationRevision WellChildHealthEducationId WellChildHealthEducation
     | WellChildHeightRevision WellChildHeightId WellChildHeight
     | WellChildHPVImmunisationRevision WellChildHPVImmunisationId WellChildHPVImmunisation
-    | WellChildImmunisationRevision WellChildImmunisationId WellChildImmunisation
     | WellChildIPVImmunisationRevision WellChildIPVImmunisationId WellChildIPVImmunisation
     | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole
     | WellChildMRImmunisationRevision WellChildMRImmunisationId WellChildMRImmunisation
@@ -472,7 +471,6 @@ type Revision
     | WellChildRotarixImmunisationRevision WellChildRotarixImmunisationId WellChildRotarixImmunisation
     | WellChildSendToHCRevision WellChildSendToHCId WellChildSendToHC
     | WellChildSymptomsReviewRevision WellChildSymptomsReviewId WellChildSymptomsReview
-    | WellChildVaccinationHistoryRevision WellChildVaccinationHistoryId WellChildVaccinationHistory
     | WellChildVitalsRevision WellChildVitalsId WellChildVitals
     | WellChildVitaminARevision WellChildVitaminAId WellChildVitaminA
     | WellChildWeightRevision WellChildWeightId WellChildWeight

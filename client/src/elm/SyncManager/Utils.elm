@@ -645,9 +645,6 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildHPVImmunisation identifier ->
             getIdentifier identifier "well_child_hpv_immunisation"
 
-        BackendAuthorityWellChildImmunisation identifier ->
-            getIdentifier identifier "well_child_immunisation"
-
         BackendAuthorityWellChildIPVImmunisation identifier ->
             getIdentifier identifier "well_child_ipv_immunisation"
 
@@ -686,9 +683,6 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityWellChildSymptomsReview identifier ->
             getIdentifier identifier "well_child_symptoms_review"
-
-        BackendAuthorityWellChildVaccinationHistory identifier ->
-            getIdentifier identifier "well_child_vaccination_history"
 
         BackendAuthorityWellChildVitals identifier ->
             getIdentifier identifier "well_child_vitals"
@@ -1167,9 +1161,6 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildHPVImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildHPVImmunisation identifier
 
-        BackendAuthorityWellChildImmunisation identifier ->
-            encode Backend.Measurement.Encoder.encodeWellChildImmunisation identifier
-
         BackendAuthorityWellChildIPVImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildIPVImmunisation identifier
 
@@ -1208,9 +1199,6 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityWellChildSymptomsReview identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildSymptomsReview identifier
-
-        BackendAuthorityWellChildVaccinationHistory identifier ->
-            encode Backend.Measurement.Encoder.encodeWellChildVaccinationHistory identifier
 
         BackendAuthorityWellChildVitals identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildVitals identifier
@@ -1652,9 +1640,6 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityWellChildHPVImmunisation identifier ->
             WellChildHPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityWellChildImmunisation identifier ->
-            WellChildImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
-
         BackendAuthorityWellChildIPVImmunisation identifier ->
             WellChildIPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1693,9 +1678,6 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildSymptomsReview identifier ->
             WellChildSymptomsReviewRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityWellChildVaccinationHistory identifier ->
-            WellChildVaccinationHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildVitals identifier ->
             WellChildVitalsRevision (toEntityUuid identifier.uuid) identifier.entity

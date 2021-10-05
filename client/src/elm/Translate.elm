@@ -877,8 +877,6 @@ type TranslationId
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
-    | ReviewVaccinationHistory
-    | ReviewVaccinationHistoryLabel
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -1008,8 +1006,6 @@ type TranslationId
     | VaccinationStatus VaccinationStatus
     | VaccineDoseAdministeredPreviouslyQuestion String
     | VaccineDoseAdministeredTodayQuestion String
-      -- @todo: remove
-    | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
     | Version
@@ -7192,16 +7188,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ReviewVaccinationHistory ->
-            { english = "Review Vaccination History"
-            , kinyarwanda = Nothing
-            }
-
-        ReviewVaccinationHistoryLabel ->
-            { english = "Review the patients vaccination history in E-Heza"
-            , kinyarwanda = Nothing
-            }
-
         RhNegative ->
             { english = "RH Negative"
             , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
@@ -8134,82 +8120,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->
-            let
-                doseNumber =
-                    case dose of
-                        VaccineDoseFirst ->
-                            "1"
-
-                        VaccineDoseSecond ->
-                            "2"
-
-                        VaccineDoseThird ->
-                            "3"
-
-                        VaccineDoseFourth ->
-                            "4"
-
-                suffix =
-                    if todaySuffix then
-                        " today"
-
-                    else
-                        ""
-            in
-            case vaccineType of
-                VaccineBCG ->
-                    if isChw then
-                        { english = "Did the child receive the Bacilius Calmette - Guérin (BCG) vaccine at birth"
-                        , kinyarwanda = Nothing
-                        }
-
-                    else
-                        { english = "Did the child receive the  Bacilius Calmette - Guérin vaccine (BCG) - Dose " ++ doseNumber ++ " of 1" ++ suffix
-                        , kinyarwanda = Nothing
-                        }
-
-                VaccineOPV ->
-                    if isChw then
-                        { english = "Did the child receive the Oral Polio vaccine (OPV) at birth"
-                        , kinyarwanda = Nothing
-                        }
-
-                    else
-                        { english = "Did the child receive the Oral Polio vaccine (OPV) - Dose " ++ doseNumber ++ " of 4" ++ suffix
-                        , kinyarwanda = Nothing
-                        }
-
-                VaccineDTP ->
-                    { english = "Did the child receive the DTP - HepB - Hib vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccinePCV13 ->
-                    { english = "Did the child receive the Pneumoccocal vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineRotarix ->
-                    { english = "Did the child receive the Rotavirus (Rotarix) vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineIPV ->
-                    { english = "Did the child receive the Inactivated Polio vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineMR ->
-                    { english = "Did the child receive the Measles - Rubella vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineHPV ->
-                    { english = "Did the child receive the HPV vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
         VaccineType vaccineType ->
             case vaccineType of
                 VaccineBCG ->
@@ -8345,11 +8255,6 @@ translationSet trans =
 
                 WellChildImmunisation ->
                     { english = "Immunizations"
-                    , kinyarwanda = Nothing
-                    }
-
-                WellChildVaccinationHistory ->
-                    { english = "Vaccine History"
                     , kinyarwanda = Nothing
                     }
 

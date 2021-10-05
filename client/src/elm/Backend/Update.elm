@@ -3362,14 +3362,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        WellChildImmunisationRevision uuid data ->
-            ( mapWellChildMeasurements
-                data.encounterId
-                (\measurements -> { measurements | immunisation = Just ( uuid, data ) })
-                model
-            , recalc
-            )
-
         WellChildIPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -3470,14 +3462,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | symptomsReview = Just ( uuid, data ) })
-                model
-            , recalc
-            )
-
-        WellChildVaccinationHistoryRevision uuid data ->
-            ( mapWellChildMeasurements
-                data.encounterId
-                (\measurements -> { measurements | vaccinationHistory = Just ( uuid, data ) })
                 model
             , recalc
             )

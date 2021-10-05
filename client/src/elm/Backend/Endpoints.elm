@@ -832,12 +832,6 @@ wellChildVitalsEndpoint =
         |> withValueEncoder (object << encodeWellChildVitals)
 
 
-wellChildImmunisationEndpoint : ReadWriteEndPoint Error WellChildImmunisationId WellChildImmunisation WellChildImmunisation ()
-wellChildImmunisationEndpoint =
-    swEndpoint "nodes/well_child_immunisation" decodeWellChildImmunisation
-        |> withValueEncoder (object << encodeWellChildImmunisation)
-
-
 wellChildAlbendazoleEndpoint : ReadWriteEndPoint Error WellChildAlbendazoleId WellChildAlbendazole WellChildAlbendazole ()
 wellChildAlbendazoleEndpoint =
     swEndpoint "nodes/well_child_albendazole" decodeWellChildAlbendazole
@@ -866,12 +860,6 @@ wellChildNextVisitEndpoint : ReadWriteEndPoint Error WellChildNextVisitId WellCh
 wellChildNextVisitEndpoint =
     swEndpoint "nodes/well_child_next_visit" decodeWellChildNextVisit
         |> withValueEncoder (object << encodeWellChildNextVisit)
-
-
-wellChildVaccinationHistoryEndpoint : ReadWriteEndPoint Error WellChildVaccinationHistoryId WellChildVaccinationHistory WellChildVaccinationHistory ()
-wellChildVaccinationHistoryEndpoint =
-    swEndpoint "nodes/well_child_vaccination_history" decodeWellChildVaccinationHistory
-        |> withValueEncoder (object << encodeWellChildVaccinationHistory)
 
 
 wellChildBCGImmunisationEndpoint : ReadWriteEndPoint Error WellChildBCGImmunisationId WellChildBCGImmunisation WellChildBCGImmunisation ()

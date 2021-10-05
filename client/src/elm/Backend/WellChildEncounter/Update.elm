@@ -206,16 +206,6 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SaveImmunisation personId valueId value ->
-            ( { model | saveImmunisation = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildImmunisationEndpoint HandleSavedImmunisation
-            )
-
-        HandleSavedImmunisation data ->
-            ( { model | saveImmunisation = data }
-            , Cmd.none
-            )
-
         SaveBCGImmunisation personId valueId value ->
             ( { model | saveBCGImmunisation = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildBCGImmunisationEndpoint HandleSavedBCGImmunisation
@@ -343,15 +333,5 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedNextVisit data ->
             ( { model | saveNextVisit = data }
-            , Cmd.none
-            )
-
-        SaveVaccinationHistory personId valueId value ->
-            ( { model | saveVaccinationHistory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildVaccinationHistoryEndpoint HandleSavedVaccinationHistory
-            )
-
-        HandleSavedVaccinationHistory data ->
-            ( { model | saveVaccinationHistory = data }
             , Cmd.none
             )

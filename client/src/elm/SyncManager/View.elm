@@ -639,9 +639,6 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildHPVImmunisation identifier ->
                 viewMeasurement identifier "Well Child HPV Immunisation"
 
-            BackendAuthorityWellChildImmunisation identifier ->
-                viewMeasurement identifier "Well Child Immunisation"
-
             BackendAuthorityWellChildIPVImmunisation identifier ->
                 viewMeasurement identifier "Well Child IPV Immunisation"
 
@@ -680,9 +677,6 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildSymptomsReview identifier ->
                 viewMeasurement identifier "Well Child Symptoms Review"
-
-            BackendAuthorityWellChildVaccinationHistory identifier ->
-                viewMeasurement identifier "Well Child Vaccination History"
 
             BackendAuthorityWellChildVitals identifier ->
                 viewMeasurement identifier "Well Child Vitals"

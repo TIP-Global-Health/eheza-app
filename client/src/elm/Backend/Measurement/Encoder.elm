@@ -2670,42 +2670,6 @@ encodeMeasurementNote note =
                 "none"
 
 
-encodeWellChildImmunisation : WellChildImmunisation -> List ( String, Value )
-encodeWellChildImmunisation =
-    encodeWellChildMeasurement encodeImmunisationValue
-
-
-encodeImmunisationValue : ImmunisationValue -> List ( String, Value )
-encodeImmunisationValue value =
-    let
-        maybeToEverySet =
-            Maybe.map EverySet.singleton >> Maybe.withDefault EverySet.empty
-    in
-    [ ( "suggested_vaccines", list encodeVaccinationEntry (Dict.toList value.suggestedVaccines) )
-    , ( "vaccination_notes", list encodeVacinationNote (Dict.toList value.vacinationNotes) )
-    , ( "opv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.opvVaccinationDate) )
-    , ( "bcg_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.bcgVaccinationDate) )
-    , ( "pcv13_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.pcv13VaccinationDate) )
-    , ( "dtp_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.dtpVaccinationDate) )
-    , ( "rotarix_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.rotarixVaccinationDate) )
-    , ( "ipv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.ipvVaccinationDate) )
-    , ( "mr_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.mrVaccinationDate) )
-    , ( "hpv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD (maybeToEverySet value.hpvVaccinationDate) )
-    , ( "deleted", bool False )
-    , ( "type", string "well_child_immunisation" )
-    ]
-
-
-encodeVaccinationEntry : ( VaccineType, VaccineDose ) -> Value
-encodeVaccinationEntry ( type_, dose ) =
-    vaccineTypeToString type_ ++ "-" ++ vaccineDoseToString dose |> string
-
-
-encodeVacinationNote : ( VaccineType, AdministrationNote ) -> Value
-encodeVacinationNote ( type_, note ) =
-    vaccineTypeToString type_ ++ "-" ++ administrationNoteToString note |> string
-
-
 encodeWellChildAlbendazole : WellChildAlbendazole -> List ( String, Value )
 encodeWellChildAlbendazole =
     encodeWellChildMeasurement encodeWellChildAlbendazoleValue
@@ -2804,38 +2768,6 @@ encodeNextVisitValue value =
     , ( "pediatric_visit_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
     , ( "deleted", bool False )
     , ( "type", string "well_child_next_visit" )
-    ]
-
-
-encodeWellChildVaccinationHistory : WellChildVaccinationHistory -> List ( String, Value )
-encodeWellChildVaccinationHistory =
-    encodeWellChildMeasurement encodeVaccinationHistoryValue
-
-
-encodeVaccinationHistoryValue : VaccinationHistoryValue -> List ( String, Value )
-encodeVaccinationHistoryValue value =
-    let
-        implodeVaccines =
-            Dict.toList
-                >> List.map
-                    (\( type_, set ) ->
-                        EverySet.toList set
-                            |> List.map (\dose -> ( type_, dose ))
-                    )
-                >> List.concat
-    in
-    [ ( "suggested_vaccines", list encodeVaccinationEntry (implodeVaccines value.suggestedVaccines) )
-    , ( "administered_vaccines", list encodeVaccinationEntry (implodeVaccines value.administeredVaccines) )
-    , ( "opv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.opvVaccinationDate )
-    , ( "bcg_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.bcgVaccinationDate )
-    , ( "pcv13_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.pcv13VaccinationDate )
-    , ( "dtp_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.dtpVaccinationDate )
-    , ( "rotarix_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.rotarixVaccinationDate )
-    , ( "ipv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.ipvVaccinationDate )
-    , ( "mr_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.mrVaccinationDate )
-    , ( "hpv_vaccination_date", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.hpvVaccinationDate )
-    , ( "deleted", bool False )
-    , ( "type", string "well_child_vaccination_history" )
     ]
 
 

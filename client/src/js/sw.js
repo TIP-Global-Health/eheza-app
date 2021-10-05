@@ -135,7 +135,6 @@ var tableForType = {
     well_child_health_education: 'shards',
     well_child_hpv_immunisation: 'shards',
     well_child_height: 'shards',
-    well_child_immunisation: 'shards',
     well_child_ipv_immunisation: 'shards',
     well_child_mebendezole: 'shards',
     well_child_mr_immunisation: 'shards',
@@ -149,7 +148,6 @@ var tableForType = {
     well_child_rotarix_immunisation: 'shards',
     well_child_send_to_hc: 'shards',
     well_child_symptoms_review: 'shards',
-    well_child_vaccination_history: 'shards',
     well_child_vitamin_a: 'shards',
     well_child_vitals: 'shards',
     well_child_weight: 'shards'

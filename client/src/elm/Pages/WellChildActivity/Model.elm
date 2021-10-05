@@ -43,12 +43,6 @@ type Msg
     | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
     | SetWeight String
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
-      -- VACCINATION HISTORY
-    | SetCatchUpRequired Bool
-    | SetVaccinationHistoryBoolInput VaccineType VaccineDose Bool
-    | SetVaccinationHistoryDateInput VaccineType VaccineDose Date
-    | ToggleVaccinationHistoryDateSelectorInput VaccineType VaccineDose
-    | SaveVaccinationHistory PersonId (Dict VaccineType (EverySet VaccineDose)) (Maybe ( WellChildVaccinationHistoryId, WellChildVaccinationHistory ))
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
     | SetVaccinationFormViewMode VaccineType VaccinationFormViewMode
@@ -67,12 +61,6 @@ type Msg
     | SaveOPVImmunisation PersonId (Maybe ( WellChildOPVImmunisationId, WellChildOPVImmunisation )) (Maybe ImmunisationTask)
     | SavePCV13Immunisation PersonId (Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )) (Maybe ImmunisationTask)
     | SaveRotarixImmunisation PersonId (Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )) (Maybe ImmunisationTask)
-      -- @todo remove
-    | SetImmunisationBoolInput (Bool -> ImmunisationForm -> ImmunisationForm) Bool
-    | SetImmunisationAdministrationNoteInput (AdministrationNote -> ImmunisationForm -> ImmunisationForm) AdministrationNote
-    | SetImmunisationDateInput (Date -> ImmunisationForm -> ImmunisationForm) Date
-    | ToggleImmunisationDateSelectorInput (ImmunisationForm -> ImmunisationForm)
-    | SaveImmunisation PersonId (Dict VaccineType VaccineDose) (Maybe ( WellChildImmunisationId, WellChildImmunisation ))
       -- ECD
     | SetECDBoolInput (Bool -> WellChildECDForm -> WellChildECDForm) Bool
     | SaveECD PersonId (Maybe ( WellChildECDId, WellChildECD ))
@@ -112,11 +100,7 @@ type alias Model =
     { pregnancySummaryForm : PregnancySummaryForm
     , dangerSignsData : DangerSignsData
     , nutritionAssessmentData : NutritionAssessmentData
-    , vaccinationHistoryForm : VaccinationHistoryForm
     , immunisationData : ImmunisationData
-
-    -- @todo: remove
-    , immunisationForm : ImmunisationForm
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
     , nextStepsData : NextStepsData
@@ -130,11 +114,7 @@ emptyModel =
     { pregnancySummaryForm = emptyPregnancySummaryForm
     , dangerSignsData = emptyDangerSignsData
     , nutritionAssessmentData = emptyNutritionAssessmentData
-    , vaccinationHistoryForm = emptyVaccinationHistoryForm
     , immunisationData = emptyImmunisationData
-
-    -- @todo: remove
-    , immunisationForm = emptyImmunisationForm
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
     , nextStepsData = emptyNextStepsData
@@ -147,7 +127,6 @@ type WarningPopupType
     = PopupNutritionAssessment (List NutritionAssessment)
     | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
-    | PopupVaccinationHistory VaccinationProgressDict
 
 
 type VaccinationStatus
@@ -244,29 +223,6 @@ type NutritionAssessmentTask
     | TaskWeight
 
 
-type alias VaccinationHistoryForm =
-    { catchUpRequired : Maybe Bool
-    , suggestedVaccines : Dict VaccineType (EverySet VaccineDose)
-    , administeredVaccines : Dict VaccineType (Dict VaccineDose (Maybe Bool))
-    , administeredVaccinesDirty : Bool
-    , vaccinationDates : Dict VaccineType (Dict VaccineDose (Maybe NominalDate))
-    , vaccinationDatesDirty : Bool
-    , dateSelectorsState : Dict ( VaccineType, VaccineDose ) Bool
-    }
-
-
-emptyVaccinationHistoryForm : VaccinationHistoryForm
-emptyVaccinationHistoryForm =
-    { catchUpRequired = Nothing
-    , suggestedVaccines = Dict.empty
-    , administeredVaccines = Dict.empty
-    , administeredVaccinesDirty = False
-    , vaccinationDates = Dict.empty
-    , vaccinationDatesDirty = False
-    , dateSelectorsState = Dict.empty
-    }
-
-
 type alias ImmunisationData =
     { bcgForm : VaccinationForm
     , dtpForm : VaccinationForm
@@ -341,85 +297,6 @@ type ImmunisationTask
     | TaskPCV13
     | TaskRotarix
     | TaskOverview
-
-
-
--- @todo: remove
-
-
-type alias ImmunisationForm =
-    { suggestedVaccines : Dict VaccineType VaccineDose
-    , bcgVaccinationAdministered : Maybe Bool
-    , opvVaccinationAdministered : Maybe Bool
-    , dtpVaccinationAdministered : Maybe Bool
-    , pcv13VaccinationAdministered : Maybe Bool
-    , rotarixVaccinationAdministered : Maybe Bool
-    , ipvVaccinationAdministered : Maybe Bool
-    , mrVaccinationAdministered : Maybe Bool
-    , hpvVaccinationAdministered : Maybe Bool
-    , bcgVaccinationNote : Maybe AdministrationNote
-    , opvVaccinationNote : Maybe AdministrationNote
-    , dtpVaccinationNote : Maybe AdministrationNote
-    , pcv13VaccinationNote : Maybe AdministrationNote
-    , rotarixVaccinationNote : Maybe AdministrationNote
-    , ipvVaccinationNote : Maybe AdministrationNote
-    , mrVaccinationNote : Maybe AdministrationNote
-    , hpvVaccinationNote : Maybe AdministrationNote
-    , bcgVaccinationDate : Maybe NominalDate
-    , opvVaccinationDate : Maybe NominalDate
-    , dtpVaccinationDate : Maybe NominalDate
-    , pcv13VaccinationDate : Maybe NominalDate
-    , rotarixVaccinationDate : Maybe NominalDate
-    , ipvVaccinationDate : Maybe NominalDate
-    , mrVaccinationDate : Maybe NominalDate
-    , hpvVaccinationDate : Maybe NominalDate
-    , bcgVaccinationDateSelectorOpen : Bool
-    , opvVaccinationDateSelectorOpen : Bool
-    , dtpVaccinationDateSelectorOpen : Bool
-    , pcv13VaccinationDateSelectorOpen : Bool
-    , rotarixVaccinationDateSelectorOpen : Bool
-    , ipvVaccinationDateSelectorOpen : Bool
-    , mrVaccinationDateSelectorOpen : Bool
-    , hpvVaccinationDateSelectorOpen : Bool
-    }
-
-
-emptyImmunisationForm : ImmunisationForm
-emptyImmunisationForm =
-    { suggestedVaccines = Dict.empty
-    , bcgVaccinationAdministered = Nothing
-    , opvVaccinationAdministered = Nothing
-    , dtpVaccinationAdministered = Nothing
-    , pcv13VaccinationAdministered = Nothing
-    , rotarixVaccinationAdministered = Nothing
-    , ipvVaccinationAdministered = Nothing
-    , mrVaccinationAdministered = Nothing
-    , hpvVaccinationAdministered = Nothing
-    , bcgVaccinationNote = Nothing
-    , opvVaccinationNote = Nothing
-    , dtpVaccinationNote = Nothing
-    , pcv13VaccinationNote = Nothing
-    , rotarixVaccinationNote = Nothing
-    , ipvVaccinationNote = Nothing
-    , mrVaccinationNote = Nothing
-    , hpvVaccinationNote = Nothing
-    , bcgVaccinationDate = Nothing
-    , opvVaccinationDate = Nothing
-    , dtpVaccinationDate = Nothing
-    , pcv13VaccinationDate = Nothing
-    , rotarixVaccinationDate = Nothing
-    , ipvVaccinationDate = Nothing
-    , mrVaccinationDate = Nothing
-    , hpvVaccinationDate = Nothing
-    , bcgVaccinationDateSelectorOpen = False
-    , opvVaccinationDateSelectorOpen = False
-    , dtpVaccinationDateSelectorOpen = False
-    , pcv13VaccinationDateSelectorOpen = False
-    , rotarixVaccinationDateSelectorOpen = False
-    , ipvVaccinationDateSelectorOpen = False
-    , mrVaccinationDateSelectorOpen = False
-    , hpvVaccinationDateSelectorOpen = False
-    }
 
 
 type alias WellChildECDForm =

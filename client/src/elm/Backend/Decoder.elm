@@ -328,9 +328,6 @@ decodeRevision =
                     "well_child_hpv_immunisation" ->
                         decodeWithUuid WellChildHPVImmunisationRevision decodeWellChildHPVImmunisation
 
-                    "well_child_immunisation" ->
-                        decodeWithUuid WellChildImmunisationRevision decodeWellChildImmunisation
-
                     "well_child_ipv_immunisation" ->
                         decodeWithUuid WellChildIPVImmunisationRevision decodeWellChildIPVImmunisation
 
@@ -369,9 +366,6 @@ decodeRevision =
 
                     "well_child_symptoms_review" ->
                         decodeWithUuid WellChildSymptomsReviewRevision decodeWellChildSymptomsReview
-
-                    "well_child_vaccination_history" ->
-                        decodeWithUuid WellChildVaccinationHistoryRevision decodeWellChildVaccinationHistory
 
                     "well_child_vitals" ->
                         decodeWithUuid WellChildVitalsRevision decodeWellChildVitals

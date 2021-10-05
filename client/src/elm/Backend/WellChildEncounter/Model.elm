@@ -129,7 +129,6 @@ type alias Model =
     , saveMebendezole : WebData ()
     , saveVitaminA : WebData ()
     , saveNextVisit : WebData ()
-    , saveVaccinationHistory : WebData ()
     }
 
 
@@ -163,7 +162,6 @@ emptyModel =
     , saveMebendezole = NotAsked
     , saveVitaminA = NotAsked
     , saveNextVisit = NotAsked
-    , saveVaccinationHistory = NotAsked
     }
 
 
@@ -200,8 +198,6 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveECD PersonId (Maybe WellChildECDId) (EverySet ECDSign)
     | HandleSavedECD (WebData ())
-    | SaveImmunisation PersonId (Maybe WellChildImmunisationId) ImmunisationValue
-    | HandleSavedImmunisation (WebData ())
     | SaveBCGImmunisation PersonId (Maybe WellChildBCGImmunisationId) VaccinationValue
     | HandleSavedBCGImmunisation (WebData ())
     | SaveDTPImmunisation PersonId (Maybe WellChildDTPImmunisationId) VaccinationValue
@@ -226,5 +222,3 @@ type Msg
     | HandleSavedVitaminA (WebData ())
     | SaveNextVisit PersonId (Maybe WellChildNextVisitId) NextVisitValue
     | HandleSavedNextVisit (WebData ())
-    | SaveVaccinationHistory PersonId (Maybe WellChildVaccinationHistoryId) VaccinationHistoryValue
-    | HandleSavedVaccinationHistory (WebData ())
