@@ -231,7 +231,7 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
             (not <| taskExpected TaskHeight) || isJust measurements.height
 
         TaskHeadCircumference ->
-            (not <| taskExpected TaskHeight) || isJust measurements.headCircumference
+            (not <| taskExpected TaskHeadCircumference) || isJust measurements.headCircumference
 
         TaskMuac ->
             (not <| taskExpected TaskMuac) || isJust measurements.muac
@@ -1608,15 +1608,6 @@ expectMedicationTask currentDate isChw assembled task =
 
 nextMedicationAdmnistrationData : NominalDate -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
 nextMedicationAdmnistrationData currentDate person measurements =
-    let
-        administeredMebendezole =
-            List.filterMap .mebendezole measurements
-                |> latestAdministrationDateForMedicine
-
-        administeredVitamineA =
-            List.filterMap .mebendezole measurements
-                |> latestAdministrationDateForMedicine
-    in
     List.filter (expectMedicationByAge currentDate person) medicationTasks
         |> List.map
             (\medication ->
@@ -1634,7 +1625,7 @@ nextMedicationAdmnistrationData currentDate person measurements =
                             |> Maybe.withDefault ( TaskMebendezole, currentDate )
 
                     TaskVitaminA ->
-                        List.filterMap .mebendezole measurements
+                        List.filterMap .vitaminA measurements
                             |> latestAdministrationDateForMedicine
                             |> Maybe.map (\date -> ( TaskVitaminA, Date.add Months 6 date ))
                             |> Maybe.withDefault ( TaskVitaminA, currentDate )
@@ -1650,15 +1641,15 @@ expectMedicationByAge currentDate person task =
                 case task of
                     -- 6 years to 12 years.
                     TaskAlbendazole ->
-                        ageMonths >= 60 && ageMonths < 120
+                        ageMonths >= (6 * 12) && ageMonths < (12 * 12)
 
                     -- 1 year to 6 years.
                     TaskMebendezole ->
-                        ageMonths >= 12 && ageMonths < 60
+                        ageMonths >= 12 && ageMonths < (6 * 12)
 
                     -- 6 months to 6 years.
                     TaskVitaminA ->
-                        ageMonths >= 6 && ageMonths < 60
+                        ageMonths >= 6 && ageMonths < (6 * 12)
             )
         |> Maybe.withDefault False
 
@@ -1765,7 +1756,7 @@ toAdministrationNote form =
 
 resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
 resolveAlbendazoleDosageAndIcon currentDate person =
-    Just ( "500 mg", "icon-pills" )
+    Just ( "400 mg", "icon-pills" )
 
 
 resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
@@ -1996,78 +1987,110 @@ generateNextVisitDates currentDate isChw assembled db =
 
 generateNextDateForECDVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
 generateNextDateForECDVisit currentDate assembled db =
-    if List.isEmpty (generateRemianingECDSignsAfterCurrentEncounter currentDate assembled) then
-        Nothing
+    assembled.person.birthDate
+        |> Maybe.andThen
+            (\birthDate ->
+                let
+                    ageWeeks =
+                        Date.diff Weeks birthDate currentDate
 
-    else
-        assembled.person.birthDate
-            |> Maybe.map
-                (\birthDate ->
-                    let
-                        ageWeeks =
-                            Date.diff Weeks birthDate currentDate
+                    ageMonths =
+                        Date.diff Months birthDate currentDate
 
-                        ageMonth =
-                            Date.diff Months birthDate currentDate
+                    ageYears =
+                        Date.diff Years birthDate currentDate
 
-                        ageYears =
-                            Date.diff Years birthDate currentDate
-                    in
-                    if ageWeeks < 6 then
-                        Date.add Weeks 6 birthDate
-
-                    else if ageWeeks < 14 then
-                        Date.add Weeks 14 birthDate
-
-                    else if ageMonth < 6 then
-                        Date.add Months 6 birthDate
-
-                    else if ageMonth < 15 then
-                        Date.add Months 15 birthDate
-
-                    else if ageYears < 2 then
-                        Date.add Years 2 birthDate
-
-                    else if ageYears < 3 then
-                        Date.add Years 3 birthDate
-
-                    else if ageYears < 4 then
-                        Date.add Years 4 birthDate
+                    noRemainingSigns =
+                        List.isEmpty <| generateRemianingECDSignsAfterCurrentEncounter currentDate assembled
+                in
+                if ageWeeks < 6 then
+                    -- Since 6 weeks question appear from age of 5 weeks,
+                    -- we check if they were completed then.
+                    -- If so, we schedule next ECD visit to following
+                    -- milestone, which is at 14 weeks.
+                    if ageWeeks == 5 && noRemainingSigns then
+                        Just <| Date.add Weeks 14 birthDate
 
                     else
-                        Date.add Months 6 currentDate
-                )
+                        Just <| Date.add Weeks 6 birthDate
+
+                else if ageWeeks < 14 then
+                    -- Since 14 weeks question appear from age of 13 weeks,
+                    -- we check if they were completed then.
+                    -- If so, we schedule next ECD visit to following
+                    -- milestone, which is at 6 months.
+                    if ageWeeks == 13 && noRemainingSigns then
+                        Just <| Date.add Months 6 birthDate
+
+                    else
+                        Just <| Date.add Weeks 14 birthDate
+
+                else if ageMonths < 6 then
+                    Just <| Date.add Months 6 birthDate
+
+                else if ageMonths < 15 then
+                    Just <| Date.add Months 15 birthDate
+
+                else if ageYears < 2 then
+                    Just <| Date.add Years 2 birthDate
+
+                else if ageYears < 3 then
+                    Just <| Date.add Years 3 birthDate
+
+                else if ageYears < 4 then
+                    Just <| Date.add Years 4 birthDate
+
+                else if not noRemainingSigns then
+                    Just <| Date.add Months 6 currentDate
+
+                else
+                    Nothing
+            )
 
 
 generateNextDateForMedicationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
 generateNextDateForMedicationVisit currentDate assembled db =
-    let
-        measurements =
-            assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
+    assembled.person.birthDate
+        |> Maybe.andThen
+            (\birthDate ->
+                let
+                    ageMonths =
+                        Date.diff Months birthDate currentDate
+                in
+                -- When younder than 6 months, set visit date to
+                -- age of 6 months.
+                if ageMonths < 6 then
+                    Just <| Date.add Months 6 birthDate
 
-        nextDate =
-            nextMedicationAdmnistrationData currentDate assembled.person measurements
-                |> Dict.values
-                |> List.sortWith Date.compare
-                |> List.reverse
-                |> List.head
-    in
-    Maybe.andThen
-        (\date ->
-            let
-                compared =
-                    Date.compare date currentDate
-            in
-            if compared == LT || compared == EQ then
-                -- Next date already passed, or, it's due today.
-                -- Per requirements, we schedule next date as if medication
-                -- was administered today.
-                Just <| Date.add Months 6 currentDate
+                else
+                    let
+                        measurements =
+                            assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
 
-            else
-                Just date
-        )
-        nextDate
+                        nextDate =
+                            nextMedicationAdmnistrationData currentDate assembled.person measurements
+                                |> Dict.values
+                                |> List.sortWith Date.compare
+                                |> List.reverse
+                                |> List.head
+                    in
+                    Maybe.andThen
+                        (\date ->
+                            let
+                                compared =
+                                    Date.compare date currentDate
+                            in
+                            if compared == LT || compared == EQ then
+                                -- Next date already passed, or, it's due today.
+                                -- Per requirements, we schedule next date as if medication
+                                -- was administered today.
+                                Just <| Date.add Months 6 currentDate
+
+                            else
+                                Just date
+                        )
+                        nextDate
+            )
 
 
 generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate

@@ -1497,9 +1497,11 @@ expectPhysicalExamTask currentDate person isFirstEncounter task =
         PhysicalExamVitals ->
             True
 
-        -- We show Muac for children under age of 5.
+        -- We show Muac for children of 6 months to 5 years old.
         PhysicalExamMuac ->
-            isChildUnderAgeOf5 currentDate person
+            ageInMonths currentDate person
+                |> Maybe.map (\ageMonths -> ageMonths > 5 && ageMonths < 60)
+                |> Maybe.withDefault False
 
         -- We show Nutrition for children under age of 5.
         PhysicalExamNutrition ->

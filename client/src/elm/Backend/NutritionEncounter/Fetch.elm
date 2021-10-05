@@ -41,6 +41,10 @@ fetchForNutrition id db =
                     )
                 |> Maybe.withDefault []
 
+        -- We fetch all encounters.
+        fetchEncounters =
+            List.map FetchNutritionEncounter encountersIds
+
         -- We fetch measurements of all encounters.
         fetchMeasurements =
             List.map FetchNutritionMeasurements encountersIds
@@ -49,6 +53,7 @@ fetchForNutrition id db =
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchNutritionEncountersForParticipant participantId
         ]
+        ++ fetchEncounters
         ++ fetchMeasurements
 
 
@@ -63,6 +68,10 @@ fetchForWellChild id db =
                 |> Maybe.withDefault []
                 |> List.map Tuple.first
 
+        -- We fetch all encounters.
+        fetchEncounters =
+            List.map FetchWellChildEncounter encountersIds
+
         -- We fetch measurements of all encounters.
         fetchMeasurements =
             List.map FetchWellChildMeasurements encountersIds
@@ -71,4 +80,5 @@ fetchForWellChild id db =
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchWellChildEncountersForParticipant participantId
         ]
+        ++ fetchEncounters
         ++ fetchMeasurements

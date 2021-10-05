@@ -12,6 +12,7 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNutritionEncountersForParticipant
         , getWellChildEncountersForParticipant
+        , sortByDate
         , sortByDateDesc
         , sortDatesDesc
         , sortEncounterTuplesDesc

@@ -1371,8 +1371,8 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                             )
 
                         else
-                            ( [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined ]
-                            , [ NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                            ( [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationKnownAllergy ]
+                            , [ NonAdministrationPatientUnableToAfford, NonAdministrationChildsCondition, NonAdministrationOther ]
                             )
                 in
                 ( [ div [ class "why-not" ]
@@ -1382,7 +1382,7 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                             rightOptions
                             (config.getVaccinationNoteFunc form)
                             (SetImmunisationAdministrationNoteInput config.setAdministrationNoteFunc)
-                            Translate.AdministrationNote
+                            Translate.AdministrationNoteForWellChild
                         ]
                   ]
                     ++ vaccinationDateInput
