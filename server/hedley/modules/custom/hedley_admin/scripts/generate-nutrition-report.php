@@ -390,6 +390,9 @@ function categorize_data(array $dataset, string $grouped_by_month_key, string $g
     'moderate' => [],
     'severe' => [],
     'any' => [],
+    'impacted_moderate' => [],
+    'impacted_severe' => [],
+    'impacted_any' => [],
   ];
   if (!isset($dataset[$grouped_by_month_key])) {
     $dataset[$grouped_by_month_key] = $category_ids;
