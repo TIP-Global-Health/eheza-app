@@ -71,7 +71,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     , []
                     )
 
-                SaveChildNutritionSigns valueId value ->
+                SaveNutrition valueId value ->
                     ( { model | saveNutritionRequest = Dict.insert personId Loading model.saveNutritionRequest }
                     , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value nutritionEndpoint (HandleSaveNutrition personId)
                     , []

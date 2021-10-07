@@ -15,7 +15,7 @@ type Msg
     | SetMuac String
     | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetNutritionSign ChildNutritionSign
-    | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
+    | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition )) (EverySet NutritionAssessment)
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String

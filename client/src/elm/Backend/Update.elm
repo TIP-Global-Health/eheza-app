@@ -18,7 +18,7 @@ import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
 import Backend.IndividualEncounterParticipant.Update
-import Backend.Measurement.Model exposing (ChildMeasurements, HistoricalMeasurements, Measurements, WellChildSymptom(..))
+import Backend.Measurement.Model exposing (ChildMeasurements, ChildNutritionSign, HistoricalMeasurements, Measurements, WellChildSymptom(..))
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
@@ -44,24 +44,13 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
-import Backend.Utils
-    exposing
-        ( mapAcuteIllnessMeasurements
-        , mapChildMeasurements
-        , mapFollowUpMeasurements
-        , mapHomeVisitMeasurements
-        , mapMotherMeasurements
-        , mapNutritionMeasurements
-        , mapPrenatalMeasurements
-        , mapWellChildMeasurements
-        , sw
-        )
+import Backend.Utils exposing (..)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Backend.WellChildActivity.Model
-import Backend.WellChildEncounter.Model exposing (emptyWellChildEncounter)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
@@ -78,6 +67,7 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveAcuteIllnessDiagnosis
         , resolveNextStepFirstEncounter
         , resolveNextStepSubsequentEncounter
+        , respiratoryRateAbnormalForAge
         )
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
@@ -1009,24 +999,18 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw newModel)
+                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
 
-                processRevisionAndAssessNutritionGroup data updateFunc =
+                processRevisionAndAssessNutritionGroup participantId sessionId updateFunc =
                     if downloadingContent then
                         ( model, [] )
 
                     else
                         let
-                            participantId =
-                                data.participantId
-
-                            sessionId =
-                                data.encounterId
-
                             ( newModel, _ ) =
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, True ) revisions
                         in
@@ -1071,7 +1055,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw newModel)
+                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1118,24 +1102,13 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 value.bodyTemperature < 35 || value.bodyTemperature >= 37.5
 
                             respiratoryRateAlert =
-                                (value.respiratoryRate < 12)
-                                    || (value.respiratoryRate > 49)
-                                    || (Dict.get participantId model.people
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.andThen (ageInMonths currentDate)
-                                            |> Maybe.map
-                                                (\ageMonths ->
-                                                    if ageMonths < 60 then
-                                                        value.respiratoryRate > 39
-
-                                                    else
-                                                        value.respiratoryRate > 30
-                                                )
-                                            |> Maybe.withDefault False
-                                       )
+                                Dict.get participantId model.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.toMaybe
+                                    |> Maybe.andThen (ageInMonths currentDate)
+                                    |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths value.respiratoryRate)
                         in
-                        if bodyTemperatureAlert || bodyTemperatureAlert then
+                        if bodyTemperatureAlert || respiratoryRateAlert then
                             generateWellChildDangerSignsAlertMsgs currentDate encounterId
 
                         else
@@ -1201,25 +1174,41 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                                             )
                                                                 )
                                                             |> Maybe.withDefault []
+
+                                                    warning =
+                                                        if List.member Pages.WellChildEncounter.Model.ReferToSpecialist warningsList then
+                                                            WarningECDMilestoneReferToSpecialist
+
+                                                        else if List.member Pages.WellChildEncounter.Model.ChildBehind warningsList then
+                                                            WarningECDMilestoneBehind
+
+                                                        else
+                                                            NoECDMilstoneWarning
+
+                                                    setPopUpStateMsg popupType =
+                                                        Pages.WellChildEncounter.Model.PopupECD popupType
+                                                            |> Just
+                                                            |> Pages.WellChildEncounter.Model.SetWarningPopupState
+                                                            |> App.Model.MsgPageWellChildEncounter id
+                                                            |> App.Model.MsgLoggedIn
+
+                                                    popUpMsg =
+                                                        case warning of
+                                                            WarningECDMilestoneReferToSpecialist ->
+                                                                [ setPopUpStateMsg Pages.WellChildEncounter.Model.ReferToSpecialist ]
+
+                                                            WarningECDMilestoneBehind ->
+                                                                [ setPopUpStateMsg Pages.WellChildEncounter.Model.ChildBehind ]
+
+                                                            _ ->
+                                                                []
+
+                                                    setEncounterWarningMsg =
+                                                        Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
+                                                            |> Backend.Model.MsgWellChildEncounter id
+                                                            |> App.Model.MsgIndexedDb
                                                 in
-                                                if List.member Pages.WellChildEncounter.Model.ReferToSpecialist warningsList then
-                                                    Pages.WellChildEncounter.Model.PopupECD Pages.WellChildEncounter.Model.ReferToSpecialist
-                                                        |> Just
-                                                        |> Pages.WellChildEncounter.Model.SetWarningPopupState
-                                                        |> App.Model.MsgPageWellChildEncounter id
-                                                        |> App.Model.MsgLoggedIn
-                                                        |> List.singleton
-
-                                                else if List.member Pages.WellChildEncounter.Model.ChildBehind warningsList then
-                                                    Pages.WellChildEncounter.Model.PopupECD Pages.WellChildEncounter.Model.ChildBehind
-                                                        |> Just
-                                                        |> Pages.WellChildEncounter.Model.SetWarningPopupState
-                                                        |> App.Model.MsgPageWellChildEncounter id
-                                                        |> App.Model.MsgLoggedIn
-                                                        |> List.singleton
-
-                                                else
-                                                    []
+                                                setEncounterWarningMsg :: popUpMsg
                                             )
                                 )
                             |> Maybe.withDefault []
@@ -1542,7 +1531,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ HeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | height = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | height = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -1552,7 +1541,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ MuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -1562,7 +1551,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ ChildNutritionRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -1572,7 +1561,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ WeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
                     in
                     ( newModel
                     , Cmd.none
@@ -3521,10 +3510,17 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
             |> Maybe.withDefault []
 
 
-generateNutritionAssessmentIndividualMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> NutritionEncounterId -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
-    Maybe.map
-        (\assembledAfter ->
+generateNutritionAssessmentIndividualMsgs :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> ModelIndexedDb
+    -> ModelIndexedDb
+    -> NutritionEncounterId
+    -> List App.Model.Msg
+generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after id =
+    Maybe.map2
+        (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
@@ -3541,17 +3537,34 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
 
             else
                 let
-                    assesmentAfter =
+                    assessmentBefore =
+                        Pages.NutritionActivity.Utils.generateNutritionAssessment currentDate zscores after assembledBefore
+                            |> nutritionAssessmentForBackend
+
+                    assessmentAfter =
                         Pages.NutritionActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
 
-                    updateFollowUpAssesmentMsg =
+                    assessmentForBackend =
+                        nutritionAssessmentForBackend assessmentAfter
+
+                    updateAssesmentMsgs =
+                        if assessmentChanged then
+                            updateAssesmentOnFollowUpMsg ++ updateAssesmentOnNutritionMsg
+
+                        else
+                            []
+
+                    assessmentChanged =
+                        not (everySetsEqual assessmentBefore assessmentForBackend)
+
+                    updateAssesmentOnFollowUpMsg =
                         assembledAfter.measurements.followUp
                             |> Maybe.map
                                 (\( measurementId, measurement ) ->
                                     let
                                         updatedValue =
                                             measurement.value
-                                                |> (\value -> { value | assesment = nutritionAssessmentForBackend assesmentAfter })
+                                                |> (\value -> { value | assesment = assessmentForBackend })
                                     in
                                     Backend.NutritionEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
                                         |> Backend.Model.MsgNutritionEncounter id
@@ -3559,23 +3572,42 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw after id =
                                         |> List.singleton
                                 )
                             |> Maybe.withDefault []
+
+                    -- Update the assesment field on Nutrition measurement.
+                    updateAssesmentOnNutritionMsg =
+                        assembledAfter.measurements.nutrition
+                            |> Maybe.map
+                                (\( measurementId, measurement ) ->
+                                    let
+                                        updatedValue =
+                                            measurement.value
+                                                |> (\value -> { value | assesment = assessmentForBackend })
+                                    in
+                                    Backend.NutritionEncounter.Model.SaveNutrition assembledAfter.participant.person (Just measurementId) updatedValue
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
+                                )
+                            |> Maybe.withDefault []
                 in
-                if List.isEmpty assesmentAfter then
+                if List.isEmpty assessmentAfter then
                     -- No assesment, so, only thing we want to update is the
-                    -- assesment field on Follow Up measurement, if it exists already.
-                    updateFollowUpAssesmentMsg
+                    -- assesment field on Nutrition measurement and FollowUp
+                    -- measurement (if it exists already).
+                    updateAssesmentMsgs
 
                 else
-                    updateFollowUpAssesmentMsg
+                    updateAssesmentMsgs
                         ++ [ -- Navigate to Nutrition encounter page.
                              App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
 
                            -- Show warning popup with new assesment.
-                           , Pages.NutritionActivity.Model.SetWarningPopupState assesmentAfter
+                           , Pages.NutritionActivity.Model.SetWarningPopupState assessmentAfter
                                 |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
                                 |> App.Model.MsgLoggedIn
                            ]
         )
+        (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id before)
         (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 
@@ -3597,14 +3629,14 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
             (\session ->
                 let
                     -- We simulate session data after measurement data is performed.
-                    offlineSession =
+                    offlineSessionAfter =
                         mapChildMeasurementsAtOfflineSession childId updateFunc session.offlineSession
 
                     mandatoryActivitiesCompleted =
                         Activity.Utils.mandatoryActivitiesCompleted
                             currentDate
                             zscores
-                            offlineSession
+                            offlineSessionAfter
                             childId
                             isChw
                             db
@@ -3614,16 +3646,41 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
 
                 else
                     let
-                        assesment =
+                        assessmentBefore =
                             Activity.Utils.generateNutritionAssessment
                                 currentDate
                                 zscores
                                 childId
                                 db
-                                offlineSession
+                                session.offlineSession
+                                |> nutritionAssessmentForBackend
 
-                        updateFollowUpAssesmentMsg =
-                            getChildMeasurementData2 childId offlineSession
+                        assessmentAfter =
+                            Activity.Utils.generateNutritionAssessment
+                                currentDate
+                                zscores
+                                childId
+                                db
+                                offlineSessionAfter
+
+                        assessmentForBackend =
+                            nutritionAssessmentForBackend assessmentAfter
+
+                        measurementsAfter =
+                            getChildMeasurementData2 childId offlineSessionAfter
+
+                        updateAssesmentMsgs =
+                            if assessmentChanged then
+                                updateAssesmentOnFollowUpMsg ++ updateAssesmentOnNutritionMsg
+
+                            else
+                                []
+
+                        assessmentChanged =
+                            not (everySetsEqual assessmentBefore assessmentForBackend)
+
+                        updateAssesmentOnFollowUpMsg =
+                            measurementsAfter
                                 |> LocalData.unwrap
                                     []
                                     (\measurements ->
@@ -3638,43 +3695,76 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                             followUpValue =
                                                 getMeasurementValueFunc followUp
                                         in
-                                        followUpValue
-                                            |> Maybe.map
-                                                (\value ->
-                                                    let
-                                                        updatedValue =
-                                                            { value | assesment = nutritionAssessmentForBackend assesment }
-                                                    in
-                                                    Measurement.Model.SaveFollowUp followUpId updatedValue
-                                                        |> Backend.Session.Model.MeasurementOutMsgChild childId
-                                                        |> Backend.Model.MsgSession sessionId
-                                                        |> App.Model.MsgIndexedDb
-                                                        |> List.singleton
-                                                )
+                                        Maybe.map
+                                            (\value ->
+                                                let
+                                                    updatedValue =
+                                                        { value | assesment = assessmentForBackend }
+                                                in
+                                                Measurement.Model.SaveFollowUp followUpId updatedValue
+                                                    |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                    |> Backend.Model.MsgSession sessionId
+                                                    |> App.Model.MsgIndexedDb
+                                                    |> List.singleton
+                                            )
+                                            followUpValue
+                                            |> Maybe.withDefault []
+                                    )
+
+                        updateAssesmentOnNutritionMsg =
+                            measurementsAfter
+                                |> LocalData.unwrap
+                                    []
+                                    (\measurements ->
+                                        let
+                                            nutrition =
+                                                mapMeasurementData .nutrition measurements
+                                                    |> .current
+
+                                            nutritionId =
+                                                Maybe.map Tuple.first nutrition
+
+                                            nutritionValue =
+                                                getMeasurementValueFunc nutrition
+                                        in
+                                        Maybe.map
+                                            (\value ->
+                                                let
+                                                    updatedValue =
+                                                        { value | assesment = assessmentForBackend }
+                                                in
+                                                Measurement.Model.SaveNutrition nutritionId updatedValue
+                                                    |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                    |> Backend.Model.MsgSession sessionId
+                                                    |> App.Model.MsgIndexedDb
+                                                    |> List.singleton
+                                            )
+                                            nutritionValue
                                             |> Maybe.withDefault []
                                     )
 
                         personByPersonMsgs =
-                            updateFollowUpAssesmentMsg
-                                ++ [ Pages.Participant.Model.SetWarningPopupState assesment
+                            updateAssesmentMsgs
+                                ++ [ Pages.Participant.Model.SetWarningPopupState assessmentAfter
                                         |> Pages.Session.Model.MsgChild childId
                                         |> App.Model.MsgPageSession sessionId
                                         |> App.Model.MsgLoggedIn
                                    ]
 
                         activityByActivityMsgs childActivity =
-                            updateFollowUpAssesmentMsg
+                            updateAssesmentMsgs
                                 ++ [ App.Model.SetActivePage (UserPage (SessionPage sessionId (NextStepsPage childId (ChildActivity childActivity))))
-                                   , Pages.NextSteps.Model.SetWarningPopupState assesment
+                                   , Pages.NextSteps.Model.SetWarningPopupState assessmentAfter
                                         |> Pages.Session.Model.MsgNextSteps childId (ChildActivity childActivity)
                                         |> App.Model.MsgPageSession sessionId
                                         |> App.Model.MsgLoggedIn
                                    ]
                     in
-                    if List.isEmpty assesment then
+                    if List.isEmpty assessmentAfter then
                         -- No assesment, so, only thing we want to update is the
-                        -- assesment field on Follow Up measurement, if it exists already.
-                        updateFollowUpAssesmentMsg
+                        -- assesment field on Nutrition measurement and FollowUp
+                        -- measurement (if it exists already).
+                        updateAssesmentMsgs
 
                     else
                         case activePage of
@@ -3696,45 +3786,84 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
         |> Maybe.withDefault []
 
 
-generateNutritionAssessmentWellChildlMsgs : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> WellChildEncounterId -> List App.Model.Msg
-generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw after id =
-    Pages.WellChildEncounter.Utils.generateAssembledData id after
-        |> RemoteData.toMaybe
-        |> Maybe.map
-            (\assembledAfter ->
+generateNutritionAssessmentWellChildlMsgs :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> ModelIndexedDb
+    -> ModelIndexedDb
+    -> WellChildEncounterId
+    -> List App.Model.Msg
+generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after id =
+    Maybe.map2
+        (\assembledBefore assembledAfter ->
+            let
+                mandatoryActivitiesCompleted =
+                    Pages.WellChildActivity.Utils.mandatoryNutritionAssessmentTasksCompleted
+                        currentDate
+                        isChw
+                        assembledAfter
+                        after
+            in
+            if not mandatoryActivitiesCompleted then
+                -- Assement is done only when all mandatory measurements were recorded.
+                []
+
+            else
                 let
-                    mandatoryActivitiesCompleted =
-                        Pages.WellChildActivity.Utils.mandatoryNutritionAssessmentTasksCompleted
-                            currentDate
-                            isChw
-                            assembledAfter
-                            after
+                    assessmentBefore =
+                        Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores before assembledBefore
+                            |> nutritionAssessmentForBackend
+
+                    assessmentForBackend =
+                        Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+                            |> nutritionAssessmentForBackend
+
+                    -- Update the assesment field on Follow Up measurement (if it exists already).
+                    updateAssesmentOnFollowUpMsg =
+                        assembledAfter.measurements.followUp
+                            |> Maybe.map
+                                (\( measurementId, measurement ) ->
+                                    let
+                                        updatedValue =
+                                            measurement.value
+                                                |> (\value -> { value | assesment = assessmentForBackend })
+                                    in
+                                    Backend.WellChildEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
+                                        |> Backend.Model.MsgWellChildEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
+                                )
+                            |> Maybe.withDefault []
+
+                    -- Update the assesment field on Nutrition measurement.
+                    updateAssesmentOnNutritionMsg =
+                        assembledAfter.measurements.nutrition
+                            |> Maybe.map
+                                (\( measurementId, measurement ) ->
+                                    let
+                                        updatedValue =
+                                            measurement.value
+                                                |> (\value -> { value | assesment = assessmentForBackend })
+                                    in
+                                    Backend.WellChildEncounter.Model.SaveNutrition assembledAfter.participant.person (Just measurementId) updatedValue
+                                        |> Backend.Model.MsgWellChildEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
+                                )
+                            |> Maybe.withDefault []
+
+                    assessmentChanged =
+                        not (everySetsEqual assessmentBefore assessmentForBackend)
                 in
-                if not mandatoryActivitiesCompleted then
-                    -- Assement is done only when all mandatory measurements were recorded.
-                    []
+                if assessmentChanged then
+                    updateAssesmentOnFollowUpMsg ++ updateAssesmentOnNutritionMsg
 
                 else
-                    let
-                        assesmentAfter =
-                            Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
-                    in
-                    -- Update the assesment field on Follow Up measurement, if it exists already.
-                    assembledAfter.measurements.followUp
-                        |> Maybe.map
-                            (\( measurementId, measurement ) ->
-                                let
-                                    updatedValue =
-                                        measurement.value
-                                            |> (\value -> { value | assesment = nutritionAssessmentForBackend assesmentAfter })
-                                in
-                                Backend.WellChildEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
-                                    |> Backend.Model.MsgWellChildEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                    |> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            )
+                    []
+        )
+        (RemoteData.toMaybe <| Pages.WellChildEncounter.Utils.generateAssembledData id before)
+        (RemoteData.toMaybe <| Pages.WellChildEncounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 
 
@@ -3868,7 +3997,7 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate after id =
             (\data ->
                 let
                     navigateToProgressReportMsg =
-                        App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage id))
+                        App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
 
                     isFirstEncounter =
                         List.isEmpty data.previousEncountersData

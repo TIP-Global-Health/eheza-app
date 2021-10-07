@@ -2,7 +2,7 @@ module Pages.AcuteIllnessEncounter.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
@@ -75,12 +75,9 @@ generateAssembledData currentDate id db =
                     )
 
         previousEncountersData =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        generatePreviousMeasurements id encounter_.participant db
-                    )
-                |> RemoteData.withDefault []
+            RemoteData.toMaybe encounter
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_.participant db)
+                |> Maybe.withDefault []
 
         assembled =
             RemoteData.map AssembledData (Success id)
@@ -122,28 +119,33 @@ generatePreviousMeasurements :
     AcuteIllnessEncounterId
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
-    -> WebData (List AcuteIllnessEncounterData)
+    -> List AcuteIllnessEncounterData
 generatePreviousMeasurements currentEncounterId participantId db =
-    Dict.get participantId db.acuteIllnessEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.map
-            (Dict.toList
-                >> List.filterMap
-                    (\( encounterId, encounter ) ->
-                        -- We do not want to get data of current encounter.
-                        if encounterId == currentEncounterId then
+    getAcuteIllnessEncountersForParticipant db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if encounterId == currentEncounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId db.acuteIllnessMeasurements of
+                        Just (Success measurements) ->
+                            Just (AcuteIllnessEncounterData encounterId encounter.startDate encounter.sequenceNumber encounter.diagnosis measurements)
+
+                        _ ->
                             Nothing
-
-                        else
-                            case Dict.get encounterId db.acuteIllnessMeasurements of
-                                Just (Success measurements) ->
-                                    Just (AcuteIllnessEncounterData encounterId encounter.startDate encounter.sequenceNumber encounter.diagnosis measurements)
-
-                                _ ->
-                                    Nothing
-                    )
-                >> List.sortWith compareAcuteIllnessEncounterDataAsc
             )
+        >> List.sortWith compareAcuteIllnessEncounterDataAsc
+
+
+getAcuteIllnessEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+getAcuteIllnessEncountersForParticipant db participantId =
+    Dict.get participantId db.acuteIllnessEncountersByParticipant
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.withDefault []
+        |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
 
 
 compareAcuteIllnessEncounterDataDesc :
@@ -178,12 +180,7 @@ getAcuteIllnessDiagnosisByPreviousEncounters :
 getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId =
     let
         encountersWithDiagnosis =
-            Dict.get participantId db.acuteIllnessEncountersByParticipant
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-                |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
+            getAcuteIllnessEncountersForParticipant db participantId
                 |> List.filterMap
                     (\( encounterId, encounter ) ->
                         -- We do not want to get data of current encounter,
@@ -211,19 +208,26 @@ getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId
 {-| Since there can be multiple encounters, resolved diagnosis is the one
 that was set in most recent encounter.
 -}
-getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe AcuteIllnessDiagnosis
+getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
 getAcuteIllnessDiagnosisForParticipant db participantId =
-    Dict.get participantId db.acuteIllnessEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.andThen
-            (List.map Tuple.second
-                >> List.sortWith compareAcuteIllnessEncounterDataDesc
-                >> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
-                >> List.head
-                >> Maybe.map .diagnosis
-            )
+    getAcuteIllnessEncountersForParticipant db participantId
+        |> getAcuteIllnessDiagnosisForEncounters
+
+
+getAcuteIllnessDiagnosisForEncounters : List ( AcuteIllnessEncounterId, AcuteIllnessEncounter ) -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
+getAcuteIllnessDiagnosisForEncounters encounters =
+    List.filterMap
+        (\( _, encounter ) ->
+            if encounter.diagnosis /= NoAcuteIllnessDiagnosis then
+                Just ( encounter.startDate, encounter.diagnosis )
+
+            else
+                Nothing
+        )
+        encounters
+        -- We know that encounters are sorted DESC, so the one at
+        -- head is the most recent.
+        |> List.head
 
 
 resolveNextStepFirstEncounter : NominalDate -> AssembledData -> Maybe NextStepsTask
@@ -1060,6 +1064,12 @@ respiratoryRateElevated currentDate person measurements =
         |> Maybe.withDefault False
 
 
+respiratoryRateAbnormalForAge : Maybe Int -> Int -> Bool
+respiratoryRateAbnormalForAge maybeAgeMonths rate =
+    respiratoryRateElevatedForAge maybeAgeMonths rate
+        || respiratoryRateRecessedForAge maybeAgeMonths rate
+
+
 respiratoryRateElevatedForAge : Maybe Int -> Int -> Bool
 respiratoryRateElevatedForAge maybeAgeMonths rate =
     maybeAgeMonths
@@ -1073,6 +1083,23 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
 
                 else
                     rate > 30
+            )
+        |> Maybe.withDefault False
+
+
+respiratoryRateRecessedForAge : Maybe Int -> Int -> Bool
+respiratoryRateRecessedForAge maybeAgeMonths rate =
+    maybeAgeMonths
+        |> Maybe.map
+            (\ageMonths ->
+                if ageMonths < 12 then
+                    rate < 30
+
+                else if ageMonths < (5 * 12) then
+                    rate < 24
+
+                else
+                    rate < 18
             )
         |> Maybe.withDefault False
 

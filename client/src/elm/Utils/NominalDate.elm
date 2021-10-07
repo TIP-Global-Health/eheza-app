@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (Days(..), Months(..), diffDays, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
+module Utils.NominalDate exposing (endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -12,36 +12,6 @@ import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMo
 import Html exposing (Html)
 import Maybe.Extra
 import Translate exposing (Language, translate)
-
-
-{-| A wrapper for an integer representing days.
--}
-type Days
-    = Days Int
-
-
-{-| A wrapper for an integer representing months.
--}
-type Months
-    = Months Int
-
-
-{-| Difference in whole days between two dates.
-
-The result is positive if the second parameter is after the first parameter.
-
--}
-diffDays : NominalDate -> NominalDate -> Days
-diffDays low high =
-    -- delta gives us separate deltas for years, months and days ... so, for
-    -- instance, for a difference of 2 years and 1 month, you'd get
-    --
-    -- { years : 2
-    -- , months: 25
-    -- , days: 760 -- roughly, depending on which months are involved
-    -- }
-    Gizra.NominalDate.diffDays low high
-        |> Days
 
 
 {-| Shows the difference between the first date (the birthdate)

@@ -182,7 +182,7 @@ type alias PhysicalExamData =
     { vitalsForm : BasicVitalsForm
     , acuteFindingsForm : AcuteFindingsForm
     , muacForm : MuacForm
-    , nutritionForm : NutritionForm
+    , nutritionForm : AcuteIllnessNutritionForm
     , activeTask : PhysicalExamTask
     }
 
@@ -192,7 +192,7 @@ emptyPhysicalExamData =
     { vitalsForm = emptyBasicVitalsForm
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , muacForm = emptyMuacForm
-    , nutritionForm = emptyNutritionForm
+    , nutritionForm = AcuteIllnessNutritionForm Nothing
     , activeTask = PhysicalExamVitals
     }
 
@@ -207,6 +207,11 @@ type PhysicalExamTask
 type alias AcuteFindingsForm =
     { signsGeneral : Maybe (List AcuteFindingsGeneralSign)
     , signsRespiratory : Maybe (List AcuteFindingsRespiratorySign)
+    }
+
+
+type alias AcuteIllnessNutritionForm =
+    { signs : Maybe (List ChildNutritionSign)
     }
 
 

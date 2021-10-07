@@ -23,6 +23,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Participant.View
 import Pages.Participants.View
+import Pages.ProgressReport.Model
 import Pages.ProgressReport.View
 import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
@@ -125,7 +126,10 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
                 |> Html.map MsgParticipants
 
         ProgressReportPage childId ->
-            Pages.ProgressReport.View.view language currentDate zscores childId ( sessionId, session ) db
+            Dict.get childId model.progressReportPages
+                |> Maybe.withDefault Pages.ProgressReport.Model.emptyModel
+                |> Pages.ProgressReport.View.view language currentDate zscores isChw childId ( sessionId, session ) db
+                |> Html.map (MsgProgressReport childId)
 
         ChildPage childId ->
             Dict.get childId model.childPages

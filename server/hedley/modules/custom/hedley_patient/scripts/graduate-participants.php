@@ -84,7 +84,7 @@ while ($processed < $total) {
     }
 
     $child_birth_date = $wrapper->field_person->field_birth_date->value();
-    // We can't set graduation date, unless we know child birth date.
+    // We can't set graduation date, unless we know childs birth date.
     if (empty($child_birth_date)) {
       continue;
     }

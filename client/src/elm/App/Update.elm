@@ -13,6 +13,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Browser
 import Browser.Navigation as Nav
 import Config
@@ -49,6 +50,8 @@ import Pages.NutritionActivity.Model
 import Pages.NutritionActivity.Update
 import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.Update
+import Pages.NutritionProgressReport.Model
+import Pages.NutritionProgressReport.Update
 import Pages.Page exposing (..)
 import Pages.People.Update
 import Pages.Person.Update
@@ -71,6 +74,8 @@ import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.Update
 import Pages.WellChildEncounter.Model
 import Pages.WellChildEncounter.Update
+import Pages.WellChildProgressReport.Model
+import Pages.WellChildProgressReport.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
@@ -525,6 +530,32 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNutritionProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.nutritionProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NutritionProgressReport.Model.emptyModel
+                                        |> Pages.NutritionProgressReport.Update.update subMsg
+                            in
+                            ( { data | nutritionProgressReportPages = Dict.insert id subModel data.nutritionProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNutritionProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageWellChildProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.wellChildProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.WellChildProgressReport.Model.emptyModel
+                                        |> Pages.WellChildProgressReport.Update.update subMsg
+                            in
+                            ( { data | wellChildProgressReportPages = Dict.insert id subModel data.wellChildProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageWellChildProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPageAcuteIllnessOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -960,6 +991,9 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (NutritionActivityPage _ Photo) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (WellChildActivityPage _ WellChildPhoto) ->
                             App.Ports.bindDropZone ()
 
                         _ ->

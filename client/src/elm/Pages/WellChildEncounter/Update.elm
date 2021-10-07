@@ -4,7 +4,7 @@ import App.Model
 import App.Ports
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model
+import Backend.WellChildEncounter.Model exposing (EncounterNote(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -49,7 +49,7 @@ update currentDate zscores isChw db msg model =
                     ]
 
                 markEncounterAsAITriggerMsg =
-                    [ Backend.WellChildEncounter.Model.MarkWellChildEncounterAsAITrigger
+                    [ Backend.WellChildEncounter.Model.SetWellChildEncounterNote NoteTriggeredAcuteIllnessEncounter
                         |> Backend.Model.MsgWellChildEncounter encounterId
                         |> App.Model.MsgIndexedDb
                     ]

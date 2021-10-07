@@ -57,7 +57,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
@@ -96,11 +96,13 @@ import Pages.PrenatalActivity.Model
         )
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..), VaccinationStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
+import ZScore.Model exposing (ChartAgeRange(..))
 
 
 {-| We re-export this one for convenience, so you don't have to import
@@ -154,23 +156,19 @@ type LoginPhrase
 
 type ChartPhrase
     = AgeCompletedMonthsYears
+    | AgeWeeks
     | Birth
-    | BirthToTwoYears
-    | BirthToFiveYears
-    | FiveToNineteenYears
-    | FiveToTenYears
+    | ChartAgeRange ChartAgeRange
+    | HeadCircumferenceCm
+    | HeadCircumferenceForAge Gender
     | HeightCm
-    | HeightForAgeBoys
-    | HeightForAgeGirls
+    | HeightForAge Gender
     | LengthCm
-    | LengthForAgeBoys
-    | LengthForAgeGirls
+    | LengthForAge Gender
     | Months
     | OneYear
-    | WeightForAgeBoys
-    | WeightForAgeGirls
-    | WeightForLengthBoys
-    | WeightForLengthGirls
+    | WeightForAge Gender
+    | WeightForLength Gender
     | WeightKg
     | YearsPlural Int
     | ZScoreChartsAvailableAt
@@ -292,6 +290,7 @@ type TranslationId
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
+    | ActiveDiagnosis
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -387,8 +386,6 @@ type TranslationId
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
-    | ChildOneMinuteApgarsQuestion
-    | ChildFiveMinutesApgarsQuestion
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -446,7 +443,7 @@ type TranslationId
     | DangerSignsLabel
     | DangerSignsHelper
     | DangerSignsTask DangerSignsTask
-    | DateConcludedActualQuestion
+    | Date
     | DateConcludedEstimatedQuestion
     | DateOfLastAssessment
     | DatePregnancyConcluded
@@ -474,7 +471,9 @@ type TranslationId
     | DeviceStatus
     | Diabetes
     | Diagnosis
-    | DifferenceBetweenDates
+    | DiagnosisDate
+    | DiagnosisEntryStatus DiagnosisEntryStatus
+    | DifferenceBetweenDueAndDeliveryDates
     | Disabled
     | DistributionNotice DistributionNotice
     | District
@@ -483,7 +482,9 @@ type TranslationId
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
+    | EarlyChildhoodDevelopment
     | ECDSignQuestion ECDSign
+    | ECDStatus ECDStatus
     | Edd
     | EddHeader
     | Edema
@@ -496,6 +497,7 @@ type TranslationId
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterTypeFollowUpLabel IndividualEncounterType
+    | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
     | EndGroupEncounter
@@ -548,6 +550,7 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | Growth
     | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
@@ -617,6 +620,7 @@ type TranslationId
     | LmpDateHeader
     | LmpRangeHeader
     | LmpRange LmpRange
+    | Location
     | LoginPhrase LoginPhrase
     | Low
     | LowRiskCase
@@ -685,6 +689,8 @@ type TranslationId
     | NegativeLabel
     | Never
     | Next
+    | NextAppointment
+    | NextDue
     | NextDoseDue
     | NextImmunisationVisit
     | NextPediatricVisit
@@ -697,8 +703,10 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoGroupsFound
     | NoMatchesFound
+    | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
+    | AdministrationNoteForWellChild AdministrationNote
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -764,6 +772,8 @@ type TranslationId
     | PatientIsolatedQuestion
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
+    | PediatricCareMilestone PediatricCareMilestone
+    | PediatricVisit
     | People
     | PersistentStorage Bool
     | Person
@@ -811,6 +821,7 @@ type TranslationId
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
+    | PriorDiagnosis
     | ProvideHealthEducation
     | ProvideHealthEducationShort
     | ProvidedHealthEducationAction
@@ -865,6 +876,7 @@ type TranslationId
     | Retry
     | ReviewCaseWith144Respondent
     | Reviewed
+    | ReviewPriorDiagnosis
     | ReviewVaccinationHistory
     | ReviewVaccinationHistoryLabel
     | RhNegative
@@ -885,6 +897,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
     | SelectPostpartumChildDangerSigns
@@ -984,6 +997,7 @@ type TranslationId
     | TuberculosisPast
     | TuberculosisPresent
     | TwoVisits
+    | Type
     | UbudeheLabel
     | Unknown
     | Update
@@ -991,6 +1005,7 @@ type TranslationId
     | Uploading
     | UterineMyoma
     | VaccinationCatchUpRequiredQuestion
+    | VaccinationStatus VaccinationStatus
     | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
     | VaccineType VaccineType
     | ValidationErrors
@@ -1006,7 +1021,7 @@ type TranslationId
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
-    | WellChildEncounterType WellChildEncounterType
+    | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
@@ -1405,6 +1420,11 @@ translationSet trans =
             , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho\n"
             }
 
+        ActiveDiagnosis ->
+            { english = "Active Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         AcuteIllnessOutcome outcome ->
             case outcome of
                 OutcomeIllnessResolved ->
@@ -1483,7 +1503,7 @@ translationSet trans =
             }
 
         AdministerAlbendazoleHelper ->
-            { english = "One tablet by mouth"
+            { english = "Give the child one tablet by mouth"
             , kinyarwanda = Nothing
             }
 
@@ -2323,16 +2343,6 @@ translationSet trans =
             , kinyarwanda = Just "Umwana wa"
             }
 
-        ChildOneMinuteApgarsQuestion ->
-            { english = "What are the child’s 1 minute apgars"
-            , kinyarwanda = Nothing
-            }
-
-        ChildFiveMinutesApgarsQuestion ->
-            { english = "What are the child’s 5 minute apgars"
-            , kinyarwanda = Nothing
-            }
-
         Clear ->
             { english = "Clear"
             , kinyarwanda = Just "Gukuraho"
@@ -2567,12 +2577,12 @@ translationSet trans =
                     }
 
                 ComplicationPreclampsia ->
-                    { english = "Preclampsia"
+                    { english = "Preeclampsia"
                     , kinyarwanda = Nothing
                     }
 
                 ComplicationMaternalHemmorhage ->
-                    { english = "Maternal Hemmorhage"
+                    { english = "Maternal Hemorrhage"
                     , kinyarwanda = Nothing
                     }
 
@@ -2583,6 +2593,11 @@ translationSet trans =
 
                 ComplicationMaternalDeath ->
                     { english = "Maternal Death"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComplicationOther ->
+                    { english = "Other"
                     , kinyarwanda = Nothing
                     }
 
@@ -2806,8 +2821,8 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso mpuruza"
                     }
 
-        DateConcludedActualQuestion ->
-            { english = "What was the actual delivery date for the child"
+        Date ->
+            { english = "Date"
             , kinyarwanda = Nothing
             }
 
@@ -2923,8 +2938,25 @@ translationSet trans =
             , kinyarwanda = Just "Uburwayi bwabonetse"
             }
 
-        DifferenceBetweenDates ->
-            { english = "Difference between dates"
+        DiagnosisDate ->
+            { english = "Diagnosis Date"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosisEntryStatus status ->
+            case status of
+                StatusOngoing ->
+                    { english = "Ongoing"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusResolved ->
+                    { english = "Resolved"
+                    , kinyarwanda = Nothing
+                    }
+
+        DifferenceBetweenDueAndDeliveryDates ->
+            { english = "Difference between due date and delivery date"
             , kinyarwanda = Nothing
             }
 
@@ -2978,6 +3010,11 @@ translationSet trans =
         DueDate ->
             { english = "Due Date"
             , kinyarwanda = Just "Itariki azabyariraho"
+            }
+
+        EarlyChildhoodDevelopment ->
+            { english = "Early Childhood Development"
+            , kinyarwanda = Nothing
             }
 
         ECDSignQuestion sign ->
@@ -3163,7 +3200,7 @@ translationSet trans =
                     }
 
                 FollowThreeStepInstructions ->
-                    { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face"
+                    { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face“"
                     , kinyarwanda = Nothing
                     }
 
@@ -3190,6 +3227,28 @@ translationSet trans =
                 NoECDSigns ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
+                    }
+
+        ECDStatus status ->
+            case status of
+                StatusOnTrack ->
+                    { english = "On Track"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusECDBehind ->
+                    { english = "Behind"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusOffTrack ->
+                    { english = "Off Track"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoECDStatus ->
+                    { english = "No Status"
+                    , kinyarwanda = Nothing
                     }
 
         Edd ->
@@ -3359,6 +3418,41 @@ translationSet trans =
 
                 WellChildEncounter ->
                     { english = "Standard Pediatric Visit Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
+        EncounterWarningForDiagnosisPane warning suffix ->
+            let
+                suffix_ =
+                    if not (String.isEmpty suffix) then
+                        " - " ++ suffix
+
+                    else
+                        ""
+            in
+            case warning of
+                WarningECDMilestoneBehind ->
+                    { english = "Missed ECD Milestone" ++ suffix_
+                    , kinyarwanda = Nothing
+                    }
+
+                WarningECDMilestoneReferToSpecialist ->
+                    { english = "Missed ECD Milestone" ++ suffix_
+                    , kinyarwanda = Nothing
+                    }
+
+                WarningHeadCircumferenceMicrocephaly ->
+                    { english = "Microcephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                WarningHeadCircumferenceMacrocephaly ->
+                    { english = "Macrocephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -3822,6 +3916,11 @@ translationSet trans =
 
         GroupEncounter ->
             { english = "Group Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        Growth ->
+            { english = "Growth"
             , kinyarwanda = Nothing
             }
 
@@ -4511,6 +4610,11 @@ translationSet trans =
                     , kinyarwanda = Just "Mu mezi atandatu"
                     }
 
+        Location ->
+            { english = "Location"
+            , kinyarwanda = Nothing
+            }
+
         LoginPhrase phrase ->
             translateLoginPhrase phrase
 
@@ -5105,6 +5209,16 @@ translationSet trans =
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 
+        NextAppointment ->
+            { english = "Next Appointment"
+            , kinyarwanda = Nothing
+            }
+
+        NextDue ->
+            { english = "Next Due"
+            , kinyarwanda = Nothing
+            }
+
         NextDoseDue ->
             { english = "Next Dose Due"
             , kinyarwanda = Nothing
@@ -5197,6 +5311,11 @@ translationSet trans =
             , kinyarwanda = Just "Ibyo wifuza ntibiboneste"
             }
 
+        NutritionSigns ->
+            { english = "Nutrition Signs"
+            , kinyarwanda = Just "Ibimenyetso by'imirire"
+            }
+
         ReasonForNotSendingToHC reason ->
             case reason of
                 ClientRefused ->
@@ -5224,8 +5343,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        AdministrationNote reason ->
-            case reason of
+        AdministrationNote note ->
+            case note of
                 NonAdministrationLackOfStock ->
                     { english = "Lack of Stock"
                     , kinyarwanda = Just "Nta miti iri mu bubiko"
@@ -5248,6 +5367,58 @@ translationSet trans =
 
                 NonAdministrationHomeBirth ->
                     { english = "Home Birth"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationChildsCondition ->
+                    { english = "Childs Condition"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    }
+
+                AdministeredToday ->
+                    { english = "Administered Today"
+                    , kinyarwanda = Nothing
+                    }
+
+                AdministeredPreviously ->
+                    { english = "Administered Previously"
+                    , kinyarwanda = Nothing
+                    }
+
+        AdministrationNoteForWellChild note ->
+            case note of
+                NonAdministrationLackOfStock ->
+                    { english = "Out of Stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationKnownAllergy ->
+                    { english = "Known Allergy or Reaction"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationPatientDeclined ->
+                    { english = "Mother / Caregiver Declined"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationPatientUnableToAfford ->
+                    { english = "Patient unable to afford"
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                NonAdministrationHomeBirth ->
+                    { english = "Home Birth"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationChildsCondition ->
+                    { english = "Childs Condition"
                     , kinyarwanda = Nothing
                     }
 
@@ -5477,11 +5648,6 @@ translationSet trans =
                 TaskNutrition ->
                     { english = "Nutrition"
                     , kinyarwanda = Just "Imirire"
-                    }
-
-                TaskPhoto ->
-                    { english = "Photo"
-                    , kinyarwanda = Just "Ifoto"
                     }
 
                 TaskWeight ->
@@ -5915,6 +6081,63 @@ translationSet trans =
                 Resources ->
                     { english = "Resources"
                     , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
+                    }
+
+        PediatricVisit ->
+            { english = "Pediatric Visit"
+            , kinyarwanda = Nothing
+            }
+
+        PediatricCareMilestone milestone ->
+            case milestone of
+                Milestone6Weeks ->
+                    { english = "6 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone14Weeks ->
+                    { english = "14 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone6Months ->
+                    { english = "6 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone9Months ->
+                    { english = "9 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone12Months ->
+                    { english = "12 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone15Months ->
+                    { english = "15 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone18Months ->
+                    { english = "18 months"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone2Years ->
+                    { english = "2 years"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone3Years ->
+                    { english = "3 years"
+                    , kinyarwanda = Nothing
+                    }
+
+                Milestone4Years ->
+                    { english = "4 years"
+                    , kinyarwanda = Nothing
                     }
 
         People ->
@@ -6454,6 +6677,11 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
+        PriorDiagnosis ->
+            { english = "Prior Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         ProvidedHealthEducationAction ->
             { english = "Provided health education and anticipatory guidance"
             , kinyarwanda = Nothing
@@ -6950,6 +7178,11 @@ translationSet trans =
             , kinyarwanda = Just "Byarebwe"
             }
 
+        ReviewPriorDiagnosis ->
+            { english = "Review Prior Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         ReviewVaccinationHistory ->
             { english = "Review Vaccination History"
             , kinyarwanda = Nothing
@@ -7131,6 +7364,11 @@ translationSet trans =
         Sector ->
             { english = "Sector"
             , kinyarwanda = Just "Umurenge"
+            }
+
+        SeeMore ->
+            { english = "See More"
+            , kinyarwanda = Nothing
             }
 
         SelectAntenatalVisit ->
@@ -7820,6 +8058,11 @@ translationSet trans =
             , kinyarwanda = Just "Inshuro ebyiri"
             }
 
+        Type ->
+            { english = "Type"
+            , kinyarwanda = Nothing
+            }
+
         UbudeheLabel ->
             { english = "Ubudehe: "
             , kinyarwanda = Nothing
@@ -7855,6 +8098,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        VaccinationStatus status ->
+            case status of
+                StatusBehind ->
+                    { english = "Behind"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusDone ->
+                    { english = "Done"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusUpToDate ->
+                    { english = "Up To Date"
+                    , kinyarwanda = Nothing
+                    }
+
         VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->
             let
                 doseNumber =
@@ -7881,53 +8141,53 @@ translationSet trans =
             case vaccineType of
                 VaccineBCG ->
                     if isChw then
-                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) at birth"
+                        { english = "Did the child receive the Bacilius Calmette - Guérin (BCG) vaccine at birth"
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Did the child receive the BCG Bacilius Calmette - Guérin Vaccine (BCG) - Dose " ++ doseNumber ++ " of 1" ++ suffix
+                        { english = "Did the child receive the  Bacilius Calmette - Guérin vaccine (BCG) - Dose " ++ doseNumber ++ " of 1" ++ suffix
                         , kinyarwanda = Nothing
                         }
 
                 VaccineOPV ->
                     if isChw then
-                        { english = "Did the child receive the Oral Polio Vaccine (OPV) at birth"
+                        { english = "Did the child receive the Oral Polio vaccine (OPV) at birth"
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Did the child receive the Oral Polio Vaccine (OPV) - Dose " ++ doseNumber ++ " of 4" ++ suffix
+                        { english = "Did the child receive the Oral Polio vaccine (OPV) - Dose " ++ doseNumber ++ " of 4" ++ suffix
                         , kinyarwanda = Nothing
                         }
 
                 VaccineDTP ->
-                    { english = "Did the child receive the DTP - HepB - Hib Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the DTP - HepB - Hib vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccinePCV13 ->
-                    { english = "Did the child receive the Pneumoccocal Vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3" ++ suffix
+                    { english = "Did the child receive the Pneumoccocal vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineRotarix ->
-                    { english = "Did the child receive the Rotavirus (Rotarix) Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the Rotavirus (Rotarix) vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineIPV ->
-                    { english = "Did the child receive the Inactivated Polio Vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
+                    { english = "Did the child receive the Inactivated Polio vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineMR ->
-                    { english = "Did the child receive the Measles - Rubella Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the Measles - Rubella vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
                 VaccineHPV ->
-                    { english = "Did the child receive the HPV Vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
+                    { english = "Did the child receive the HPV vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
                     , kinyarwanda = Nothing
                     }
 
@@ -8079,10 +8339,15 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                WellChildPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Just "Ifoto"
+                    }
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChildActivity.Model.TaskSymptomsReview ->
-                    { english = "Symptoms Review"
+                    { english = "Symptom Review"
                     , kinyarwanda = Nothing
                     }
 
@@ -8110,60 +8375,55 @@ translationSet trans =
                             , kinyarwanda = Nothing
                             }
 
-        WellChildEncounterType encounterType ->
+        WellChildECDMilestoneForDiagnosisPane encounterType ->
             case encounterType of
-                NewbornExam ->
-                    { english = "Newborn Exam"
+                Milestone6Weeks ->
+                    { english = "1.5 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCareBirthTo6Weeks ->
-                    { english = "Birth to 6 Week visit"
+                Milestone14Weeks ->
+                    { english = "3.5 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare6Weeks ->
-                    { english = "6 Week visit"
+                Milestone6Months ->
+                    { english = "6 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare10Weeks ->
-                    { english = "10 Week visit"
+                Milestone9Months ->
+                    { english = "9 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare14Weeks ->
-                    { english = "14 Week visit"
+                Milestone12Months ->
+                    { english = "12 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare6Months ->
-                    { english = "6 Month visit"
+                Milestone15Months ->
+                    { english = "15 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare9Months ->
-                    { english = "9 Month visit"
+                Milestone18Months ->
+                    { english = "18 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare12Months ->
-                    { english = "12 Month visit"
+                Milestone2Years ->
+                    { english = "24 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare15Months ->
-                    { english = "15 Month visit"
+                Milestone3Years ->
+                    { english = "36 Mo"
                     , kinyarwanda = Nothing
                     }
 
-                PediatricCare18Months ->
-                    { english = "18 Month visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                PediatricCareRecurrent ->
-                    { english = "Recurrent visit (from 2 years)"
+                Milestone4Years ->
+                    { english = "48 Mo"
                     , kinyarwanda = Nothing
                     }
 
@@ -8663,7 +8923,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Igikorwa cyo kuvura uburwayi butunguranye"
                     }
 
-                AcuteIllnessProgressReportPage _ ->
+                AcuteIllnessProgressReportPage _ _ ->
                     { english = "Acute Illness Progress Report"
                     , kinyarwanda = Just "Raporo y’ibyakozwe ku ndwara zifatiyeho"
                     }
@@ -8695,6 +8955,11 @@ translateActivePage page =
 
                 WellChildActivityPage _ _ ->
                     { english = "Standard Pediatric Visit Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                WellChildProgressReportPage _ ->
+                    { english = "Progress Report"
                     , kinyarwanda = Nothing
                     }
 
@@ -8760,60 +9025,93 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Imyaka uzuza amezi n'imyaka"
             }
 
+        AgeWeeks ->
+            { english = "Age (weeks)"
+            , kinyarwanda = Nothing
+            }
+
         Birth ->
             { english = "Birth"
             , kinyarwanda = Just "kuvuka"
             }
 
-        BirthToTwoYears ->
-            { english = "Birth to 2 years (z-scores)"
-            , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+        ChartAgeRange range ->
+            case range of
+                RangeBirthToThirteenWeeks ->
+                    { english = "Birth to 13-weeks (z-scores)"
+                    , kinyarwanda = Nothing
+                    }
+
+                RangeBirthToTwoYears ->
+                    { english = "Birth to 2-years (z-scores)"
+                    , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+                    }
+
+                RangeBirthToFiveYears ->
+                    { english = "Birth to 5-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 0-5"
+                    }
+
+                RangeFiveToTenYears ->
+                    { english = "5 to 10-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-10"
+                    }
+
+                RangeFiveToNineteenYears ->
+                    { english = "5 to 19-years (z-scores)"
+                    , kinyarwanda = Just "Imyaka 5-19"
+                    }
+
+        HeadCircumferenceCm ->
+            { english = "Head Circumference (cm)"
+            , kinyarwanda = Nothing
             }
 
-        BirthToFiveYears ->
-            { english = "0 to 5 years (z-scores)"
-            , kinyarwanda = Just "Imyaka 0-5"
-            }
+        HeadCircumferenceForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Head Circumference Boys"
+                    , kinyarwanda = Nothing
+                    }
 
-        FiveToNineteenYears ->
-            { english = "5 to 19 years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-19"
-            }
-
-        FiveToTenYears ->
-            { english = "5 to 10 years (z-scores)"
-            , kinyarwanda = Just "Imyaka 5-10"
-            }
+                Female ->
+                    { english = "Head Circumference Girls"
+                    , kinyarwanda = Nothing
+                    }
 
         HeightCm ->
             { english = "Height (cm)"
             , kinyarwanda = Just "Uburebure cm"
             }
 
-        HeightForAgeBoys ->
-            { english = "Height-for-age BOYS"
-            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
-            }
+        HeightForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Height-For-Age Boys"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
+                    }
 
-        HeightForAgeGirls ->
-            { english = "Height-for-age GIRLS"
-            , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
-            }
+                Female ->
+                    { english = "Height-For-Age Girls"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
+                    }
 
         LengthCm ->
             { english = "Length (cm)"
             , kinyarwanda = Just "Uburebure cm"
             }
 
-        LengthForAgeBoys ->
-            { english = "Length-for-age BOYS"
-            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
-            }
+        LengthForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Length-For-Age Boys"
+                    , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
+                    }
 
-        LengthForAgeGirls ->
-            { english = "Length-for-age GIRLS"
-            , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
-            }
+                Female ->
+                    { english = "Length-For-Age Girls"
+                    , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
+                    }
 
         Months ->
             { english = "Months"
@@ -8825,25 +9123,29 @@ translateChartPhrase phrase =
             , kinyarwanda = Just "Umwaka umwe"
             }
 
-        WeightForAgeBoys ->
-            { english = "Weight-for-age BOYS"
-            , kinyarwanda = Just "Ibiro ku myaka umuhungu"
-            }
+        WeightForAge gender ->
+            case gender of
+                Male ->
+                    { english = "Weight-For-Age Boys"
+                    , kinyarwanda = Just "Ibiro ku myaka umuhungu"
+                    }
 
-        WeightForAgeGirls ->
-            { english = "Weight-for-age GIRLS"
-            , kinyarwanda = Just "ibiro ku myaka umukobwa"
-            }
+                Female ->
+                    { english = "Weight-For-Age Girls"
+                    , kinyarwanda = Just "ibiro ku myaka umukobwa"
+                    }
 
-        WeightForLengthBoys ->
-            { english = "Weight-for-height BOYS"
-            , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
-            }
+        WeightForLength gender ->
+            case gender of
+                Male ->
+                    { english = "Weight-For-Height Boys"
+                    , kinyarwanda = Just "Ibiro ku Uburebure umuhungu"
+                    }
 
-        WeightForLengthGirls ->
-            { english = "Weight-for-height GIRLS"
-            , kinyarwanda = Just "ibiro ku uburebure umukobwa"
-            }
+                Female ->
+                    { english = "Weight-For-Height Girls"
+                    , kinyarwanda = Just "ibiro ku uburebure umukobwa"
+                    }
 
         WeightKg ->
             { english = "Weight (kg)"

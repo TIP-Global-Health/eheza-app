@@ -84,7 +84,7 @@ update currentDate id db msg model =
             resolveFormWithDefaults .dangerSigns reviewDangerSignsFormWithDefault model.dangerSignsData.reviewDangerSignsForm
 
         nutritionForm =
-            resolveFormWithDefaults .nutrition nutritionFormWithDefault model.physicalExamData.nutritionForm
+            resolveFormWithDefaults .nutrition Pages.AcuteIllnessActivity.Utils.nutritionFormWithDefault model.physicalExamData.nutritionForm
     in
     case msg of
         SetActivePage page ->
@@ -606,7 +606,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.physicalExamData.nutritionForm
-                        |> toNutritionValueWithDefault measurement
+                        |> Pages.AcuteIllnessActivity.Utils.toNutritionValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->

@@ -1,7 +1,9 @@
 module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
+import Maybe.Extra
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
 acuteIllnessDiagnosisToString : AcuteIllnessDiagnosis -> String
@@ -85,3 +87,64 @@ acuteIllnessDiagnosisFromString diagnosis =
 
         _ ->
             Nothing
+
+
+progressReportInitiatorToUrlFragmemt : AcuteIllnessProgressReportInitiator -> String
+progressReportInitiatorToUrlFragmemt initiator =
+    case initiator of
+        InitiatorEncounterPage ->
+            "encounter-page"
+
+        InitiatorIndividualNutritionProgressReport encounterId ->
+            "nutrition-progress-report-" ++ fromEntityUuid encounterId
+
+        InitiatorWellChildProgressReport encounterId ->
+            "well-child-progress-report-" ++ fromEntityUuid encounterId
+
+        InitiatorGroupNutritionProgressReport sessionId personId ->
+            "progress-report-" ++ fromEntityUuid sessionId ++ "+++" ++ fromEntityUuid personId
+
+
+progressReportInitiatorFromUrlFragmemt : String -> Maybe AcuteIllnessProgressReportInitiator
+progressReportInitiatorFromUrlFragmemt s =
+    case s of
+        "encounter-page" ->
+            Just InitiatorEncounterPage
+
+        _ ->
+            if String.startsWith "well-child-progress-report" s then
+                String.dropLeft (String.length "well-child-progress-report-") s
+                    |> toEntityUuid
+                    |> InitiatorWellChildProgressReport
+                    |> Just
+
+            else if String.startsWith "nutrition-progress-report" s then
+                String.dropLeft (String.length "nutrition-progress-report-") s
+                    |> toEntityUuid
+                    |> InitiatorIndividualNutritionProgressReport
+                    |> Just
+
+            else if String.startsWith "progress-report" s then
+                let
+                    ids =
+                        String.dropLeft (String.length "progress-report-") s
+                            |> String.split "+++"
+                in
+                -- In case of Group Nutrition report we need to know Session ID
+                -- and Child ID. These 2 IDs are separated by '+++' string.
+                -- '+' char is not used for UUIDs, so we have no risk of getting
+                -- it wrong.
+                if List.length ids /= 2 then
+                    Nothing
+
+                else
+                    Maybe.map2
+                        (\sessionId personId ->
+                            Just <| InitiatorGroupNutritionProgressReport (toEntityUuid sessionId) (toEntityUuid personId)
+                        )
+                        (List.head ids)
+                        (List.head (List.drop 1 ids))
+                        |> Maybe.Extra.join
+
+            else
+                Nothing

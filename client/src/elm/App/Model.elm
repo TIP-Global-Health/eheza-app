@@ -31,6 +31,7 @@ import Pages.HomeVisitEncounter.Model
 import Pages.IndividualEncounterParticipants.Model
 import Pages.NutritionActivity.Model
 import Pages.NutritionEncounter.Model
+import Pages.NutritionProgressReport.Model
 import Pages.Page exposing (DashboardPage(..), Page(..))
 import Pages.People.Model
 import Pages.Person.Model
@@ -43,6 +44,7 @@ import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.WellChildActivity.Model
 import Pages.WellChildEncounter.Model
+import Pages.WellChildProgressReport.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
@@ -250,6 +252,7 @@ type alias LoggedInModel =
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
     , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.NutritionActivity.Model.Model
+    , nutritionProgressReportPages : Dict NutritionEncounterId Pages.NutritionProgressReport.Model.Model
     , acuteIllnessParticipantPages : Dict PersonId Pages.AcuteIllnessParticipant.Model.Model
     , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Model
     , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
@@ -259,6 +262,7 @@ type alias LoggedInModel =
     , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity ) Pages.HomeVisitActivity.Model.Model
     , wellChildEncounterPages : Dict WellChildEncounterId Pages.WellChildEncounter.Model.Model
     , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChildActivity.Model.Model
+    , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChildProgressReport.Model.Model
     }
 
 
@@ -280,6 +284,7 @@ emptyLoggedInModel villageId nurse =
     , sessionPages = Dict.empty
     , nutritionEncounterPages = Dict.empty
     , nutritionActivityPages = Dict.empty
+    , nutritionProgressReportPages = Dict.empty
     , acuteIllnessParticipantPages = Dict.empty
     , acuteIllnessEncounterPages = Dict.empty
     , acuteIllnessActivityPages = Dict.empty
@@ -289,6 +294,7 @@ emptyLoggedInModel villageId nurse =
     , homeVisitActivityPages = Dict.empty
     , wellChildEncounterPages = Dict.empty
     , wellChildActivityPages = Dict.empty
+    , wellChildProgressReportPages = Dict.empty
     }
 
 
@@ -350,6 +356,8 @@ type MsgLoggedIn
     | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChildActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg
+    | MsgPageNutritionProgressReport NutritionEncounterId Pages.NutritionProgressReport.Model.Msg
+    | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChildProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
 
 

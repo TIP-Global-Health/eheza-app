@@ -1460,6 +1460,10 @@ div.page-activity.well-child {
 
       @include next-steps;
 
+      .helper {
+        font-style: italic;
+      }
+
       .ui.form {
         min-height: 140px;
 
@@ -1500,14 +1504,6 @@ div.page-activity.well-child {
           height: 100%;
           margin-left: 20px;
           width: 60%;
-        }
-
-        &.apgars {
-          background: $color-white;
-          border: 2px solid $color-light-gray;
-          color: $color-text;
-          padding: 5px;
-          width: 50%;
         }
 
         &.measurement {
@@ -2477,6 +2473,346 @@ div.page-report.acute-illness {
     }
   }
 
+}
+
+div.page-encounter.well-child,
+div.page-activity.well-child,
+div.page-report.well-child {
+
+  .details {
+    padding-left: 25px;
+
+    .ui.header {
+      color: $color-white;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    p {
+      color: $color-white;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 0;
+
+      .label {
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+div.page-report.well-child {
+  background: unset;
+
+  .pane-heading {
+    background: $color-primary;
+    color: $color-white;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px 15px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .patient-info {
+    background: $color-white;
+    display: flex;
+    padding: 30px 40px;
+
+    .details {
+
+      .ui.header {
+        color: $color-primary;
+      }
+
+      p {
+        color: $color-text;
+        font-weight: 300;
+
+        .label {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .pane-content {
+    background: $color-white;
+
+    &.overflow {
+      overflow-y: scroll;
+    }
+
+    .heading {
+      border-bottom: 1px solid $color-text;
+      color: $color-dark-gray;
+      display: flex;
+      font-size: 20px;
+      font-weight: 600;
+      padding: 15px 30px;
+      width: 100%;
+    }
+
+    .heading.diagnosis {
+
+      .assesment {
+        width: 40%;
+      }
+
+      .status {
+        width: 15%;
+      }
+
+      .date {
+        margin-left: 25px;
+        width: 28%;
+      }
+    }
+
+    .heading.vaccination {
+
+      .name {
+        width: 35%;
+      }
+
+      .date {
+        width: 25%;
+      }
+
+      .next-due {
+        width: 20%;
+      }
+
+      .status {
+        width: 20%;
+      }
+    }
+
+    .heading.nutrition-signs {
+
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
+    .heading.next-appointment {
+
+      .type {
+        width: 35%;
+      }
+
+      .location {
+        width: 40%;
+      }
+
+      .date {
+        width: 25%;
+      }
+    }
+
+    .entry {
+      border-bottom: 1px solid $color-text;
+      color: $color-dark-gray;
+      display: flex;
+      font-size: 22px;
+      padding: 15px 30px;
+      width: 100%;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .entry .cell {
+      align-self: center;
+      text-align: left;
+      padding-right: 20px;
+    }
+
+    .entry .cell.status,
+    .milestone .status {
+      border-radius: 10px;
+      color: $color-white;
+      font-size: 17px;
+      margin: 3px 5px;
+      padding: 0 10px;
+      text-transform: uppercase;
+
+      &.done {
+        background: $color-blue;
+      }
+
+      &.behind,
+      &.off-track,
+      &.ongoing {
+        background: $color-velvet;
+      }
+
+      &.up-to-date,
+      &.on-track,
+      &.resolved {
+        background: $color-cyan;
+      }
+
+      &.ecd-behind {
+        background: $color-orange-light;
+      }
+
+      &.no-status {
+        color: $color-background;
+        background: $color-background;
+      }
+    }
+
+    .entry.no-matches {
+      border-bottom: none;
+      display: block;
+      text-align: center;
+    }
+
+    .entry.diagnosis {
+
+      .assesment {
+        width: 40%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .status {
+        width: 15%;
+        padding-right: 20px;
+      }
+
+      .date {
+        margin-left: 20px;
+        width: 30%;
+      }
+
+      .icon-forward {
+        align-self: center;
+        background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        margin-left: 20px;
+        width: 50px;
+      }
+    }
+
+    .entry.vaccination {
+      .name {
+        width: 35%;
+      }
+
+      .date {
+        width: 25%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .next-due {
+        width: 20%;
+      }
+    }
+
+    .entry.nutrition-signs {
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
+    .entry.next-appointment {
+
+      .type {
+        width: 35%;
+      }
+
+      .location {
+        width: 40%;
+      }
+
+      .date {
+        width: 25%;
+      }
+    }
+
+    .ecd-milestones {
+      align-items: stretch;
+      color: $color-dark-gray;
+      display: flex;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+
+      .milestone {
+        padding: 30px 0 20px;
+        text-align: center;
+
+        .status {
+          font-size: 13px;
+        }
+
+        .description {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .growth-nutrition-signs {
+      border-bottom: 1px solid $color-text;
+    }
+
+    .growth-charts {
+      margin-bottom: 30px;
+      margin-left: -30px;
+      margin-right: -30px;
+    }
+
+    .growth-photos {
+      padding: 20px 30px;
+
+      .ui.cards .report.card {
+        margin: 0 7px 15px;
+        width: calc(16% - 10px);
+      }
+
+      .ui.cards .report.card .content {
+        background: $color-white;
+        color: $color-dark-gray;
+        text-transform: uppercase;
+        font-size: 17px;
+        font-weight: 500;
+        text-align: center;
+        line-height: 35px;
+        width: 100px;
+      }
+    }
+  }
+
+  .pane-action {
+    border-top: 1px solid $color-text;
+    background: $color-white;
+    padding-bottom: 30px;
+    padding-top: 25px;
+    text-align: center;
+
+    button {
+      font-size: 20px;
+      font-weight: 600;
+      padding: 15px 10px;
+    }
+  }
 }
 
 div.page-case-management {

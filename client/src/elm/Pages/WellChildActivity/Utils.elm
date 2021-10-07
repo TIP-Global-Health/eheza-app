@@ -35,6 +35,7 @@ generateNutritionAssessment currentDate zscores db assembled =
 
         nutritionValue =
             getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .signs
 
         weightValue =
             Maybe.map
@@ -66,11 +67,7 @@ activityCompleted currentDate zscores isChw assembled db activity =
                 || (isJust measurements.symptomsReview && isJust measurements.vitals)
 
         WellChildNutritionAssessment ->
-            let
-                ( mandatory, optional ) =
-                    partitionNutritionAssessmentTasks isChw
-            in
-            (mandatory ++ optional)
+            resolveNutritionAssessmentTasks isChw
                 |> List.all (nutritionAssessmentTaskCompleted currentDate isChw assembled db)
 
         WellChildECD ->
@@ -88,6 +85,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
 
         WellChildNextSteps ->
             List.all (nextStepsTaskCompleted currentDate zscores isChw assembled db) nextStepsTasks
+
+        WellChildPhoto ->
+            (not <| activityExpected WellChildPhoto) || isJust measurements.photo
 
 
 expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
@@ -144,6 +144,9 @@ expectActivity currentDate zscores isChw assembled db activity =
                 |> List.isEmpty
                 |> not
 
+        WellChildPhoto ->
+            True
+
 
 fromPregnancySummaryValue : Maybe PregnancySummaryValue -> PregnancySummaryForm
 fromPregnancySummaryValue saved =
@@ -156,10 +159,6 @@ fromPregnancySummaryValue saved =
     in
     { expectedDateConcluded = Maybe.map .expectedDateConcluded saved
     , isExpectedDateConcludedSelectorOpen = False
-    , dateConcluded = Maybe.map .dateConcluded saved
-    , isDateConcludedSelectorOpen = False
-    , apgarsOneMinute = Maybe.map .apgarsOneMinute saved
-    , apgarsFiveMinutes = Maybe.map .apgarsFiveMinutes saved
     , deliveryComplicationsPresent = deliveryComplicationsPresent
     , deliveryComplications = deliveryComplications
     }
@@ -181,10 +180,6 @@ pregnancySummaryFormWithDefault form saved =
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , isExpectedDateConcludedSelectorOpen = form.isExpectedDateConcludedSelectorOpen
-                , dateConcluded = or form.dateConcluded (Just value.dateConcluded)
-                , isDateConcludedSelectorOpen = form.isDateConcludedSelectorOpen
-                , apgarsOneMinute = or form.apgarsOneMinute (Just value.apgarsOneMinute)
-                , apgarsFiveMinutes = or form.apgarsFiveMinutes (Just value.apgarsFiveMinutes)
                 , deliveryComplicationsPresent = or form.deliveryComplicationsPresent (complicationsPresent deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
                 }
@@ -206,9 +201,6 @@ toPregnancySummaryValue form =
                 |> Maybe.withDefault (EverySet.singleton NoDeliveryComplications)
     in
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
-        |> andMap form.dateConcluded
-        |> andMap form.apgarsOneMinute
-        |> andMap form.apgarsFiveMinutes
         |> andMap (Just deliveryComplications)
 
 
@@ -239,16 +231,13 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
             (not <| taskExpected TaskHeight) || isJust measurements.height
 
         TaskHeadCircumference ->
-            (not <| taskExpected TaskHeight) || isJust measurements.headCircumference
+            (not <| taskExpected TaskHeadCircumference) || isJust measurements.headCircumference
 
         TaskMuac ->
             (not <| taskExpected TaskMuac) || isJust measurements.muac
 
         TaskNutrition ->
             (not <| taskExpected TaskNutrition) || isJust measurements.nutrition
-
-        TaskPhoto ->
-            (not <| taskExpected TaskPhoto) || isJust measurements.photo
 
         TaskWeight ->
             (not <| taskExpected TaskWeight) || isJust measurements.weight
@@ -276,23 +265,20 @@ expectNutritionAssessmentTask currentDate isChw data db task =
 
 mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
 mandatoryNutritionAssessmentTasksCompleted currentDate isChw data db =
-    partitionNutritionAssessmentTasks isChw
-        |> Tuple.first
+    resolveNutritionAssessmentTasks isChw
         |> List.filter (not << nutritionAssessmentTaskCompleted currentDate isChw data db)
         |> List.isEmpty
 
 
-{-| List of activities that need to be completed, in order to
-decide if to show Next Steps activity, or not.
--}
-partitionNutritionAssessmentTasks : Bool -> ( List NutritionAssessmentTask, List NutritionAssessmentTask )
-partitionNutritionAssessmentTasks isChw =
+resolveNutritionAssessmentTasks : Bool -> List NutritionAssessmentTask
+resolveNutritionAssessmentTasks isChw =
     if isChw then
-        -- Muac is not here, because Newbor Exam is done for children that are less than 2 months old.
-        ( [ TaskHeadCircumference, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+        -- Height and Muac are not here, because Newbor Exam
+        -- is done for children that are less than 2 months old.
+        [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
     else
-        ( [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ], [ TaskPhoto ] )
+        [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
@@ -339,15 +325,6 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
                         |> nutritionFormWithDefault data.nutritionForm
             in
             ( taskCompleted form.signs
-            , 1
-            )
-
-        TaskPhoto ->
-            ( if isNothing data.photoForm.url && isNothing measurements.photo then
-                0
-
-              else
-                1
             , 1
             )
 
@@ -633,8 +610,8 @@ generateSuggestedVaccinations currentDate isChw assembled =
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> Bool -> Person -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate isChw person vaccinationProgress =
+generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
     List.map
         (\vaccineType ->
             let
@@ -650,8 +627,15 @@ generateFutureVaccinationsData currentDate isChw person vaccinationProgress =
                                 initialDate =
                                     Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst )) person.birthDate
                                         |> Maybe.withDefault currentDate
+
+                                vaccinationDate =
+                                    if scheduleFirstDoseForToday then
+                                        Date.max initialDate currentDate
+
+                                    else
+                                        initialDate
                             in
-                            Just ( VaccineDoseFirst, Date.max initialDate currentDate )
+                            Just ( VaccineDoseFirst, vaccinationDate )
             in
             -- Getting Nothing at nextVaccinationData indicates that
             -- vacination cycle is completed for this vaccine.
@@ -1624,15 +1608,6 @@ expectMedicationTask currentDate isChw assembled task =
 
 nextMedicationAdmnistrationData : NominalDate -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
 nextMedicationAdmnistrationData currentDate person measurements =
-    let
-        administeredMebendezole =
-            List.filterMap .mebendezole measurements
-                |> latestAdministrationDateForMedicine
-
-        administeredVitamineA =
-            List.filterMap .mebendezole measurements
-                |> latestAdministrationDateForMedicine
-    in
     List.filter (expectMedicationByAge currentDate person) medicationTasks
         |> List.map
             (\medication ->
@@ -1650,7 +1625,7 @@ nextMedicationAdmnistrationData currentDate person measurements =
                             |> Maybe.withDefault ( TaskMebendezole, currentDate )
 
                     TaskVitaminA ->
-                        List.filterMap .mebendezole measurements
+                        List.filterMap .vitaminA measurements
                             |> latestAdministrationDateForMedicine
                             |> Maybe.map (\date -> ( TaskVitaminA, Date.add Months 6 date ))
                             |> Maybe.withDefault ( TaskVitaminA, currentDate )
@@ -1666,15 +1641,15 @@ expectMedicationByAge currentDate person task =
                 case task of
                     -- 6 years to 12 years.
                     TaskAlbendazole ->
-                        ageMonths >= 60 && ageMonths < 120
+                        ageMonths >= (6 * 12) && ageMonths < (12 * 12)
 
                     -- 1 year to 6 years.
                     TaskMebendezole ->
-                        ageMonths >= 12 && ageMonths < 60
+                        ageMonths >= 12 && ageMonths < (6 * 12)
 
                     -- 6 months to 6 years.
                     TaskVitaminA ->
-                        ageMonths >= 6 && ageMonths < 60
+                        ageMonths >= 6 && ageMonths < (6 * 12)
             )
         |> Maybe.withDefault False
 
@@ -1781,7 +1756,7 @@ toAdministrationNote form =
 
 resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
 resolveAlbendazoleDosageAndIcon currentDate person =
-    Just ( "500 mg", "icon-pills" )
+    Just ( "400 mg", "icon-pills" )
 
 
 resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
@@ -1859,6 +1834,8 @@ expectNextStepsTask currentDate zscores isChw assembled db task =
 
         TaskNextVisit ->
             not isChw
+                -- Activity that triggers Nutrition Assessment next steps is completed.
+                && activityCompleted currentDate zscores isChw assembled db WellChildNutritionAssessment
                 -- Activities that affect determinating next visit date are
                 -- either completed, or not shown at current visit.
                 && activityCompleted currentDate zscores isChw assembled db WellChildImmunisation
@@ -2010,85 +1987,117 @@ generateNextVisitDates currentDate isChw assembled db =
 
 generateNextDateForECDVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
 generateNextDateForECDVisit currentDate assembled db =
-    if List.isEmpty (generateRemianingECDSignsAfterCurrentEncounter currentDate assembled) then
-        Nothing
+    assembled.person.birthDate
+        |> Maybe.andThen
+            (\birthDate ->
+                let
+                    ageWeeks =
+                        Date.diff Weeks birthDate currentDate
 
-    else
-        assembled.person.birthDate
-            |> Maybe.map
-                (\birthDate ->
-                    let
-                        ageWeeks =
-                            Date.diff Weeks birthDate currentDate
+                    ageMonths =
+                        Date.diff Months birthDate currentDate
 
-                        ageMonth =
-                            Date.diff Months birthDate currentDate
+                    ageYears =
+                        Date.diff Years birthDate currentDate
 
-                        ageYears =
-                            Date.diff Years birthDate currentDate
-                    in
-                    if ageWeeks < 6 then
-                        Date.add Weeks 6 birthDate
-
-                    else if ageWeeks < 14 then
-                        Date.add Weeks 14 birthDate
-
-                    else if ageMonth < 6 then
-                        Date.add Months 6 birthDate
-
-                    else if ageMonth < 15 then
-                        Date.add Months 15 birthDate
-
-                    else if ageYears < 2 then
-                        Date.add Years 2 birthDate
-
-                    else if ageYears < 3 then
-                        Date.add Years 3 birthDate
-
-                    else if ageYears < 4 then
-                        Date.add Years 4 birthDate
+                    noRemainingSigns =
+                        List.isEmpty <| generateRemianingECDSignsAfterCurrentEncounter currentDate assembled
+                in
+                if ageWeeks < 6 then
+                    -- Since 6 weeks question appear from age of 5 weeks,
+                    -- we check if they were completed then.
+                    -- If so, we schedule next ECD visit to following
+                    -- milestone, which is at 14 weeks.
+                    if ageWeeks == 5 && noRemainingSigns then
+                        Just <| Date.add Weeks 14 birthDate
 
                     else
-                        Date.add Months 6 currentDate
-                )
+                        Just <| Date.add Weeks 6 birthDate
+
+                else if ageWeeks < 14 then
+                    -- Since 14 weeks question appear from age of 13 weeks,
+                    -- we check if they were completed then.
+                    -- If so, we schedule next ECD visit to following
+                    -- milestone, which is at 6 months.
+                    if ageWeeks == 13 && noRemainingSigns then
+                        Just <| Date.add Months 6 birthDate
+
+                    else
+                        Just <| Date.add Weeks 14 birthDate
+
+                else if ageMonths < 6 then
+                    Just <| Date.add Months 6 birthDate
+
+                else if ageMonths < 15 then
+                    Just <| Date.add Months 15 birthDate
+
+                else if ageYears < 2 then
+                    Just <| Date.add Years 2 birthDate
+
+                else if ageYears < 3 then
+                    Just <| Date.add Years 3 birthDate
+
+                else if ageYears < 4 then
+                    Just <| Date.add Years 4 birthDate
+
+                else if not noRemainingSigns then
+                    Just <| Date.add Months 6 currentDate
+
+                else
+                    Nothing
+            )
 
 
 generateNextDateForMedicationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
 generateNextDateForMedicationVisit currentDate assembled db =
-    let
-        measurements =
-            assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
+    assembled.person.birthDate
+        |> Maybe.andThen
+            (\birthDate ->
+                let
+                    ageMonths =
+                        Date.diff Months birthDate currentDate
+                in
+                -- When younder than 6 months, set visit date to
+                -- age of 6 months.
+                if ageMonths < 6 then
+                    Just <| Date.add Months 6 birthDate
 
-        nextDate =
-            nextMedicationAdmnistrationData currentDate assembled.person measurements
-                |> Dict.values
-                |> List.sortWith Date.compare
-                |> List.reverse
-                |> List.head
-    in
-    Maybe.andThen
-        (\date ->
-            let
-                compared =
-                    Date.compare date currentDate
-            in
-            if compared == LT || compared == EQ then
-                -- Next date already passed, or, it's due today.
-                -- Per requirements, we schedule next date as if medication
-                -- was administered today.
-                Just <| Date.add Months 6 currentDate
+                else
+                    let
+                        measurements =
+                            assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
 
-            else
-                Just date
-        )
-        nextDate
+                        nextDate =
+                            nextMedicationAdmnistrationData currentDate assembled.person measurements
+                                |> Dict.values
+                                |> List.sortWith Date.compare
+                                |> List.reverse
+                                |> List.head
+                    in
+                    Maybe.andThen
+                        (\date ->
+                            let
+                                compared =
+                                    Date.compare date currentDate
+                            in
+                            if compared == LT || compared == EQ then
+                                -- Next date already passed, or, it's due today.
+                                -- Per requirements, we schedule next date as if medication
+                                -- was administered today.
+                                Just <| Date.add Months 6 currentDate
+
+                            else
+                                Just date
+                        )
+                        nextDate
+            )
 
 
 generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
 generateNextDateForImmunisationVisit currentDate isChw assembled db =
     let
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate isChw assembled.person assembled.vaccinationProgress
+            generateFutureVaccinationsData currentDate assembled.person True assembled.vaccinationProgress
 
         futureVaccines =
             List.map Tuple.first futureVaccinationsData
@@ -2427,6 +2436,6 @@ resolvePreviousValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-getPreviousMeasurements : List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) ) -> List WellChildMeasurements
+getPreviousMeasurements : List ( NominalDate, ( is, a ) ) -> List a
 getPreviousMeasurements =
     List.map (Tuple.second >> Tuple.second)

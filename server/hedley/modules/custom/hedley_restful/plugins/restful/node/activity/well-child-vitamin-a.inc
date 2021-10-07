@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'well_child_vitamin_a',
   'description' => t('Exports the Well Child Vitamin A bundle.'),
-  'class' => 'HedleyRestfulWellChildVitaminA',
+  'class' => 'HedleyRestfulWellChildMedication',
   'authentication_types' => TRUE,
 );

@@ -8,7 +8,7 @@ import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -109,50 +109,6 @@ update currentDate id db msg model =
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
             , [ focusOnCalendar ]
-            )
-
-        SetDateConcluded value ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | dateConcluded = Just value })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
-        ToggleDateConcluded ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | isDateConcludedSelectorOpen = not form.isDateConcludedSelectorOpen })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , [ focusOnCalendar ]
-            )
-
-        SetApgarsOneMinute value ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | apgarsOneMinute = String.toInt value })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
-        SetApgarsFiveMinutes value ->
-            let
-                updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | apgarsFiveMinutes = String.toInt value })
-            in
-            ( { model | pregnancySummaryForm = updatedForm }
-            , Cmd.none
-            , []
             )
 
         SetDeliveryComplicationsPresent value ->
@@ -333,20 +289,12 @@ update currentDate id db msg model =
 
         SetActiveNutritionAssessmentTask task ->
             let
-                cmd =
-                    case task of
-                        TaskPhoto ->
-                            bindDropZone ()
-
-                        _ ->
-                            Cmd.none
-
                 updatedData =
                     model.nutritionAssessmentData
                         |> (\data -> { data | activeTask = Just task })
             in
             ( { model | nutritionAssessmentData = updatedData }
-            , cmd
+            , Cmd.none
             , []
             )
 
@@ -453,6 +401,55 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        PreSaveHeadCircumference personId maybeZscore saved nextTask ->
+            let
+                warning =
+                    Maybe.map
+                        (\zscore ->
+                            if zscore > 3 then
+                                WarningHeadCircumferenceMacrocephaly
+
+                            else if zscore < -3 then
+                                WarningHeadCircumferenceMicrocephaly
+
+                            else
+                                NoHeadCircumferenceWarning
+                        )
+                        maybeZscore
+                        |> Maybe.withDefault NoHeadCircumferenceWarning
+
+                setEncounterWarningMsg =
+                    [ Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
+                        |> Backend.Model.MsgWellChildEncounter id
+                        |> App.Model.MsgIndexedDb
+                    ]
+
+                extraMsgs =
+                    -- If there's a warning, we show warning popup.
+                    -- Head Circumference will be saved once popup is closed.
+                    -- If there's no warning, we execute Save here.
+                    case warning of
+                        WarningHeadCircumferenceMacrocephaly ->
+                            [ PopupMacrocephaly personId saved nextTask
+                                |> Just
+                                |> SetWarningPopupState
+                            ]
+
+                        WarningHeadCircumferenceMicrocephaly ->
+                            [ PopupMicrocephaly personId saved nextTask
+                                |> Just
+                                |> SetWarningPopupState
+                            ]
+
+                        _ ->
+                            [ SaveHeadCircumference personId saved nextTask ]
+            in
+            ( model
+            , Cmd.none
+            , setEncounterWarningMsg
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
         SaveHeadCircumference personId saved nextTask_ ->
             let
                 measurementId =
@@ -555,7 +552,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveNutrition personId saved nextTask_ ->
+        SaveNutrition personId saved assessment nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -568,6 +565,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.nutritionAssessmentData.nutritionForm
+                        |> (\form -> { form | assesment = Just assessment })
                         |> toNutritionValueWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveNutrition personId measurementId
@@ -578,42 +576,6 @@ update currentDate id db msg model =
                         |> Maybe.withDefault []
             in
             ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate id db) extraMsgs
-
-        DropZoneComplete result ->
-            let
-                updatedForm =
-                    model.nutritionAssessmentData.photoForm
-                        |> (\form -> { form | url = Just (PhotoUrl result.url) })
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | photoForm = updatedForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SavePhoto personId maybePhotoId url nextTask_ ->
-            let
-                extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
-
-                appMsgs =
-                    Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
-                        |> Backend.Model.MsgWellChildEncounter id
-                        |> App.Model.MsgIndexedDb
-                        >> List.singleton
-
-                updatedData =
-                    model.nutritionAssessmentData
-                        |> (\data -> { data | photoForm = emptyPhotoForm })
-            in
-            ( { model | nutritionAssessmentData = updatedData }
             , Cmd.none
             , appMsgs
             )
@@ -1411,3 +1373,28 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        DropZoneComplete result ->
+            let
+                updatedForm =
+                    model.photoForm
+                        |> (\form -> { form | url = Just (PhotoUrl result.url) })
+            in
+            ( { model | photoForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SavePhoto personId maybePhotoId url ->
+            let
+                appMsgs =
+                    [ Backend.WellChildEncounter.Model.SavePhoto personId maybePhotoId url
+                        |> Backend.Model.MsgWellChildEncounter id
+                        |> App.Model.MsgIndexedDb
+                    , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                    ]
+            in
+            ( { model | photoForm = emptyPhotoForm }
+            , Cmd.none
+            , appMsgs
+            )

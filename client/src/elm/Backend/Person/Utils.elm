@@ -1,11 +1,15 @@
 module Backend.Person.Utils exposing (..)
 
+import AssocList as Dict
+import Backend.Entities exposing (HealthCenterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
+import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
@@ -170,3 +174,15 @@ initiatorFromUrlFragmemt s =
 graduatingAgeInMonth : Int
 graduatingAgeInMonth =
     26
+
+
+getHealthCenterName : Maybe HealthCenterId -> ModelIndexedDb -> Maybe String
+getHealthCenterName healthCenterId db =
+    Maybe.map2
+        (\healthCenterId_ healthCenters ->
+            Dict.get healthCenterId_ healthCenters
+                |> Maybe.map .name
+        )
+        healthCenterId
+        (RemoteData.toMaybe db.healthCenters)
+        |> Maybe.Extra.join

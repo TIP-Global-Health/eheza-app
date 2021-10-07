@@ -44,6 +44,7 @@ import Pages.NutritionActivity.View
 import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.View
 import Pages.NutritionParticipant.View
+import Pages.NutritionProgressReport.Model
 import Pages.NutritionProgressReport.View
 import Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
@@ -67,6 +68,8 @@ import Pages.WellChildActivity.View
 import Pages.WellChildEncounter.Model
 import Pages.WellChildEncounter.View
 import Pages.WellChildParticipant.View
+import Pages.WellChildProgressReport.Model
+import Pages.WellChildProgressReport.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import SyncManager.View
@@ -514,7 +517,13 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     NutritionProgressReportPage encounterId ->
-                        Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId model.indexedDb
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.nutritionProgressReportPages
+                                    |> Maybe.withDefault Pages.NutritionProgressReport.Model.emptyModel
+                        in
+                        Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNutritionProgressReport encounterId)
                             |> oldPageWrapper model
 
                     AcuteIllnessEncounterPage id ->
@@ -537,13 +546,13 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
                             |> flexPageWrapper model
 
-                    AcuteIllnessProgressReportPage encounterId ->
+                    AcuteIllnessProgressReportPage initiator encounterId ->
                         let
                             page_ =
                                 Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
                                     |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
                         in
-                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
+                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> oldPageWrapper model
 
@@ -596,6 +605,16 @@ viewUserPage page deviceName model configured =
                         Pages.WellChildActivity.View.view model.language currentDate model.zscores id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildActivity id activity)
                             |> flexPageWrapper model
+
+                    WellChildProgressReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.wellChildProgressReportPages
+                                    |> Maybe.withDefault Pages.WellChildProgressReport.Model.emptyModel
+                        in
+                        Pages.WellChildProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
+                            |> oldPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language

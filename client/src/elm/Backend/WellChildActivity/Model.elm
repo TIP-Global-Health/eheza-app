@@ -10,3 +10,4 @@ type WellChildActivity
     | WellChildImmunisation
     | WellChildNextSteps
     | WellChildVaccinationHistory
+    | WellChildPhoto

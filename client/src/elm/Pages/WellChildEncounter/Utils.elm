@@ -5,9 +5,10 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortTuplesByDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (..)
-import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
@@ -46,10 +47,9 @@ generateAssembledData id db =
                     )
 
         previousMeasurementsWithDates =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
-                |> RemoteData.withDefault []
+            RemoteData.toMaybe encounter
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
+                |> Maybe.withDefault []
 
         previousMeasurements =
             getPreviousMeasurements previousMeasurementsWithDates
@@ -95,166 +95,99 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success vaccinationProgress)
 
 
-generatePreviousMeasurements : Maybe WellChildEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) ))
+generatePreviousMeasurements : Maybe WellChildEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
 generatePreviousMeasurements currentEncounterId participantId db =
-    Dict.get participantId db.wellChildEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.map
-            (Dict.toList
-                >> List.filterMap
-                    (\( encounterId, encounter ) ->
-                        -- We do not want to get data of current encounter.
-                        if currentEncounterId == Just encounterId then
+    getWellChildEncountersForParticipant db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId db.wellChildMeasurements of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
                             Nothing
-
-                        else
-                            case Dict.get encounterId db.wellChildMeasurements of
-                                Just (Success data) ->
-                                    Just ( encounter.startDate, ( encounterId, data ) )
-
-                                _ ->
-                                    Nothing
-                    )
-                -- Most recent date to least recent date.
-                >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> Date.compare date2 date1)
             )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc
 
 
-resolveEncounterTypeOnDate : Bool -> NominalDate -> NominalDate -> WellChildEncounterType
-resolveEncounterTypeOnDate isChw duewDate birthDate =
+resolvePediatricCareMilestoneOnDate : NominalDate -> NominalDate -> Maybe PediatricCareMilestone
+resolvePediatricCareMilestoneOnDate dueDate birthDate =
     let
         ageWeeks =
-            Date.diff Weeks birthDate duewDate
+            Date.diff Weeks birthDate dueDate
 
         ageMonths =
-            Date.diff Months birthDate duewDate
+            Date.diff Months birthDate dueDate
     in
-    if isChw then
-        NewbornExam
-
-    else if ageWeeks < 6 then
-        PediatricCareBirthTo6Weeks
-
-    else if ageWeeks < 10 then
-        PediatricCare6Weeks
+    if ageWeeks < 6 then
+        Nothing
 
     else if ageWeeks < 14 then
-        PediatricCare10Weeks
+        Just Milestone6Weeks
 
     else if ageMonths < 6 then
-        PediatricCare14Weeks
+        Just Milestone14Weeks
 
     else if ageMonths < 9 then
-        PediatricCare6Months
+        Just Milestone6Months
 
     else if ageMonths < 12 then
-        PediatricCare9Months
+        Just Milestone9Months
 
     else if ageMonths < 15 then
-        PediatricCare12Months
+        Just Milestone12Months
 
     else if ageMonths < 18 then
-        PediatricCare15Months
+        Just Milestone15Months
 
     else if ageMonths < 24 then
-        PediatricCare18Months
+        Just Milestone18Months
+
+    else if ageMonths < 36 then
+        Just Milestone2Years
+
+    else if ageMonths < 48 then
+        Just Milestone3Years
 
     else
-        PediatricCareRecurrent
+        Just Milestone4Years
 
 
-encounterToComparable : WellChildEncounterType -> Int
-encounterToComparable encounterType =
-    case encounterType of
-        NewbornExam ->
-            0
-
-        PediatricCareBirthTo6Weeks ->
+pediatricCareMilestoneToComparable : PediatricCareMilestone -> Int
+pediatricCareMilestoneToComparable milestone =
+    case milestone of
+        Milestone6Weeks ->
             1
 
-        PediatricCare6Weeks ->
+        Milestone14Weeks ->
             2
 
-        PediatricCare10Weeks ->
+        Milestone6Months ->
             3
 
-        PediatricCare14Weeks ->
+        Milestone9Months ->
             4
 
-        PediatricCare6Months ->
+        Milestone12Months ->
             5
 
-        PediatricCare9Months ->
+        Milestone15Months ->
             6
 
-        PediatricCare12Months ->
+        Milestone18Months ->
             7
 
-        PediatricCare15Months ->
+        Milestone2Years ->
             8
 
-        PediatricCare18Months ->
+        Milestone3Years ->
             9
 
-        PediatricCareRecurrent ->
+        Milestone4Years ->
             10
-
-
-dueDateForEncounter : NominalDate -> WellChildEncounterType -> NominalDate
-dueDateForEncounter birthDate encounterType =
-    case encounterType of
-        NewbornExam ->
-            birthDate
-
-        PediatricCareBirthTo6Weeks ->
-            birthDate
-
-        PediatricCare6Weeks ->
-            Date.add Weeks 6 birthDate
-
-        PediatricCare10Weeks ->
-            Date.add Weeks 10 birthDate
-
-        PediatricCare14Weeks ->
-            Date.add Weeks 14 birthDate
-
-        PediatricCare6Months ->
-            Date.add Months 6 birthDate
-
-        PediatricCare9Months ->
-            Date.add Months 9 birthDate
-
-        PediatricCare12Months ->
-            Date.add Months 12 birthDate
-
-        PediatricCare15Months ->
-            Date.add Months 15 birthDate
-
-        PediatricCare18Months ->
-            Date.add Months 18 birthDate
-
-        PediatricCareRecurrent ->
-            Date.add Months 24 birthDate
-
-
-getNextPediatricCareEncounter : WellChildEncounterType -> WellChildEncounterType
-getNextPediatricCareEncounter encounterType =
-    List.Extra.elemIndex encounterType allPediatricCareEncounters
-        |> Maybe.andThen (\position -> List.Extra.getAt (position + 1) allPediatricCareEncounters)
-        |> Maybe.withDefault PediatricCareRecurrent
-
-
-allPediatricCareEncounters : List WellChildEncounterType
-allPediatricCareEncounters =
-    [ PediatricCareBirthTo6Weeks
-    , PediatricCare6Weeks
-    , PediatricCare10Weeks
-    , PediatricCare14Weeks
-    , PediatricCare6Months
-    , PediatricCare9Months
-    , PediatricCare12Months
-    , PediatricCare15Months
-    , PediatricCare18Months
-    , PediatricCareRecurrent
-    ]

@@ -20,6 +20,8 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Participant.Update
 import Pages.Participants.Update
+import Pages.ProgressReport.Model
+import Pages.ProgressReport.Update
 import Pages.Session.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import ZScore.Model
@@ -267,6 +269,20 @@ updateFoundSession currentDate zscores sessionId session db msg model =
             in
             ( { model | nextStepsPages = Dict.insert childId subModel model.nextStepsPages }
             , Cmd.map (MsgNextSteps childId activity) subCmd
+            , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
+            )
+
+        MsgProgressReport childId subMsg ->
+            let
+                progressReportPage =
+                    Dict.get childId model.progressReportPages
+                        |> Maybe.withDefault Pages.ProgressReport.Model.emptyModel
+
+                ( subModel, subCmd, extraMsgs ) =
+                    Pages.ProgressReport.Update.update subMsg progressReportPage
+            in
+            ( { model | progressReportPages = Dict.insert childId subModel model.progressReportPages }
+            , Cmd.map (MsgProgressReport childId) subCmd
             , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 

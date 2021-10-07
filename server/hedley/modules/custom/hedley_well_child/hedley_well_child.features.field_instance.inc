@@ -984,6 +984,44 @@ function hedley_well_child_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-well_child_encounter-field_encounter_warnings'.
+  $field_instances['node-well_child_encounter-field_encounter_warnings'] = array(
+    'bundle' => 'well_child_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_encounter_warnings',
+    'label' => 'Encounter warnings',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-well_child_encounter-field_individual_participant'.
   $field_instances['node-well_child_encounter-field_individual_participant'] = array(
     'bundle' => 'well_child_encounter',
@@ -1124,7 +1162,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 6,
+      'weight' => 7,
     ),
   );
 
@@ -1164,7 +1202,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -4635,6 +4673,44 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-well_child_nutrition-field_nutrition_assesment'.
+  $field_instances['node-well_child_nutrition-field_nutrition_assesment'] = array(
+    'bundle' => 'well_child_nutrition',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nutrition_assesment',
+    'label' => 'Nutrition Assesment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_nutrition-field_nutrition_signs'.
   $field_instances['node-well_child_nutrition-field_nutrition_signs'] = array(
     'bundle' => 'well_child_nutrition',
@@ -5165,157 +5241,6 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 3,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-well_child_pregnancy_summary-field_apgars_five_minutes'.
-  $field_instances['node-well_child_pregnancy_summary-field_apgars_five_minutes'] = array(
-    'bundle' => 'well_child_pregnancy_summary',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 0,
-          'thousand_separator' => '',
-        ),
-        'type' => 'number_integer',
-        'weight' => 9,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_apgars_five_minutes',
-    'label' => 'Apgars five minutes',
-    'required' => 0,
-    'settings' => array(
-      'max' => '',
-      'min' => '',
-      'prefix' => '',
-      'suffix' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 13,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-well_child_pregnancy_summary-field_apgars_one_minute'.
-  $field_instances['node-well_child_pregnancy_summary-field_apgars_one_minute'] = array(
-    'bundle' => 'well_child_pregnancy_summary',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 0,
-          'thousand_separator' => '',
-        ),
-        'type' => 'number_integer',
-        'weight' => 8,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_apgars_one_minute',
-    'label' => 'Apgars one minute',
-    'required' => 0,
-    'settings' => array(
-      'max' => '',
-      'min' => '',
-      'prefix' => '',
-      'suffix' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 12,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-well_child_pregnancy_summary-field_date_concluded'.
-  $field_instances['node-well_child_pregnancy_summary-field_date_concluded'] = array(
-    'bundle' => 'well_child_pregnancy_summary',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'date',
-        'settings' => array(
-          'custom_date_format' => '',
-          'format_type' => 'long',
-          'fromto' => 'both',
-          'multiple_from' => '',
-          'multiple_number' => '',
-          'multiple_to' => '',
-          'show_remaining_days' => FALSE,
-        ),
-        'type' => 'date_default',
-        'weight' => 7,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_date_concluded',
-    'label' => 'Date concluded',
-    'required' => 0,
-    'settings' => array(
-      'default_value' => 'now',
-      'default_value2' => 'same',
-      'default_value_code' => '',
-      'default_value_code2' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'date',
-      'settings' => array(
-        'increment' => 15,
-        'input_format' => 'm/d/Y - H:i:s',
-        'input_format_custom' => '',
-        'label_position' => 'above',
-        'no_fieldset' => 0,
-        'text_parts' => array(),
-        'year_range' => '-3:+3',
-      ),
-      'type' => 'date_select',
-      'weight' => 11,
     ),
   );
 
@@ -8350,6 +8275,7 @@ function hedley_well_child_field_default_field_instances() {
   t('Delivery Complications');
   t('ECD Signs');
   t('Encounter notes');
+  t('Encounter warnings');
   t('Expected date concluded');
   t('Follow up options');
   t('HPV Vaccination Date');

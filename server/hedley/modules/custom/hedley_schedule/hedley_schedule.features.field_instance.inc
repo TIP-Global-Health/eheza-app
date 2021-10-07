@@ -2756,6 +2756,7 @@ Used to track location where pregnancies were completed.',
   // Translatables
   // Included for use with string extractors like potx.
   t('Acute Illness Diagnosis');
+  t('Acute Illness Encounter Type');
   t('Adult');
   t('Adult Activities');
   t('At which point should these topics be addressed?');

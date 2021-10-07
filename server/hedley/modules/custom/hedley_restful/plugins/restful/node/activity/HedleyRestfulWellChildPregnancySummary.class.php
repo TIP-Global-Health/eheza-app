@@ -21,10 +21,7 @@ class HedleyRestfulWellChildPregnancySummary extends HedleyRestfulWellChildActiv
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_apgars_one_minute',
-    'field_apgars_five_minutes',
     'field_expected_date_concluded',
-    'field_date_concluded',
   ];
 
   /**
@@ -32,7 +29,6 @@ class HedleyRestfulWellChildPregnancySummary extends HedleyRestfulWellChildActiv
    */
   protected $dateFields = [
     'field_expected_date_concluded',
-    'field_date_concluded',
   ];
 
 }

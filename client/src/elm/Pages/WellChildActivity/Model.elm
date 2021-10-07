@@ -18,10 +18,6 @@ type Msg
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | ToggleExpectedDateConcluded
-    | SetDateConcluded Date
-    | ToggleDateConcluded
-    | SetApgarsOneMinute String
-    | SetApgarsFiveMinutes String
     | SetDeliveryComplicationsPresent Bool
     | SetDeliveryComplication DeliveryComplication
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
@@ -39,13 +35,12 @@ type Msg
     | SetHeadCircumference String
     | ToggleHeadCircumferenceNotTaken
     | CloseHeadCircumferencePopup PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PreSaveHeadCircumference PersonId (Maybe Float) (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | SetMuac String
     | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssessmentTask)
     | SetNutritionSign ChildNutritionSign
-    | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (Maybe NutritionAssessmentTask)
-    | DropZoneComplete DropZoneFile
-    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl (Maybe NutritionAssessmentTask)
+    | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
     | SetWeight String
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- VACCINATION HISTORY
@@ -90,6 +85,9 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe NextStepsTask)
     | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe NextStepsTask)
+      -- PHOTO
+    | DropZoneComplete DropZoneFile
+    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
 
 
 type alias Model =
@@ -101,6 +99,7 @@ type alias Model =
     , ecdForm : WellChildECDForm
     , medicationData : MedicationData
     , nextStepsData : NextStepsData
+    , photoForm : PhotoForm
     , warningPopupState : Maybe WarningPopupType
     }
 
@@ -115,6 +114,7 @@ emptyModel =
     , ecdForm = emptyWellChildECDForm
     , medicationData = emptyMedicationData
     , nextStepsData = emptyNextStepsData
+    , photoForm = emptyPhotoForm
     , warningPopupState = Nothing
     }
 
@@ -129,10 +129,6 @@ type WarningPopupType
 type alias PregnancySummaryForm =
     { expectedDateConcluded : Maybe Date
     , isExpectedDateConcludedSelectorOpen : Bool
-    , dateConcluded : Maybe Date
-    , isDateConcludedSelectorOpen : Bool
-    , apgarsOneMinute : Maybe Int
-    , apgarsFiveMinutes : Maybe Int
     , deliveryComplicationsPresent : Maybe Bool
     , deliveryComplications : Maybe (List DeliveryComplication)
     }
@@ -142,10 +138,6 @@ emptyPregnancySummaryForm : PregnancySummaryForm
 emptyPregnancySummaryForm =
     { expectedDateConcluded = Nothing
     , isExpectedDateConcludedSelectorOpen = False
-    , dateConcluded = Nothing
-    , isDateConcludedSelectorOpen = False
-    , apgarsOneMinute = Nothing
-    , apgarsFiveMinutes = Nothing
     , deliveryComplicationsPresent = Nothing
     , deliveryComplications = Nothing
     }
@@ -186,7 +178,6 @@ type alias NutritionAssessmentData =
     , headCircumferenceForm : HeadCircumferenceForm
     , muacForm : MuacForm
     , nutritionForm : NutritionForm
-    , photoForm : PhotoForm
     , weightForm : WeightForm
     , activeTask : Maybe NutritionAssessmentTask
     }
@@ -198,7 +189,6 @@ emptyNutritionAssessmentData =
     , headCircumferenceForm = emptyHeadCircumferenceForm
     , muacForm = emptyMuacForm
     , nutritionForm = emptyNutritionForm
-    , photoForm = emptyPhotoForm
     , weightForm = emptyWeightForm
     , activeTask = Nothing
     }
@@ -221,7 +211,6 @@ type NutritionAssessmentTask
     | TaskHeadCircumference
     | TaskMuac
     | TaskNutrition
-    | TaskPhoto
     | TaskWeight
 
 

@@ -1,4 +1,4 @@
-module Pages.WellChildEncounter.View exposing (view)
+module Pages.WellChildEncounter.View exposing (view, viewPersonDetails)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -6,23 +6,23 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.WellChildActivity.Utils exposing (activityCompleted, expectActivity, mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChildActivity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChildEncounter.Model exposing (..)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, viewModal)
+import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
@@ -46,7 +46,7 @@ viewHeaderAndContent language currentDate zscores id isChw db model assembeld =
         content =
             viewContent language currentDate zscores id isChw db model assembeld
     in
-    div [ class "page-encounter home-visit" ]
+    div [ class "page-encounter well-child" ]
         [ header
         , content
         , viewModal <|
@@ -81,7 +81,7 @@ viewHeader language isChw assembeld =
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id isChw db model assembeld =
-    ((viewPersonDetails language currentDate assembeld.person Nothing |> div [ class "item" ])
+    ((viewPersonDetails language currentDate assembeld.person |> div [ class "item" ])
         :: viewMainPageContent language currentDate zscores id isChw db assembeld model
     )
         |> div [ class "ui unstackable items" ]
@@ -132,6 +132,70 @@ warningPopup language childId encounterId warningPopupState =
             )
 
 
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 140
+    , height = 140
+    }
+
+
+viewPersonDetails : Language -> NominalDate -> Person -> List (Html any)
+viewPersonDetails language currentDate person =
+    let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
+
+        ( thumbnailClass, maybeAge ) =
+            if isAdult then
+                ( "mother"
+                , ageInYears currentDate person
+                    |> Maybe.map (Translate.YearsOld >> translate language)
+                )
+
+            else
+                ( "child"
+                , person.birthDate
+                    |> Maybe.map
+                        (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
+                )
+
+        ( dateOfBirthEntry, ageEntry ) =
+            Maybe.map
+                (\birthDate ->
+                    ( viewEntry Translate.DateOfBirth (formatDDMMYY birthDate)
+                    , viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate)
+                    )
+                )
+                person.birthDate
+                |> Maybe.withDefault ( emptyNode, emptyNode )
+
+        genderEntry =
+            viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
+
+        villageEntry =
+            Maybe.map (viewEntry Translate.Village) person.village
+                |> Maybe.withDefault emptyNode
+
+        viewEntry labelTransId content =
+            p []
+                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
+                , span [] [ text content ]
+                ]
+    in
+    [ div [ class "ui image" ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
+    , div [ class "details" ]
+        [ h2 [ class "ui header" ]
+            [ text person.name ]
+        , ageEntry
+        , dateOfBirthEntry
+        , genderEntry
+        , villageEntry
+        ]
+    ]
+
+
 viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate zscores id isChw db assembeld model =
     let
@@ -153,6 +217,7 @@ viewMainPageContent language currentDate zscores id isChw db assembeld model =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (WellChildProgressReportPage id)))
                 ]
 
         viewCard activity =
@@ -179,6 +244,9 @@ viewMainPageContent language currentDate zscores id isChw db assembeld model =
 
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                Reports ->
+                    ( [], "" )
 
         viewReportLink labelTransId redirectPage =
             div
@@ -209,8 +277,8 @@ viewMainPageContent language currentDate zscores id isChw db assembeld model =
                 [] ->
                     True
 
-                [ WellChildNutritionAssessment ] ->
-                    mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembeld db
+                [ WellChildPhoto ] ->
+                    True
 
                 _ ->
                     False

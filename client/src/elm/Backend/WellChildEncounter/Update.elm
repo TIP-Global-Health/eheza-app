@@ -7,6 +7,7 @@ import Backend.Measurement.Model exposing (HeightInCm(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Backend.WellChildEncounter.Encoder exposing (encodeWellChildEncounter)
 import Backend.WellChildEncounter.Model exposing (..)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -26,31 +27,54 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                         , { encounter | endDate = Just currentDate }
                             |> sw.patchFull wellChildEncounterEndpoint encounterId
                             |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedWellChildEncounter)
+                            |> toCmd (RemoteData.fromResult >> HandleWellChildEncounterEdited)
                         )
                     )
 
-        HandleClosedWellChildEncounter data ->
+        HandleWellChildEncounterEdited data ->
             ( { model | editWellChildEncounter = data }
             , Cmd.none
             )
 
-        MarkWellChildEncounterAsAITrigger ->
+        SetWellChildEncounterNote note ->
             maybeEncounter
                 |> unwrap ( model, Cmd.none )
                     (\encounter ->
                         ( { model | editWellChildEncounter = Loading }
-                        , { encounter | encounterNote = NoteTriggeredAcuteIllnessEncounter }
+                        , { encounter | encounterNote = note }
                             |> sw.patchFull wellChildEncounterEndpoint encounterId
                             |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedWellChildEncounter)
+                            |> toCmd (RemoteData.fromResult >> HandleWellChildEncounterEdited)
                         )
                     )
 
-        HandleMarkedWellChildEncounterAsAITrigger data ->
-            ( { model | editWellChildEncounter = data }
-            , Cmd.none
-            )
+        SetWellChildEncounterWarning warning ->
+            maybeEncounter
+                |> unwrap ( model, Cmd.none )
+                    (\encounter ->
+                        let
+                            warnings =
+                                EverySet.toList encounter.encounterWarnings
+
+                            updatedWarnings =
+                                if List.member warning ecdMilestoneWarnings then
+                                    List.filter (\item -> not (List.member item (NoEncounterWarnings :: ecdMilestoneWarnings))) warnings
+                                        |> List.append [ warning ]
+
+                                else if List.member warning headCircumferenceWarnings then
+                                    List.filter (\item -> not (List.member item (NoEncounterWarnings :: headCircumferenceWarnings))) warnings
+                                        |> List.append [ warning ]
+
+                                else
+                                    [ NoEncounterWarnings ]
+                        in
+                        ( { model | editWellChildEncounter = Loading }
+                        , { encounter | encounterWarnings = EverySet.fromList updatedWarnings }
+                            |> sw.patchFull wellChildEncounterEndpoint encounterId
+                            |> withoutDecoder
+                            |> toCmd (RemoteData.fromResult >> HandleWellChildEncounterEdited)
+                        )
+                    )
 
         SavePregnancySummary personId valueId value ->
             ( { model | savePregnancySummary = Loading }

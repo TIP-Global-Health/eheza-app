@@ -22,6 +22,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Model exposing (PhotoForm)
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -39,7 +40,6 @@ import Measurement.View
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.NutritionActivity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -59,13 +59,13 @@ import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
+import Pages.WellChildEncounter.View exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (diffDays)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreHeadCircumferenceForAge)
+import ZScore.Utils exposing (diffDays, viewZScore, zScoreHeadCircumferenceForAge)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
@@ -113,7 +113,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id isChw activity db model assembled =
-    ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
+    ((viewPersonDetails language currentDate assembled.person |> div [ class "item" ])
         :: viewActivity language currentDate zscores id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
@@ -208,7 +208,17 @@ vaccinationHistoryPopup language currentDate vaccinationHistory =
             ]
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
 viewActivity language currentDate zscores id isChw activity assembled db model =
     case activity of
         WellChildPregnancySummary ->
@@ -235,6 +245,9 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
         WellChildNextSteps ->
             viewNextStepsContent language currentDate zscores id isChw assembled db model.nextStepsData
 
+        WellChildPhoto ->
+            viewPhotoContent language currentDate assembled model.photoForm
+
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
 viewPregnancySummaryForm language currentDate assembled form_ =
@@ -253,12 +266,9 @@ viewPregnancySummaryForm language currentDate assembled form_ =
 
         ( tasksCompleted, totalTasks ) =
             ( taskCompleted form.expectedDateConcluded
-                + taskCompleted form.dateConcluded
-                + taskCompleted form.apgarsOneMinute
-                + taskCompleted form.apgarsFiveMinutes
                 + taskCompleted form.deliveryComplicationsPresent
                 + deliveryComplicationsCompleted
-            , 5 + deliveryComplicationsActive
+            , 2 + deliveryComplicationsActive
             )
 
         expectedDateConcludedInput =
@@ -269,15 +279,6 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 (Date.add Months -3 currentDate)
                 (Date.add Months 4 currentDate)
                 form.expectedDateConcluded
-
-        dateConcludedInput =
-            DateSelector.SelectorDropdown.view
-                ToggleDateConcluded
-                SetDateConcluded
-                form.isDateConcludedSelectorOpen
-                (Date.add Months -2 currentDate)
-                currentDate
-                form.dateConcluded
 
         viewDatesDiff =
             Maybe.map2
@@ -316,44 +317,13 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                 _ ->
                                     viewPart ( 0, Translate.DaySinglePlural )
                     in
-                    [ viewLabel language Translate.DifferenceBetweenDates
+                    [ viewLabel language Translate.DifferenceBetweenDueAndDeliveryDates
                     , div [ class "form-input" ] [ text viewDiff ]
                     ]
                 )
                 form.expectedDateConcluded
-                form.dateConcluded
+                assembled.person.birthDate
                 |> Maybe.withDefault []
-
-        apgarsOptions fromValue =
-            option
-                [ value ""
-                , selected (fromValue == Nothing)
-                ]
-                [ text "" ]
-                :: (List.repeat 11 ""
-                        |> List.indexedMap
-                            (\index _ ->
-                                option
-                                    [ value <| String.fromInt index
-                                    , selected <| fromValue == Just index
-                                    ]
-                                    [ text <| String.fromInt index ]
-                            )
-                   )
-
-        apgarsOneMinuteInput =
-            apgarsOptions form.apgarsOneMinute
-                |> select
-                    [ class "form-input apgars"
-                    , onInput SetApgarsOneMinute
-                    ]
-
-        apgarsFiveMinutesInput =
-            apgarsOptions form.apgarsFiveMinutes
-                |> select
-                    [ class "form-input apgars"
-                    , onInput SetApgarsFiveMinutes
-                    ]
 
         deliveryComplicationsPresentInput =
             viewBoolInput
@@ -367,7 +337,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
             if form.deliveryComplicationsPresent == Just True then
                 [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
                 , viewCheckBoxMultipleSelectInput language
-                    [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia ]
+                    [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia, ComplicationOther ]
                     [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
                     (form.deliveryComplications |> Maybe.withDefault [])
                     Nothing
@@ -388,16 +358,9 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
                 , div [ class "form-input date" ]
                     [ expectedDateConcludedInput ]
-                , viewQuestionLabel language Translate.DateConcludedActualQuestion
-                , div [ class "form-input date" ]
-                    [ dateConcludedInput ]
                 ]
                     ++ viewDatesDiff
-                    ++ [ viewQuestionLabel language Translate.ChildOneMinuteApgarsQuestion
-                       , apgarsOneMinuteInput
-                       , viewQuestionLabel language Translate.ChildFiveMinutesApgarsQuestion
-                       , apgarsFiveMinutesInput
-                       , viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
+                    ++ [ viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
                        , deliveryComplicationsPresentInput
                        ]
                     ++ deliveryComplicationsSection
@@ -548,7 +511,8 @@ viewDangerSignsContent language currentDate assembled data =
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
 viewSymptomsReviewForm language currentDate person form =
     [ div [ class "ui form symptoms-review" ]
-        [ viewLabel language Translate.SelectAllSigns
+        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
         , viewCheckBoxMultipleSelectInput language
             [ SymptomBreathingProblems
             , SymptomConvulsions
@@ -595,11 +559,8 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
         measurements =
             assembled.measurements
 
-        ( mandatory, optional ) =
-            partitionNutritionAssessmentTasks isChw
-
         tasks =
-            (mandatory ++ optional)
+            resolveNutritionAssessmentTasks isChw
                 |> List.filter (expectNutritionAssessmentTask currentDate isChw assembled db)
 
         activeTask =
@@ -627,11 +588,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         TaskNutrition ->
                             ( "nutrition"
                             , isJust measurements.nutrition
-                            )
-
-                        TaskPhoto ->
-                            ( "photo"
-                            , isJust measurements.photo
                             )
 
                         TaskWeight ->
@@ -720,18 +676,6 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate SetNutritionSign
 
-                Just TaskPhoto ->
-                    let
-                        displayPhoto =
-                            case data.photoForm.url of
-                                Just url ->
-                                    Just url
-
-                                Nothing ->
-                                    getMeasurementValueFunc assembled.measurements.photo
-                    in
-                    viewPhotoForm language currentDate displayPhoto DropZoneComplete
-
                 Just TaskWeight ->
                     let
                         heightValue =
@@ -769,53 +713,24 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                                         SaveHeight personId measurements.height nextTask
 
                                     TaskHeadCircumference ->
-                                        let
-                                            saveHeadCircumferenceMsg =
-                                                SaveHeadCircumference personId measurements.headCircumference nextTask
-                                        in
-                                        headCircumferenceZScore
-                                            |> Maybe.map
-                                                (\zscore ->
-                                                    if zscore > 3 then
-                                                        PopupMacrocephaly personId measurements.headCircumference nextTask
-                                                            |> Just
-                                                            |> SetWarningPopupState
-
-                                                    else if zscore < -3 then
-                                                        PopupMicrocephaly personId measurements.headCircumference nextTask
-                                                            |> Just
-                                                            |> SetWarningPopupState
-
-                                                    else
-                                                        saveHeadCircumferenceMsg
-                                                )
-                                            |> Maybe.withDefault saveHeadCircumferenceMsg
+                                        PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
 
                                     TaskMuac ->
                                         SaveMuac personId measurements.muac nextTask
 
                                     TaskNutrition ->
-                                        SaveNutrition personId measurements.nutrition nextTask
-
-                                    TaskPhoto ->
                                         let
-                                            photoId =
-                                                Maybe.map Tuple.first measurements.photo
+                                            assessment =
+                                                generateNutritionAssessment currentDate zscores db assembled
+                                                    |> nutritionAssessmentForBackend
                                         in
-                                        data.photoForm.url
-                                            |> Maybe.map (\url -> SavePhoto personId photoId url nextTask)
-                                            |> Maybe.withDefault NoOp
+                                        SaveNutrition personId measurements.nutrition assessment nextTask
 
                                     TaskWeight ->
                                         SaveWeight personId measurements.weight nextTask
 
                             disabled =
-                                case task of
-                                    TaskPhoto ->
-                                        isNothing data.photoForm.url
-
-                                    _ ->
-                                        tasksCompleted /= totalTasks
+                                tasksCompleted /= totalTasks
                         in
                         viewAction language saveMsg disabled
                     )
@@ -1456,8 +1371,8 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                             )
 
                         else
-                            ( [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined ]
-                            , [ NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                            ( [ AdministeredPreviously, NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationKnownAllergy ]
+                            , [ NonAdministrationPatientUnableToAfford, NonAdministrationChildsCondition, NonAdministrationOther ]
                             )
                 in
                 ( [ div [ class "why-not" ]
@@ -1467,7 +1382,7 @@ inputsAndTasksForSuggestedVaccine language currentDate isChw assembled form ( va
                             rightOptions
                             (config.getVaccinationNoteFunc form)
                             (SetImmunisationAdministrationNoteInput config.setAdministrationNoteFunc)
-                            Translate.AdministrationNote
+                            Translate.AdministrationNoteForWellChild
                         ]
                   ]
                     ++ vaccinationDateInput
@@ -2597,6 +2512,54 @@ resolveNextVisitDates currentDate isChw assembled db form =
     ( Maybe.Extra.or form.immunisationDate nextDateForImmunisationVisit
     , Maybe.Extra.or form.pediatricVisitDate nextDateForPediatricVisit
     )
+
+
+viewPhotoContent : Language -> NominalDate -> AssembledData -> PhotoForm -> List (Html Msg)
+viewPhotoContent language currentDate assembled form =
+    let
+        photoId =
+            Maybe.map Tuple.first assembled.measurements.photo
+
+        -- If we have a photo that we've just taken, but not saved, that is in
+        -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
+        -- measurement, if we have that.
+        ( displayPhoto, saveMsg, isDisabled ) =
+            case form.url of
+                Just url ->
+                    ( Just url
+                    , [ onClick <| SavePhoto assembled.participant.person photoId url ]
+                    , False
+                    )
+
+                Nothing ->
+                    ( getMeasurementValueFunc assembled.measurements.photo
+                    , []
+                    , True
+                    )
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted displayPhoto
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            viewPhotoForm language currentDate displayPhoto DropZoneComplete
+        , div [ class "actions" ]
+            [ button
+                ([ classList
+                    [ ( "ui fluid primary button", True )
+                    , ( "disabled", isDisabled )
+                    ]
+                 ]
+                    ++ saveMsg
+                )
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 

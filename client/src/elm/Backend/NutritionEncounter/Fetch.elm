@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
@@ -40,6 +41,10 @@ fetchForNutrition id db =
                     )
                 |> Maybe.withDefault []
 
+        -- We fetch all encounters.
+        fetchEncounters =
+            List.map FetchNutritionEncounter encountersIds
+
         -- We fetch measurements of all encounters.
         fetchMeasurements =
             List.map FetchNutritionMeasurements encountersIds
@@ -48,6 +53,7 @@ fetchForNutrition id db =
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchNutritionEncountersForParticipant participantId
         ]
+        ++ fetchEncounters
         ++ fetchMeasurements
 
 
@@ -58,15 +64,13 @@ fetchForWellChild id db =
             resolveIndividualParticipantForPerson id WellChildEncounter db
 
         encountersIds =
-            participantId
-                |> Maybe.map
-                    (\participantId_ ->
-                        Dict.get participantId_ db.wellChildEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map Dict.keys
-                            |> RemoteData.withDefault []
-                    )
+            Maybe.map (getWellChildEncountersForParticipant db) participantId
                 |> Maybe.withDefault []
+                |> List.map Tuple.first
+
+        -- We fetch all encounters.
+        fetchEncounters =
+            List.map FetchWellChildEncounter encountersIds
 
         -- We fetch measurements of all encounters.
         fetchMeasurements =
@@ -76,4 +80,5 @@ fetchForWellChild id db =
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchWellChildEncountersForParticipant participantId
         ]
+        ++ fetchEncounters
         ++ fetchMeasurements

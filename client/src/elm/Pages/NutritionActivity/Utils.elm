@@ -30,7 +30,6 @@ import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (taskCompleted)
 import RemoteData exposing (RemoteData(..))
-import Utils.NominalDate exposing (diffDays)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
@@ -46,6 +45,7 @@ generateNutritionAssessment currentDate zscores db assembled =
 
         nutritionValue =
             getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .signs
 
         weightValue =
             Maybe.map

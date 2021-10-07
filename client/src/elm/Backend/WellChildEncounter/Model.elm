@@ -13,6 +13,7 @@ type alias WellChildEncounter =
     , endDate : Maybe NominalDate
     , encounterType : WellChildEncounterType
     , encounterNote : EncounterNote
+    , encounterWarnings : EverySet EncounterWarning
     , shard : Maybe HealthCenterId
     }
 
@@ -24,30 +25,76 @@ emptyWellChildEncounter participant startDate encounterType shard =
     , endDate = Nothing
     , encounterType = encounterType
     , encounterNote = NoEncounterNotes
+    , encounterWarnings = EverySet.singleton NoEncounterWarnings
     , shard = shard
     }
 
 
 type WellChildEncounterType
-    = NewbornExam
-      -- This encounter will occur if immunisation at
-      -- birth was not completed.
-    | PediatricCareBirthTo6Weeks
-    | PediatricCare6Weeks
-    | PediatricCare10Weeks
-    | PediatricCare14Weeks
-    | PediatricCare6Months
-    | PediatricCare9Months
-    | PediatricCare12Months
-    | PediatricCare15Months
-    | PediatricCare18Months
-      -- From age of 2 years, every 6 months.
-    | PediatricCareRecurrent
+    = PediatricCare
+    | NewbornExam
+
+
+type PediatricCareMilestone
+    = Milestone6Weeks
+    | Milestone14Weeks
+    | Milestone6Months
+    | Milestone9Months
+    | Milestone12Months
+    | Milestone15Months
+    | Milestone18Months
+    | Milestone2Years
+    | Milestone3Years
+    | Milestone4Years
+
+
+pediatricCareMilestones : List PediatricCareMilestone
+pediatricCareMilestones =
+    [ Milestone6Weeks
+    , Milestone14Weeks
+    , Milestone6Months
+    , Milestone9Months
+    , Milestone12Months
+    , Milestone15Months
+    , Milestone18Months
+    , Milestone2Years
+    , Milestone3Years
+    , Milestone4Years
+    ]
 
 
 type EncounterNote
     = NoteTriggeredAcuteIllnessEncounter
     | NoEncounterNotes
+
+
+type
+    EncounterWarning
+    -- ECD related warnings.
+    = WarningECDMilestoneBehind
+    | WarningECDMilestoneReferToSpecialist
+      -- We use this option when ECD activity was completed,
+      -- and no warnings were generated.
+    | NoECDMilstoneWarning
+      -- Head Circumference related warnings.
+    | WarningHeadCircumferenceMicrocephaly
+    | WarningHeadCircumferenceMacrocephaly
+      -- We use this option when Head Circumference activity was
+      -- completed, and no warnings were generated.
+    | NoHeadCircumferenceWarning
+      -- This option is set when neither ECD nor
+      -- Head Circumference activity were completed.
+    | NoEncounterWarnings
+
+
+ecdMilestoneWarnings : List EncounterWarning
+ecdMilestoneWarnings =
+    [ WarningECDMilestoneBehind, WarningECDMilestoneReferToSpecialist, NoECDMilstoneWarning ]
+
+
+headCircumferenceWarnings : List EncounterWarning
+headCircumferenceWarnings =
+    [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly, NoECDMilstoneWarning ]
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
@@ -106,9 +153,9 @@ emptyModel =
 
 type Msg
     = CloseWellChildEncounter
-    | HandleClosedWellChildEncounter (WebData ())
-    | MarkWellChildEncounterAsAITrigger
-    | HandleMarkedWellChildEncounterAsAITrigger (WebData ())
+    | HandleWellChildEncounterEdited (WebData ())
+    | SetWellChildEncounterNote EncounterNote
+    | SetWellChildEncounterWarning EncounterWarning
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
     | HandleSavedPregnancySummary (WebData ())
     | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)
@@ -121,7 +168,7 @@ type Msg
     | HandleSavedHeight (WebData ())
     | SaveMuac PersonId (Maybe WellChildMuacId) MuacInCm
     | HandleSavedMuac (WebData ())
-    | SaveNutrition PersonId (Maybe WellChildNutritionId) (EverySet ChildNutritionSign)
+    | SaveNutrition PersonId (Maybe WellChildNutritionId) NutritionValue
     | HandleSavedNutrition (WebData ())
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
     | HandleSavedPhoto (WebData ())

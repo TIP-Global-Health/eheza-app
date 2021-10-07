@@ -7,6 +7,7 @@ import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Utils exposing (getHealthCenterName)
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
@@ -270,13 +271,7 @@ viewLocationName nurse ( healthCenterId, villageId ) db =
                     |> Maybe.map .name
 
             else
-                healthCenterId
-                    |> Maybe.andThen
-                        (\id ->
-                            RemoteData.toMaybe db.healthCenters
-                                |> Maybe.andThen (Dict.get id)
-                        )
-                    |> Maybe.map .name
+                getHealthCenterName healthCenterId db
     in
     locationName
         |> Maybe.map

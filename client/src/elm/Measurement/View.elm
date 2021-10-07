@@ -23,9 +23,19 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, getMeasurementValueFunc, heightValueFunc, mapMeasurementData, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( currentValues
+        , getMeasurementValueFunc
+        , heightValueFunc
+        , mapMeasurementData
+        , muacIndication
+        , muacValueFunc
+        , nutritionSignToString
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Gender, Person)
@@ -61,9 +71,9 @@ import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (Days(..), diffDays, renderDate)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import Utils.NominalDate exposing (renderDate)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
+import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 {-| We need the current date in order to immediately construct a ZScore for the
@@ -97,7 +107,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
+            viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
 
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
@@ -593,8 +603,17 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> EverySet ChildNutritionSign -> Html MsgChild
-viewNutritionSigns language measurement signs =
+viewNutritionSigns :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> PersonId
+    -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition ))
+    -> OfflineSession
+    -> ModelIndexedDb
+    -> NutritionValue
+    -> Html MsgChild
+viewNutritionSigns language currentDate zscores childId measurement offlineSession db value =
     let
         activity =
             ChildActivity NutritionSigns
@@ -602,12 +621,12 @@ viewNutritionSigns language measurement signs =
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        saveMsg =
-            if EverySet.isEmpty signs then
-                Nothing
+        assesment =
+            generateNutritionAssessment currentDate zscores childId db offlineSession
+                |> nutritionAssessmentForBackend
 
-            else
-                Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
+        saveMsg =
+            Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
     div
         [ class "ui full segment nutrition"
@@ -620,7 +639,7 @@ viewNutritionSigns language measurement signs =
             , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
                 p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
-                    :: viewNutritionSignsSelector language signs
+                    :: viewNutritionSignsSelector language value.signs
             ]
         , div [ class "actions" ] <|
             saveButton
@@ -663,7 +682,7 @@ viewNutritionSignsSelectorItem : Language -> EverySet ChildNutritionSign -> Chil
 viewNutritionSignsSelectorItem language nutritionSigns sign =
     let
         inputId =
-            encodeNutritionSignAsString sign
+            nutritionSignToString sign
 
         isChecked =
             EverySet.member sign nutritionSigns
@@ -1246,18 +1265,18 @@ viewBasicVitalsForm language currentDate person previousRespiratoryRate previous
                         let
                             ( redCondition, yellowCondition ) =
                                 if ageMonths < 12 then
-                                    ( [ [ (>) 12 ], [ (<=) 50 ] ]
+                                    ( [ [ (>) 30 ], [ (<=) 50 ] ]
                                     , []
                                     )
 
                                 else if ageMonths < 60 then
-                                    ( [ [ (>) 12 ], [ (<=) 40 ] ]
+                                    ( [ [ (>) 24 ], [ (<=) 40 ] ]
                                     , []
                                     )
 
                                 else
-                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
-                                    , [ [ (<=) 21, (>=) 30 ] ]
+                                    ( [ [ (>) 18 ], [ (<) 30 ] ]
+                                    , []
                                     )
                         in
                         viewConditionalAlert form.respiratoryRate redCondition yellowCondition
