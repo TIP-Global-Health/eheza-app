@@ -111,6 +111,25 @@ update currentDate id db msg model =
             , []
             )
 
+        SetConfirmLmpDate confirmedDate confirmed ->
+            let
+                updatedForm =
+                    if confirmed then
+                        model.pregnancyDatingData.form
+                            |> (\form -> { form | chwLmpConfirmation = Just True, lmpDate = Just confirmedDate, lmpDateConfident = Just True })
+
+                    else
+                        { emptyPregnancyDatingForm | chwLmpConfirmation = Just False }
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | pregnancyDatingData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetLmpDate value ->
             let
                 updatedForm =

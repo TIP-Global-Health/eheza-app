@@ -587,8 +587,11 @@ type TranslationId
     | LevelOfEducation EducationLevel
     | LinkToMother
     | LiveChildren
+    | LmpDateConfirmationLabel
+    | LmpDateConfirmationQuestion
     | LmpDateConfidentHeader
     | LmpDateHeader
+    | LmpLabel
     | LmpRangeHeader
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
@@ -4012,6 +4015,16 @@ translationSet trans =
             , kinyarwanda = Just "Abana bariho"
             }
 
+        LmpDateConfirmationLabel ->
+            { english = "Please confirm the last menstrual period submitted by the CHW"
+            , kinyarwanda = Nothing
+            }
+
+        LmpDateConfirmationQuestion ->
+            { english = "Do you want to confirm the above LMP"
+            , kinyarwanda = Nothing
+            }
+
         LmpDateConfidentHeader ->
             { english = "Is the Patient confident of LMP Date"
             , kinyarwanda = Just "Ese umubyeyi azi neza itariki aherukira mu mihango?"
@@ -4020,6 +4033,11 @@ translationSet trans =
         LmpDateHeader ->
             { english = "Last Menstrual Period Date"
             , kinyarwanda = Just "Itariki aherukira mu mihango"
+            }
+
+        LmpLabel ->
+            { english = "Last Menstrual Period"
+            , kinyarwanda = Nothing
             }
 
         LmpRangeHeader ->
