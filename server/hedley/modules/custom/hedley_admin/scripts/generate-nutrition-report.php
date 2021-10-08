@@ -26,6 +26,12 @@ $batch = drush_get_option('batch', 100);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
+$impacted = array_flip(db_query("SELECT entity_id FROM {person_impacted}")->fetchCol());
+if (empty($impacted)) {
+  drush_print('Execute ddev robo report:demographics first to generate data about impacted patients');
+  exit(1);
+}
+
 $base_query = base_query_for_bundle('person');
 
 $six_years_ago = date('Ymd', strtotime('-6 years'));
@@ -46,6 +52,7 @@ drush_print("$total children with age below 6 years located.");
 $processed = 0;
 
 $stunting = $underweight = $wasting = [];
+$stunting_impacted = $underweight_impacted = $wasting_impacted = [];
 
 while ($processed < $total) {
   // Free up memory.
@@ -96,15 +103,24 @@ while ($processed < $total) {
       if (in_array($measurement->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
         [$stunting_moderate, $stunting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
         $stunting = categorize_data($stunting, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $stunting_moderate, $stunting_severe, $child->nid);
+        if (isset($impacted[$child->nid])) {
+          $stunting_impacted = categorize_data($stunting_impacted, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $stunting_moderate, $stunting_severe, $child->nid);
+        }
         continue;
       }
 
       // We know it's one of HEDLEY_ACTIVITY_WEIGHT_BUNDLES.
       [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
       $underweight = categorize_data($underweight, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $underweight_moderate, $underweight_severe, $child->nid);
+      if (isset($impacted[$child->nid])) {
+        $underweight_impacted = categorize_data($underweight_impacted, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $underweight_moderate, $underweight_severe, $child->nid);
+      }
 
       [$wasting_moderate, $wasting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_length');
       $wasting = categorize_data($wasting, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $wasting_moderate, $wasting_severe, $child->nid);
+      if (isset($impacted[$child->nid])) {
+        $wasting_impacted = categorize_data($wasting_impacted, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $wasting_moderate, $wasting_severe, $child->nid);
+      }
     }
   }
 
@@ -149,142 +165,56 @@ $skeleton = [
 drush_print('## Prevalence by month (period prevalence)');
 drush_print('### One visit or more');
 
-$header = [
-  'Prevalence by Month',
-];
-$data = $skeleton;
 
-// Assemble the table for prevalence.
-for ($i = 1; $i <= 12; $i++) {
-  $current_month = strtotime('- ' . $i . 'months');
-  $month_key = date('Y F', $current_month);
-  $header[] = $month_key;
+print_prevalence_report($skeleton, $stunting, $underweight, $wasting);
 
-  if (isset($stunting[$month_key]['moderate'])) {
-    $data[0][] = format_prevalence($stunting[$month_key]['moderate'], $stunting[$month_key]['any']);
-  }
-  else {
-    $data[0][] = '-';
-  }
-  if (isset($stunting[$month_key]['severe'])) {
-    $data[1][] = format_prevalence($stunting[$month_key]['severe'], $stunting[$month_key]['any']);
-  }
-  else {
-    $data[1][] = '-';
-  }
-
-  if (isset($underweight[$month_key]['moderate'])) {
-    $data[2][] = format_prevalence($underweight[$month_key]['moderate'], $underweight[$month_key]['any']);
-  }
-  else {
-    $data[2][] = '-';
-  }
-  if (isset($underweight[$month_key]['severe'])) {
-    $data[3][] = format_prevalence($underweight[$month_key]['severe'], $underweight[$month_key]['any']);
-  }
-  else {
-    $data[3][] = '-';
-  }
-
-  if (isset($wasting[$month_key]['moderate'])) {
-    $data[4][] = format_prevalence($wasting[$month_key]['moderate'], $wasting[$month_key]['any']);
-  }
-  else {
-    $data[4][] = '-';
-  }
-  if (isset($wasting[$month_key]['severe'])) {
-    $data[5][] = format_prevalence($wasting[$month_key]['severe'], $wasting[$month_key]['any']);
-  }
-  else {
-    $data[5][] = '-';
-  }
-
-}
-$text_table = new HedleyAdminTextTable($header);
-$text_table->addData($data);
-
-drush_print($text_table->render());
+drush_print('### More than two visits');
+print_prevalence_report($skeleton, $stunting_impacted, $underweight_impacted, $wasting_impacted);
 
 drush_print('## Incidence by month');
+
+$month_calculate = function ($i) {
+  return [strtotime('- ' . $i . 'months'), strtotime('- ' . ($i + 1) . 'months')];
+};
+
+$month_format = function ($val) {
+  return date('Y F', $val);
+};
+
 drush_print('### One visit or more');
-
-$header = [
-  'Incidence by Month',
-];
-$data = $skeleton;
-
-for ($i = 1; $i <= 12; $i++) {
-  $current_month = strtotime('- ' . $i . 'months');
-  $previous_month = strtotime('- ' . ($i + 1) . 'months');
-  $month_key = date('Y F', $current_month);
-  $previous_month_key = date('Y F', $previous_month);
-  $header[] = $month_key;
-  $data[0][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'moderate');
-  $data[1][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'severe');
-  $data[2][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'moderate');
-  $data[3][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'severe');
-  $data[4][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'moderate');
-  $data[5][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'severe');
-}
-
-$text_table = new HedleyAdminTextTable($header);
-$text_table->addData($data);
-
-drush_print($text_table->render());
+print_incidence_report($skeleton, $stunting, $underweight, $wasting, 'month', 12, $month_calculate, $month_format);
+drush_print('### More than two visits');
+print_incidence_report($skeleton, $stunting_impacted, $underweight_impacted, $wasting_impacted, 'month', 12, $month_calculate, $month_format);
 
 drush_print('## Incidence by quarter');
+
+$quarter_calculate = function ($i) {
+  return [strtotime('- ' . ($i * 3) . ' months'), strtotime('- ' . (($i + 1) * 3) . ' months')];
+};
+
+$quarter_format = function ($val) {
+  return format_quarter($val);
+};
+
 drush_print('### One visit or more');
-
-$header = [
-  'Incidence by quarter',
-];
-$data = $skeleton;
-
-for ($i = 1; $i <= 4; $i++) {
-  $current_quarter = strtotime('- ' . ($i * 3) . 'months');
-  $previous_quarter = strtotime('- ' . ($i * 6) . 'months');
-  $quarter_key = format_quarter($current_quarter);
-  $previous_quarter_key = date('Y F', $previous_quarter);
-  $header[] = $quarter_key;
-  $data[0][] = calculate_incidence($stunting, $quarter_key, $previous_quarter_key, 'moderate');
-  $data[1][] = calculate_incidence($stunting, $quarter_key, $previous_quarter_key, 'severe');
-  $data[2][] = calculate_incidence($underweight, $quarter_key, $previous_quarter_key, 'moderate');
-  $data[3][] = calculate_incidence($underweight, $quarter_key, $previous_quarter_key, 'severe');
-  $data[4][] = calculate_incidence($wasting, $quarter_key, $previous_quarter_key, 'moderate');
-  $data[5][] = calculate_incidence($wasting, $quarter_key, $previous_quarter_key, 'severe');
-}
-
-$text_table = new HedleyAdminTextTable($header);
-$text_table->addData($data);
-
-drush_print($text_table->render());
+print_incidence_report($skeleton, $stunting, $underweight, $wasting, 'quarter', 4, $quarter_calculate, $quarter_format);
+drush_print('### More than two visits');
+print_incidence_report($skeleton, $stunting_impacted, $underweight_impacted, $wasting_impacted, 'quarter', 4, $quarter_calculate, $quarter_format);
 
 drush_print('## Incidence by year');
+
+$year_calculate = function ($i) {
+  return [strtotime('- ' . $i . ' years'), strtotime('- ' . ($i + 1) . ' years')];
+};
+
+$year_format = function ($val) {
+  return date('Y', $val);
+};
+
 drush_print('### One visit or more');
-
-$header = [
-  'Incidence by year',
-];
-$data = $skeleton;
-
-for ($i = 1; $i <= 2; $i++) {
-  $current_year = strtotime('- ' . $i . ' years');
-  $previous_year = strtotime('- ' . ($i + 1) . ' years');
-  $year_key = date('Y', $current_year);
-  $previous_year_key = date('Y', $previous_year);
-  $header[] = $year_key;
-  $data[0][] = calculate_incidence($stunting, $year_key, $previous_year_key, 'moderate');
-  $data[1][] = calculate_incidence($stunting, $year_key, $previous_year_key, 'severe');
-  $data[2][] = calculate_incidence($underweight, $year_key, $previous_year_key, 'moderate');
-  $data[3][] = calculate_incidence($underweight, $year_key, $previous_year_key, 'severe');
-  $data[4][] = calculate_incidence($wasting, $year_key, $previous_year_key, 'moderate');
-  $data[5][] = calculate_incidence($wasting, $year_key, $previous_year_key, 'severe');
-}
-
-$text_table = new HedleyAdminTextTable($header);
-$text_table->addData($data);
-
-drush_print($text_table->render());
+print_incidence_report($skeleton, $stunting, $underweight, $wasting, 'year', 2, $year_calculate, $year_format);
+drush_print('### More than two visits');
+print_incidence_report($skeleton, $stunting_impacted, $underweight_impacted, $wasting_impacted, 'year', 2, $year_calculate, $year_format);
 
 /**
  * Classifies measurement by its malnutrition indicator (severe / moderate).
@@ -448,4 +378,111 @@ function calculate_incidence(array $dataset, string $current_period, string $pre
   }
 
   return round((($new_cases / count(array_unique($dataset[$current_period]['any']))) * 100), 3) . ' %';
+}
+
+/**
+ * Prints prevalence report.
+ *
+ * @param array $skeleton
+ *   Column names.
+ * @param array $stunting
+ *   Stunting data.
+ * @param array $underweight
+ *   Underweight data.
+ * @param array $wasting
+ *   Wasting data.
+ */
+function print_prevalence_report(array $skeleton, array $stunting, array $underweight, array $wasting) {
+  $header = [
+    'Prevalence by Month',
+  ];
+  $data = $skeleton;
+
+  // Assemble the table for prevalence.
+  for ($i = 1; $i <= 12; $i++) {
+    $current_month = strtotime('- ' . $i . 'months');
+    $month_key = date('Y F', $current_month);
+    $header[] = $month_key;
+
+    if (isset($stunting[$month_key]['moderate'])) {
+      $data[0][] = format_prevalence($stunting[$month_key]['moderate'], $stunting[$month_key]['any']);
+    }
+    else {
+      $data[0][] = '-';
+    }
+    if (isset($stunting[$month_key]['severe'])) {
+      $data[1][] = format_prevalence($stunting[$month_key]['severe'], $stunting[$month_key]['any']);
+    }
+    else {
+      $data[1][] = '-';
+    }
+
+    if (isset($underweight[$month_key]['moderate'])) {
+      $data[2][] = format_prevalence($underweight[$month_key]['moderate'], $underweight[$month_key]['any']);
+    }
+    else {
+      $data[2][] = '-';
+    }
+    if (isset($underweight[$month_key]['severe'])) {
+      $data[3][] = format_prevalence($underweight[$month_key]['severe'], $underweight[$month_key]['any']);
+    }
+    else {
+      $data[3][] = '-';
+    }
+
+    if (isset($wasting[$month_key]['moderate'])) {
+      $data[4][] = format_prevalence($wasting[$month_key]['moderate'], $wasting[$month_key]['any']);
+    }
+    else {
+      $data[4][] = '-';
+    }
+    if (isset($wasting[$month_key]['severe'])) {
+      $data[5][] = format_prevalence($wasting[$month_key]['severe'], $wasting[$month_key]['any']);
+    }
+    else {
+      $data[5][] = '-';
+    }
+
+  }
+  $text_table = new HedleyAdminTextTable($header);
+  $text_table->addData($data);
+
+  drush_print($text_table->render());
+}
+
+/**
+ * Prints prevalence report.
+ *
+ * @param array $skeleton
+ * @param array $stunting
+ * @param array $underweight
+ * @param array $wasting
+ * @param string $frequency_human_readable
+ * @param int $limit
+ * @param callable $date_calculate
+ * @param callable $date_format
+ */
+function print_incidence_report(array $skeleton, array $stunting, array $underweight, array $wasting, string $frequency_human_readable, int $limit, callable $date_calculate, callable $date_format) {
+  $header = [
+    'Incidence by ' . $frequency_human_readable,
+  ];
+  $data = $skeleton;
+
+  for ($i = 1; $i <= $limit; $i++) {
+    [$current_month, $previous_month] = $date_calculate($i);
+    $month_key = $date_format($current_month);
+    $previous_month_key = date('Y F', $previous_month);
+    $header[] = $month_key;
+    $data[0][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'moderate');
+    $data[1][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'severe');
+    $data[2][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'moderate');
+    $data[3][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'severe');
+    $data[4][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'moderate');
+    $data[5][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'severe');
+  }
+
+  $text_table = new HedleyAdminTextTable($header);
+  $text_table->addData($data);
+
+  drush_print($text_table->render());
 }
