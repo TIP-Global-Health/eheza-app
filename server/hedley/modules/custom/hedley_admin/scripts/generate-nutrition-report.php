@@ -369,10 +369,9 @@ function calculate_incidence(array $dataset, string $current_period, string $pre
   }
   foreach ($dataset[$current_period][$severity] as $id) {
     if (!isset($dataset[$previous_period][$severity])) {
-      $new_cases++;
       continue;
     }
-    if (!in_array($id, $dataset[$previous_period][$severity])) {
+    if (!in_array($id, $dataset[$previous_period][$severity]) && in_array($id, $dataset[$previous_period]['any'])) {
       $new_cases++;
     }
   }
@@ -471,7 +470,7 @@ function print_incidence_report(array $skeleton, array $stunting, array $underwe
   for ($i = 1; $i <= $limit; $i++) {
     [$current_month, $previous_month] = $date_calculate($i);
     $month_key = $date_format($current_month);
-    $previous_month_key = date('Y F', $previous_month);
+    $previous_month_key = $date_format($previous_month);
     $header[] = $month_key;
     $data[0][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'moderate');
     $data[1][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'severe');
