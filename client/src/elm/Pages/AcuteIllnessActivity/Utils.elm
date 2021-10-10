@@ -12,7 +12,6 @@ import Backend.Measurement.Model
         , AcuteIllnessMeasurements
         , AdministrationNote(..)
         , AdverseEvent(..)
-        , BasicVitalsValue
         , Call114Sign(..)
         , Call114Value
         , ChildNutritionSign(..)

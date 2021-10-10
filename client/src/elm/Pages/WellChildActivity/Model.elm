@@ -25,8 +25,8 @@ type Msg
     | SetActiveDangerSignsTask DangerSignsTask
     | SetSymptom WellChildSymptom
     | SaveSymptomsReview PersonId (Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )) (Maybe DangerSignsTask)
-    | SetVitalsResporatoryRate String
-    | SetVitalsBodyTemperature String
+    | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SaveVitals PersonId (Maybe ( WellChildVitalsId, WellChildVitals )) (Maybe DangerSignsTask)
       -- NUTRITION ASSESMENT
     | SetActiveNutritionAssessmentTask NutritionAssessmentTask
@@ -154,7 +154,7 @@ emptyPregnancySummaryForm =
 
 type alias DangerSignsData =
     { symptomsReviewForm : SymptomsReviewForm
-    , vitalsForm : BasicVitalsForm
+    , vitalsForm : VitalsForm
     , activeTask : Maybe DangerSignsTask
     }
 
@@ -162,7 +162,7 @@ type alias DangerSignsData =
 emptyDangerSignsData : DangerSignsData
 emptyDangerSignsData =
     { symptomsReviewForm = emptySymptomsReviewForm
-    , vitalsForm = emptyBasicVitalsForm
+    , vitalsForm = emptyVitalsForm
     , activeTask = Nothing
     }
 

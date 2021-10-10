@@ -1343,15 +1343,6 @@ encodeAcuteIllnessVitals =
     encodeAcuteIllnessMeasurement (encodeVitalsValueWithType "acute_illness_vitals")
 
 
-encodeBasicVitalsValueWithType : String -> BasicVitalsValue -> List ( String, Value )
-encodeBasicVitalsValueWithType type_ value =
-    [ ( "respiratory_rate", int value.respiratoryRate )
-    , ( "body_temperature", float value.bodyTemperature )
-    , ( "deleted", bool False )
-    , ( "type", string type_ )
-    ]
-
-
 encodeAcuteFindings : AcuteFindings -> List ( String, Value )
 encodeAcuteFindings =
     encodeAcuteIllnessMeasurement encodeAcuteFindingsValue
@@ -2511,7 +2502,7 @@ encodeWellChildSymptom symptom =
 
 encodeWellChildVitals : WellChildVitals -> List ( String, Value )
 encodeWellChildVitals =
-    encodeWellChildMeasurement (encodeBasicVitalsValueWithType "well_child_vitals")
+    encodeWellChildMeasurement (encodeVitalsValueWithType "well_child_vitals")
 
 
 encodeWellChildECD : WellChildECD -> List ( String, Value )

@@ -233,15 +233,16 @@ update currentDate isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
-        SetVitalsResporatoryRate value ->
+        SetVitalsIntInput formUpdateFunc value ->
             let
-                updatedForm =
+                form =
                     model.dangerSignsData.vitalsForm
-                        |> (\form ->
-                                { form | respiratoryRate = String.toInt value, respiratoryRateDirty = True }
-                           )
 
                 updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc (String.toInt value) form
+                    in
                     model.dangerSignsData
                         |> (\data -> { data | vitalsForm = updatedForm })
             in
@@ -250,15 +251,16 @@ update currentDate isChw id db msg model =
             , []
             )
 
-        SetVitalsBodyTemperature value ->
+        SetVitalsFloatInput formUpdateFunc value ->
             let
-                updatedForm =
+                form =
                     model.dangerSignsData.vitalsForm
-                        |> (\form ->
-                                { form | bodyTemperature = String.toFloat value, bodyTemperatureDirty = True }
-                           )
 
                 updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc (String.toFloat value) form
+                    in
                     model.dangerSignsData
                         |> (\data -> { data | vitalsForm = updatedForm })
             in
@@ -280,7 +282,7 @@ update currentDate isChw id db msg model =
 
                 appMsgs =
                     model.dangerSignsData.vitalsForm
-                        |> toBasicVitalsValueWithDefault measurement
+                        |> toVitalsValueWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveVitals personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id

@@ -898,12 +898,6 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement SymptomsGIValue
 
 
-type alias BasicVitalsValue =
-    { respiratoryRate : Int
-    , bodyTemperature : Float
-    }
-
-
 type alias AcuteIllnessVitals =
     AcuteIllnessMeasurement VitalsValue
 
@@ -1261,7 +1255,7 @@ type WellChildSymptom
 
 
 type alias WellChildVitals =
-    WellChildMeasurement BasicVitalsValue
+    WellChildMeasurement VitalsValue
 
 
 type alias WellChildHeight =

@@ -28,7 +28,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, InvocationModule(..), MuacForm, SendToHCForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (HealthEducationForm, InvocationModule(..), MuacForm, SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( getInputConstraintsMuac

@@ -572,7 +572,7 @@ dangerSignsTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.vitals
                         |> getMeasurementValueFunc
-                        |> basicVitalsFormWithDefault data.vitalsForm
+                        |> vitalsFormWithDefault data.vitalsForm
             in
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
             , 2

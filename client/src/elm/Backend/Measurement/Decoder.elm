@@ -1866,14 +1866,7 @@ decodeAcuteIllnessVitals =
 
 decodeWellChildVitals : Decoder WellChildVitals
 decodeWellChildVitals =
-    decodeWellChildMeasurement decodeBasicVitalsValue
-
-
-decodeBasicVitalsValue : Decoder BasicVitalsValue
-decodeBasicVitalsValue =
-    succeed BasicVitalsValue
-        |> required "respiratory_rate" decodeInt
-        |> required "body_temperature" decodeFloat
+    decodeWellChildMeasurement decodeVitalsValue
 
 
 decodeAcuteFindings : Decoder AcuteFindings

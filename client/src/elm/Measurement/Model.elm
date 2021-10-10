@@ -344,19 +344,6 @@ emptyWeightForm =
     WeightForm Nothing False
 
 
-type alias BasicVitalsForm =
-    { respiratoryRate : Maybe Int
-    , respiratoryRateDirty : Bool
-    , bodyTemperature : Maybe Float
-    , bodyTemperatureDirty : Bool
-    }
-
-
-emptyBasicVitalsForm : BasicVitalsForm
-emptyBasicVitalsForm =
-    BasicVitalsForm Nothing False Nothing False
-
-
 type alias VitalsForm =
     { sysBloodPressure : Maybe Float
     , sysBloodPressureDirty : Bool
@@ -409,3 +396,4 @@ type VitalsFormMode
 type InvocationModule
     = InvocationModulePrenatal
     | InvocationModuleAcuteIllness
+    | InvocationModuleWellChild

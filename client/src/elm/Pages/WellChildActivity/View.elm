@@ -22,12 +22,11 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (PhotoForm)
+import Measurement.Model exposing (InvocationModule(..), PhotoForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
-        , viewBasicVitalsForm
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
@@ -398,24 +397,13 @@ viewDangerSignsContent language currentDate assembled data =
                         |> viewSymptomsReviewForm language currentDate assembled.person
 
                 Just TaskVitals ->
-                    let
-                        previousRespiratoryRate =
-                            resolvePreviousValue assembled .vitals .respiratoryRate
-                                |> Maybe.map toFloat
-
-                        previousBodyTemperature =
-                            resolvePreviousValue assembled .vitals .bodyTemperature
-                    in
                     measurements.vitals
                         |> getMeasurementValueFunc
-                        |> basicVitalsFormWithDefault data.vitalsForm
-                        |> viewBasicVitalsForm language
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> viewVitalsForm language
                             currentDate
-                            assembled.person
-                            previousRespiratoryRate
-                            previousBodyTemperature
-                            SetVitalsResporatoryRate
-                            SetVitalsBodyTemperature
+                            assembled
+                        |> List.singleton
 
                 Nothing ->
                     []
@@ -459,6 +447,28 @@ viewDangerSignsContent language currentDate assembled data =
             (viewForm ++ [ actions ])
         ]
     ]
+
+
+viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate assembled form =
+    let
+        formConfig =
+            { setIntInputMsg = SetVitalsIntInput
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = Nothing
+            , diaBloodPressurePreviousValue = Nothing
+            , heartRatePreviousValue = Nothing
+            , respiratoryRatePreviousValue =
+                resolvePreviousValue assembled .vitals .respiratoryRate
+                    |> Maybe.map toFloat
+            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , birthDate = assembled.person.birthDate
+            , formClass = "vitals"
+            , mode = VitalsFormBasic
+            , invocationModule = InvocationModuleWellChild
+            }
+    in
+    Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)

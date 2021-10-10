@@ -174,7 +174,7 @@ type Msg
     | HandleSavedPregnancySummary (WebData ())
     | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)
     | HandleSavedSymptomsReview (WebData ())
-    | SaveVitals PersonId (Maybe WellChildVitalsId) BasicVitalsValue
+    | SaveVitals PersonId (Maybe WellChildVitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
     | SaveHeight PersonId (Maybe WellChildHeightId) HeightInCm
     | SaveHeadCircumference PersonId (Maybe WellChildHeadCircumferenceId) HeadCircumferenceValue
