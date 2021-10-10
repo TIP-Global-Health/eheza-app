@@ -29,7 +29,7 @@ import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (toSendToHCValueWithDefault)
+import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
@@ -648,7 +648,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetVitalsIntMeasurement formUpdateFunc value ->
+        SetVitalsIntInput formUpdateFunc value ->
             let
                 updatedData =
                     let
@@ -663,7 +663,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetVitalsFloatMeasurement formUpdateFunc value ->
+        SetVitalsFloatInput formUpdateFunc value ->
             let
                 updatedData =
                     let

@@ -905,7 +905,7 @@ type alias BasicVitalsValue =
 
 
 type alias AcuteIllnessVitals =
-    AcuteIllnessMeasurement BasicVitalsValue
+    AcuteIllnessMeasurement VitalsValue
 
 
 type AcuteFindingsGeneralSign
@@ -1815,3 +1815,13 @@ type alias PreviousMeasurementsSet =
     , weights : List ( NominalDate, Float )
     , headCircumferences : List ( NominalDate, Float )
     }
+
+
+intMeasurementNotSetValue : Int
+intMeasurementNotSetValue =
+    -999
+
+
+floatMeasurementNotSetValue : Float
+floatMeasurementNotSetValue =
+    toFloat intMeasurementNotSetValue

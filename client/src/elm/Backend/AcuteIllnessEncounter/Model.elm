@@ -122,7 +122,7 @@ type Msg
     | HandleSavedSymptomsRespiratory (WebData ())
     | SaveSymptomsGI PersonId (Maybe SymptomsGIId) SymptomsGIValue
     | HandleSavedSymptomsGI (WebData ())
-    | SaveVitals PersonId (Maybe AcuteIllnessVitalsId) BasicVitalsValue
+    | SaveVitals PersonId (Maybe AcuteIllnessVitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
     | SaveAcuteFindings PersonId (Maybe AcuteFindingsId) AcuteFindingsValue
     | HandleSavedAcuteFindings (WebData ())

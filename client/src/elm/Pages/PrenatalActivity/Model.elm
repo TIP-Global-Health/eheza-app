@@ -3,7 +3,7 @@ module Pages.PrenatalActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
-import Measurement.Model exposing (DropZoneFile, SendToHCForm, emptySendToHCForm)
+import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
 
 
@@ -42,8 +42,8 @@ type Msg
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals
-    | SetVitalsIntMeasurement (Maybe Int -> VitalsForm -> VitalsForm) String
-    | SetVitalsFloatMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
@@ -502,35 +502,6 @@ type ExaminationTask
     | NutritionAssessment
     | ObstetricalExam
     | Vitals
-
-
-type alias VitalsForm =
-    { sysBloodPressure : Maybe Float
-    , sysBloodPressureDirty : Bool
-    , diaBloodPressure : Maybe Float
-    , diaBloodPressureDirty : Bool
-    , heartRate : Maybe Int
-    , heartRateDirty : Bool
-    , respiratoryRate : Maybe Int
-    , respiratoryRateDirty : Bool
-    , bodyTemperature : Maybe Float
-    , bodyTemperatureDirty : Bool
-    }
-
-
-emptyVitalsForm : VitalsForm
-emptyVitalsForm =
-    { sysBloodPressure = Nothing
-    , sysBloodPressureDirty = False
-    , diaBloodPressure = Nothing
-    , diaBloodPressureDirty = False
-    , heartRate = Nothing
-    , heartRateDirty = False
-    , respiratoryRate = Nothing
-    , respiratoryRateDirty = False
-    , bodyTemperature = Nothing
-    , bodyTemperatureDirty = False
-    }
 
 
 type alias NutritionAssessmentForm =

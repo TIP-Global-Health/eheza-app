@@ -28,17 +28,17 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, MuacForm, SendToHCForm)
+import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, MuacForm, SendToHCForm, VitalsForm)
 import Measurement.Utils
     exposing
-        ( basicVitalsFormWithDefault
-        , getInputConstraintsMuac
+        ( getInputConstraintsMuac
         , healthEducationFormWithDefault
         , muacFormWithDefault
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
+        , vitalsFormWithDefault
         )
-import Measurement.View exposing (renderDatePart, viewBasicVitalsForm, viewColorAlertIndication, viewSendToHCForm)
+import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHCForm, viewVitalsForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -72,24 +72,24 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw activity db model =
     let
         data =
             generateAssembledData currentDate id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw activity model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity model data =
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw activity model data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
     in
     div [ class "page-activity acute-illness" ]
         [ viewHeader language id activity <| Maybe.map Tuple.second data.diagnosis
-        , viewContent language currentDate id activity model data
+        , viewContent language currentDate id isChw activity model data
         , viewModal <|
             warningPopup language
                 currentDate
@@ -137,10 +137,10 @@ viewHeader language id activity diagnosis =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id activity model data =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw activity model data =
     (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity data model
+        :: viewActivity language currentDate id isChw activity data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -388,8 +388,8 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id activity data model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id isChw activity data model =
     let
         personId =
             data.participant.person
@@ -408,7 +408,7 @@ viewActivity language currentDate id activity data model =
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id data isFirstEncounter model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate id isChw data isFirstEncounter model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
@@ -625,11 +625,12 @@ viewAcuteIllnessPhysicalExam :
     Language
     -> NominalDate
     -> AcuteIllnessEncounterId
+    -> Bool
     -> AssembledData
     -> Bool
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter data =
+viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEncounter data =
     let
         activity =
             AcuteIllnessPhysicalExam
@@ -694,7 +695,7 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
             tasks
                 |> List.map
                     (\task ->
-                        ( task, physicalExamTasksCompletedFromTotal measurements data task )
+                        ( task, physicalExamTasksCompletedFromTotal isChw measurements data task )
                     )
                 |> Dict.fromList
 
@@ -715,14 +716,12 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                     in
                     measurements.vitals
                         |> getMeasurementValueFunc
-                        |> basicVitalsFormWithDefault data.vitalsForm
-                        |> viewBasicVitalsForm language
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> viewVitalsForm language
                             currentDate
-                            assembled.person
-                            previousRespiratoryRate
-                            previousBodyTemperature
-                            SetVitalsResporatoryRate
-                            SetVitalsBodyTemperature
+                            isChw
+                            assembled
+                        |> List.singleton
 
                 PhysicalExamMuac ->
                     let
@@ -809,6 +808,28 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
             (viewForm ++ [ actions ])
         ]
     ]
+
+
+viewVitalsForm : Language -> NominalDate -> Bool -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate isChw assembled form =
+    let
+        formConfig =
+            { setIntInputMsg = SetVitalsIntInput
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .sys
+            , diaBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .dia
+            , heartRatePreviousValue =
+                resolvePreviousValue assembled .vitals .heartRate
+                    |> Maybe.map toFloat
+            , respiratoryRatePreviousValue =
+                resolvePreviousValue assembled .vitals .respiratoryRate
+                    |> Maybe.map toFloat
+            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , formClass = "vitals"
+            , isBasicMode = isChw
+            }
+    in
+    Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
 viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> List (Html Msg)

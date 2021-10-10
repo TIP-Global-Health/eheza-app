@@ -354,3 +354,45 @@ type alias BasicVitalsForm =
 emptyBasicVitalsForm : BasicVitalsForm
 emptyBasicVitalsForm =
     BasicVitalsForm Nothing False Nothing False
+
+
+type alias VitalsForm =
+    { sysBloodPressure : Maybe Float
+    , sysBloodPressureDirty : Bool
+    , diaBloodPressure : Maybe Float
+    , diaBloodPressureDirty : Bool
+    , heartRate : Maybe Int
+    , heartRateDirty : Bool
+    , respiratoryRate : Maybe Int
+    , respiratoryRateDirty : Bool
+    , bodyTemperature : Maybe Float
+    , bodyTemperatureDirty : Bool
+    }
+
+
+emptyVitalsForm : VitalsForm
+emptyVitalsForm =
+    { sysBloodPressure = Nothing
+    , sysBloodPressureDirty = False
+    , diaBloodPressure = Nothing
+    , diaBloodPressureDirty = False
+    , heartRate = Nothing
+    , heartRateDirty = False
+    , respiratoryRate = Nothing
+    , respiratoryRateDirty = False
+    , bodyTemperature = Nothing
+    , bodyTemperatureDirty = False
+    }
+
+
+type alias VitalsFormConfig msg =
+    { setIntInputMsg : (Maybe Int -> VitalsForm -> VitalsForm) -> String -> msg
+    , setFloatInputMsg : (Maybe Float -> VitalsForm -> VitalsForm) -> String -> msg
+    , sysBloodPressurePreviousValue : Maybe Float
+    , diaBloodPressurePreviousValue : Maybe Float
+    , heartRatePreviousValue : Maybe Float
+    , respiratoryRatePreviousValue : Maybe Float
+    , bodyTemperaturePreviousValue : Maybe Float
+    , formClass : String
+    , isBasicMode : Bool
+    }

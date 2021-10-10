@@ -34,11 +34,11 @@ import Measurement.Utils
     exposing
         ( muacFormWithDefault
         , nutritionFormWithDefault
-        , toBasicVitalsValueWithDefault
         , toHealthEducationValueWithDefault
         , toMuacValueWithDefault
         , toNutritionValueWithDefault
         , toSendToHCValueWithDefault
+        , toVitalsValueWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
@@ -360,15 +360,16 @@ update currentDate id db msg model =
             , []
             )
 
-        SetVitalsResporatoryRate value ->
+        SetVitalsIntInput formUpdateFunc value ->
             let
                 form =
                     model.physicalExamData.vitalsForm
 
-                updatedForm =
-                    { form | respiratoryRate = String.toInt value, respiratoryRateDirty = True }
-
                 updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc (String.toInt value) form
+                    in
                     model.physicalExamData
                         |> (\data -> { data | vitalsForm = updatedForm })
             in
@@ -377,15 +378,16 @@ update currentDate id db msg model =
             , []
             )
 
-        SetVitalsBodyTemperature value ->
+        SetVitalsFloatInput formUpdateFunc value ->
             let
                 form =
                     model.physicalExamData.vitalsForm
 
-                updatedForm =
-                    { form | bodyTemperature = String.toFloat value, bodyTemperatureDirty = True }
-
                 updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc (String.toFloat value) form
+                    in
                     model.physicalExamData
                         |> (\data -> { data | vitalsForm = updatedForm })
             in
@@ -454,7 +456,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.physicalExamData.vitalsForm
-                        |> toBasicVitalsValueWithDefault measurement
+                        |> toVitalsValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->

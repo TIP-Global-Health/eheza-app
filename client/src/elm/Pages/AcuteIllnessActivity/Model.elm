@@ -28,8 +28,8 @@ type Msg
     | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)
       -- PHYSICAL EXAM Msgs
     | SetActivePhysicalExamTask PhysicalExamTask
-    | SetVitalsResporatoryRate String
-    | SetVitalsBodyTemperature String
+    | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SetAcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | SetAcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )) (Maybe PhysicalExamTask)
@@ -179,7 +179,7 @@ type alias SymptomsGIForm =
 
 
 type alias PhysicalExamData =
-    { vitalsForm : BasicVitalsForm
+    { vitalsForm : VitalsForm
     , acuteFindingsForm : AcuteFindingsForm
     , muacForm : MuacForm
     , nutritionForm : AcuteIllnessNutritionForm
@@ -189,7 +189,7 @@ type alias PhysicalExamData =
 
 emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
-    { vitalsForm = emptyBasicVitalsForm
+    { vitalsForm = emptyVitalsForm
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , muacForm = emptyMuacForm
     , nutritionForm = AcuteIllnessNutritionForm Nothing

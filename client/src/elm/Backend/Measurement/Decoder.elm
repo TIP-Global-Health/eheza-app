@@ -1160,13 +1160,17 @@ decodeSocialHistory =
 
 decodeVitals : Decoder Vitals
 decodeVitals =
+    decodePrenatalMeasurement decodeVitalsValue
+
+
+decodeVitalsValue : Decoder VitalsValue
+decodeVitalsValue =
     succeed VitalsValue
-        |> required "sys" decodeFloat
-        |> required "dia" decodeFloat
-        |> required "heart_rate" decodeInt
+        |> optional "sys" decodeFloat floatMeasurementNotSetValue
+        |> optional "dia" decodeFloat floatMeasurementNotSetValue
+        |> optional "heart_rate" decodeInt intMeasurementNotSetValue
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
-        |> decodePrenatalMeasurement
 
 
 decodeCSectionReason : Decoder CSectionReason
@@ -1857,7 +1861,7 @@ decodeSymptomsGIDerivedSign =
 
 decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
 decodeAcuteIllnessVitals =
-    decodeAcuteIllnessMeasurement decodeBasicVitalsValue
+    decodeAcuteIllnessMeasurement decodeVitalsValue
 
 
 decodeWellChildVitals : Decoder WellChildVitals

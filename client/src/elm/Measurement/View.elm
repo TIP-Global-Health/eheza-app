@@ -11,6 +11,7 @@ module Measurement.View exposing
     , viewMother
     , viewReferToProgramForm
     , viewSendToHCForm
+    , viewVitalsForm
     , zScoreForHeightOrLength
     )
 
@@ -1316,6 +1317,140 @@ viewBasicVitalsForm language currentDate person previousRespiratoryRate previous
         , Pages.Utils.viewPreviousMeasurement language previousBodyTemperature Translate.Celsius
         ]
     ]
+
+
+viewVitalsForm : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> Html msg
+viewVitalsForm language currentDate config form =
+    let
+        sysBloodPressureUpdateFunc value form_ =
+            { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
+
+        diaBloodPressureUpdateFunc value form_ =
+            { form_ | diaBloodPressure = value, diaBloodPressureDirty = True }
+
+        heartRateUpdateFunc value form_ =
+            { form_ | heartRate = value, heartRateDirty = True }
+
+        respiratoryRateUpdateFunc value form_ =
+            { form_ | respiratoryRate = value, respiratoryRateDirty = True }
+
+        bodyTemperatureUpdateFunc value form_ =
+            { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
+
+        bloodPressureSection =
+            [ div [ class "ui grid" ]
+                [ div [ class "eleven wide column" ]
+                    [ viewLabel language Translate.BloodPressure ]
+                ]
+            , div [ class "ui grid systolic" ]
+                [ div [ class "twelve wide column" ]
+                    [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.sysBloodPressure
+                        [ [ (<) 140 ] ]
+                        []
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                form.sysBloodPressure
+                (config.setFloatInputMsg sysBloodPressureUpdateFunc)
+                "sys-blood-pressure"
+                Translate.MMHGUnit
+            , Pages.Utils.viewPreviousMeasurement language config.sysBloodPressurePreviousValue Translate.MMHGUnit
+            , div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.diaBloodPressure
+                        [ [ (<) 90 ] ]
+                        []
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                form.diaBloodPressure
+                (config.setFloatInputMsg diaBloodPressureUpdateFunc)
+                "dia-blood-pressure"
+                Translate.MMHGUnit
+            , Pages.Utils.viewPreviousMeasurement language config.diaBloodPressurePreviousValue Translate.MMHGUnit
+            , separator
+            ]
+
+        heartRateSection =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.HeartRate ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.heartRate
+                        [ [ (>) 40 ], [ (<=) 120 ] ]
+                        [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                (Maybe.map toFloat form.heartRate)
+                (config.setIntInputMsg heartRateUpdateFunc)
+                "heart-rate"
+                Translate.BpmUnitLabel
+            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BpmUnitLabel
+            , separator
+            ]
+
+        respiratoryRateSection =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.RespiratoryRate ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.respiratoryRate
+                        [ [ (>) 12 ], [ (<) 30 ] ]
+                        [ [ (<=) 21, (>=) 30 ] ]
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                (Maybe.map toFloat form.respiratoryRate)
+                (config.setIntInputMsg respiratoryRateUpdateFunc)
+                "respiratory-rate"
+                Translate.BpmUnitLabel
+            , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BpmUnitLabel
+            , separator
+            ]
+
+        bodyTemperatureSection =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.BodyTemperature ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.bodyTemperature
+                        [ [ (>) 35 ], [ (<) 37.5 ] ]
+                        []
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                form.bodyTemperature
+                (config.setFloatInputMsg bodyTemperatureUpdateFunc)
+                "body-temperature"
+                Translate.Celsius
+            , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
+            ]
+
+        separator =
+            div [ class "separator" ] []
+
+        content =
+            if config.isBasicMode then
+                respiratoryRateSection ++ bodyTemperatureSection
+
+            else
+                bloodPressureSection
+                    ++ heartRateSection
+                    ++ respiratoryRateSection
+                    ++ bodyTemperatureSection
+    in
+    div [ class <| "ui form " ++ config.formClass ]
+        content
 
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any

@@ -21,8 +21,8 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (SendToHCForm)
-import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Measurement.Model exposing (SendToHCForm, VitalsForm)
+import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHCForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
@@ -2043,128 +2043,23 @@ viewSocialForm language currentDate showCounselingQuestion showTestingQuestions 
 viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
 viewVitalsForm language currentDate assembled form =
     let
-        sysBloodPressureUpdateFunc value form_ =
-            { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
-
-        diaBloodPressureUpdateFunc value form_ =
-            { form_ | diaBloodPressure = value, diaBloodPressureDirty = True }
-
-        heartRateUpdateFunc value form_ =
-            { form_ | heartRate = value, heartRateDirty = True }
-
-        respiratoryRateUpdateFunc value form_ =
-            { form_ | respiratoryRate = value, respiratoryRateDirty = True }
-
-        bodyTemperatureUpdateFunc value form_ =
-            { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
-
-        sysBloodPressurePreviousValue =
-            resolvePreviousValue assembled .vitals .sys
-
-        diaBloodPressurePreviousValue =
-            resolvePreviousValue assembled .vitals .dia
-
-        heartRatePreviousValue =
-            resolvePreviousValue assembled .vitals .heartRate
-                |> Maybe.map toFloat
-
-        respiratoryRatePreviousValue =
-            resolvePreviousValue assembled .vitals .respiratoryRate
-                |> Maybe.map toFloat
-
-        bodyTemperaturePreviousValue =
-            resolvePreviousValue assembled .vitals .bodyTemperature
+        formConfig =
+            { setIntInputMsg = SetVitalsIntInput
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .sys
+            , diaBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .dia
+            , heartRatePreviousValue =
+                resolvePreviousValue assembled .vitals .heartRate
+                    |> Maybe.map toFloat
+            , respiratoryRatePreviousValue =
+                resolvePreviousValue assembled .vitals .respiratoryRate
+                    |> Maybe.map toFloat
+            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , formClass = "examination vitals"
+            , isBasicMode = False
+            }
     in
-    div [ class "ui form examination vitals" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.BloodPressure ]
-            , viewWarning language Nothing
-            ]
-        , div [ class "ui grid systolic" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.sysBloodPressure
-                    [ [ (<) 140 ] ]
-                    []
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.sysBloodPressure
-            (SetVitalsFloatMeasurement sysBloodPressureUpdateFunc)
-            "sys-blood-pressure"
-            Translate.MMHGUnit
-        , viewPreviousMeasurement language sysBloodPressurePreviousValue Translate.MMHGUnit
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.diaBloodPressure
-                    [ [ (<) 90 ] ]
-                    []
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.diaBloodPressure
-            (SetVitalsFloatMeasurement diaBloodPressureUpdateFunc)
-            "dia-blood-pressure"
-            Translate.MMHGUnit
-        , viewPreviousMeasurement language diaBloodPressurePreviousValue Translate.MMHGUnit
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeartRate ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.heartRate
-                    [ [ (>) 40 ], [ (<=) 120 ] ]
-                    [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            (Maybe.map toFloat form.heartRate)
-            (SetVitalsIntMeasurement heartRateUpdateFunc)
-            "heart-rate"
-            Translate.BpmUnitLabel
-        , viewPreviousMeasurement language heartRatePreviousValue Translate.BpmUnitLabel
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RespiratoryRate ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.respiratoryRate
-                    [ [ (>) 12 ], [ (<) 30 ] ]
-                    [ [ (<=) 21, (>=) 30 ] ]
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            (Maybe.map toFloat form.respiratoryRate)
-            (SetVitalsIntMeasurement respiratoryRateUpdateFunc)
-            "respiratory-rate"
-            Translate.BpmUnitLabel
-        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BodyTemperature ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.bodyTemperature
-                    [ [ (>) 35 ], [ (<) 37.5 ] ]
-                    []
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.bodyTemperature
-            (SetVitalsFloatMeasurement bodyTemperatureUpdateFunc)
-            "body-temperature"
-            Translate.Celsius
-        , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
-        ]
+    Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
 viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Bool -> Html Msg

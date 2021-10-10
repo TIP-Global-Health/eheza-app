@@ -57,11 +57,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
-        ( basicVitalsFormWithDefault
-        , healthEducationFormWithDefault
+        ( healthEducationFormWithDefault
         , muacFormWithDefault
         , nutritionFormWithDefault
         , sendToHCFormWithDefault
+        , vitalsFormWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -191,19 +191,29 @@ symptomsTasksCompletedFromTotal measurements data task =
             )
 
 
-physicalExamTasksCompletedFromTotal : AcuteIllnessMeasurements -> PhysicalExamData -> PhysicalExamTask -> ( Int, Int )
-physicalExamTasksCompletedFromTotal measurements data task =
+physicalExamTasksCompletedFromTotal : Bool -> AcuteIllnessMeasurements -> PhysicalExamData -> PhysicalExamTask -> ( Int, Int )
+physicalExamTasksCompletedFromTotal isChw measurements data task =
     case task of
         PhysicalExamVitals ->
             let
                 form =
                     measurements.vitals
                         |> getMeasurementValueFunc
-                        |> basicVitalsFormWithDefault data.vitalsForm
+                        |> vitalsFormWithDefault data.vitalsForm
             in
-            ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
-            , 2
-            )
+            if isChw then
+                ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
+                , 2
+                )
+
+            else
+                ( taskCompleted form.sysBloodPressure
+                    + taskCompleted form.diaBloodPressure
+                    + taskCompleted form.heartRate
+                    + taskCompleted form.respiratoryRate
+                    + taskCompleted form.bodyTemperature
+                , 5
+                )
 
         PhysicalExamMuac ->
             let
