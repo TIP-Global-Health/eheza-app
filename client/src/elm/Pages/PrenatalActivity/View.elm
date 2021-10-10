@@ -21,7 +21,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (SendToHCForm, VitalsForm)
+import Measurement.Model exposing (InvocationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHCForm)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -2055,8 +2055,10 @@ viewVitalsForm language currentDate assembled form =
                 resolvePreviousValue assembled .vitals .respiratoryRate
                     |> Maybe.map toFloat
             , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , birthDate = assembled.person.birthDate
             , formClass = "examination vitals"
-            , isBasicMode = False
+            , mode = VitalsFormFull
+            , invocationModule = InvocationModulePrenatal
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form

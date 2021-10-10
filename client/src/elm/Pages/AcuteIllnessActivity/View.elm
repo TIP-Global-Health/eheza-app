@@ -28,7 +28,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, MuacForm, SendToHCForm, VitalsForm)
+import Measurement.Model exposing (BasicVitalsForm, HealthEducationForm, InvocationModule(..), MuacForm, SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( getInputConstraintsMuac
@@ -706,14 +706,6 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
         viewForm =
             case data.activeTask of
                 PhysicalExamVitals ->
-                    let
-                        previousRespiratoryRate =
-                            resolvePreviousValue assembled .vitals .respiratoryRate
-                                |> Maybe.map toFloat
-
-                        previousBodyTemperature =
-                            resolvePreviousValue assembled .vitals .bodyTemperature
-                    in
                     measurements.vitals
                         |> getMeasurementValueFunc
                         |> vitalsFormWithDefault data.vitalsForm
@@ -825,8 +817,15 @@ viewVitalsForm language currentDate isChw assembled form =
                 resolvePreviousValue assembled .vitals .respiratoryRate
                     |> Maybe.map toFloat
             , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , birthDate = assembled.person.birthDate
             , formClass = "vitals"
-            , isBasicMode = isChw
+            , mode =
+                if isChw then
+                    VitalsFormBasic
+
+                else
+                    VitalsFormFull
+            , invocationModule = InvocationModuleAcuteIllness
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form

@@ -10,6 +10,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Translate.Model exposing (Language)
 
 
@@ -393,6 +394,18 @@ type alias VitalsFormConfig msg =
     , heartRatePreviousValue : Maybe Float
     , respiratoryRatePreviousValue : Maybe Float
     , bodyTemperaturePreviousValue : Maybe Float
+    , birthDate : Maybe NominalDate
     , formClass : String
-    , isBasicMode : Bool
+    , mode : VitalsFormMode
+    , invocationModule : InvocationModule
     }
+
+
+type VitalsFormMode
+    = VitalsFormBasic
+    | VitalsFormFull
+
+
+type InvocationModule
+    = InvocationModulePrenatal
+    | InvocationModuleAcuteIllness

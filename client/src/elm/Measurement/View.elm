@@ -1337,7 +1337,51 @@ viewVitalsForm language currentDate config form =
         bodyTemperatureUpdateFunc value form_ =
             { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
 
+        agesSet =
+            Maybe.map
+                (\birthDate ->
+                    { days = Gizra.NominalDate.diffDays birthDate currentDate
+                    , years = Gizra.NominalDate.diffYears birthDate currentDate
+                    }
+                )
+                config.birthDate
+
         bloodPressureSection =
+            let
+                ( redAlertsSys, redAlertsDia ) =
+                    Maybe.map
+                        (\ages ->
+                            let
+                                ( redAlertValueSys, redAlertValueDia ) =
+                                    if ages.days == 1 then
+                                        ( 80, 50 )
+
+                                    else if ages.days <= 7 then
+                                        ( 100, 70 )
+
+                                    else if ages.years <= 6 then
+                                        ( 115, 80 )
+
+                                    else if ages.years <= 8 then
+                                        ( 120, 82 )
+
+                                    else if ages.years <= 9 then
+                                        ( 125, 84 )
+
+                                    else if ages.years <= 10 then
+                                        ( 130, 86 )
+
+                                    else if ages.years <= 12 then
+                                        ( 135, 88 )
+
+                                    else
+                                        ( 140, 90 )
+                            in
+                            ( [ [ (<) redAlertValueSys ] ], [ [ (<) redAlertValueDia ] ] )
+                        )
+                        agesSet
+                        |> Maybe.withDefault ( [], [] )
+            in
             [ div [ class "ui grid" ]
                 [ div [ class "eleven wide column" ]
                     [ viewLabel language Translate.BloodPressure ]
@@ -1347,7 +1391,7 @@ viewVitalsForm language currentDate config form =
                     [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
                 , div [ class "four wide column" ]
                     [ viewConditionalAlert form.sysBloodPressure
-                        [ [ (<) 140 ] ]
+                        redAlertsSys
                         []
                     ]
                 ]
@@ -1363,7 +1407,7 @@ viewVitalsForm language currentDate config form =
                     [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
                 , div [ class "four wide column" ]
                     [ viewConditionalAlert form.diaBloodPressure
-                        [ [ (<) 90 ] ]
+                        redAlertsDia
                         []
                     ]
                 ]
@@ -1378,13 +1422,46 @@ viewVitalsForm language currentDate config form =
             ]
 
         heartRateSection =
+            let
+                ( redAlerts, yellowAlerts ) =
+                    case config.invocationModule of
+                        InvocationModulePrenatal ->
+                            ( [ [ (>) 40 ], [ (<=) 120 ] ]
+                            , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                            )
+
+                        InvocationModuleAcuteIllness ->
+                            Maybe.map
+                                (\ages ->
+                                    let
+                                        ( redAlertMinValue, redAlertMaxValue ) =
+                                            if ages.years == 0 then
+                                                ( 110, 160 )
+
+                                            else if ages.years <= 2 then
+                                                ( 100, 150 )
+
+                                            else if ages.years <= 5 then
+                                                ( 95, 140 )
+
+                                            else if ages.years <= 12 then
+                                                ( 80, 120 )
+
+                                            else
+                                                ( 60, 100 )
+                                    in
+                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                )
+                                agesSet
+                                |> Maybe.withDefault ( [], [] )
+            in
             [ div [ class "ui grid" ]
                 [ div [ class "twelve wide column" ]
                     [ viewLabel language Translate.HeartRate ]
                 , div [ class "four wide column" ]
                     [ viewConditionalAlert form.heartRate
-                        [ [ (>) 40 ], [ (<=) 120 ] ]
-                        [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                        redAlerts
+                        yellowAlerts
                     ]
                 ]
             , viewMeasurementInput
@@ -1398,13 +1475,40 @@ viewVitalsForm language currentDate config form =
             ]
 
         respiratoryRateSection =
+            let
+                ( redAlerts, yellowAlerts ) =
+                    case config.invocationModule of
+                        InvocationModulePrenatal ->
+                            ( [ [ (>) 12 ], [ (<) 30 ] ]
+                            , [ [ (<=) 21, (>=) 30 ] ]
+                            )
+
+                        InvocationModuleAcuteIllness ->
+                            Maybe.map
+                                (\ages ->
+                                    let
+                                        ( redAlertMinValue, redAlertMaxValue ) =
+                                            if ages.years == 0 then
+                                                ( 30, 49 )
+
+                                            else if ages.years <= 5 then
+                                                ( 24, 39 )
+
+                                            else
+                                                ( 18, 30 )
+                                    in
+                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                )
+                                agesSet
+                                |> Maybe.withDefault ( [], [] )
+            in
             [ div [ class "ui grid" ]
                 [ div [ class "twelve wide column" ]
                     [ viewLabel language Translate.RespiratoryRate ]
                 , div [ class "four wide column" ]
                     [ viewConditionalAlert form.respiratoryRate
-                        [ [ (>) 12 ], [ (<) 30 ] ]
-                        [ [ (<=) 21, (>=) 30 ] ]
+                        redAlerts
+                        yellowAlerts
                     ]
                 ]
             , viewMeasurementInput
@@ -1423,7 +1527,7 @@ viewVitalsForm language currentDate config form =
                     [ viewLabel language Translate.BodyTemperature ]
                 , div [ class "four wide column" ]
                     [ viewConditionalAlert form.bodyTemperature
-                        [ [ (>) 35 ], [ (<) 37.5 ] ]
+                        [ [ (>) 35 ], [ (<=) 37.5 ] ]
                         []
                     ]
                 ]
@@ -1440,14 +1544,15 @@ viewVitalsForm language currentDate config form =
             div [ class "separator" ] []
 
         content =
-            if config.isBasicMode then
-                respiratoryRateSection ++ bodyTemperatureSection
+            case config.mode of
+                VitalsFormBasic ->
+                    respiratoryRateSection ++ bodyTemperatureSection
 
-            else
-                bloodPressureSection
-                    ++ heartRateSection
-                    ++ respiratoryRateSection
-                    ++ bodyTemperatureSection
+                VitalsFormFull ->
+                    bloodPressureSection
+                        ++ heartRateSection
+                        ++ respiratoryRateSection
+                        ++ bodyTemperatureSection
     in
     div [ class <| "ui form " ++ config.formClass ]
         content
