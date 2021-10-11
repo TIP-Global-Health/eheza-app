@@ -1998,6 +1998,20 @@ input::placeholder {
   }
 }
 
+.icon-physical-exam-core-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-gray.svg);
+  }
+}
+
 .icon-laboratory-malaria-testing {
   .active &:after {
     background-image: url(#{$img-path}icon-malaria-white.svg);
