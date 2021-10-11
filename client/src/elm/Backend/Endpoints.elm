@@ -634,6 +634,12 @@ treatmentOngoingEndpoint =
         |> withValueEncoder (object << encodeTreatmentOngoing)
 
 
+acuteIllnessCoreExamEndpoint : ReadWriteEndPoint Error AcuteIllnessCoreExamId AcuteIllnessCoreExam AcuteIllnessCoreExam ()
+acuteIllnessCoreExamEndpoint =
+    swEndpoint "nodes/acute_illness_core_exam" decodeAcuteIllnessCoreExam
+        |> withValueEncoder (object << encodeAcuteIllnessCoreExam)
+
+
 acuteIllnessDangerSignsEndpoint : ReadWriteEndPoint Error AcuteIllnessDangerSignsId AcuteIllnessDangerSigns AcuteIllnessDangerSigns ()
 acuteIllnessDangerSignsEndpoint =
     swEndpoint "nodes/acute_illness_danger_signs" decodeAcuteIllnessDangerSigns
