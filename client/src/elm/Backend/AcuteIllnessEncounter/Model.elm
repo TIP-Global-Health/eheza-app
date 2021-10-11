@@ -52,10 +52,11 @@ type alias Model =
     , saveTreatmentReview : WebData ()
     , saveMuac : WebData ()
     , saveTreatmentOngoing : WebData ()
-    , saveAcuteIllnessDangerSigns : WebData ()
+    , saveDangerSigns : WebData ()
     , saveNutrition : WebData ()
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
+    , saveCoreExam : WebData ()
     }
 
 
@@ -78,10 +79,11 @@ emptyModel =
     , saveTreatmentReview = NotAsked
     , saveMuac = NotAsked
     , saveTreatmentOngoing = NotAsked
-    , saveAcuteIllnessDangerSigns = NotAsked
+    , saveDangerSigns = NotAsked
     , saveNutrition = NotAsked
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
+    , saveCoreExam = NotAsked
     }
 
 
@@ -148,11 +150,13 @@ type Msg
     | HandleSavedMuac (WebData ())
     | SaveTreatmentOngoing PersonId (Maybe TreatmentOngoingId) TreatmentOngoingValue
     | HandleSavedTreatmentOngoing (WebData ())
-    | SaveAcuteIllnessDangerSigns PersonId (Maybe AcuteIllnessDangerSignsId) (EverySet AcuteIllnessDangerSign)
-    | HandleSavedAcuteIllnessDangerSigns (WebData ())
+    | SaveDangerSigns PersonId (Maybe AcuteIllnessDangerSignsId) (EverySet AcuteIllnessDangerSign)
+    | HandleSavedDangerSigns (WebData ())
     | SaveNutrition PersonId (Maybe AcuteIllnessNutritionId) (EverySet ChildNutritionSign)
     | HandleSavedNutrition (WebData ())
     | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) (EverySet FollowUpOption)
     | HandleSavedFollowUp (WebData ())
+    | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
+    | HandleSavedCoreExam (WebData ())

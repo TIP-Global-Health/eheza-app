@@ -1639,7 +1639,7 @@ update currentDate id db msg model =
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveAcuteIllnessDangerSigns personId measurementId value
+                                [ Backend.AcuteIllnessEncounter.Model.SaveDangerSigns personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
