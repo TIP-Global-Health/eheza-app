@@ -2,52 +2,7 @@ module Pages.AcuteIllnessActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
-import Backend.Measurement.Model
-    exposing
-        ( AcuteFindingsGeneralSign(..)
-        , AcuteFindingsRespiratorySign(..)
-        , AcuteFindingsValue
-        , AcuteIllnessDangerSign(..)
-        , AcuteIllnessMeasurement
-        , AcuteIllnessMeasurements
-        , AdministrationNote(..)
-        , AdverseEvent(..)
-        , Call114Sign(..)
-        , Call114Value
-        , ChildNutritionSign(..)
-        , ExposureSign(..)
-        , FollowUpOption(..)
-        , HCContactSign(..)
-        , HCContactValue
-        , HCRecommendation(..)
-        , HealthEducationSign(..)
-        , HealthEducationValue
-        , IsolationSign(..)
-        , IsolationValue
-        , MalariaRapidTestResult(..)
-        , MedicationDistributionSign(..)
-        , MedicationDistributionValue
-        , MedicationNonAdministrationSign(..)
-        , MuacInCm(..)
-        , ReasonForNotIsolating(..)
-        , ReasonForNotProvidingHealthEducation(..)
-        , ReasonForNotSendingToHC(..)
-        , ReasonForNotTaking(..)
-        , Recommendation114(..)
-        , RecommendationSite(..)
-        , ResponsePeriod(..)
-        , SendToHCSign(..)
-        , SendToHCValue
-        , SymptomsGIDerivedSign(..)
-        , SymptomsGISign(..)
-        , SymptomsGIValue
-        , SymptomsGeneralSign(..)
-        , SymptomsRespiratorySign(..)
-        , TravelHistorySign(..)
-        , TreatmentOngoingSign(..)
-        , TreatmentOngoingValue
-        , TreatmentReviewSign(..)
-        )
+import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
@@ -1585,6 +1540,37 @@ toNutritionValueWithDefault saved form =
 toNutritionValue : AcuteIllnessNutritionForm -> Maybe (EverySet ChildNutritionSign)
 toNutritionValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+
+
+fromCoreExamValue : Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
+fromCoreExamValue saved =
+    { heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
+    , lungs = Maybe.map (.lungs >> EverySet.toList) saved
+    }
+
+
+corePhysicalExamFormWithDefault : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
+corePhysicalExamFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { heart = or form.heart (value.heart |> EverySet.toList |> List.head)
+                , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
+                }
+            )
+
+
+toCoreExamValueWithDefault : Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue
+toCoreExamValueWithDefault saved form =
+    corePhysicalExamFormWithDefault form saved
+        |> toCoreExamValue
+
+
+toCoreExamValue : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue
+toCoreExamValue form =
+    Maybe.map AcuteIllnessCoreExamValue (Maybe.map EverySet.singleton form.heart)
+        |> andMap (Maybe.map EverySet.fromList form.lungs)
 
 
 
