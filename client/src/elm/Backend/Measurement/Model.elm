@@ -1189,10 +1189,10 @@ type alias TreatmentOngoing =
 
 
 type alias AcuteIllnessCoreExam =
-    AcuteIllnessMeasurement CoreExamValue
+    AcuteIllnessMeasurement AcuteIllnessCoreExamValue
 
 
-type alias CoreExamValue =
+type alias AcuteIllnessCoreExamValue =
     { heart : EverySet HeartCPESign
     , lungs : EverySet LungsCPESign
     }

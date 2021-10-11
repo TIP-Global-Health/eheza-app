@@ -2313,6 +2313,20 @@ encodeAdverseEvent event =
                 "none"
 
 
+encodeAcuteIllnessCoreExam : AcuteIllnessCoreExam -> List ( String, Value )
+encodeAcuteIllnessCoreExam =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessCoreExamValue
+
+
+encodeAcuteIllnessCoreExamValue : AcuteIllnessCoreExamValue -> List ( String, Value )
+encodeAcuteIllnessCoreExamValue value =
+    [ ( "heart", encodeEverySet encodeHeartCPESign value.heart )
+    , ( "lungs", encodeEverySet encodeLungsCPESign value.lungs )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_core_exam" )
+    ]
+
+
 encodeAcuteIllnessDangerSigns : AcuteIllnessDangerSigns -> List ( String, Value )
 encodeAcuteIllnessDangerSigns =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessDangerSignsValue

@@ -2671,12 +2671,12 @@ decodeAdverseEvent =
 
 decodeAcuteIllnessCoreExam : Decoder AcuteIllnessCoreExam
 decodeAcuteIllnessCoreExam =
-    decodeAcuteIllnessMeasurement decodeCoreExamValue
+    decodeAcuteIllnessMeasurement decodeAcuteIllnessCoreExamValue
 
 
-decodeCoreExamValue : Decoder CoreExamValue
-decodeCoreExamValue =
-    succeed CoreExamValue
+decodeAcuteIllnessCoreExamValue : Decoder AcuteIllnessCoreExamValue
+decodeAcuteIllnessCoreExamValue =
+    succeed AcuteIllnessCoreExamValue
         |> required "heart" (decodeEverySet decodeHeartCPESign)
         |> required "lungs" (decodeEverySet decodeLungsCPESign)
 
