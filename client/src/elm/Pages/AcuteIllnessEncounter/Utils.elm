@@ -728,6 +728,7 @@ mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements a
                 && isJust measurements.acuteFindings
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamMuac) || isJust measurements.muac)
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamNutrition) || isJust measurements.nutrition)
+                && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamCoreExam) || isJust measurements.coreExam)
 
         AcuteIllnessExposure ->
             isJust measurements.travelHistory
@@ -763,6 +764,7 @@ mandatoryActivityCompletedSubsequentVisit currentDate isChw data activity =
                 && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamMuac) || isJust measurements.muac)
                 && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamNutrition) || isJust measurements.nutrition)
                 && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamAcuteFindings) || isJust measurements.acuteFindings)
+                && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamCoreExam) || isJust measurements.coreExam)
 
         AcuteIllnessOngoingTreatment ->
             (not <| expectActivity currentDate isChw False data AcuteIllnessOngoingTreatment)
