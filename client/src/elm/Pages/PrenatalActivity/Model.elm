@@ -526,7 +526,6 @@ emptyNutritionAssessmentForm =
 
 
 type alias CorePhysicalExamForm =
-    -- Needs to be redefined to use EverySet to allow multiple signs.
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
     , neck : Maybe (List NeckCPESign)
