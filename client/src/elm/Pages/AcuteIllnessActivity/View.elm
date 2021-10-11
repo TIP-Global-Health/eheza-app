@@ -76,7 +76,7 @@ view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnes
 view language currentDate id isChw activity db model =
     let
         data =
-            generateAssembledData currentDate id db
+            generateAssembledData currentDate id isChw db
     in
     viewWebData language (viewHeaderAndContent language currentDate id isChw activity model) identity data
 
@@ -420,7 +420,7 @@ viewActivity language currentDate id isChw activity data model =
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id data isFirstEncounter model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate id isChw data isFirstEncounter model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -645,8 +645,8 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
             assembled.measurements
 
         tasks =
-            [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
-                |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+            [ PhysicalExamVitals, PhysicalExamCoreExam, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
+                |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
 
         viewTask task =
             let
@@ -655,6 +655,11 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
                         PhysicalExamVitals ->
                             ( "physical-exam-vitals"
                             , isJust measurements.vitals
+                            )
+
+                        PhysicalExamCoreExam ->
+                            ( "physical-exam-core-exam"
+                            , isJust measurements.coreExam
                             )
 
                         PhysicalExamMuac ->
@@ -715,6 +720,10 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
                             assembled
                         |> List.singleton
 
+                PhysicalExamCoreExam ->
+                    -- @todo
+                    []
+
                 PhysicalExamMuac ->
                     let
                         previousValue =
@@ -741,25 +750,29 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
             case currentTask of
                 PhysicalExamVitals ->
                     [ PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
+                PhysicalExamCoreExam ->
+                    -- @todo
+                    Nothing
+
                 PhysicalExamMuac ->
                     [ PhysicalExamNutrition, PhysicalExamAcuteFindings, PhysicalExamVitals ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamNutrition ->
                     [ PhysicalExamAcuteFindings, PhysicalExamVitals, PhysicalExamAcuteFindings ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
                 PhysicalExamAcuteFindings ->
                     [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
 
@@ -772,6 +785,9 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
                     case data.activeTask of
                         PhysicalExamVitals ->
                             SaveVitals personId measurements.vitals nextTask
+
+                        PhysicalExamCoreExam ->
+                            SaveCoreExam personId measurements.coreExam nextTask
 
                         PhysicalExamMuac ->
                             SaveMuac personId measurements.muac nextTask
@@ -1402,8 +1418,8 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Bool -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> Bool -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncounter data =
     let
         personId =
             assembled.participant.person
@@ -1421,7 +1437,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             AcuteIllnessNextSteps
 
         tasks =
-            resolveNextStepsTasks currentDate isFirstEncounter assembled
+            resolveNextStepsTasks currentDate isChw isFirstEncounter assembled
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)

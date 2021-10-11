@@ -628,6 +628,46 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SaveCoreExam personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , PhysicalExamVitals
+                            )
+
+                appMsgs =
+                    -- @todo
+                    -- model.physicalExamData.coreExamForm
+                    --     |> Pages.AcuteIllnessActivity.Utils.toCoreExamValueWithDefault measurement
+                    --     |> unwrap
+                    --         []
+                    --         (\value ->
+                    --             (Backend.AcuteIllnessEncounter.Model.SaveCoreExam personId measurementId value
+                    --                 |> Backend.Model.MsgAcuteIllnessEncounter id
+                    --                 |> App.Model.MsgIndexedDb
+                    --             )
+                    --                 :: backToActivitiesMsg
+                    --         )
+                    []
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetActiveLaboratoryTask task ->
             let
                 updatedData =

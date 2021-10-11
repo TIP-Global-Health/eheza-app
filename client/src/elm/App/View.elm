@@ -532,7 +532,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.acuteIllnessEncounterPages
                                     |> Maybe.withDefault Pages.AcuteIllnessEncounter.Model.emptyModel
                         in
-                        Pages.AcuteIllnessEncounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.AcuteIllnessEncounter.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
                             |> flexPageWrapper model
 
@@ -552,7 +552,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
                                     |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
                         in
-                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
+                        Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> oldPageWrapper model
 
@@ -562,7 +562,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.acuteIllnessOutcomePages
                                     |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
                         in
-                        Pages.AcuteIllnessOutcome.View.view model.language currentDate id model.indexedDb page_
+                        Pages.AcuteIllnessOutcome.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
                             |> flexPageWrapper model
 

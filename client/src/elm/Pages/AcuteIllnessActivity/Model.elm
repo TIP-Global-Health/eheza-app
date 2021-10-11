@@ -38,6 +38,7 @@ type Msg
     | SaveMuac PersonId (Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )) (Maybe PhysicalExamTask)
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )) (Maybe PhysicalExamTask)
+    | SaveCoreExam PersonId (Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
@@ -201,6 +202,7 @@ emptyPhysicalExamData =
 
 type PhysicalExamTask
     = PhysicalExamVitals
+    | PhysicalExamCoreExam
     | PhysicalExamMuac
     | PhysicalExamAcuteFindings
     | PhysicalExamNutrition

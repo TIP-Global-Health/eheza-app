@@ -24,8 +24,8 @@ import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> IndividualEncounterParticipantId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw db model =
     let
         firstEncounterId =
             Dict.get id db.acuteIllnessEncountersByParticipant
@@ -38,7 +38,7 @@ view language currentDate id db model =
             firstEncounterId
                 |> Maybe.map
                     (\encounterId ->
-                        generateAssembledData currentDate encounterId db
+                        generateAssembledData currentDate encounterId isChw db
                     )
                 |> Maybe.withDefault NotAsked
 

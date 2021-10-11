@@ -214,6 +214,19 @@ physicalExamTasksCompletedFromTotal isChw measurements data task =
                 , 5
                 )
 
+        PhysicalExamCoreExam ->
+            let
+                form =
+                    -- @todo
+                    -- measurements.vitals
+                    --     |> getMeasurementValueFunc
+                    --     |> vitalsFormWithDefault
+                    data.coreExamForm
+            in
+            ( taskCompleted form.heart + taskCompleted form.lungs
+            , 2
+            )
+
         PhysicalExamMuac ->
             let
                 form =
@@ -1500,11 +1513,14 @@ toReviewDangerSignsValue form =
         form.symptoms
 
 
-expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool
-expectPhysicalExamTask currentDate person isFirstEncounter task =
+expectPhysicalExamTask : NominalDate -> Person -> Bool -> Bool -> PhysicalExamTask -> Bool
+expectPhysicalExamTask currentDate person isChw isFirstEncounter task =
     case task of
         PhysicalExamVitals ->
             True
+
+        PhysicalExamCoreExam ->
+            not isChw
 
         -- We show Muac for children of 6 months to 5 years old.
         PhysicalExamMuac ->

@@ -6193,6 +6193,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibipimo by'ubuzima"
                     }
 
+                PhysicalExamCoreExam ->
+                    { english = "Core Exam"
+                    , kinyarwanda = Nothing
+                    }
+
                 PhysicalExamMuac ->
                     { english = "Muac"
                     , kinyarwanda = Just "Ikizigira"
