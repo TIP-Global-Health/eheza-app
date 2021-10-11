@@ -2484,6 +2484,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        AcuteIllnessCoreExamRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AcuteIllnessDangerSignsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
