@@ -172,11 +172,9 @@ physicalExamTasksCompletedFromTotal isChw measurements data task =
         PhysicalExamCoreExam ->
             let
                 form =
-                    -- @todo
-                    -- measurements.vitals
-                    --     |> getMeasurementValueFunc
-                    --     |> vitalsFormWithDefault
-                    data.coreExamForm
+                    measurements.coreExam
+                        |> getMeasurementValueFunc
+                        |> coreExamFormWithDefault data.coreExamForm
             in
             ( taskCompleted form.heart + taskCompleted form.lungs
             , 2
@@ -1549,8 +1547,8 @@ fromCoreExamValue saved =
     }
 
 
-corePhysicalExamFormWithDefault : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
-corePhysicalExamFormWithDefault form saved =
+coreExamFormWithDefault : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
+coreExamFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -1563,7 +1561,7 @@ corePhysicalExamFormWithDefault form saved =
 
 toCoreExamValueWithDefault : Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue
 toCoreExamValueWithDefault saved form =
-    corePhysicalExamFormWithDefault form saved
+    coreExamFormWithDefault form saved
         |> toCoreExamValue
 
 

@@ -28,7 +28,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (HealthEducationForm, InvocationModule(..), MuacForm, SendToHCForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), MuacForm, SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( getInputConstraintsMuac
@@ -841,7 +841,7 @@ viewVitalsForm language currentDate isChw assembled form =
 
                 else
                     VitalsFormFull
-            , invocationModule = InvocationModuleAcuteIllness
+            , invokationModule = InvokationModuleAcuteIllness
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form

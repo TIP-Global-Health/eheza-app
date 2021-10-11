@@ -21,7 +21,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (InvocationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHCForm)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -2058,7 +2058,7 @@ viewVitalsForm language currentDate assembled form =
             , birthDate = assembled.person.birthDate
             , formClass = "examination vitals"
             , mode = VitalsFormFull
-            , invocationModule = InvocationModulePrenatal
+            , invokationModule = InvokationModulePrenatal
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form

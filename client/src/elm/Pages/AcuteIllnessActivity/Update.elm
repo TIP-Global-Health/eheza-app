@@ -645,19 +645,17 @@ update currentDate id db msg model =
                             )
 
                 appMsgs =
-                    -- @todo
-                    -- model.physicalExamData.coreExamForm
-                    --     |> Pages.AcuteIllnessActivity.Utils.toCoreExamValueWithDefault measurement
-                    --     |> unwrap
-                    --         []
-                    --         (\value ->
-                    --             (Backend.AcuteIllnessEncounter.Model.SaveCoreExam personId measurementId value
-                    --                 |> Backend.Model.MsgAcuteIllnessEncounter id
-                    --                 |> App.Model.MsgIndexedDb
-                    --             )
-                    --                 :: backToActivitiesMsg
-                    --         )
-                    []
+                    model.physicalExamData.coreExamForm
+                        |> Pages.AcuteIllnessActivity.Utils.toCoreExamValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveCoreExam personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
 
                 updatedData =
                     model.physicalExamData

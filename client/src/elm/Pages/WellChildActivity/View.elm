@@ -22,7 +22,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (InvocationModule(..), PhotoForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (InvokationModule(..), PhotoForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -465,7 +465,7 @@ viewVitalsForm language currentDate assembled form =
             , birthDate = assembled.person.birthDate
             , formClass = "vitals"
             , mode = VitalsFormBasic
-            , invocationModule = InvocationModuleWellChild
+            , invokationModule = InvokationModuleWellChild
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form

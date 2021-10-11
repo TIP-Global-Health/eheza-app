@@ -384,7 +384,7 @@ type alias VitalsFormConfig msg =
     , birthDate : Maybe NominalDate
     , formClass : String
     , mode : VitalsFormMode
-    , invocationModule : InvocationModule
+    , invokationModule : InvokationModule
     }
 
 
@@ -393,7 +393,7 @@ type VitalsFormMode
     | VitalsFormFull
 
 
-type InvocationModule
-    = InvocationModulePrenatal
-    | InvocationModuleAcuteIllness
-    | InvocationModuleWellChild
+type InvokationModule
+    = InvokationModulePrenatal
+    | InvokationModuleAcuteIllness
+    | InvokationModuleWellChild
