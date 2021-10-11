@@ -14,6 +14,7 @@ import Backend.Measurement.Model
         , AdverseEvent(..)
         , ChildNutritionSign(..)
         , HCRecommendation(..)
+        , LungsCPESign(..)
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
@@ -74,6 +75,9 @@ update currentDate id db msg model =
 
         symptomsGIForm =
             resolveFormWithDefaults .symptomsGI symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
+
+        coreExamForm =
+            resolveFormWithDefaults .coreExam coreExamFormWithDefault model.physicalExamData.coreExamForm
 
         acuteFindingsForm =
             resolveFormWithDefaults .acuteFindings acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
@@ -602,6 +606,41 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetCoreExamHeart value ->
+            let
+                updatedForm =
+                    { coreExamForm | heart = Just value }
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | coreExamForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCoreExamLungs sign ->
+            let
+                form =
+                    coreExamForm
+
+                updatedForm =
+                    setMultiSelectInputValue .lungs
+                        (\signs -> { form | lungs = signs })
+                        NormalLungs
+                        sign
+                        form
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | coreExamForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveCoreExam personId saved nextTask ->
             let

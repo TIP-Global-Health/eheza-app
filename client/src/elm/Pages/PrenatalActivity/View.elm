@@ -47,6 +47,9 @@ import Pages.Utils
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewRedAlertForBool
+        , viewRedAlertForSelect
+        , viewYellowAlertForSelect
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -2628,40 +2631,6 @@ viewNewbornEnrolmentForm language currentDate assembled =
 
 
 -- HELPER FUNCITONS
-
-
-viewRedAlertForSelect : List a -> List a -> Html any
-viewRedAlertForSelect actual normal =
-    viewAlertForSelect "red" actual normal
-
-
-viewYellowAlertForSelect : List a -> List a -> Html any
-viewYellowAlertForSelect actual normal =
-    viewAlertForSelect "yellow" actual normal
-
-
-viewAlertForSelect : String -> List a -> List a -> Html any
-viewAlertForSelect color actual normal =
-    if
-        List.isEmpty actual
-            || List.all
-                (\item ->
-                    List.member item normal
-                )
-                actual
-    then
-        emptyNode
-
-    else
-        div [ class <| "alert " ++ color ]
-            [ viewAlert color ]
-
-
-viewRedAlertForBool : Maybe Bool -> Bool -> Html any
-viewRedAlertForBool actual normal =
-    viewRedAlertForSelect
-        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
-        [ normal ]
 
 
 viewNumberInput :
