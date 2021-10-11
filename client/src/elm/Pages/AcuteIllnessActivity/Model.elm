@@ -185,7 +185,7 @@ type alias PhysicalExamData =
     , muacForm : MuacForm
     , nutritionForm : AcuteIllnessNutritionForm
     , coreExamForm : AcuteIllnessCoreExamForm
-    , activeTask : PhysicalExamTask
+    , activeTask : Maybe PhysicalExamTask
     }
 
 
@@ -196,7 +196,7 @@ emptyPhysicalExamData =
     , muacForm = emptyMuacForm
     , nutritionForm = AcuteIllnessNutritionForm Nothing
     , coreExamForm = AcuteIllnessCoreExamForm Nothing Nothing
-    , activeTask = PhysicalExamVitals
+    , activeTask = Nothing
     }
 
 

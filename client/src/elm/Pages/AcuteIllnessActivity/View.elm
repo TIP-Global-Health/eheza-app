@@ -632,9 +632,6 @@ viewAcuteIllnessPhysicalExam :
     -> List (Html Msg)
 viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEncounter data =
     let
-        activity =
-            AcuteIllnessPhysicalExam
-
         personId =
             assembled.participant.person
 
@@ -647,6 +644,9 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
         tasks =
             [ PhysicalExamVitals, PhysicalExamCoreExam, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
                 |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
 
         viewTask task =
             let
@@ -678,7 +678,7 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -705,12 +705,13 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                PhysicalExamVitals ->
+            case activeTask of
+                Just PhysicalExamVitals ->
                     measurements.vitals
                         |> getMeasurementValueFunc
                         |> vitalsFormWithDefault data.vitalsForm
@@ -720,11 +721,11 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
                             assembled
                         |> List.singleton
 
-                PhysicalExamCoreExam ->
+                Just PhysicalExamCoreExam ->
                     -- @todo
                     []
 
-                PhysicalExamMuac ->
+                Just PhysicalExamMuac ->
                     let
                         previousValue =
                             resolvePreviousValue assembled .muac muacValueFunc
@@ -734,77 +735,61 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
                         |> muacFormWithDefault data.muacForm
                         |> viewMuacForm language currentDate assembled.person previousValue SetMuac
 
-                PhysicalExamAcuteFindings ->
+                Just PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
                         |> getMeasurementValueFunc
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
                         |> viewAcuteFindingsForm language currentDate
 
-                PhysicalExamNutrition ->
+                Just PhysicalExamNutrition ->
                     measurements.nutrition
                         |> getMeasurementValueFunc
                         |> Pages.AcuteIllnessActivity.Utils.nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate
 
-        getNextTask currentTask =
-            case currentTask of
-                PhysicalExamVitals ->
-                    [ PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                Nothing ->
+                    []
 
-                PhysicalExamCoreExam ->
-                    -- @todo
-                    Nothing
-
-                PhysicalExamMuac ->
-                    [ PhysicalExamNutrition, PhysicalExamAcuteFindings, PhysicalExamVitals ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                PhysicalExamNutrition ->
-                    [ PhysicalExamAcuteFindings, PhysicalExamVitals, PhysicalExamAcuteFindings ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                PhysicalExamAcuteFindings ->
-                    [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isChw isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    PhysicalExamVitals ->
+                                        SaveVitals personId measurements.vitals nextTask
 
-                saveMsg =
-                    case data.activeTask of
-                        PhysicalExamVitals ->
-                            SaveVitals personId measurements.vitals nextTask
+                                    PhysicalExamCoreExam ->
+                                        SaveCoreExam personId measurements.coreExam nextTask
 
-                        PhysicalExamCoreExam ->
-                            SaveCoreExam personId measurements.coreExam nextTask
+                                    PhysicalExamMuac ->
+                                        SaveMuac personId measurements.muac nextTask
 
-                        PhysicalExamMuac ->
-                            SaveMuac personId measurements.muac nextTask
+                                    PhysicalExamAcuteFindings ->
+                                        SaveAcuteFindings personId measurements.acuteFindings nextTask
 
-                        PhysicalExamAcuteFindings ->
-                            SaveAcuteFindings personId measurements.acuteFindings nextTask
-
-                        PhysicalExamNutrition ->
-                            SaveNutrition personId measurements.nutrition nextTask
-            in
-            div [ class "actions symptoms" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                    PhysicalExamNutrition ->
+                                        SaveNutrition personId measurements.nutrition nextTask
+                        in
+                        div [ class "actions symptoms" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui four column grid" ] <|
