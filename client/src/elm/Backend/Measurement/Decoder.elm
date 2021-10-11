@@ -152,6 +152,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
         |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
+        |> optional "acute_illness_core_exam" (decodeHead decodeAcuteIllnessCoreExam) Nothing
 
 
 decodeFollowUpMeasurements : Decoder FollowUpMeasurements
@@ -2666,6 +2667,18 @@ decodeAdverseEvent =
                             event
                                 ++ " is not a recognized AdverseEvent"
             )
+
+
+decodeAcuteIllnessCoreExam : Decoder AcuteIllnessCoreExam
+decodeAcuteIllnessCoreExam =
+    decodeAcuteIllnessMeasurement decodeCoreExamValue
+
+
+decodeCoreExamValue : Decoder CoreExamValue
+decodeCoreExamValue =
+    succeed CoreExamValue
+        |> required "heart" (decodeEverySet decodeHeartCPESign)
+        |> required "lungs" (decodeEverySet decodeLungsCPESign)
 
 
 decodeAcuteIllnessDangerSigns : Decoder AcuteIllnessDangerSigns
