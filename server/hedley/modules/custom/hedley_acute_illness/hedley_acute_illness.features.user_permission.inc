@@ -91,6 +91,16 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create covid_testing content'.
+  $permissions['create covid_testing content'] = array(
+    'name' => 'create covid_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create exposure content'.
   $permissions['create exposure content'] = array(
     'name' => 'create exposure content',
@@ -293,6 +303,15 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any covid_testing content'.
+  $permissions['delete any covid_testing content'] = array(
+    'name' => 'delete any covid_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any exposure content'.
   $permissions['delete any exposure content'] = array(
     'name' => 'delete any exposure content',
@@ -476,6 +495,15 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'delete own call_114 content'.
   $permissions['delete own call_114 content'] = array(
     'name' => 'delete own call_114 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own covid_testing content'.
+  $permissions['delete own covid_testing content'] = array(
+    'name' => 'delete own covid_testing content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -672,6 +700,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit any call_114 content'.
   $permissions['edit any call_114 content'] = array(
     'name' => 'edit any call_114 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any covid_testing content'.
+  $permissions['edit any covid_testing content'] = array(
+    'name' => 'edit any covid_testing content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -882,6 +920,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit own call_114 content'.
   $permissions['edit own call_114 content'] = array(
     'name' => 'edit own call_114 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own covid_testing content'.
+  $permissions['edit own covid_testing content'] = array(
+    'name' => 'edit own covid_testing content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
