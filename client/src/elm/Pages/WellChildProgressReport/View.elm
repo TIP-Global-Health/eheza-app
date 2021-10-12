@@ -437,13 +437,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 |> Maybe.Extra.values
 
         assessmentEntries =
-            List.map
-                (\( dateMeasured, ( assessments, status ) ) ->
-                    List.map (\assessment -> ( dateMeasured, ( assessment, status ) )) assessments
-                )
-                selectedAssessmentEntries
-                |> List.concat
-                |> List.map (viewNutritionAssessmentEntry language)
+            List.map (viewNutritionAssessmentEntry language) selectedAssessmentEntries
 
         warningEntries =
             List.map (viewWarningEntry language) selectedWarningEntries
@@ -491,12 +485,6 @@ filterNutritionAssessments dateMeasured value =
                     (\assesment ->
                         case assesment of
                             NoNutritionAssessment ->
-                                Nothing
-
-                            AssesmentDangerSignsNotPresent ->
-                                Nothing
-
-                            AssesmentDangerSignsPresent ->
                                 Nothing
 
                             AssesmentMalnutritionSigns _ ->
@@ -732,11 +720,12 @@ diagnosisEntryStatusToString status =
             "resolved"
 
 
-viewNutritionAssessmentEntry : Language -> ( NominalDate, ( NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
-viewNutritionAssessmentEntry language ( date, ( assessment, status ) ) =
+viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
+viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
     ( date
     , div [ class "entry diagnosis" ]
-        [ div [ class "cell assesment" ] [ translateNutritionAssement language assessment ]
+        [ div [ class "cell assesment" ] <|
+            List.map (translateNutritionAssement language >> List.singleton >> p []) assessments
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]
