@@ -1037,8 +1037,10 @@ div.page-activity.acute-illness {
     }
 
     .separator {
+      color: $color-light-gray;
       margin: 30px 0;
       width: 100%;
+      border: 1px solid;
     }
 
     .days-present {
@@ -1482,7 +1484,10 @@ div.page-activity.well-child {
         min-height: 140px;
 
         .separator {
+          color: $color-light-gray;
           margin: 30px 0;
+          width: 100%;
+          border: 1px solid;
         }
       }
 

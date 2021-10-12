@@ -10,6 +10,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Translate.Model exposing (Language)
 
 
@@ -343,14 +344,56 @@ emptyWeightForm =
     WeightForm Nothing False
 
 
-type alias BasicVitalsForm =
-    { respiratoryRate : Maybe Int
+type alias VitalsForm =
+    { sysBloodPressure : Maybe Float
+    , sysBloodPressureDirty : Bool
+    , diaBloodPressure : Maybe Float
+    , diaBloodPressureDirty : Bool
+    , heartRate : Maybe Int
+    , heartRateDirty : Bool
+    , respiratoryRate : Maybe Int
     , respiratoryRateDirty : Bool
     , bodyTemperature : Maybe Float
     , bodyTemperatureDirty : Bool
     }
 
 
-emptyBasicVitalsForm : BasicVitalsForm
-emptyBasicVitalsForm =
-    BasicVitalsForm Nothing False Nothing False
+emptyVitalsForm : VitalsForm
+emptyVitalsForm =
+    { sysBloodPressure = Nothing
+    , sysBloodPressureDirty = False
+    , diaBloodPressure = Nothing
+    , diaBloodPressureDirty = False
+    , heartRate = Nothing
+    , heartRateDirty = False
+    , respiratoryRate = Nothing
+    , respiratoryRateDirty = False
+    , bodyTemperature = Nothing
+    , bodyTemperatureDirty = False
+    }
+
+
+type alias VitalsFormConfig msg =
+    { setIntInputMsg : (Maybe Int -> VitalsForm -> VitalsForm) -> String -> msg
+    , setFloatInputMsg : (Maybe Float -> VitalsForm -> VitalsForm) -> String -> msg
+    , sysBloodPressurePreviousValue : Maybe Float
+    , diaBloodPressurePreviousValue : Maybe Float
+    , heartRatePreviousValue : Maybe Float
+    , respiratoryRatePreviousValue : Maybe Float
+    , bodyTemperaturePreviousValue : Maybe Float
+    , birthDate : Maybe NominalDate
+    , formClass : String
+    , mode : VitalsFormMode
+    , invocationModule : InvocationModule
+    }
+
+
+type VitalsFormMode
+    = VitalsFormBasic
+    | VitalsFormFull
+
+
+type InvocationModule
+    = InvocationModulePrenatal
+    | InvocationModuleAcuteIllness
+    | InvocationModuleWellChild

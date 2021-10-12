@@ -1143,19 +1143,37 @@ encodeSocialHistoryValue value =
 
 encodeVitals : Vitals -> List ( String, Value )
 encodeVitals =
-    encodePrenatalMeasurement encodeVitalsValue
+    encodePrenatalMeasurement (encodeVitalsValueWithType "vitals")
 
 
-encodeVitalsValue : VitalsValue -> List ( String, Value )
-encodeVitalsValue value =
-    [ ( "sys", float value.sys )
-    , ( "dia", float value.dia )
-    , ( "heart_rate", int value.heartRate )
-    , ( "respiratory_rate", int value.respiratoryRate )
-    , ( "body_temperature", float value.bodyTemperature )
-    , ( "deleted", bool False )
-    , ( "type", string "vitals" )
-    ]
+encodeVitalsValueWithType : String -> VitalsValue -> List ( String, Value )
+encodeVitalsValueWithType type_ value =
+    let
+        optionals =
+            encodeOptionalFloatValue "sys" value.sys
+                ++ encodeOptionalFloatValue "dia" value.dia
+                ++ encodeOptionalIntValue "heart_rate" value.heartRate
+
+        encodeOptionalFloatValue name floatValue =
+            if floatValue == floatMeasurementNotSetValue then
+                []
+
+            else
+                [ ( name, float floatValue ) ]
+
+        encodeOptionalIntValue name intValue =
+            if intValue == intMeasurementNotSetValue then
+                []
+
+            else
+                [ ( name, int intValue ) ]
+    in
+    optionals
+        ++ [ ( "respiratory_rate", int value.respiratoryRate )
+           , ( "body_temperature", float value.bodyTemperature )
+           , ( "deleted", bool False )
+           , ( "type", string type_ )
+           ]
 
 
 encodeSymptomsGeneral : SymptomsGeneral -> List ( String, Value )
@@ -1323,16 +1341,7 @@ encodeSymptomsGIDerivedSigns sign =
 
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
 encodeAcuteIllnessVitals =
-    encodeAcuteIllnessMeasurement (encodeBasicVitalsValueWithType "acute_illness_vitals")
-
-
-encodeBasicVitalsValueWithType : String -> BasicVitalsValue -> List ( String, Value )
-encodeBasicVitalsValueWithType type_ value =
-    [ ( "respiratory_rate", int value.respiratoryRate )
-    , ( "body_temperature", float value.bodyTemperature )
-    , ( "deleted", bool False )
-    , ( "type", string type_ )
-    ]
+    encodeAcuteIllnessMeasurement (encodeVitalsValueWithType "acute_illness_vitals")
 
 
 encodeAcuteFindings : AcuteFindings -> List ( String, Value )
@@ -2494,7 +2503,7 @@ encodeWellChildSymptom symptom =
 
 encodeWellChildVitals : WellChildVitals -> List ( String, Value )
 encodeWellChildVitals =
-    encodeWellChildMeasurement (encodeBasicVitalsValueWithType "well_child_vitals")
+    encodeWellChildMeasurement (encodeVitalsValueWithType "well_child_vitals")
 
 
 encodeWellChildECD : WellChildECD -> List ( String, Value )

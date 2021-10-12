@@ -544,22 +544,34 @@ allNextStepsTasks =
     [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC, NextStepFollowUp ]
 
 
-fromBasicVitalsForm : Maybe BasicVitalsValue -> BasicVitalsForm
-fromBasicVitalsForm saved =
-    { respiratoryRate = Maybe.map .respiratoryRate saved
+fromVitalsValue : Maybe VitalsValue -> VitalsForm
+fromVitalsValue saved =
+    { sysBloodPressure = Maybe.map .sys saved
+    , sysBloodPressureDirty = False
+    , diaBloodPressure = Maybe.map .dia saved
+    , diaBloodPressureDirty = False
+    , heartRate = Maybe.map .heartRate saved
+    , heartRateDirty = False
+    , respiratoryRate = Maybe.map .respiratoryRate saved
     , respiratoryRateDirty = False
     , bodyTemperature = Maybe.map .bodyTemperature saved
     , bodyTemperatureDirty = False
     }
 
 
-basicVitalsFormWithDefault : BasicVitalsForm -> Maybe BasicVitalsValue -> BasicVitalsForm
-basicVitalsFormWithDefault form saved =
+vitalsFormWithDefault : VitalsForm -> Maybe VitalsValue -> VitalsForm
+vitalsFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                { sysBloodPressure = valueConsideringIsDirtyField form.sysBloodPressureDirty form.sysBloodPressure value.sys
+                , sysBloodPressureDirty = form.sysBloodPressureDirty
+                , diaBloodPressure = valueConsideringIsDirtyField form.diaBloodPressureDirty form.diaBloodPressure value.dia
+                , diaBloodPressureDirty = form.diaBloodPressureDirty
+                , heartRate = valueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
+                , heartRateDirty = form.heartRateDirty
+                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
                 , respiratoryRateDirty = form.respiratoryRateDirty
                 , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
                 , bodyTemperatureDirty = form.bodyTemperatureDirty
@@ -567,13 +579,29 @@ basicVitalsFormWithDefault form saved =
             )
 
 
-toBasicVitalsValueWithDefault : Maybe BasicVitalsValue -> BasicVitalsForm -> Maybe BasicVitalsValue
-toBasicVitalsValueWithDefault saved form =
-    basicVitalsFormWithDefault form saved
-        |> toBasicVitalsValue
+toVitalsValueWithDefault : Maybe VitalsValue -> VitalsForm -> Maybe VitalsValue
+toVitalsValueWithDefault saved form =
+    vitalsFormWithDefault form saved
+        |> toVitalsValue
 
 
-toBasicVitalsValue : BasicVitalsForm -> Maybe BasicVitalsValue
-toBasicVitalsValue form =
-    Maybe.map BasicVitalsValue form.respiratoryRate
+toVitalsValue : VitalsForm -> Maybe VitalsValue
+toVitalsValue form =
+    let
+        sysBloodPressure =
+            Maybe.withDefault floatMeasurementNotSetValue form.sysBloodPressure
+                |> Just
+
+        diaBloodPressure =
+            Maybe.withDefault floatMeasurementNotSetValue form.diaBloodPressure
+                |> Just
+
+        heartRate =
+            Maybe.withDefault intMeasurementNotSetValue form.heartRate
+                |> Just
+    in
+    Maybe.map VitalsValue sysBloodPressure
+        |> andMap diaBloodPressure
+        |> andMap heartRate
+        |> andMap form.respiratoryRate
         |> andMap form.bodyTemperature

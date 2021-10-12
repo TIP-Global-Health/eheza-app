@@ -899,14 +899,8 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement SymptomsGIValue
 
 
-type alias BasicVitalsValue =
-    { respiratoryRate : Int
-    , bodyTemperature : Float
-    }
-
-
 type alias AcuteIllnessVitals =
-    AcuteIllnessMeasurement BasicVitalsValue
+    AcuteIllnessMeasurement VitalsValue
 
 
 type AcuteFindingsGeneralSign
@@ -1262,7 +1256,7 @@ type WellChildSymptom
 
 
 type alias WellChildVitals =
-    WellChildMeasurement BasicVitalsValue
+    WellChildMeasurement VitalsValue
 
 
 type alias WellChildHeight =
@@ -1816,3 +1810,13 @@ type alias PreviousMeasurementsSet =
     , weights : List ( NominalDate, Float )
     , headCircumferences : List ( NominalDate, Float )
     }
+
+
+intMeasurementNotSetValue : Int
+intMeasurementNotSetValue =
+    -999
+
+
+floatMeasurementNotSetValue : Float
+floatMeasurementNotSetValue =
+    toFloat intMeasurementNotSetValue
