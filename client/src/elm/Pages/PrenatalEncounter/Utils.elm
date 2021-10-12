@@ -505,10 +505,16 @@ generatePara value =
         ++ String.fromInt value.liveChildren
 
 
-getLmpMeasurement : PrenatalMeasurements -> Maybe NominalDate
-getLmpMeasurement measurements =
+getLastMenstrualPeriodValue : PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
+getLastMenstrualPeriodValue measurements =
     measurements.lastMenstrualPeriod
-        |> Maybe.map (Tuple.second >> .value >> .date)
+        |> Maybe.map (Tuple.second >> .value)
+
+
+getLmpDate : PrenatalMeasurements -> Maybe NominalDate
+getLmpDate measurements =
+    getLastMenstrualPeriodValue measurements
+        |> Maybe.map .date
 
 
 getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
@@ -530,13 +536,13 @@ resolveGlobalLmpDate measurements nursePreviousMeasurements chwPreviousMeasureme
         -- will be located at head of the list, becuase previous measurements
         -- are sorted ASC by encounter date, and Lmp date is a mandatory
         -- measurement at first encounter.
-        getLmpMeasurementFromList measurementsList =
+        getLmpDateFromList measurementsList =
             List.head measurementsList
-                |> Maybe.andThen getLmpMeasurement
+                |> Maybe.andThen getLmpDate
     in
-    getLmpMeasurementFromList nursePreviousMeasurements
-        |> orElse (getLmpMeasurementFromList chwPreviousMeasurements)
-        |> orElse (getLmpMeasurement measurements)
+    getLmpDateFromList nursePreviousMeasurements
+        |> orElse (getLmpDateFromList chwPreviousMeasurements)
+        |> orElse (getLmpDate measurements)
 
 
 resolveGlobalObstetricHistory : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe ObstetricHistoryValue

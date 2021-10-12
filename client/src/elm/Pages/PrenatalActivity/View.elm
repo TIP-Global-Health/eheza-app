@@ -14,7 +14,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -186,6 +186,27 @@ viewPregnancyDatingContent language currentDate assembled data =
                 |> getMeasurementValueFunc
                 |> lastMenstrualPeriodFormWithDefault data.form
 
+        chwLmpConfirmationSection dateToConfirm =
+            [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
+            , viewLabel language Translate.LmpLabel
+            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY dateToConfirm ]
+            , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
+            , viewBoolInput language form.chwLmpConfirmation (SetConfirmLmpDate dateToConfirm) "confirm-lmp" Nothing
+            ]
+
+        chwLmpConfirmationTasksCompleted =
+            taskCompleted form.chwLmpConfirmation
+
+        newLmpInputSection =
+            [ viewQuestionLabel language Translate.LmpRangeHeader
+            , lmpRangeInput
+            , viewLabel language Translate.LmpDateHeader
+            , div [ class "form-input date" ]
+                [ lmpDateInput ]
+            , viewQuestionLabel language Translate.LmpDateConfidentHeader
+            , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
+            ]
+
         lmpRangeInput =
             option
                 [ value ""
@@ -204,54 +225,79 @@ viewPregnancyDatingContent language currentDate assembled data =
                    )
                 |> select [ onInput SetLmpRange, class "form-input select" ]
 
-        today =
-            currentDate
-
         lmpDateInput =
             if isJust form.lmpRange then
                 DateSelector.SelectorDropdown.view
                     ToggleDateSelector
                     SetLmpDate
                     form.isDateSelectorOpen
-                    (Date.add Days -280 today)
-                    today
+                    (Date.add Days -280 currentDate)
+                    currentDate
                     form.lmpDate
 
             else
                 emptyNode
 
+        newLmpInputTasksCompleted =
+            taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
+
+        ( inputs, tasksCompleted, totalTasks ) =
+            if assembled.encounter.encounterType == NurseEncounter then
+                let
+                    lmpDateTakenByChw =
+                        List.head assembled.chwPreviousMeasurementsWithDates
+                            |> Maybe.andThen
+                                (\( _, _, measurements ) ->
+                                    getLmpDate measurements
+                                )
+                in
+                Maybe.map
+                    (\lmpDateByChw ->
+                        if form.chwLmpConfirmation == Just False then
+                            ( chwLmpConfirmationSection lmpDateByChw ++ newLmpInputSection
+                            , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted
+                            , 3
+                            )
+
+                        else
+                            ( chwLmpConfirmationSection lmpDateByChw
+                            , chwLmpConfirmationTasksCompleted
+                            , 1
+                            )
+                    )
+                    lmpDateTakenByChw
+                    |> Maybe.withDefault
+                        ( newLmpInputSection
+                        , newLmpInputTasksCompleted
+                        , 2
+                        )
+
+            else
+                ( newLmpInputSection
+                , newLmpInputTasksCompleted
+                , 2
+                )
+
         ( edd, ega ) =
             generateEDDandEGA language currentDate ( "", "" ) form.lmpDate
-
-        totalTasks =
-            2
-
-        tasksCompleted =
-            taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "form pregnancy-dating" ]
-                [ viewQuestionLabel language Translate.LmpRangeHeader
-                , lmpRangeInput
-                , viewLabel language Translate.LmpDateHeader
-                , div [ class "form-input date" ]
-                    [ lmpDateInput ]
-                , viewQuestionLabel language Translate.LmpDateConfidentHeader
-                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
-                , div [ class "separator" ] []
-                , div [ class "results" ]
-                    [ div [ class "edd-result" ]
-                        [ viewLabel language Translate.EddHeader
-                        , div [ class "value" ] [ text edd ]
-                        ]
-                    , div [ class "ega-result" ]
-                        [ viewLabel language Translate.EgaHeader
-                        , div [ class "value" ] [ text ega ]
-                        ]
-                    ]
-                ]
+            [ div [ class "form pregnancy-dating" ] <|
+                inputs
+                    ++ [ div [ class "separator" ] []
+                       , div [ class "results" ]
+                            [ div [ class "edd-result" ]
+                                [ viewLabel language Translate.EddHeader
+                                , div [ class "value" ] [ text edd ]
+                                ]
+                            , div [ class "ega-result" ]
+                                [ viewLabel language Translate.EgaHeader
+                                , div [ class "value" ] [ text ega ]
+                                ]
+                            ]
+                       ]
             ]
         , div [ class "actions" ]
             [ button
@@ -2591,16 +2637,13 @@ viewFollowUpForm language assembled currentDate form =
 viewAppointmentConfirmationForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
 viewAppointmentConfirmationForm language currentDate assembled form =
     let
-        today =
-            currentDate
-
         appointmentDateInput =
             DateSelector.SelectorDropdown.view
                 AppointmentToggleDateSelector
                 SetAppointmentConfirmation
                 form.isDateSelectorOpen
-                today
-                (Date.add Months 9 today)
+                currentDate
+                (Date.add Months 9 currentDate)
                 form.appointmentDate
     in
     div [ class "form appointment-confirmation" ]

@@ -488,6 +488,7 @@ fromLastMenstrualPeriodValue saved =
     { lmpRange = Nothing
     , lmpDate = Maybe.map .date saved
     , lmpDateConfident = Maybe.map .confident saved
+    , chwLmpConfirmation = Maybe.map .confirmation saved
     , isDateSelectorOpen = False
     }
 
@@ -501,6 +502,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
+                , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
             )
@@ -508,17 +510,19 @@ lastMenstrualPeriodFormWithDefault form saved =
 
 toLastMenstrualPeriodValueWithDefault : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm -> Maybe LastMenstrualPeriodValue
 toLastMenstrualPeriodValueWithDefault saved form =
-    let
-        form_ =
-            lastMenstrualPeriodFormWithDefault form saved
-    in
-    toLastMenstrualPeriodValue form_
+    lastMenstrualPeriodFormWithDefault form saved
+        |> toLastMenstrualPeriodValue
 
 
 toLastMenstrualPeriodValue : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue
 toLastMenstrualPeriodValue form =
+    let
+        chwLmpConfirmation =
+            Maybe.withDefault False form.chwLmpConfirmation
+    in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
         |> andMap form.lmpDateConfident
+        |> andMap (Just chwLmpConfirmation)
 
 
 fromMedicalHistoryValue : Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm

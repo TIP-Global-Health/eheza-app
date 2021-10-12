@@ -8,6 +8,10 @@
       color: $color-light-blue;
     }
 
+    span.in-days {
+      color: $color-velvet;
+    }
+
     span.date {
       font-style: italic;
     }
@@ -1050,7 +1054,7 @@ div.page-activity.acute-illness {
   }
 }
 
-// Prenatal Activity and Nutrition Activity pages
+// Prenatal, Nutrition and Home Visit activity pages
 div.page-activity.prenatal,
 div.page-activity.nutrition,
 div.page-activity.home-visit {
@@ -1449,6 +1453,12 @@ div.page-activity.home-visit {
           margin-top: 20px;
           width: 50%;
         }
+      }
+
+      .form.pregnancy-dating .chw-lmp {
+        font-size: 25px;
+        font-weight: 300;
+        margin-left: 40px;
       }
     }
   }
@@ -2330,54 +2340,8 @@ div.page-report.acute-illness {
 
   .ui.report.unstackable.items {
 
-    .report-header {
-      background: $color-white;
-      border-top: 9px solid $color-primary;
-      color: $color-text;
-      padding: 20px 20px 0 25px;
-
-      .icon-back {
-        width: 34px;
-        height: 27px;
-        display: block;
-        background: url(#{$img-path}icon-back-dark.svg);
-        position: absolute;
-        background-size: 34px 27px;
-      }
-
-      .ui.report.header {
-        font-size: 30px;
-      }
-
-      .date {
-        font-size: 22px;
-        text-align: center;
-      }
-    }
-
-    .item.person-details {
-      background: $color-white;
-      margin-top: 0;
-      padding: 30px;
-
-      .content {
-
-         h2 {
-           font-size: 27px;
-           font-weight: bold;
-         }
-
-         p {
-           color: $color-text;
-           font-size: 20px;
-           margin-bottom: 0;
-         }
-      }
-    }
-
     div.pane {
       background: $color-white;
-      margin-bottom: 20px;
 
       .pane-heading {
         color: $color-white;
@@ -2401,39 +2365,32 @@ div.page-report.acute-illness {
       }
     }
 
-    div.pane.assessment .pane-content {
+    div.pane.assessment .entry {
+      align-items: center;
+      color: $color-white;
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
 
-      .diagnosis {
-        color: $color-red-alert;
-        margin-bottom: 20px;
-
-        p {
-          margin-bottom: 5px;
-        }
-
-        .diagnosis-date {
-          color: $color-light-blue;
-        }
+      .assessment {
+        max-width: 360px;
       }
 
-      .visit-date {
-        color: $color-light-blue;
-        font-size: 20px;
-        margin-bottom: 5px;
+      &.red {
+        background: $color-velvet;
       }
 
-      .treatment-comment {
-        color: $color-text;
-        font-size: 20px;
-        font-weight: normal;
-        line-height: 22px;
-        margin-bottom: 7px;
-        text-transform: none;
-
-        b {
-          margin-left: 5px;
-        }
+      &.orange {
+        background: $color-orange-light;
       }
+
+      &.green {
+        background: $color-cyan;
+      }
+    }
+
+    div.pane.symptoms .symptoms-table {
+      padding-top: 20px;
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row {
@@ -2473,7 +2430,7 @@ div.page-report.acute-illness {
         }
 
         &.blue {
-          border-left: 1px solid $color-lighter-blue;
+          border-left: 1px solid $color-primary;
         }
       }
     }
@@ -2481,8 +2438,12 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row ul {
       display: inline-block;
       list-style-type: none;
-      margin: 5px 0;
+      margin: 0;
       padding: 0;
+
+      &:last-child {
+        margin-bottom: 20px;
+      }
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row ul li {
@@ -2509,11 +2470,12 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table {
-      border: 0;
+      border: none;
       color: $color-text;
       margin: 0;
-      padding: 5px 10px;
+      padding: 5px 0;
       text-align: center;
+      width: 100%;
     }
 
     div.pane.physical-exam .ui.table.nutrition-signs {
@@ -2521,43 +2483,83 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table thead th {
+      border: none;
+      border-bottom: 1px solid;
+      border-radius: 0;
       background-color: $color-white;
       color: $color-text;
-      width: 135px;
+      font-weight: 600;
+    }
 
-      &.first {
-        text-align: left;
-        width: 190px;
-      }
+    div.pane.physical-exam .ui.table thead .muac {
+      width: 180px;
     }
 
     div.pane.physical-exam .ui.table tbody td {
-      font-weight: 600;
-      width: 135px;
+      border: none;
+      border-bottom: 1px solid;
+      border-radius: 0;
+      font-weight: normal;
 
-      &.first {
-        text-align: left;
-        width: 190px;
-      }
+      .alert {
+        border-radius: 50%;
+        display: inline-block;
+        height: 17px;
+        margin-left: 10px;
+        width: 17px;
 
-      &.red {
-        color: $color-red-alert;
-      }
+        &.red {
+          background: $color-velvet;
+        }
 
-      &.yellow {
-        color: $color-yellow;
+        &.orange {
+          background: $color-orange-light;
+        }
       }
+    }
 
-      &.green {
-        color: $color-green;
+    div.pane.physical-exam .ui.table tbody tr {
+
+      &:last-child td {
+        border-bottom: none;
       }
+    }
+
+    div.pane.nutrition-signs .pane-content {
+      font-weight: normal;
+      padding: 0;
+      text-transform: none;
+    }
+
+    div.pane.nutrition-signs .pane-content .heading {
+      font-size: 22px;
+    }
+
+    div.pane.treatment .pane-content {
+      color: $color-text;
+      font-weight: normal;
+      padding: 20px 10px 20px 40px;
+      text-transform: none;
+    }
+
+    div.pane.treatment .pane-content .treatment-comment:before {
+      background: $color-text;
+      border-radius: 4px;
+      content: " ";
+      display: inline-block;
+      height: 8px;
+      margin-bottom: 3px;
+      margin-left: -20px;
+      margin-right: 10px;
+      width: 8px;
     }
 
     div.pane.actions-taken {
       @include next-steps;
     }
 
-    div.pane.actions-taken .instructions {
+    div.pane.actions-taken .instructions,
+    div.pane.next-steps .instructions {
       color: $color-text;
       margin-bottom: 0;
       padding: 20px;
@@ -2575,12 +2577,12 @@ div.page-report.acute-illness {
     }
 
     div.actions {
-      margin: 0
+      margin: 20px 0 0 0;
     }
   }
-
 }
 
+div.page-report.acute-illness,
 div.page-encounter.well-child,
 div.page-activity.well-child,
 div.page-report.well-child {
@@ -2720,6 +2722,7 @@ div.page-report.well-child {
 
 }
 
+div.page-report.acute-illness,
 div.page-report.well-child {
   background: unset;
 
@@ -2867,6 +2870,7 @@ div.page-report.well-child {
       white-space: nowrap;
 
       .milestone {
+        min-width: 120px;
         padding: 30px 0 20px;
         text-align: center;
 

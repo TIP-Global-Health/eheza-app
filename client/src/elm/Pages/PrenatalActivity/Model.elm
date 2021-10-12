@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 
@@ -15,6 +16,7 @@ type Msg
     | SetWarningPopupState (Maybe String)
       -- PregnancyDatingMsgs
     | ToggleDateSelector
+    | SetConfirmLmpDate NominalDate Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
@@ -330,13 +332,14 @@ type alias PregnancyDatingForm =
     { lmpRange : Maybe LmpRange
     , lmpDate : Maybe Date
     , lmpDateConfident : Maybe Bool
+    , chwLmpConfirmation : Maybe Bool
     , isDateSelectorOpen : Bool
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing False
+    PregnancyDatingForm Nothing Nothing Nothing Nothing False
 
 
 type alias ObstetricFormFirstStep =

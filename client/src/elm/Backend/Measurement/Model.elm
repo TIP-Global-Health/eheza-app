@@ -547,6 +547,7 @@ type PostpartumChildDangerSign
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
     , confident : Bool
+    , confirmation : Bool
     }
 
 

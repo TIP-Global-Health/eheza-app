@@ -146,29 +146,29 @@ viewPersonDetails language currentDate person =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
 
-        ( thumbnailClass, maybeAge ) =
+        ( thumbnailClass, ageEntry ) =
             if isAdult then
                 ( "mother"
                 , ageInYears currentDate person
-                    |> Maybe.map (Translate.YearsOld >> translate language)
+                    |> Maybe.map (\ageYears -> viewEntry Translate.AgeWord (Translate.YearsOld ageYears |> translate language))
+                    |> Maybe.withDefault emptyNode
                 )
 
             else
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
+                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate))
+                    |> Maybe.withDefault emptyNode
                 )
 
-        ( dateOfBirthEntry, ageEntry ) =
+        dateOfBirthEntry =
             Maybe.map
                 (\birthDate ->
-                    ( viewEntry Translate.DateOfBirth (formatDDMMYY birthDate)
-                    , viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate)
-                    )
+                    viewEntry Translate.DateOfBirth (formatDDMMYY birthDate)
                 )
                 person.birthDate
-                |> Maybe.withDefault ( emptyNode, emptyNode )
+                |> Maybe.withDefault emptyNode
 
         genderEntry =
             viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)

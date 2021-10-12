@@ -94,7 +94,7 @@ ecdMilestoneWarnings =
 
 headCircumferenceWarnings : List EncounterWarning
 headCircumferenceWarnings =
-    [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly, NoECDMilstoneWarning ]
+    [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly, NoHeadCircumferenceWarning ]
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
