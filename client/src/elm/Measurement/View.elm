@@ -1280,7 +1280,7 @@ viewVitalsForm language currentDate config form =
                         (\ages ->
                             let
                                 ( redAlertValueSys, redAlertValueDia ) =
-                                    if ages.days == 1 then
+                                    if ages.days <= 1 then
                                         ( 80, 50 )
 
                                     else if ages.days <= 7 then
