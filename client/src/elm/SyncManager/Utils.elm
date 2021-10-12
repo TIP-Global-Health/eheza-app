@@ -372,6 +372,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             getIdentifier identifier "acute_findings"
 
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            getIdentifier identifier "acute_illness_core_exam"
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             getIdentifier identifier "acute_illness_danger_signs"
 
@@ -888,6 +891,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteFindings identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteFindings identifier
 
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessCoreExam identifier
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessDangerSigns identifier
 
@@ -1366,6 +1372,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
     case backendAuthorityEntity of
         BackendAuthorityAcuteFindings identifier ->
             AcuteFindingsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            AcuteIllnessCoreExamRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             AcuteIllnessDangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity

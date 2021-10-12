@@ -57,23 +57,23 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id initiator db model =
+view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw initiator db model =
     let
         data =
-            generateAssembledData currentDate id db
+            generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewContent language currentDate id initiator model) identity data
+    viewWebData language (viewContent language currentDate id isChw initiator model) identity data
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id initiator model data =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw initiator model data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
 
         diagnosisByCurrentEncounterMeasurements =
-            resolveAcuteIllnessDiagnosis currentDate data
+            resolveAcuteIllnessDiagnosis currentDate isChw data
                 |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
         currentEncounterData =
@@ -108,7 +108,7 @@ viewContent language currentDate id initiator model data =
                     |> Maybe.withDefault []
 
         ( _, pendingActivities ) =
-            splitActivities currentDate isFirstEncounter data
+            splitActivities currentDate isChw isFirstEncounter data
 
         endEncounterDialog =
             if model.showEndEncounetrDialog then

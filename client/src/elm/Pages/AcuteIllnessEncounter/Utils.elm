@@ -46,8 +46,8 @@ import Pages.AcuteIllnessEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-generateAssembledData : NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> WebData AssembledData
-generateAssembledData currentDate id db =
+generateAssembledData : NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> WebData AssembledData
+generateAssembledData currentDate id isChw db =
     let
         encounter =
             Dict.get id db.acuteIllnessEncounters
@@ -98,7 +98,7 @@ generateAssembledData currentDate id db =
         diagnosisByCurrentEncounterMeasurements =
             assembled
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate)
+                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate isChw)
                 |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
         ( currentByPreviousEncounters, previousByPreviousEncounters ) =
@@ -229,20 +229,20 @@ getAcuteIllnessDiagnosisForEncounters encounters =
         |> List.head
 
 
-resolveNextStepFirstEncounter : NominalDate -> AssembledData -> Maybe NextStepsTask
-resolveNextStepFirstEncounter currentDate data =
-    resolveNextStepsTasks currentDate True data
+resolveNextStepFirstEncounter : NominalDate -> Bool -> AssembledData -> Maybe NextStepsTask
+resolveNextStepFirstEncounter currentDate isChw data =
+    resolveNextStepsTasks currentDate isChw True data
         |> List.head
 
 
-resolveNextStepSubsequentEncounter : NominalDate -> AssembledData -> Maybe NextStepsTask
-resolveNextStepSubsequentEncounter currentDate data =
-    resolveNextStepsTasks currentDate False data
+resolveNextStepSubsequentEncounter : NominalDate -> Bool -> AssembledData -> Maybe NextStepsTask
+resolveNextStepSubsequentEncounter currentDate isChw data =
+    resolveNextStepsTasks currentDate isChw False data
         |> List.head
 
 
-resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTask
-resolveNextStepsTasks currentDate isFirstEncounter data =
+resolveNextStepsTasks : NominalDate -> Bool -> Bool -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate isChw isFirstEncounter data =
     let
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
@@ -252,7 +252,7 @@ resolveNextStepsTasks currentDate isFirstEncounter data =
         [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTaskFirstEncounter currentDate data.person diagnosis data.measurements)
 
-    else if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
+    else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         -- The order is important. Do not change.
         [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person diagnosis data.measurements)
@@ -532,12 +532,12 @@ muacRedOnSubsequentVisit measurements =
         |> Maybe.withDefault False
 
 
-expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
-expectActivity currentDate isFirstEncounter data activity =
+expectActivity : NominalDate -> Bool -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
+expectActivity currentDate isChw isFirstEncounter data activity =
     case activity of
         AcuteIllnessLaboratory ->
             if isFirstEncounter then
-                mandatoryActivitiesCompletedFirstEncounter currentDate data.person data.measurements
+                mandatoryActivitiesCompletedFirstEncounter currentDate data.person isChw data.measurements
                     && feverRecorded data.measurements
 
             else
@@ -590,7 +590,7 @@ expectActivity currentDate isFirstEncounter data activity =
                     |> not
 
         AcuteIllnessNextSteps ->
-            resolveNextStepsTasks currentDate isFirstEncounter data
+            resolveNextStepsTasks currentDate isChw isFirstEncounter data
                 |> List.isEmpty
                 |> not
 
@@ -598,8 +598,8 @@ expectActivity currentDate isFirstEncounter data activity =
             True
 
 
-activityCompleted : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
-activityCompleted currentDate isFirstEncounter data activity =
+activityCompleted : NominalDate -> Bool -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
+activityCompleted currentDate isChw isFirstEncounter data activity =
     let
         person =
             data.person
@@ -612,14 +612,14 @@ activityCompleted currentDate isFirstEncounter data activity =
     in
     case activity of
         AcuteIllnessSymptoms ->
-            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessSymptoms
+            mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements AcuteIllnessSymptoms
 
         AcuteIllnessPhysicalExam ->
             if isFirstEncounter then
-                mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessPhysicalExam
+                mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements AcuteIllnessPhysicalExam
 
             else
-                mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessPhysicalExam
+                mandatoryActivityCompletedSubsequentVisit currentDate isChw data AcuteIllnessPhysicalExam
 
         AcuteIllnessPriorTreatment ->
             isJust measurements.treatmentReview
@@ -628,12 +628,12 @@ activityCompleted currentDate isFirstEncounter data activity =
             isJust measurements.malariaTesting
 
         AcuteIllnessExposure ->
-            mandatoryActivityCompletedFirstEncounter currentDate person measurements AcuteIllnessExposure
+            mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
             let
                 nextStepsTasks =
-                    resolveNextStepsTasks currentDate isFirstEncounter data
+                    resolveNextStepsTasks currentDate isChw isFirstEncounter data
             in
             if isFirstEncounter then
                 case nextStepsTasks of
@@ -700,23 +700,23 @@ activityCompleted currentDate isFirstEncounter data activity =
                         False
 
         AcuteIllnessDangerSigns ->
-            mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessDangerSigns
+            mandatoryActivityCompletedSubsequentVisit currentDate isChw data AcuteIllnessDangerSigns
 
         AcuteIllnessOngoingTreatment ->
-            mandatoryActivityCompletedSubsequentVisit currentDate data AcuteIllnessOngoingTreatment
+            mandatoryActivityCompletedSubsequentVisit currentDate isChw data AcuteIllnessOngoingTreatment
 
 
 {-| These are the activities that are mandatory for us to come up with diagnosis during first encounter.
 Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative.
 -}
-mandatoryActivitiesCompletedFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
-mandatoryActivitiesCompletedFirstEncounter currentDate person measurements =
+mandatoryActivitiesCompletedFirstEncounter : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Bool
+mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements =
     [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
-        |> List.all (mandatoryActivityCompletedFirstEncounter currentDate person measurements)
+        |> List.all (mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements)
 
 
-mandatoryActivityCompletedFirstEncounter : NominalDate -> Person -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompletedFirstEncounter currentDate person measurements activity =
+mandatoryActivityCompletedFirstEncounter : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements activity =
     case activity of
         AcuteIllnessSymptoms ->
             isJust measurements.symptomsGeneral
@@ -726,8 +726,9 @@ mandatoryActivityCompletedFirstEncounter currentDate person measurements activit
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
                 && isJust measurements.acuteFindings
-                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamMuac) || isJust measurements.muac)
-                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamNutrition) || isJust measurements.nutrition)
+                && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamMuac) || isJust measurements.muac)
+                && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamNutrition) || isJust measurements.nutrition)
+                && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamCoreExam) || isJust measurements.coreExam)
 
         AcuteIllnessExposure ->
             isJust measurements.travelHistory
@@ -739,14 +740,14 @@ mandatoryActivityCompletedFirstEncounter currentDate person measurements activit
 
 {-| These are the activities that are mandatory for us to come up with next steps during subsequent encounter.
 -}
-mandatoryActivitiesCompletedSubsequentVisit : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesCompletedSubsequentVisit currentDate data =
+mandatoryActivitiesCompletedSubsequentVisit : NominalDate -> Bool -> AssembledData -> Bool
+mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data =
     [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment, AcuteIllnessLaboratory ]
-        |> List.all (mandatoryActivityCompletedSubsequentVisit currentDate data)
+        |> List.all (mandatoryActivityCompletedSubsequentVisit currentDate isChw data)
 
 
-mandatoryActivityCompletedSubsequentVisit : NominalDate -> AssembledData -> AcuteIllnessActivity -> Bool
-mandatoryActivityCompletedSubsequentVisit currentDate data activity =
+mandatoryActivityCompletedSubsequentVisit : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
+mandatoryActivityCompletedSubsequentVisit currentDate isChw data activity =
     let
         person =
             data.person
@@ -760,16 +761,17 @@ mandatoryActivityCompletedSubsequentVisit currentDate data activity =
 
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
-                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamMuac) || isJust measurements.muac)
-                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamNutrition) || isJust measurements.nutrition)
-                && ((not <| expectPhysicalExamTask currentDate person False PhysicalExamAcuteFindings) || isJust measurements.acuteFindings)
+                && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamMuac) || isJust measurements.muac)
+                && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamNutrition) || isJust measurements.nutrition)
+                && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamAcuteFindings) || isJust measurements.acuteFindings)
+                && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamCoreExam) || isJust measurements.coreExam)
 
         AcuteIllnessOngoingTreatment ->
-            (not <| expectActivity currentDate False data AcuteIllnessOngoingTreatment)
+            (not <| expectActivity currentDate isChw False data AcuteIllnessOngoingTreatment)
                 || isJust measurements.treatmentOngoing
 
         AcuteIllnessLaboratory ->
-            (not <| expectActivity currentDate False data AcuteIllnessLaboratory)
+            (not <| expectActivity currentDate isChw False data AcuteIllnessLaboratory)
                 || isJust measurements.malariaTesting
 
         _ ->
@@ -805,8 +807,8 @@ ageDependentARINextStep currentDate person =
             )
 
 
-resolveAcuteIllnessDiagnosis : NominalDate -> AssembledData -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis currentDate data =
+resolveAcuteIllnessDiagnosis : NominalDate -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosis currentDate isChw data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
@@ -821,7 +823,7 @@ resolveAcuteIllnessDiagnosis currentDate data =
             Just DiagnosisCovid19
 
         else
-            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person covid19ByPartialSet data.measurements
+            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person isChw covid19ByPartialSet data.measurements
 
     else
         malariaRapidTestResult data.measurements
@@ -920,10 +922,10 @@ covid19Diagnosed measurements =
     )
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person covid19ByPartialSet measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person isChw covid19ByPartialSet measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
-    if mandatoryActivitiesCompletedFirstEncounter currentDate person measurements then
+    if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
         if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
 

@@ -21,7 +21,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (InvocationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHCForm)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -47,6 +47,9 @@ import Pages.Utils
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewRedAlertForBool
+        , viewRedAlertForSelect
+        , viewYellowAlertForSelect
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -2104,7 +2107,7 @@ viewVitalsForm language currentDate assembled form =
             , birthDate = assembled.person.birthDate
             , formClass = "examination vitals"
             , mode = VitalsFormFull
-            , invocationModule = InvocationModulePrenatal
+            , invokationModule = InvokationModulePrenatal
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
@@ -2671,40 +2674,6 @@ viewNewbornEnrolmentForm language currentDate assembled =
 
 
 -- HELPER FUNCITONS
-
-
-viewRedAlertForSelect : List a -> List a -> Html any
-viewRedAlertForSelect actual normal =
-    viewAlertForSelect "red" actual normal
-
-
-viewYellowAlertForSelect : List a -> List a -> Html any
-viewYellowAlertForSelect actual normal =
-    viewAlertForSelect "yellow" actual normal
-
-
-viewAlertForSelect : String -> List a -> List a -> Html any
-viewAlertForSelect color actual normal =
-    if
-        List.isEmpty actual
-            || List.all
-                (\item ->
-                    List.member item normal
-                )
-                actual
-    then
-        emptyNode
-
-    else
-        div [ class <| "alert " ++ color ]
-            [ viewAlert color ]
-
-
-viewRedAlertForBool : Maybe Bool -> Bool -> Html any
-viewRedAlertForBool actual normal =
-    viewRedAlertForSelect
-        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
-        [ normal ]
 
 
 viewNumberInput :

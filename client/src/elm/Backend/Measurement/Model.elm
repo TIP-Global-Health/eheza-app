@@ -1189,6 +1189,16 @@ type alias TreatmentOngoing =
     AcuteIllnessMeasurement TreatmentOngoingValue
 
 
+type alias AcuteIllnessCoreExam =
+    AcuteIllnessMeasurement AcuteIllnessCoreExamValue
+
+
+type alias AcuteIllnessCoreExamValue =
+    { heart : EverySet HeartCPESign
+    , lungs : EverySet LungsCPESign
+    }
+
+
 type AcuteIllnessDangerSign
     = DangerSignConditionNotImproving
     | DangerSignUnableDrinkSuck
@@ -1645,6 +1655,7 @@ type alias AcuteIllnessMeasurements =
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
     , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
+    , coreExam : Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )
     }
 
 

@@ -27,6 +27,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'acute_illness_core_exam' => array(
+      'name' => t('Acute Illness Core Exam'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'acute_illness_danger_signs' => array(
       'name' => t('Acute Illness Danger Signs'),
       'base' => 'node_content',

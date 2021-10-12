@@ -1351,8 +1351,8 @@ viewVitalsForm language currentDate config form =
         heartRateSection =
             let
                 ( redAlerts, yellowAlerts ) =
-                    case config.invocationModule of
-                        InvocationModulePrenatal ->
+                    case config.invokationModule of
+                        InvokationModulePrenatal ->
                             ( [ [ (>) 40 ], [ (<=) 120 ] ]
                             , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
                             )
@@ -1404,8 +1404,8 @@ viewVitalsForm language currentDate config form =
         respiratoryRateSection =
             let
                 ( redAlerts, yellowAlerts ) =
-                    case config.invocationModule of
-                        InvocationModulePrenatal ->
+                    case config.invokationModule of
+                        InvokationModulePrenatal ->
                             ( [ [ (>) 12 ], [ (<) 30 ] ]
                             , [ [ (<=) 21, (>=) 30 ] ]
                             )

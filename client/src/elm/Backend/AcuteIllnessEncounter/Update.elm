@@ -188,13 +188,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SaveAcuteIllnessDangerSigns personId valueId value ->
-            ( { model | saveAcuteIllnessDangerSigns = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessDangerSignsEndpoint HandleSavedAcuteIllnessDangerSigns
+        SaveDangerSigns personId valueId value ->
+            ( { model | saveDangerSigns = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessDangerSignsEndpoint HandleSavedDangerSigns
             )
 
-        HandleSavedAcuteIllnessDangerSigns data ->
-            ( { model | saveAcuteIllnessDangerSigns = data }
+        HandleSavedDangerSigns data ->
+            ( { model | saveDangerSigns = data }
             , Cmd.none
             )
 
@@ -225,6 +225,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedFollowUp data ->
             ( { model | saveFollowUp = data }
+            , Cmd.none
+            )
+
+        SaveCoreExam personId valueId value ->
+            ( { model | saveCoreExam = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessCoreExamEndpoint HandleSavedCoreExam
+            )
+
+        HandleSavedCoreExam data ->
+            ( { model | saveCoreExam = data }
             , Cmd.none
             )
 

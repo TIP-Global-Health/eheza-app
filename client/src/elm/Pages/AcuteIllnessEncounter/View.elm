@@ -27,17 +27,17 @@ import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw db model =
     let
         data =
-            generateAssembledData currentDate id db
+            generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id db model data =
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw db model data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
@@ -46,7 +46,7 @@ viewHeaderAndContent language currentDate id db model data =
             viewHeader language data
 
         content =
-            viewContent language currentDate id model data
+            viewContent language currentDate id isChw model data
 
         endEncounterDialog =
             if model.showEndEncounetrDialog then
@@ -220,10 +220,10 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id model data =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw model data =
     (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
-        :: viewMainPageContent language currentDate id data model
+        :: viewMainPageContent language currentDate id isChw data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -295,8 +295,8 @@ alertsDialog language isOpen setAlertsDialogStateMsg =
         Nothing
 
 
-viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id data model =
+viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id isChw data model =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
@@ -305,7 +305,7 @@ viewMainPageContent language currentDate id data model =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            splitActivities currentDate isFirstEncounter data
+            splitActivities currentDate isChw isFirstEncounter data
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -395,11 +395,11 @@ viewMainPageContent language currentDate id data model =
     ]
 
 
-splitActivities : NominalDate -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
-splitActivities currentDate isFirstEncounter data =
+splitActivities : NominalDate -> Bool -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
+splitActivities currentDate isChw isFirstEncounter data =
     getAllActivities isFirstEncounter
-        |> List.filter (expectActivity currentDate isFirstEncounter data)
-        |> List.partition (activityCompleted currentDate isFirstEncounter data)
+        |> List.filter (expectActivity currentDate isChw isFirstEncounter data)
+        |> List.partition (activityCompleted currentDate isChw isFirstEncounter data)
 
 
 viewEndEncounterButton : Language -> Bool -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg

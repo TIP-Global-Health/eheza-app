@@ -997,3 +997,11 @@ type alias WellChildRotarixImmunisationId =
 
 type WellChildRotarixImmunisationUuidType
     = WellChildRotarixImmunisationUuidType
+
+
+type alias AcuteIllnessCoreExamId =
+    EntityUuid AcuteIllnessCoreExamUuidType
+
+
+type AcuteIllnessCoreExamUuidType
+    = AcuteIllnessCoreExamUuidType

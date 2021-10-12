@@ -493,6 +493,40 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewRedAlertForSelect : List a -> List a -> Html any
+viewRedAlertForSelect actual normal =
+    viewAlertForSelect "red" actual normal
+
+
+viewYellowAlertForSelect : List a -> List a -> Html any
+viewYellowAlertForSelect actual normal =
+    viewAlertForSelect "yellow" actual normal
+
+
+viewAlertForSelect : String -> List a -> List a -> Html any
+viewAlertForSelect color actual normal =
+    if
+        List.isEmpty actual
+            || List.all
+                (\item ->
+                    List.member item normal
+                )
+                actual
+    then
+        emptyNode
+
+    else
+        div [ class <| "alert " ++ color ]
+            [ viewAlert color ]
+
+
+viewRedAlertForBool : Maybe Bool -> Bool -> Html any
+viewRedAlertForBool actual normal =
+    viewRedAlertForSelect
+        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
+        [ normal ]
+
+
 {-| The idea here is that we get lists for red alert conditions, and yellow
 alert conditions. If any of red conditions matches, we present red alert.
 If any of yellow conditions matches, we present yellow alert.

@@ -2,52 +2,7 @@ module Pages.AcuteIllnessActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
-import Backend.Measurement.Model
-    exposing
-        ( AcuteFindingsGeneralSign(..)
-        , AcuteFindingsRespiratorySign(..)
-        , AcuteFindingsValue
-        , AcuteIllnessDangerSign(..)
-        , AcuteIllnessMeasurement
-        , AcuteIllnessMeasurements
-        , AdministrationNote(..)
-        , AdverseEvent(..)
-        , Call114Sign(..)
-        , Call114Value
-        , ChildNutritionSign(..)
-        , ExposureSign(..)
-        , FollowUpOption(..)
-        , HCContactSign(..)
-        , HCContactValue
-        , HCRecommendation(..)
-        , HealthEducationSign(..)
-        , HealthEducationValue
-        , IsolationSign(..)
-        , IsolationValue
-        , MalariaRapidTestResult(..)
-        , MedicationDistributionSign(..)
-        , MedicationDistributionValue
-        , MedicationNonAdministrationSign(..)
-        , MuacInCm(..)
-        , ReasonForNotIsolating(..)
-        , ReasonForNotProvidingHealthEducation(..)
-        , ReasonForNotSendingToHC(..)
-        , ReasonForNotTaking(..)
-        , Recommendation114(..)
-        , RecommendationSite(..)
-        , ResponsePeriod(..)
-        , SendToHCSign(..)
-        , SendToHCValue
-        , SymptomsGIDerivedSign(..)
-        , SymptomsGISign(..)
-        , SymptomsGIValue
-        , SymptomsGeneralSign(..)
-        , SymptomsRespiratorySign(..)
-        , TravelHistorySign(..)
-        , TreatmentOngoingSign(..)
-        , TreatmentOngoingValue
-        , TreatmentReviewSign(..)
-        )
+import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
@@ -213,6 +168,17 @@ physicalExamTasksCompletedFromTotal isChw measurements data task =
                     + taskCompleted form.bodyTemperature
                 , 5
                 )
+
+        PhysicalExamCoreExam ->
+            let
+                form =
+                    measurements.coreExam
+                        |> getMeasurementValueFunc
+                        |> coreExamFormWithDefault data.coreExamForm
+            in
+            ( taskCompleted form.heart + taskCompleted form.lungs
+            , 2
+            )
 
         PhysicalExamMuac ->
             let
@@ -1500,11 +1466,14 @@ toReviewDangerSignsValue form =
         form.symptoms
 
 
-expectPhysicalExamTask : NominalDate -> Person -> Bool -> PhysicalExamTask -> Bool
-expectPhysicalExamTask currentDate person isFirstEncounter task =
+expectPhysicalExamTask : NominalDate -> Person -> Bool -> Bool -> PhysicalExamTask -> Bool
+expectPhysicalExamTask currentDate person isChw isFirstEncounter task =
     case task of
         PhysicalExamVitals ->
             True
+
+        PhysicalExamCoreExam ->
+            not isChw
 
         -- We show Muac for children of 6 months to 5 years old.
         PhysicalExamMuac ->
@@ -1569,6 +1538,37 @@ toNutritionValueWithDefault saved form =
 toNutritionValue : AcuteIllnessNutritionForm -> Maybe (EverySet ChildNutritionSign)
 toNutritionValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+
+
+fromCoreExamValue : Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
+fromCoreExamValue saved =
+    { heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
+    , lungs = Maybe.map (.lungs >> EverySet.toList) saved
+    }
+
+
+coreExamFormWithDefault : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
+coreExamFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { heart = or form.heart (value.heart |> EverySet.toList |> List.head)
+                , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
+                }
+            )
+
+
+toCoreExamValueWithDefault : Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue
+toCoreExamValueWithDefault saved form =
+    coreExamFormWithDefault form saved
+        |> toCoreExamValue
+
+
+toCoreExamValue : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue
+toCoreExamValue form =
+    Maybe.map AcuteIllnessCoreExamValue (Maybe.map EverySet.singleton form.heart)
+        |> andMap (Maybe.map EverySet.fromList form.lungs)
 
 
 

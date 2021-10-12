@@ -423,7 +423,6 @@ toCorePhysicalExamValueWithDefault saved form =
 
 toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
 toCorePhysicalExamValue form =
-    -- Also, termporary things here, until CorePhysicalExamForm is redefined
     Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
         |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
         |> andMap (Maybe.map EverySet.singleton form.heart)

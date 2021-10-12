@@ -21,6 +21,16 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create acute_illness_core_exam content'.
+  $permissions['create acute_illness_core_exam content'] = array(
+    'name' => 'create acute_illness_core_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create acute_illness_danger_signs content'.
   $permissions['create acute_illness_danger_signs content'] = array(
     'name' => 'create acute_illness_danger_signs content',
@@ -220,6 +230,15 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any acute_illness_core_exam content'.
+  $permissions['delete any acute_illness_core_exam content'] = array(
+    'name' => 'delete any acute_illness_core_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any acute_illness_danger_signs content'.
   $permissions['delete any acute_illness_danger_signs content'] = array(
     'name' => 'delete any acute_illness_danger_signs content',
@@ -400,6 +419,15 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own acute_illness_core_exam content'.
+  $permissions['delete own acute_illness_core_exam content'] = array(
+    'name' => 'delete own acute_illness_core_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own acute_illness_danger_signs content'.
   $permissions['delete own acute_illness_danger_signs content'] = array(
     'name' => 'delete own acute_illness_danger_signs content',
@@ -574,6 +602,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit any acute_findings content'.
   $permissions['edit any acute_findings content'] = array(
     'name' => 'edit any acute_findings content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any acute_illness_core_exam content'.
+  $permissions['edit any acute_illness_core_exam content'] = array(
+    'name' => 'edit any acute_illness_core_exam content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -774,6 +812,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit own acute_findings content'.
   $permissions['edit own acute_findings content'] = array(
     'name' => 'edit own acute_findings content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own acute_illness_core_exam content'.
+  $permissions['edit own acute_illness_core_exam content'] = array(
+    'name' => 'edit own acute_illness_core_exam content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
