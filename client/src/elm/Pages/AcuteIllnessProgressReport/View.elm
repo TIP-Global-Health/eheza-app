@@ -12,12 +12,12 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
@@ -37,9 +37,10 @@ import Pages.AcuteIllnessEncounter.Utils
         )
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
-import Pages.DemographicsReport.View exposing (viewItemHeading)
+import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog)
+import Pages.WellChildProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
@@ -89,10 +90,6 @@ viewContent language currentDate id initiator model data =
             else
                 List.head data.previousEncountersData
 
-        illnessBeganDate =
-            Maybe.map .startDate firstEncounterData
-                |> Maybe.withDefault currentDate
-
         subsequentEncountersData =
             if isFirstEncounter then
                 []
@@ -137,23 +134,34 @@ viewContent language currentDate id initiator model data =
                     emptyNode
     in
     div [ class "page-report acute-illness" ]
-        [ div
+        [ viewHeader language id initiator
+        , div
             [ class "ui report unstackable items" ]
-            [ viewHeader language illnessBeganDate id initiator
-            , viewPersonInfo language currentDate data.person data.measurements
+            [ viewPersonInfoPane language currentDate data.person
             , viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data
             , viewSymptomsPane language currentDate isFirstEncounter firstEncounterData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data
+            , viewNutritionSignsPane language currentDate firstEncounterData subsequentEncountersData data
+            , viewTreatmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData data
+            , viewNextStepsPane language currentDate data
             , endEncounterButton
             ]
         , viewModal endEncounterDialog
         ]
 
 
-viewHeader : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> Html Msg
-viewHeader language date id initiator =
+viewHeader : Language -> AcuteIllnessEncounterId -> AcuteIllnessProgressReportInitiator -> Html Msg
+viewHeader language id initiator =
     let
+        label =
+            case initiator of
+                InitiatorEncounterPage ->
+                    Translate.ProgressReport
+
+                _ ->
+                    Translate.AcuteIllnessHistory
+
         goBackPage =
             case initiator of
                 InitiatorEncounterPage ->
@@ -168,75 +176,16 @@ viewHeader language date id initiator =
                 InitiatorGroupNutritionProgressReport sessionId personId ->
                     SessionPage sessionId (ProgressReportPage personId)
     in
-    div [ class "report-header" ]
-        [ a
-            [ class "icon-back"
+    div [ class "ui basic segment head" ]
+        [ h1 [ class "ui header" ]
+            [ text <| translate language label
+            ]
+        , span
+            [ class "link-back"
             , onClick <| SetActivePage (UserPage goBackPage)
             ]
-            []
-        , h1 [ class "ui report header" ]
-            [ text <| translate language Translate.ProgressReport ]
-        , p [ class "date" ]
-            [ text <| translate language Translate.CurrentIllnessBegan
-            , text " - "
-            , text <| renderDate language date
-            ]
-        ]
-
-
-viewPersonInfo : Language -> NominalDate -> Person -> AcuteIllnessMeasurements -> Html Msg
-viewPersonInfo language currentDate person measurements =
-    let
-        isAdult =
-            isPersonAnAdult currentDate person
-                |> Maybe.withDefault True
-
-        ( thumbnailClass, maybeAge ) =
-            if isAdult then
-                ( "mother"
-                , ageInYears currentDate person
-                    |> Maybe.map (\age -> translate language <| Translate.YearsOld age)
-                )
-
-            else
-                ( "child"
-                , person.birthDate
-                    |> Maybe.map
-                        (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
-                )
-
-        viewAge =
-            maybeAge
-                |> Maybe.map
-                    (\age ->
-                        p []
-                            [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ": " ]
-                            , span [] [ text age ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
-
-        viewVillage =
-            person.village
-                |> Maybe.map
-                    (\village ->
-                        p []
-                            [ span [ class "label" ] [ text <| translate language Translate.Village ++ ": " ]
-                            , span [] [ text village ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
-    in
-    div
-        [ class "item person-details" ]
-        [ div [ class "ui image" ]
-            [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width
-            ]
-        , div [ class "content" ]
-            [ h2 [ class "ui header" ]
-                [ text person.name ]
-            , viewAge
-            , viewVillage
+            [ span [ class "icon-back" ] []
+            , span [] []
             ]
         ]
 
@@ -250,83 +199,418 @@ viewAssessmentPane :
     -> AssembledData
     -> Html Msg
 viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData data =
-    let
-        assessment =
-            data.diagnosis
-                |> Maybe.map
+    if isNothing data.diagnosis && isNothing data.previousDiagnosis then
+        emptyNode
+
+    else
+        let
+            viewAssessmentEntry date diagnosis status background =
+                div [ class <| "entry " ++ background ]
+                    [ div [ class "title" ] [ text <| translate language Translate.Assessment ++ ":" ]
+                    , div [ class "assessment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
+                    , div [ class "date" ] [ text <| (translate language <| Translate.AcuteIllnessStatus status) ++ ": " ++ formatDDMMYY date ]
+                    ]
+
+            currentAssessment =
+                Maybe.map
                     (\( date, diagnosis ) ->
-                        let
-                            diagnosisText =
-                                text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis
+                        if isJust data.participant.outcome then
+                            viewAssessmentEntry date diagnosis AcuteIllnessResolved "green"
 
-                            ( diagnosisSuffix, additionalObservations, diagnosisDate ) =
-                                if isFirstEncounter then
-                                    ( [], [], emptyNode )
+                        else
+                            let
+                                status =
+                                    if isNothing data.previousDiagnosis then
+                                        AcuteIllnessBegan
 
-                                else
-                                    let
-                                        isImproving =
-                                            not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
-
-                                        respiratoryDistress =
-                                            if respiratoryRateElevated currentDate data.person data.measurements then
-                                                p [] [ text <| translate language Translate.RespiratoryDistress ]
-
-                                            else
-                                                emptyNode
-
-                                        severeAcuteMalnutrition =
-                                            if muacRedOnSubsequentVisit data.measurements then
-                                                p [] [ text <| translate language Translate.SevereAcuteMalnutrition ]
-
-                                            else
-                                                emptyNode
-
-                                        malnutritionWithComplications =
-                                            if sendToHCOnSubsequentVisitByNutrition data.measurements then
-                                                p [] [ text <| translate language Translate.MalnutritionWithComplications ]
-
-                                            else
-                                                emptyNode
-                                    in
-                                    ( [ text " - ["
-                                      , text <| translate language <| Translate.ConditionImproving isImproving
-                                      , text "]"
-                                      ]
-                                    , [ respiratoryDistress
-                                      , severeAcuteMalnutrition
-                                      , malnutritionWithComplications
-                                      ]
-                                    , p [ class "diagnosis-date" ] [ text <| formatDDMMYY date ++ ":" ]
-                                    )
-
-                            currentDiagnosisHtml =
-                                div [ class "diagnosis" ] <|
-                                    [ diagnosisDate
-                                    , p [] <| diagnosisText :: diagnosisSuffix
-                                    ]
-                                        ++ additionalObservations
-
-                            previousDiagnosisHtml =
-                                data.previousDiagnosis
-                                    |> Maybe.map
-                                        (\( datePrevious, previousDiagnosis ) ->
-                                            div [ class "diagnosis" ]
-                                                [ p [ class "diagnosis-date" ] [ text <| formatDDMMYY datePrevious ++ ":" ]
-                                                , p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning previousDiagnosis ]
-                                                ]
-                                        )
-                                    |> Maybe.withDefault emptyNode
-                        in
-                        [ previousDiagnosisHtml, currentDiagnosisHtml ]
+                                    else
+                                        AcuteIllnessUpdated
+                            in
+                            viewAssessmentEntry date diagnosis status "red"
                     )
-                |> Maybe.withDefault []
+                    data.diagnosis
+                    |> Maybe.withDefault emptyNode
+
+            previousAssessment =
+                Maybe.map
+                    (\( date, diagnosis ) ->
+                        if isJust data.participant.outcome then
+                            emptyNode
+
+                        else
+                            viewAssessmentEntry date diagnosis AcuteIllnessBegan "orange"
+                    )
+                    data.previousDiagnosis
+                    |> Maybe.withDefault emptyNode
+        in
+        div [ class "pane assessment" ]
+            [ currentAssessment
+            , previousAssessment
+            ]
+
+
+viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe AcuteIllnessEncounterData -> Html Msg
+viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
+    let
+        symptomsTable =
+            firstEncounterData
+                |> Maybe.map
+                    (\dataFirst ->
+                        let
+                            symptomsMaxDuration getFunc measurement =
+                                measurement
+                                    |> Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
+                                    |> Maybe.withDefault 1
+
+                            maxDuration =
+                                List.maximum
+                                    [ symptomsMaxDuration .value dataFirst.measurements.symptomsGeneral
+                                    , symptomsMaxDuration .value dataFirst.measurements.symptomsRespiratory
+                                    , symptomsMaxDuration (.value >> .signs) dataFirst.measurements.symptomsGI
+                                    ]
+                                    |> Maybe.withDefault 1
+
+                            filterSymptoms symptomDuration exclusion dict =
+                                Dict.toList dict
+                                    |> List.filterMap
+                                        (\( symptom, count ) ->
+                                            if symptom /= exclusion && count > symptomDuration then
+                                                Just symptom
+
+                                            else
+                                                Nothing
+                                        )
+
+                            symptomsGeneral duration =
+                                dataFirst.measurements.symptomsGeneral
+                                    |> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> filterSymptoms duration NoSymptomsGeneral
+                                            >> List.map (\symptom -> li [ class "general" ] [ text <| translate language (Translate.SymptomsGeneralSign symptom) ])
+                                        )
+                                    |> Maybe.withDefault []
+
+                            symptomsRespiratory duration =
+                                dataFirst.measurements.symptomsRespiratory
+                                    |> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> filterSymptoms duration NoSymptomsRespiratory
+                                            >> List.map (\symptom -> li [ class "respiratory" ] [ text <| translate language (Translate.SymptomsRespiratorySign symptom) ])
+                                        )
+                                    |> Maybe.withDefault []
+
+                            symptomsGI duration =
+                                dataFirst.measurements.symptomsGI
+                                    |> Maybe.map
+                                        (\measurement ->
+                                            Tuple.second measurement
+                                                |> .value
+                                                |> .signs
+                                                |> filterSymptoms duration NoSymptomsGI
+                                                |> List.map
+                                                    (\symptom ->
+                                                        let
+                                                            translation =
+                                                                if symptom == Vomiting then
+                                                                    Tuple.second measurement
+                                                                        |> .value
+                                                                        |> .derivedSigns
+                                                                        |> EverySet.member IntractableVomiting
+                                                                        |> Translate.IntractableVomiting
+
+                                                                else
+                                                                    Translate.SymptomsGISignAbbrev symptom
+                                                        in
+                                                        li [ class "gi" ] [ text <| translate language translation ]
+                                                    )
+                                        )
+                                    |> Maybe.withDefault []
+
+                            values =
+                                List.repeat maxDuration dataFirst.startDate
+                                    |> List.indexedMap
+                                        (\index date ->
+                                            ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
+                                            , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
+                                            )
+                                        )
+                                    |> List.filter (Tuple.second >> List.isEmpty >> not)
+
+                            totalValues =
+                                List.length values
+                        in
+                        values
+                            |> List.indexedMap
+                                (\index ( date, symptoms ) ->
+                                    let
+                                        timeline =
+                                            if index == 0 then
+                                                viewTimeLineTop (totalValues == 1)
+
+                                            else if index == totalValues - 1 then
+                                                viewTimeLineBottom
+
+                                            else
+                                                viewTimeLineMiddle
+                                    in
+                                    div [ class "symptoms-table-row" ]
+                                        [ div [ class "date" ] [ text date ]
+                                        , div [ class "timeline" ] timeline
+                                        , ul [] symptoms
+                                        ]
+                                )
+                            |> div [ class "symptoms-table" ]
+                    )
+                |> Maybe.withDefault emptyNode
     in
-    div [ class "pane assessment" ]
-        [ viewItemHeading language Translate.Assessment "blue"
-        , assessment
-            ++ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
-            |> div [ class "pane-content" ]
+    div [ class "pane symptoms" ]
+        [ viewPaneHeading language Translate.Symptoms
+        , symptomsTable
+        ]
+
+
+viewTimeLineTop : Bool -> List (Html any)
+viewTimeLineTop isSingle =
+    [ div [ class "line half" ] []
+    , div
+        [ classList
+            [ ( "line half", True )
+            , ( "blue", not isSingle )
+            ]
+        ]
+        [ img [ src "assets/images/icon-blue-ball.svg" ]
+            []
+        ]
+    ]
+
+
+viewTimeLineMiddle : List (Html any)
+viewTimeLineMiddle =
+    [ div [ class "line blue" ]
+        [ img [ src "assets/images/icon-blue-circle.png" ]
+            []
+        ]
+    ]
+
+
+viewTimeLineBottom : List (Html any)
+viewTimeLineBottom =
+    [ div [ class "line half blue" ] []
+    , div [ class "line half" ]
+        [ img [ src "assets/images/icon-blue-circle.png" ]
+            []
+        ]
+    ]
+
+
+viewPhysicalExamPane :
+    Language
+    -> NominalDate
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
+    -> AssembledData
+    -> Html Msg
+viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data =
+    let
+        allEncountersData =
+            firstEncounterData
+                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
+                |> Maybe.withDefault []
+
+        maybeAgeMonths =
+            ageInMonths currentDate data.person
+
+        showMuac =
+            isChildUnderAgeOf5 currentDate data.person
+
+        muacHeader =
+            if showMuac then
+                th [ class "muac" ] [ text <| translate language Translate.MUAC ]
+
+            else
+                emptyNode
+
+        header =
+            [ tr []
+                [ th [ class "date" ] [ text <| translate language Translate.Date ]
+                , th [ class "body-temperature" ] [ text <| translate language Translate.BodyTemperature ]
+                , th [ class "respiratory-rate" ] [ text <| translate language Translate.RespiratoryRate ]
+                , muacHeader
+                ]
+            ]
+
+        rows =
+            List.map
+                (\encounterData ->
+                    let
+                        bodyTemperature =
+                            encounterData.measurements.vitals
+                                |> getMeasurementValueFunc
+                                |> Maybe.map .bodyTemperature
+
+                        bodyTemperatureValue =
+                            Maybe.map
+                                (\value ->
+                                    String.fromFloat value ++ " " ++ translate language Translate.CelsiusAbbrev
+                                )
+                                bodyTemperature
+
+                        bodyTemperatureWarning =
+                            Maybe.andThen
+                                (\bodyTemperature_ ->
+                                    if bodyTemperature_ < 35 || bodyTemperature_ >= 37.5 then
+                                        Just "red"
+
+                                    else
+                                        Nothing
+                                )
+                                bodyTemperature
+
+                        respiratoryRate =
+                            encounterData.measurements.vitals
+                                |> getMeasurementValueFunc
+                                |> Maybe.map .respiratoryRate
+
+                        respiratoryRateValue =
+                            Maybe.map
+                                (\value ->
+                                    translate language <| Translate.BpmUnit value
+                                )
+                                respiratoryRate
+
+                        respiratoryRateWarning =
+                            Maybe.andThen
+                                (\respiratoryRate_ ->
+                                    if respiratoryRateAbnormalForAge maybeAgeMonths respiratoryRate_ then
+                                        Just "red"
+
+                                    else
+                                        Nothing
+                                )
+                                respiratoryRate
+
+                        muac =
+                            encounterData.measurements
+                                |> .muac
+                                |> getMeasurementValueFunc
+                                |> Maybe.map (\(MuacInCm muac_) -> muac_)
+
+                        muacValue =
+                            Maybe.map String.fromFloat muac
+
+                        muacWarning =
+                            Maybe.map
+                                (\muac_ ->
+                                    case muacIndication (MuacInCm muac_) of
+                                        ColorAlertRed ->
+                                            "red"
+
+                                        ColorAlertYellow ->
+                                            "orange"
+
+                                        ColorAlertGreen ->
+                                            "green"
+                                )
+                                muac
+
+                        muacCell =
+                            if not showMuac then
+                                emptyNode
+
+                            else if isNothing muac then
+                                viewNotTaken
+
+                            else if muacWarning == Just "green" then
+                                td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+
+                            else
+                                viewValueWithAlert muacValue muacWarning "muac"
+                    in
+                    tr []
+                        [ td [ class "date" ] [ text <| formatDDMMYY encounterData.startDate ]
+                        , viewValueWithAlert bodyTemperatureValue bodyTemperatureWarning "body-temperature"
+                        , viewValueWithAlert respiratoryRateValue respiratoryRateWarning "respiratory-rate"
+                        , muacCell
+                        ]
+                )
+                allEncountersData
+
+        viewNotTaken =
+            td [] [ text <| translate language Translate.NotTaken ]
+
+        viewValueWithAlert maybeValue maybeAlert class_ =
+            Maybe.map
+                (\value ->
+                    let
+                        alert =
+                            Maybe.map
+                                (\color_ -> span [ class <| "alert " ++ color_ ] [])
+                                maybeAlert
+                                |> Maybe.withDefault emptyNode
+                    in
+                    td [ class class_ ]
+                        [ span [] [ text value ]
+                        , alert
+                        ]
+                )
+                maybeValue
+                |> Maybe.withDefault viewNotTaken
+    in
+    div [ class "pane physical-exam" ]
+        [ viewPaneHeading language Translate.PhysicalExam
+        , table [ class "ui collapsing celled table" ]
+            [ thead [] header
+            , tbody [] rows
+            ]
+        ]
+
+
+viewNutritionSignsPane :
+    Language
+    -> NominalDate
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
+    -> AssembledData
+    -> Html Msg
+viewNutritionSignsPane language currentDate firstEncounterData subsequentEncountersData data =
+    let
+        nutritions =
+            firstEncounterData
+                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
+                |> Maybe.withDefault []
+                |> List.filterMap
+                    (.measurements
+                        >> .nutrition
+                        >> Maybe.map (\( _, measurement ) -> ( measurement.dateMeasured, measurement.value ))
+                    )
+    in
+    if List.isEmpty nutritions then
+        -- If there is no signs to display, we do not show the pane.
+        -- Note that we do not record nutrition signs for adults.
+        emptyNode
+
+    else
+        div [ class "pane nutrition-signs" ]
+            [ viewPaneHeading language Translate.NitritionSigns
+            , div [ class "pane-content" ] <|
+                viewNutritionSigns language data.person nutritions
+            ]
+
+
+viewTreatmentPane :
+    Language
+    -> NominalDate
+    -> Bool
+    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
+    -> Html Msg
+viewTreatmentPane language currentDate isFirstEncounter firstEncounterData subsequentEncountersData =
+    div [ class "pane treatment" ]
+        [ viewPaneHeading language Translate.Treatment
+        , div [ class "pane-content" ] <|
+            viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData
         ]
 
 
@@ -360,7 +644,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                                             in
                                             div [ class "treatment-comment" ]
                                                 [ text <| translate language signTransId
-                                                , text ","
+                                                , text ", "
                                                 , b [] [ text medicationHelpedEnding ]
                                                 , text "."
                                                 ]
@@ -490,352 +774,6 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
         |> Maybe.withDefault []
 
 
-viewSymptomsPane : Language -> NominalDate -> Bool -> Maybe AcuteIllnessEncounterData -> Html Msg
-viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
-    let
-        headingTransId =
-            if isFirstEncounter then
-                Translate.Symptoms
-
-            else
-                Translate.SymptomsAtFirstEncounter
-
-        symptomsTable =
-            firstEncounterData
-                |> Maybe.map
-                    (\dataFirst ->
-                        let
-                            symptomsMaxDuration getFunc measurement =
-                                measurement
-                                    |> Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
-                                    |> Maybe.withDefault 1
-
-                            maxDuration =
-                                List.maximum
-                                    [ symptomsMaxDuration .value dataFirst.measurements.symptomsGeneral
-                                    , symptomsMaxDuration .value dataFirst.measurements.symptomsRespiratory
-                                    , symptomsMaxDuration (.value >> .signs) dataFirst.measurements.symptomsGI
-                                    ]
-                                    |> Maybe.withDefault 1
-
-                            filterSymptoms symptomDuration exclusion dict =
-                                Dict.toList dict
-                                    |> List.filterMap
-                                        (\( symptom, count ) ->
-                                            if symptom /= exclusion && count > symptomDuration then
-                                                Just symptom
-
-                                            else
-                                                Nothing
-                                        )
-
-                            symptomsGeneral duration =
-                                dataFirst.measurements.symptomsGeneral
-                                    |> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> filterSymptoms duration NoSymptomsGeneral
-                                            >> List.map (\symptom -> li [ class "general" ] [ text <| translate language (Translate.SymptomsGeneralSign symptom) ])
-                                        )
-                                    |> Maybe.withDefault []
-
-                            symptomsRespiratory duration =
-                                dataFirst.measurements.symptomsRespiratory
-                                    |> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> filterSymptoms duration NoSymptomsRespiratory
-                                            >> List.map (\symptom -> li [ class "respiratory" ] [ text <| translate language (Translate.SymptomsRespiratorySign symptom) ])
-                                        )
-                                    |> Maybe.withDefault []
-
-                            symptomsGI duration =
-                                dataFirst.measurements.symptomsGI
-                                    |> Maybe.map
-                                        (\measurement ->
-                                            Tuple.second measurement
-                                                |> .value
-                                                |> .signs
-                                                |> filterSymptoms duration NoSymptomsGI
-                                                |> List.map
-                                                    (\symptom ->
-                                                        let
-                                                            translation =
-                                                                if symptom == Vomiting then
-                                                                    Tuple.second measurement
-                                                                        |> .value
-                                                                        |> .derivedSigns
-                                                                        |> EverySet.member IntractableVomiting
-                                                                        |> Translate.IntractableVomiting
-
-                                                                else
-                                                                    Translate.SymptomsGISignAbbrev symptom
-                                                        in
-                                                        li [ class "gi" ] [ text <| translate language translation ]
-                                                    )
-                                        )
-                                    |> Maybe.withDefault []
-
-                            values =
-                                List.repeat maxDuration dataFirst.startDate
-                                    |> List.indexedMap
-                                        (\index date ->
-                                            ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
-                                            , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
-                                            )
-                                        )
-                                    |> List.filter (Tuple.second >> List.isEmpty >> not)
-
-                            totalValues =
-                                List.length values
-                        in
-                        values
-                            |> List.indexedMap
-                                (\index ( date, symptoms ) ->
-                                    let
-                                        timeline =
-                                            if index == 0 then
-                                                viewTimeLineTop (totalValues == 1)
-
-                                            else if index == totalValues - 1 then
-                                                viewTimeLineBottom
-
-                                            else
-                                                viewTimeLineMiddle
-                                    in
-                                    div [ class "symptoms-table-row" ]
-                                        [ div [ class "date" ] [ text date ]
-                                        , div [ class "timeline" ] timeline
-                                        , ul [] symptoms
-                                        ]
-                                )
-                            |> div [ class "symptoms-table" ]
-                    )
-                |> Maybe.withDefault emptyNode
-    in
-    div [ class "pane symptoms" ]
-        [ viewItemHeading language headingTransId "blue"
-        , symptomsTable
-        ]
-
-
-viewTimeLineTop : Bool -> List (Html any)
-viewTimeLineTop isSingle =
-    [ div [ class "line half" ] []
-    , div
-        [ classList
-            [ ( "line half", True )
-            , ( "blue", not isSingle )
-            ]
-        ]
-        [ img [ src "assets/images/icon-blue-ball.svg" ]
-            []
-        ]
-    ]
-
-
-viewTimeLineMiddle : List (Html any)
-viewTimeLineMiddle =
-    [ div [ class "line blue" ]
-        [ img [ src "assets/images/icon-blue-circle.png" ]
-            []
-        ]
-    ]
-
-
-viewTimeLineBottom : List (Html any)
-viewTimeLineBottom =
-    [ div [ class "line half blue" ] []
-    , div [ class "line half" ]
-        [ img [ src "assets/images/icon-blue-circle.png" ]
-            []
-        ]
-    ]
-
-
-viewPhysicalExamPane :
-    Language
-    -> NominalDate
-    -> Maybe AcuteIllnessEncounterData
-    -> List AcuteIllnessEncounterData
-    -> AssembledData
-    -> Html Msg
-viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData data =
-    let
-        viewDateCell date =
-            th [] [ text <| formatDDMMYY date ]
-
-        viewValueNormal =
-            td [] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
-
-        viewBodyTemperatureCell maybeBodyTemperature =
-            maybeBodyTemperature
-                |> Maybe.map
-                    (\bodyTemperature_ ->
-                        if bodyTemperature_ < 35 || bodyTemperature_ >= 37.5 then
-                            td [ class "red" ] [ text <| String.fromFloat bodyTemperature_ ++ " " ++ translate language Translate.CelsiusAbbrev ]
-
-                        else
-                            viewValueNormal
-                    )
-                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
-
-        viewRespiratoryRateCell maybeRespiratoryRate =
-            maybeRespiratoryRate
-                |> Maybe.map
-                    (\respiratoryRate_ ->
-                        if respiratoryRateAbnormalForAge maybeAgeMonths respiratoryRate_ then
-                            td [ class "red" ] [ text <| translate language <| Translate.BpmUnit respiratoryRate_ ]
-
-                        else
-                            viewValueNormal
-                    )
-                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
-
-        maybeAgeMonths =
-            ageInMonths currentDate data.person
-
-        viewMuacCell maybeMuac =
-            maybeMuac
-                |> Maybe.map
-                    (\(MuacInCm muac_) ->
-                        let
-                            muacColor =
-                                case muacIndication (MuacInCm muac_) of
-                                    ColorAlertRed ->
-                                        "red"
-
-                                    ColorAlertYellow ->
-                                        "yellow"
-
-                                    ColorAlertGreen ->
-                                        "green"
-                        in
-                        td [ class muacColor ] [ text <| String.fromFloat muac_ ]
-                    )
-                |> Maybe.withDefault (td [] [ text <| translate language Translate.NotTaken ])
-
-        allEncountersData =
-            firstEncounterData
-                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
-                |> Maybe.withDefault []
-
-        tables =
-            allEncountersData
-                |> greedyGroupsOf 4
-                |> List.map
-                    (\groupOfFour ->
-                        let
-                            dates =
-                                List.map .startDate groupOfFour
-
-                            bodyTemperatures =
-                                groupOfFour
-                                    |> List.map
-                                        (.measurements
-                                            >> .vitals
-                                            >> Maybe.map (Tuple.second >> .value >> .bodyTemperature)
-                                        )
-
-                            respiratoryRates =
-                                groupOfFour
-                                    |> List.map
-                                        (.measurements
-                                            >> .vitals
-                                            >> Maybe.map (Tuple.second >> .value >> .respiratoryRate)
-                                        )
-
-                            muacs =
-                                groupOfFour
-                                    |> List.map
-                                        (.measurements
-                                            >> .muac
-                                            >> getMeasurementValueFunc
-                                        )
-
-                            tableHead =
-                                th [ class "first" ] []
-                                    :: List.map viewDateCell dates
-                                    |> tr []
-                                    |> List.singleton
-
-                            feverRow =
-                                td [ class "first" ] [ text <| translate language Translate.BodyTemperature ]
-                                    :: List.map viewBodyTemperatureCell bodyTemperatures
-                                    |> tr []
-
-                            tachypneaRow =
-                                td [ class "first" ] [ text <| translate language Translate.RespiratoryRate ]
-                                    :: List.map viewRespiratoryRateCell respiratoryRates
-                                    |> tr []
-
-                            muacRow =
-                                if isChildUnderAgeOf5 currentDate data.person then
-                                    td [ class "first" ] [ text <| translate language Translate.MUAC ]
-                                        :: List.map viewMuacCell muacs
-                                        |> tr []
-
-                                else
-                                    emptyNode
-
-                            tableBody =
-                                [ feverRow
-                                , tachypneaRow
-                                , muacRow
-                                ]
-                        in
-                        table
-                            [ class "ui collapsing celled table" ]
-                            [ thead [] tableHead
-                            , tbody [] tableBody
-                            ]
-                    )
-
-        heading =
-            viewItemHeading language Translate.PhysicalExam "blue"
-
-        nutrition =
-            -- We show nutrition data of current encounter.
-            data.measurements.nutrition
-                |> getMeasurementValueFunc
-
-        nutritionSignsTable =
-            nutrition
-                |> Maybe.map
-                    (viewNutritionSigns language currentDate)
-                |> Maybe.withDefault emptyNode
-    in
-    (heading :: tables)
-        ++ [ nutritionSignsTable ]
-        |> div [ class "pane physical-exam" ]
-
-
-viewNutritionSigns : Language -> NominalDate -> EverySet ChildNutritionSign -> Html any
-viewNutritionSigns language dateOfLastAssessment signs =
-    table
-        [ class "ui celled table nutrition-signs" ]
-        [ tbody []
-            [ tr []
-                [ td
-                    [ class "first" ]
-                    [ ChildActivity NutritionSigns
-                        |> Translate.ActivityProgressReport
-                        |> translate language
-                        |> text
-                    ]
-                , (signs
-                    |> EverySet.toList
-                    |> List.map (translate language << Translate.ChildNutritionSignReport)
-                    |> String.join ", "
-                    |> text
-                    |> List.singleton
-                  )
-                    |> td []
-                ]
-            ]
-        ]
-
-
 viewActionsTakenPane :
     Language
     -> NominalDate
@@ -872,7 +810,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                 |> div [ class "instructions" ]
     in
     div [ class "pane actions-taken" ]
-        [ viewItemHeading language Translate.ActionsTaken "blue"
+        [ viewPaneHeading language Translate.ActionsTaken
         , content
         ]
 
@@ -1193,3 +1131,56 @@ viewActionsTakenHealthEducation language date measurements =
 
     else
         []
+
+
+viewNextStepsPane :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> Html Msg
+viewNextStepsPane language currentDate data =
+    if isJust data.participant.outcome then
+        -- Illness resolved, therefore, we do not show
+        -- Next Steps pane.
+        emptyNode
+
+    else
+        let
+            instructions =
+                data.measurements.followUp
+                    |> getMeasurementValueFunc
+                    |> Maybe.andThen (EverySet.toList >> List.head)
+                    |> Maybe.map
+                        (\followUp ->
+                            let
+                                followUpDate =
+                                    calculateDueDate data.encounter.startDate followUp
+
+                                diff =
+                                    diffDays currentDate followUpDate
+                            in
+                            if diff > 0 then
+                                [ text <| translate language Translate.FollowUpWithPatientIn
+                                , text " "
+                                , span [ class "in-days" ] [ text <| String.toLower <| translate language <| Translate.DaySinglePlural diff ]
+                                , text " "
+                                , text <| String.toLower <| translate language Translate.On
+                                , text " "
+                                , text <| formatDDMMYY followUpDate
+                                , text "."
+                                ]
+
+                            else
+                                [ text <| translate language Translate.FollowUpWithPatientOn
+                                , text " "
+                                , text <| formatDDMMYY followUpDate
+                                , text "."
+                                ]
+                        )
+                    |> Maybe.withDefault []
+        in
+        div [ class "pane next-steps" ]
+            [ viewPaneHeading language Translate.NextSteps
+            , div [ class "instructions" ]
+                instructions
+            ]

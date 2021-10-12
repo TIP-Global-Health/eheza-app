@@ -1078,7 +1078,7 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
                 if ageMonths < 12 then
                     rate >= 50
 
-                else if ageMonths < 60 then
+                else if ageMonths < 5 * 12 then
                     rate >= 40
 
                 else

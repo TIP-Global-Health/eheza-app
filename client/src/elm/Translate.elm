@@ -74,6 +74,7 @@ import Pages.AcuteIllnessActivity.Model
         , PriorTreatmentTask(..)
         , SymptomsTask(..)
         )
+import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Dashboard.Model as Dashboard
     exposing
@@ -287,9 +288,11 @@ type TranslationId
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
+    | AcuteIllnessHistory
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
+    | AcuteIllnessStatus AcuteIllnessStatus
     | ActiveDiagnosis
     | Activities
     | ActivitiesCompleted Int
@@ -535,6 +538,8 @@ type TranslationId
     | FirstName
     | FiveVisits
     | ForIllustrativePurposesOnly
+    | FollowUpWithPatientIn
+    | FollowUpWithPatientOn
     | FollowUpLabel
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
@@ -733,6 +738,7 @@ type TranslationId
     | NutritionHelper
     | NutritionHygieneSignQuestion NutritionHygieneSign
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
+    | NitritionSigns
     | NutritionSupplementType NutritionSupplementType
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
@@ -993,6 +999,7 @@ type TranslationId
     | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
+    | Treatment
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -1410,6 +1417,11 @@ translationSet trans =
             , kinyarwanda = Just "Indwara ifatiyeho iheruka kuvurwa"
             }
 
+        AcuteIllnessHistory ->
+            { english = "Acute Illness History"
+            , kinyarwanda = Nothing
+            }
+
         AcuteIllnessNew ->
             { english = "New Acute Illness"
             , kinyarwanda = Just "Indwara ifatiyeho nshyashya"
@@ -1419,6 +1431,23 @@ translationSet trans =
             { english = "Acute Illness Outcome"
             , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho\n"
             }
+
+        AcuteIllnessStatus status ->
+            case status of
+                AcuteIllnessBegan ->
+                    { english = "Began"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessUpdated ->
+                    { english = "Updated"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessResolved ->
+                    { english = "Resolved"
+                    , kinyarwanda = Nothing
+                    }
 
         ActiveDiagnosis ->
             { english = "Active Diagnosis"
@@ -3792,6 +3821,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FollowUpWithPatientIn ->
+            { english = "Follow up with patient in"
+            , kinyarwanda = Nothing
+            }
+
+        FollowUpWithPatientOn ->
+            { english = "Follow up with patient on"
+            , kinyarwanda = Nothing
+            }
+
         FollowUpLabel ->
             { english = "Follow up with the patient in"
             , kinyarwanda = Just "Gukurikirana umurwayi mu"
@@ -5826,6 +5865,11 @@ translationSet trans =
                     { english = "None"
                     , kinyarwanda = Just "Nta na kimwe"
                     }
+
+        NitritionSigns ->
+            { english = "Nitrition Signs"
+            , kinyarwanda = Nothing
+            }
 
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
@@ -8038,6 +8082,11 @@ translationSet trans =
             , kinyarwanda = Just "Amukuru ku ngendo"
             }
 
+        Treatment ->
+            { english = "Treatment"
+            , kinyarwanda = Nothing
+            }
+
         TrySyncing ->
             { english = "Try syncing with backend"
             , kinyarwanda = Just "Gerageza guhuza amakuru y'iki gikoresho cy'ikoranabuhanga n'abakoze E-Heza"
@@ -8607,7 +8656,7 @@ translationSet trans =
             }
 
         YearsOld int ->
-            { english = String.fromInt int ++ " Years old"
+            { english = String.fromInt int ++ " years old"
             , kinyarwanda = Just (String.fromInt int)
             }
 

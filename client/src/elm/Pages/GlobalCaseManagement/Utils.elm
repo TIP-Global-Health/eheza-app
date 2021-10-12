@@ -237,7 +237,7 @@ followUpDueOptionByDate currentDate dateMeasured options =
         dueDate =
             EverySet.toList options
                 |> List.head
-                |> Maybe.map (caclulateDueDate dateMeasured)
+                |> Maybe.map (calculateDueDate dateMeasured)
                 |> Maybe.withDefault dateMeasured
 
         diff =
@@ -263,12 +263,12 @@ caclulateFollowUpDueDate : NominalDate -> EverySet FollowUpOption -> NominalDate
 caclulateFollowUpDueDate dateMeasured options =
     EverySet.toList options
         |> List.head
-        |> Maybe.map (caclulateDueDate dateMeasured)
+        |> Maybe.map (calculateDueDate dateMeasured)
         |> Maybe.withDefault dateMeasured
 
 
-caclulateDueDate : NominalDate -> FollowUpOption -> NominalDate
-caclulateDueDate dateMeasured option =
+calculateDueDate : NominalDate -> FollowUpOption -> NominalDate
+calculateDueDate dateMeasured option =
     case option of
         OneDay ->
             Date.add Days 1 dateMeasured
