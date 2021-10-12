@@ -1005,3 +1005,11 @@ type alias AcuteIllnessCoreExamId =
 
 type AcuteIllnessCoreExamUuidType
     = AcuteIllnessCoreExamUuidType
+
+
+type alias CovidTestingId =
+    EntityUuid CovidTestingUuidType
+
+
+type CovidTestingUuidType
+    = CovidTestingUuidType
