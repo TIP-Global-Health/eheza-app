@@ -524,7 +524,7 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionProgressReport encounterId)
-                            |> oldPageWrapper model
+                            |> flexPageWrapper model
 
                     AcuteIllnessEncounterPage id ->
                         let
@@ -554,7 +554,7 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.AcuteIllnessProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
-                            |> oldPageWrapper model
+                            |> flexPageWrapper model
 
                     AcuteIllnessOutcomePage id ->
                         let
@@ -614,7 +614,7 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.WellChildProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
-                            |> oldPageWrapper model
+                            |> flexPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language
