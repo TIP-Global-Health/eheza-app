@@ -57,6 +57,7 @@ var tableForType = {
     counseling_session: 'shards',
     counseling_topic: 'nodes',
     core_physical_exam: 'shards',
+    covid_testing: 'shards',
     danger_signs: 'shards',
     exposure: 'shards',
     family_planning: 'shards',
