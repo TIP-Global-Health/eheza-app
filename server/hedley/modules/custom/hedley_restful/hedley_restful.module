@@ -61,6 +61,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'contributing_factors' => 'contributing-factors',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
+  'covid_testing' => 'covid-testing',
   'danger_signs' => 'danger-signs',
   'exposure' => 'exposures',
   'family_planning' => 'family-plannings',
