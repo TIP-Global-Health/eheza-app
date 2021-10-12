@@ -3268,10 +3268,26 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildBCGImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildContributingFactorsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildDTPImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3338,10 +3354,18 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        WellChildImmunisationRevision uuid data ->
+        WellChildHPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | immunisation = Just ( uuid, data ) })
+                (\measurements -> { measurements | hpvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildIPVImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3350,6 +3374,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | mebendezole = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildMRImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3378,6 +3410,22 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildOPVImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildPCV13ImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildPhotoRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -3394,6 +3442,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildRotarixImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildSendToHCRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -3406,14 +3462,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | symptomsReview = Just ( uuid, data ) })
-                model
-            , recalc
-            )
-
-        WellChildVaccinationHistoryRevision uuid data ->
-            ( mapWellChildMeasurements
-                data.encounterId
-                (\measurements -> { measurements | vaccinationHistory = Just ( uuid, data ) })
                 model
             , recalc
             )

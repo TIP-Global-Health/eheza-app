@@ -611,16 +611,16 @@ vaccineTypeToString type_ =
 vaccineDoseFromString : String -> Maybe VaccineDose
 vaccineDoseFromString dose =
     case dose of
-        "1" ->
+        "dose-1" ->
             Just VaccineDoseFirst
 
-        "2" ->
+        "dose-2" ->
             Just VaccineDoseSecond
 
-        "3" ->
+        "dose-3" ->
             Just VaccineDoseThird
 
-        "4" ->
+        "dose-4" ->
             Just VaccineDoseFourth
 
         _ ->
@@ -631,16 +631,16 @@ vaccineDoseToString : VaccineDose -> String
 vaccineDoseToString dose =
     case dose of
         VaccineDoseFirst ->
-            "1"
+            "dose-1"
 
         VaccineDoseSecond ->
-            "2"
+            "dose-2"
 
         VaccineDoseThird ->
-            "3"
+            "dose-3"
 
         VaccineDoseFourth ->
-            "4"
+            "dose-4"
 
 
 getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v

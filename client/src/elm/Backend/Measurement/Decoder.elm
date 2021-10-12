@@ -189,13 +189,19 @@ decodeWellChildMeasurements =
         |> optional "well_child_follow_up" (decodeHead decodeWellChildFollowUp) Nothing
         |> optional "well_child_send_to_hc" (decodeHead decodeWellChildSendToHC) Nothing
         |> optional "well_child_head_circumference" (decodeHead decodeWellChildHeadCircumference) Nothing
-        |> optional "well_child_immunisation" (decodeHead decodeWellChildImmunisation) Nothing
         |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
         |> optional "well_child_albendazole" (decodeHead decodeWellChildAlbendazole) Nothing
         |> optional "well_child_mebendezole" (decodeHead decodeWellChildMebendezole) Nothing
         |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
         |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
-        |> optional "well_child_vaccination_history" (decodeHead decodeWellChildVaccinationHistory) Nothing
+        |> optional "well_child_bcg_immunisation" (decodeHead decodeWellChildBCGImmunisation) Nothing
+        |> optional "well_child_dtp_immunisation" (decodeHead decodeWellChildDTPImmunisation) Nothing
+        |> optional "well_child_hpv_immunisation" (decodeHead decodeWellChildHPVImmunisation) Nothing
+        |> optional "well_child_ipv_immunisation" (decodeHead decodeWellChildIPVImmunisation) Nothing
+        |> optional "well_child_mr_immunisation" (decodeHead decodeWellChildMRImmunisation) Nothing
+        |> optional "well_child_opv_immunisation" (decodeHead decodeWellChildOPVImmunisation) Nothing
+        |> optional "well_child_pcv13_immunisation" (decodeHead decodeWellChildPCV13Immunisation) Nothing
+        |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -3078,80 +3084,6 @@ decodeMeasurementNote =
             )
 
 
-decodeWellChildImmunisation : Decoder WellChildImmunisation
-decodeWellChildImmunisation =
-    decodeWellChildMeasurement decodeImmunisationValue
-
-
-decodeImmunisationValue : Decoder ImmunisationValue
-decodeImmunisationValue =
-    let
-        everySetToMaybe =
-            EverySet.toList >> List.head
-    in
-    succeed ImmunisationValue
-        |> required "suggested_vaccines" (map Dict.fromList (list decodeVaccinationEntry))
-        |> required "vaccination_notes" (map Dict.fromList (list decodeVacinationNote))
-        |> required "bcg_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-        |> required "opv_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-        |> required "dtp_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-        |> required "pcv13_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-        |> required "rotarix_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-        |> required "ipv_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-        |> required "mr_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-        |> required "hpv_vaccination_date" (map everySetToMaybe (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD))
-
-
-decodeVaccinationEntry : Decoder ( VaccineType, VaccineDose )
-decodeVaccinationEntry =
-    string
-        |> andThen
-            (\suggestedVaccine ->
-                let
-                    parts =
-                        String.split "-" suggestedVaccine
-
-                    type_ =
-                        List.head parts
-                            |> Maybe.andThen vaccineTypeFromString
-
-                    dose =
-                        List.tail parts
-                            |> Maybe.map (List.intersperse "-" >> String.concat)
-                            |> Maybe.andThen vaccineDoseFromString
-                in
-                Maybe.map2 (\first second -> ( first, second ) |> succeed)
-                    type_
-                    dose
-                    |> Maybe.withDefault (fail <| suggestedVaccine ++ " is not a recognized SuggestedVaccine")
-            )
-
-
-decodeVacinationNote : Decoder ( VaccineType, AdministrationNote )
-decodeVacinationNote =
-    string
-        |> andThen
-            (\vacinationNote ->
-                let
-                    parts =
-                        String.split "-" vacinationNote
-
-                    type_ =
-                        List.head parts
-                            |> Maybe.andThen vaccineTypeFromString
-
-                    note =
-                        List.tail parts
-                            |> Maybe.map (List.intersperse "-" >> String.concat)
-                            |> Maybe.andThen administrationNoteFromString
-                in
-                Maybe.map2 (\first second -> ( first, second ) |> succeed)
-                    type_
-                    note
-                    |> Maybe.withDefault (fail <| vacinationNote ++ " is not a recognized VacinationNote")
-            )
-
-
 decodeVaccineType : Decoder VaccineType
 decodeVaccineType =
     string
@@ -3176,23 +3108,23 @@ decodeVaccineDose =
 
 decodeWellChildAlbendazole : Decoder WellChildAlbendazole
 decodeWellChildAlbendazole =
-    decodeAdministrationNote
-        |> field "administration_note"
-        |> decodeWellChildMeasurement
+    decodeWellChildMeasurement decodeWellChildMedication
 
 
 decodeWellChildMebendezole : Decoder WellChildMebendezole
 decodeWellChildMebendezole =
-    decodeAdministrationNote
-        |> field "administration_note"
-        |> decodeWellChildMeasurement
+    decodeWellChildMeasurement decodeWellChildMedication
 
 
 decodeWellChildVitaminA : Decoder WellChildVitaminA
 decodeWellChildVitaminA =
+    decodeWellChildMeasurement decodeWellChildMedication
+
+
+decodeWellChildMedication : Decoder AdministrationNote
+decodeWellChildMedication =
     decodeAdministrationNote
         |> field "administration_note"
-        |> decodeWellChildMeasurement
 
 
 decodeAdministrationNote : Decoder AdministrationNote
@@ -3265,41 +3197,49 @@ decodeNextVisitValue =
         |> required "pediatric_visit_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
 
 
-decodeWellChildVaccinationHistory : Decoder WellChildVaccinationHistory
-decodeWellChildVaccinationHistory =
-    decodeWellChildMeasurement decodeVaccinationHistoryValue
+decodeWellChildBCGImmunisation : Decoder WellChildBCGImmunisation
+decodeWellChildBCGImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
 
 
-decodeVaccinationHistoryValue : Decoder VaccinationHistoryValue
-decodeVaccinationHistoryValue =
-    let
-        explodeVaccines =
-            List.foldl
-                (\( type_, dose ) accum ->
-                    let
-                        updated =
-                            Dict.get type_ accum
-                                |> Maybe.map (EverySet.insert dose)
-                                |> Maybe.withDefault (EverySet.singleton dose)
-                    in
-                    Dict.insert type_ updated accum
-                )
-                Dict.empty
+decodeWellChildDTPImmunisation : Decoder WellChildDTPImmunisation
+decodeWellChildDTPImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
 
-        decodeVaccines =
-            oneOf
-                [ map explodeVaccines (list decodeVaccinationEntry)
-                , succeed Dict.empty
-                ]
-    in
-    succeed VaccinationHistoryValue
-        |> required "suggested_vaccines" decodeVaccines
-        |> required "administered_vaccines" decodeVaccines
-        |> required "bcg_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "opv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "dtp_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "pcv13_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "rotarix_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "ipv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "mr_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "hpv_vaccination_date" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+
+decodeWellChildHPVImmunisation : Decoder WellChildHPVImmunisation
+decodeWellChildHPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildIPVImmunisation : Decoder WellChildIPVImmunisation
+decodeWellChildIPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildMRImmunisation : Decoder WellChildMRImmunisation
+decodeWellChildMRImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildOPVImmunisation : Decoder WellChildOPVImmunisation
+decodeWellChildOPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildPCV13Immunisation : Decoder WellChildPCV13Immunisation
+decodeWellChildPCV13Immunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildRotarixImmunisation : Decoder WellChildRotarixImmunisation
+decodeWellChildRotarixImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeVaccinationValue : Decoder VaccinationValue
+decodeVaccinationValue =
+    succeed VaccinationValue
+        |> required "administered_doses" (decodeEverySet decodeVaccineDose)
+        |> required "administration_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "administration_note" decodeAdministrationNote

@@ -36,8 +36,8 @@ import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
 
-update : NominalDate -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : NominalDate -> Bool -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate isChw id db msg model =
     let
         resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
             Dict.get id db.wellChildMeasurements
@@ -51,24 +51,32 @@ update currentDate id db msg model =
                 |> Maybe.withDefault form
 
         generateNutritionAssessmentMsgs nextTask =
-            nextTask
-                |> Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ])
+            Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
 
         generateDangerSignsMsgs nextTask =
-            nextTask
-                |> Maybe.map (\task -> [ SetActiveDangerSignsTask task ])
+            Maybe.map (\task -> [ SetActiveDangerSignsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
 
         generateMedicationMsgs nextTask =
-            nextTask
-                |> Maybe.map (\task -> [ SetActiveMedicationTask task ])
+            Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
 
         generateNextStepsMsgs nextTask =
-            nextTask
-                |> Maybe.map (\task -> [ SetActiveNextStepsTask task ])
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+
+        generateImmunisationMsgs nextTask =
+            let
+                defaultMsg =
+                    if isChw then
+                        SetActivePage <| UserPage <| WellChildEncounterPage id
+
+                    else
+                        SetActiveImmunisationTask TaskOverview
+            in
+            Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
+                |> Maybe.withDefault [ defaultMsg ]
 
         focusOnCalendar =
             App.Model.ScrollToElement "dropdown--content-container"
@@ -223,7 +231,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetVitalsResporatoryRate value ->
             let
@@ -285,7 +293,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetActiveNutritionAssessmentTask task ->
             let
@@ -341,7 +349,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetHeadCircumference string ->
             let
@@ -399,7 +407,7 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         PreSaveHeadCircumference personId maybeZscore saved nextTask ->
             let
@@ -448,7 +456,7 @@ update currentDate id db msg model =
             , Cmd.none
             , setEncounterWarningMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SaveHeadCircumference personId saved nextTask_ ->
             let
@@ -476,7 +484,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetMuac string ->
             let
@@ -521,7 +529,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetNutritionSign sign ->
             let
@@ -579,7 +587,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetWeight string ->
             let
@@ -624,124 +632,220 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
-        SetCatchUpRequired value ->
+        SetActiveImmunisationTask task ->
             let
-                form =
-                    model.vaccinationHistoryForm
-
-                updatedForm =
-                    { form | catchUpRequired = Just value }
+                updatedData =
+                    model.immunisationData
+                        |> (\data -> { data | activeTask = Just task })
             in
-            ( { model | vaccinationHistoryForm = updatedForm }
+            ( { model | immunisationData = updatedData }
             , Cmd.none
             , []
             )
 
-        SetVaccinationHistoryBoolInput type_ dose vaccineAdministered ->
+        SetVaccinationFormViewMode vaccineType mode ->
             let
                 form =
-                    resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
 
-                administeredVaccines =
-                    Dict.get type_ form.administeredVaccines
-                        |> Maybe.map
-                            (\doses ->
-                                let
-                                    updatedDoses_ =
-                                        Dict.insert dose (Just vaccineAdministered) doses
+                updatedForm =
+                    { form | viewMode = mode }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
 
-                                    updatedDoses =
-                                        if vaccineAdministered then
-                                            updatedDoses_
+        SetAllowPreviousVaccinesUpdate vaccineType value ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
 
-                                        else
-                                            Dict.filter
-                                                (\dose_ _ ->
-                                                    vaccineDoseToComparable dose_ <= vaccineDoseToComparable dose
-                                                )
-                                                updatedDoses_
-                                in
-                                Dict.insert type_ updatedDoses form.administeredVaccines
-                            )
-                        |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just vaccineAdministered)) form.administeredVaccines)
+                updatedForm =
+                    { form | allowPreviousVaccinesUpdate = Just value }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
 
-                ( vaccinationDates, vaccinationDatesDirty ) =
-                    if vaccineAdministered then
-                        ( form.vaccinationDates, form.vaccinationDatesDirty )
+        SetWillReceiveVaccineToday vaccineType dose willReceive ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    if willReceive then
+                        { form
+                            | willReceiveVaccineToday = Just True
+                            , administeredDoses = insertIntoSet dose form.administeredDoses
+                            , administrationDates = insertIntoSet currentDate form.administrationDates
+                            , administrationNote = Just AdministeredToday
+                        }
 
                     else
                         let
-                            updatedDatesData =
-                                Dict.get type_ form.vaccinationDates
-                                    |> Maybe.map
-                                        (\datesData ->
-                                            ( Dict.filter (\dose_ _ -> vaccineDoseToComparable dose_ < vaccineDoseToComparable dose) datesData
-                                            , True
-                                            )
-                                        )
+                            updatedDoses =
+                                Maybe.map
+                                    (EverySet.toList
+                                        >> List.sortBy vaccineDoseToComparable
+                                        >> List.reverse
+                                        >> List.drop 1
+                                        >> EverySet.fromList
+                                    )
+                                    form.administeredDoses
+
+                            updatedDates =
+                                Maybe.map
+                                    (EverySet.toList
+                                        >> List.sortWith Date.compare
+                                        >> List.reverse
+                                        >> List.drop 1
+                                        >> EverySet.fromList
+                                    )
+                                    form.administrationDates
                         in
-                        Maybe.map
-                            (\( datesData, updated ) ->
-                                ( Dict.insert type_ datesData form.vaccinationDates, updated )
-                            )
-                            updatedDatesData
-                            |> Maybe.withDefault ( form.vaccinationDates, form.vaccinationDatesDirty )
+                        { form
+                            | willReceiveVaccineToday = Just False
+                            , administeredDoses = updatedDoses
+                            , administrationDates = updatedDates
+                            , administrationNote = Nothing
+                        }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetAdministrationNote vaccineType note ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | administrationNote = Just note }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleDateSelectorInput vaccineType ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | dateSelectorOpen = not form.dateSelectorOpen }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationUpdateDate vaccineType date ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | vaccinationUpdateDate = Just date }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SaveVaccinationUpdateDate vaccineType dose ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedModel =
+                    Maybe.map
+                        (\date ->
+                            let
+                                updatedForm =
+                                    { form
+                                        | administeredDoses = insertIntoSet dose form.administeredDoses
+                                        , administrationDates = insertIntoSet date form.administrationDates
+                                        , vaccinationUpdateDate = Nothing
+                                        , viewMode = ViewModeInitial
+                                    }
+                            in
+                            { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+                        )
+                        form.vaccinationUpdateDate
+                        |> Maybe.withDefault model
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        DeleteVaccinationUpdateDate vaccineType doseToDelete dateToDelete ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedDoses =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) doseToDelete)
+                            >> EverySet.fromList
+                        )
+                        form.administeredDoses
+
+                updatedDates =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) dateToDelete)
+                            >> EverySet.fromList
+                        )
+                        form.administrationDates
 
                 updatedForm =
                     { form
-                        | administeredVaccines = administeredVaccines
-                        , administeredVaccinesDirty = True
-                        , vaccinationDates = vaccinationDates
-                        , vaccinationDatesDirty = vaccinationDatesDirty
+                        | administeredDoses = updatedDoses
+                        , administrationDates = updatedDates
                     }
             in
-            ( { model | vaccinationHistoryForm = updatedForm }
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none
             , []
             )
 
-        SetVaccinationHistoryDateInput type_ dose date ->
+        SaveBCGImmunisation personId saved nextTask_ ->
             let
-                form =
-                    resolveFormWithDefaults .vaccinationHistory vaccinationHistoryFormWithDefault model.vaccinationHistoryForm
+                measurementId =
+                    Maybe.map Tuple.first saved
 
-                vaccinationDates =
-                    Dict.get type_ form.vaccinationDates
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.bcgForm
+                        |> toVaccinationValueWithDefault measurement
                         |> Maybe.map
-                            (\dates ->
-                                Dict.insert type_ (Dict.insert dose (Just date) dates) form.vaccinationDates
+                            (Backend.WellChildEncounter.Model.SaveBCGImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-                        |> Maybe.withDefault (Dict.insert type_ (Dict.singleton dose (Just date)) form.vaccinationDates)
-
-                updatedForm =
-                    { form | vaccinationDates = vaccinationDates, vaccinationDatesDirty = True }
+                        |> Maybe.withDefault []
             in
-            ( { model | vaccinationHistoryForm = updatedForm }
+            ( model
             , Cmd.none
-            , []
+            , appMsgs
             )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
-        ToggleVaccinationHistoryDateSelectorInput type_ dose ->
-            let
-                form =
-                    model.vaccinationHistoryForm
-
-                dateSelectorsState =
-                    Dict.get ( type_, dose ) form.dateSelectorsState
-                        |> Maybe.map (\value -> Dict.insert ( type_, dose ) (not value) form.dateSelectorsState)
-                        |> Maybe.withDefault (Dict.insert ( type_, dose ) True form.dateSelectorsState)
-
-                updatedForm =
-                    { form | dateSelectorsState = dateSelectorsState }
-            in
-            ( { model | vaccinationHistoryForm = updatedForm }
-            , Cmd.none
-            , [ focusOnCalendar ]
-            )
-
-        SaveVaccinationHistory personId suggestedVaccines saved ->
+        SaveDTPImmunisation personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -749,66 +853,27 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
                 appMsgs =
-                    model.vaccinationHistoryForm
-                        |> (\form -> { form | suggestedVaccines = suggestedVaccines })
-                        |> toVaccinationHistoryValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.WellChildEncounter.Model.SaveVaccinationHistory personId measurementId value
-                                    |> Backend.Model.MsgWellChildEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
-                                ]
+                    model.immunisationData.dtpForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveDTPImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
-        SetImmunisationBoolInput formUpdateFunc value ->
-            let
-                updatedForm =
-                    formUpdateFunc value model.immunisationForm
-            in
-            ( { model | immunisationForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
-        SetImmunisationAdministrationNoteInput formUpdateFunc value ->
-            let
-                updatedForm =
-                    formUpdateFunc value model.immunisationForm
-            in
-            ( { model | immunisationForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
-        SetImmunisationDateInput formUpdateFunc value ->
-            let
-                updatedForm =
-                    formUpdateFunc value model.immunisationForm
-            in
-            ( { model | immunisationForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
-        ToggleImmunisationDateSelectorInput formUpdateFunc ->
-            let
-                updatedForm =
-                    formUpdateFunc model.immunisationForm
-            in
-            ( { model | immunisationForm = updatedForm }
-            , Cmd.none
-            , [ focusOnCalendar ]
-            )
-
-        SaveImmunisation personId suggestedVaccines saved ->
+        SaveHPVImmunisation personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -816,24 +881,165 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
                 appMsgs =
-                    model.immunisationForm
-                        |> (\form -> { form | suggestedVaccines = suggestedVaccines })
-                        |> toImmunisationValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.WellChildEncounter.Model.SaveImmunisation personId measurementId value
-                                    |> Backend.Model.MsgWellChildEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
-                                ]
+                    model.immunisationData.hpvForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveHPVImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+
+        SaveIPVImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.ipvForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveIPVImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+
+        SaveMRImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.mrForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveMRImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+
+        SaveOPVImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.opvForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveOPVImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+
+        SavePCV13Immunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.pcv13Form
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SavePCV13Immunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+
+        SaveRotarixImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.rotarixForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveRotarixImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetECDBoolInput formUpdateFunc value ->
             let
@@ -938,7 +1144,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetMebendezoleAdministered value ->
             let
@@ -996,7 +1202,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetVitaminAAdministered value ->
             let
@@ -1054,7 +1260,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetActiveNextStepsTask task ->
             let
@@ -1178,7 +1384,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetProvidedEducationForDiagnosis value ->
             let
@@ -1240,7 +1446,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetContributingFactorsSign sign ->
             let
@@ -1297,7 +1503,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -1343,7 +1549,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit nextTask_ ->
             let
@@ -1372,7 +1578,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
         DropZoneComplete result ->
             let
@@ -1398,3 +1604,10 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+
+insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
+insertIntoSet value set =
+    Maybe.map (EverySet.insert value) set
+        |> Maybe.withDefault (EverySet.singleton value)
+        |> Just

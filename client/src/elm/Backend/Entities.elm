@@ -895,14 +895,6 @@ type WellChildVitalsUuidType
     = WellChildVitalsUuidType
 
 
-type alias WellChildImmunisationId =
-    EntityUuid WellChildImmunisationUuidType
-
-
-type WellChildImmunisationUuidType
-    = WellChildImmunisationUuidType
-
-
 type alias WellChildMebendezoleId =
     EntityUuid WellChildMebendezoleUuidType
 
@@ -943,9 +935,65 @@ type WellChildNextVisitUuidType
     = WellChildNextVisitUuidType
 
 
-type alias WellChildVaccinationHistoryId =
-    EntityUuid WellChildVaccinationHistoryUuidType
+type alias WellChildBCGImmunisationId =
+    EntityUuid WellChildBCGImmunisationUuidType
 
 
-type WellChildVaccinationHistoryUuidType
-    = WellChildVaccinationHistoryUuidType
+type WellChildBCGImmunisationUuidType
+    = WellChildBCGImmunisationUuidType
+
+
+type alias WellChildDTPImmunisationId =
+    EntityUuid WellChildDTPImmunisationUuidType
+
+
+type WellChildDTPImmunisationUuidType
+    = WellChildDTPImmunisationUuidType
+
+
+type alias WellChildHPVImmunisationId =
+    EntityUuid WellChildHPVImmunisationUuidType
+
+
+type WellChildHPVImmunisationUuidType
+    = WellChildHPVImmunisationUuidType
+
+
+type alias WellChildIPVImmunisationId =
+    EntityUuid WellChildIPVImmunisationUuidType
+
+
+type WellChildIPVImmunisationUuidType
+    = WellChildIPVImmunisationUuidType
+
+
+type alias WellChildMRImmunisationId =
+    EntityUuid WellChildMRImmunisationUuidType
+
+
+type WellChildMRImmunisationUuidType
+    = WellChildMRImmunisationUuidType
+
+
+type alias WellChildOPVImmunisationId =
+    EntityUuid WellChildOPVImmunisationUuidType
+
+
+type WellChildOPVImmunisationUuidType
+    = WellChildOPVImmunisationUuidType
+
+
+type alias WellChildPCV13ImmunisationId =
+    EntityUuid WellChildPCV13ImmunisationUuidType
+
+
+type WellChildPCV13ImmunisationUuidType
+    = WellChildPCV13ImmunisationUuidType
+
+
+type alias WellChildRotarixImmunisationId =
+    EntityUuid WellChildRotarixImmunisationUuidType
+
+
+type WellChildRotarixImmunisationUuidType
+    = WellChildRotarixImmunisationUuidType

@@ -95,9 +95,9 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
-import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..))
+import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..), VaccinationStatus(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -883,8 +883,6 @@ type TranslationId
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
-    | ReviewVaccinationHistory
-    | ReviewVaccinationHistoryLabel
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -1013,7 +1011,8 @@ type TranslationId
     | UterineMyoma
     | VaccinationCatchUpRequiredQuestion
     | VaccinationStatus VaccinationStatus
-    | VaccineDoseAdministeredQuestion VaccineType VaccineDose Bool Bool
+    | VaccineDoseAdministeredPreviouslyQuestion String
+    | VaccineDoseAdministeredTodayQuestion String
     | VaccineType VaccineType
     | ValidationErrors
     | Version
@@ -1031,9 +1030,15 @@ type TranslationId
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
+    | WellChildImmunisationDescription VaccineType
+    | WellChildImmunisationDosage VaccineType
+    | WellChildImmunisationHeader VaccineType
+    | WellChildImmunisationHistory VaccineType
+    | WellChildImmunisationTask Pages.WellChildActivity.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
     | WellChildSymptom WellChildSymptom
+    | WellChildVaccineLabel VaccineType
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -7227,16 +7232,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ReviewVaccinationHistory ->
-            { english = "Review Vaccination History"
-            , kinyarwanda = Nothing
-            }
-
-        ReviewVaccinationHistoryLabel ->
-            { english = "Review the patients vaccination history in E-Heza"
-            , kinyarwanda = Nothing
-            }
-
         RhNegative ->
             { english = "RH Negative"
             , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
@@ -8164,81 +8159,15 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        VaccineDoseAdministeredQuestion vaccineType dose isChw todaySuffix ->
-            let
-                doseNumber =
-                    case dose of
-                        VaccineDoseFirst ->
-                            "1"
+        VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
+            { english = "Did the child receive any " ++ vaccineType ++ " vaccines prior to today that are not recorded above"
+            , kinyarwanda = Nothing
+            }
 
-                        VaccineDoseSecond ->
-                            "2"
-
-                        VaccineDoseThird ->
-                            "3"
-
-                        VaccineDoseFourth ->
-                            "4"
-
-                suffix =
-                    if todaySuffix then
-                        " today"
-
-                    else
-                        ""
-            in
-            case vaccineType of
-                VaccineBCG ->
-                    if isChw then
-                        { english = "Did the child receive the Bacilius Calmette - Guérin (BCG) vaccine at birth"
-                        , kinyarwanda = Nothing
-                        }
-
-                    else
-                        { english = "Did the child receive the  Bacilius Calmette - Guérin vaccine (BCG) - Dose " ++ doseNumber ++ " of 1" ++ suffix
-                        , kinyarwanda = Nothing
-                        }
-
-                VaccineOPV ->
-                    if isChw then
-                        { english = "Did the child receive the Oral Polio vaccine (OPV) at birth"
-                        , kinyarwanda = Nothing
-                        }
-
-                    else
-                        { english = "Did the child receive the Oral Polio vaccine (OPV) - Dose " ++ doseNumber ++ " of 4" ++ suffix
-                        , kinyarwanda = Nothing
-                        }
-
-                VaccineDTP ->
-                    { english = "Did the child receive the DTP - HepB - Hib vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccinePCV13 ->
-                    { english = "Did the child receive the Pneumoccocal vaccine (PCV 13) - Dose " ++ doseNumber ++ " of 3" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineRotarix ->
-                    { english = "Did the child receive the Rotavirus (Rotarix) vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineIPV ->
-                    { english = "Did the child receive the Inactivated Polio vaccine - Dose " ++ doseNumber ++ " of 1" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineMR ->
-                    { english = "Did the child receive the Measles - Rubella vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
-
-                VaccineHPV ->
-                    { english = "Did the child receive the HPV vaccine - Dose " ++ doseNumber ++ " of 2" ++ suffix
-                    , kinyarwanda = Nothing
-                    }
+        VaccineDoseAdministeredTodayQuestion vaccineType ->
+            { english = "Will the child receive the " ++ vaccineType ++ " vaccine today"
+            , kinyarwanda = Nothing
+            }
 
         VaccineType vaccineType ->
             case vaccineType of
@@ -8378,11 +8307,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                WellChildVaccinationHistory ->
-                    { english = "Vaccine History"
-                    , kinyarwanda = Nothing
-                    }
-
                 WellChildNextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Nothing
@@ -8485,6 +8409,221 @@ translationSet trans =
             { english = "Child shows signs of microcephaly. Monitor for developmental, nutritional, and genetic problems.  Please refer to a specialist if concerned for genetic syndrome or other problems."
             , kinyarwanda = Nothing
             }
+
+        WellChildImmunisationDescription task ->
+            case task of
+                VaccineBCG ->
+                    { english = "BCG protects your child from getting the worst complications of tuberculosis, which can affect the lungs and could be deadly for young children."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), liver failure (Hepatitis B), diarrhea (Diptheria)."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "HPV prevents certain types of cancer from developing in your child."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "Is the final vaccine to prevent Polio in children. IPV boosts the effects of the previous polio vaccines your child received."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Prevents the child from contracting a highly contagious viral infection that causes a fever, lesions, and diarrhea. MR is very dangerous for pregnant women, causing miscarriage or birth defects. Vaccinating your child prevents the spread of the disease in the community."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "OPV prevents the child from contracting the Polio Virus, which affects the spinal cord and can cause paralysis."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "Protects against any disease caused by a specific bacteria that can lead to lung infections."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Protects against diarrhea caused by the Rotavirus. Diarrhea is the 3rd leading cause of death of children in Rwanda."
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildImmunisationDosage task ->
+            case task of
+                VaccineBCG ->
+                    { english = "There is one dose of BCG and it is given at birth."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "There are 3 doses of DTP-HepB-Hib - 6 weeks, 10 weeks, and 14 weeks."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "There are 2 doses of HPV - at 12 years and 12.5 years."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "There is only one dose of the inactivated vaccine."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "There are 2 doses of OPV - at 9 months and 15 months."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "There are 4 doses of OPV - at birth, 6 weeks, 10 weeks, and 14 weeks."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "There are 3 doses of PCV 13 - 6 weeks, 10 weeks, and 14 weeks."
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "There are 2 doses of Rotarix - 6 weeks and 10 weeks."
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildImmunisationHeader task ->
+            case task of
+                VaccineBCG ->
+                    { english = "Bacillus Calmette - Guérin (BCG)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "Diptheria, Hepatitis B, Tetanus, and Pertussis"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "Human Papillomavirus (HPV)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "Inactivated Polio Vaccine (IPV)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Measles - Rubella (MR)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "Oral Polio Vaccine (OPV)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "Pneumococcal Vaccine (PCV 13)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Rotavirus Vaccine (Rotarix)"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildImmunisationHistory task ->
+            case task of
+                VaccineBCG ->
+                    { english = "BCG History"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "DTP - HepB - Hib History"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "HPV History"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "IPV History"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Measles - Rubella History"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "OPV History"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "PCV 13 History"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Rotarix History"
+                    , kinyarwanda = Nothing
+                    }
+
+        WellChildImmunisationTask task ->
+            case task of
+                Pages.WellChildActivity.Model.TaskBCG ->
+                    { english = "BCG"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskDTP ->
+                    { english = "DTP - HepB - Hib"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskHPV ->
+                    { english = "HPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskIPV ->
+                    { english = "IPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskMR ->
+                    { english = "Measles - Rubella"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskOPV ->
+                    { english = "OPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskPCV13 ->
+                    { english = "PCV 13"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskRotarix ->
+                    { english = "Rotarix"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChildActivity.Model.TaskOverview ->
+                    { english = "Overview"
+                    , kinyarwanda = Nothing
+                    }
 
         WellChildMedicationTask task ->
             case task of
@@ -8611,6 +8750,48 @@ translationSet trans =
                 NoWellChildSymptoms ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta na kimwe"
+                    }
+
+        WellChildVaccineLabel vaccineType ->
+            case vaccineType of
+                VaccineBCG ->
+                    { english = "BCG"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineDTP ->
+                    { english = "DTP - HepB - Hib"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineHPV ->
+                    { english = "HPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineIPV ->
+                    { english = "IPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineMR ->
+                    { english = "Measles - Rubella"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineOPV ->
+                    { english = "OPV"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccinePCV13 ->
+                    { english = "PCV 13"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaccineRotarix ->
+                    { english = "Rotarix"
+                    , kinyarwanda = Nothing
                     }
 
         WhatDoYouWantToDo ->

@@ -54,36 +54,14 @@ generateAssembledData id db =
         previousMeasurements =
             getPreviousMeasurements previousMeasurementsWithDates
 
-        immunisation =
-            RemoteData.toMaybe measurements
-                |> Maybe.andThen (.immunisation >> getMeasurementValueFunc)
-
-        previousImmunisations =
-            List.filterMap (.immunisation >> getMeasurementValueFunc)
-                previousMeasurements
-
         vaccinationHistory =
-            RemoteData.toMaybe measurements
-                |> Maybe.andThen (.vaccinationHistory >> getMeasurementValueFunc)
-
-        previousVaccinationHistories =
-            List.filterMap (.vaccinationHistory >> getMeasurementValueFunc)
-                previousMeasurements
-
-        histories =
-            Maybe.map (\history -> history :: previousVaccinationHistories) vaccinationHistory
-                |> Maybe.withDefault previousVaccinationHistories
-
-        vaccinationHistory_ =
-            generateVaccinationProgress previousImmunisations histories
+            generateVaccinationProgress previousMeasurements
 
         vaccinationProgress =
-            Maybe.map
-                (\immunisation_ ->
-                    generateVaccinationProgress (immunisation_ :: previousImmunisations) histories
-                )
-                immunisation
-                |> Maybe.withDefault vaccinationHistory_
+            RemoteData.toMaybe measurements
+                |> Maybe.map (\measurements_ -> measurements_ :: previousMeasurements)
+                |> Maybe.withDefault previousMeasurements
+                |> generateVaccinationProgress
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -91,7 +69,7 @@ generateAssembledData id db =
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
-        |> RemoteData.andMap (Success vaccinationHistory_)
+        |> RemoteData.andMap (Success vaccinationHistory)
         |> RemoteData.andMap (Success vaccinationProgress)
 
 
