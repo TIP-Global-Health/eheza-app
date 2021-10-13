@@ -2026,6 +2026,20 @@ input::placeholder {
   }
 }
 
+.icon-laboratory-covid-testing {
+  .active &:after {
+    background-image: url(#{$img-path}icon-covid-white-blue.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-covid-white-gray.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-covid-gray.svg);
+  }
+}
+
 .icon-exposure-travel {
   .active &:after {
     background-image: url(#{$img-path}icon-travel-white.svg);
