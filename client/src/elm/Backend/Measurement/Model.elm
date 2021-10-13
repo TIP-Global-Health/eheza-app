@@ -930,7 +930,7 @@ type alias AcuteFindings =
     AcuteIllnessMeasurement AcuteFindingsValue
 
 
-type MalariaRapidTestResult
+type RapidTestResult
     = RapidTestPositive
     | RapidTestPositiveAndPregnant
     | RapidTestNegative
@@ -939,7 +939,7 @@ type MalariaRapidTestResult
 
 
 type alias MalariaTesting =
-    AcuteIllnessMeasurement MalariaRapidTestResult
+    AcuteIllnessMeasurement RapidTestResult
 
 
 type TravelHistorySign
@@ -1237,6 +1237,16 @@ type HealthEducationSign
 
 type alias AcuteIllnessFollowUp =
     AcuteIllnessMeasurement (EverySet FollowUpOption)
+
+
+type alias CovidTesting =
+    AcuteIllnessMeasurement CovidTestingValue
+
+
+type alias CovidTestingValue =
+    { result : RapidTestResult
+    , administrationNote : Maybe AdministrationNote
+    }
 
 
 
@@ -1656,6 +1666,7 @@ type alias AcuteIllnessMeasurements =
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
     , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
     , coreExam : Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )
+    , covidTesting : Maybe ( CovidTestingId, CovidTesting )
     }
 
 

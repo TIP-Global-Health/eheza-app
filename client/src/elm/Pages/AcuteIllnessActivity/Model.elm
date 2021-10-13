@@ -249,7 +249,7 @@ type LaboratoryTask
 
 
 type alias MalariaTestingForm =
-    { rapidTestResult : Maybe MalariaRapidTestResult
+    { rapidTestResult : Maybe RapidTestResult
     , isPregnant : Maybe Bool
     }
 

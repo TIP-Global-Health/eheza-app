@@ -233,7 +233,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> Maybe.map
                         (Tuple.second
                             >> .value
-                            >> (Translate.MalariaRapidTestResult
+                            >> (Translate.RapidTestResult
                                     >> translate language
                                     >> viewLabelValuePopupItem Translate.MalariaRapidDiagnosticTest
                                )
@@ -1023,7 +1023,7 @@ viewMalariaTestingForm language currentDate person form =
                                     [ value (malariaRapidTestResultAsString result)
                                     , selected (form.rapidTestResult == Just result)
                                     ]
-                                    [ text <| translate language <| Translate.MalariaRapidTestResult result ]
+                                    [ text <| translate language <| Translate.RapidTestResult result ]
                             )
                    )
                 |> select [ onInput SetRapidTestResult, class "form-input rapid-test-result" ]

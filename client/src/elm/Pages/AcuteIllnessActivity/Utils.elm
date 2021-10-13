@@ -821,7 +821,7 @@ toAcuteFindingsValue form =
         |> andMap signsRespiratorySet
 
 
-fromMalariaTestingValue : Maybe MalariaRapidTestResult -> MalariaTestingForm
+fromMalariaTestingValue : Maybe RapidTestResult -> MalariaTestingForm
 fromMalariaTestingValue saved =
     if saved == Just RapidTestPositiveAndPregnant then
         { rapidTestResult = Just RapidTestPositive
@@ -834,7 +834,7 @@ fromMalariaTestingValue saved =
         }
 
 
-malariaTestingFormWithDefault : MalariaTestingForm -> Maybe MalariaRapidTestResult -> MalariaTestingForm
+malariaTestingFormWithDefault : MalariaTestingForm -> Maybe RapidTestResult -> MalariaTestingForm
 malariaTestingFormWithDefault form saved =
     saved
         |> unwrap
@@ -850,7 +850,7 @@ malariaTestingFormWithDefault form saved =
             )
 
 
-toMalariaTestingValueWithDefault : Maybe MalariaRapidTestResult -> MalariaTestingForm -> Maybe MalariaRapidTestResult
+toMalariaTestingValueWithDefault : Maybe RapidTestResult -> MalariaTestingForm -> Maybe RapidTestResult
 toMalariaTestingValueWithDefault saved form =
     malariaTestingFormWithDefault form saved
         |> (\form_ ->
@@ -863,7 +863,7 @@ toMalariaTestingValueWithDefault saved form =
         |> toMalariaTestingValue
 
 
-toMalariaTestingValue : MalariaTestingForm -> Maybe MalariaRapidTestResult
+toMalariaTestingValue : MalariaTestingForm -> Maybe RapidTestResult
 toMalariaTestingValue form =
     form.rapidTestResult
 

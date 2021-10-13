@@ -15,7 +15,7 @@ import Backend.Measurement.Model
         , ChildNutritionSign(..)
         , HCRecommendation(..)
         , LungsCPESign(..)
-        , MalariaRapidTestResult(..)
+        , RapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)

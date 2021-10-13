@@ -20,7 +20,7 @@ import Backend.Measurement.Model
         , HCRecommendation(..)
         , IsolationSign(..)
         , IsolationValue
-        , MalariaRapidTestResult(..)
+        , RapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
         , ReasonForNotIsolating(..)
@@ -1105,7 +1105,7 @@ respiratoryRateRecessedForAge maybeAgeMonths rate =
         |> Maybe.withDefault False
 
 
-malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe MalariaRapidTestResult
+malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
 malariaRapidTestResult measurements =
     measurements.malariaTesting
         |> getMeasurementValueFunc

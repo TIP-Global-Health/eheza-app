@@ -1940,23 +1940,23 @@ decodeAcuteFindingsRespiratorySign =
 
 decodeMalariaTesting : Decoder MalariaTesting
 decodeMalariaTesting =
-    decodeMalariaRapidTestResult
+    decodeRapidTestResult
         |> field "malaria_rapid_test"
         |> decodeAcuteIllnessMeasurement
 
 
-decodeMalariaRapidTestResult : Decoder MalariaRapidTestResult
-decodeMalariaRapidTestResult =
+decodeRapidTestResult : Decoder RapidTestResult
+decodeRapidTestResult =
     string
         |> andThen
             (\result ->
                 malariaRapidTestResultFromString result
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (result ++ " is not a recognized MalariaRapidTestResult" |> fail)
+                    |> Maybe.withDefault (result ++ " is not a recognized RapidTestResult" |> fail)
             )
 
 
-malariaRapidTestResultFromString : String -> Maybe MalariaRapidTestResult
+malariaRapidTestResultFromString : String -> Maybe RapidTestResult
 malariaRapidTestResultFromString result =
     case result of
         "positive" ->

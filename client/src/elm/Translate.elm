@@ -642,7 +642,7 @@ type TranslationId
     | MainWaterPreparationQuestion
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
-    | MalariaRapidTestResult MalariaRapidTestResult
+    | RapidTestResult RapidTestResult
     | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
@@ -4816,7 +4816,7 @@ translationSet trans =
             , kinyarwanda = Just "Igikoresho gipima Malariya ku buryo bwihuse"
             }
 
-        MalariaRapidTestResult result ->
+        RapidTestResult result ->
             case result of
                 RapidTestNegative ->
                     { english = "Negative"

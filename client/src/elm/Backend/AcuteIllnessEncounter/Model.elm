@@ -128,7 +128,7 @@ type Msg
     | HandleSavedVitals (WebData ())
     | SaveAcuteFindings PersonId (Maybe AcuteFindingsId) AcuteFindingsValue
     | HandleSavedAcuteFindings (WebData ())
-    | SaveMalariaTesting PersonId (Maybe MalariaTestingId) MalariaRapidTestResult
+    | SaveMalariaTesting PersonId (Maybe MalariaTestingId) RapidTestResult
     | HandleSavedMalariaTesting (WebData ())
     | SaveSendToHC PersonId (Maybe SendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())

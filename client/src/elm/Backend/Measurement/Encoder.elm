@@ -1406,20 +1406,20 @@ encodeMalariaTesting =
     encodeAcuteIllnessMeasurement encodeMalariaTestingValue
 
 
-encodeMalariaTestingValue : MalariaRapidTestResult -> List ( String, Value )
+encodeMalariaTestingValue : RapidTestResult -> List ( String, Value )
 encodeMalariaTestingValue value =
-    [ ( "malaria_rapid_test", encodeMalariaRapidTestResult value )
+    [ ( "malaria_rapid_test", encodeRapidTestResult value )
     , ( "deleted", bool False )
     , ( "type", string "malaria_testing" )
     ]
 
 
-encodeMalariaRapidTestResult : MalariaRapidTestResult -> Value
-encodeMalariaRapidTestResult =
+encodeRapidTestResult : RapidTestResult -> Value
+encodeRapidTestResult =
     malariaRapidTestResultAsString >> string
 
 
-malariaRapidTestResultAsString : MalariaRapidTestResult -> String
+malariaRapidTestResultAsString : RapidTestResult -> String
 malariaRapidTestResultAsString sign =
     case sign of
         RapidTestPositive ->
