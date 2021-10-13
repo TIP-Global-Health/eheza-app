@@ -917,11 +917,8 @@ viewNutritionForm language currentDate form =
 viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
 viewAcuteIllnessLaboratory language currentDate id ( personId, person, measurements ) data =
     let
-        activity =
-            AcuteIllnessLaboratory
-
         tasks =
-            [ LaboratoryMalariaTesting ]
+            [ LaboratoryMalariaTesting, LaboratoryCovidTesting ]
 
         viewTask task =
             let
@@ -930,6 +927,11 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
                             , isJust measurements.malariaTesting
+                            )
+
+                        LaboratoryCovidTesting ->
+                            ( "laboratory-covid-testing"
+                            , isJust measurements.covidTesting
                             )
 
                 isActive =
@@ -971,12 +973,21 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
 
+                LaboratoryCovidTesting ->
+                    measurements.covidTesting
+                        |> getMeasurementValueFunc
+                        |> covidTestingFormWithDefault data.covidTestingForm
+                        |> viewCovidTestingForm language currentDate person
+
         actions =
             let
                 saveMsg =
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
                             SaveMalariaTesting personId measurements.malariaTesting
+
+                        LaboratoryCovidTesting ->
+                            SaveCovidTesting personId measurements.covidTesting
             in
             div [ class "actions malaria-testing" ]
                 [ button
@@ -1033,7 +1044,7 @@ viewMalariaTestingForm language currentDate person form =
 
         isPregnantInput =
             if testResultPositive && isPersonAFertileWoman currentDate person then
-                [ viewQuestionLabel language Translate.CurrentlyPregnant
+                [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
                 , viewBoolInput
                     language
                     form.isPregnant
@@ -1050,6 +1061,75 @@ viewMalariaTestingForm language currentDate person form =
         , resultInput
         ]
             ++ isPregnantInput
+
+
+viewCovidTestingForm : Language -> NominalDate -> Person -> CovidTestingForm -> Html Msg
+viewCovidTestingForm language currentDate person form =
+    let
+        derrivedInputs =
+            Maybe.map
+                (\testPerformed ->
+                    if testPerformed then
+                        let
+                            isPregnantInput =
+                                if form.testPositive == Just True && isPersonAFertileWoman currentDate person then
+                                    [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
+                                    , viewBoolInput
+                                        language
+                                        form.isPregnant
+                                        (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value }))
+                                        "is-pregnant"
+                                        Nothing
+                                    ]
+
+                                else
+                                    []
+                        in
+                        [ viewQuestionLabel language Translate.TestResultQuestion
+                        , viewBoolInput
+                            language
+                            form.testPositive
+                            (SetCovidTestingBoolInput (\value form_ -> { form_ | testPositive = Just value, isPregnant = Nothing }))
+                            "test-result"
+                            (Just ( Translate.RapidTestResult RapidTestPositive, Translate.RapidTestResult RapidTestNegative ))
+                        ]
+                            ++ isPregnantInput
+
+                    else
+                        [ div [ class "why-not" ]
+                            [ viewQuestionLabel language Translate.WhyNot
+                            , viewCheckBoxSelectInput language
+                                [ NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                                []
+                                form.administrationNote
+                                SetCovidTestingAdministrationNote
+                                Translate.AdministrationNoteForWellChild
+                            ]
+                        ]
+                )
+                form.testPerformed
+                |> Maybe.withDefault []
+    in
+    div [ class "ui form laboratory covid-testing" ] <|
+        [ viewCustomLabel language Translate.CovidTestingInstructions "." "label"
+        , viewQuestionLabel language Translate.TestPerformedQuesiton
+        , viewBoolInput
+            language
+            form.testPerformed
+            (SetCovidTestingBoolInput
+                (\value form_ ->
+                    { form_
+                        | testPerformed = Just value
+                        , testPositive = Nothing
+                        , isPregnant = Nothing
+                        , administrationNote = Nothing
+                    }
+                )
+            )
+            "test-performed"
+            Nothing
+        ]
+            ++ derrivedInputs
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)

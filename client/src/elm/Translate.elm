@@ -396,7 +396,6 @@ type TranslationId
     | ClickTheCheckMark
     | ClinicType ClinicType
     | Clinical
-    | Dashboard Dashboard
     | ClinicalProgressReport
     | CloseAcuteIllnessLabel
     | CloseAndContinue
@@ -416,6 +415,7 @@ type TranslationId
     | ConvulsionsPreviousDelivery
     | CurrentIllnessBegan
     | CSectionScar CSectionScar
+    | Dashboard Dashboard
     | GroupNotFound
     | Group
     | Groups
@@ -433,6 +433,7 @@ type TranslationId
     | CounselingTimingHeading CounselingTiming
     | CounselingTopic CounselingTopic
     | CounselorReviewed
+    | CovidTestingInstructions
     | CounselorSignature
     | CSectionInPreviousDelivery
     | CSectionReason
@@ -441,7 +442,7 @@ type TranslationId
     | CreateRelationship
     | CreateTrainingGroupEncounters
     | ChwDashboardLabel
-    | CurrentlyPregnant
+    | CurrentlyPregnantQuestion
     | DangerSign DangerSign
     | DangerSignsLabel
     | DangerSignsHelper
@@ -990,6 +991,8 @@ type TranslationId
     | TelephoneNumber
     | Term
     | TermPregnancy
+    | TestPerformedQuesiton
+    | TestResultQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
     | To
@@ -2707,6 +2710,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        CovidTestingInstructions ->
+            { english = "Perform a COVID-19 Rapid Test to confirm patient’s diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         CounselorSignature ->
             { english = "Entry Counselor Signature"
             , kinyarwanda = Nothing
@@ -2764,9 +2772,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        CurrentlyPregnant ->
-            { english = "Currently Pregnant"
-            , kinyarwanda = Just "Aratwite"
+        CurrentlyPregnantQuestion ->
+            { english = "Is the patient currently pregnant"
+            , kinyarwanda = Nothing
             }
 
         ChwDashboardLabel ->
@@ -4545,6 +4553,11 @@ translationSet trans =
                 LaboratoryMalariaTesting ->
                     { english = "Malaria"
                     , kinyarwanda = Just "Malariya"
+                    }
+
+                LaboratoryCovidTesting ->
+                    { english = "Covid Rapid Test"
+                    , kinyarwanda = Nothing
                     }
 
         LastChecked ->
@@ -6747,6 +6760,16 @@ translationSet trans =
         PreTermPregnancy ->
             { english = "Number of Pre-term Pregnancies (Live Birth)"
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
+            }
+
+        TestPerformedQuesiton ->
+            { english = "Were you able to perform the test"
+            , kinyarwanda = Nothing
+            }
+
+        TestResultQuestion ->
+            { english = "What were the results of the test"
+            , kinyarwanda = Nothing
             }
 
         PriorDiagnosis ->

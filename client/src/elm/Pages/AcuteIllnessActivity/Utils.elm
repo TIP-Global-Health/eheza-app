@@ -216,6 +216,10 @@ physicalExamTasksCompletedFromTotal isChw measurements data task =
 
 laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
 laboratoryTasksCompletedFromTotal currentDate person measurements data task =
+    let
+        personAFertileWoman =
+            isPersonAFertileWoman currentDate person
+    in
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -240,6 +244,42 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
             in
             ( taskCompleted form.rapidTestResult + isPregnantCompleted
             , 1 + isPregnantActive
+            )
+
+        LaboratoryCovidTesting ->
+            let
+                form =
+                    measurements.covidTesting
+                        |> getMeasurementValueFunc
+                        |> covidTestingFormWithDefault data.covidTestingForm
+
+                ( derrivedCompleted, derrivedActive ) =
+                    Maybe.map
+                        (\testPerformed ->
+                            if testPerformed then
+                                Maybe.map
+                                    (\testPositive ->
+                                        if testPositive && personAFertileWoman then
+                                            if isJust form.isPregnant then
+                                                ( 2, 2 )
+
+                                            else
+                                                ( 1, 2 )
+
+                                        else
+                                            ( 1, 1 )
+                                    )
+                                    form.testPositive
+                                    |> Maybe.withDefault ( 0, 1 )
+
+                            else
+                                ( taskCompleted form.administrationNote, 1 )
+                        )
+                        form.testPerformed
+                        |> Maybe.withDefault ( 0, 0 )
+            in
+            ( taskCompleted form.testPerformed + derrivedCompleted
+            , 1 + derrivedActive
             )
 
 

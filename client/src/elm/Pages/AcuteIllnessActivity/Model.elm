@@ -46,6 +46,9 @@ type Msg
     | SetRapidTestResult String
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
+    | SetCovidTestingBoolInput (Bool -> CovidTestingForm -> CovidTestingForm) Bool
+    | SetCovidTestingAdministrationNote AdministrationNote
+    | SaveCovidTesting PersonId (Maybe ( CovidTestingId, CovidTesting ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -248,6 +251,7 @@ emptyLaboratoryData =
 
 type LaboratoryTask
     = LaboratoryMalariaTesting
+    | LaboratoryCovidTesting
 
 
 type alias MalariaTestingForm =

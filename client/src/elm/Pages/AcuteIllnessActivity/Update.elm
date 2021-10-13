@@ -15,9 +15,9 @@ import Backend.Measurement.Model
         , ChildNutritionSign(..)
         , HCRecommendation(..)
         , LungsCPESign(..)
-        , RapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
+        , RapidTestResult(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -730,6 +730,66 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetCovidTestingBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.covidTestingForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | covidTestingForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCovidTestingAdministrationNote note ->
+            let
+                form =
+                    model.laboratoryData.covidTestingForm
+
+                updatedForm =
+                    { form | administrationNote = Just note }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | covidTestingForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveCovidTesting personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.laboratoryData.covidTestingForm
+                        |> toCovidTestingValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveCovidTesting personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id

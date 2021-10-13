@@ -42,6 +42,7 @@ type alias Model =
     , saveVitals : WebData ()
     , saveAcuteFindings : WebData ()
     , saveMalariaTesting : WebData ()
+    , saveCovidTesting : WebData ()
     , saveSendToHC : WebData ()
     , saveMedicationDistribution : WebData ()
     , saveTravelHistory : WebData ()
@@ -69,6 +70,7 @@ emptyModel =
     , saveVitals = NotAsked
     , saveAcuteFindings = NotAsked
     , saveMalariaTesting = NotAsked
+    , saveCovidTesting = NotAsked
     , saveSendToHC = NotAsked
     , saveMedicationDistribution = NotAsked
     , saveTravelHistory = NotAsked
@@ -130,6 +132,8 @@ type Msg
     | HandleSavedAcuteFindings (WebData ())
     | SaveMalariaTesting PersonId (Maybe MalariaTestingId) RapidTestResult
     | HandleSavedMalariaTesting (WebData ())
+    | SaveCovidTesting PersonId (Maybe CovidTestingId) CovidTestingValue
+    | HandleSavedCovidTesting (WebData ())
     | SaveSendToHC PersonId (Maybe SendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
