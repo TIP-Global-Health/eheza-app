@@ -3124,8 +3124,8 @@ function hedley_acute_illness_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-covid_testing-field_test_result'.
-  $field_instances['node-covid_testing-field_test_result'] = array(
+  // Exported field_instance: 'node-covid_testing-field_rapid_test_result'.
+  $field_instances['node-covid_testing-field_rapid_test_result'] = array(
     'bundle' => 'covid_testing',
     'default_value' => NULL,
     'deleted' => 0,
@@ -3146,7 +3146,7 @@ function hedley_acute_illness_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_test_result',
+    'field_name' => 'field_rapid_test_result',
     'label' => 'Test Result',
     'required' => 0,
     'settings' => array(

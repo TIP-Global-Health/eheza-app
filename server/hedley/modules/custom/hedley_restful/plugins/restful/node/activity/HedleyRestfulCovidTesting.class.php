@@ -14,7 +14,7 @@ class HedleyRestfulCovidTesting extends HedleyRestfulAcuteIllnessActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_test_result',
+    'field_rapid_test_result',
     'field_administration_note',
   ];
 

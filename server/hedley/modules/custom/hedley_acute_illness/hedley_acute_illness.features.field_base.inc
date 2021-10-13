@@ -1096,13 +1096,13 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_test_result'.
-  $field_bases['field_test_result'] = array(
+  // Exported field_base: 'field_rapid_test_result'.
+  $field_bases['field_rapid_test_result'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_test_result',
+    'field_name' => 'field_rapid_test_result',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -1115,6 +1115,7 @@ function hedley_acute_illness_field_default_field_bases() {
         'positive' => 'Positive',
         'positive-and-pregnant' => 'Positive and pregnant',
         'negative' => 'Negative',
+        'unable-to-run' => 'Unable to run',
       ),
       'allowed_values_function' => '',
     ),
