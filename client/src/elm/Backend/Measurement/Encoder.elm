@@ -1414,6 +1414,29 @@ encodeMalariaTestingValue value =
     ]
 
 
+encodeCovidTesting : CovidTesting -> List ( String, Value )
+encodeCovidTesting =
+    encodeAcuteIllnessMeasurement encodeCovidTestingValue
+
+
+encodeCovidTestingValue : CovidTestingValue -> List ( String, Value )
+encodeCovidTestingValue value =
+    let
+        optional =
+            Maybe.map
+                (\administrationNote ->
+                    [ ( "administration_note", encodeAdministrationNote administrationNote ) ]
+                )
+                value.administrationNote
+                |> Maybe.withDefault []
+    in
+    optional
+        ++ [ ( "rapid_test_result", encodeRapidTestResult value.result )
+           , ( "deleted", bool False )
+           , ( "type", string "malaria_testing" )
+           ]
+
+
 encodeRapidTestResult : RapidTestResult -> Value
 encodeRapidTestResult =
     malariaRapidTestResultAsString >> string
