@@ -1571,6 +1571,95 @@ toCoreExamValue form =
         |> andMap (Maybe.map EverySet.fromList form.lungs)
 
 
+fromCovidTestingValue : Maybe CovidTestingValue -> CovidTestingForm
+fromCovidTestingValue saved =
+    Maybe.map
+        (\value ->
+            let
+                testPerformed =
+                    value.result /= RapidTestUnableToRun |> Just
+
+                testPositive =
+                    case value.result of
+                        RapidTestPositive ->
+                            Just True
+
+                        RapidTestPositiveAndPregnant ->
+                            Just True
+
+                        RapidTestNegative ->
+                            Just False
+
+                        _ ->
+                            Nothing
+
+                isPregnant =
+                    value.result == RapidTestPositiveAndPregnant |> Just
+            in
+            { testPerformed = testPerformed
+            , testPositive = testPositive
+            , isPregnant = isPregnant
+            , administrationNote = value.administrationNote
+            }
+        )
+        saved
+        |> Maybe.withDefault emptyCovidTestingForm
+
+
+covidTestingFormWithDefault : CovidTestingForm -> Maybe CovidTestingValue -> CovidTestingForm
+covidTestingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromCovidTestingValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPositive = or form.testPositive formWithDefault.testPositive
+                , isPregnant = or form.isPregnant formWithDefault.isPregnant
+                , administrationNote = or form.administrationNote formWithDefault.administrationNote
+                }
+            )
+
+
+toCovidTestingValueWithDefault : Maybe CovidTestingValue -> CovidTestingForm -> Maybe CovidTestingValue
+toCovidTestingValueWithDefault saved form =
+    covidTestingFormWithDefault form saved
+        |> toCovidTestingValue
+
+
+toCovidTestingValue : CovidTestingForm -> Maybe CovidTestingValue
+toCovidTestingValue form =
+    let
+        maybeResult =
+            Maybe.andThen
+                (\testPerformed ->
+                    if testPerformed then
+                        case ( form.testPositive, form.isPregnant ) of
+                            ( Just True, Just True ) ->
+                                Just RapidTestPositiveAndPregnant
+
+                            ( Just True, _ ) ->
+                                Just RapidTestPositive
+
+                            ( Just False, _ ) ->
+                                Just RapidTestNegative
+
+                            _ ->
+                                Nothing
+
+                    else
+                        Just RapidTestUnableToRun
+                )
+                form.testPerformed
+    in
+    Maybe.map
+        (\result -> CovidTestingValue result form.administrationNote)
+        maybeResult
+
+
 
 -- HELPER FUNCTIONS
 

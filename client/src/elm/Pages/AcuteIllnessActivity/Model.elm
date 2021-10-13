@@ -241,7 +241,7 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
-    , covidTestingForm = CovidTestingForm Nothing Nothing Nothing
+    , covidTestingForm = emptyCovidTestingForm
     , activeTask = LaboratoryMalariaTesting
     }
 
@@ -260,7 +260,13 @@ type alias CovidTestingForm =
     { testPerformed : Maybe Bool
     , testPositive : Maybe Bool
     , isPregnant : Maybe Bool
+    , administrationNote : Maybe AdministrationNote
     }
+
+
+emptyCovidTestingForm : CovidTestingForm
+emptyCovidTestingForm =
+    CovidTestingForm Nothing Nothing Nothing Nothing
 
 
 
