@@ -233,6 +233,7 @@ type alias AcuteIllnessCoreExamForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
+    , covidTestingForm : CovidTestingForm
     , activeTask : LaboratoryTask
     }
 
@@ -240,6 +241,7 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
+    , covidTestingForm = CovidTestingForm Nothing Nothing Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
@@ -250,6 +252,13 @@ type LaboratoryTask
 
 type alias MalariaTestingForm =
     { rapidTestResult : Maybe RapidTestResult
+    , isPregnant : Maybe Bool
+    }
+
+
+type alias CovidTestingForm =
+    { testPerformed : Maybe Bool
+    , testPositive : Maybe Bool
     , isPregnant : Maybe Bool
     }
 
