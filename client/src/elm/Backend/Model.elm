@@ -378,6 +378,7 @@ type Revision
     | ClinicRevision ClinicId Clinic
     | ContributingFactorsRevision ContributingFactorsId ContributingFactors
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
+    | CovidTestingRevision CovidTestingId CovidTesting
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
