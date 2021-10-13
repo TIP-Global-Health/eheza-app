@@ -153,6 +153,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
         |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
         |> optional "acute_illness_core_exam" (decodeHead decodeAcuteIllnessCoreExam) Nothing
+        |> optional "covid_testing" (decodeHead decodeCovidTesting) Nothing
 
 
 decodeFollowUpMeasurements : Decoder FollowUpMeasurements
@@ -1943,6 +1944,18 @@ decodeMalariaTesting =
     decodeRapidTestResult
         |> field "malaria_rapid_test"
         |> decodeAcuteIllnessMeasurement
+
+
+decodeCovidTesting : Decoder CovidTesting
+decodeCovidTesting =
+    decodeAcuteIllnessMeasurement decodeCovidTestingValue
+
+
+decodeCovidTestingValue : Decoder CovidTestingValue
+decodeCovidTestingValue =
+    succeed CovidTestingValue
+        |> required "rapid_test_result" decodeRapidTestResult
+        |> required "administration_note" (maybe decodeAdministrationNote)
 
 
 decodeRapidTestResult : Decoder RapidTestResult
