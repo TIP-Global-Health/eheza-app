@@ -1433,7 +1433,7 @@ encodeCovidTestingValue value =
     optional
         ++ [ ( "rapid_test_result", encodeRapidTestResult value.result )
            , ( "deleted", bool False )
-           , ( "type", string "malaria_testing" )
+           , ( "type", string "covid_testing" )
            ]
 
 

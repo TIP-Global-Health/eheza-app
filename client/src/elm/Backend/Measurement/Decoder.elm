@@ -1955,7 +1955,7 @@ decodeCovidTestingValue : Decoder CovidTestingValue
 decodeCovidTestingValue =
     succeed CovidTestingValue
         |> required "rapid_test_result" decodeRapidTestResult
-        |> required "administration_note" (maybe decodeAdministrationNote)
+        |> optional "administration_note" (maybe decodeAdministrationNote) Nothing
 
 
 decodeRapidTestResult : Decoder RapidTestResult

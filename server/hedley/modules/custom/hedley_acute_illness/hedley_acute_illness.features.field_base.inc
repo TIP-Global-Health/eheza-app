@@ -809,6 +809,33 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_rapid_test_result'.
+  $field_bases['field_rapid_test_result'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_rapid_test_result',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive' => 'Positive',
+        'positive-and-pregnant' => 'Positive and pregnant',
+        'negative' => 'Negative',
+        'unable-to-run' => 'Unable to run',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_reason_for_not_isolating'.
   $field_bases['field_reason_for_not_isolating'] = array(
     'active' => 1,
@@ -1089,33 +1116,6 @@ function hedley_acute_illness_field_default_field_bases() {
       'allowed_values' => array(
         'intractable-vomiting' => 'Intractable Vomiting',
         'none' => 'None',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_rapid_test_result'.
-  $field_bases['field_rapid_test_result'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_rapid_test_result',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'positive' => 'Positive',
-        'positive-and-pregnant' => 'Positive and pregnant',
-        'negative' => 'Negative',
-        'unable-to-run' => 'Unable to run',
       ),
       'allowed_values_function' => '',
     ),
