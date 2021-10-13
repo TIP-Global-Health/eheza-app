@@ -417,6 +417,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityCorePhysicalExam identifier ->
                 viewMeasurement identifier "Core Physical Exam"
 
+            BackendAuthorityCovidTesting identifier ->
+                viewMeasurement identifier "Covid Testing"
+
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
 
@@ -459,11 +462,11 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityLactation identifier ->
                 viewMeasurement identifier "Lactation"
 
-            BackendAuthorityMalariaTesting identifier ->
-                viewMeasurement identifier "Malaria Testing"
-
             BackendAuthorityLastMenstrualPeriod identifier ->
                 viewMeasurement identifier "Menstrual Period"
+
+            BackendAuthorityMalariaTesting identifier ->
+                viewMeasurement identifier "Malaria Testing"
 
             BackendAuthorityMedicalHistory identifier ->
                 viewMeasurement identifier "Medical History"
