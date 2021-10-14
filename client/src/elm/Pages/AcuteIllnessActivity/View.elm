@@ -1060,7 +1060,11 @@ viewCovidTestingForm : Language -> NominalDate -> Person -> CovidTestingForm -> 
 viewCovidTestingForm language currentDate person form =
     let
         isPregnantInputForView =
-            viewIsPregnantInput language (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value })) form.isPregnant
+            if isPersonAFertileWoman currentDate person then
+                viewIsPregnantInput language (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value })) form.isPregnant
+
+            else
+                []
 
         derrivedInputs =
             Maybe.map
@@ -1068,7 +1072,7 @@ viewCovidTestingForm language currentDate person form =
                     if testPerformed then
                         let
                             isPregnantInput =
-                                if form.testPositive == Just True && isPersonAFertileWoman currentDate person then
+                                if form.testPositive == Just True then
                                     isPregnantInputForView
 
                                 else
@@ -1106,7 +1110,7 @@ viewCovidTestingForm language currentDate person form =
                 |> Maybe.withDefault []
     in
     div [ class "ui form laboratory covid-testing" ] <|
-        [ viewCustomLabel language Translate.CovidTestingInstructions "." "label"
+        [ viewCustomLabel language Translate.CovidTestingInstructions "." "instructions"
         , viewQuestionLabel language Translate.TestPerformedQuesiton
         , viewBoolInput
             language
