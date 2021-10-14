@@ -1097,7 +1097,7 @@ viewCovidTestingForm language currentDate person form =
                                 []
                                 form.administrationNote
                                 SetCovidTestingAdministrationNote
-                                Translate.AdministrationNoteForWellChild
+                                Translate.AdministrationNote
                             ]
                         ]
                             ++ isPregnantInputForView
