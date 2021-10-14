@@ -829,6 +829,7 @@ function hedley_acute_illness_field_default_field_bases() {
         'positive-and-pregnant' => 'Positive and pregnant',
         'negative' => 'Negative',
         'unable-to-run' => 'Unable to run',
+        'unable-to-run-and-pregnant' => 'Unable to run and pregnant',
       ),
       'allowed_values_function' => '',
     ),

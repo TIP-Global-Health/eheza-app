@@ -4856,6 +4856,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ikizamini nticyakozwe"
                     }
 
+                RapidTestUnableToRunAndPregnant ->
+                    { english = "Unable to run and Pregnant"
+                    , kinyarwanda = Nothing
+                    }
+
         MalnutritionWithComplications ->
             { english = "Malnutrition with complications"
             , kinyarwanda = Just "Imirire mibi n'indwara ziyikomokaho"

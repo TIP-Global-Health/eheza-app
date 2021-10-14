@@ -1987,6 +1987,9 @@ malariaRapidTestResultFromString result =
         "unable-to-run" ->
             Just RapidTestUnableToRun
 
+        "unable-to-run-and-pregnant" ->
+            Just RapidTestUnableToRunAndPregnant
+
         _ ->
             Nothing
 

@@ -1634,7 +1634,9 @@ fromCovidTestingValue saved =
                             Nothing
 
                 isPregnant =
-                    value.result == RapidTestPositiveAndPregnant |> Just
+                    Just <|
+                        (value.result == RapidTestPositiveAndPregnant)
+                            || (value.result == RapidTestUnableToRunAndPregnant)
             in
             { testPerformed = testPerformed
             , testPositive = testPositive
@@ -1689,6 +1691,9 @@ toCovidTestingValue form =
 
                             _ ->
                                 Nothing
+
+                    else if form.isPregnant == Just True then
+                        Just RapidTestUnableToRunAndPregnant
 
                     else
                         Just RapidTestUnableToRun
