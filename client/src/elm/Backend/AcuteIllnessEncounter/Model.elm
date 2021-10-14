@@ -95,7 +95,7 @@ type AcuteIllnessEncounterType
 
 
 type AcuteIllnessDiagnosis
-    = DiagnosisCovid19
+    = DiagnosisCovid19Suspect
     | DiagnosisMalariaComplicated
     | DiagnosisMalariaUncomplicated
     | DiagnosisMalariaUncomplicatedAndPregnant

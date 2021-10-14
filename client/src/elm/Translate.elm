@@ -1302,7 +1302,7 @@ translationSet trans =
 
         AcuteIllnessDiagnosis diagnosis ->
             case diagnosis of
-                DiagnosisCovid19 ->
+                DiagnosisCovid19Suspect ->
                     { english = "Suspected COVID-19"
                     , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
                     }
@@ -1364,7 +1364,7 @@ translationSet trans =
 
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
-                DiagnosisCovid19 ->
+                DiagnosisCovid19Suspect ->
                     { english = "Suspected COVID-19 case"
                     , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
                     }

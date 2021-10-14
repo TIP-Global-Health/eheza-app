@@ -100,7 +100,7 @@ viewWarningPopupFirstEncounter language setStateMsg diagnosis =
 
         ( heading, content ) =
             case diagnosis of
-                DiagnosisCovid19 ->
+                DiagnosisCovid19Suspect ->
                     ( warningHeading
                     , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
                       , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
@@ -235,7 +235,7 @@ viewPersonDetailsWithAlert language currentDate data isDialogOpen setAlertsDialo
             Maybe.map Tuple.second data.diagnosis
 
         alertSign =
-            if diagnosis == Just DiagnosisCovid19 then
+            if diagnosis == Just DiagnosisCovid19Suspect then
                 div
                     [ class "alerts"
                     , onClick <| setAlertsDialogStateMsg True
@@ -409,7 +409,7 @@ viewEndEncounterButton language isFirstEncounter measurements pendingActivities 
             if not isFirstEncounter then
                 List.isEmpty pendingActivities
 
-            else if diagnosis == Just DiagnosisCovid19 then
+            else if diagnosis == Just DiagnosisCovid19Suspect then
                 isJust measurements.isolation
                     && (talkedTo114 measurements || isJust measurements.hcContact)
 

@@ -454,7 +454,7 @@ only those that Yes answered to quesiton about patien being refered to HC.
 wasSentToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
 wasSentToHCByDiagnosis encounter =
     case encounter.diagnosis of
-        DiagnosisCovid19 ->
+        DiagnosisCovid19Suspect ->
             let
                 sentToHCBy114 =
                     EverySet.member Call114 encounter.call114Signs
@@ -481,7 +481,7 @@ if patient was not sent to HC, then it was managed at home.
 wasManagedAtHomeByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
 wasManagedAtHomeByDiagnosis encounter =
     case encounter.diagnosis of
-        DiagnosisCovid19 ->
+        DiagnosisCovid19Suspect ->
             -- HC was contacted, and it suggested home isolation
             -- or CHW monitoring.
             EverySet.member ContactedHealthCenter encounter.hcContactSigns
@@ -527,7 +527,7 @@ countDiagnosedWithCovidCallsTo114 encounters =
         (\encounter ->
             -- Encounter which has produced Covid19 diagnosis,
             -- and there was a call to 114.
-            (encounter.diagnosis == DiagnosisCovid19)
+            (encounter.diagnosis == DiagnosisCovid19Suspect)
                 && EverySet.member Call114 encounter.call114Signs
         )
         encounters
@@ -538,7 +538,7 @@ countDiagnosedWithCovidSentToHC : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidSentToHC encounters =
     -- Encounters which has produced Covid19 diagnosis,
     -- and patient was sent to health center.
-    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+    List.filter (.diagnosis >> (==) DiagnosisCovid19Suspect) encounters
         |> List.filter wasSentToHCByDiagnosis
         |> List.length
 
@@ -547,7 +547,7 @@ countDiagnosedWithCovidManagedAtHome : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidManagedAtHome encounters =
     -- Encounter which has produced Covid19 diagnosis,
     -- and it was decided to manage illness at home.
-    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+    List.filter (.diagnosis >> (==) DiagnosisCovid19Suspect) encounters
         |> List.filter wasManagedAtHomeByDiagnosis
         |> List.length
 
@@ -917,7 +917,7 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db v
             generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         covidEntries =
-            List.filter (.diagnosis >> (==) DiagnosisCovid19) acuteIllnessEntries
+            List.filter (.diagnosis >> (==) DiagnosisCovid19Suspect) acuteIllnessEntries
 
         malariaEntries =
             List.filter

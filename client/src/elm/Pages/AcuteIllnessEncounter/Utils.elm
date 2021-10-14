@@ -277,13 +277,13 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
     in
     case task of
         NextStepsIsolation ->
-            diagnosis == Just DiagnosisCovid19
+            diagnosis == Just DiagnosisCovid19Suspect
 
         NextStepsCall114 ->
-            diagnosis == Just DiagnosisCovid19
+            diagnosis == Just DiagnosisCovid19Suspect
 
         NextStepsContactHC ->
-            diagnosis == Just DiagnosisCovid19 && isJust measurements.call114 && (not <| talkedTo114 measurements)
+            diagnosis == Just DiagnosisCovid19Suspect && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
         NextStepsMedicationDistribution ->
             medicationPrescribed
@@ -387,17 +387,17 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
                 -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
                     || -- No improvement, with danger signs, and diagnosis is not Covid19.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19)
+                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19Suspect)
                     || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
                        (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
-                            && (diagnosis == Just DiagnosisCovid19)
+                            && (diagnosis == Just DiagnosisCovid19Suspect)
                             && healthCenterRecommendedToCome measurements
                        )
 
         NextStepsContactHC ->
             not malariaDiagnosedAtCurrentEncounter
                 && -- No improvement, with danger signs, and diagnosis is Covid19.
-                   (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis == Just DiagnosisCovid19)
+                   (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis == Just DiagnosisCovid19Suspect)
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
@@ -814,16 +814,12 @@ resolveAcuteIllnessDiagnosis currentDate isChw data =
             List.isEmpty data.previousEncountersData
     in
     if isFirstEncounter then
-        let
-            ( covid19ByCompleteSet, covid19ByPartialSet ) =
-                covid19Diagnosed data.measurements
-        in
         -- First we check for Covid19.
-        if covid19ByCompleteSet then
-            Just DiagnosisCovid19
+        if covid19SuspectDiagnosed data.measurements then
+            Just DiagnosisCovid19Suspect
 
         else
-            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person isChw covid19ByPartialSet data.measurements
+            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person isChw data.measurements
 
     else
         malariaRapidTestResult data.measurements
@@ -849,8 +845,8 @@ resolveAcuteIllnessDiagnosis currentDate isChw data =
                 )
 
 
-covid19Diagnosed : AcuteIllnessMeasurements -> ( Bool, Bool )
-covid19Diagnosed measurements =
+covid19SuspectDiagnosed : AcuteIllnessMeasurements -> Bool
+covid19SuspectDiagnosed measurements =
     let
         countSigns measurement_ exclusion =
             measurement_
@@ -914,20 +910,18 @@ covid19Diagnosed measurements =
         feverAndRdtNotPositive =
             feverOnRecord && isJust rdtResult && rdtResult /= Just RapidTestPositive
     in
-    ( (signsIndicateCovid && symptomsIndicateCovid)
+    (signsIndicateCovid && symptomsIndicateCovid)
         || (signsIndicateCovid && feverOnRecord)
         || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
         || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
-    , False
-    )
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person isChw covid19ByPartialSet measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
         if feverRecorded measurements then
-            resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
+            resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
 
         else if respiratoryInfectionDangerSignsPresent measurements then
             Just DiagnosisRespiratoryInfectionComplicated
@@ -956,8 +950,8 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person isChw covid19ByPartial
         Nothing
 
 
-resolveAcuteIllnessDiagnosisByLaboratoryResults : Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements =
+resolveAcuteIllnessDiagnosisByLaboratoryResults : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
     malariaRapidTestResult measurements
         |> Maybe.andThen
             (\testResult ->
@@ -983,9 +977,6 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults covid19ByPartialSet measurements
                         else if gastrointestinalInfectionDangerSignsPresent True measurements then
                             -- Fever with Diarrhea is considered to be a complicated case.
                             Just DiagnosisGastrointestinalInfectionComplicated
-
-                        else if covid19ByPartialSet then
-                            Just DiagnosisCovid19
 
                         else
                             Just DiagnosisFeverOfUnknownOrigin

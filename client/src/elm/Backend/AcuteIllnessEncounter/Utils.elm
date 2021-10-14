@@ -9,7 +9,7 @@ import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 acuteIllnessDiagnosisToString : AcuteIllnessDiagnosis -> String
 acuteIllnessDiagnosisToString diagnosis =
     case diagnosis of
-        DiagnosisCovid19 ->
+        DiagnosisCovid19Suspect ->
             "covid19"
 
         DiagnosisMalariaComplicated ->
@@ -50,7 +50,7 @@ acuteIllnessDiagnosisFromString : String -> Maybe AcuteIllnessDiagnosis
 acuteIllnessDiagnosisFromString diagnosis =
     case diagnosis of
         "covid19" ->
-            Just DiagnosisCovid19
+            Just DiagnosisCovid19Suspect
 
         "malaria-complicated" ->
             Just DiagnosisMalariaComplicated

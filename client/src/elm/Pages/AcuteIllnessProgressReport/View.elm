@@ -788,7 +788,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                 |> Maybe.map
                     (\dataFirst ->
                         case dataFirst.diagnosis of
-                            DiagnosisCovid19 ->
+                            DiagnosisCovid19Suspect ->
                                 viewActionsTakenCovid19 language dataFirst.startDate dataFirst.measurements
 
                             _ ->
