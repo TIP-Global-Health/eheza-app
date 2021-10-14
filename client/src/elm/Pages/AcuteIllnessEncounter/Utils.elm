@@ -812,11 +812,14 @@ resolveAcuteIllnessDiagnosis currentDate isChw data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
+
+        covid19AcuteIllnessDiagnosis =
+            resolveCovid19AcuteIllnessDiagnosis currentDate data.person isChw data.measurements
     in
     if isFirstEncounter then
         -- First we check for Covid19.
-        if covid19SuspectDiagnosed data.measurements then
-            Just DiagnosisCovid19Suspect
+        if isJust covid19AcuteIllnessDiagnosis then
+            covid19AcuteIllnessDiagnosis
 
         else
             resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person isChw data.measurements
@@ -847,73 +850,100 @@ resolveAcuteIllnessDiagnosis currentDate isChw data =
 
 covid19SuspectDiagnosed : AcuteIllnessMeasurements -> Bool
 covid19SuspectDiagnosed measurements =
-    let
-        countSigns measurement_ exclusion =
-            measurement_
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            set =
-                                Tuple.second measurement |> .value
+    if covidRapidTestResult measurements == Just RapidTestNegative then
+        -- Patient has taken Covid RDT, and got a Negative result.
+        -- This path may only happen for nurses, because CHW
+        -- do not take Covid RDT.
+        False
 
-                            setSize =
-                                EverySet.size set
-                        in
-                        case setSize of
-                            1 ->
-                                if EverySet.member exclusion set then
-                                    0
+    else
+        let
+            countSigns measurement_ exclusion =
+                measurement_
+                    |> Maybe.map
+                        (\measurement ->
+                            let
+                                set =
+                                    Tuple.second measurement |> .value
 
-                                else
-                                    1
+                                setSize =
+                                    EverySet.size set
+                            in
+                            case setSize of
+                                1 ->
+                                    if EverySet.member exclusion set then
+                                        0
 
-                            _ ->
-                                setSize
-                    )
-                |> Maybe.withDefault 0
+                                    else
+                                        1
 
-        excludesGeneral =
-            [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
+                                _ ->
+                                    setSize
+                        )
+                    |> Maybe.withDefault 0
 
-        generalSymptomsCount =
-            countSymptoms measurements.symptomsGeneral .value excludesGeneral
+            excludesGeneral =
+                [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
 
-        respiratorySymptomsCount =
-            countRespiratorySymptoms measurements []
+            generalSymptomsCount =
+                countSymptoms measurements.symptomsGeneral .value excludesGeneral
 
-        giSymptomsCount =
-            countGISymptoms measurements []
+            respiratorySymptomsCount =
+                countRespiratorySymptoms measurements []
 
-        totalSymptoms =
-            generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
+            giSymptomsCount =
+                countGISymptoms measurements []
 
-        symptomsIndicateCovid =
-            if giSymptomsCount > 0 then
-                respiratorySymptomsCount > 0
+            totalSymptoms =
+                generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
 
-            else
-                totalSymptoms > 1
+            symptomsIndicateCovid =
+                if giSymptomsCount > 0 then
+                    respiratorySymptomsCount > 0
 
-        totalSigns =
-            countSigns measurements.travelHistory NoTravelHistorySigns
-                + countSigns measurements.exposure NoExposureSigns
+                else
+                    totalSymptoms > 1
 
-        signsIndicateCovid =
-            totalSigns > 0
+            totalSigns =
+                countSigns measurements.travelHistory NoTravelHistorySigns
+                    + countSigns measurements.exposure NoExposureSigns
 
-        feverOnRecord =
-            feverRecorded measurements
+            signsIndicateCovid =
+                totalSigns > 0
 
-        rdtResult =
-            malariaRapidTestResult measurements
+            feverOnRecord =
+                feverRecorded measurements
 
-        feverAndRdtNotPositive =
-            feverOnRecord && isJust rdtResult && rdtResult /= Just RapidTestPositive
-    in
-    (signsIndicateCovid && symptomsIndicateCovid)
-        || (signsIndicateCovid && feverOnRecord)
-        || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
-        || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
+            malariaRDTResult =
+                malariaRapidTestResult measurements
+
+            feverAndRdtNotPositive =
+                feverOnRecord && isJust malariaRDTResult && malariaRDTResult /= Just RapidTestPositive
+        in
+        (signsIndicateCovid && symptomsIndicateCovid)
+            || (signsIndicateCovid && feverOnRecord)
+            || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
+            || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
+
+
+resolveCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
+    if not <| covid19SuspectDiagnosed measurements then
+        Nothing
+
+    else if isChw then
+        Just DiagnosisCovid19Suspect
+
+    else if not <| covidCaseConfirmed measurements then
+        Nothing
+
+    else if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
+        -- @todo
+        Nothing
+
+    else
+        -- We don't have enough data to make a decision on COVID severity diagnosis.
+        Nothing
 
 
 resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
@@ -1094,6 +1124,23 @@ respiratoryRateRecessedForAge maybeAgeMonths rate =
                     rate < 18
             )
         |> Maybe.withDefault False
+
+
+{-| We consider suspected case to be confirmed, if Covid RDT was performed and
+turned out positive, or was not taken for whatever reason.
+Only option to rule out Covid is for RDT result to be negative.
+-}
+covidCaseConfirmed : AcuteIllnessMeasurements -> Bool
+covidCaseConfirmed measurements =
+    isJust measurements.covidTesting
+        && (covidRapidTestResult measurements /= Just RapidTestNegative)
+
+
+covidRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
+covidRapidTestResult measurements =
+    measurements.covidTesting
+        |> getMeasurementValueFunc
+        |> Maybe.map .result
 
 
 malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
