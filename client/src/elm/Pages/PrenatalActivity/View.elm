@@ -1515,7 +1515,7 @@ viewObstetricFormFirstStep language currentDate assembled form =
             { form_ | liveChildren = value, liveChildrenDirty = True }
     in
     div [ class "form history obstetric first" ]
-        [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
+        [ viewQuestionLabel language Translate.CurrentlyPregnant
         , viewBoolInput language
             form.currentlyPregnant
             SetCurrentlyPregnant

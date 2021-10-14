@@ -442,6 +442,7 @@ type TranslationId
     | CreateRelationship
     | CreateTrainingGroupEncounters
     | ChwDashboardLabel
+    | CurrentlyPregnant
     | CurrentlyPregnantQuestion
     | DangerSign DangerSign
     | DangerSignsLabel
@@ -2770,6 +2771,11 @@ translationSet trans =
         CreateTrainingGroupEncounters ->
             { english = "Create All Training Group Encounters"
             , kinyarwanda = Nothing
+            }
+
+        CurrentlyPregnant ->
+            { english = "Currently Pregnant"
+            , kinyarwanda = Just "Aratwite"
             }
 
         CurrentlyPregnantQuestion ->

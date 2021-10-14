@@ -20,9 +20,9 @@ import Backend.Measurement.Model
         , HCRecommendation(..)
         , IsolationSign(..)
         , IsolationValue
-        , RapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
+        , RapidTestResult(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
