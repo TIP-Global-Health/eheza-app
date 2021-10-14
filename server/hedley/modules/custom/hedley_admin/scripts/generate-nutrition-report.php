@@ -453,13 +453,21 @@ function print_prevalence_report(array $skeleton, array $stunting, array $underw
  * Prints prevalence report.
  *
  * @param array $skeleton
+ *   Skeleton of the summary.
  * @param array $stunting
+ *   Stunting data.
  * @param array $underweight
+ *   Underweight data.
  * @param array $wasting
+ *   Wasting data.
  * @param string $frequency_human_readable
+ *   Either 'year', 'month', etc.
  * @param int $limit
+ *   How many items we have in the date range.
  * @param callable $date_calculate
+ *   Calculate the date range item.
  * @param callable $date_format
+ *   Print the date in the needed format (2021 Q3 for example).
  */
 function print_incidence_report(array $skeleton, array $stunting, array $underweight, array $wasting, string $frequency_human_readable, int $limit, callable $date_calculate, callable $date_format) {
   $header = [
