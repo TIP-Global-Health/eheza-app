@@ -273,7 +273,7 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                                     |> Maybe.withDefault ( 0, 1 )
 
                             else
-                                ( taskCompleted form.administrationNote, 1 )
+                                ( taskCompleted form.administrationNote + taskCompleted form.isPregnant, 2 )
                         )
                         form.testPerformed
                         |> Maybe.withDefault ( 0, 0 )

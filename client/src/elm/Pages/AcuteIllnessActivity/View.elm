@@ -1044,14 +1044,7 @@ viewMalariaTestingForm language currentDate person form =
 
         isPregnantInput =
             if testResultPositive && isPersonAFertileWoman currentDate person then
-                [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
-                , viewBoolInput
-                    language
-                    form.isPregnant
-                    SetIsPregnant
-                    "is-pregnant"
-                    Nothing
-                ]
+                viewIsPregnantInput language SetIsPregnant form.isPregnant
 
             else
                 []
@@ -1066,6 +1059,9 @@ viewMalariaTestingForm language currentDate person form =
 viewCovidTestingForm : Language -> NominalDate -> Person -> CovidTestingForm -> Html Msg
 viewCovidTestingForm language currentDate person form =
     let
+        isPregnantInputForView =
+            viewIsPregnantInput language (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value })) form.isPregnant
+
         derrivedInputs =
             Maybe.map
                 (\testPerformed ->
@@ -1073,14 +1069,7 @@ viewCovidTestingForm language currentDate person form =
                         let
                             isPregnantInput =
                                 if form.testPositive == Just True && isPersonAFertileWoman currentDate person then
-                                    [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
-                                    , viewBoolInput
-                                        language
-                                        form.isPregnant
-                                        (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value }))
-                                        "is-pregnant"
-                                        Nothing
-                                    ]
+                                    isPregnantInputForView
 
                                 else
                                     []
@@ -1099,13 +1088,19 @@ viewCovidTestingForm language currentDate person form =
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
-                                [ NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+                                [ AdministeredPreviously
+                                , NonAdministrationLackOfStock
+                                , NonAdministrationPatientDeclined
+                                , NonAdministrationPatientUnableToAfford
+                                , NonAdministrationOther
+                                ]
                                 []
                                 form.administrationNote
                                 SetCovidTestingAdministrationNote
                                 Translate.AdministrationNoteForWellChild
                             ]
                         ]
+                            ++ isPregnantInputForView
                 )
                 form.testPerformed
                 |> Maybe.withDefault []
@@ -1130,6 +1125,18 @@ viewCovidTestingForm language currentDate person form =
             Nothing
         ]
             ++ derrivedInputs
+
+
+viewIsPregnantInput : Language -> (Bool -> Msg) -> Maybe Bool -> List (Html Msg)
+viewIsPregnantInput language setMsg currentValue =
+    [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
+    , viewBoolInput
+        language
+        currentValue
+        setMsg
+        "is-pregnant"
+        Nothing
+    ]
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
