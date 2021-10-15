@@ -1307,6 +1307,21 @@ translationSet trans =
                     , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
                     }
 
+                DiagnosisSevereCovid19 ->
+                    { english = "Severe COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPneuminialCovid19 ->
+                    { english = "COVID-19 with signs of Pneumonia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLowRiskCovid19 ->
+                    { english = "Low risk COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisMalariaComplicated ->
                     { english = "Complicated Malaria"
                     , kinyarwanda = Just "Malariya y'igikatu"
@@ -1367,6 +1382,21 @@ translationSet trans =
                 DiagnosisCovid19Suspect ->
                     { english = "Suspected COVID-19 case"
                     , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
+                    }
+
+                DiagnosisSevereCovid19 ->
+                    { english = "Severe COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPneuminialCovid19 ->
+                    { english = "COVID-19 with signs of Pneumonia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLowRiskCovid19 ->
+                    { english = "Low risk COVID-19"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaComplicated ->

@@ -28,6 +28,9 @@ function hedley_schedule_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'covid19' => 'Covid19',
+        'covid19-severe' => 'Severe COVID-19',
+        'covid19-pneumonia' => 'COVID-19 with signs of Pneumonia',
+        'covid19-low-risk' => 'Low risk COVID-19',
         'malaria-complicated' => 'Malaria Complicated',
         'malaria-uncomplicated' => 'Malaria Uncomplicated',
         'malaria-uncomplicated-pregnant' => 'Malaria Uncomplicated and Pregnant',
