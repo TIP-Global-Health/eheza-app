@@ -1946,7 +1946,7 @@ resolveNextStepsTasks currentDate isChw isFirstEncounter data =
     if isFirstEncounter then
         -- The order is important. Do not change.
         [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
-            |> List.filter (expectNextStepsTaskFirstEncounter currentDate data.person diagnosis data.measurements)
+            |> List.filter (expectNextStepsTaskFirstEncounter currentDate isChw data.person diagnosis data.measurements)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         -- The order is important. Do not change.
@@ -1957,8 +1957,8 @@ resolveNextStepsTasks currentDate isChw isFirstEncounter data =
         []
 
 
-expectNextStepsTaskFirstEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
-expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task =
+expectNextStepsTaskFirstEncounter : NominalDate -> Bool -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
+expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements task =
     let
         ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
             ageInMonths currentDate person
@@ -1970,16 +1970,20 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
                 || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
                 || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
                 || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
+                || (diagnosis == Just DiagnosisPneuminialCovid19)
     in
     case task of
         NextStepsIsolation ->
-            diagnosis == Just DiagnosisCovid19Suspect
+            isChw
+                && (diagnosis == Just DiagnosisCovid19Suspect)
+                || (diagnosis == Just DiagnosisPneuminialCovid19)
+                || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsCall114 ->
-            diagnosis == Just DiagnosisCovid19Suspect
+            isChw && (diagnosis == Just DiagnosisCovid19Suspect)
 
         NextStepsContactHC ->
-            diagnosis == Just DiagnosisCovid19Suspect && isJust measurements.call114 && (not <| talkedTo114 measurements)
+            isChw && (diagnosis == Just DiagnosisCovid19Suspect) && isJust measurements.call114 && (not <| talkedTo114 measurements)
 
         NextStepsMedicationDistribution ->
             medicationPrescribed
@@ -1992,6 +1996,7 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
                 || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
                 || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                 || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
+                || (diagnosis == Just DiagnosisSevereCovid19)
                 -- Medication was perscribed, but it's out of stock, or patient is alergic.
                 || (medicationPrescribed && sendToHCDueToMedicationNonAdministration measurements)
 
@@ -2000,11 +2005,11 @@ expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements task
 
         NextStepsFollowUp ->
             -- Whenever any other next step exists.
-            expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsIsolation
-                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsCall114
-                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsContactHC
-                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
-                || expectNextStepsTaskFirstEncounter currentDate person diagnosis measurements NextStepsSendToHC
+            expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsIsolation
+                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsCall114
+                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
+                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
+                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,

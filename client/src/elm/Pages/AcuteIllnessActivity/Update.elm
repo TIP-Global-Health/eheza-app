@@ -94,6 +94,10 @@ update currentDate id db msg model =
         generatePhysicalExamMsgs nextTask =
             Maybe.map (\task -> [ SetActivePhysicalExamTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+
+        generateLaboratoryMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -674,7 +678,7 @@ update currentDate id db msg model =
             let
                 updatedData =
                     model.laboratoryData
-                        |> (\data -> { data | activeTask = task })
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | laboratoryData = updatedData }
             , Cmd.none
@@ -715,7 +719,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveMalariaTesting personId saved ->
+        SaveMalariaTesting personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -723,23 +727,25 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
                 appMsgs =
                     model.laboratoryData.malariaTestingForm
                         |> toMalariaTestingValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
+                        |> Maybe.map
+                            (Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId
+                                >> Backend.Model.MsgAcuteIllnessEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetCovidTestingBoolInput formUpdateFunc value ->
             let
@@ -775,7 +781,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveCovidTesting personId saved ->
+        SaveCovidTesting personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -783,23 +789,25 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
                 appMsgs =
                     model.laboratoryData.covidTestingForm
                         |> toCovidTestingValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveCovidTesting personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
+                        |> Maybe.map
+                            (Backend.AcuteIllnessEncounter.Model.SaveCovidTesting personId measurementId
+                                >> Backend.Model.MsgAcuteIllnessEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetActiveExposureTask task ->
             let

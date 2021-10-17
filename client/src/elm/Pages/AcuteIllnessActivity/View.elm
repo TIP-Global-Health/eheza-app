@@ -928,6 +928,9 @@ viewAcuteIllnessLaboratory language currentDate id isChw isFirstEncounter assemb
         tasks =
             List.filter (expectLaboratoryTask currentDate isChw isFirstEncounter assembled) laboratoryTasks
 
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -943,7 +946,7 @@ viewAcuteIllnessLaboratory language currentDate id isChw isFirstEncounter assemb
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -970,40 +973,57 @@ viewAcuteIllnessLaboratory language currentDate id isChw isFirstEncounter assemb
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                LaboratoryMalariaTesting ->
+            case activeTask of
+                Just LaboratoryMalariaTesting ->
                     assembled.measurements.malariaTesting
                         |> getMeasurementValueFunc
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate assembled.person
 
-                LaboratoryCovidTesting ->
+                Just LaboratoryCovidTesting ->
                     assembled.measurements.covidTesting
                         |> getMeasurementValueFunc
                         |> covidTestingFormWithDefault data.covidTestingForm
                         |> viewCovidTestingForm language currentDate assembled.person
 
-        actions =
-            let
-                saveMsg =
-                    case data.activeTask of
-                        LaboratoryMalariaTesting ->
-                            SaveMalariaTesting assembled.participant.person assembled.measurements.malariaTesting
+                Nothing ->
+                    emptyNode
 
-                        LaboratoryCovidTesting ->
-                            SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting
-            in
-            div [ class "actions malaria-testing" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                LaboratoryMalariaTesting ->
+                                    SaveMalariaTesting assembled.participant.person assembled.measurements.malariaTesting nextTask
+
+                                LaboratoryCovidTesting ->
+                                    SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask
+                    in
+                    div [ class "actions malaria-testing" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
