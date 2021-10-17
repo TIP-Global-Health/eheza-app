@@ -4,34 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model
-    exposing
-        ( AcuteFindingsGeneralSign(..)
-        , AcuteFindingsRespiratorySign(..)
-        , AcuteIllnessDangerSign(..)
-        , AcuteIllnessMeasurements
-        , AdministrationNote(..)
-        , Call114Sign(..)
-        , ChildNutritionSign(..)
-        , ColorAlertIndication(..)
-        , ExposureSign(..)
-        , HCContactSign(..)
-        , HCContactValue
-        , HCRecommendation(..)
-        , IsolationSign(..)
-        , IsolationValue
-        , MedicationDistributionSign(..)
-        , MedicationNonAdministrationSign(..)
-        , RapidTestResult(..)
-        , ReasonForNotIsolating(..)
-        , Recommendation114(..)
-        , RecommendationSite(..)
-        , SymptomsGIDerivedSign(..)
-        , SymptomsGISign(..)
-        , SymptomsGeneralSign(..)
-        , SymptomsRespiratorySign(..)
-        , TravelHistorySign(..)
-        )
+import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -416,15 +389,15 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
 
 talkedTo114 : AcuteIllnessMeasurements -> Bool
 talkedTo114 measurements =
-    measurements.call114
-        |> Maybe.map (Tuple.second >> .value >> .signs >> EverySet.member Call114)
+    getMeasurementValueFunc measurements.call114
+        |> Maybe.map (.signs >> EverySet.member Call114)
         |> Maybe.withDefault False
 
 
 healthCenterRecommendedToCome : AcuteIllnessMeasurements -> Bool
 healthCenterRecommendedToCome measurements =
-    measurements.hcContact
-        |> Maybe.map (Tuple.second >> .value >> .recommendations >> EverySet.member ComeToHealthCenter)
+    getMeasurementValueFunc measurements.hcContact
+        |> Maybe.map (.recommendations >> EverySet.member ComeToHealthCenter)
         |> Maybe.withDefault False
 
 
@@ -886,7 +859,7 @@ covid19SuspectDiagnosed measurements =
                 [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
 
             generalSymptomsCount =
-                countSymptoms measurements.symptomsGeneral .value excludesGeneral
+                countGeneralSymptoms measurements excludesGeneral
 
             respiratorySymptomsCount =
                 countRespiratorySymptoms measurements []
@@ -938,8 +911,27 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
         Nothing
 
     else if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
-        -- @todo
-        Nothing
+        if
+            bloodPressureIndicatesSevereCovid19 measurements
+                && respiratoryRateElevatedForCovid19 currentDate person measurements
+                && lethargyAtSymptoms measurements
+                && lethargicOrUnconsciousAtAcuteFindings measurements
+                && acuteFindinsgRespiratoryDangerSignPresent measurements
+        then
+            Just DiagnosisSevereCovid19
+
+        else if
+            bloodPressureIndicatesCovid19WithPneumonia measurements
+                && stabbingChestPainAtSymptoms measurements
+                && -- @todo: revise
+                   -- countRespiratorySymptoms measurements [] > 0 &&
+                   (countGeneralSymptoms measurements [] > 0)
+                && cracklesAtCoreExam measurements
+        then
+            Just DiagnosisPneuminialCovid19
+
+        else
+            Just DiagnosisLowRiskCovid19
 
     else
         -- We don't have enough data to make a decision on COVID severity diagnosis.
@@ -1014,16 +1006,21 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
 
 
 countSymptoms : Maybe ( id, m ) -> (m -> Dict k v) -> List k -> Int
-countSymptoms measurement geSymptomsListFunc exclusions =
-    measurement
-        |> Maybe.map
-            (Tuple.second
-                >> geSymptomsListFunc
-                >> Dict.keys
-                >> List.filter (\sign -> List.member sign exclusions |> not)
-                >> List.length
-            )
+countSymptoms measurement getSymptomsListFunc exclusions =
+    Maybe.map
+        (Tuple.second
+            >> getSymptomsListFunc
+            >> Dict.keys
+            >> List.filter (\sign -> List.member sign exclusions |> not)
+            >> List.length
+        )
+        measurement
         |> Maybe.withDefault 0
+
+
+countGeneralSymptoms : AcuteIllnessMeasurements -> List SymptomsGeneralSign -> Int
+countGeneralSymptoms measurements exclusions =
+    countSymptoms measurements.symptomsGeneral .value (NoSymptomsGeneral :: exclusions)
 
 
 countRespiratorySymptoms : AcuteIllnessMeasurements -> List SymptomsRespiratorySign -> Int
@@ -1043,8 +1040,8 @@ feverRecorded measurements =
 
 feverAtSymptoms : AcuteIllnessMeasurements -> Bool
 feverAtSymptoms measurements =
-    measurements.symptomsGeneral
-        |> Maybe.map (Tuple.second >> .value >> symptomAppearsAtSymptomsDict SymptomGeneralFever)
+    getMeasurementValueFunc measurements.symptomsGeneral
+        |> Maybe.map (symptomAppearsAtSymptomsDict SymptomGeneralFever)
         |> Maybe.withDefault False
 
 
@@ -1080,7 +1077,26 @@ respiratoryRateElevated currentDate person measurements =
                         |> .value
                         |> .respiratoryRate
             in
-            respiratoryRateElevatedForAge maybeAgeMonths respiratoryRate
+            respiratoryRateElevatedByAge maybeAgeMonths respiratoryRate
+        )
+        measurements.vitals
+        |> Maybe.withDefault False
+
+
+respiratoryRateElevatedForCovid19 : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+respiratoryRateElevatedForCovid19 currentDate person measurements =
+    Maybe.map
+        (\measurement ->
+            let
+                maybeAgeMonths =
+                    ageInMonths currentDate person
+
+                respiratoryRate =
+                    Tuple.second measurement
+                        |> .value
+                        |> .respiratoryRate
+            in
+            respiratoryRateElevatedByAgeForCovid19 maybeAgeMonths respiratoryRate
         )
         measurements.vitals
         |> Maybe.withDefault False
@@ -1088,12 +1104,12 @@ respiratoryRateElevated currentDate person measurements =
 
 respiratoryRateAbnormalForAge : Maybe Int -> Int -> Bool
 respiratoryRateAbnormalForAge maybeAgeMonths rate =
-    respiratoryRateElevatedForAge maybeAgeMonths rate
-        || respiratoryRateRecessedForAge maybeAgeMonths rate
+    respiratoryRateElevatedByAge maybeAgeMonths rate
+        || respiratoryRateRecessedByAge maybeAgeMonths rate
 
 
-respiratoryRateElevatedForAge : Maybe Int -> Int -> Bool
-respiratoryRateElevatedForAge maybeAgeMonths rate =
+respiratoryRateElevatedByAge : Maybe Int -> Int -> Bool
+respiratoryRateElevatedByAge maybeAgeMonths rate =
     maybeAgeMonths
         |> Maybe.map
             (\ageMonths ->
@@ -1109,8 +1125,28 @@ respiratoryRateElevatedForAge maybeAgeMonths rate =
         |> Maybe.withDefault False
 
 
-respiratoryRateRecessedForAge : Maybe Int -> Int -> Bool
-respiratoryRateRecessedForAge maybeAgeMonths rate =
+respiratoryRateElevatedByAgeForCovid19 : Maybe Int -> Int -> Bool
+respiratoryRateElevatedByAgeForCovid19 maybeAgeMonths rate =
+    maybeAgeMonths
+        |> Maybe.map
+            (\ageMonths ->
+                if ageMonths < 2 then
+                    rate >= 60
+
+                else if ageMonths < 12 then
+                    rate >= 50
+
+                else if ageMonths < 5 * 12 then
+                    rate >= 40
+
+                else
+                    rate > 30
+            )
+        |> Maybe.withDefault False
+
+
+respiratoryRateRecessedByAge : Maybe Int -> Int -> Bool
+respiratoryRateRecessedByAge maybeAgeMonths rate =
     maybeAgeMonths
         |> Maybe.map
             (\ageMonths ->
@@ -1343,15 +1379,70 @@ mildGastrointestinalInfectionSymptomsPresent measurements =
 
 nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
 nonBloodyDiarrheaAtSymptoms measurements =
-    measurements.symptomsGI
-        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
+    getMeasurementValueFunc measurements.symptomsGI
+        |> Maybe.map (.signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
         |> Maybe.withDefault False
 
 
 vomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
 vomitingAtSymptoms measurements =
-    measurements.symptomsGI
-        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict Vomiting)
+    getMeasurementValueFunc measurements.symptomsGI
+        |> Maybe.map (.signs >> symptomAppearsAtSymptomsDict Vomiting)
+        |> Maybe.withDefault False
+
+
+bloodPressureIndicatesSevereCovid19 : AcuteIllnessMeasurements -> Bool
+bloodPressureIndicatesSevereCovid19 measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.map (\value -> value.sys < 90 || value.dia < 60)
+        |> Maybe.withDefault False
+
+
+bloodPressureIndicatesCovid19WithPneumonia : AcuteIllnessMeasurements -> Bool
+bloodPressureIndicatesCovid19WithPneumonia measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.map (\value -> value.sys <= 100)
+        |> Maybe.withDefault False
+
+
+lethargyAtSymptoms : AcuteIllnessMeasurements -> Bool
+lethargyAtSymptoms measurements =
+    getMeasurementValueFunc measurements.symptomsGeneral
+        |> Maybe.map (symptomAppearsAtSymptomsDict Lethargy)
+        |> Maybe.withDefault False
+
+
+stabbingChestPainAtSymptoms : AcuteIllnessMeasurements -> Bool
+stabbingChestPainAtSymptoms measurements =
+    getMeasurementValueFunc measurements.symptomsRespiratory
+        |> Maybe.map (symptomAppearsAtSymptomsDict StabbingChestPain)
+        |> Maybe.withDefault False
+
+
+lethargicOrUnconsciousAtAcuteFindings : AcuteIllnessMeasurements -> Bool
+lethargicOrUnconsciousAtAcuteFindings measurements =
+    getMeasurementValueFunc measurements.acuteFindings
+        |> Maybe.map (.signsGeneral >> EverySet.member LethargicOrUnconscious)
+        |> Maybe.withDefault False
+
+
+cracklesAtCoreExam : AcuteIllnessMeasurements -> Bool
+cracklesAtCoreExam measurements =
+    getMeasurementValueFunc measurements.coreExam
+        |> Maybe.map (.lungs >> EverySet.member Crackles)
+        |> Maybe.withDefault False
+
+
+acuteFindinsgRespiratoryDangerSignPresent : AcuteIllnessMeasurements -> Bool
+acuteFindinsgRespiratoryDangerSignPresent measurements =
+    getMeasurementValueFunc measurements.acuteFindings
+        |> Maybe.map
+            (.signsRespiratory
+                >> EverySet.toList
+                >> List.filter ((/=) NoAcuteFindingsRespiratorySigns)
+                >> List.isEmpty
+                >> not
+            )
         |> Maybe.withDefault False
 
 
