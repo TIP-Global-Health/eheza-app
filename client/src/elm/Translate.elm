@@ -958,6 +958,7 @@ type TranslationId
     | SuspectedCovid19CaseAlertHelper
     | SuspectedCovid19CaseIsolate
     | SuspectedCovid19CaseContactHC
+    | SuspectedCovid19CasePerformRapidTest
     | Symptoms
     | SymptomsAtFirstEncounter
     | SymptomsGeneralSign SymptomsGeneralSign
@@ -7766,7 +7767,12 @@ translationSet trans =
 
         SuspectedCovid19CaseContactHC ->
             { english = "Contact health center immediately"
-            , kinyarwanda = Just "Menyesha ikigo nderabuzima ako kanya "
+            , kinyarwanda = Just "Menyesha ikigo nderabuzima ako kanya"
+            }
+
+        SuspectedCovid19CasePerformRapidTest ->
+            { english = "Perform a rapid test immediately"
+            , kinyarwanda = Nothing
             }
 
         Symptoms ->

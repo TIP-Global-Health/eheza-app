@@ -3967,30 +3967,8 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembl
             case diagnosisAfterChange of
                 Just newDiagnosis ->
                     updateDiagnosisMsg id newDiagnosis
-                        :: (case resolveNextStepFirstEncounter currentDate isChw assembledAfter of
-                                Just nextStep ->
-                                    [ -- Navigate to Acute Ilness NextSteps activty page.
-                                      App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-                                    , -- Focus on first task on that page.
-                                      Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
-                                        |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
-                                        |> App.Model.MsgLoggedIn
-
-                                    -- Show warning popup with new diagnosis.
-                                    , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just newDiagnosis)
-                                        |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
-                                        |> App.Model.MsgLoggedIn
-                                    ]
-
-                                Nothing ->
-                                    [ -- Navigate to Acute Ilness encounter page.
-                                      App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
-
-                                    -- Show warning popup with new diagnosis.
-                                    , Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just newDiagnosis)
-                                        |> App.Model.MsgPageAcuteIllnessEncounter id
-                                        |> App.Model.MsgLoggedIn
-                                    ]
+                        :: (resolveNextStepFirstEncounter currentDate isChw assembledAfter
+                                |> generateMsgsForNewDiagnosis currentDate isChw id newDiagnosis
                            )
 
                 Nothing ->
@@ -4001,6 +3979,81 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembl
 
     else
         []
+
+
+generateMsgsForNewDiagnosis :
+    NominalDate
+    -> Bool
+    -> AcuteIllnessEncounterId
+    -> AcuteIllnessDiagnosis
+    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> List App.Model.Msg
+generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
+    if isChw then
+        generateMsgsForNewDiagnosisForCHW currentDate id diagnosis nextStep
+
+    else
+        generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep
+
+
+generateMsgsForNewDiagnosisForNurse :
+    NominalDate
+    -> AcuteIllnessEncounterId
+    -> AcuteIllnessDiagnosis
+    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> List App.Model.Msg
+generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
+    case diagnosis of
+        DiagnosisCovid19Suspect ->
+            [ -- Navigate to Acute Ilness Laboratory activty page.
+              App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , -- Focus on Covid testing task.
+              Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryCovidTesting
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                |> App.Model.MsgLoggedIn
+
+            -- Show warning popup with new diagnosis.
+            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+            ]
+
+        _ ->
+            -- @todo
+            []
+
+
+generateMsgsForNewDiagnosisForCHW :
+    NominalDate
+    -> AcuteIllnessEncounterId
+    -> AcuteIllnessDiagnosis
+    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> List App.Model.Msg
+generateMsgsForNewDiagnosisForCHW currentDate id diagnosis nextStep =
+    case nextStep of
+        Just step ->
+            [ -- Navigate to Acute Ilness NextSteps activty page.
+              App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
+            , -- Focus on first task on that page.
+              Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask step
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                |> App.Model.MsgLoggedIn
+
+            -- Show warning popup with new diagnosis.
+            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                |> App.Model.MsgLoggedIn
+            ]
+
+        Nothing ->
+            [ -- Navigate to Acute Ilness encounter page.
+              App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+
+            -- Show warning popup with new diagnosis.
+            , Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just diagnosis)
+                |> App.Model.MsgPageAcuteIllnessEncounter id
+                |> App.Model.MsgLoggedIn
+            ]
 
 
 generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Bool -> Pages.AcuteIllnessEncounter.Model.AssembledData -> List App.Model.Msg

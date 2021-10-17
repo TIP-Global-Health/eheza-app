@@ -93,6 +93,7 @@ viewHeaderAndContent language currentDate id isChw activity model data =
         , viewModal <|
             warningPopup language
                 currentDate
+                isChw
                 isFirstEncounter
                 model.warningPopupState
                 SetWarningPopupState

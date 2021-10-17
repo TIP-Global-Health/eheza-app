@@ -77,6 +77,7 @@ viewHeaderAndContent language currentDate id isChw db model data =
         , viewModal <|
             warningPopup language
                 currentDate
+                isChw
                 isFirstEncounter
                 model.warningPopupState
                 SetWarningPopupState
@@ -84,21 +85,21 @@ viewHeaderAndContent language currentDate id isChw db model data =
         ]
 
 
-warningPopup : Language -> NominalDate -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
-warningPopup language currentDate isFirstEncounter state setStateMsg data =
+warningPopup : Language -> NominalDate -> Bool -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
+warningPopup language currentDate isChw isFirstEncounter state setStateMsg data =
     state
         |> Maybe.map
             (\diagnosis ->
                 if isFirstEncounter then
-                    viewWarningPopupFirstEncounter language setStateMsg diagnosis
+                    viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis
 
                 else
                     viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis data
             )
 
 
-viewWarningPopupFirstEncounter : Language -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
-viewWarningPopupFirstEncounter language setStateMsg diagnosis =
+viewWarningPopupFirstEncounter : Language -> Bool -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
+viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
     let
         infoHeading =
             [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
@@ -112,9 +113,13 @@ viewWarningPopupFirstEncounter language setStateMsg diagnosis =
             case diagnosis of
                 DiagnosisCovid19Suspect ->
                     ( warningHeading
-                    , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                      , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                      ]
+                    , if isChw then
+                        [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                        , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                        ]
+
+                      else
+                        [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CasePerformRapidTest ] ]
                     )
 
                 _ ->
