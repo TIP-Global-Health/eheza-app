@@ -20,21 +20,20 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
-import Pages.AcuteIllnessActivity.Utils exposing (resolveAmoxicillinDosage, resolveCoartemDosage, resolveORSDosage, resolveZincDosage)
+import Pages.AcuteIllnessActivity.Utils
+    exposing
+        ( muacRedOnSubsequentVisit
+        , resolveAcuteIllnessDiagnosis
+        , resolveAmoxicillinDosage
+        , resolveCoartemDosage
+        , resolveMedicationsNonAdministrationReasons
+        , resolveORSDosage
+        , resolveZincDosage
+        , respiratoryRateAbnormalForAge
+        )
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
-import Pages.AcuteIllnessEncounter.Utils
-    exposing
-        ( generateAssembledData
-        , muacRedOnSubsequentVisit
-        , noImprovementOnSubsequentVisit
-        , resolveAcuteIllnessDiagnosis
-        , resolveMedicationsNonAdministrationReasons
-        , resolveNextStepFirstEncounter
-        , respiratoryRateAbnormalForAge
-        , respiratoryRateElevated
-        , sendToHCOnSubsequentVisitByNutrition
-        )
+import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)

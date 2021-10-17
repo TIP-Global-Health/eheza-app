@@ -408,13 +408,13 @@ viewActivity language currentDate id isChw activity data model =
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id isChw data isFirstEncounter model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate id isChw isFirstEncounter data model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
 
         AcuteIllnessLaboratory ->
-            viewAcuteIllnessLaboratory language currentDate id ( personId, data.person, measurements ) model.laboratoryData
+            viewAcuteIllnessLaboratory language currentDate id isChw isFirstEncounter data model.laboratoryData
 
         AcuteIllnessExposure ->
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
@@ -626,11 +626,11 @@ viewAcuteIllnessPhysicalExam :
     -> NominalDate
     -> AcuteIllnessEncounterId
     -> Bool
-    -> AssembledData
     -> Bool
+    -> AssembledData
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEncounter data =
+viewAcuteIllnessPhysicalExam language currentDate id isChw isFirstEncounter assembled data =
     let
         personId =
             assembled.participant.person
@@ -914,11 +914,19 @@ viewNutritionForm language currentDate form =
     ]
 
 
-viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
-viewAcuteIllnessLaboratory language currentDate id ( personId, person, measurements ) data =
+viewAcuteIllnessLaboratory :
+    Language
+    -> NominalDate
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> Bool
+    -> AssembledData
+    -> LaboratoryData
+    -> List (Html Msg)
+viewAcuteIllnessLaboratory language currentDate id isChw isFirstEncounter assembled data =
     let
         tasks =
-            [ LaboratoryMalariaTesting, LaboratoryCovidTesting ]
+            List.filter (expectLaboratoryTask currentDate isChw isFirstEncounter assembled) laboratoryTasks
 
         viewTask task =
             let
@@ -926,12 +934,12 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                     case task of
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
-                            , isJust measurements.malariaTesting
+                            , isJust assembled.measurements.malariaTesting
                             )
 
                         LaboratoryCovidTesting ->
                             ( "laboratory-covid-testing"
-                            , isJust measurements.covidTesting
+                            , isJust assembled.measurements.covidTesting
                             )
 
                 isActive =
@@ -957,7 +965,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             tasks
                 |> List.map
                     (\task ->
-                        ( task, laboratoryTasksCompletedFromTotal currentDate person measurements data task )
+                        ( task, laboratoryTasksCompletedFromTotal currentDate assembled.person assembled.measurements data task )
                     )
                 |> Dict.fromList
 
@@ -968,26 +976,26 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
         viewForm =
             case data.activeTask of
                 LaboratoryMalariaTesting ->
-                    measurements.malariaTesting
+                    assembled.measurements.malariaTesting
                         |> getMeasurementValueFunc
                         |> malariaTestingFormWithDefault data.malariaTestingForm
-                        |> viewMalariaTestingForm language currentDate person
+                        |> viewMalariaTestingForm language currentDate assembled.person
 
                 LaboratoryCovidTesting ->
-                    measurements.covidTesting
+                    assembled.measurements.covidTesting
                         |> getMeasurementValueFunc
                         |> covidTestingFormWithDefault data.covidTestingForm
-                        |> viewCovidTestingForm language currentDate person
+                        |> viewCovidTestingForm language currentDate assembled.person
 
         actions =
             let
                 saveMsg =
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
-                            SaveMalariaTesting personId measurements.malariaTesting
+                            SaveMalariaTesting assembled.participant.person assembled.measurements.malariaTesting
 
                         LaboratoryCovidTesting ->
-                            SaveCovidTesting personId measurements.covidTesting
+                            SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting
             in
             div [ class "actions malaria-testing" ]
                 [ button

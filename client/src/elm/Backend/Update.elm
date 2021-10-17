@@ -58,8 +58,7 @@ import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
-import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Utils
+import Pages.AcuteIllnessActivity.Utils
     exposing
         ( activityCompleted
         , mandatoryActivitiesCompletedSubsequentVisit
@@ -69,6 +68,8 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveNextStepSubsequentEncounter
         , respiratoryRateAbnormalForAge
         )
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.NextSteps.Model

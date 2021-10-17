@@ -15,6 +15,16 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.AcuteIllnessActivity.Utils
+    exposing
+        ( activityCompleted
+        , expectActivity
+        , muacRedOnSubsequentVisit
+        , noImprovementOnSubsequentVisit
+        , respiratoryRateElevated
+        , sendToHCOnSubsequentVisitByNutrition
+        , talkedTo114
+        )
 import Pages.AcuteIllnessEncounter.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
