@@ -5384,7 +5384,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Monitor at home"
+                        { english = "Monitor at Home"
                         , kinyarwanda = Nothing
                         }
 
@@ -5410,7 +5410,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = "Send to Hospital"
+                        { english = "Refer to Hospital"
                         , kinyarwanda = Nothing
                         }
 
