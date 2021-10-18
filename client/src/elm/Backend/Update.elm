@@ -3990,7 +3990,7 @@ generateMsgsForNewDiagnosis :
     -> List App.Model.Msg
 generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
     if isChw then
-        generateMsgsForNewDiagnosisForCHW currentDate id diagnosis nextStep
+        generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
 
     else
         generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep
@@ -4019,17 +4019,16 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
             ]
 
         _ ->
-            -- @todo
-            []
+            generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
 
 
-generateMsgsForNewDiagnosisForCHW :
+generateCustomMsgsForNewDiagnosis :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
     -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
     -> List App.Model.Msg
-generateMsgsForNewDiagnosisForCHW currentDate id diagnosis nextStep =
+generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
     case nextStep of
         Just step ->
             [ -- Navigate to Acute Ilness NextSteps activty page.

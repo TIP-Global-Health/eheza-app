@@ -705,7 +705,7 @@ type TranslationId
     | NextImmunisationVisit
     | NextPediatricVisit
     | NextSteps
-    | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
+    | NextStepsTask Bool Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -780,7 +780,7 @@ type TranslationId
     | PatientGotAnySymptoms
     | PatientProgress
     | PatientInformation
-    | PatientIsolatedQuestion
+    | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
     | PediatricCareMilestone PediatricCareMilestone
@@ -5356,12 +5356,18 @@ translationSet trans =
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 
-        NextStepsTask task ->
+        NextStepsTask isChw task ->
             case task of
                 NextStepsIsolation ->
-                    { english = "Isolate Patient"
-                    , kinyarwanda = Just "Shyira umurwayi mu kato"
-                    }
+                    if isChw then
+                        { english = "Isolate Patient"
+                        , kinyarwanda = Just "Shyira umurwayi mu kato"
+                        }
+
+                    else
+                        { english = "Monitor at home"
+                        , kinyarwanda = Nothing
+                        }
 
                 NextStepsContactHC ->
                     { english = "Contact Health Center"
@@ -6183,10 +6189,16 @@ translationSet trans =
             , kinyarwanda = Just "Amakuru k'umurwayi"
             }
 
-        PatientIsolatedQuestion ->
-            { english = "Have you isolated the patient"
-            , kinyarwanda = Just "Washyize umurwayi mu kato"
-            }
+        PatientIsolatedQuestion isChw ->
+            if isChw then
+                { english = "Have you isolated the patient"
+                , kinyarwanda = Just "Washyize umurwayi mu kato"
+                }
+
+            else
+                { english = "Is the patient able to self-isolate at home"
+                , kinyarwanda = Nothing
+                }
 
         PatientNotYetSeenAtHCLabel ->
             { english = " has not yet been seen at the health center for this pregnancy"

@@ -533,12 +533,13 @@ treatmentTasksCompletedFromTotal measurements data task =
 
 
 nextStepsTasksCompletedFromTotal :
-    Maybe AcuteIllnessDiagnosis
+    Bool
+    -> Maybe AcuteIllnessDiagnosis
     -> AcuteIllnessMeasurements
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal diagnosis measurements data task =
+nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
     case task of
         NextStepsIsolation ->
             let
@@ -550,7 +551,11 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
                 ( derivedActive, derivedCompleted ) =
                     case form.patientIsolated of
                         Just True ->
-                            ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
+                            if isChw then
+                                ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
+
+                            else
+                                ( 1, taskCompleted form.healthEducation )
 
                         Just False ->
                             ( 2, taskCompleted form.healthEducation + naListTaskCompleted IsolationReasonNotApplicable form.reasonsForNotIsolating )
@@ -697,6 +702,11 @@ nextStepsTasksCompletedFromTotal diagnosis measurements data task =
 
                 -- This is for child form 2 month old, to 5 years old.
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
+                    , 1 + derivedQuestionExists form.amoxicillin
+                    )
+
+                Just DiagnosisPneuminialCovid19 ->
                     ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
                     , 1 + derivedQuestionExists form.amoxicillin
                     )
@@ -1496,12 +1506,15 @@ resolveAmoxicillinDosage currentDate person =
 
                 else if months < 30 then
                     Just "3"
-
-                else if months < 60 then
-                    Just "4"
+                    --@todo: revise
+                    -- else if months < 60 then
+                    --     Just "4"
+                    --
+                    -- else
+                    --     Nothing
 
                 else
-                    Nothing
+                    Just "4"
             )
 
 
@@ -2457,7 +2470,7 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
                 (\rdtResult ->
                     case rdtResult of
                         RapidTestNegative ->
-                            -- On negative result, we can statet that this is not a Covid case.
+                            -- On negative result, we can state that this is not a Covid case.
                             Nothing
 
                         _ ->

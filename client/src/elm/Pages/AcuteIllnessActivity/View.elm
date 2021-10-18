@@ -1642,7 +1642,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.NextStepsTask task)
+                    , text <| translate language (Translate.NextStepsTask isChw task)
                     ]
                 ]
 
@@ -1650,7 +1650,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal diagnosis measurements data task )
+                        ( task, nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task )
                     )
                 |> Dict.fromList
 
@@ -1665,7 +1665,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                     measurements.isolation
                         |> getMeasurementValueFunc
                         |> isolationFormWithDefault data.isolationForm
-                        |> viewIsolationForm language currentDate measurements
+                        |> viewIsolationForm language currentDate isChw measurements
 
                 Just NextStepsContactHC ->
                     measurements.hcContact
@@ -1865,11 +1865,11 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
     ]
 
 
-viewIsolationForm : Language -> NominalDate -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
-viewIsolationForm language currentDate measurements form =
+viewIsolationForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
+viewIsolationForm language currentDate isChw measurements form =
     let
         patientIsolatedInput =
-            [ viewQuestionLabel language Translate.PatientIsolatedQuestion
+            [ viewQuestionLabel language (Translate.PatientIsolatedQuestion isChw)
             , viewBoolInput
                 language
                 form.patientIsolated
@@ -1881,15 +1881,7 @@ viewIsolationForm language currentDate measurements form =
         derivedInputs =
             case form.patientIsolated of
                 Just True ->
-                    [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
-                    , viewBoolInput
-                        language
-                        form.signOnDoor
-                        SetSignOnDoor
-                        "sign-on-door"
-                        Nothing
-                    ]
-                        ++ healthEducationInput
+                    signOnDoorInput ++ healthEducationInput
 
                 Just False ->
                     [ viewQuestionLabel language Translate.WhyNot
@@ -1906,6 +1898,20 @@ viewIsolationForm language currentDate measurements form =
 
                 Nothing ->
                     []
+
+        signOnDoorInput =
+            if isChw then
+                [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
+                , viewBoolInput
+                    language
+                    form.signOnDoor
+                    SetSignOnDoor
+                    "sign-on-door"
+                    Nothing
+                ]
+
+            else
+                []
 
         healthEducationInput =
             [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion
@@ -2137,6 +2143,42 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 
                     else
                         form_.nonAdministrationSigns
+
+                amoxicillinAdministration =
+                    let
+                        _ =
+                            resolveAmoxicillinDosage currentDate person |> Debug.log ""
+
+                        amoxicillinUpdateFunc value form_ =
+                            { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
+
+                        derivedQuestion =
+                            case form.amoxicillin of
+                                Just False ->
+                                    viewDerivedQuestion Amoxicillin MedicationAmoxicillin
+
+                                _ ->
+                                    []
+                    in
+                    ( resolveAmoxicillinDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "instructions respiratory-infection-uncomplicated" ]
+                                    [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" Nothing
+                                    , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
+                      , viewBoolInput
+                            language
+                            form.amoxicillin
+                            (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
+                            "amoxicillin-medication"
+                            Nothing
+                      ]
+                        ++ derivedQuestion
+                    )
             in
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
@@ -2246,37 +2288,10 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     )
 
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    let
-                        amoxicillinUpdateFunc value form_ =
-                            { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
+                    amoxicillinAdministration
 
-                        derivedQuestion =
-                            case form.amoxicillin of
-                                Just False ->
-                                    viewDerivedQuestion Amoxicillin MedicationAmoxicillin
-
-                                _ ->
-                                    []
-                    in
-                    ( resolveAmoxicillinDosage currentDate person
-                        |> Maybe.map
-                            (\dosage ->
-                                div [ class "instructions respiratory-infection-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" Nothing
-                                    , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
-                      , viewBoolInput
-                            language
-                            form.amoxicillin
-                            (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
-                            "amoxicillin-medication"
-                            Nothing
-                      ]
-                        ++ derivedQuestion
-                    )
+                Just DiagnosisPneuminialCovid19 ->
+                    amoxicillinAdministration
 
                 _ ->
                     ( emptyNode, [] )
