@@ -1896,18 +1896,15 @@ expectLaboratoryTask currentDate isChw isFirstEncounter assembled task =
 
             else
                 -- If fever is recorded on current encounter, and patient did not
-                -- test positive to Malaria during previous encounters,
+                -- test positive to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
                 feverRecorded assembled.measurements
                     && (assembled.previousEncountersData
                             |> List.filter
                                 (.measurements
                                     >> .malariaTesting
-                                    >> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
-                                        )
+                                    >> getMeasurementValueFunc
+                                    >> Maybe.map (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
                                     >> Maybe.withDefault False
                                 )
                             |> List.isEmpty

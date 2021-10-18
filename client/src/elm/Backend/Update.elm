@@ -1324,6 +1324,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ AcuteIllnessCoreExamRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ AcuteFindingsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -1335,6 +1345,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     )
 
                 [ MalariaTestingRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ CovidTestingRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -4047,6 +4067,11 @@ generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
         Nothing ->
             [ -- Navigate to Acute Ilness encounter page.
               App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+
+            -- Focus on 'Todo' tab.
+            , Pages.AcuteIllnessEncounter.Model.SetSelectedTab Pages.AcuteIllnessEncounter.Model.Pending
+                |> App.Model.MsgPageAcuteIllnessEncounter id
+                |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.
             , Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just diagnosis)
