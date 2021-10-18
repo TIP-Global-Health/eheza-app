@@ -1848,14 +1848,7 @@ expectLaboratoryTask currentDate isChw isFirstEncounter assembled task =
                        )
 
         LaboratoryCovidTesting ->
-            not isChw
-                && (Maybe.map
-                        (\( _, diagnosis ) ->
-                            List.member diagnosis [ DiagnosisCovid19Suspect, DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ]
-                        )
-                        assembled.diagnosis
-                        |> Maybe.withDefault False
-                   )
+            not isChw && covid19SuspectDiagnosed assembled.measurements
 
 
 laboratoryTaskCompleted : NominalDate -> Bool -> Bool -> AssembledData -> LaboratoryTask -> Bool
@@ -2454,6 +2447,15 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
                         RapidTestNegative ->
                             -- On negative result, we can state that this is not a Covid case.
                             Nothing
+
+                        RapidTestPositiveAndPregnant ->
+                            -- Covid with pregnancy always concidered as severe case.
+                            Just DiagnosisSevereCovid19
+
+                        RapidTestUnableToRunAndPregnant ->
+                            -- We treat Unable to run as if tese was positive,
+                            -- and confirmed Covid with pregnancy always concidered as severe case.
+                            Just DiagnosisSevereCovid19
 
                         _ ->
                             -- Any other result is treated as if RDT was positive.
