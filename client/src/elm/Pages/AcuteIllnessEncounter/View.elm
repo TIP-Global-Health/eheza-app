@@ -237,40 +237,40 @@ viewHeader language data =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id isChw model data =
-    (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
+    (viewPersonDetailsWithAlert language currentDate isChw data model.showAlertsDialog SetAlertsDialogState
         :: viewMainPageContent language currentDate id isChw data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewPersonDetailsWithAlert : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
-viewPersonDetailsWithAlert language currentDate data isDialogOpen setAlertsDialogStateMsg =
+viewPersonDetailsWithAlert : Language -> NominalDate -> Bool -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
+viewPersonDetailsWithAlert language currentDate isChw data isDialogOpen setAlertsDialogStateMsg =
     let
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
 
-        alertSign =
-            if diagnosis == Just DiagnosisCovid19Suspect then
-                div
+        diagnosisTranslationId =
+            Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
+
+        alertSection =
+            if isChw && diagnosis == Just DiagnosisCovid19Suspect then
+                [ div
                     [ class "alerts"
                     , onClick <| setAlertsDialogStateMsg True
                     ]
                     [ img [ src "assets/images/exclamation-red.png" ] [] ]
-
-            else
-                emptyNode
-
-        diagnosisTranslationId =
-            Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
-    in
-    div [ class "item" ] <|
-        viewPersonDetails language currentDate data.person diagnosisTranslationId
-            ++ [ alertSign
-               , viewModal <|
+                , viewModal <|
                     alertsDialog language
                         isDialogOpen
                         setAlertsDialogStateMsg
-               ]
+                ]
+
+            else
+                []
+    in
+    div [ class "item" ] <|
+        viewPersonDetails language currentDate data.person diagnosisTranslationId
+            ++ alertSection
 
 
 alertsDialog : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)

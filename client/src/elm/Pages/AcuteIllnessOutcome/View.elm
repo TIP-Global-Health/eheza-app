@@ -46,7 +46,7 @@ view language currentDate id isChw db model =
             viewWebData language (viewHeader language) identity data
 
         content =
-            viewWebData language (viewContent language currentDate model) identity data
+            viewWebData language (viewContent language currentDate isChw model) identity data
     in
     div
         [ class "page-outcome acute-illness" ]
@@ -71,10 +71,10 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model data =
+viewContent : Language -> NominalDate -> Bool -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isChw model data =
     div [ class "ui unstackable items" ] <|
-        viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
+        viewPersonDetailsWithAlert language currentDate isChw data model.showAlertsDialog SetAlertsDialogState
             :: viewAcuteIllnessOutcome language currentDate data model
 
 

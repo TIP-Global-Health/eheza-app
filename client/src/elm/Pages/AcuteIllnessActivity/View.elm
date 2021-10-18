@@ -140,7 +140,7 @@ viewHeader language id activity diagnosis =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id isChw activity model data =
-    (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
+    (viewPersonDetailsWithAlert language currentDate isChw data model.showAlertsDialog SetAlertsDialogState
         :: viewActivity language currentDate id isChw activity data model
     )
         |> div [ class "ui unstackable items" ]
