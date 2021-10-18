@@ -107,73 +107,10 @@ activityCompleted currentDate isChw isFirstEncounter data activity =
             mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements AcuteIllnessExposure
 
         AcuteIllnessNextSteps ->
-            let
-                nextStepsTasks =
-                    resolveNextStepsTasks currentDate isChw isFirstEncounter data
-            in
-            if isFirstEncounter then
-                case nextStepsTasks of
-                    [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ] ->
-                        isJust measurements.isolation && isJust measurements.call114 && isJust measurements.followUp
-
-                    [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ] ->
-                        isJust measurements.isolation
-                            && isJust measurements.call114
-                            && isJust measurements.hcContact
-                            && isJust measurements.followUp
-
-                    [ NextStepsMedicationDistribution, NextStepsFollowUp ] ->
-                        isJust measurements.medicationDistribution && isJust measurements.followUp
-
-                    -- When medication was prescribed, but it is out
-                    -- of stock, or patient is alergic.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ] ->
-                        isJust measurements.medicationDistribution
-                            && isJust measurements.sendToHC
-                            && isJust measurements.followUp
-
-                    [ NextStepsSendToHC, NextStepsFollowUp ] ->
-                        isJust measurements.sendToHC && isJust measurements.followUp
-
-                    _ ->
-                        False
-
-            else
-                case nextStepsTasks of
-                    -- Improving, without danger signs present.
-                    [ NextStepsHealthEducation ] ->
-                        isJust measurements.healthEducation
-
-                    -- Not improving, without danger signs present.
-                    [ NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
-                        isJust measurements.sendToHC && isJust measurements.followUp && isJust measurements.healthEducation
-
-                    -- Not improving, with danger signs, and not instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
-                        isJust measurements.hcContact && isJust measurements.followUp && isJust measurements.healthEducation
-
-                    -- Not improving, with danger signs, and instructed to send patient to health center.
-                    [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ] ->
-                        isJust measurements.hcContact
-                            && isJust measurements.sendToHC
-                            && isJust measurements.followUp
-                            && isJust measurements.healthEducation
-
-                    -- Uncomplicated malaria for adult.
-                    [ NextStepsMedicationDistribution, NextStepsFollowUp ] ->
-                        isJust measurements.medicationDistribution && isJust measurements.followUp
-
-                    -- Uncomplicated malaria for adult, when medicine is out
-                    -- of stock, or patient is alergic.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ] ->
-                        isJust measurements.medicationDistribution && isJust measurements.sendToHC && isJust measurements.followUp
-
-                    -- Other cases of malaria.
-                    [ NextStepsSendToHC, NextStepsFollowUp ] ->
-                        isJust measurements.sendToHC && isJust measurements.followUp
-
-                    _ ->
-                        False
+            (not <| activityExpected AcuteIllnessNextSteps)
+                || (resolveNextStepsTasks currentDate isChw isFirstEncounter data
+                        |> List.all (nextStepsTaskCompleted currentDate isChw isFirstEncounter data)
+                   )
 
         AcuteIllnessDangerSigns ->
             mandatoryActivityCompletedSubsequentVisit currentDate isChw data AcuteIllnessDangerSigns
@@ -1957,22 +1894,31 @@ resolveNextStepSubsequentEncounter currentDate isChw data =
 
 resolveNextStepsTasks : NominalDate -> Bool -> Bool -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate isChw isFirstEncounter data =
-    let
-        diagnosis =
-            Maybe.map Tuple.second data.diagnosis
-    in
     if isFirstEncounter then
         -- The order is important. Do not change.
         [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
-            |> List.filter (expectNextStepsTaskFirstEncounter currentDate isChw data.person diagnosis data.measurements)
+            |> List.filter (expectNextStepsTask currentDate isChw True data)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         -- The order is important. Do not change.
         [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
-            |> List.filter (expectNextStepsTaskSubsequentEncounter currentDate data.person diagnosis data.measurements)
+            |> List.filter (expectNextStepsTask currentDate isChw False data)
 
     else
         []
+
+
+expectNextStepsTask : NominalDate -> Bool -> Bool -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask currentDate isChw isFirstEncounter assembled task =
+    let
+        diagnosis =
+            Maybe.map Tuple.second assembled.diagnosis
+    in
+    if isFirstEncounter then
+        expectNextStepsTaskFirstEncounter currentDate isChw assembled.person diagnosis assembled.measurements task
+
+    else
+        expectNextStepsTaskSubsequentEncounter currentDate assembled.person diagnosis assembled.measurements task
 
 
 expectNextStepsTaskFirstEncounter : NominalDate -> Bool -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
@@ -1992,8 +1938,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
     in
     case task of
         NextStepsIsolation ->
-            isChw
-                && (diagnosis == Just DiagnosisCovid19Suspect)
+            (isChw && (diagnosis == Just DiagnosisCovid19Suspect))
                 || (diagnosis == Just DiagnosisPneuminialCovid19)
                 || (diagnosis == Just DiagnosisLowRiskCovid19)
 
@@ -2028,56 +1973,6 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
                 || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
                 || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
-
-
-{-| Send patient to health center if patient is alergic to any of prescribed medications,
-or, if any of prescribed medications is out of stock.
--}
-sendToHCDueToMedicationNonAdministration : AcuteIllnessMeasurements -> Bool
-sendToHCDueToMedicationNonAdministration measurements =
-    resolveMedicationsNonAdministrationReasons measurements
-        |> List.filter
-            (\( _, reason ) ->
-                reason == NonAdministrationLackOfStock || reason == NonAdministrationKnownAllergy
-            )
-        |> List.isEmpty
-        |> not
-
-
-resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> List ( MedicationDistributionSign, AdministrationNote )
-resolveMedicationsNonAdministrationReasons measurements =
-    let
-        nonAdministrationSigns =
-            Maybe.map
-                (Tuple.second
-                    >> .value
-                    >> .nonAdministrationSigns
-                    >> EverySet.toList
-                )
-                measurements.medicationDistribution
-    in
-    nonAdministrationSigns
-        |> Maybe.map
-            (List.filterMap
-                (\sign ->
-                    case sign of
-                        MedicationAmoxicillin reason ->
-                            Just ( Amoxicillin, reason )
-
-                        MedicationCoartem reason ->
-                            Just ( Coartem, reason )
-
-                        MedicationORS reason ->
-                            Just ( ORS, reason )
-
-                        MedicationZinc reason ->
-                            Just ( Zinc, reason )
-
-                        NoMedicationNonAdministrationSigns ->
-                            Nothing
-                )
-            )
-        |> Maybe.withDefault []
 
 
 expectNextStepsTaskSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
@@ -2131,6 +2026,88 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
 
         _ ->
             False
+
+
+nextStepsTaskCompleted : NominalDate -> Bool -> Bool -> AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted currentDate isChw isFirstEncounter assembled task =
+    let
+        measurements =
+            assembled.measurements
+
+        taskExpected =
+            expectNextStepsTask currentDate isChw isFirstEncounter assembled
+    in
+    case task of
+        NextStepsIsolation ->
+            (not <| taskExpected NextStepsIsolation) || isJust measurements.isolation
+
+        NextStepsContactHC ->
+            (not <| taskExpected NextStepsContactHC) || isJust measurements.hcContact
+
+        NextStepsCall114 ->
+            (not <| taskExpected NextStepsCall114) || isJust measurements.call114
+
+        NextStepsMedicationDistribution ->
+            (not <| taskExpected NextStepsMedicationDistribution) || isJust measurements.medicationDistribution
+
+        NextStepsSendToHC ->
+            (not <| taskExpected NextStepsSendToHC) || isJust measurements.sendToHC
+
+        NextStepsHealthEducation ->
+            (not <| taskExpected NextStepsHealthEducation) || isJust measurements.healthEducation
+
+        NextStepsFollowUp ->
+            (not <| taskExpected NextStepsFollowUp) || isJust measurements.followUp
+
+
+{-| Send patient to health center if patient is alergic to any of prescribed medications,
+or, if any of prescribed medications is out of stock.
+-}
+sendToHCDueToMedicationNonAdministration : AcuteIllnessMeasurements -> Bool
+sendToHCDueToMedicationNonAdministration measurements =
+    resolveMedicationsNonAdministrationReasons measurements
+        |> List.filter
+            (\( _, reason ) ->
+                reason == NonAdministrationLackOfStock || reason == NonAdministrationKnownAllergy
+            )
+        |> List.isEmpty
+        |> not
+
+
+resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> List ( MedicationDistributionSign, AdministrationNote )
+resolveMedicationsNonAdministrationReasons measurements =
+    let
+        nonAdministrationSigns =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> .nonAdministrationSigns
+                    >> EverySet.toList
+                )
+                measurements.medicationDistribution
+    in
+    nonAdministrationSigns
+        |> Maybe.map
+            (List.filterMap
+                (\sign ->
+                    case sign of
+                        MedicationAmoxicillin reason ->
+                            Just ( Amoxicillin, reason )
+
+                        MedicationCoartem reason ->
+                            Just ( Coartem, reason )
+
+                        MedicationORS reason ->
+                            Just ( ORS, reason )
+
+                        MedicationZinc reason ->
+                            Just ( Zinc, reason )
+
+                        NoMedicationNonAdministrationSigns ->
+                            Nothing
+                )
+            )
+        |> Maybe.withDefault []
 
 
 talkedTo114 : AcuteIllnessMeasurements -> Bool
