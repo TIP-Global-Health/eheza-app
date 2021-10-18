@@ -1885,6 +1885,14 @@ expectLaboratoryTask currentDate isChw isFirstEncounter assembled task =
             if isFirstEncounter then
                 mandatoryActivitiesCompletedFirstEncounter currentDate assembled.person isChw assembled.measurements
                     && feverRecorded assembled.measurements
+                    && -- Do not show Malaria RDT if we have a confirmed Covid case.
+                       (Maybe.map
+                            (\( _, diagnosis ) ->
+                                not <| List.member diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ]
+                            )
+                            assembled.diagnosis
+                            |> Maybe.withDefault False
+                       )
 
             else
                 -- If fever is recorded on current encounter, and patient did not
