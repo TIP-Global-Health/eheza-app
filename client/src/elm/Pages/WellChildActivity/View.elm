@@ -33,7 +33,7 @@ import Measurement.View
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
         , viewReferToProgramForm
-        , viewSendToHCForm
+        , viewSendToHealthCenterForm
         , zScoreForHeightOrLength
         )
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
@@ -2269,7 +2269,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                     let
                         viewFormFunc =
                             if isChw then
-                                viewSendToHCForm language
+                                viewSendToHealthCenterForm language
                                     currentDate
                                     SetReferToHealthCenter
                                     SetReasonForNotSendingToHC

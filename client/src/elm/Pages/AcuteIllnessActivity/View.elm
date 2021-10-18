@@ -38,7 +38,7 @@ import Measurement.Utils
         , sendToHCFormWithDefault
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHCForm, viewVitalsForm)
+import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHealthCenterForm, viewSendToHospitalForm, viewVitalsForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
@@ -1686,10 +1686,18 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                         |> viewMedicationDistributionForm language currentDate person diagnosis
 
                 Just NextStepsSendToHC ->
+                    let
+                        sendToFacilityFunc =
+                            if isChw then
+                                viewSendToHealthCenterForm
+
+                            else
+                                viewSendToHospitalForm
+                    in
                     measurements.sendToHC
                         |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language
+                        |> sendToFacilityFunc language
                             currentDate
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
@@ -1868,6 +1876,13 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
 viewIsolationForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
 viewIsolationForm language currentDate isChw measurements form =
     let
+        headerHelper =
+            if isChw then
+                emptyNode
+
+            else
+                viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
+
         patientIsolatedInput =
             [ viewQuestionLabel language (Translate.PatientIsolatedQuestion isChw)
             , viewBoolInput
@@ -1923,7 +1938,7 @@ viewIsolationForm language currentDate isChw measurements form =
                 Nothing
             ]
     in
-    patientIsolatedInput
+    (headerHelper :: patientIsolatedInput)
         ++ derivedInputs
         |> div [ class "ui form next-steps isolation" ]
 

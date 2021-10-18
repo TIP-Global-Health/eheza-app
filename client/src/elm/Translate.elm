@@ -62,7 +62,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
-import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..))
+import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
 import Pages.AcuteIllnessActivity.Model
     exposing
         ( DangerSignsTask(..)
@@ -289,6 +289,8 @@ type TranslationId
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
     | AcuteIllnessHistory
+    | AcuteIllnessHighRiskCaseHelper
+    | AcuteIllnessLowRiskCaseHelper
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
@@ -401,7 +403,7 @@ type TranslationId
     | CloseAndContinue
     | ColorAlertIndication ColorAlertIndication
     | Completed
-    | CompleteHCReferralForm
+    | CompleteFacilityReferralForm ReferralFacility
     | CompletedHCReferralForm
     | Contacted114
     | ContactedHC
@@ -852,7 +854,7 @@ type TranslationId
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
-    | ReferredPatientToHealthCenterQuestion
+    | ReferredPatientToFacilityQuestion ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -971,7 +973,7 @@ type TranslationId
     | GroupEncounterLoading
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
-    | SendPatientToHC
+    | SendPatientToFacility ReferralFacility
     | SentPatientToHC
     | ShowAll
     | StartEndDate
@@ -1462,6 +1464,16 @@ translationSet trans =
 
         AcuteIllnessHistory ->
             { english = "Acute Illness History"
+            , kinyarwanda = Nothing
+            }
+
+        AcuteIllnessHighRiskCaseHelper ->
+            { english = "This patient is a high risk case and should be sent to a hospital for further treatment"
+            , kinyarwanda = Nothing
+            }
+
+        AcuteIllnessLowRiskCaseHelper ->
+            { english = "This patient is a low risk case and should be sent home to be monitored by a CHW"
             , kinyarwanda = Nothing
             }
 
@@ -2497,10 +2509,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        CompleteHCReferralForm ->
-            { english = "Complete a health center referral form"
-            , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
-            }
+        CompleteFacilityReferralForm facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Complete a health center referral form"
+                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
+                    }
+
+                FacilityHospital ->
+                    { english = "Complete a hospital referral form"
+                    , kinyarwanda = Nothing
+                    }
 
         CompletedHCReferralForm ->
             { english = "Completed health center referral form"
@@ -5385,9 +5404,15 @@ translationSet trans =
                     }
 
                 Pages.AcuteIllnessActivity.Model.NextStepsSendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    }
+                    if isChw then
+                        { english = "Send to Health Center"
+                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                        }
+
+                    else
+                        { english = "Send to Hospital"
+                        , kinyarwanda = Nothing
+                        }
 
                 Pages.AcuteIllnessActivity.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
@@ -7063,10 +7088,17 @@ translationSet trans =
                     , kinyarwanda = Just "Umuvuduko w'amaraso"
                     }
 
-        ReferredPatientToHealthCenterQuestion ->
-            { english = "Have you referred the patient to the health center"
-            , kinyarwanda = Just "Waba wohereje umurwayi ku kigo nderabuzima"
-            }
+        ReferredPatientToFacilityQuestion facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Have you referred the patient to the health center"
+                    , kinyarwanda = Just "Waba wohereje umurwayi ku kigo nderabuzima"
+                    }
+
+                FacilityHospital ->
+                    { english = "Have you referred the patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
 
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
@@ -8020,10 +8052,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SendPatientToHC ->
-            { english = "Send patient to the health center"
-            , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima"
-            }
+        SendPatientToFacility facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Send patient to the health center"
+                    , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima"
+                    }
+
+                FacilityHospital ->
+                    { english = "Send patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
 
         SentPatientToHC ->
             { english = "Sent patient to the health center"
