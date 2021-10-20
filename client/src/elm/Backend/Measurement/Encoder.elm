@@ -1406,20 +1406,43 @@ encodeMalariaTesting =
     encodeAcuteIllnessMeasurement encodeMalariaTestingValue
 
 
-encodeMalariaTestingValue : MalariaRapidTestResult -> List ( String, Value )
+encodeMalariaTestingValue : RapidTestResult -> List ( String, Value )
 encodeMalariaTestingValue value =
-    [ ( "malaria_rapid_test", encodeMalariaRapidTestResult value )
+    [ ( "malaria_rapid_test", encodeRapidTestResult value )
     , ( "deleted", bool False )
     , ( "type", string "malaria_testing" )
     ]
 
 
-encodeMalariaRapidTestResult : MalariaRapidTestResult -> Value
-encodeMalariaRapidTestResult =
+encodeCovidTesting : CovidTesting -> List ( String, Value )
+encodeCovidTesting =
+    encodeAcuteIllnessMeasurement encodeCovidTestingValue
+
+
+encodeCovidTestingValue : CovidTestingValue -> List ( String, Value )
+encodeCovidTestingValue value =
+    let
+        optional =
+            Maybe.map
+                (\administrationNote ->
+                    [ ( "administration_note", encodeAdministrationNote administrationNote ) ]
+                )
+                value.administrationNote
+                |> Maybe.withDefault []
+    in
+    optional
+        ++ [ ( "rapid_test_result", encodeRapidTestResult value.result )
+           , ( "deleted", bool False )
+           , ( "type", string "covid_testing" )
+           ]
+
+
+encodeRapidTestResult : RapidTestResult -> Value
+encodeRapidTestResult =
     malariaRapidTestResultAsString >> string
 
 
-malariaRapidTestResultAsString : MalariaRapidTestResult -> String
+malariaRapidTestResultAsString : RapidTestResult -> String
 malariaRapidTestResultAsString sign =
     case sign of
         RapidTestPositive ->
@@ -1436,6 +1459,9 @@ malariaRapidTestResultAsString sign =
 
         RapidTestUnableToRun ->
             "unable-to-run"
+
+        RapidTestUnableToRunAndPregnant ->
+            "unable-to-run-and-pregnant"
 
 
 encodeSendToHC : SendToHC -> List ( String, Value )

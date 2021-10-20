@@ -423,6 +423,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityCorePhysicalExam identifier ->
             getIdentifier identifier "core_physical_exam"
 
+        BackendAuthorityCovidTesting identifier ->
+            getIdentifier identifier "covid_testing"
+
         BackendAuthorityDangerSigns identifier ->
             getIdentifier identifier "danger_signs"
 
@@ -942,6 +945,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityCorePhysicalExam identifier ->
             encode Backend.Measurement.Encoder.encodeCorePhysicalExam identifier
 
+        BackendAuthorityCovidTesting identifier ->
+            encode Backend.Measurement.Encoder.encodeCovidTesting identifier
+
         BackendAuthorityDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeDangerSigns identifier
 
@@ -1423,6 +1429,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityCorePhysicalExam identifier ->
             CorePhysicalExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityCovidTesting identifier ->
+            CovidTestingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityDangerSigns identifier ->
             DangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity

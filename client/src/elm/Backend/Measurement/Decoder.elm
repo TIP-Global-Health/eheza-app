@@ -153,6 +153,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
         |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
         |> optional "acute_illness_core_exam" (decodeHead decodeAcuteIllnessCoreExam) Nothing
+        |> optional "covid_testing" (decodeHead decodeCovidTesting) Nothing
 
 
 decodeFollowUpMeasurements : Decoder FollowUpMeasurements
@@ -1940,23 +1941,35 @@ decodeAcuteFindingsRespiratorySign =
 
 decodeMalariaTesting : Decoder MalariaTesting
 decodeMalariaTesting =
-    decodeMalariaRapidTestResult
+    decodeRapidTestResult
         |> field "malaria_rapid_test"
         |> decodeAcuteIllnessMeasurement
 
 
-decodeMalariaRapidTestResult : Decoder MalariaRapidTestResult
-decodeMalariaRapidTestResult =
+decodeCovidTesting : Decoder CovidTesting
+decodeCovidTesting =
+    decodeAcuteIllnessMeasurement decodeCovidTestingValue
+
+
+decodeCovidTestingValue : Decoder CovidTestingValue
+decodeCovidTestingValue =
+    succeed CovidTestingValue
+        |> required "rapid_test_result" decodeRapidTestResult
+        |> optional "administration_note" (maybe decodeAdministrationNote) Nothing
+
+
+decodeRapidTestResult : Decoder RapidTestResult
+decodeRapidTestResult =
     string
         |> andThen
             (\result ->
                 malariaRapidTestResultFromString result
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (result ++ " is not a recognized MalariaRapidTestResult" |> fail)
+                    |> Maybe.withDefault (result ++ " is not a recognized RapidTestResult" |> fail)
             )
 
 
-malariaRapidTestResultFromString : String -> Maybe MalariaRapidTestResult
+malariaRapidTestResultFromString : String -> Maybe RapidTestResult
 malariaRapidTestResultFromString result =
     case result of
         "positive" ->
@@ -1973,6 +1986,9 @@ malariaRapidTestResultFromString result =
 
         "unable-to-run" ->
             Just RapidTestUnableToRun
+
+        "unable-to-run-and-pregnant" ->
+            Just RapidTestUnableToRunAndPregnant
 
         _ ->
             Nothing

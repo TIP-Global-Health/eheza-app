@@ -66,6 +66,7 @@ type BackendAuthorityEntity
     | BackendAuthorityContributingFactors (BackendEntity ContributingFactors)
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
+    | BackendAuthorityCovidTesting (BackendEntity CovidTesting)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
     | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
     | BackendAuthorityExposure (BackendEntity Exposure)

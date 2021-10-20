@@ -914,3 +914,9 @@ wellChildRotarixImmunisationEndpoint : ReadWriteEndPoint Error WellChildRotarixI
 wellChildRotarixImmunisationEndpoint =
     swEndpoint "nodes/well_child_rotarix_immunisation" decodeWellChildRotarixImmunisation
         |> withValueEncoder (object << encodeWellChildRotarixImmunisation)
+
+
+covidTestingEndpoint : ReadWriteEndPoint Error CovidTestingId CovidTesting CovidTesting ()
+covidTestingEndpoint =
+    swEndpoint "nodes/covid_testing" decodeCovidTesting
+        |> withValueEncoder (object << encodeCovidTesting)

@@ -94,6 +94,9 @@ decodeRevision =
                     "counseling_topic" ->
                         decodeWithUuid CounselingTopicRevision decodeCounselingTopic
 
+                    "covid_testing" ->
+                        decodeWithUuid CovidTestingRevision decodeCovidTesting
+
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
 

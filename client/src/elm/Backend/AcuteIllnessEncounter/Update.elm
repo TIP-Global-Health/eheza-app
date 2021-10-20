@@ -88,6 +88,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveCovidTesting personId valueId value ->
+            ( { model | saveCovidTesting = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value covidTestingEndpoint HandleSavedCovidTesting
+            )
+
+        HandleSavedCovidTesting data ->
+            ( { model | saveCovidTesting = data }
+            , Cmd.none
+            )
+
         SaveSendToHC personId valueId value ->
             ( { model | saveSendToHC = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value sendToHCEndpoint HandleSavedSendToHC

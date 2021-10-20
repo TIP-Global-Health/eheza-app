@@ -216,6 +216,10 @@ physicalExamTasksCompletedFromTotal isChw measurements data task =
 
 laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
 laboratoryTasksCompletedFromTotal currentDate person measurements data task =
+    let
+        personAFertileWoman =
+            isPersonAFertileWoman currentDate person
+    in
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -240,6 +244,42 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
             in
             ( taskCompleted form.rapidTestResult + isPregnantCompleted
             , 1 + isPregnantActive
+            )
+
+        LaboratoryCovidTesting ->
+            let
+                form =
+                    measurements.covidTesting
+                        |> getMeasurementValueFunc
+                        |> covidTestingFormWithDefault data.covidTestingForm
+
+                ( derivedCompleted, derivedActive ) =
+                    Maybe.map
+                        (\testPerformed ->
+                            if testPerformed then
+                                Maybe.map
+                                    (\testPositive ->
+                                        if testPositive && personAFertileWoman then
+                                            if isJust form.isPregnant then
+                                                ( 2, 2 )
+
+                                            else
+                                                ( 1, 2 )
+
+                                        else
+                                            ( 1, 1 )
+                                    )
+                                    form.testPositive
+                                    |> Maybe.withDefault ( 0, 1 )
+
+                            else
+                                ( taskCompleted form.administrationNote + taskCompleted form.isPregnant, 2 )
+                        )
+                        form.testPerformed
+                        |> Maybe.withDefault ( 0, 0 )
+            in
+            ( taskCompleted form.testPerformed + derivedCompleted
+            , 1 + derivedActive
             )
 
 
@@ -821,7 +861,7 @@ toAcuteFindingsValue form =
         |> andMap signsRespiratorySet
 
 
-fromMalariaTestingValue : Maybe MalariaRapidTestResult -> MalariaTestingForm
+fromMalariaTestingValue : Maybe RapidTestResult -> MalariaTestingForm
 fromMalariaTestingValue saved =
     if saved == Just RapidTestPositiveAndPregnant then
         { rapidTestResult = Just RapidTestPositive
@@ -834,7 +874,7 @@ fromMalariaTestingValue saved =
         }
 
 
-malariaTestingFormWithDefault : MalariaTestingForm -> Maybe MalariaRapidTestResult -> MalariaTestingForm
+malariaTestingFormWithDefault : MalariaTestingForm -> Maybe RapidTestResult -> MalariaTestingForm
 malariaTestingFormWithDefault form saved =
     saved
         |> unwrap
@@ -850,7 +890,7 @@ malariaTestingFormWithDefault form saved =
             )
 
 
-toMalariaTestingValueWithDefault : Maybe MalariaRapidTestResult -> MalariaTestingForm -> Maybe MalariaRapidTestResult
+toMalariaTestingValueWithDefault : Maybe RapidTestResult -> MalariaTestingForm -> Maybe RapidTestResult
 toMalariaTestingValueWithDefault saved form =
     malariaTestingFormWithDefault form saved
         |> (\form_ ->
@@ -863,7 +903,7 @@ toMalariaTestingValueWithDefault saved form =
         |> toMalariaTestingValue
 
 
-toMalariaTestingValue : MalariaTestingForm -> Maybe MalariaRapidTestResult
+toMalariaTestingValue : MalariaTestingForm -> Maybe RapidTestResult
 toMalariaTestingValue form =
     form.rapidTestResult
 
@@ -1569,6 +1609,100 @@ toCoreExamValue : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue
 toCoreExamValue form =
     Maybe.map AcuteIllnessCoreExamValue (Maybe.map EverySet.singleton form.heart)
         |> andMap (Maybe.map EverySet.fromList form.lungs)
+
+
+fromCovidTestingValue : Maybe CovidTestingValue -> CovidTestingForm
+fromCovidTestingValue saved =
+    Maybe.map
+        (\value ->
+            let
+                testPerformed =
+                    value.result /= RapidTestUnableToRun |> Just
+
+                testPositive =
+                    case value.result of
+                        RapidTestPositive ->
+                            Just True
+
+                        RapidTestPositiveAndPregnant ->
+                            Just True
+
+                        RapidTestNegative ->
+                            Just False
+
+                        _ ->
+                            Nothing
+
+                isPregnant =
+                    Just <|
+                        (value.result == RapidTestPositiveAndPregnant)
+                            || (value.result == RapidTestUnableToRunAndPregnant)
+            in
+            { testPerformed = testPerformed
+            , testPositive = testPositive
+            , isPregnant = isPregnant
+            , administrationNote = value.administrationNote
+            }
+        )
+        saved
+        |> Maybe.withDefault emptyCovidTestingForm
+
+
+covidTestingFormWithDefault : CovidTestingForm -> Maybe CovidTestingValue -> CovidTestingForm
+covidTestingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromCovidTestingValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPositive = or form.testPositive formWithDefault.testPositive
+                , isPregnant = or form.isPregnant formWithDefault.isPregnant
+                , administrationNote = or form.administrationNote formWithDefault.administrationNote
+                }
+            )
+
+
+toCovidTestingValueWithDefault : Maybe CovidTestingValue -> CovidTestingForm -> Maybe CovidTestingValue
+toCovidTestingValueWithDefault saved form =
+    covidTestingFormWithDefault form saved
+        |> toCovidTestingValue
+
+
+toCovidTestingValue : CovidTestingForm -> Maybe CovidTestingValue
+toCovidTestingValue form =
+    let
+        maybeResult =
+            Maybe.andThen
+                (\testPerformed ->
+                    if testPerformed then
+                        case ( form.testPositive, form.isPregnant ) of
+                            ( Just True, Just True ) ->
+                                Just RapidTestPositiveAndPregnant
+
+                            ( Just True, _ ) ->
+                                Just RapidTestPositive
+
+                            ( Just False, _ ) ->
+                                Just RapidTestNegative
+
+                            _ ->
+                                Nothing
+
+                    else if form.isPregnant == Just True then
+                        Just RapidTestUnableToRunAndPregnant
+
+                    else
+                        Just RapidTestUnableToRun
+                )
+                form.testPerformed
+    in
+    Maybe.map
+        (\result -> CovidTestingValue result form.administrationNote)
+        maybeResult
 
 
 

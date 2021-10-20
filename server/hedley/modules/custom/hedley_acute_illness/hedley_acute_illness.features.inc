@@ -83,6 +83,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'covid_testing' => array(
+      'name' => t('COVID Testing'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'exposure' => array(
       'name' => t('Exposure'),
       'base' => 'node_content',

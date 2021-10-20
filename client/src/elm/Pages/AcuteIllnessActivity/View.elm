@@ -233,7 +233,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> Maybe.map
                         (Tuple.second
                             >> .value
-                            >> (Translate.MalariaRapidTestResult
+                            >> (Translate.RapidTestResult
                                     >> translate language
                                     >> viewLabelValuePopupItem Translate.MalariaRapidDiagnosticTest
                                )
@@ -917,11 +917,8 @@ viewNutritionForm language currentDate form =
 viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
 viewAcuteIllnessLaboratory language currentDate id ( personId, person, measurements ) data =
     let
-        activity =
-            AcuteIllnessLaboratory
-
         tasks =
-            [ LaboratoryMalariaTesting ]
+            [ LaboratoryMalariaTesting, LaboratoryCovidTesting ]
 
         viewTask task =
             let
@@ -930,6 +927,11 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
                             , isJust measurements.malariaTesting
+                            )
+
+                        LaboratoryCovidTesting ->
+                            ( "laboratory-covid-testing"
+                            , isJust measurements.covidTesting
                             )
 
                 isActive =
@@ -971,12 +973,21 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
 
+                LaboratoryCovidTesting ->
+                    measurements.covidTesting
+                        |> getMeasurementValueFunc
+                        |> covidTestingFormWithDefault data.covidTestingForm
+                        |> viewCovidTestingForm language currentDate person
+
         actions =
             let
                 saveMsg =
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
                             SaveMalariaTesting personId measurements.malariaTesting
+
+                        LaboratoryCovidTesting ->
+                            SaveCovidTesting personId measurements.covidTesting
             in
             div [ class "actions malaria-testing" ]
                 [ button
@@ -1023,7 +1034,7 @@ viewMalariaTestingForm language currentDate person form =
                                     [ value (malariaRapidTestResultAsString result)
                                     , selected (form.rapidTestResult == Just result)
                                     ]
-                                    [ text <| translate language <| Translate.MalariaRapidTestResult result ]
+                                    [ text <| translate language <| Translate.RapidTestResult result ]
                             )
                    )
                 |> select [ onInput SetRapidTestResult, class "form-input rapid-test-result" ]
@@ -1033,14 +1044,7 @@ viewMalariaTestingForm language currentDate person form =
 
         isPregnantInput =
             if testResultPositive && isPersonAFertileWoman currentDate person then
-                [ viewQuestionLabel language Translate.CurrentlyPregnant
-                , viewBoolInput
-                    language
-                    form.isPregnant
-                    SetIsPregnant
-                    "is-pregnant"
-                    Nothing
-                ]
+                viewIsPregnantInput language SetIsPregnant form.isPregnant
 
             else
                 []
@@ -1050,6 +1054,93 @@ viewMalariaTestingForm language currentDate person form =
         , resultInput
         ]
             ++ isPregnantInput
+
+
+viewCovidTestingForm : Language -> NominalDate -> Person -> CovidTestingForm -> Html Msg
+viewCovidTestingForm language currentDate person form =
+    let
+        isPregnantInputForView =
+            if isPersonAFertileWoman currentDate person then
+                viewIsPregnantInput language (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value })) form.isPregnant
+
+            else
+                []
+
+        derivedInputs =
+            Maybe.map
+                (\testPerformed ->
+                    if testPerformed then
+                        let
+                            isPregnantInput =
+                                if form.testPositive == Just True then
+                                    isPregnantInputForView
+
+                                else
+                                    []
+                        in
+                        [ viewQuestionLabel language Translate.TestResultQuestion
+                        , viewBoolInput
+                            language
+                            form.testPositive
+                            (SetCovidTestingBoolInput (\value form_ -> { form_ | testPositive = Just value, isPregnant = Nothing }))
+                            "test-result"
+                            (Just ( Translate.RapidTestResult RapidTestPositive, Translate.RapidTestResult RapidTestNegative ))
+                        ]
+                            ++ isPregnantInput
+
+                    else
+                        [ div [ class "why-not" ]
+                            [ viewQuestionLabel language Translate.WhyNot
+                            , viewCheckBoxSelectInput language
+                                [ AdministeredPreviously
+                                , NonAdministrationLackOfStock
+                                , NonAdministrationPatientDeclined
+                                , NonAdministrationPatientUnableToAfford
+                                , NonAdministrationOther
+                                ]
+                                []
+                                form.administrationNote
+                                SetCovidTestingAdministrationNote
+                                Translate.AdministrationNote
+                            ]
+                        ]
+                            ++ isPregnantInputForView
+                )
+                form.testPerformed
+                |> Maybe.withDefault []
+    in
+    div [ class "ui form laboratory covid-testing" ] <|
+        [ viewCustomLabel language Translate.CovidTestingInstructions "." "instructions"
+        , viewQuestionLabel language Translate.TestPerformedQuesiton
+        , viewBoolInput
+            language
+            form.testPerformed
+            (SetCovidTestingBoolInput
+                (\value form_ ->
+                    { form_
+                        | testPerformed = Just value
+                        , testPositive = Nothing
+                        , isPregnant = Nothing
+                        , administrationNote = Nothing
+                    }
+                )
+            )
+            "test-performed"
+            Nothing
+        ]
+            ++ derivedInputs
+
+
+viewIsPregnantInput : Language -> (Bool -> Msg) -> Maybe Bool -> List (Html Msg)
+viewIsPregnantInput language setMsg currentValue =
+    [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
+    , viewBoolInput
+        language
+        currentValue
+        setMsg
+        "is-pregnant"
+        Nothing
+    ]
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
@@ -1899,7 +1990,7 @@ viewCall114Form language currentDate measurements form =
                 Nothing
             ]
 
-        derrivedInputs =
+        derivedInputs =
             form.called114
                 |> Maybe.map
                     (\called114 ->
@@ -1915,7 +2006,7 @@ viewCall114Form language currentDate measurements form =
                                         Translate.Recommendation114
                                     ]
 
-                                derrivedSiteInputs =
+                                derivedSiteInputs =
                                     if isJust form.recommendation114 && form.recommendation114 /= Just OtherRecommendation114 then
                                         let
                                             contactedSiteInput =
@@ -1959,7 +2050,7 @@ viewCall114Form language currentDate measurements form =
                                     else
                                         []
                             in
-                            recommendation114Input ++ derrivedSiteInputs
+                            recommendation114Input ++ derivedSiteInputs
 
                         else
                             [ viewQuestionLabel language Translate.WhyNot
@@ -1975,7 +2066,7 @@ viewCall114Form language currentDate measurements form =
     in
     header
         ++ called114Input
-        ++ derrivedInputs
+        ++ derivedInputs
         |> div [ class "ui form next-steps call-114" ]
 
 
