@@ -225,7 +225,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
             Maybe.map .vaccinationProgress maybeAssembled
                 |> Maybe.withDefault Dict.empty
 
-        derrivedContent =
+        derivedContent =
             case diagnosisMode of
                 ModeActiveDiagnosis ->
                     [ viewVaccinationHistoryPane language
@@ -277,7 +277,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 setDiagnosisModeMsg
                 maybeAssembled
             ]
-                ++ derrivedContent
+                ++ derivedContent
 
         -- , viewModal endEncounterDialog
         ]

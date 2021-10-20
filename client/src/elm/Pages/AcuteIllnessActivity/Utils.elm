@@ -253,7 +253,7 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                         |> getMeasurementValueFunc
                         |> covidTestingFormWithDefault data.covidTestingForm
 
-                ( derrivedCompleted, derrivedActive ) =
+                ( derivedCompleted, derivedActive ) =
                     Maybe.map
                         (\testPerformed ->
                             if testPerformed then
@@ -278,8 +278,8 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                         form.testPerformed
                         |> Maybe.withDefault ( 0, 0 )
             in
-            ( taskCompleted form.testPerformed + derrivedCompleted
-            , 1 + derrivedActive
+            ( taskCompleted form.testPerformed + derivedCompleted
+            , 1 + derivedActive
             )
 
 
