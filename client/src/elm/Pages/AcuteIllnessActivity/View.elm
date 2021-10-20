@@ -700,7 +700,7 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled isFirstEnco
             tasks
                 |> List.map
                     (\task ->
-                        ( task, physicalExamTasksCompletedFromTotal isChw measurements data task )
+                        ( task, physicalExamTasksCompletedFromTotal currentDate isChw person measurements data task )
                     )
                 |> Dict.fromList
 

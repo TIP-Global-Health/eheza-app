@@ -1273,7 +1273,7 @@ viewVitalsForm language currentDate config form =
             Maybe.map
                 (\ageYears ->
                     if ageYears < 12 then
-                        -- Blood presure is taken for patienst that are
+                        -- Blood presure is taken for patients that are
                         -- 12 years old, or older.
                         []
 
