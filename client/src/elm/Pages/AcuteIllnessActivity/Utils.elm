@@ -1960,12 +1960,18 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
             False
 
         NextStepsFollowUp ->
-            -- Whenever any other next step exists.
-            expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsIsolation
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsCall114
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
+            if diagnosis == Just DiagnosisSevereCovid19 then
+                -- In this case patient is sent to hospital, and
+                -- there's no need for CHW to follow up.
+                False
+
+            else
+                -- Whenever any other next step exists.
+                expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsIsolation
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsCall114
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
 
 
 expectNextStepsTaskSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
