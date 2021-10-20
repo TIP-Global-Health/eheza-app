@@ -2459,7 +2459,7 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
                             Just DiagnosisSevereCovid19
 
                         RapidTestUnableToRunAndPregnant ->
-                            -- We treat Unable to run as if tese was positive,
+                            -- We treat Unable to run as if test was positive,
                             -- and confirmed Covid with pregnancy always concidered as severe case.
                             Just DiagnosisSevereCovid19
 
