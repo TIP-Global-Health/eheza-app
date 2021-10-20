@@ -46,7 +46,7 @@ function hedley_patient_node_update($node) {
 
   if (empty($shards_orig)) {
     // Having empty shards on update is a sign for person creation during
-    // patients input. Therefore, know there's no content to
+    // patients import process. Therefore, know there's no content to
     // recalculate shards for.
     return;
   }
