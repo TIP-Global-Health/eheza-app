@@ -78,7 +78,7 @@ viewPrenatalActions :
     -> Html Msg
 viewPrenatalActions language currentDate selectedHealthCenter id isChw db model prenatalSessions =
     let
-        activePrgnancyData =
+        activePregnancyData =
             prenatalSessions
                 |> Dict.toList
                 |> List.filter
@@ -89,10 +89,10 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                 |> List.head
 
         maybeSessionId =
-            Maybe.map Tuple.first activePrgnancyData
+            Maybe.map Tuple.first activePregnancyData
 
         allEncounters =
-            activePrgnancyData
+            activePregnancyData
                 |> Maybe.map
                     (Tuple.first
                         >> (\sessionId ->
@@ -146,7 +146,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
 
         encounterTypeSpecificButtons =
             if isChw then
-                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData chwEncounters hasNurseEncounter
+                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePregnancyData chwEncounters hasNurseEncounter
 
             else
                 viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
@@ -300,10 +300,10 @@ viewPrenatalActionsForChw :
     -> List ( PrenatalEncounterId, PrenatalEncounter )
     -> Bool
     -> List (Html Msg)
-viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData encounters hasNurseEncounter =
+viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePregnancyData encounters hasNurseEncounter =
     let
         maybeSessionId =
-            Maybe.map Tuple.first activePrgnancyData
+            Maybe.map Tuple.first activePregnancyData
 
         ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             encounters
