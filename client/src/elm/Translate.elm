@@ -333,6 +333,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AlertChwToFollowUp
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
@@ -2046,6 +2047,11 @@ translationSet trans =
         AgeSingleDayWithoutMonth months days ->
             { english = String.fromInt days ++ " day"
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
+            }
+
+        AlertChwToFollowUp ->
+            { english = "Alert CHW to follow up with patient"
+            , kinyarwanda = Nothing
             }
 
         And ->
