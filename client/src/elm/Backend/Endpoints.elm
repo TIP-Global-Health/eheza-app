@@ -920,3 +920,9 @@ covidTestingEndpoint : ReadWriteEndPoint Error CovidTestingId CovidTesting Covid
 covidTestingEndpoint =
     swEndpoint "nodes/covid_testing" decodeCovidTesting
         |> withValueEncoder (object << encodeCovidTesting)
+
+
+acuteIllnessContactsTracingEndpoint : ReadWriteEndPoint Error AcuteIllnessContactsTracingId AcuteIllnessContactsTracing AcuteIllnessContactsTracing ()
+acuteIllnessContactsTracingEndpoint =
+    swEndpoint "nodes/acute_illness_contacts_tracing" decodeAcuteIllnessContactsTracing
+        |> withValueEncoder (object << encodeAcuteIllnessContactsTracing)
