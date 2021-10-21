@@ -716,6 +716,18 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
             , 1
             )
 
+        NextStepsContactsTracing ->
+            -- @todo
+            -- let
+            --     form =
+            --         measurements.followUp
+            --             |> getMeasurementValueFunc
+            --             |> followUpFormWithDefault data.followUpForm
+            -- in
+            ( 0
+            , 1
+            )
+
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
 ongoingTreatmentTasksCompletedFromTotal measurements data task =
@@ -1889,7 +1901,7 @@ resolveNextStepsTasks : NominalDate -> Bool -> Bool -> AssembledData -> List Nex
 resolveNextStepsTasks currentDate isChw isFirstEncounter data =
     if isFirstEncounter then
         -- The order is important. Do not change.
-        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
+        [ NextStepsContactsTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw True data)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
@@ -1958,6 +1970,10 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
 
         NextStepsHealthEducation ->
             False
+
+        NextStepsContactsTracing ->
+            -- @todo
+            True
 
         NextStepsFollowUp ->
             -- Whenever any other next step exists.
@@ -2051,6 +2067,9 @@ nextStepsTaskCompleted currentDate isChw isFirstEncounter assembled task =
 
         NextStepsFollowUp ->
             (not <| taskExpected NextStepsFollowUp) || isJust measurements.followUp
+
+        NextStepsContactsTracing ->
+            (not <| taskExpected NextStepsContactsTracing) || isJust measurements.contactsTracing
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,

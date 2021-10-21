@@ -93,6 +93,7 @@ type Msg
     | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
     | SetContactsTracingInput String
     | SetContactsTracingSearch String
+    | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -393,6 +394,7 @@ type NextStepsTask
     | NextStepsSendToHC
     | NextStepsHealthEducation
     | NextStepsFollowUp
+    | NextStepsContactsTracing
 
 
 type alias IsolationForm =

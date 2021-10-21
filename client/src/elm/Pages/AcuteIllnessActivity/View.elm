@@ -433,9 +433,6 @@ viewActivity language currentDate id isChw activity data model =
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
 viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessSymptoms
-
         tasks =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
@@ -1175,9 +1172,6 @@ viewIsPregnantInput language setMsg currentValue =
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
 viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessExposure
-
         tasks =
             [ ExposureTravel, ExposureExposure ]
 
@@ -1345,9 +1339,6 @@ viewHCRecommendation language recommendation =
 viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
 viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessPriorTreatment
-
         tasks =
             [ TreatmentReview ]
 
@@ -1579,9 +1570,6 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
         diagnosis =
             Maybe.map Tuple.second assembled.diagnosis
 
-        activity =
-            AcuteIllnessNextSteps
-
         tasks =
             resolveNextStepsTasks currentDate isChw isFirstEncounter assembled
 
@@ -1625,6 +1613,11 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                         NextStepsFollowUp ->
                             ( "next-steps-follow-up"
                             , isJust measurements.followUp
+                            )
+
+                        NextStepsContactsTracing ->
+                            ( "next-steps-contacts-tracing"
+                            , isJust measurements.contactsTracing
                             )
 
                 isActive =
@@ -1715,6 +1708,15 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                         |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate
+
+                Just NextStepsContactsTracing ->
+                    data.contactsTracingForm
+                        |> -- @todo
+                           -- measurements.contactsTracing
+                           --     |> getMeasurementValueFunc
+                           --     |> contactsTracingFormWithDefault data.contactsTracingForm
+                           --     |>
+                           viewContactsTracingForm language currentDate
 
                 Nothing ->
                     emptyNode
@@ -1836,6 +1838,9 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
 
                                     NextStepsFollowUp ->
                                         SaveFollowUp personId measurements.followUp nextTask
+
+                                    NextStepsContactsTracing ->
+                                        SaveContactsTracing personId measurements.contactsTracing nextTask
 
                             saveLabel =
                                 case task of
@@ -2377,9 +2382,6 @@ viewOralSolutionPrescription language dosage =
 viewAcuteIllnessOngoingTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> OngoingTreatmentData -> List (Html Msg)
 viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessOngoingTreatment
-
         tasks =
             [ OngoingTreatmentReview ]
 
@@ -2632,9 +2634,6 @@ viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measuremen
 viewAcuteIllnessDangerSigns : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
 viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessDangerSigns
-
         tasks =
             [ ReviewDangerSigns ]
 
@@ -2839,3 +2838,8 @@ viewFollowUpForm language currentDate form =
             SetFollowUpOption
             Translate.FollowUpOption
         ]
+
+
+viewContactsTracingForm : Language -> NominalDate -> ContactsTracingForm -> Html Msg
+viewContactsTracingForm language currentDate form =
+    text "viewContactsTracingForm"
