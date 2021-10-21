@@ -367,12 +367,13 @@ function calculate_incidence(array $dataset, string $current_period, array $prev
     return '-';
   }
   foreach ($dataset[$current_period][$severity] as $id) {
-    if (!isset($dataset[$previous_periods][$severity])) {
-      continue;
-    }
 
     $occurs_in_previous_periods = FALSE;
     foreach ($previous_periods as $period) {
+      if (!isset($dataset[$period][$severity])) {
+        continue;
+      }
+
       if (!in_array($id, $dataset[$period][$severity]) && in_array($id, $dataset[$period]['any'])) {
         // If a case became moderate from severe, it's not a new case, as
         // the situation improved, handling this exception.
