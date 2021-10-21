@@ -358,8 +358,10 @@ function categorize_data(array $dataset, string $grouped_by_month_key, string $g
  *   Group key, like 2021 May, 2021 or 2020 Q4.
  * @param string $severity
  *   Either 'moderate' or 'severe'.
+ * @param string $frequency_human_readable
+ *   Either "month", "year" or "quarter".
  */
-function calculate_incidence(array $dataset, string $current_period, string $previous_period, string $severity) {
+function calculate_incidence(array $dataset, string $current_period, string $previous_period, string $severity, string $frequency_human_readable) {
   $new_cases = 0;
   if (!isset($dataset[$current_period][$severity])) {
     return '-';
@@ -368,8 +370,26 @@ function calculate_incidence(array $dataset, string $current_period, string $pre
     if (!isset($dataset[$previous_period][$severity])) {
       continue;
     }
-    if (!in_array($id, $dataset[$previous_period][$severity]) && in_array($id, $dataset[$previous_period]['any'])) {
-      $new_cases++;
+    if ($frequency_human_readable === 'month') {
+      // The period for determining a new case for the monthly report is 3 months.
+
+    }
+    else {
+      // In the other reports we just compare with the previous period.
+      if (!in_array($id, $dataset[$previous_period][$severity]) && in_array($id, $dataset[$previous_period]['any'])) {
+
+        // If a case became moderate from severe, it's not a new case, as
+        // the situation improved, handling this exception.
+        if ($severity === 'moderate') {
+          if (in_array($id, $dataset[$previous_period]['severe'])) {
+            continue;
+          }
+        }
+
+        // Otherwise it's a new case as it did not occur in the previous period
+        // but now it does.
+        $new_cases++;
+      }
     }
   }
 
@@ -477,12 +497,12 @@ function print_incidence_report(array $skeleton, array $stunting, array $underwe
     $month_key = $date_format($current_month);
     $previous_month_key = $date_format($previous_month);
     $header[] = $month_key;
-    $data[0][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'moderate');
-    $data[1][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'severe');
-    $data[2][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'moderate');
-    $data[3][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'severe');
-    $data[4][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'moderate');
-    $data[5][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'severe');
+    $data[0][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'moderate', $frequency_human_readable);
+    $data[1][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'severe', $frequency_human_readable);
+    $data[2][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'moderate', $frequency_human_readable);
+    $data[3][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'severe', $frequency_human_readable);
+    $data[4][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'moderate', $frequency_human_readable);
+    $data[5][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'severe', $frequency_human_readable);
   }
 
   $text_table = new HedleyAdminTextTable($header);
