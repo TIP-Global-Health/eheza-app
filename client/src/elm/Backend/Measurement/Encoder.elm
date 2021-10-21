@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate
+import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
@@ -2418,6 +2418,26 @@ encodeAcuteIllnessNutritionValue nutritions =
 encodeHealthEducation : HealthEducation -> List ( String, Value )
 encodeHealthEducation =
     encodeAcuteIllnessMeasurement (encodeHealthEducationValueWithType "health_education")
+
+
+encodeAcuteIllnessContactsTracing : AcuteIllnessContactsTracing -> List ( String, Value )
+encodeAcuteIllnessContactsTracing =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessContactsTracingValue
+
+
+encodeAcuteIllnessContactsTracingValue : List ContactTraceEntry -> List ( String, Value )
+encodeAcuteIllnessContactsTracingValue entries =
+    [ ( "contacts_trace_data", list encodeContactTraceEntry entries )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_contacts_tracing" )
+    ]
+
+
+encodeContactTraceEntry : ContactTraceEntry -> Value
+encodeContactTraceEntry entry =
+    [ fromEntityUuid entry.personId, entry.name, entry.phoneNumber, formatYYYYMMDD entry.contactDate ]
+        |> String.join "[&]"
+        |> string
 
 
 encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )

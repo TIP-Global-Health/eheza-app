@@ -1258,7 +1258,7 @@ type alias ContactTraceEntry =
     { personId : PersonId
     , name : String
     , phoneNumber : String
-    , cantactDate : NominalDate
+    , contactDate : NominalDate
     }
 
 
