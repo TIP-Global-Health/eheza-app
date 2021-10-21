@@ -5,6 +5,7 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
@@ -154,6 +155,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
         |> optional "acute_illness_core_exam" (decodeHead decodeAcuteIllnessCoreExam) Nothing
         |> optional "covid_testing" (decodeHead decodeCovidTesting) Nothing
+        |> optional "acute_illness_contacts_tracing" (decodeHead decodeAcuteIllnessContactsTracing) Nothing
 
 
 decodeFollowUpMeasurements : Decoder FollowUpMeasurements
@@ -2753,6 +2755,46 @@ decodeAcuteIllnessNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
+decodeAcuteIllnessContactsTracing =
+    decodeAcuteIllnessMeasurement decodeAcuteIllnessContactsTracingValue
+
+
+decodeAcuteIllnessContactsTracingValue : Decoder (List ContactTraceEntry)
+decodeAcuteIllnessContactsTracingValue =
+    list deceodeContactTraceEntry
+
+
+deceodeContactTraceEntry : Decoder ContactTraceEntry
+deceodeContactTraceEntry =
+    string
+        |> andThen
+            (\data ->
+                let
+                    parts =
+                        String.split "[&]" data
+                in
+                case parts of
+                    [ id, name, phoneNumber, contactDate ] ->
+                        Date.fromIsoString contactDate
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\date ->
+                                    succeed (ContactTraceEntry (toEntityUuid id) name phoneNumber date)
+                                )
+                            |> Maybe.withDefault
+                                (fail <|
+                                    contactDate
+                                        ++ " is not a valid date format at ContactTraceEntry"
+                                )
+
+                    _ ->
+                        fail <|
+                            data
+                                ++ " is not a recognized ContactTraceEntry"
+            )
 
 
 decodeHealthEducation : Decoder HealthEducation
