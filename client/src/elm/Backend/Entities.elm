@@ -1013,3 +1013,11 @@ type alias CovidTestingId =
 
 type CovidTestingUuidType
     = CovidTestingUuidType
+
+
+type alias AcuteIllnessContactsTracingId =
+    EntityUuid AcuteIllnessContactsTracingUuidType
+
+
+type AcuteIllnessContactsTracingUuidType
+    = AcuteIllnessContactsTracingUuidType
