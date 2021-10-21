@@ -1250,6 +1250,18 @@ type alias CovidTestingValue =
     }
 
 
+type alias AcuteIllnessContactsTracing =
+    AcuteIllnessMeasurement (List ContactTraceEntry)
+
+
+type alias ContactTraceEntry =
+    { personId : PersonId
+    , name : String
+    , phoneNumber : String
+    , cantactDate : String
+    }
+
+
 
 -- WELL CHILD MEASUREMENTS
 
@@ -1668,6 +1680,7 @@ type alias AcuteIllnessMeasurements =
     , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
     , coreExam : Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )
     , covidTesting : Maybe ( CovidTestingId, CovidTesting )
+    , contactsTracing : Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )
     }
 
 
