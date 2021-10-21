@@ -4,13 +4,15 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
     | SetPertinentSymptomsPopupState Bool
@@ -88,6 +90,9 @@ type Msg
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe NextStepsTask)
+    | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
+    | SetContactsTracingInput String
+    | SetContactsTracingSearch String
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -361,6 +366,7 @@ type alias NextStepsData =
     , medicationDistributionForm : MedicationDistributionForm
     , healthEducationForm : HealthEducationForm
     , followUpForm : FollowUpForm
+    , contactsTracingForm : ContactsTracingForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -374,6 +380,7 @@ emptyNextStepsData =
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
     , followUpForm = FollowUpForm Nothing
+    , contactsTracingForm = emptyContactsTracingForm
     , activeTask = Nothing
     }
 
@@ -415,11 +422,6 @@ type alias Call114Form =
     }
 
 
-type alias FollowUpForm =
-    { option : Maybe FollowUpOption
-    }
-
-
 emptyCall114Form : Call114Form
 emptyCall114Form =
     { called114 = Nothing
@@ -432,6 +434,11 @@ emptyCall114Form =
     }
 
 
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+    }
+
+
 type alias MedicationDistributionForm =
     { amoxicillin : Maybe Bool
     , coartem : Maybe Bool
@@ -439,6 +446,21 @@ type alias MedicationDistributionForm =
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+type alias ContactsTracingForm =
+    { debouncer : Debouncer Msg Msg
+    , search : Maybe String
+    , input : String
+    }
+
+
+emptyContactsTracingForm : ContactsTracingForm
+emptyContactsTracingForm =
+    { debouncer = debounce 500 |> toDebouncer
+    , search = Nothing
+    , input = ""
     }
 
 

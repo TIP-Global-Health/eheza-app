@@ -15,6 +15,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
 import Pages.IndividualEncounterParticipants.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model
@@ -77,27 +78,7 @@ viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) 
 viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
-            Html.form
-                [ -- These attribites are blocking 'Submit' action on HTML form,
-                  -- as it is not needed, and causes application to reload.
-                  action "javascript:void(0);"
-                , onSubmit NoOp
-                ]
-                [ div
-                    [ class "ui search form" ]
-                    [ div []
-                        [ input
-                            [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
-                            , type_ "text"
-                            , class "search-input"
-                            , onInput SetInput
-                            , value model.input
-                            , autofocus True
-                            ]
-                            []
-                        ]
-                    ]
-                ]
+            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput NoOp
 
         searchValue =
             model.search

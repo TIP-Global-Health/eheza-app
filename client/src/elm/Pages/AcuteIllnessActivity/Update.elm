@@ -28,6 +28,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -100,6 +101,12 @@ update currentDate id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
     in
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -1886,4 +1893,70 @@ update currentDate id db msg model =
             ( { model | nextStepsData = updatedData }
             , Cmd.none
             , appMsgs
+            )
+
+        MsgContactsTracingDebouncer subMsg ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+
+                ( subModel, subCmd, extraMsg ) =
+                    Debouncer.update subMsg form.debouncer
+
+                updatedForm =
+                    { form | debouncer = subModel }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contactsTracingForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate id db) (Maybe.Extra.toList extraMsg)
+
+        SetContactsTracingInput input ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+
+                updatedForm =
+                    { form | input = input }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contactsTracingForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate id db) [ MsgContactsTracingDebouncer <| provideInput <| SetContactsTracingSearch input ]
+
+        SetContactsTracingSearch search ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+
+                trimmed =
+                    String.trim search
+
+                maybeSearch =
+                    if String.isEmpty trimmed then
+                        Nothing
+
+                    else
+                        Just trimmed
+
+                updatedForm =
+                    { form | search = maybeSearch }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contactsTracingForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
             )
