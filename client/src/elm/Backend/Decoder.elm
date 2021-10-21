@@ -34,6 +34,9 @@ decodeRevision =
                     "acute_findings" ->
                         decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
 
+                    "acute_illness_contacts_tracing" ->
+                        decodeWithUuid AcuteIllnessContactsTracingRevision decodeAcuteIllnessContactsTracing
+
                     "acute_illness_core_exam" ->
                         decodeWithUuid AcuteIllnessCoreExamRevision decodeAcuteIllnessCoreExam
 
