@@ -358,10 +358,8 @@ function categorize_data(array $dataset, string $grouped_by_month_key, string $g
  *   Group key, like 2021 May, 2021 or 2020 Q4 or array of group keys.
  * @param string $severity
  *   Either 'moderate' or 'severe'.
- * @param string $frequency_human_readable
- *   Either "month", "year" or "quarter".
  */
-function calculate_incidence(array $dataset, string $current_period, array $previous_periods, string $severity, string $frequency_human_readable) {
+function calculate_incidence(array $dataset, string $current_period, array $previous_periods, string $severity) {
   $new_cases = 0;
   if (!isset($dataset[$current_period][$severity])) {
     return '-';
@@ -369,26 +367,30 @@ function calculate_incidence(array $dataset, string $current_period, array $prev
   foreach ($dataset[$current_period][$severity] as $id) {
 
     $occurs_in_previous_periods = FALSE;
+    $tested_in_previous_periods = FALSE;
     foreach ($previous_periods as $period) {
       if (!isset($dataset[$period][$severity])) {
-        continue;
+        // We have no data at all, it makes no sense to deal with it.
+        continue 2;
+      }
+      if (in_array($id, $dataset[$period]['any'])) {
+        $tested_in_previous_periods = TRUE;
       }
 
-      if (!in_array($id, $dataset[$period][$severity]) && in_array($id, $dataset[$period]['any'])) {
-        // If a case became moderate from severe, it's not a new case, as
-        // the situation improved, handling this exception.
-        if ($severity === 'moderate') {
-          if (in_array($id, $dataset[$period]['severe'])) {
-            continue;
-          }
-        }
-
+      if (in_array($id, $dataset[$period][$severity])) {
         $occurs_in_previous_periods = TRUE;
         break;
       }
+      // If a case became moderate from severe, it's not a new case, as
+      // the situation improved, handling this exception.
+      if ($severity === 'moderate' && in_array($id, $dataset[$period]['severe'])) {
+        $occurs_in_previous_periods = TRUE;
+        break;
+      }
+
     }
 
-    if (!$occurs_in_previous_periods) {
+    if (!$occurs_in_previous_periods && $tested_in_previous_periods) {
       $new_cases++;
     }
   }
