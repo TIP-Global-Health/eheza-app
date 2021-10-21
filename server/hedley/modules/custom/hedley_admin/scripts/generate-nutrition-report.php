@@ -354,42 +354,41 @@ function categorize_data(array $dataset, string $grouped_by_month_key, string $g
  *   Data about the measurement type.
  * @param string $current_period
  *   Group key, like 2021 May, 2021 or 2020 Q4.
- * @param string $previous_period
- *   Group key, like 2021 May, 2021 or 2020 Q4.
+ * @param array $previous_periods
+ *   Group key, like 2021 May, 2021 or 2020 Q4 or array of group keys.
  * @param string $severity
  *   Either 'moderate' or 'severe'.
  * @param string $frequency_human_readable
  *   Either "month", "year" or "quarter".
  */
-function calculate_incidence(array $dataset, string $current_period, string $previous_period, string $severity, string $frequency_human_readable) {
+function calculate_incidence(array $dataset, string $current_period, array $previous_periods, string $severity, string $frequency_human_readable) {
   $new_cases = 0;
   if (!isset($dataset[$current_period][$severity])) {
     return '-';
   }
   foreach ($dataset[$current_period][$severity] as $id) {
-    if (!isset($dataset[$previous_period][$severity])) {
+    if (!isset($dataset[$previous_periods][$severity])) {
       continue;
     }
-    if ($frequency_human_readable === 'month') {
-      // The period for determining a new case for the monthly report is 3 months.
 
-    }
-    else {
-      // In the other reports we just compare with the previous period.
-      if (!in_array($id, $dataset[$previous_period][$severity]) && in_array($id, $dataset[$previous_period]['any'])) {
-
+    $occurs_in_previous_periods = FALSE;
+    foreach ($previous_periods as $period) {
+      if (!in_array($id, $dataset[$period][$severity]) && in_array($id, $dataset[$period]['any'])) {
         // If a case became moderate from severe, it's not a new case, as
         // the situation improved, handling this exception.
         if ($severity === 'moderate') {
-          if (in_array($id, $dataset[$previous_period]['severe'])) {
+          if (in_array($id, $dataset[$period]['severe'])) {
             continue;
           }
         }
 
-        // Otherwise it's a new case as it did not occur in the previous period
-        // but now it does.
-        $new_cases++;
+        $occurs_in_previous_periods = TRUE;
+        break;
       }
+    }
+
+    if (!$occurs_in_previous_periods) {
+      $new_cases++;
     }
   }
 
@@ -493,16 +492,31 @@ function print_incidence_report(array $skeleton, array $stunting, array $underwe
   $data = $skeleton;
 
   for ($i = 1; $i <= $limit; $i++) {
-    [$current_month, $previous_month] = $date_calculate($i);
-    $month_key = $date_format($current_month);
-    $previous_month_key = $date_format($previous_month);
-    $header[] = $month_key;
-    $data[0][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'moderate', $frequency_human_readable);
-    $data[1][] = calculate_incidence($stunting, $month_key, $previous_month_key, 'severe', $frequency_human_readable);
-    $data[2][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'moderate', $frequency_human_readable);
-    $data[3][] = calculate_incidence($underweight, $month_key, $previous_month_key, 'severe', $frequency_human_readable);
-    $data[4][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'moderate', $frequency_human_readable);
-    $data[5][] = calculate_incidence($wasting, $month_key, $previous_month_key, 'severe', $frequency_human_readable);
+    [$current_period, $previous_period] = $date_calculate($i);
+    $period_key = $date_format($current_period);
+    $previous_period_key = $date_format($previous_period);
+    $previous_period_keys = [];
+
+    // The period for determining a new case for the monthly report is 3 months.
+    // In the other reports we just compare with the previous period.
+    // So we might have multiple items, but not always.
+    $previous_period_keys[] = $previous_period_key;
+    if ($frequency_human_readable === 'month') {
+      // For months, we look 3 months back.
+      // That is, if a a child is malnourished in July, but was not in April,
+      // May, and June, it is considered a new case.
+      [, $previous_period] = $date_calculate($i + 1);
+      $previous_period_keys[] = $date_format($previous_period);
+      [, $previous_period] = $date_calculate($i + 2);
+      $previous_period_keys[] = $date_format($previous_period);
+    }
+    $header[] = $period_key;
+    $data[0][] = calculate_incidence($stunting, $period_key, $previous_period_keys, 'moderate', $frequency_human_readable);
+    $data[1][] = calculate_incidence($stunting, $period_key, $previous_period_keys, 'severe', $frequency_human_readable);
+    $data[2][] = calculate_incidence($underweight, $period_key, $previous_period_keys, 'moderate', $frequency_human_readable);
+    $data[3][] = calculate_incidence($underweight, $period_key, $previous_period_keys, 'severe', $frequency_human_readable);
+    $data[4][] = calculate_incidence($wasting, $period_key, $previous_period_keys, 'moderate', $frequency_human_readable);
+    $data[5][] = calculate_incidence($wasting, $period_key, $previous_period_keys, 'severe', $frequency_human_readable);
   }
 
   $text_table = new HedleyAdminTextTable($header);
