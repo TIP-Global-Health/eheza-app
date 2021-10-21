@@ -733,7 +733,13 @@ function hedley_person_import_patient($patient_type, array $values) {
     $health_center = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HEALTH_CENTER]);
   }
 
-  $person = hedley_person_create_basic_node('person');
+  try {
+    $person = hedley_person_create_basic_node('person');
+  }
+  catch (Exception $e) {
+    return 'Failed to create person node';
+  }
+
   $wrapper = entity_metadata_wrapper('node', $person);
 
   // Title.
@@ -938,7 +944,12 @@ function hedley_person_import_patient($patient_type, array $values) {
  *   TRUE on success, FALSE otherwise.
  */
 function hedley_person_create_relationship($child_id, $adult_id, $relation) {
-  $relationship = hedley_person_create_basic_node('relationship');
+  try {
+    $relationship = hedley_person_create_basic_node('relationship');
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
 
   $wrapper = entity_metadata_wrapper('node', $relationship);
   $wrapper->field_person->set($adult_id);
@@ -968,7 +979,12 @@ function hedley_person_create_relationship($child_id, $adult_id, $relation) {
  *   TRUE on success, FALSE otherwise.
  */
 function hedley_person_create_pmtct_participant($adult_id, $child_id, $relation, $group_id, $author = FALSE) {
-  $pmtct_participant = hedley_person_create_basic_node('pmtct_participant', $author);
+  try {
+    $pmtct_participant = hedley_person_create_basic_node('pmtct_participant', $author);
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
 
   $wrapper = entity_metadata_wrapper('node', $pmtct_participant);
   $wrapper->field_person->set($child_id);
@@ -1001,15 +1017,16 @@ function hedley_person_create_pmtct_participant($adult_id, $child_id, $relation,
 /**
  * Creates a node of provided type.
  *
- * Note that node is not saved. Saving is responsibility of invoking function.
- *
  * @param string $type
  *   Node bundle.
  * @param int $author_id
  *   Optional; The ID of node author. Defaults to global user ID.
  *
  * @return object
- *   Newly created node.
+ *   Neely created node.
+ *
+ * @throws \Exception
+ *   In case Save operation fails.
  */
 function hedley_person_create_basic_node($type, $author_id = FALSE) {
   if (empty($author_id)) {
@@ -1026,6 +1043,7 @@ function hedley_person_create_basic_node($type, $author_id = FALSE) {
   // Mark node as imported, to be able to identify it at hook_insert().
   $node->imported = 1;
   $node = node_submit($node);
+  node_save($node);
 
   return $node;
 }
