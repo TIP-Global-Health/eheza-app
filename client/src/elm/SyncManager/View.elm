@@ -366,6 +366,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteFindings identifier ->
                 viewMeasurement identifier "Acute Findings"
 
+            BackendAuthorityAcuteIllnessContactsTracing identifier ->
+                viewMeasurement identifier "Acute Illness Contacts Tracing"
+
             BackendAuthorityAcuteIllnessCoreExam identifier ->
                 viewMeasurement identifier "AcuteI llness Core Exam"
 
