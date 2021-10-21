@@ -38,6 +38,7 @@ var dbVerno = 17;
 var tableForType = {
     acute_findings: 'shards',
     acute_illness_core_exam: 'shards',
+    acute_illness_contacts_tracing: 'shards',
     acute_illness_danger_signs: 'shards',
     acute_illness_encounter: 'shards',
     acute_illness_follow_up: 'shards',
