@@ -1976,12 +1976,18 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
             True
 
         NextStepsFollowUp ->
-            -- Whenever any other next step exists.
-            expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsIsolation
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsCall114
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
-                || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
+            if diagnosis == Just DiagnosisSevereCovid19 then
+                -- In this case patient is sent to hospital, and
+                -- there's no need for CHW to follow up.
+                False
+
+            else
+                -- Whenever any other next step exists.
+                expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsIsolation
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsCall114
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
+                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
 
 
 expectNextStepsTaskSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
@@ -2472,7 +2478,7 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
                             Just DiagnosisSevereCovid19
 
                         RapidTestUnableToRunAndPregnant ->
-                            -- We treat Unable to run as if tese was positive,
+                            -- We treat Unable to run as if test was positive,
                             -- and confirmed Covid with pregnancy always concidered as severe case.
                             Just DiagnosisSevereCovid19
 

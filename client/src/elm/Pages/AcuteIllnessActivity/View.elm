@@ -1707,7 +1707,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                     measurements.followUp
                         |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate
+                        |> viewFollowUpForm language currentDate isChw
 
                 Just NextStepsContactsTracing ->
                     data.contactsTracingForm
@@ -2353,10 +2353,7 @@ viewAdministeredMedicationCustomLabel language administerTranslationId medicineT
                     ++ renderDatePart language maybeDate
                     ++ [ text <| " " ++ suffix ]
     in
-    div [ class "header icon-label" ] <|
-        [ i [ class iconClass ] []
-        , message
-        ]
+    viewInstructionsLabel iconClass message
 
 
 viewTabletsPrescription : Language -> String -> TranslationId -> Html any
@@ -2821,24 +2818,50 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
                     ++ renderDatePart language maybeDate
                     ++ [ text "." ]
     in
+    viewInstructionsLabel iconClass message
+
+
+viewInstructionsLabel : String -> Html any -> Html any
+viewInstructionsLabel iconClass message =
     div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , message
         ]
 
 
-viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
-viewFollowUpForm language currentDate form =
-    div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpLabel
-        , viewCheckBoxSelectInput language
-            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
-            []
-            form.option
-            SetFollowUpOption
-            Translate.FollowUpOption
-        ]
+viewFollowUpForm : Language -> NominalDate -> Bool -> FollowUpForm -> Html Msg
+viewFollowUpForm language currentDate isChw form =
+    let
+        headerHelper =
+            if isChw then
+                []
 
+            else
+                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                , div [ class "instructions" ]
+                    [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
+                    ]
+                ]
+    in
+    div [ class "ui form follow-up" ] <|
+        headerHelper
+            ++ [ viewLabel language Translate.FollowUpLabel
+               , viewCheckBoxSelectInput language
+                    [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+                    []
+                    form.option
+                    SetFollowUpOption
+                    Translate.FollowUpOption
+               ]
+
+
+viewFollowUpLabel : Language -> TranslationId -> String -> Html any
+viewFollowUpLabel language actionTranslationId iconClass =
+    let
+        message =
+            div [] [ text <| translate language actionTranslationId ++ "." ]
+    in
+    viewInstructionsLabel iconClass message
 
 viewContactsTracingForm : Language -> NominalDate -> ContactsTracingForm -> Html Msg
 viewContactsTracingForm language currentDate form =
