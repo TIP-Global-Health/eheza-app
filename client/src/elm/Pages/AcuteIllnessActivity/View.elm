@@ -19,7 +19,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, isPersonAFertileWoman)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -67,7 +67,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
 
@@ -78,18 +78,18 @@ view language currentDate id isChw activity db model =
         data =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw activity model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw activity db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw activity model data =
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw activity db model data =
     let
         isFirstEncounter =
             List.isEmpty data.previousEncountersData
     in
     div [ class "page-activity acute-illness" ]
         [ viewHeader language id activity <| Maybe.map Tuple.second data.diagnosis
-        , viewContent language currentDate id isChw activity model data
+        , viewContent language currentDate id isChw activity db model data
         , viewModal <|
             warningPopup language
                 currentDate
@@ -138,10 +138,10 @@ viewHeader language id activity diagnosis =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw activity model data =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw activity db model data =
     (viewPersonDetailsWithAlert language currentDate isChw data model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id isChw activity data model
+        :: viewActivity language currentDate id isChw activity db data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -389,8 +389,8 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id isChw activity data model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id isChw activity db data model =
     let
         personId =
             data.participant.person
@@ -421,7 +421,7 @@ viewActivity language currentDate id isChw activity data model =
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id isChw data isFirstEncounter model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate id isChw data isFirstEncounter db model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -1555,8 +1555,8 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> Bool -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncounter data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> Bool -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncounter db data =
     let
         personId =
             assembled.participant.person
@@ -1716,7 +1716,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                            --     |> getMeasurementValueFunc
                            --     |> contactsTracingFormWithDefault data.contactsTracingForm
                            --     |>
-                           viewContactsTracingForm language currentDate
+                           viewContactsTracingForm language currentDate db
 
                 Nothing ->
                     emptyNode
@@ -2863,6 +2863,91 @@ viewFollowUpLabel language actionTranslationId iconClass =
     in
     viewInstructionsLabel iconClass message
 
-viewContactsTracingForm : Language -> NominalDate -> ContactsTracingForm -> Html Msg
-viewContactsTracingForm language currentDate form =
-    text "viewContactsTracingForm"
+
+viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> ContactsTracingForm -> Html Msg
+viewContactsTracingForm language currentDate db form =
+    let
+        searchValue =
+            Maybe.withDefault "" form.search
+
+        results =
+            if String.isEmpty searchValue then
+                Nothing
+
+            else
+                Dict.get searchValue db.personSearches
+                    |> Maybe.withDefault NotAsked
+                    |> Just
+
+        summary =
+            results
+                |> Maybe.map (viewWebData language viewSummary identity)
+                |> Maybe.withDefault emptyNode
+
+        viewSummary data =
+            Dict.size data
+                |> Translate.ReportResultsOfSearch
+                |> translate language
+                |> text
+
+        searchResultsParticipants =
+            results
+                |> Maybe.withDefault (Success Dict.empty)
+                |> RemoteData.withDefault Dict.empty
+                |> Dict.map (viewSearchedParticipant language currentDate)
+                |> Dict.values
+    in
+    div [ class "ui form contacts-tracing" ]
+        [ Pages.Utils.viewSearchForm language
+            form.input
+            Translate.PlaceholderEnterParticipantName
+            SetContactsTracingInput
+            NoOp
+        ]
+
+
+viewSearchedParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
+viewSearchedParticipant language currentDate id person =
+    let
+        viewAction =
+            div [ class "action" ]
+                [ div [ class "action-icon-wrapper" ]
+                    [ span
+                        [ class "action-icon forward" ]
+                        []
+                    ]
+                ]
+
+        content =
+            div [ class "content" ]
+                [ div
+                    [ class "details" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text <| person.name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ person.birthDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        ]
+                    ]
+                , viewAction
+                ]
+
+        defaultIcon =
+            defaultIconForPerson currentDate person
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
+        , content
+        ]
