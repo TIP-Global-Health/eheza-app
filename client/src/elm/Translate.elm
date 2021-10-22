@@ -904,6 +904,7 @@ type TranslationId
     | ScheduleFollowUp
     | Search
     | SearchByName
+    | SearchEhezaForExistingParticipants
     | SearchExistingParticipants
     | SearchHelper
     | SearchHelperFamilyMember
@@ -7521,6 +7522,11 @@ translationSet trans =
         SearchByName ->
             { english = "Search by Name"
             , kinyarwanda = Just "Gushakisha izina"
+            }
+
+        SearchEhezaForExistingParticipants ->
+            { english = "Search E-Heza to see if the contact already exists"
+            , kinyarwanda = Nothing
             }
 
         SearchExistingParticipants ->

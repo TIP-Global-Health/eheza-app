@@ -2867,6 +2867,9 @@ viewFollowUpLabel language actionTranslationId iconClass =
 viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> ContactsTracingForm -> Html Msg
 viewContactsTracingForm language currentDate db form =
     let
+        searchForm =
+            Pages.Utils.viewSearchForm language form.input Translate.PlaceholderEnterParticipantName SetContactsTracingInput NoOp
+
         searchValue =
             Maybe.withDefault "" form.search
 
@@ -2898,11 +2901,23 @@ viewContactsTracingForm language currentDate db form =
                 |> Dict.values
     in
     div [ class "ui form contacts-tracing" ]
-        [ Pages.Utils.viewSearchForm language
-            form.input
-            Translate.PlaceholderEnterParticipantName
-            SetContactsTracingInput
-            NoOp
+        [ div [ class "registration-page search" ]
+            [ div
+                [ class "search-top" ]
+                [ p [ class "search-helper" ]
+                    [ text <| translate language Translate.SearchEhezaForExistingParticipants ]
+                , searchForm
+                ]
+            , div
+                [ class "search-middle" ]
+                [ div
+                    [ class "results-summary" ]
+                    [ summary ]
+                , div
+                    [ class "ui unstackable items participants-list" ]
+                    searchResultsParticipants
+                ]
+            ]
         ]
 
 

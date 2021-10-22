@@ -1831,11 +1831,17 @@ update currentDate id db msg model =
 
         MsgContactsTracingDebouncer subMsg ->
             let
+                _ =
+                    Debug.log "MsgContactsTracingDebouncer" subMsg
+
                 form =
                     model.nextStepsData.contactsTracingForm
 
                 ( subModel, subCmd, extraMsg ) =
                     Debouncer.update subMsg form.debouncer
+
+                _ =
+                    Debug.log "extraMsg" extraMsg
 
                 updatedForm =
                     { form | debouncer = subModel }
@@ -1845,13 +1851,16 @@ update currentDate id db msg model =
                         |> (\data -> { data | contactsTracingForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
-            , Cmd.none
+            , Cmd.map MsgContactsTracingDebouncer subCmd
             , []
             )
                 |> sequenceExtra (update currentDate id db) (Maybe.Extra.toList extraMsg)
 
         SetContactsTracingInput input ->
             let
+                _ =
+                    Debug.log "SetContactsTracingInput" input
+
                 form =
                     model.nextStepsData.contactsTracingForm
 
@@ -1870,6 +1879,9 @@ update currentDate id db msg model =
 
         SetContactsTracingSearch search ->
             let
+                _ =
+                    Debug.log "SetContactsTracingSearch" search
+
                 form =
                     model.nextStepsData.contactsTracingForm
 
