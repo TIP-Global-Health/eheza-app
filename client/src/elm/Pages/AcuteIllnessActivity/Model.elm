@@ -11,8 +11,7 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = NoOp
-    | SetActivePage Page
+    = SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
     | SetPertinentSymptomsPopupState Bool

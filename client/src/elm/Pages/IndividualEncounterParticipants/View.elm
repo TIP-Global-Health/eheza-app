@@ -78,7 +78,7 @@ viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) 
 viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
-            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput NoOp
+            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
 
         searchValue =
             model.search

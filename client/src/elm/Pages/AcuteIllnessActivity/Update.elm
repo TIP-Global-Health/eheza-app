@@ -105,12 +105,6 @@ update currentDate id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
     in
     case msg of
-        NoOp ->
-            ( model
-            , Cmd.none
-            , []
-            )
-
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -1831,17 +1825,11 @@ update currentDate id db msg model =
 
         MsgContactsTracingDebouncer subMsg ->
             let
-                _ =
-                    Debug.log "MsgContactsTracingDebouncer" subMsg
-
                 form =
                     model.nextStepsData.contactsTracingForm
 
                 ( subModel, subCmd, extraMsg ) =
                     Debouncer.update subMsg form.debouncer
-
-                _ =
-                    Debug.log "extraMsg" extraMsg
 
                 updatedForm =
                     { form | debouncer = subModel }

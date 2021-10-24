@@ -105,7 +105,7 @@ viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator
 viewSearchForm language currentDate maybeVillageId isChw initiator relation model db =
     let
         searchForm =
-            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput NoOp
+            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
 
         relatedPerson =
             relation

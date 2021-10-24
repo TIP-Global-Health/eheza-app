@@ -926,6 +926,106 @@ div.page-activity.acute-illness {
       margin-bottom: 40px;
     }
 
+
+    .ui.form.contacts-tracing {
+
+      .search-top .search-helper {
+        margin-bottom: 15px;
+      }
+
+      .ui.form.search {
+        min-height: unset;
+      }
+
+      .ui.form.search input,
+      .ui.form.search input:focus {
+        height: 60px;
+        margin-bottom: 30px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .results-summary {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      .register-helper {
+        margin-bottom: 10px;
+      }
+
+      .items {
+        color: $color-gray;
+
+        .item .content {
+          padding-top: 0 !important;
+
+          .details {
+            float:left;
+            width: 70%;
+
+            .ui.header {
+              color: $color-gray;
+              font-size: 24px;
+              font-weight: bold;
+              margin-top: 3px;
+              margin-bottom: 7px;
+            }
+
+            p {
+              margin-bottom: 0;
+              font-size: 20px;
+
+              label {
+                font-weight: bold;
+              }
+            }
+          }
+
+          .action {
+            float:left;
+            margin-top: -20px;
+            width: 20%;
+
+            .action-icon-wrapper {
+              height: 50px;
+              width: 50px;
+              margin-top: 60px;
+              margin-left: 50px;
+
+              .action-icon {
+                background-size: 62% 62%;
+                cursor: pointer;
+                display: block;
+                height: 40px;
+                width: 40px;
+                margin-left: 2px;
+                margin-top: 2px;
+
+                &.edit {
+                  background: url(#{$img-path}icon-edit.svg) no-repeat center;
+                }
+
+                &.forward {
+                  background: url(#{$img-path}icon-forward.svg) no-repeat center;
+                }
+
+                &.link {
+                  background: url(#{$img-path}icon-link.svg) no-repeat center;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .items.participants-list {
+        max-height: 480px;
+        overflow-y: auto;
+      }
+
+    }
+
     .label {
       margin-bottom: 5px;
     }

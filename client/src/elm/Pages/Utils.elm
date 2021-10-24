@@ -136,28 +136,18 @@ viewCustomLabel language translationId suffix class_ =
 -- Inputs
 
 
-viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> msg -> Html msg
-viewSearchForm language inputValue placeholderTransId setInputMsg noOpMsg =
-    Html.form
-        [ -- These attribites are blocking 'Submit' action on HTML form,
-          -- as it is not needed, and causes application to reload.
-          action "javascript:void(0);"
-        , onSubmit noOpMsg
-        ]
-        [ div
-            [ class "ui search form" ]
-            [ div []
-                [ input
-                    [ placeholder <| translate language placeholderTransId
-                    , type_ "text"
-                    , class "search-input"
-                    , onInput setInputMsg
-                    , value inputValue
-                    , autofocus True
-                    ]
-                    []
-                ]
+viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> Html msg
+viewSearchForm language inputValue placeholderTransId setInputMsg =
+    div [ class "ui search form" ]
+        [ input
+            [ placeholder <| translate language placeholderTransId
+            , type_ "text"
+            , class "search-input"
+            , onInput setInputMsg
+            , value inputValue
+            , autofocus True
             ]
+            []
         ]
 
 
