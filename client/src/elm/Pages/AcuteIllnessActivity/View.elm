@@ -2867,11 +2867,49 @@ viewFollowUpLabel language actionTranslationId iconClass =
 viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> ContactsTracingForm -> Html Msg
 viewContactsTracingForm language currentDate db form =
     let
+        content =
+            case form.state of
+                ContactsTracingFormSummary ->
+                    viewContactsTracingFormSummary language currentDate form.contacts
+
+                ContactsTracingFormSearchParticipants data ->
+                    viewContactsTracingFormSearchParticipants language currentDate db data
+
+                ContactsTracingFormRecordContactDetails ->
+                    []
+    in
+    div [ class "ui form contacts-tracing" ] content
+
+
+viewContactsTracingFormSummary : Language -> NominalDate -> Dict PersonId ContactTraceEntry -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate contacts =
+    [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
+    , div [ class "summary-actions" ]
+        [ div
+            [ class "ui primary button"
+            , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
+            ]
+            [ text <| translate language Translate.AddContact
+            ]
+        , div
+            [ class "ui primary button"
+
+            -- , onClick <| SetVaccinationFormViewMode vaccineType ViewModeInitial
+            ]
+            [ text <| translate language Translate.Finish
+            ]
+        ]
+    ]
+
+
+viewContactsTracingFormSearchParticipants : Language -> NominalDate -> ModelIndexedDb -> SearchParticipantsData -> List (Html Msg)
+viewContactsTracingFormSearchParticipants language currentDate db data =
+    let
         searchForm =
-            Pages.Utils.viewSearchForm language form.input Translate.PlaceholderEnterParticipantName SetContactsTracingInput
+            Pages.Utils.viewSearchForm language data.input Translate.PlaceholderEnterParticipantName SetContactsTracingInput
 
         searchValue =
-            Maybe.withDefault "" form.search
+            Maybe.withDefault "" data.search
 
         results =
             if String.isEmpty searchValue then
@@ -2886,8 +2924,8 @@ viewContactsTracingForm language currentDate db form =
             Maybe.map (viewWebData language viewSummary identity) results
                 |> Maybe.withDefault emptyNode
 
-        viewSummary data =
-            Dict.size data
+        viewSummary participants =
+            Dict.size participants
                 |> Translate.ReportResultsOfSearch
                 |> translate language
                 |> text
@@ -2898,21 +2936,29 @@ viewContactsTracingForm language currentDate db form =
                 |> Dict.map (viewSearchedParticipant language currentDate)
                 |> Dict.values
     in
-    div [ class "ui form contacts-tracing" ]
-        [ div
-            [ class "search-top" ]
-            [ viewCustomLabel language Translate.SearchEhezaForExistingParticipants "." "search-helper"
-            , searchForm
-            ]
+    [ div
+        [ class "search-top" ]
+        [ viewCustomLabel language Translate.SearchEhezaForExistingParticipants "." "search-helper"
+        , searchForm
+        ]
+    , div
+        [ class "search-middle" ]
+        [ div [ class "results-summary" ]
+            [ summary ]
         , div
-            [ class "search-middle" ]
-            [ div [ class "results-summary" ]
-                [ summary ]
-            , div
-                [ class "ui unstackable items participants-list" ]
-                searchResultsParticipants
+            [ class "ui unstackable items participants-list" ]
+            searchResultsParticipants
+        ]
+    , div
+        [ class "search-bottom" ]
+        [ div
+            [ class "ui primary button"
+            , onClick <| SetContactsTracingFormState ContactsTracingFormSummary
+            ]
+            [ text <| translate language Translate.Cancel
             ]
         ]
+    ]
 
 
 viewSearchedParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg

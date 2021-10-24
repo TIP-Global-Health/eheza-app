@@ -308,6 +308,7 @@ type TranslationId
     | ActivePage Page
     | AcuteIllnessActivityTitle AcuteIllnessActivity
     | AddChild
+    | AddContact
     | AddFamilyMember
     | AddFamilyMemberFor String
     | AddNewParticipant
@@ -410,6 +411,7 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
+    | ContactsTracingHelper
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
     | ContributingFactor ContributingFactorsSign
@@ -539,6 +541,7 @@ type TranslationId
     | FetalPresentation FetalPresentation
     | Fetch
     | FilterByName
+    | Finish
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
@@ -1548,6 +1551,11 @@ translationSet trans =
             , kinyarwanda = Just "Ongeraho umwana"
             }
 
+        AddContact ->
+            { english = "Add Contact"
+            , kinyarwanda = Nothing
+            }
+
         AddFamilyMember ->
             { english = "Add Family Member"
             , kinyarwanda = Nothing
@@ -2551,6 +2559,11 @@ translationSet trans =
         ContactedRecommendedSiteQuestion ->
             { english = "Did you contact the recommended site"
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
+            }
+
+        ContactsTracingHelper ->
+            { english = "Please record everyone that the patient has come into contact within 2 days of their symptoms beginning"
+            , kinyarwanda = Nothing
             }
 
         ContactWithCOVID19SymptomsHelper ->
@@ -3878,6 +3891,11 @@ translationSet trans =
         FilterByName ->
             { english = "Filter by name"
             , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
+            }
+
+        Finish ->
+            { english = "Finish"
+            , kinyarwanda = Nothing
             }
 
         FirstAntenatalVisit ->

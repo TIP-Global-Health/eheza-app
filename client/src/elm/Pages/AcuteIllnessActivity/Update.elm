@@ -1823,77 +1823,115 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetContactsTracingFormState state ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+
+                updatedForm =
+                    { form | state = state }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contactsTracingForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         MsgContactsTracingDebouncer subMsg ->
             let
                 form =
                     model.nextStepsData.contactsTracingForm
-
-                ( subModel, subCmd, extraMsg ) =
-                    Debouncer.update subMsg form.debouncer
-
-                updatedForm =
-                    { form | debouncer = subModel }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | contactsTracingForm = updatedForm })
             in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.map MsgContactsTracingDebouncer subCmd
-            , []
-            )
-                |> sequenceExtra (update currentDate id db) (Maybe.Extra.toList extraMsg)
+            case form.state of
+                ContactsTracingFormSearchParticipants searchData ->
+                    let
+                        ( subModel, subCmd, extraMsg ) =
+                            Debouncer.update subMsg searchData.debouncer
+
+                        updatedSearchData =
+                            { searchData | debouncer = subModel }
+
+                        updatedForm =
+                            { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | contactsTracingForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.map MsgContactsTracingDebouncer subCmd
+                    , []
+                    )
+                        |> sequenceExtra (update currentDate id db) (Maybe.Extra.toList extraMsg)
+
+                _ ->
+                    noChange
 
         SetContactsTracingInput input ->
             let
-                _ =
-                    Debug.log "SetContactsTracingInput" input
-
                 form =
                     model.nextStepsData.contactsTracingForm
-
-                updatedForm =
-                    { form | input = input }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | contactsTracingForm = updatedForm })
             in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-                |> sequenceExtra (update currentDate id db) [ MsgContactsTracingDebouncer <| provideInput <| SetContactsTracingSearch input ]
+            case form.state of
+                ContactsTracingFormSearchParticipants searchData ->
+                    let
+                        updatedSearchData =
+                            { searchData | input = input }
+
+                        updatedForm =
+                            { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | contactsTracingForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.none
+                    , []
+                    )
+                        |> sequenceExtra (update currentDate id db) [ MsgContactsTracingDebouncer <| provideInput <| SetContactsTracingSearch input ]
+
+                _ ->
+                    noChange
 
         SetContactsTracingSearch search ->
             let
-                _ =
-                    Debug.log "SetContactsTracingSearch" search
-
                 form =
                     model.nextStepsData.contactsTracingForm
-
-                trimmed =
-                    String.trim search
-
-                maybeSearch =
-                    if String.isEmpty trimmed then
-                        Nothing
-
-                    else
-                        Just trimmed
-
-                updatedForm =
-                    { form | search = maybeSearch }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | contactsTracingForm = updatedForm })
             in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
+            case form.state of
+                ContactsTracingFormSearchParticipants searchData ->
+                    let
+                        trimmed =
+                            String.trim search
+
+                        maybeSearch =
+                            if String.isEmpty trimmed then
+                                Nothing
+
+                            else
+                                Just trimmed
+
+                        updatedSearchData =
+                            { searchData | search = maybeSearch }
+
+                        updatedForm =
+                            { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | contactsTracingForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.none
+                    , []
+                    )
+
+                _ ->
+                    noChange
 
         SaveContactsTracing personId saved nextTask ->
             let

@@ -882,7 +882,8 @@ div.page-activity.acute-illness {
     .ui.form.send-to-hc,
     .ui.form.isolation,
     .ui.form.health-education,
-    .ui.form.follow-up {
+    .ui.form.follow-up,
+    .ui.form.contacts-tracing {
 
       h2 {
         text-transform: uppercase;
@@ -926,8 +927,20 @@ div.page-activity.acute-illness {
       margin-bottom: 40px;
     }
 
-
     .ui.form.contacts-tracing {
+
+      .summary-actions {
+        display: flex;
+        justify-content: space-around;
+
+        .button {
+          border-radius: 3px;
+          font-size: 17px;
+          padding: 10px 20px;
+          width: 45%;
+          font-weight: 400;
+        }
+      }
 
       .search-top .search-helper {
         margin-bottom: 15px;
@@ -1022,6 +1035,19 @@ div.page-activity.acute-illness {
       .items.participants-list {
         max-height: 480px;
         overflow-y: auto;
+      }
+
+      .search-bottom {
+        margin-top: 20px;
+        text-align: center;
+
+        .button {
+          border-radius: 3px;
+          font-size: 17px;
+          padding: 10px 20px;
+          width: 60%;
+          font-weight: 400;
+        }
       }
 
     }

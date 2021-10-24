@@ -3,7 +3,7 @@ module Pages.AcuteIllnessActivity.Fetch exposing (fetch)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Pages.AcuteIllnessActivity.Model exposing (Model)
+import Pages.AcuteIllnessActivity.Model exposing (ContactsTracingFormState(..), Model)
 import Pages.AcuteIllnessEncounter.Fetch
 
 
@@ -14,15 +14,24 @@ fetch id activity db model =
             case activity of
                 AcuteIllnessNextSteps ->
                     let
-                        trimmed =
-                            Maybe.withDefault "" model.nextStepsData.contactsTracingForm.search
-                                |> String.trim
+                        form =
+                            model.nextStepsData.contactsTracingForm
                     in
-                    if String.isEmpty trimmed then
-                        []
+                    case form.state of
+                        ContactsTracingFormSearchParticipants searchData ->
+                            let
+                                trimmed =
+                                    Maybe.withDefault "" searchData.search
+                                        |> String.trim
+                            in
+                            if String.isEmpty trimmed then
+                                []
 
-                    else
-                        [ FetchPeopleByName trimmed ]
+                            else
+                                [ FetchPeopleByName trimmed ]
+
+                        _ ->
+                            []
 
                 _ ->
                     []

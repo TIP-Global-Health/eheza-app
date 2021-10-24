@@ -89,6 +89,7 @@ type Msg
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe NextStepsTask)
+    | SetContactsTracingFormState ContactsTracingFormState
     | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
     | SetContactsTracingInput String
     | SetContactsTracingSearch String
@@ -451,14 +452,33 @@ type alias MedicationDistributionForm =
 
 
 type alias ContactsTracingForm =
+    { state : ContactsTracingFormState
+    , contacts : Dict PersonId ContactTraceEntry
+    }
+
+
+emptyContactsTracingForm : ContactsTracingForm
+emptyContactsTracingForm =
+    { state = ContactsTracingFormSummary
+    , contacts = Dict.empty
+    }
+
+
+type ContactsTracingFormState
+    = ContactsTracingFormSummary
+    | ContactsTracingFormSearchParticipants SearchParticipantsData
+    | ContactsTracingFormRecordContactDetails
+
+
+type alias SearchParticipantsData =
     { debouncer : Debouncer Msg Msg
     , search : Maybe String
     , input : String
     }
 
 
-emptyContactsTracingForm : ContactsTracingForm
-emptyContactsTracingForm =
+emptySearchParticipantsData : SearchParticipantsData
+emptySearchParticipantsData =
     { debouncer = debounce 500 |> toDebouncer
     , search = Nothing
     , input = ""
