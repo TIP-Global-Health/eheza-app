@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Model exposing (Person)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -467,7 +468,7 @@ emptyContactsTracingForm =
 type ContactsTracingFormState
     = ContactsTracingFormSummary
     | ContactsTracingFormSearchParticipants SearchParticipantsData
-    | ContactsTracingFormRecordContactDetails
+    | ContactsTracingFormRecordContactDetails PersonId Person
 
 
 type alias SearchParticipantsData =

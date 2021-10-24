@@ -2875,8 +2875,8 @@ viewContactsTracingForm language currentDate db form =
                 ContactsTracingFormSearchParticipants data ->
                     viewContactsTracingFormSearchParticipants language currentDate db data
 
-                ContactsTracingFormRecordContactDetails ->
-                    []
+                ContactsTracingFormRecordContactDetails personId person ->
+                    viewContactsTracingFormRecordContactDetails language currentDate personId person
     in
     div [ class "ui form contacts-tracing" ] content
 
@@ -2938,7 +2938,7 @@ viewContactsTracingFormSearchParticipants language currentDate db data =
     in
     [ div
         [ class "search-top" ]
-        [ viewCustomLabel language Translate.SearchEhezaForExistingParticipants "." "search-helper"
+        [ viewCustomLabel language Translate.SearchEhezaForExistingParticipants "." "search-helper instructions"
         , searchForm
         ]
     , div
@@ -2962,11 +2962,14 @@ viewContactsTracingFormSearchParticipants language currentDate db data =
 
 
 viewSearchedParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
-viewSearchedParticipant language currentDate id person =
+viewSearchedParticipant language currentDate personId person =
     let
         viewAction =
             div [ class "action" ]
-                [ div [ class "action-icon-wrapper" ]
+                [ div
+                    [ class "action-icon-wrapper"
+                    , onClick <| SetContactsTracingFormState <| ContactsTracingFormRecordContactDetails personId person
+                    ]
                     [ span [ class "icon-check-in" ] []
                     ]
                 ]
@@ -3004,3 +3007,8 @@ viewSearchedParticipant language currentDate id person =
             [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
         , content
         ]
+
+
+viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> Person -> List (Html Msg)
+viewContactsTracingFormRecordContactDetails language currentDate personId person =
+    [ div [] [ text person.name ] ]
