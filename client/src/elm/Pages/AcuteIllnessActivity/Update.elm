@@ -2006,7 +2006,7 @@ update currentDate id db msg model =
                     in
                     ( { model | nextStepsData = updatedData }
                     , Cmd.none
-                    , [ focusOnCalendarMsg ]
+                    , []
                     )
 
                 _ ->
@@ -2026,7 +2026,7 @@ update currentDate id db msg model =
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
-            , []
+            , [ Backend.Model.FetchPerson entry.personId |> App.Model.MsgIndexedDb ]
             )
 
         SaveContactsTracing personId saved nextTask ->

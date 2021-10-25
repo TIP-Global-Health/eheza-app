@@ -24,7 +24,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -2873,10 +2873,10 @@ viewContactsTracingForm language currentDate db form =
         content =
             case form.state of
                 ContactsTracingFormSummary ->
-                    viewContactsTracingFormSummary language currentDate form.contacts
+                    viewContactsTracingFormSummary language currentDate db form.contacts
 
                 ContactsTracingFormSearchParticipants data ->
-                    viewContactsTracingFormSearchParticipants language currentDate db data
+                    viewContactsTracingFormSearchParticipants language currentDate db (Dict.keys form.contacts) data
 
                 ContactsTracingFormRecordContactDetails personId person data ->
                     viewContactsTracingFormRecordContactDetails language currentDate personId person data
@@ -2885,12 +2885,8 @@ viewContactsTracingForm language currentDate db form =
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> Dict PersonId ContactTraceEntry -> List (Html Msg)
-viewContactsTracingFormSummary language currentDate contacts =
-    let
-        _ =
-            Debug.log "" contacts
-    in
+viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Dict PersonId ContactTraceEntry -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate db contacts =
     [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
     , div [ class "summary-actions" ]
         [ div
@@ -2908,10 +2904,70 @@ viewContactsTracingFormSummary language currentDate contacts =
             ]
         ]
     ]
+        ++ List.map (viewTracedContact language currentDate db) (Dict.values contacts)
 
 
-viewContactsTracingFormSearchParticipants : Language -> NominalDate -> ModelIndexedDb -> SearchParticipantsData -> List (Html Msg)
-viewContactsTracingFormSearchParticipants language currentDate db data =
+viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> ContactTraceEntry -> Html Msg
+viewTracedContact language currentDate db contact =
+    let
+        person =
+            Dict.get contact.personId db.people
+                |> Maybe.andThen RemoteData.toMaybe
+
+        name =
+            contact.name
+
+        birthDate =
+            Maybe.andThen .birthDate person
+
+        village =
+            Maybe.andThen .village person
+
+        avatarUrl =
+            Maybe.andThen .avatarUrl person
+
+        defaultIcon =
+            Maybe.map (defaultIconForPerson currentDate) person
+                |> Maybe.withDefault "mother"
+
+        content =
+            div [ class "content" ]
+                [ div
+                    [ class "details" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text <| name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ Maybe.map (renderDate language >> text) birthDate
+                                |> showMaybe
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ village |> Maybe.withDefault "" |> text ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DateOfContact ++ ": " ]
+                        , span [] [ formatDDMMYYYY contact.contactDate |> text ]
+                        ]
+                    ]
+
+                -- , viewAction
+                ]
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage defaultIcon avatarUrl name 120 120 ]
+        , content
+        ]
+
+
+viewContactsTracingFormSearchParticipants : Language -> NominalDate -> ModelIndexedDb -> List PersonId -> SearchParticipantsData -> List (Html Msg)
+viewContactsTracingFormSearchParticipants language currentDate db existingContacts data =
     let
         searchForm =
             Pages.Utils.viewSearchForm language data.input Translate.PlaceholderEnterParticipantName SetContactsTracingInput
@@ -2926,6 +2982,13 @@ viewContactsTracingFormSearchParticipants language currentDate db data =
             else
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
+                    |> RemoteData.map
+                        (Dict.filter
+                            (\personId _ ->
+                                -- Do not display person we already have as a contact.
+                                not <| List.member personId existingContacts
+                            )
+                        )
                     |> Just
 
         summary =
