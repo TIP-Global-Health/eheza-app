@@ -98,6 +98,7 @@ type Msg
     | SetContactsTracingDate Date
     | ToggleContactsTracingDateSelector
     | SetContactsTracingPhoneNumber String
+    | SetContactsTracingFinished
     | SaveTracedContact ContactTraceEntry
     | DeleteTracedContact PersonId
     | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe NextStepsTask)
@@ -461,6 +462,7 @@ type alias MedicationDistributionForm =
 type alias ContactsTracingForm =
     { state : ContactsTracingFormState
     , contacts : Dict PersonId ContactTraceEntry
+    , finished : Bool
     }
 
 
@@ -468,6 +470,7 @@ emptyContactsTracingForm : ContactsTracingForm
 emptyContactsTracingForm =
     { state = ContactsTracingFormSummary
     , contacts = Dict.empty
+    , finished = False
     }
 
 

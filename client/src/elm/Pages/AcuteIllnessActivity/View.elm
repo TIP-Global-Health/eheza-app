@@ -1815,9 +1815,12 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                 |> List.head
 
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
+            Maybe.map
+                (\task ->
+                    if task == NextStepsContactsTracing && not data.contactsTracingForm.finished then
+                        emptyNode
+
+                    else
                         let
                             saveMsg =
                                 case task of
@@ -1864,7 +1867,8 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                                 ]
                                 [ text <| translate language saveLabel ]
                             ]
-                    )
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
@@ -2873,7 +2877,7 @@ viewContactsTracingForm language currentDate db form =
         content =
             case form.state of
                 ContactsTracingFormSummary ->
-                    viewContactsTracingFormSummary language currentDate db form.contacts
+                    viewContactsTracingFormSummary language currentDate db form.contacts form.finished
 
                 ContactsTracingFormSearchParticipants data ->
                     viewContactsTracingFormSearchParticipants language currentDate db (Dict.keys form.contacts) data
@@ -2885,23 +2889,28 @@ viewContactsTracingForm language currentDate db form =
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Dict PersonId ContactTraceEntry -> List (Html Msg)
-viewContactsTracingFormSummary language currentDate db contacts =
+viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Dict PersonId ContactTraceEntry -> Bool -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate db contacts finished =
     [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
     , div [ class "ui items" ] <|
-        List.map (viewTracedContact language currentDate db)
-            (Dict.values contacts)
+        List.map (viewTracedContact language currentDate db) <|
+            Dict.values contacts
     , div [ class "summary-actions" ]
         [ div
-            [ class "ui primary button"
+            [ classList
+                [ ( "ui primary button", True )
+                , ( "disabled", finished )
+                ]
             , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
             ]
             [ text <| translate language Translate.AddContact
             ]
         , div
-            [ class "ui primary button"
-
-            -- , onClick <| SetVaccinationFormViewMode vaccineType ViewModeInitial
+            [ classList
+                [ ( "ui primary button", True )
+                , ( "disabled", finished )
+                ]
+            , onClick SetContactsTracingFinished
             ]
             [ text <| translate language Translate.Finish
             ]

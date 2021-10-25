@@ -2012,6 +2012,23 @@ update currentDate id db msg model =
                 _ ->
                     noChange
 
+        SetContactsTracingFinished ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+
+                updatedForm =
+                    { form | finished = True }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contactsTracingForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveTracedContact entry ->
             let
                 form =
