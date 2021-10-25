@@ -1,6 +1,7 @@
 module Pages.AcuteIllnessActivity.Update exposing (update)
 
 import App.Model
+import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
@@ -1932,6 +1933,101 @@ update currentDate id db msg model =
 
                 _ ->
                     noChange
+
+        SetContactsTracingDate date ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+            in
+            case form.state of
+                ContactsTracingFormRecordContactDetails personId person recordData ->
+                    let
+                        updatedRecordData =
+                            { recordData | contactDate = Just date }
+
+                        updatedForm =
+                            { form | state = ContactsTracingFormRecordContactDetails personId person updatedRecordData }
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | contactsTracingForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.none
+                    , [ focusOnCalendarMsg ]
+                    )
+
+                _ ->
+                    noChange
+
+        ToggleContactsTracingDateSelector ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+            in
+            case form.state of
+                ContactsTracingFormRecordContactDetails personId person recordData ->
+                    let
+                        updatedRecordData =
+                            { recordData | isDateSelectorOpen = not recordData.isDateSelectorOpen }
+
+                        updatedForm =
+                            { form | state = ContactsTracingFormRecordContactDetails personId person updatedRecordData }
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | contactsTracingForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.none
+                    , []
+                    )
+
+                _ ->
+                    noChange
+
+        SetContactsTracingPhoneNumber value ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+            in
+            case form.state of
+                ContactsTracingFormRecordContactDetails personId person recordData ->
+                    let
+                        updatedRecordData =
+                            { recordData | phoneNumber = Just value }
+
+                        updatedForm =
+                            { form | state = ContactsTracingFormRecordContactDetails personId person updatedRecordData }
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | contactsTracingForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.none
+                    , [ focusOnCalendarMsg ]
+                    )
+
+                _ ->
+                    noChange
+
+        SaveTracedContact entry ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+
+                updatedForm =
+                    { form | contacts = Dict.insert entry.personId entry form.contacts, state = ContactsTracingFormSummary }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contactsTracingForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveContactsTracing personId saved nextTask ->
             let

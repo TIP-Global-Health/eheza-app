@@ -1037,7 +1037,7 @@ div.page-activity.acute-illness {
         overflow-y: auto;
       }
 
-      .search-bottom {
+      .single-action {
         margin-top: 20px;
         text-align: center;
 
@@ -1050,6 +1050,52 @@ div.page-activity.acute-illness {
         }
       }
 
+      .contact-detail {
+        display: flex;
+        justify-content: flex-start;
+
+        .label {
+          float: left;
+          font-weight: 500;
+          width: 35%;
+        }
+
+        .form-input {
+          margin-bottom: 30px;
+
+          &.text {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+            width: 50%;
+
+            input {
+              text-align: center;
+            }
+          }
+
+          &.date {
+            height: 2em;
+            width: 50%;
+
+            .dropdown,
+            .dropdown-open {
+              width: 100%;
+
+              .dropdown--button-container {
+                background: $color-white;
+                border: 2px solid $color-light-gray;
+
+                input {
+                  border: 0;
+                  color: $color-text;
+                  padding: 5px;
+                  text-align: center;
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
     .label {

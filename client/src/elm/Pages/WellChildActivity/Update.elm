@@ -2,6 +2,7 @@ module Pages.WellChildActivity.Update exposing (update)
 
 import App.Model
 import App.Ports exposing (bindDropZone)
+import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -77,9 +78,6 @@ update currentDate isChw id db msg model =
             in
             Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
                 |> Maybe.withDefault [ defaultMsg ]
-
-        focusOnCalendar =
-            App.Model.ScrollToElement "dropdown--content-container"
     in
     case msg of
         SetActivePage page ->
@@ -116,7 +114,7 @@ update currentDate isChw id db msg model =
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
-            , [ focusOnCalendar ]
+            , [ focusOnCalendarMsg ]
             )
 
         SetDeliveryComplicationsPresent value ->
@@ -395,7 +393,7 @@ update currentDate isChw id db msg model =
             in
             ( { model | nutritionAssessmentData = updatedData }
             , Cmd.none
-            , [ focusOnCalendar ]
+            , [ focusOnCalendarMsg ]
             )
 
         CloseHeadCircumferencePopup personId saved nextTask_ ->

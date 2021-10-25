@@ -139,16 +139,31 @@ viewCustomLabel language translationId suffix class_ =
 viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> Html msg
 viewSearchForm language inputValue placeholderTransId setInputMsg =
     div [ class "ui search form" ]
-        [ input
-            [ placeholder <| translate language placeholderTransId
-            , type_ "text"
-            , class "search-input"
-            , onInput setInputMsg
-            , value inputValue
-            , autofocus True
-            ]
-            []
-        ]
+        [ viewTextInput language inputValue setInputMsg (Just placeholderTransId) (Just "search-input") ]
+
+
+viewTextInput : Language -> String -> (String -> msg) -> Maybe TranslationId -> Maybe String -> Html msg
+viewTextInput language inputValue setInputMsg placeholderTransId inputClass =
+    let
+        attributes =
+            inputClassAttribute
+                ++ placeholderAttribute
+                ++ [ type_ "text"
+                   , onInput setInputMsg
+                   , value inputValue
+                   , autofocus True
+                   ]
+
+        inputClassAttribute =
+            Maybe.map (class >> List.singleton) inputClass
+                |> Maybe.withDefault []
+
+        placeholderAttribute =
+            Maybe.map (translate language >> placeholder >> List.singleton)
+                placeholderTransId
+                |> Maybe.withDefault []
+    in
+    input attributes []
 
 
 viewBoolInput :

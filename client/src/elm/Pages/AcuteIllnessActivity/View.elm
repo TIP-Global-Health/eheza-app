@@ -20,6 +20,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicati
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, isPersonAFertileWoman)
+import Date exposing (Unit(..))
+import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -64,6 +66,7 @@ import Pages.Utils
         , viewPreviousMeasurement
         , viewQuestionLabel
         , viewRedAlertForSelect
+        , viewTextInput
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -2875,14 +2878,19 @@ viewContactsTracingForm language currentDate db form =
                 ContactsTracingFormSearchParticipants data ->
                     viewContactsTracingFormSearchParticipants language currentDate db data
 
-                ContactsTracingFormRecordContactDetails personId person ->
-                    viewContactsTracingFormRecordContactDetails language currentDate personId person
+                ContactsTracingFormRecordContactDetails personId person data ->
+                    viewContactsTracingFormRecordContactDetails language currentDate personId person data
     in
-    div [ class "ui form contacts-tracing" ] content
+    div [ class "ui form contacts-tracing" ]
+        content
 
 
 viewContactsTracingFormSummary : Language -> NominalDate -> Dict PersonId ContactTraceEntry -> List (Html Msg)
 viewContactsTracingFormSummary language currentDate contacts =
+    let
+        _ =
+            Debug.log "" contacts
+    in
     [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
     , div [ class "summary-actions" ]
         [ div
@@ -2950,7 +2958,7 @@ viewContactsTracingFormSearchParticipants language currentDate db data =
             searchResultsParticipants
         ]
     , div
-        [ class "search-bottom" ]
+        [ class "single-action" ]
         [ div
             [ class "ui primary button"
             , onClick <| SetContactsTracingFormState ContactsTracingFormSummary
@@ -2963,14 +2971,91 @@ viewContactsTracingFormSearchParticipants language currentDate db data =
 
 viewSearchedParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewSearchedParticipant language currentDate personId person =
+    viewContactTracingParticipant language
+        currentDate
+        personId
+        person
+        False
+        (ContactsTracingFormRecordContactDetails personId person emptyRecordContactDetailsData)
+
+
+viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> Person -> RecordContactDetailsData -> List (Html Msg)
+viewContactsTracingFormRecordContactDetails language currentDate personId person data =
+    let
+        contactDateInput =
+            DateSelector.SelectorDropdown.view
+                ToggleContactsTracingDateSelector
+                SetContactsTracingDate
+                data.isDateSelectorOpen
+                (Date.add Months -3 currentDate)
+                currentDate
+                data.contactDate
+
+        phoneNumberInput =
+            viewTextInput language inputNumber SetContactsTracingPhoneNumber Nothing Nothing
+
+        inputNumber =
+            Maybe.Extra.or data.phoneNumber person.telephoneNumber
+                |> Maybe.withDefault ""
+
+        saveButtonAttrinutes =
+            classList
+                [ ( "ui primary button", True )
+                , ( "disabled", saveDisabled )
+                ]
+                :: saveAction
+
+        saveAction =
+            Maybe.map
+                (ContactTraceEntry personId (person.secondName ++ " " ++ person.firstName) inputNumber
+                    >> SaveTracedContact
+                    >> onClick
+                    >> List.singleton
+                )
+                data.contactDate
+                |> Maybe.withDefault []
+
+        saveDisabled =
+            isNothing data.contactDate || String.isEmpty inputNumber
+    in
+    [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
+    , div [ class "ui items" ] <|
+        [ viewContactTracingParticipant language currentDate personId person True (ContactsTracingFormSearchParticipants emptySearchParticipantsData) ]
+    , div [ class "contact-detail" ]
+        [ viewLabel language Translate.DateOfContact
+        , div [ class "form-input date" ]
+            [ contactDateInput ]
+        ]
+    , div [ class "contact-detail" ]
+        [ viewLabel language Translate.TelephoneNumber
+        , div [ class "form-input text" ]
+            [ phoneNumberInput ]
+        ]
+    , div [ class "single-action" ]
+        [ div saveButtonAttrinutes
+            [ text <| translate language Translate.Save ]
+        ]
+    ]
+
+
+viewContactTracingParticipant : Language -> NominalDate -> PersonId -> Person -> Bool -> ContactsTracingFormState -> Html Msg
+viewContactTracingParticipant language currentDate personId person checked newFormState =
     let
         viewAction =
+            let
+                checkInClass =
+                    if checked then
+                        "icon-checked-in"
+
+                    else
+                        "icon-check-in"
+            in
             div [ class "action" ]
                 [ div
                     [ class "action-icon-wrapper"
-                    , onClick <| SetContactsTracingFormState <| ContactsTracingFormRecordContactDetails personId person
+                    , onClick <| SetContactsTracingFormState newFormState
                     ]
-                    [ span [ class "icon-check-in" ] []
+                    [ span [ class checkInClass ] []
                     ]
                 ]
 
@@ -3007,8 +3092,3 @@ viewSearchedParticipant language currentDate personId person =
             [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
         , content
         ]
-
-
-viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> Person -> List (Html Msg)
-viewContactsTracingFormRecordContactDetails language currentDate personId person =
-    [ div [] [ text person.name ] ]

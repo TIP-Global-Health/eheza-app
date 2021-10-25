@@ -5,6 +5,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person)
+import Date exposing (Date)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -94,6 +95,10 @@ type Msg
     | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
     | SetContactsTracingInput String
     | SetContactsTracingSearch String
+    | SetContactsTracingDate Date
+    | ToggleContactsTracingDateSelector
+    | SetContactsTracingPhoneNumber String
+    | SaveTracedContact ContactTraceEntry
     | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
@@ -468,7 +473,7 @@ emptyContactsTracingForm =
 type ContactsTracingFormState
     = ContactsTracingFormSummary
     | ContactsTracingFormSearchParticipants SearchParticipantsData
-    | ContactsTracingFormRecordContactDetails PersonId Person
+    | ContactsTracingFormRecordContactDetails PersonId Person RecordContactDetailsData
 
 
 type alias SearchParticipantsData =
@@ -483,6 +488,21 @@ emptySearchParticipantsData =
     { debouncer = debounce 500 |> toDebouncer
     , search = Nothing
     , input = ""
+    }
+
+
+type alias RecordContactDetailsData =
+    { contactDate : Maybe Date
+    , isDateSelectorOpen : Bool
+    , phoneNumber : Maybe String
+    }
+
+
+emptyRecordContactDetailsData : RecordContactDetailsData
+emptyRecordContactDetailsData =
+    { contactDate = Nothing
+    , isDateSelectorOpen = False
+    , phoneNumber = Nothing
     }
 
 

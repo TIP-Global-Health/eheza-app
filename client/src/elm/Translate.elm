@@ -411,6 +411,7 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
+    | ContactsTracingCompleteDetails
     | ContactsTracingHelper
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
@@ -455,6 +456,7 @@ type TranslationId
     | DangerSignsTask DangerSignsTask
     | Date
     | DateConcludedEstimatedQuestion
+    | DateOfContact
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | DashboardLabel
@@ -2561,6 +2563,11 @@ translationSet trans =
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
             }
 
+        ContactsTracingCompleteDetails ->
+            { english = "Please fill in contact details"
+            , kinyarwanda = Nothing
+            }
+
         ContactsTracingHelper ->
             { english = "Please record everyone that the patient has come into contact within 2 days of their symptoms beginning"
             , kinyarwanda = Nothing
@@ -2949,6 +2956,11 @@ translationSet trans =
 
         DateConcludedEstimatedQuestion ->
             { english = "What was the estimated due date for the child"
+            , kinyarwanda = Nothing
+            }
+
+        DateOfContact ->
+            { english = "Date of Contact"
             , kinyarwanda = Nothing
             }
 
