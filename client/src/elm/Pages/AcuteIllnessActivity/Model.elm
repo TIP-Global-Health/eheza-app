@@ -99,6 +99,7 @@ type Msg
     | ToggleContactsTracingDateSelector
     | SetContactsTracingPhoneNumber String
     | SaveTracedContact ContactTraceEntry
+    | DeleteTracedContact PersonId
     | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask

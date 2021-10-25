@@ -24,7 +24,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -2888,6 +2888,9 @@ viewContactsTracingForm language currentDate db form =
 viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Dict PersonId ContactTraceEntry -> List (Html Msg)
 viewContactsTracingFormSummary language currentDate db contacts =
     [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
+    , div [ class "ui items" ] <|
+        List.map (viewTracedContact language currentDate db)
+            (Dict.values contacts)
     , div [ class "summary-actions" ]
         [ div
             [ class "ui primary button"
@@ -2904,7 +2907,6 @@ viewContactsTracingFormSummary language currentDate db contacts =
             ]
         ]
     ]
-        ++ List.map (viewTracedContact language currentDate db) (Dict.values contacts)
 
 
 viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> ContactTraceEntry -> Html Msg
@@ -2930,18 +2932,27 @@ viewTracedContact language currentDate db contact =
             Maybe.map (defaultIconForPerson currentDate) person
                 |> Maybe.withDefault "mother"
 
+        action =
+            div [ class "action" ]
+                [ div
+                    [ class "action-icon-wrapper"
+                    , onClick <| DeleteTracedContact contact.personId
+                    ]
+                    [ span [ class "icon-checked-in" ] [] ]
+                ]
+
         content =
             div [ class "content" ]
                 [ div
                     [ class "details" ]
-                    [ h2
-                        [ class "ui header" ]
-                        [ text <| name ]
+                    [ h2 [ class "ui header" ]
+                        [ text name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []
-                            [ Maybe.map (renderDate language >> text) birthDate
-                                |> showMaybe
+                            [ Maybe.map (renderDate language) birthDate
+                                |> Maybe.withDefault "--/--/--"
+                                |> text
                             ]
                         ]
                     , p []
@@ -2950,11 +2961,10 @@ viewTracedContact language currentDate db contact =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.DateOfContact ++ ": " ]
-                        , span [] [ formatDDMMYYYY contact.contactDate |> text ]
+                        , span [] [ formatDDMMYY contact.contactDate |> text ]
                         ]
                     ]
-
-                -- , viewAction
+                , action
                 ]
     in
     div
@@ -3004,8 +3014,16 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
         searchResultsParticipants =
             Maybe.withDefault (Success Dict.empty) results
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewSearchedParticipant language currentDate)
+                |> Dict.map viewSearchedParticipant
                 |> Dict.values
+
+        viewSearchedParticipant personId person =
+            viewContactTracingParticipant language
+                currentDate
+                personId
+                person
+                False
+                (ContactsTracingFormRecordContactDetails personId person emptyRecordContactDetailsData)
     in
     [ div
         [ class "search-top" ]
@@ -3030,16 +3048,6 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
             ]
         ]
     ]
-
-
-viewSearchedParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
-viewSearchedParticipant language currentDate personId person =
-    viewContactTracingParticipant language
-        currentDate
-        personId
-        person
-        False
-        (ContactsTracingFormRecordContactDetails personId person emptyRecordContactDetailsData)
 
 
 viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> Person -> RecordContactDetailsData -> List (Html Msg)

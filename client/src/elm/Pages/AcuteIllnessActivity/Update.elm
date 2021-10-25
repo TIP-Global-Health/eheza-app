@@ -2029,6 +2029,23 @@ update currentDate id db msg model =
             , [ Backend.Model.FetchPerson entry.personId |> App.Model.MsgIndexedDb ]
             )
 
+        DeleteTracedContact personId ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+
+                updatedForm =
+                    { form | contacts = Dict.remove personId form.contacts }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | contactsTracingForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveContactsTracing personId saved nextTask ->
             let
                 measurementId =
