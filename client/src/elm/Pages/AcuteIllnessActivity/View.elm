@@ -2180,9 +2180,6 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 
                 amoxicillinAdministration =
                     let
-                        _ =
-                            resolveAmoxicillinDosage currentDate person |> Debug.log ""
-
                         amoxicillinUpdateFunc value form_ =
                             { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
 

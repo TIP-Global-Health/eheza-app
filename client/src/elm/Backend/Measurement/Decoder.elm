@@ -2764,23 +2764,6 @@ decodeAcuteIllnessContactsTracing =
         |> decodeAcuteIllnessMeasurement
 
 
-
---     let
---         _ =
---             Debug.log "" "decodeAcuteIllnessContactsTracing"
---     in
---     decodeAcuteIllnessMeasurement decodeAcuteIllnessContactsTracingValue
---
---
--- decodeAcuteIllnessContactsTracingValue : Decoder (List ContactTraceEntry)
--- decodeAcuteIllnessContactsTracingValue =
---     let
---         _ =
---             Debug.log "" "decodeAcuteIllnessContactsTracingValue"
---     in
---     list decodeContactTraceEntry
-
-
 decodeContactTraceEntry : Decoder ContactTraceEntry
 decodeContactTraceEntry =
     string
@@ -2789,9 +2772,6 @@ decodeContactTraceEntry =
                 let
                     parts =
                         String.split "[&]" data
-
-                    _ =
-                        Debug.log "parts" parts
                 in
                 case parts of
                     [ id, name, phoneNumber, contactDate ] ->
