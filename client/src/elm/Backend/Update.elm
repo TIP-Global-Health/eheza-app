@@ -2575,6 +2575,9 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        AcuteIllnessContactsTracingRevision uuid data ->
+            noChange
+
         AcuteIllnessVitalsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
