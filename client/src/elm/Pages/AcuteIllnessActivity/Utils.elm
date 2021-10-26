@@ -3,6 +3,7 @@ module Pages.AcuteIllnessActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Person.Model exposing (Person)
@@ -3022,6 +3023,47 @@ acuteFindinsgRespiratoryDangerSignPresent measurements =
                 >> not
             )
         |> Maybe.withDefault False
+
+
+fromContactsTracingValue : Maybe (List ContactTraceEntry) -> ContactsTracingForm
+fromContactsTracingValue saved =
+    { state = ContactsTracingFormSummary
+    , contacts = generateContactsFromTraceEntries saved
+    , finished = False
+    }
+
+
+contactsTracingFormWithDefault : ContactsTracingForm -> Maybe (List ContactTraceEntry) -> ContactsTracingForm
+contactsTracingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { state = form.state
+                , contacts = or form.contacts (generateContactsFromTraceEntries saved)
+                , finished = form.finished
+                }
+            )
+
+
+generateContactsFromTraceEntries : Maybe (List ContactTraceEntry) -> Maybe (Dict PersonId ContactTraceEntry)
+generateContactsFromTraceEntries entries =
+    Maybe.map
+        (List.map (\entry -> ( entry.personId, entry ))
+            >> Dict.fromList
+        )
+        entries
+
+
+toContactsTracingValueWithDefault : Maybe (List ContactTraceEntry) -> ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValueWithDefault saved form =
+    contactsTracingFormWithDefault form saved
+        |> toContactsTracingValue
+
+
+toContactsTracingValue : ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValue form =
+    Maybe.map Dict.values form.contacts
 
 
 

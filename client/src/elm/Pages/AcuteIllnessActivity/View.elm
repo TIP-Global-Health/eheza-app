@@ -1859,10 +1859,17 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
 
                                     _ ->
                                         Translate.Save
+
+                            disabled =
+                                if task == NextStepsContactsTracing then
+                                    not data.contactsTracingForm.finished
+
+                                else
+                                    tasksCompleted /= totalTasks
                         in
                         div [ class "actions next-steps" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                                 , onClick saveMsg
                                 ]
                                 [ text <| translate language saveLabel ]
@@ -1870,12 +1877,22 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
+
+        fullScreen =
+            Maybe.map ((==) NextStepsContactsTracing) activeTask
+                |> Maybe.withDefault False
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div
+        [ classList
+            [ ( "tasks-count", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -2877,10 +2894,15 @@ viewContactsTracingForm language currentDate db form =
         content =
             case form.state of
                 ContactsTracingFormSummary ->
-                    viewContactsTracingFormSummary language currentDate db form.contacts form.finished
+                    viewContactsTracingFormSummary language currentDate db form
 
                 ContactsTracingFormSearchParticipants data ->
-                    viewContactsTracingFormSearchParticipants language currentDate db (Dict.keys form.contacts) data
+                    let
+                        recordedContacts =
+                            Maybe.map Dict.keys form.contacts
+                                |> Maybe.withDefault []
+                    in
+                    viewContactsTracingFormSearchParticipants language currentDate db recordedContacts data
 
                 ContactsTracingFormRecordContactDetails personId person data ->
                     viewContactsTracingFormRecordContactDetails language currentDate personId person data
@@ -2889,17 +2911,21 @@ viewContactsTracingForm language currentDate db form =
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Dict PersonId ContactTraceEntry -> Bool -> List (Html Msg)
-viewContactsTracingFormSummary language currentDate db contacts finished =
+viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> ContactsTracingForm -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate db form =
+    let
+        contactsForView =
+            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db))
+                form.contacts
+                |> Maybe.withDefault []
+    in
     [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
-    , div [ class "ui items" ] <|
-        List.map (viewTracedContact language currentDate db) <|
-            Dict.values contacts
+    , div [ class "ui items" ] contactsForView
     , div [ class "summary-actions" ]
         [ div
             [ classList
                 [ ( "ui primary button", True )
-                , ( "disabled", finished )
+                , ( "disabled", form.finished )
                 ]
             , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
             ]
@@ -2908,7 +2934,7 @@ viewContactsTracingFormSummary language currentDate db contacts finished =
         , div
             [ classList
                 [ ( "ui primary button", True )
-                , ( "disabled", finished )
+                , ( "disabled", form.finished )
                 ]
             , onClick SetContactsTracingFinished
             ]

@@ -310,6 +310,9 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
         |> andThen
             (\( type_, uuid, revisionIdentifier ) ->
                 let
+                    _ =
+                        Debug.log "type_" type_
+
                     doDecode decoder tag =
                         decoder
                             |> andThen

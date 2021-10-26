@@ -717,50 +717,54 @@ div.page-encounter {
 //Common for Activity pages
 div.page-activity {
 
-    .ui.task.segment {
+  .ui.task.segment {
 
-      .column.core-physical-exam {
-        width: 25%;
+    .column.core-physical-exam {
+      width: 25%;
 
-        a {
-          width: 131px;
-        }
+      a {
+        width: 131px;
       }
     }
+  }
 
-    .tasks-count {
-      background: $color-primary;
-      padding: 5px 15px;
-      font-size: 18px;
+  .tasks-count {
+    background: $color-primary;
+    padding: 5px 15px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .tasks-count.full-screen {
+    color: $color-primary;
+  }  
+
+  .ui.full.segment {
+
+    .label {
       font-weight: bold;
-    }
+      margin-bottom: 20px;
 
-    .ui.full.segment {
-
-      .label {
-        font-weight: bold;
-        margin-bottom: 20px;
-
-        &.helper {
-          margin-bottom: 40px;
-        }
-      }
-
-      .form .ui.grid {
-
-        .measurement input {
-          width: 85%;
-        }
-
-        .measurement .unit {
-          width: unset;
-        }
-      }
-
-      .form.muac .ui.grid {
-        margin-top: 30px;
+      &.helper {
+        margin-bottom: 40px;
       }
     }
+
+    .form .ui.grid {
+
+      .measurement input {
+        width: 85%;
+      }
+
+      .measurement .unit {
+        width: unset;
+      }
+    }
+
+    .form.muac .ui.grid {
+      margin-top: 30px;
+    }
+  }
 }
 
 // Prenatal Encounter, Nutrition Encounter and
@@ -1654,10 +1658,6 @@ div.page-activity.home-visit {
 }
 
 div.page-activity.well-child {
-
-  .tasks-count.full-screen {
-    color: $color-primary;
-  }
 
   .ui.full.segment {
 

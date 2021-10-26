@@ -2034,8 +2034,12 @@ update currentDate id db msg model =
                 form =
                     model.nextStepsData.contactsTracingForm
 
+                updatedContacts =
+                    Maybe.map (Dict.insert entry.personId entry) form.contacts
+                        |> Maybe.withDefault (Dict.singleton entry.personId entry)
+
                 updatedForm =
-                    { form | contacts = Dict.insert entry.personId entry form.contacts, state = ContactsTracingFormSummary }
+                    { form | contacts = Just updatedContacts, state = ContactsTracingFormSummary }
 
                 updatedData =
                     model.nextStepsData
@@ -2051,8 +2055,11 @@ update currentDate id db msg model =
                 form =
                     model.nextStepsData.contactsTracingForm
 
+                updatedContacts =
+                    Maybe.map (Dict.remove personId) form.contacts
+
                 updatedForm =
-                    { form | contacts = Dict.remove personId form.contacts }
+                    { form | contacts = updatedContacts }
 
                 updatedData =
                     model.nextStepsData
@@ -2075,19 +2082,15 @@ update currentDate id db msg model =
                     generateNextStepsMsgs nextTask
 
                 appMsgs =
-                    -- @todo
-                    -- model.nextStepsData.contactsTracingForm
-                    --     |> toContactsTracingValueWithDefault measurement
-                    --     |> unwrap
-                    --         []
-                    --         (\value ->
-                    --             (Backend.AcuteIllnessEncounter.Model.SaveContactsTracing personId measurementId value
-                    --                 |> Backend.Model.MsgAcuteIllnessEncounter id
-                    --                 |> App.Model.MsgIndexedDb
-                    --             )
-                    --                 :: backToActivitiesMsg
-                    --         )
-                    []
+                    model.nextStepsData.contactsTracingForm
+                        |> toContactsTracingValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.AcuteIllnessEncounter.Model.SaveContactsTracing personId measurementId
+                                >> Backend.Model.MsgAcuteIllnessEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none

@@ -461,7 +461,7 @@ type alias MedicationDistributionForm =
 
 type alias ContactsTracingForm =
     { state : ContactsTracingFormState
-    , contacts : Dict PersonId ContactTraceEntry
+    , contacts : Maybe (Dict PersonId ContactTraceEntry)
     , finished : Bool
     }
 
@@ -469,7 +469,7 @@ type alias ContactsTracingForm =
 emptyContactsTracingForm : ContactsTracingForm
 emptyContactsTracingForm =
     { state = ContactsTracingFormSummary
-    , contacts = Dict.empty
+    , contacts = Nothing
     , finished = False
     }
 

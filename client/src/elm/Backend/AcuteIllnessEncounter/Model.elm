@@ -58,6 +58,7 @@ type alias Model =
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveCoreExam : WebData ()
+    , saveContactsTracing : WebData ()
     }
 
 
@@ -86,6 +87,7 @@ emptyModel =
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveCoreExam = NotAsked
+    , saveContactsTracing = NotAsked
     }
 
 
@@ -167,3 +169,5 @@ type Msg
     | HandleSavedFollowUp (WebData ())
     | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
     | HandleSavedCoreExam (WebData ())
+    | SaveContactsTracing PersonId (Maybe AcuteIllnessContactsTracingId) (List ContactTraceEntry)
+    | HandleSavedContactsTracing (WebData ())
