@@ -1021,3 +1021,11 @@ type alias AcuteIllnessContactsTracingId =
 
 type AcuteIllnessContactsTracingUuidType
     = AcuteIllnessContactsTracingUuidType
+
+
+type alias AcuteIllnessTraceContactId =
+    EntityUuid AcuteIllnessTraceContactUuidType
+
+
+type AcuteIllnessTraceContactUuidType
+    = AcuteIllnessTraceContactUuidType
