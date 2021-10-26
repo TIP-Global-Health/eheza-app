@@ -926,3 +926,9 @@ acuteIllnessContactsTracingEndpoint : ReadWriteEndPoint Error AcuteIllnessContac
 acuteIllnessContactsTracingEndpoint =
     swEndpoint "nodes/acute_illness_contacts_tracing" decodeAcuteIllnessContactsTracing
         |> withValueEncoder (object << encodeAcuteIllnessContactsTracing)
+
+
+acuteIllnessTraceContactEndpoint : ReadWriteEndPoint Error AcuteIllnessTraceContactId AcuteIllnessTraceContact AcuteIllnessTraceContact ()
+acuteIllnessTraceContactEndpoint =
+    swEndpoint "nodes/acute_illness_trace_contact" decodeAcuteIllnessTraceContact
+        |> withValueEncoder (object << encodeAcuteIllnessTraceContact)
