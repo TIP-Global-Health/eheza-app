@@ -2427,17 +2427,40 @@ encodeAcuteIllnessContactsTracing =
 
 encodeAcuteIllnessContactsTracingValue : List ContactTraceEntry -> List ( String, Value )
 encodeAcuteIllnessContactsTracingValue entries =
-    [ ( "contacts_trace_data", list encodeContactTraceEntry entries )
+    [ ( "contacts_trace_data", list encodeContactTraceEntryToString entries )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_contacts_tracing" )
     ]
 
 
-encodeContactTraceEntry : ContactTraceEntry -> Value
-encodeContactTraceEntry entry =
+encodeContactTraceEntryToString : ContactTraceEntry -> Value
+encodeContactTraceEntryToString entry =
     [ fromEntityUuid entry.personId, entry.firstName, entry.secondName, entry.phoneNumber, formatYYYYMMDD entry.contactDate ]
         |> String.join "[&]"
         |> string
+
+
+encodeAcuteIllnessTraceContact : AcuteIllnessTraceContact -> List ( String, Value )
+encodeAcuteIllnessTraceContact =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessTraceContactValue
+
+
+encodeAcuteIllnessTraceContactValue : ContactTraceEntry -> List ( String, Value )
+encodeAcuteIllnessTraceContactValue entry =
+    encodeContactTraceEntry entry
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "acute_illness_trace_contact" )
+           ]
+
+
+encodeContactTraceEntry : ContactTraceEntry -> List ( String, Value )
+encodeContactTraceEntry entry =
+    [ ( "referred_person", encodeEntityUuid entry.personId )
+    , ( "first_name", string entry.firstName )
+    , ( "second_name", string entry.secondName )
+    , ( "phone_number", string entry.phoneNumber )
+    , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
+    ]
 
 
 encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )
