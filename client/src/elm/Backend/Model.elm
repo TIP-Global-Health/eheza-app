@@ -367,6 +367,7 @@ type Revision
     | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
     | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    | AcuteIllnessTraceContactRevision AcuteIllnessTraceContactId AcuteIllnessTraceContact
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
     | AttendanceRevision AttendanceId Attendance
