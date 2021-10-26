@@ -2430,6 +2430,63 @@ function hedley_acute_illness_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-acute_illness_trace_contact-field_date_concluded'.
+  $field_instances['node-acute_illness_trace_contact-field_date_concluded'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_concluded',
+    'label' => 'Date concluded',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 16,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-acute_illness_trace_contact-field_date_measured'.
   $field_instances['node-acute_illness_trace_contact-field_date_measured'] = array(
     'bundle' => 'acute_illness_trace_contact',
@@ -2653,6 +2710,51 @@ function hedley_acute_illness_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 13,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-acute_illness_trace_contact-field_referred_person'.
+  $field_instances['node-acute_illness_trace_contact-field_referred_person'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_referred_person',
+    'label' => 'Referred Person',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 17,
     ),
   );
 
@@ -9677,6 +9779,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Convulsions Period');
   t('Cough Period');
   t('Date Measured');
+  t('Date concluded');
   t('Dia');
   t('Dry Mouth Period');
   t('Exposure');
@@ -9715,6 +9818,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Reason for Not Sending to HC');
   t('Reason for not isolating');
   t('Reason for not taking');
+  t('Referred Person');
   t('Respiratory rate');
   t('Second name');
   t('Send to HC');
