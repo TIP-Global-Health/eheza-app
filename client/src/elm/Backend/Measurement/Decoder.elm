@@ -2759,13 +2759,13 @@ decodeAcuteIllnessNutrition =
 
 decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
 decodeAcuteIllnessContactsTracing =
-    list decodeContactTraceEntry
+    list decodeContactTraceEntryFromString
         |> field "contacts_trace_data"
         |> decodeAcuteIllnessMeasurement
 
 
-decodeContactTraceEntry : Decoder ContactTraceEntry
-decodeContactTraceEntry =
+decodeContactTraceEntryFromString : Decoder ContactTraceEntry
+decodeContactTraceEntryFromString =
     string
         |> andThen
             (\data ->
@@ -2792,6 +2792,21 @@ decodeContactTraceEntry =
                             data
                                 ++ " is not a recognized ContactTraceEntry"
             )
+
+
+decodeAcuteIllnessTraceContact : Decoder AcuteIllnessTraceContact
+decodeAcuteIllnessTraceContact =
+    decodeAcuteIllnessMeasurement decodeContactTraceEntry
+
+
+decodeContactTraceEntry : Decoder ContactTraceEntry
+decodeContactTraceEntry =
+    succeed ContactTraceEntry
+        |> required "referred_person" decodeEntityUuid
+        |> required "first_name" string
+        |> required "second_name" string
+        |> required "phone_number" string
+        |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
 
 
 decodeHealthEducation : Decoder HealthEducation
