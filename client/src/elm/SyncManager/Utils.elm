@@ -393,6 +393,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteIllnessNutrition identifier ->
             getIdentifier identifier "acute_illness_nutrition"
 
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            getIdentifier identifier "acute_illness_trace_contact"
+
         BackendAuthorityAcuteIllnessVitals identifier ->
             getIdentifier identifier "acute_illness_vitals"
 
@@ -918,6 +921,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteIllnessNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessNutrition identifier
 
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessTraceContact identifier
+
         BackendAuthorityAcuteIllnessVitals identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessVitals identifier
 
@@ -1405,6 +1411,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             AcuteIllnessNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            AcuteIllnessTraceContactRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityAcuteIllnessVitals identifier ->
             AcuteIllnessVitalsRevision (toEntityUuid identifier.uuid) identifier.entity

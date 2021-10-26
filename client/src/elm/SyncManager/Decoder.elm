@@ -365,6 +365,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteIllnessNutrition
                             BackendAuthorityAcuteIllnessNutrition
 
+                    "acute_illness_trace_contact" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessTraceContact
+                            BackendAuthorityAcuteIllnessTraceContact
+
                     "acute_illness_vitals" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals

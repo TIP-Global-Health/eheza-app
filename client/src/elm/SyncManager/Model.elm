@@ -56,6 +56,7 @@ type BackendAuthorityEntity
     | BackendAuthorityAcuteIllnessFollowUp (BackendEntity AcuteIllnessFollowUp)
     | BackendAuthorityAcuteIllnessMuac (BackendEntity AcuteIllnessMuac)
     | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
+    | BackendAuthorityAcuteIllnessTraceContact (BackendEntity AcuteIllnessTraceContact)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
     | BackendAuthorityAppointmentConfirmation (BackendEntity PrenatalAppointmentConfirmation)
     | BackendAuthorityAttendance (BackendEntity Attendance)
