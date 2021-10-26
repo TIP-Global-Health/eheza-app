@@ -44,6 +44,7 @@ var tableForType = {
     acute_illness_follow_up: 'shards',
     acute_illness_muac: 'shards',
     acute_illness_nutrition: 'shards',
+    acute_illness_trace_contact: 'shards',
     acute_illness_vitals: 'shards',
     appointment_confirmation: 'shards',
     attendance: 'shards',
