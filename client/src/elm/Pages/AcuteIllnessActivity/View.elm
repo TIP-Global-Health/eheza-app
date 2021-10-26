@@ -23,7 +23,7 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPer
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -2902,7 +2902,7 @@ viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Co
 viewContactsTracingFormSummary language currentDate db form =
     let
         contactsForView =
-            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db))
+            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db form.finished))
                 form.contacts
                 |> Maybe.withDefault []
     in
@@ -2931,8 +2931,8 @@ viewContactsTracingFormSummary language currentDate db form =
     ]
 
 
-viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> ContactTraceEntry -> Html Msg
-viewTracedContact language currentDate db contact =
+viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceEntry -> Html Msg
+viewTracedContact language currentDate db finished contact =
     let
         person =
             Dict.get contact.personId db.people
@@ -2955,13 +2955,14 @@ viewTracedContact language currentDate db contact =
                 |> Maybe.withDefault "mother"
 
         action =
-            div [ class "action" ]
-                [ div
-                    [ class "action-icon-wrapper"
-                    , onClick <| DeleteTracedContact contact.personId
+            showIf (not finished) <|
+                div [ class "action" ]
+                    [ div
+                        [ class "action-icon-wrapper"
+                        , onClick <| DeleteTracedContact contact.personId
+                        ]
+                        [ span [ class "icon-checked-in" ] [] ]
                     ]
-                    [ span [ class "icon-checked-in" ] [] ]
-                ]
 
         content =
             div [ class "content" ]
