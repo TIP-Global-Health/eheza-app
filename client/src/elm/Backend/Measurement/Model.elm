@@ -1254,9 +1254,14 @@ type alias AcuteIllnessContactsTracing =
     AcuteIllnessMeasurement (List ContactTraceEntry)
 
 
+type alias AcuteIllnessTraceContact =
+    AcuteIllnessMeasurement ContactTraceEntry
+
+
 type alias ContactTraceEntry =
     { personId : PersonId
-    , name : String
+    , firstName : String
+    , secondName : String
     , phoneNumber : String
     , contactDate : NominalDate
     }

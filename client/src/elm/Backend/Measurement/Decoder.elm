@@ -2774,12 +2774,12 @@ decodeContactTraceEntry =
                         String.split "[&]" data
                 in
                 case parts of
-                    [ id, name, phoneNumber, contactDate ] ->
+                    [ id, firstName, secondName, phoneNumber, contactDate ] ->
                         Date.fromIsoString contactDate
                             |> Result.toMaybe
                             |> Maybe.map
                                 (\date ->
-                                    succeed (ContactTraceEntry (toEntityUuid id) name phoneNumber date)
+                                    succeed (ContactTraceEntry (toEntityUuid id) firstName secondName phoneNumber date)
                                 )
                             |> Maybe.withDefault
                                 (fail <|

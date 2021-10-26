@@ -2435,7 +2435,7 @@ encodeAcuteIllnessContactsTracingValue entries =
 
 encodeContactTraceEntry : ContactTraceEntry -> Value
 encodeContactTraceEntry entry =
-    [ fromEntityUuid entry.personId, entry.name, entry.phoneNumber, formatYYYYMMDD entry.contactDate ]
+    [ fromEntityUuid entry.personId, entry.firstName, entry.secondName, entry.phoneNumber, formatYYYYMMDD entry.contactDate ]
         |> String.join "[&]"
         |> string
 

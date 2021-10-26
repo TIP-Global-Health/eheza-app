@@ -2939,7 +2939,10 @@ viewTracedContact language currentDate db finished contact =
                 |> Maybe.andThen RemoteData.toMaybe
 
         name =
-            contact.name
+            contact.secondName
+                ++ " "
+                ++ contact.firstName
+                |> String.trim
 
         birthDate =
             Maybe.andThen .birthDate person
@@ -3101,7 +3104,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId person
 
         saveAction =
             Maybe.map
-                (ContactTraceEntry personId (person.secondName ++ " " ++ person.firstName) inputNumber
+                (ContactTraceEntry personId person.firstName person.secondName inputNumber
                     >> SaveTracedContact
                     >> onClick
                     >> List.singleton
