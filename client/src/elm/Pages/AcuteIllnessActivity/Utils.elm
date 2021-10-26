@@ -718,15 +718,9 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
             )
 
         NextStepsContactsTracing ->
-            -- @todo
-            -- let
-            --     form =
-            --         measurements.followUp
-            --             |> getMeasurementValueFunc
-            --             |> followUpFormWithDefault data.followUpForm
-            -- in
+            -- We do not count tasks here.
             ( 0
-            , 1
+            , 0
             )
 
 

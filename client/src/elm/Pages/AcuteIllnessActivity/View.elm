@@ -1713,13 +1713,10 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                         |> viewFollowUpForm language currentDate isChw
 
                 Just NextStepsContactsTracing ->
-                    data.contactsTracingForm
-                        |> -- @todo
-                           -- measurements.contactsTracing
-                           --     |> getMeasurementValueFunc
-                           --     |> contactsTracingFormWithDefault data.contactsTracingForm
-                           --     |>
-                           viewContactsTracingForm language currentDate db
+                    measurements.contactsTracing
+                        |> getMeasurementValueFunc
+                        |> contactsTracingFormWithDefault data.contactsTracingForm
+                        |> viewContactsTracingForm language currentDate db
 
                 Nothing ->
                     emptyNode
@@ -1859,17 +1856,10 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
 
                                     _ ->
                                         Translate.Save
-
-                            disabled =
-                                if task == NextStepsContactsTracing then
-                                    not data.contactsTracingForm.finished
-
-                                else
-                                    tasksCompleted /= totalTasks
                         in
                         div [ class "actions next-steps" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                 , onClick saveMsg
                                 ]
                                 [ text <| translate language saveLabel ]
