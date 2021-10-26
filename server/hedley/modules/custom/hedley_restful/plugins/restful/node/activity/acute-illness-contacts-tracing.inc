@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'acute_illness_contacts_tracing',
   'description' => t('Exports the AcuteIllnessContactsTracing bundle.'),
-  'class' => 'HedleyRestfulAcuteIllnessFollowUp',
+  'class' => 'HedleyRestfulAcuteIllnessContactsTracing',
   'authentication_types' => TRUE,
 );

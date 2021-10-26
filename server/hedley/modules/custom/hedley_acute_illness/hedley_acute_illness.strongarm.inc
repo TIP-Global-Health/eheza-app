@@ -21,6 +21,13 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_acute_illness_contacts_tracing';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_acute_illness_contacts_tracing'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_acute_illness_core_exam';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_acute_illness_core_exam'] = $strongarm;
@@ -175,6 +182,13 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_acute_illness_contacts_tracing';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
+  $export['auto_entitylabel_pattern_node_acute_illness_contacts_tracing'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_acute_illness_core_exam';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
   $export['auto_entitylabel_pattern_node_acute_illness_core_exam'] = $strongarm;
@@ -325,6 +339,13 @@ function hedley_acute_illness_strongarm() {
   $strongarm->name = 'auto_entitylabel_php_node_acute_findings';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_acute_findings'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_acute_illness_contacts_tracing';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_acute_illness_contacts_tracing'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */

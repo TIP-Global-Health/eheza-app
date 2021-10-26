@@ -439,7 +439,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'active' => 1,
       'module' => 'text',
       'settings' => array(
-        'size' => 120,
+        'size' => 512,
       ),
       'type' => 'text_textfield',
       'weight' => 8,
