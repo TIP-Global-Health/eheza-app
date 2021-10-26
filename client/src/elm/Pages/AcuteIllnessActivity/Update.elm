@@ -93,6 +93,9 @@ update currentDate id db msg model =
         nutritionForm =
             resolveFormWithDefaults .nutrition Pages.AcuteIllnessActivity.Utils.nutritionFormWithDefault model.physicalExamData.nutritionForm
 
+        contactsTracingForm =
+            resolveFormWithDefaults .contactsTracing Pages.AcuteIllnessActivity.Utils.contactsTracingFormWithDefault model.nextStepsData.contactsTracingForm
+
         generatePhysicalExamMsgs nextTask =
             Maybe.map (\task -> [ SetActivePhysicalExamTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
@@ -2031,15 +2034,12 @@ update currentDate id db msg model =
 
         SaveTracedContact entry ->
             let
-                form =
-                    model.nextStepsData.contactsTracingForm
-
                 updatedContacts =
-                    Maybe.map (Dict.insert entry.personId entry) form.contacts
+                    Maybe.map (Dict.insert entry.personId entry) contactsTracingForm.contacts
                         |> Maybe.withDefault (Dict.singleton entry.personId entry)
 
                 updatedForm =
-                    { form | contacts = Just updatedContacts, state = ContactsTracingFormSummary }
+                    { contactsTracingForm | contacts = Just updatedContacts, state = ContactsTracingFormSummary }
 
                 updatedData =
                     model.nextStepsData
@@ -2052,14 +2052,11 @@ update currentDate id db msg model =
 
         DeleteTracedContact personId ->
             let
-                form =
-                    model.nextStepsData.contactsTracingForm
-
                 updatedContacts =
-                    Maybe.map (Dict.remove personId) form.contacts
+                    Maybe.map (Dict.remove personId) contactsTracingForm.contacts
 
                 updatedForm =
-                    { form | contacts = updatedContacts }
+                    { contactsTracingForm | contacts = updatedContacts }
 
                 updatedData =
                     model.nextStepsData
