@@ -3063,6 +3063,24 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
                 person
                 False
                 (ContactsTracingFormRecordContactDetails personId person emptyRecordContactDetailsData)
+
+        addNewContactSection =
+            if String.isEmpty searchValue then
+                []
+
+            else
+                [ div [ class "register-helper" ]
+                    [ text <| translate language Translate.RegisterContactHelper ]
+                , div
+                    [ class "single-action" ]
+                    [ div
+                        [ class "ui primary button"
+
+                        -- , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (IndividualEncounterOrigin encounterType)
+                        ]
+                        [ text <| translate language Translate.RegisterNewContact ]
+                    ]
+                ]
     in
     [ div
         [ class "search-top" ]
@@ -3077,16 +3095,18 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
             [ class "ui unstackable items participants-list" ]
             searchResultsParticipants
         ]
-    , div
-        [ class "single-action" ]
-        [ div
-            [ class "ui primary button"
-            , onClick <| SetContactsTracingFormState ContactsTracingFormSummary
-            ]
-            [ text <| translate language Translate.Cancel
-            ]
-        ]
     ]
+        ++ addNewContactSection
+        ++ [ div
+                [ class "single-action" ]
+                [ div
+                    [ class "ui primary button"
+                    , onClick <| SetContactsTracingFormState ContactsTracingFormSummary
+                    ]
+                    [ text <| translate language Translate.Cancel
+                    ]
+                ]
+           ]
 
 
 viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> Person -> RecordContactDetailsData -> List (Html Msg)

@@ -183,7 +183,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
             [ class "search-bottom" ]
             [ div
                 [ class "register-helper" ]
-                [ text <| translate language Translate.RegisterHelper ]
+                [ text <| translate language Translate.RegisterParticipantHelper ]
             , div
                 [ class "register-actions" ]
                 [ button

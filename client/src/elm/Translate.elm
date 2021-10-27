@@ -864,7 +864,9 @@ type TranslationId
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
-    | RegisterHelper
+    | RegisterContactHelper
+    | RegisterParticipantHelper
+    | RegisterNewContact
     | RegisterNewParticipant
     | RegistratingHealthCenter
     | RegistrationSuccessful
@@ -7157,9 +7159,19 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegisterHelper ->
+        RegisterContacttHelper ->
             { english = "Not the participant you were looking for?"
             , kinyarwanda = Just "Umugenerwabikorwa ubonye si we washakaga?"
+            }
+
+        RegisterParticipantHelper ->
+            { english = "Not the contact you were looking for?"
+            , kinyarwanda = Nothing
+            }
+
+        RegisterNewContact ->
+            { english = "Register a new contact"
+            , kinyarwanda = Nothing
             }
 
         RegisterNewParticipant ->
