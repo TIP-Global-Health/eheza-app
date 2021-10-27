@@ -1,49 +1,4 @@
-module Backend.Person.Form exposing
-    ( PersonForm
-    , allDigitsPattern
-    , applyDefaultValues
-    , birthDate
-    , birthDateEstimated
-    , cell
-    , district
-    , educationLevel
-    , emptyCreateForm
-    , emptyEditForm
-    , expectedAgeByForm
-    , firstName
-    , gender
-    , healthCenter
-    , hivStatus
-    , hmisNumber
-    , maritalStatus
-    , modeOfDelivery
-    , nationalIdNumber
-    , numberOfChildren
-    , phoneNumber
-    , photo
-    , province
-    , secondName
-    , sector
-    , ubudehe
-    , validateBirthDate
-    , validateCell
-    , validateDigitsOnly
-    , validateDistrict
-    , validateEducationLevel
-    , validateGender
-    , validateHealthCenterId
-    , validateHivStatus
-    , validateMaritalStatus
-    , validateModeOfDelivery
-    , validateNationalIdNumber
-    , validatePerson
-    , validateProvince
-    , validateSector
-    , validateUbudehe
-    , validateVillage
-    , village
-    , withDefault
-    )
+module Backend.Person.Form exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
@@ -58,7 +13,7 @@ import Backend.Person.Encoder
         , genderToString
         )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils exposing (expectedAgeByPerson, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
@@ -89,6 +44,15 @@ emptyEditForm : PersonForm
 emptyEditForm =
     initial []
         (validatePerson Nothing (toEntityUuid "1" |> EditPerson) Nothing)
+
+
+type alias ContactForm =
+    Form ValidationError Person
+
+
+emptyContactForm : ContactForm
+emptyContactForm =
+    initial [] validateContact
 
 
 {-| Given the birth date actually entered into the form, what age range are we
@@ -367,16 +331,6 @@ validatePerson maybeRelated operation maybeCurrentDate =
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName string)
 
-        combineNames first second =
-            if String.trim first == "" then
-                String.trim second
-
-            else
-                [ String.trim second
-                , String.trim first
-                ]
-                    |> String.join " "
-
         withAllNames firstNameValue secondNameValue =
             validateBirthDate externalExpectedAge maybeCurrentDate
                 |> field birthDate
@@ -410,7 +364,7 @@ validatePerson maybeRelated operation maybeCurrentDate =
                                    )
             in
             succeed Person
-                |> andMap (succeed (combineNames firstNameValue secondNameValue))
+                |> andMap (succeed (generateFullName firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
@@ -432,6 +386,42 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
+                |> andMap (succeed False)
+                |> andMap (succeed Nothing)
+    in
+    andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
+
+
+validateContact : Validation ValidationError Person
+validateContact =
+    let
+        withFirstName firstNameValue =
+            andThen (withAllNames firstNameValue) (field secondName string)
+
+        withAllNames firstNameValue secondNameValue =
+            succeed Person
+                |> andMap (succeed (generateFullName firstNameValue secondNameValue))
+                |> andMap (succeed <| String.trim firstNameValue)
+                |> andMap (succeed <| String.trim secondNameValue)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed False)
+                |> andMap (succeed Male)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (field province <| nullable string)
+                |> andMap (field district <| nullable string)
+                |> andMap (field sector <| nullable string)
+                |> andMap (field cell <| nullable string)
+                |> andMap (field village <| nullable string)
+                |> andMap (field phoneNumber <| nullable validateDigitsOnly)
+                |> andMap (succeed Nothing)
                 |> andMap (succeed False)
                 |> andMap (succeed Nothing)
     in

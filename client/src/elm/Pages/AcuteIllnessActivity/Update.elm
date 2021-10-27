@@ -29,8 +29,10 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Form
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet exposing (EverySet)
+import Form
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
@@ -45,6 +47,7 @@ import Measurement.Utils
         , toVitalsValueWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (ifEverySetEmpty, setMultiSelectInputValue)
@@ -2066,6 +2069,61 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        RegisterContactMsgForm subMsg ->
+            let
+                form =
+                    model.nextStepsData.contactsTracingForm
+            in
+            case form.state of
+                ContactsTracingFormRegisterContact registrationData ->
+                    let
+                        updatedRegistrationData =
+                            Form.update Backend.Person.Form.validateContact subMsg registrationData
+
+                        appMsgs =
+                            case subMsg of
+                                Form.Submit ->
+                                    Form.getOutput registrationData
+                                        |> Maybe.map
+                                            (\person ->
+                                                -- @todo
+                                                -- let
+                                                --     personWithShard =
+                                                --         { person | shard = selectedHealthCenter }
+                                                -- in
+                                                [-- personWithShard
+                                                 --     |> Backend.Model.PostPerson relation initiator
+                                                 --     |> App.Model.MsgIndexedDb
+                                                ]
+                                            )
+                                        -- If we submit, but can't actually submit,
+                                        -- then change the request status to
+                                        -- `NotAsked` (to reset network errors
+                                        -- etc.)
+                                        |> Maybe.withDefault
+                                            [-- @todo
+                                             -- Backend.Model.HandlePostedPerson relation initiator NotAsked
+                                             --     |> App.Model.MsgIndexedDb
+                                            ]
+
+                                _ ->
+                                    []
+
+                        updatedForm =
+                            { form | state = ContactsTracingFormRegisterContact updatedRegistrationData }
+
+                        updatedData =
+                            model.nextStepsData
+                                |> (\data -> { data | contactsTracingForm = updatedForm })
+                    in
+                    ( { model | nextStepsData = updatedData }
+                    , Cmd.none
+                    , appMsgs
+                    )
+
+                _ ->
+                    noChange
 
         SaveContactsTracing personId saved nextTask ->
             let

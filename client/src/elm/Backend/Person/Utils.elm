@@ -13,6 +13,12 @@ import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
+generateFullName : String -> String -> String
+generateFullName first second =
+    String.join " " [ second, first ]
+        |> String.trim
+
+
 ageInYears : NominalDate -> Person -> Maybe Int
 ageInYears currentDate person =
     person.birthDate

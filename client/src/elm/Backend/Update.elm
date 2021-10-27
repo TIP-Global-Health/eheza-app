@@ -58,6 +58,7 @@ import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.Types
 import Pages.AcuteIllnessActivity.Utils
     exposing
         ( activityCompleted
@@ -4017,7 +4018,7 @@ generateMsgsForNewDiagnosis :
     -> Bool
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
     if isChw then
@@ -4031,7 +4032,7 @@ generateMsgsForNewDiagnosisForNurse :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
     case diagnosis of
@@ -4039,7 +4040,7 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
             [ -- Navigate to Acute Ilness Laboratory activty page.
               App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , -- Focus on Covid testing task.
-              Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryCovidTesting
+              Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Types.LaboratoryCovidTesting
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                 |> App.Model.MsgLoggedIn
 
@@ -4057,7 +4058,7 @@ generateCustomMsgsForNewDiagnosis :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     -> List App.Model.Msg
 generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
     case nextStep of

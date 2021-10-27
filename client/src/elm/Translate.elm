@@ -63,7 +63,7 @@ import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
 import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
-import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.Types
     exposing
         ( DangerSignsTask(..)
         , ExposureTask(..)
@@ -713,7 +713,7 @@ type TranslationId
     | NextImmunisationVisit
     | NextPediatricVisit
     | NextSteps
-    | NextStepsTask Bool Pages.AcuteIllnessActivity.Model.NextStepsTask
+    | NextStepsTask Bool Pages.AcuteIllnessActivity.Types.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -5442,7 +5442,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.AcuteIllnessActivity.Model.NextStepsSendToHC ->
+                Pages.AcuteIllnessActivity.Types.NextStepsSendToHC ->
                     if isChw then
                         { english = "Send to Health Center"
                         , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
@@ -5453,17 +5453,17 @@ translationSet trans =
                         , kinyarwanda = Nothing
                         }
 
-                Pages.AcuteIllnessActivity.Model.NextStepsHealthEducation ->
+                Pages.AcuteIllnessActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.AcuteIllnessActivity.Model.NextStepsFollowUp ->
+                Pages.AcuteIllnessActivity.Types.NextStepsFollowUp ->
                     { english = "Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
-                Pages.AcuteIllnessActivity.Model.NextStepsContactsTracing ->
+                Pages.AcuteIllnessActivity.Types.NextStepsContactsTracing ->
                     { english = "Contacts Tracing"
                     , kinyarwanda = Nothing
                     }
@@ -7159,7 +7159,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegisterContacttHelper ->
+        RegisterContactHelper ->
             { english = "Not the participant you were looking for?"
             , kinyarwanda = Just "Umugenerwabikorwa ubonye si we washakaga?"
             }

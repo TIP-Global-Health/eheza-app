@@ -19,7 +19,7 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
-import Pages.AcuteIllnessActivity.Model exposing (NextStepsTask(..))
+import Pages.AcuteIllnessActivity.Types exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils
     exposing
         ( muacRedOnSubsequentVisit

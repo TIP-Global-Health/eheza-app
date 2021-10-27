@@ -1,4 +1,4 @@
-module Pages.Person.View exposing (view, viewCreateEditForm)
+module Pages.Person.View exposing (view, viewCreateEditForm, viewSelectInput, viewTextInput)
 
 import App.Model
 import AssocList as Dict exposing (Dict)

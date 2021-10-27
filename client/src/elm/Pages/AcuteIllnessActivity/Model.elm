@@ -4,11 +4,14 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
 import Date exposing (Date)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
+import Form
 import Measurement.Model exposing (..)
+import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.Page exposing (Page)
 
 
@@ -63,34 +66,34 @@ type Msg
     | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
     | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
       -- NEXT STEPS
-    | SetActiveNextStepsTask NextStepsTask
+    | SetActiveNextStepsTask Pages.AcuteIllnessActivity.Types.NextStepsTask
     | SetPatientIsolated Bool
     | SetHealthEducation Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetSignOnDoor Bool
     | SetReasonForNotIsolating ReasonForNotIsolating
-    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
+    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetContactedHC Bool
     | SetHCRecommendation HCRecommendation
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
-    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
+    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetCalled114 Bool
     | SetContactedSite Bool
     | SetRecommendation114 Recommendation114
     | SetRecommendationSite RecommendationSite
-    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe NextStepsTask)
+    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
-    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
+    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
-    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
+    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetContactsTracingFormState ContactsTracingFormState
     | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
     | SetContactsTracingInput String
@@ -101,7 +104,8 @@ type Msg
     | SetContactsTracingFinished
     | SaveTracedContact ContactTraceEntry
     | DeleteTracedContact PersonId
-    | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe NextStepsTask)
+    | RegisterContactMsgForm Form.Msg
+    | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -168,12 +172,6 @@ emptySymptomsData =
     }
 
 
-type SymptomsTask
-    = SymptomsGeneral
-    | SymptomsRespiratory
-    | SymptomsGI
-
-
 type alias SymptomsGeneralForm =
     { signs : Dict SymptomsGeneralSign Int
     , signsDirty : Bool
@@ -219,14 +217,6 @@ emptyPhysicalExamData =
     }
 
 
-type PhysicalExamTask
-    = PhysicalExamVitals
-    | PhysicalExamCoreExam
-    | PhysicalExamMuac
-    | PhysicalExamAcuteFindings
-    | PhysicalExamNutrition
-
-
 type alias AcuteFindingsForm =
     { signsGeneral : Maybe (List AcuteFindingsGeneralSign)
     , signsRespiratory : Maybe (List AcuteFindingsRespiratorySign)
@@ -261,11 +251,6 @@ emptyLaboratoryData =
     , covidTestingForm = emptyCovidTestingForm
     , activeTask = Nothing
     }
-
-
-type LaboratoryTask
-    = LaboratoryMalariaTesting
-    | LaboratoryCovidTesting
 
 
 type alias MalariaTestingForm =
@@ -306,11 +291,6 @@ emptyExposureData =
     }
 
 
-type ExposureTask
-    = ExposureTravel
-    | ExposureExposure
-
-
 type alias TravelHistoryForm =
     { covid19Country : Maybe Bool
     }
@@ -336,10 +316,6 @@ emptyPriorTreatmentData =
     { treatmentReviewForm = emptyTreatmentReviewForm
     , activeTask = TreatmentReview
     }
-
-
-type PriorTreatmentTask
-    = TreatmentReview
 
 
 type alias TreatmentReviewForm =
@@ -376,7 +352,7 @@ type alias NextStepsData =
     , healthEducationForm : HealthEducationForm
     , followUpForm : FollowUpForm
     , contactsTracingForm : ContactsTracingForm
-    , activeTask : Maybe NextStepsTask
+    , activeTask : Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     }
 
 
@@ -392,17 +368,6 @@ emptyNextStepsData =
     , contactsTracingForm = emptyContactsTracingForm
     , activeTask = Nothing
     }
-
-
-type NextStepsTask
-    = NextStepsIsolation
-    | NextStepsContactHC
-    | NextStepsCall114
-    | NextStepsMedicationDistribution
-    | NextStepsSendToHC
-    | NextStepsHealthEducation
-    | NextStepsFollowUp
-    | NextStepsContactsTracing
 
 
 type alias IsolationForm =
@@ -466,18 +431,19 @@ type alias ContactsTracingForm =
     }
 
 
+type ContactsTracingFormState
+    = ContactsTracingFormSummary
+    | ContactsTracingFormSearchParticipants SearchParticipantsData
+    | ContactsTracingFormRecordContactDetails PersonId Person RecordContactDetailsData
+    | ContactsTracingFormRegisterContact RegisterContactData
+
+
 emptyContactsTracingForm : ContactsTracingForm
 emptyContactsTracingForm =
     { state = ContactsTracingFormSummary
     , contacts = Nothing
     , finished = False
     }
-
-
-type ContactsTracingFormState
-    = ContactsTracingFormSummary
-    | ContactsTracingFormSearchParticipants SearchParticipantsData
-    | ContactsTracingFormRecordContactDetails PersonId Person RecordContactDetailsData
 
 
 type alias SearchParticipantsData =
@@ -510,6 +476,15 @@ emptyRecordContactDetailsData =
     }
 
 
+type alias RegisterContactData =
+    Backend.Person.Form.ContactForm
+
+
+emptyRegisterContactData : RegisterContactData
+emptyRegisterContactData =
+    Backend.Person.Form.emptyContactForm
+
+
 
 -- ONGOING TREATMENT
 
@@ -525,10 +500,6 @@ emptyOngoingTreatmentData =
     { treatmentReviewForm = emptyOngoingTreatmentReviewForm
     , activeTask = OngoingTreatmentReview
     }
-
-
-type OngoingTreatmentTask
-    = OngoingTreatmentReview
 
 
 type alias OngoingTreatmentReviewForm =
@@ -575,10 +546,6 @@ emptyDangerSignsData =
     { reviewDangerSignsForm = emptyReviewDangerSignsForm
     , activeTask = ReviewDangerSigns
     }
-
-
-type DangerSignsTask
-    = ReviewDangerSigns
 
 
 type alias ReviewDangerSignsForm =

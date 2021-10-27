@@ -18,11 +18,13 @@ import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
+import Form
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
@@ -42,12 +44,14 @@ import Measurement.Utils
         )
 import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHealthCenterForm, viewSendToHospitalForm, viewVitalsForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
 import Pages.NutritionActivity.View exposing (viewMuacForm)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Person.View
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -69,10 +73,14 @@ import Pages.Utils
         , viewTextInput
         )
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Set
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (thumbnailImage, viewModal)
+import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
+import Utils.GeoLocation exposing (GeoInfo, geoInfo)
+import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
-import Utils.WebData exposing (viewWebData)
+import Utils.WebData exposing (viewError, viewWebData)
 
 
 view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
@@ -2906,6 +2914,9 @@ viewContactsTracingForm language currentDate db contactsTracingFinished form =
 
                 ContactsTracingFormRecordContactDetails personId person data ->
                     viewContactsTracingFormRecordContactDetails language currentDate personId person data
+
+                ContactsTracingFormRegisterContact data ->
+                    viewCreateContactForm language currentDate db data
     in
     div [ class "ui form contacts-tracing" ]
         content
@@ -2952,10 +2963,7 @@ viewTracedContact language currentDate db finished contact =
                 |> Maybe.andThen RemoteData.toMaybe
 
         name =
-            contact.secondName
-                ++ " "
-                ++ contact.firstName
-                |> String.trim
+            generateFullName contact.firstName contact.secondName
 
         birthDate =
             Maybe.andThen .birthDate person
@@ -3075,8 +3083,7 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
                     [ class "single-action" ]
                     [ div
                         [ class "ui primary button"
-
-                        -- , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (IndividualEncounterOrigin encounterType)
+                        , onClick <| SetContactsTracingFormState <| ContactsTracingFormRegisterContact emptyRegisterContactData
                         ]
                         [ text <| translate language Translate.RegisterNewContact ]
                     ]
@@ -3222,3 +3229,270 @@ viewContactTracingParticipant language currentDate personId person checked newFo
             [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
         , content
         ]
+
+
+viewCreateContactForm : Language -> NominalDate -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
+viewCreateContactForm language currentDate db data =
+    let
+        request =
+            db.postPerson
+
+        emptyOption =
+            ( "", "" )
+
+        errors =
+            Form.getErrors data
+
+        requestStatus =
+            case request of
+                Success _ ->
+                    -- We only show the success message until you make changes.
+                    if Set.isEmpty (Form.getChangedFields data) then
+                        div
+                            [ class "ui success message" ]
+                            [ div [ class "header" ] [ text <| translate language Translate.Success ]
+                            , div [] [ text <| translate language Translate.PersonHasBeenSaved ]
+                            ]
+
+                    else
+                        emptyNode
+
+                Failure err ->
+                    div
+                        [ class "ui warning message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
+                        , viewError language err
+                        ]
+
+                Loading ->
+                    viewLoading
+
+                NotAsked ->
+                    emptyNode
+
+        demographicFields =
+            List.map (Html.map RegisterContactMsgForm) <|
+                [ Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
+                , Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
+                ]
+
+        geoLocationDictToOptions dict =
+            Dict.toList dict
+                |> List.map
+                    (\( id, geoLocation ) ->
+                        ( String.fromInt <| fromEntityId id, geoLocation.name )
+                    )
+
+        filterGeoLocationDictByParent parentId dict =
+            dict
+                |> Dict.filter
+                    (\_ geoLocation ->
+                        (Just <| toEntityId parentId) == geoLocation.parent
+                    )
+
+        geoLocationInputClass isDisabled =
+            "select-input"
+                ++ (if isDisabled then
+                        " disabled"
+
+                    else
+                        ""
+                   )
+
+        province =
+            Form.getFieldAsString Backend.Person.Form.province data
+
+        district =
+            Form.getFieldAsString Backend.Person.Form.district data
+
+        sector =
+            Form.getFieldAsString Backend.Person.Form.sector data
+
+        cell =
+            Form.getFieldAsString Backend.Person.Form.cell data
+
+        village =
+            Form.getFieldAsString Backend.Person.Form.village data
+
+        viewProvince =
+            let
+                options =
+                    emptyOption
+                        :: geoLocationDictToOptions geoInfo.provinces
+
+                disabled =
+                    isFormFieldSet district
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Province
+                options
+                Backend.Person.Form.province
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewDistrict =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt province of
+                                Nothing ->
+                                    []
+
+                                Just provinceId ->
+                                    geoInfo.districts
+                                        |> filterGeoLocationDictByParent provinceId
+                                        |> geoLocationDictToOptions
+                           )
+
+                disabled =
+                    isFormFieldSet sector
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.District
+                options
+                Backend.Person.Form.district
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewSector =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt district of
+                                Nothing ->
+                                    []
+
+                                Just districtId ->
+                                    geoInfo.sectors
+                                        |> filterGeoLocationDictByParent districtId
+                                        |> geoLocationDictToOptions
+                           )
+
+                disabled =
+                    isFormFieldSet cell
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Sector
+                options
+                Backend.Person.Form.sector
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewCell =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt sector of
+                                Nothing ->
+                                    []
+
+                                Just sectorId ->
+                                    geoInfo.cells
+                                        |> filterGeoLocationDictByParent sectorId
+                                        |> geoLocationDictToOptions
+                           )
+
+                disabled =
+                    isFormFieldSet village
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Cell
+                options
+                Backend.Person.Form.cell
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewVillage =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt cell of
+                                Nothing ->
+                                    []
+
+                                Just cellId ->
+                                    geoInfo.villages
+                                        |> filterGeoLocationDictByParent cellId
+                                        |> geoLocationDictToOptions
+                           )
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Village
+                options
+                Backend.Person.Form.village
+                "ten"
+                "select-input"
+                True
+                data
+
+        addressFields =
+            [ viewProvince
+            , viewDistrict
+            , viewSector
+            , viewCell
+            , viewVillage
+            ]
+
+        addressSection =
+            [ addressFields
+                |> fieldset [ class "registration-form address-info" ]
+                |> Html.map RegisterContactMsgForm
+            ]
+
+        contactInformationSection =
+            [ [ Pages.Person.View.viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False data ]
+                |> fieldset [ class "registration-form address-info" ]
+                |> Html.map RegisterContactMsgForm
+            ]
+
+        submitButton =
+            button
+                [ classList
+                    [ ( "ui button primary fluid", True )
+                    , ( "loading", RemoteData.isLoading request )
+                    , ( "disabled", RemoteData.isLoading request )
+                    ]
+                , type_ "submit"
+                , onClick Form.Submit
+                ]
+                [ text <| translate language Translate.Save ]
+
+        formContent =
+            [ demographicFields
+                |> fieldset [ class "registration-form" ]
+            ]
+                ++ contactInformationSection
+                ++ addressSection
+                ++ [ p [] []
+                   , submitButton
+                        |> Html.map RegisterContactMsgForm
+
+                   -- Note that these are hidden by deafult by semantic-ui ... the
+                   -- class of the "form" controls whether they are shown.
+                   , requestStatus
+                   , div
+                        [ class "ui error message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
+                        , List.map (viewFormError language) errors
+                            |> ul []
+                        ]
+                   ]
+    in
+    [ div
+        [ classList
+            [ ( "ui form registration", True )
+            , ( "error", Form.isSubmitted data && not (List.isEmpty errors) )
+            , ( "success", RemoteData.isSuccess request )
+            , ( "warning", RemoteData.isFailure request )
+            ]
+        ]
+        formContent
+    ]

@@ -20,6 +20,7 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 
