@@ -59,6 +59,7 @@ type alias Model =
     , saveFollowUp : WebData ()
     , saveCoreExam : WebData ()
     , saveContactsTracing : WebData ()
+    , saveTraceContact : Dict PersonId (WebData ())
     }
 
 
@@ -88,6 +89,7 @@ emptyModel =
     , saveFollowUp = NotAsked
     , saveCoreExam = NotAsked
     , saveContactsTracing = NotAsked
+    , saveTraceContact = Dict.empty
     }
 
 
@@ -170,4 +172,6 @@ type Msg
     | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
     | HandleSavedCoreExam (WebData ())
     | SaveContactsTracing PersonId (Maybe AcuteIllnessContactsTracingId) (List ContactTraceEntry)
-    | HandleSavedContactsTracing (WebData ())
+    | HandleSavedContactsTracing PersonId (List ContactTraceEntry) (WebData ())
+    | SaveTraceContact PersonId (Maybe AcuteIllnessTraceContactId) ContactTraceEntry
+    | HandleSavedTraceContact PersonId (WebData ())

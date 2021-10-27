@@ -1,5 +1,6 @@
 module Backend.AcuteIllnessEncounter.Update exposing (update)
 
+import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Model exposing (..)
 import Backend.Endpoints exposing (..)
@@ -12,6 +13,7 @@ import Json.Encode.Extra
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
+import Update.Extra exposing (sequence)
 
 
 update : Maybe NurseId -> Maybe HealthCenterId -> AcuteIllnessEncounterId -> Maybe AcuteIllnessEncounter -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
@@ -250,11 +252,48 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveContactsTracing personId valueId value ->
             ( { model | saveContactsTracing = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessContactsTracingEndpoint HandleSavedContactsTracing
+            , saveMeasurementCmd currentDate
+                encounterId
+                personId
+                nurseId
+                healthCenterId
+                valueId
+                value
+                acuteIllnessContactsTracingEndpoint
+                (HandleSavedContactsTracing personId value)
             )
 
-        HandleSavedContactsTracing data ->
+        HandleSavedContactsTracing personId entries data ->
+            let
+                createTraceContactMsgs =
+                    case data of
+                        Success () ->
+                            -- @todo: is it possible to edit?
+                            List.map (SaveTraceContact personId Nothing) entries
+
+                        _ ->
+                            []
+            in
             ( { model | saveContactsTracing = data }
+            , Cmd.none
+            )
+                |> sequence (update nurseId healthCenterId encounterId maybeEncounter currentDate) createTraceContactMsgs
+
+        SaveTraceContact personId valueId value ->
+            ( { model | saveTraceContact = Dict.insert value.personId Loading model.saveTraceContact }
+            , saveMeasurementCmd currentDate
+                encounterId
+                personId
+                nurseId
+                healthCenterId
+                valueId
+                value
+                acuteIllnessTraceContactEndpoint
+                (HandleSavedTraceContact value.personId)
+            )
+
+        HandleSavedTraceContact tracedPersonId data ->
+            ( { model | saveTraceContact = Dict.insert tracedPersonId data model.saveTraceContact }
             , Cmd.none
             )
 

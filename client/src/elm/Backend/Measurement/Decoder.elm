@@ -2759,7 +2759,7 @@ decodeAcuteIllnessNutrition =
 
 decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
 decodeAcuteIllnessContactsTracing =
-    list decodeContactTraceEntryFromString
+    decodeWithFallback [] (list decodeContactTraceEntryFromString)
         |> field "contacts_trace_data"
         |> decodeAcuteIllnessMeasurement
 
