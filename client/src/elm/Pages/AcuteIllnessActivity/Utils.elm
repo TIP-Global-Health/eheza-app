@@ -1967,8 +1967,9 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
             False
 
         NextStepsContactsTracing ->
-            -- @todo
-            True
+            (diagnosis == Just DiagnosisSevereCovid19)
+                || (diagnosis == Just DiagnosisPneuminialCovid19)
+                || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsFollowUp ->
             if diagnosis == Just DiagnosisSevereCovid19 then
