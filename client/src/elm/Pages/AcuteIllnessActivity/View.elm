@@ -1716,7 +1716,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                     measurements.contactsTracing
                         |> getMeasurementValueFunc
                         |> contactsTracingFormWithDefault data.contactsTracingForm
-                        |> viewContactsTracingForm language currentDate db
+                        |> viewContactsTracingForm language currentDate db contactsTracingFinished
 
                 Nothing ->
                     emptyNode
@@ -1811,10 +1811,13 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
                     )
                 |> List.head
 
+        contactsTracingFinished =
+            isJust assembled.measurements.contactsTracing || data.contactsTracingForm.finished
+
         actions =
             Maybe.map
                 (\task ->
-                    if task == NextStepsContactsTracing && not data.contactsTracingForm.finished then
+                    if task == NextStepsContactsTracing && not contactsTracingFinished then
                         emptyNode
 
                     else
@@ -1856,10 +1859,20 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled isFirstEncount
 
                                     _ ->
                                         Translate.Save
+
+                            disabled =
+                                case task of
+                                    NextStepsContactsTracing ->
+                                        -- After traceing is finished and saved, we
+                                        -- do not allow additional editing.
+                                        isJust assembled.measurements.contactsTracing
+
+                                    _ ->
+                                        tasksCompleted /= totalTasks
                         in
                         div [ class "actions next-steps" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                                 , onClick saveMsg
                                 ]
                                 [ text <| translate language saveLabel ]
@@ -2875,13 +2888,13 @@ viewFollowUpLabel language actionTranslationId iconClass =
     viewInstructionsLabel iconClass message
 
 
-viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> ContactsTracingForm -> Html Msg
-viewContactsTracingForm language currentDate db form =
+viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactsTracingForm -> Html Msg
+viewContactsTracingForm language currentDate db contactsTracingFinished form =
     let
         content =
             case form.state of
                 ContactsTracingFormSummary ->
-                    viewContactsTracingFormSummary language currentDate db form
+                    viewContactsTracingFormSummary language currentDate db contactsTracingFinished form.contacts
 
                 ContactsTracingFormSearchParticipants data ->
                     let
@@ -2898,12 +2911,12 @@ viewContactsTracingForm language currentDate db form =
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> ContactsTracingForm -> List (Html Msg)
-viewContactsTracingFormSummary language currentDate db form =
+viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceEntry) -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate db contactsTracingFinished contacts =
     let
         contactsForView =
-            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db form.finished))
-                form.contacts
+            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db contactsTracingFinished))
+                contacts
                 |> Maybe.withDefault []
     in
     [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
@@ -2912,7 +2925,7 @@ viewContactsTracingFormSummary language currentDate db form =
         [ div
             [ classList
                 [ ( "ui primary button", True )
-                , ( "disabled", form.finished )
+                , ( "disabled", contactsTracingFinished )
                 ]
             , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
             ]
@@ -2921,7 +2934,7 @@ viewContactsTracingFormSummary language currentDate db form =
         , div
             [ classList
                 [ ( "ui primary button", True )
-                , ( "disabled", form.finished )
+                , ( "disabled", contactsTracingFinished )
                 ]
             , onClick SetContactsTracingFinished
             ]
