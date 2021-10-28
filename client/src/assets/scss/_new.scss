@@ -933,7 +933,7 @@ div.page-activity.acute-illness {
 
     .ui.form.contacts-tracing {
 
-      .summary-actions {
+      .dual-action {
         display: flex;
         justify-content: space-around;
 
@@ -1123,6 +1123,10 @@ div.page-activity.acute-illness {
           &.error {
             border-color: $color-red;
           }
+        }
+
+        .dual-action {
+          margin-top: 20px;
         }
       }
     }

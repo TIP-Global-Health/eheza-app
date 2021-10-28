@@ -404,6 +404,11 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                     PrenatalNextStepsActivityOrigin _ ->
                         -- We do not allow this actions when registering newborn child.
                         emptyNode
+
+                    AcuteIllnessContactsTracingActivityOrigin _ _ ->
+                        -- Not in use, as at Acute Ilness patient is created
+                        -- from a dedicated form.
+                        emptyNode
                 )
 
         content =
@@ -672,6 +677,17 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , birthDateSelectorFrom = Date.add Years -3 today
                     , birthDateSelectorTo = today
                     , title = Translate.EnrolNewborn
+                    }
+
+                AcuteIllnessContactsTracingActivityOrigin _ _ ->
+                    -- Not in use, as at Acute Ilness patient is created
+                    -- from a dedicated form.
+                    { goBackPage = PinCodePage
+                    , expectedAge = ExpectAdultOrChild
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = today
+                    , birthDateSelectorTo = today
+                    , title = Translate.People
                     }
 
         header =

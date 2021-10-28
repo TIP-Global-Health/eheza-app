@@ -75,6 +75,12 @@ nullable validation field =
                     Ok Nothing
 
 
+required : Validation e a -> Validation e (Maybe a)
+required validation field =
+    validation field
+        |> Result.map Just
+
+
 {-| Applies a JSON Decoder to a string field. If the decoder succeeds, returns
 the result of decoding. If the decoder fails, wraps the failure in the provided
 error tag.

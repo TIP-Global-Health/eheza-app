@@ -85,6 +85,11 @@ viewHeader initiator relation title =
 
                 PrenatalNextStepsActivityOrigin encounterId ->
                     UserPage (PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps)
+
+                AcuteIllnessContactsTracingActivityOrigin _ _ ->
+                    -- Not in use, as at Acute Ilness patient is created
+                    -- from a dedicated form.
+                    PinCodePage
     in
     div
         [ class "ui basic segment head" ]

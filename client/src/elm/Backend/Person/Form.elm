@@ -26,7 +26,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
 import Translate exposing (ValidationError(..))
-import Utils.Form exposing (fromDecoder, nullable)
+import Utils.Form exposing (fromDecoder, nullable, required)
 import Utils.GeoLocation exposing (geoInfo, getGeoLocation)
 
 
@@ -420,7 +420,7 @@ validateContact =
                 |> andMap (field sector <| nullable string)
                 |> andMap (field cell <| nullable string)
                 |> andMap (field village <| nullable string)
-                |> andMap (field phoneNumber <| nullable validateDigitsOnly)
+                |> andMap (field phoneNumber validateRequiredPhoneNumber)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
                 |> andMap (succeed Nothing)
@@ -646,6 +646,18 @@ validateHealthCenterId : Maybe Person -> Validation ValidationError (Maybe Healt
 validateHealthCenterId related =
     fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEntityUuid)
         |> withDefault (Maybe.andThen .healthCenterId related)
+
+
+validateRequiredPhoneNumber : Validation ValidationError (Maybe String)
+validateRequiredPhoneNumber =
+    string
+        |> mapError (\_ -> customError RequiredField)
+        |> andThen
+            (String.trim
+                >> format allDigitsPattern
+                >> mapError (\_ -> customError DigitsOnly)
+            )
+        |> required
 
 
 

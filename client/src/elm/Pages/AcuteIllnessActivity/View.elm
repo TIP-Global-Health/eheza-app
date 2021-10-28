@@ -2932,7 +2932,7 @@ viewContactsTracingFormSummary language currentDate db contactsTracingFinished c
     in
     [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
     , div [ class "ui items" ] contactsForView
-    , div [ class "summary-actions" ]
+    , div [ class "dual-action" ]
         [ div
             [ classList
                 [ ( "ui primary button", True )
@@ -3465,15 +3465,24 @@ viewCreateContactForm language currentDate db data =
                 ]
                 [ text <| translate language Translate.Save ]
 
+        cancelButton =
+            button
+                [ class "ui button primary"
+                , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
+                ]
+                [ text <| translate language Translate.Cancel ]
+
         formContent =
-            [ demographicFields
-                |> fieldset [ class "registration-form" ]
+            [ fieldset [ class "registration-form" ]
+                demographicFields
             ]
                 ++ contactInformationSection
                 ++ addressSection
-                ++ [ p [] []
-                   , submitButton
-                        |> Html.map RegisterContactMsgForm
+                ++ [ div [ class "dual-action" ]
+                        [ submitButton
+                            |> Html.map RegisterContactMsgForm
+                        , cancelButton
+                        ]
 
                    -- Note that these are hidden by deafult by semantic-ui ... the
                    -- class of the "form" controls whether they are shown.

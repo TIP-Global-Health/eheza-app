@@ -30,6 +30,8 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
+import Backend.Person.Model
+import Backend.Village.Utils exposing (getVillageHealthCenterId, getVillageIdByGeoFields)
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet exposing (EverySet)
 import Form
@@ -55,8 +57,8 @@ import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
 
-update : NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : NominalDate -> Maybe HealthCenterId -> AcuteIllnessEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate selectedHealthCenter id db msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -489,7 +491,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SaveAcuteFindings personId saved nextTask_ ->
             let
@@ -572,7 +574,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetNutritionSign sign ->
             let
@@ -621,7 +623,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetCoreExamHeart value ->
             let
@@ -684,7 +686,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetActiveLaboratoryTask task ->
             let
@@ -757,7 +759,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetCovidTestingBoolInput formUpdateFunc value ->
             let
@@ -819,7 +821,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetActiveExposureTask task ->
             let
@@ -1111,7 +1113,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetContactedHC value ->
             let
@@ -1234,7 +1236,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetCalled114 value ->
             let
@@ -1382,7 +1384,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetReferToHealthCenter value ->
             let
@@ -1461,7 +1463,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetMedicationDistributionBoolInput formUpdateFunc value ->
             let
@@ -1539,7 +1541,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetActiveOngoingTreatmentTask task ->
             let
@@ -1783,7 +1785,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -1828,7 +1830,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetContactsTracingFormState state ->
             let
@@ -1872,7 +1874,7 @@ update currentDate id db msg model =
                     , Cmd.map MsgContactsTracingDebouncer subCmd
                     , []
                     )
-                        |> sequenceExtra (update currentDate id db) (Maybe.Extra.toList extraMsg)
+                        |> sequenceExtra (update currentDate selectedHealthCenter id db) (Maybe.Extra.toList extraMsg)
 
                 _ ->
                     noChange
@@ -1899,7 +1901,7 @@ update currentDate id db msg model =
                     , Cmd.none
                     , []
                     )
-                        |> sequenceExtra (update currentDate id db) [ MsgContactsTracingDebouncer <| provideInput <| SetContactsTracingSearch input ]
+                        |> sequenceExtra (update currentDate selectedHealthCenter id db) [ MsgContactsTracingDebouncer <| provideInput <| SetContactsTracingSearch input ]
 
                 _ ->
                     noChange
@@ -2087,14 +2089,28 @@ update currentDate id db msg model =
                                     Form.getOutput registrationData
                                         |> Maybe.map
                                             (\person ->
-                                                -- @todo
-                                                -- let
-                                                --     personWithShard =
-                                                --         { person | shard = selectedHealthCenter }
-                                                -- in
-                                                [-- personWithShard
-                                                 --     |> Backend.Model.PostPerson relation initiator
-                                                 --     |> App.Model.MsgIndexedDb
+                                                let
+                                                    personForCreate =
+                                                        { person | healthCenterId = resolvedHealthCenterId, shard = selectedHealthCenter }
+
+                                                    initiator =
+                                                        Backend.Person.Model.AcuteIllnessContactsTracingActivityOrigin id (Just personForCreate)
+
+                                                    resolvedHealthCenterId =
+                                                        Maybe.Extra.or healthCenterIdByGeoFields selectedHealthCenter
+
+                                                    healthCenterIdByGeoFields =
+                                                        Maybe.map5 (getVillageIdByGeoFields db)
+                                                            person.province
+                                                            person.district
+                                                            person.sector
+                                                            person.cell
+                                                            person.village
+                                                            |> Maybe.Extra.join
+                                                            |> Maybe.andThen (\villageId -> getVillageHealthCenterId villageId db)
+                                                in
+                                                [ Backend.Model.PostPerson Nothing initiator personForCreate
+                                                    |> App.Model.MsgIndexedDb
                                                 ]
                                             )
                                         -- If we submit, but can't actually submit,
@@ -2102,9 +2118,10 @@ update currentDate id db msg model =
                                         -- `NotAsked` (to reset network errors
                                         -- etc.)
                                         |> Maybe.withDefault
-                                            [-- @todo
-                                             -- Backend.Model.HandlePostedPerson relation initiator NotAsked
-                                             --     |> App.Model.MsgIndexedDb
+                                            [ Backend.Model.HandlePostedPerson Nothing
+                                                (Backend.Person.Model.AcuteIllnessContactsTracingActivityOrigin id Nothing)
+                                                NotAsked
+                                                |> App.Model.MsgIndexedDb
                                             ]
 
                                 _ ->
@@ -2151,4 +2168,4 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs

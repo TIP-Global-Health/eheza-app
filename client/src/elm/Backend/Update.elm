@@ -2200,6 +2200,27 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         ( [ resetFormMsg, navigationMsg nextPage ]
                                         , updateNewbornEnroledMsg ++ createRelationshipMsg
                                         )
+
+                                    AcuteIllnessContactsTracingActivityOrigin encounterId createdPerson ->
+                                        let
+                                            selectContactsTracingFormStateMsg =
+                                                Maybe.map
+                                                    (\person ->
+                                                        Pages.AcuteIllnessActivity.Model.ContactsTracingFormRecordContactDetails
+                                                            personId
+                                                            person
+                                                            Pages.AcuteIllnessActivity.Model.emptyRecordContactDetailsData
+                                                            |> Pages.AcuteIllnessActivity.Model.SetContactsTracingFormState
+                                                            |> App.Model.MsgPageAcuteIllnessActivity encounterId Backend.AcuteIllnessActivity.Model.AcuteIllnessNextSteps
+                                                            |> App.Model.MsgLoggedIn
+                                                            |> List.singleton
+                                                    )
+                                                    createdPerson
+                                                    |> Maybe.withDefault []
+                                        in
+                                        ( selectContactsTracingFormStateMsg
+                                        , []
+                                        )
                             )
                         |> Maybe.withDefault ( [], [] )
             in
