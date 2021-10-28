@@ -1100,6 +1100,31 @@ div.page-activity.acute-illness {
           }
         }
       }
+
+      .ui.form.registration {
+
+        fieldset {
+          border:none;
+        }
+
+        input,
+        input:focus,
+        .select-input {
+          background: none;
+          font-size: 2rem;
+          border: 2px solid $color-gray;
+          padding: 0 0.5em;
+          line-height: 0.5;
+          text-align: left;
+          height: 50px;
+          width: 100%;
+          color: $color-text;
+
+          &.error {
+            border-color: $color-red;
+          }
+        }
+      }
     }
 
     .label {
