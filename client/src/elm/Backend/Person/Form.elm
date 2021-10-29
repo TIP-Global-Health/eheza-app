@@ -66,8 +66,8 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValues : NominalDate -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
-applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation form =
+applyDefaultValuesForPerson : NominalDate -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
+applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation form =
     let
         defaultProvince =
             if isChw then
@@ -415,11 +415,11 @@ validateContact =
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
-                |> andMap (field province <| nullable string)
-                |> andMap (field district <| nullable string)
-                |> andMap (field sector <| nullable string)
-                |> andMap (field cell <| nullable string)
-                |> andMap (field village <| nullable string)
+                |> andMap (field province validateProvinceForContact)
+                |> andMap (field district validateDistrictForContact)
+                |> andMap (field sector validateSectorForContact)
+                |> andMap (field cell validateCellForContact)
+                |> andMap (field village validateVillageForContact)
                 |> andMap (field phoneNumber validateRequiredPhoneNumber)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
@@ -496,6 +496,18 @@ validateProvince related =
         |> withDefault (Maybe.andThen .province related)
 
 
+validateProvinceForContact : Validation ValidationError (Maybe String)
+validateProvinceForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.provinces
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownProvince)
+            )
+        |> nullable
+
+
 validateDistrict : Maybe Person -> Validation ValidationError (Maybe String)
 validateDistrict related =
     int
@@ -507,6 +519,18 @@ validateDistrict related =
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
         |> withDefault (Maybe.andThen .district related)
+
+
+validateDistrictForContact : Validation ValidationError (Maybe String)
+validateDistrictForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.districts
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownDistrict)
+            )
+        |> nullable
 
 
 validateSector : Maybe Person -> Validation ValidationError (Maybe String)
@@ -522,6 +546,18 @@ validateSector related =
         |> withDefault (Maybe.andThen .sector related)
 
 
+validateSectorForContact : Validation ValidationError (Maybe String)
+validateSectorForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.sectors
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownSector)
+            )
+        |> nullable
+
+
 validateCell : Maybe Person -> Validation ValidationError (Maybe String)
 validateCell related =
     int
@@ -535,6 +571,18 @@ validateCell related =
         |> withDefault (Maybe.andThen .cell related)
 
 
+validateCellForContact : Validation ValidationError (Maybe String)
+validateCellForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.cells
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownCell)
+            )
+        |> nullable
+
+
 validateVillage : Maybe Person -> Validation ValidationError (Maybe String)
 validateVillage related =
     int
@@ -546,6 +594,18 @@ validateVillage related =
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
         |> withDefault (Maybe.andThen .village related)
+
+
+validateVillageForContact : Validation ValidationError (Maybe String)
+validateVillageForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.villages
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownVillage)
+            )
+        |> nullable
 
 
 validateGender : Validation ValidationError Gender

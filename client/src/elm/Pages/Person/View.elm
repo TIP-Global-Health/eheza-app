@@ -14,7 +14,7 @@ import Backend.Person.Encoder
         , encodeModeOfDelivery
         , encodeUbudehe
         )
-import Backend.Person.Form exposing (PersonForm, applyDefaultValues, expectedAgeByForm, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
 import Backend.Person.Model
     exposing
         ( ExpectedAge(..)
@@ -405,7 +405,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                         -- We do not allow this actions when registering newborn child.
                         emptyNode
 
-                    AcuteIllnessContactsTracingActivityOrigin _ _ ->
+                    AcuteIllnessContactsTracingActivityOrigin _ ->
                         -- Not in use, as at Acute Ilness patient is created
                         -- from a dedicated form.
                         emptyNode
@@ -487,7 +487,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             currentDate
 
         personForm =
-            applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -679,7 +679,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , title = Translate.EnrolNewborn
                     }
 
-                AcuteIllnessContactsTracingActivityOrigin _ _ ->
+                AcuteIllnessContactsTracingActivityOrigin _ ->
                     -- Not in use, as at Acute Ilness patient is created
                     -- from a dedicated form.
                     { goBackPage = PinCodePage

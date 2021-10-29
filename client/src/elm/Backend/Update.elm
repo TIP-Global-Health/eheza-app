@@ -2201,24 +2201,18 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         , updateNewbornEnroledMsg ++ createRelationshipMsg
                                         )
 
-                                    AcuteIllnessContactsTracingActivityOrigin encounterId createdPerson ->
+                                    AcuteIllnessContactsTracingActivityOrigin encounterId ->
                                         let
-                                            selectContactsTracingFormStateMsg =
-                                                Maybe.map
-                                                    (\person ->
-                                                        Pages.AcuteIllnessActivity.Model.ContactsTracingFormRecordContactDetails
-                                                            personId
-                                                            person
-                                                            Pages.AcuteIllnessActivity.Model.emptyRecordContactDetailsData
-                                                            |> Pages.AcuteIllnessActivity.Model.SetContactsTracingFormState
-                                                            |> App.Model.MsgPageAcuteIllnessActivity encounterId Backend.AcuteIllnessActivity.Model.AcuteIllnessNextSteps
-                                                            |> App.Model.MsgLoggedIn
-                                                            |> List.singleton
-                                                    )
-                                                    createdPerson
-                                                    |> Maybe.withDefault []
+                                            setContactsTracingFormStateMsg =
+                                                Pages.AcuteIllnessActivity.Model.ContactsTracingFormRecordContactDetails
+                                                    personId
+                                                    Pages.AcuteIllnessActivity.Model.emptyRecordContactDetailsData
+                                                    |> Pages.AcuteIllnessActivity.Model.SetContactsTracingFormState
+                                                    |> App.Model.MsgPageAcuteIllnessActivity encounterId Backend.AcuteIllnessActivity.Model.AcuteIllnessNextSteps
+                                                    |> App.Model.MsgLoggedIn
+                                                    |> List.singleton
                                         in
-                                        ( selectContactsTracingFormStateMsg
+                                        ( setContactsTracingFormStateMsg
                                         , []
                                         )
                             )

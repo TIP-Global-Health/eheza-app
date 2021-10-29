@@ -434,7 +434,7 @@ type alias ContactsTracingForm =
 type ContactsTracingFormState
     = ContactsTracingFormSummary
     | ContactsTracingFormSearchParticipants SearchParticipantsData
-    | ContactsTracingFormRecordContactDetails PersonId Person RecordContactDetailsData
+    | ContactsTracingFormRecordContactDetails PersonId RecordContactDetailsData
     | ContactsTracingFormRegisterContact RegisterContactData
 
 

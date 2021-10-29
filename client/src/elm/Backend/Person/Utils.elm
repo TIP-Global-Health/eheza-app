@@ -135,7 +135,7 @@ initiatorToUrlFragmemt initiator =
         PrenatalNextStepsActivityOrigin encounterId ->
             "prenatal-next-steps-" ++ fromEntityUuid encounterId
 
-        AcuteIllnessContactsTracingActivityOrigin _ _ ->
+        AcuteIllnessContactsTracingActivityOrigin _ ->
             -- Not in use, as at Acute Ilness patient is created
             -- from a dedicated form.
             ""

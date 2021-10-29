@@ -154,7 +154,7 @@ type Initiator
     | IndividualEncounterOrigin IndividualEncounterType
     | GroupEncounterOrigin SessionId
     | PrenatalNextStepsActivityOrigin PrenatalEncounterId
-    | AcuteIllnessContactsTracingActivityOrigin AcuteIllnessEncounterId (Maybe Person)
+    | AcuteIllnessContactsTracingActivityOrigin AcuteIllnessEncounterId
 
 
 type ParticipantDirectoryOperation

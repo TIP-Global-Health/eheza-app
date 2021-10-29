@@ -1832,21 +1832,29 @@ update currentDate selectedHealthCenter id db msg model =
             )
                 |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
-        SetContactsTracingFormState state ->
+        SetContactsTracingFormState newState ->
             let
                 form =
                     model.nextStepsData.contactsTracingForm
 
                 updatedForm =
-                    { form | state = state }
+                    { form | state = newState }
 
                 updatedData =
                     model.nextStepsData
                         |> (\data -> { data | contactsTracingForm = updatedForm })
+
+                fetchPersonMsg =
+                    case updatedForm.state of
+                        ContactsTracingFormRecordContactDetails personId _ ->
+                            [ Backend.Model.FetchPerson personId |> App.Model.MsgIndexedDb ]
+
+                        _ ->
+                            []
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
-            , []
+            , fetchPersonMsg
             )
 
         MsgContactsTracingDebouncer subMsg ->
@@ -1948,13 +1956,13 @@ update currentDate selectedHealthCenter id db msg model =
                     model.nextStepsData.contactsTracingForm
             in
             case form.state of
-                ContactsTracingFormRecordContactDetails personId person recordData ->
+                ContactsTracingFormRecordContactDetails personId recordData ->
                     let
                         updatedRecordData =
                             { recordData | contactDate = Just date }
 
                         updatedForm =
-                            { form | state = ContactsTracingFormRecordContactDetails personId person updatedRecordData }
+                            { form | state = ContactsTracingFormRecordContactDetails personId updatedRecordData }
 
                         updatedData =
                             model.nextStepsData
@@ -1974,13 +1982,13 @@ update currentDate selectedHealthCenter id db msg model =
                     model.nextStepsData.contactsTracingForm
             in
             case form.state of
-                ContactsTracingFormRecordContactDetails personId person recordData ->
+                ContactsTracingFormRecordContactDetails personId recordData ->
                     let
                         updatedRecordData =
                             { recordData | isDateSelectorOpen = not recordData.isDateSelectorOpen }
 
                         updatedForm =
-                            { form | state = ContactsTracingFormRecordContactDetails personId person updatedRecordData }
+                            { form | state = ContactsTracingFormRecordContactDetails personId updatedRecordData }
 
                         updatedData =
                             model.nextStepsData
@@ -2000,13 +2008,13 @@ update currentDate selectedHealthCenter id db msg model =
                     model.nextStepsData.contactsTracingForm
             in
             case form.state of
-                ContactsTracingFormRecordContactDetails personId person recordData ->
+                ContactsTracingFormRecordContactDetails personId recordData ->
                     let
                         updatedRecordData =
                             { recordData | phoneNumber = Just value }
 
                         updatedForm =
-                            { form | state = ContactsTracingFormRecordContactDetails personId person updatedRecordData }
+                            { form | state = ContactsTracingFormRecordContactDetails personId updatedRecordData }
 
                         updatedData =
                             model.nextStepsData
@@ -2052,7 +2060,7 @@ update currentDate selectedHealthCenter id db msg model =
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
-            , [ Backend.Model.FetchPerson entry.personId |> App.Model.MsgIndexedDb ]
+            , []
             )
 
         DeleteTracedContact personId ->
@@ -2083,6 +2091,9 @@ update currentDate selectedHealthCenter id db msg model =
                         updatedRegistrationData =
                             Form.update Backend.Person.Form.validateContact subMsg registrationData
 
+                        initiator =
+                            Backend.Person.Model.AcuteIllnessContactsTracingActivityOrigin id
+
                         appMsgs =
                             case subMsg of
                                 Form.Submit ->
@@ -2092,9 +2103,6 @@ update currentDate selectedHealthCenter id db msg model =
                                                 let
                                                     personForCreate =
                                                         { person | healthCenterId = resolvedHealthCenterId, shard = selectedHealthCenter }
-
-                                                    initiator =
-                                                        Backend.Person.Model.AcuteIllnessContactsTracingActivityOrigin id (Just personForCreate)
 
                                                     resolvedHealthCenterId =
                                                         Maybe.Extra.or healthCenterIdByGeoFields selectedHealthCenter
@@ -2118,9 +2126,7 @@ update currentDate selectedHealthCenter id db msg model =
                                         -- `NotAsked` (to reset network errors
                                         -- etc.)
                                         |> Maybe.withDefault
-                                            [ Backend.Model.HandlePostedPerson Nothing
-                                                (Backend.Person.Model.AcuteIllnessContactsTracingActivityOrigin id Nothing)
-                                                NotAsked
+                                            [ Backend.Model.HandlePostedPerson Nothing initiator NotAsked
                                                 |> App.Model.MsgIndexedDb
                                             ]
 

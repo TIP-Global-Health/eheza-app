@@ -2912,8 +2912,8 @@ viewContactsTracingForm language currentDate db contactsTracingFinished form =
                     in
                     viewContactsTracingFormSearchParticipants language currentDate db recordedContacts data
 
-                ContactsTracingFormRecordContactDetails personId person data ->
-                    viewContactsTracingFormRecordContactDetails language currentDate personId person data
+                ContactsTracingFormRecordContactDetails personId data ->
+                    viewContactsTracingFormRecordContactDetails language currentDate personId db data
 
                 ContactsTracingFormRegisterContact data ->
                     viewCreateContactForm language currentDate db data
@@ -3070,7 +3070,7 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
                 personId
                 person
                 False
-                (ContactsTracingFormRecordContactDetails personId person emptyRecordContactDetailsData)
+                (ContactsTracingFormRecordContactDetails personId emptyRecordContactDetailsData)
 
         addNewContactSection =
             if String.isEmpty searchValue then
@@ -3116,63 +3116,69 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
            ]
 
 
-viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> Person -> RecordContactDetailsData -> List (Html Msg)
-viewContactsTracingFormRecordContactDetails language currentDate personId person data =
-    let
-        contactDateInput =
-            DateSelector.SelectorDropdown.view
-                ToggleContactsTracingDateSelector
-                SetContactsTracingDate
-                data.isDateSelectorOpen
-                (Date.add Months -3 currentDate)
-                currentDate
-                data.contactDate
+viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> ModelIndexedDb -> RecordContactDetailsData -> List (Html Msg)
+viewContactsTracingFormRecordContactDetails language currentDate personId db data =
+    Dict.get personId db.people
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (\person ->
+                let
+                    contactDateInput =
+                        DateSelector.SelectorDropdown.view
+                            ToggleContactsTracingDateSelector
+                            SetContactsTracingDate
+                            data.isDateSelectorOpen
+                            (Date.add Months -3 currentDate)
+                            currentDate
+                            data.contactDate
 
-        phoneNumberInput =
-            viewTextInput language inputNumber SetContactsTracingPhoneNumber Nothing Nothing
+                    phoneNumberInput =
+                        viewTextInput language inputNumber SetContactsTracingPhoneNumber Nothing Nothing
 
-        inputNumber =
-            Maybe.Extra.or data.phoneNumber person.telephoneNumber
-                |> Maybe.withDefault ""
+                    inputNumber =
+                        Maybe.Extra.or data.phoneNumber person.telephoneNumber
+                            |> Maybe.withDefault ""
 
-        saveButtonAttrinutes =
-            classList
-                [ ( "ui primary button", True )
-                , ( "disabled", saveDisabled )
+                    saveButtonAttrinutes =
+                        classList
+                            [ ( "ui primary button", True )
+                            , ( "disabled", saveDisabled )
+                            ]
+                            :: saveAction
+
+                    saveAction =
+                        Maybe.map
+                            (ContactTraceEntry personId person.firstName person.secondName inputNumber
+                                >> SaveTracedContact
+                                >> onClick
+                                >> List.singleton
+                            )
+                            data.contactDate
+                            |> Maybe.withDefault []
+
+                    saveDisabled =
+                        isNothing data.contactDate || String.isEmpty inputNumber
+                in
+                [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
+                , div [ class "ui items" ] <|
+                    [ viewContactTracingParticipant language currentDate personId person True (ContactsTracingFormSearchParticipants emptySearchParticipantsData) ]
+                , div [ class "contact-detail" ]
+                    [ viewLabel language Translate.DateOfContact
+                    , div [ class "form-input date" ]
+                        [ contactDateInput ]
+                    ]
+                , div [ class "contact-detail" ]
+                    [ viewLabel language Translate.TelephoneNumber
+                    , div [ class "form-input text" ]
+                        [ phoneNumberInput ]
+                    ]
+                , div [ class "single-action" ]
+                    [ div saveButtonAttrinutes
+                        [ text <| translate language Translate.Save ]
+                    ]
                 ]
-                :: saveAction
-
-        saveAction =
-            Maybe.map
-                (ContactTraceEntry personId person.firstName person.secondName inputNumber
-                    >> SaveTracedContact
-                    >> onClick
-                    >> List.singleton
-                )
-                data.contactDate
-                |> Maybe.withDefault []
-
-        saveDisabled =
-            isNothing data.contactDate || String.isEmpty inputNumber
-    in
-    [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
-    , div [ class "ui items" ] <|
-        [ viewContactTracingParticipant language currentDate personId person True (ContactsTracingFormSearchParticipants emptySearchParticipantsData) ]
-    , div [ class "contact-detail" ]
-        [ viewLabel language Translate.DateOfContact
-        , div [ class "form-input date" ]
-            [ contactDateInput ]
-        ]
-    , div [ class "contact-detail" ]
-        [ viewLabel language Translate.TelephoneNumber
-        , div [ class "form-input text" ]
-            [ phoneNumberInput ]
-        ]
-    , div [ class "single-action" ]
-        [ div saveButtonAttrinutes
-            [ text <| translate language Translate.Save ]
-        ]
-    ]
+            )
+        |> Maybe.withDefault []
 
 
 viewContactTracingParticipant : Language -> NominalDate -> PersonId -> Person -> Bool -> ContactsTracingFormState -> Html Msg
