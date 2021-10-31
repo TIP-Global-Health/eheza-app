@@ -2468,19 +2468,17 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
                             if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
                                 if
                                     bloodPressureIndicatesSevereCovid19 measurements
-                                        && respiratoryRateElevatedForCovid19 currentDate person measurements
-                                        && lethargyAtSymptoms measurements
-                                        && lethargicOrUnconsciousAtAcuteFindings measurements
-                                        && acuteFindinsgRespiratoryDangerSignPresent measurements
+                                        || respiratoryRateElevatedForCovid19 currentDate person measurements
+                                        || lethargyAtSymptoms measurements
+                                        || lethargicOrUnconsciousAtAcuteFindings measurements
+                                        || acuteFindinsgRespiratoryDangerSignPresent measurements
                                 then
                                     Just DiagnosisSevereCovid19
 
                                 else if
                                     bloodPressureIndicatesCovid19WithPneumonia measurements
-                                        && stabbingChestPainAtSymptoms measurements
-                                        && -- @todo: revise
-                                           -- countRespiratorySymptoms measurements [] > 0 &&
-                                           (countGeneralSymptoms measurements [] > 0)
+                                        || (countRespiratorySymptoms measurements [] > 0)
+                                        || (countGeneralSymptoms measurements [] > 0)
                                         && cracklesAtCoreExam measurements
                                 then
                                     Just DiagnosisPneuminialCovid19
@@ -2968,13 +2966,6 @@ lethargyAtSymptoms : AcuteIllnessMeasurements -> Bool
 lethargyAtSymptoms measurements =
     getMeasurementValueFunc measurements.symptomsGeneral
         |> Maybe.map (symptomAppearsAtSymptomsDict Lethargy)
-        |> Maybe.withDefault False
-
-
-stabbingChestPainAtSymptoms : AcuteIllnessMeasurements -> Bool
-stabbingChestPainAtSymptoms measurements =
-    getMeasurementValueFunc measurements.symptomsRespiratory
-        |> Maybe.map (symptomAppearsAtSymptomsDict StabbingChestPain)
         |> Maybe.withDefault False
 
 
