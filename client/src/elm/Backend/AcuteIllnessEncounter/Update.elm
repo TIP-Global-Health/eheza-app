@@ -268,7 +268,6 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                 createTraceContactMsgs =
                     case data of
                         Success () ->
-                            -- @todo: is it possible to edit?
                             List.map (SaveTraceContact personId Nothing) entries
 
                         _ ->
