@@ -2833,20 +2833,22 @@ viewInstructionsLabel iconClass message =
 viewFollowUpForm : Language -> NominalDate -> Bool -> FollowUpForm -> Html Msg
 viewFollowUpForm language currentDate isChw form =
     let
-        headerHelper =
+        ( headerHelper, label ) =
             if isChw then
-                []
+                ( [], Translate.FollowUpByChwLabel )
 
             else
-                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                , div [ class "instructions" ]
-                    [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
-                    ]
-                ]
+                ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                  , div [ class "instructions" ]
+                        [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
+                        ]
+                  ]
+                , Translate.FollowUpLabel
+                )
     in
     div [ class "ui form follow-up" ] <|
         headerHelper
-            ++ [ viewLabel language Translate.FollowUpLabel
+            ++ [ viewLabel language label
                , viewCheckBoxSelectInput language
                     [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
                     []
