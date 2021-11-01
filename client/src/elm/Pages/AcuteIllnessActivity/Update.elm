@@ -2033,8 +2033,17 @@ update currentDate selectedHealthCenter id db msg model =
                 form =
                     model.nextStepsData.contactsTracingForm
 
+                contacts =
+                    if isNothing form.contacts then
+                        -- When there're no contacts, we
+                        -- send an empty distionary.
+                        Just Dict.empty
+
+                    else
+                        form.contacts
+
                 updatedForm =
-                    { form | finished = True }
+                    { form | contacts = contacts, finished = True }
 
                 updatedData =
                     model.nextStepsData
