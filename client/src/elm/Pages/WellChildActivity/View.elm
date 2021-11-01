@@ -1373,7 +1373,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                 vaccineTypeLabel =
                                     translate language <| Translate.WellChildVaccineLabel vaccineType
 
-                                ( derrivedInputs, derrivedTasksActive, derrivedTasksCompleted ) =
+                                ( derivedInputs, derivedTasksActive, derivedTasksCompleted ) =
                                     Maybe.map2
                                         (\todaysDose _ ->
                                             let
@@ -1439,9 +1439,9 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                     ""
                                     Nothing
                               ]
-                                ++ derrivedInputs
-                            , taskCompleted form.allowPreviousVaccinesUpdate + derrivedTasksActive
-                            , 1 + derrivedTasksCompleted
+                                ++ derivedInputs
+                            , taskCompleted form.allowPreviousVaccinesUpdate + derivedTasksActive
+                            , 1 + derivedTasksCompleted
                             )
 
                         ViewModeVaccinationUpdate dose ->
@@ -2121,9 +2121,9 @@ viewMedicationAdministrationForm language currentDate assembled config form =
                 ""
                 Nothing
             ]
-                ++ derrivedQuestion
+                ++ derivedQuestion
 
-        derrivedQuestion =
+        derivedQuestion =
             if form.medicationAdministered == Just False then
                 [ viewQuestionLabel language Translate.WhyNot
                 , viewCheckBoxSelectInput language

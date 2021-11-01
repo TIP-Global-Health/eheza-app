@@ -709,7 +709,7 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw isFirstEncounter asse
             tasks
                 |> List.map
                     (\task ->
-                        ( task, physicalExamTasksCompletedFromTotal isChw measurements data task )
+                        ( task, physicalExamTasksCompletedFromTotal currentDate isChw person measurements data task )
                     )
                 |> Dict.fromList
 
@@ -1103,7 +1103,7 @@ viewCovidTestingForm language currentDate person form =
             else
                 []
 
-        derrivedInputs =
+        derivedInputs =
             Maybe.map
                 (\testPerformed ->
                     if testPerformed then
@@ -1165,7 +1165,7 @@ viewCovidTestingForm language currentDate person form =
             "test-performed"
             Nothing
         ]
-            ++ derrivedInputs
+            ++ derivedInputs
 
 
 viewIsPregnantInput : Language -> (Bool -> Msg) -> Maybe Bool -> List (Html Msg)
@@ -2080,7 +2080,7 @@ viewCall114Form language currentDate measurements form =
                 Nothing
             ]
 
-        derrivedInputs =
+        derivedInputs =
             form.called114
                 |> Maybe.map
                     (\called114 ->
@@ -2096,7 +2096,7 @@ viewCall114Form language currentDate measurements form =
                                         Translate.Recommendation114
                                     ]
 
-                                derrivedSiteInputs =
+                                derivedSiteInputs =
                                     if isJust form.recommendation114 && form.recommendation114 /= Just OtherRecommendation114 then
                                         let
                                             contactedSiteInput =
@@ -2140,7 +2140,7 @@ viewCall114Form language currentDate measurements form =
                                     else
                                         []
                             in
-                            recommendation114Input ++ derrivedSiteInputs
+                            recommendation114Input ++ derivedSiteInputs
 
                         else
                             [ viewQuestionLabel language Translate.WhyNot
@@ -2156,7 +2156,7 @@ viewCall114Form language currentDate measurements form =
     in
     header
         ++ called114Input
-        ++ derrivedInputs
+        ++ derivedInputs
         |> div [ class "ui form next-steps call-114" ]
 
 
@@ -2864,20 +2864,22 @@ viewInstructionsLabel iconClass message =
 viewFollowUpForm : Language -> NominalDate -> Bool -> FollowUpForm -> Html Msg
 viewFollowUpForm language currentDate isChw form =
     let
-        headerHelper =
+        ( headerHelper, label ) =
             if isChw then
-                []
+                ( [], Translate.FollowUpByChwLabel )
 
             else
-                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                , div [ class "instructions" ]
-                    [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
-                    ]
-                ]
+                ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                  , div [ class "instructions" ]
+                        [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
+                        ]
+                  ]
+                , Translate.FollowUpLabel
+                )
     in
     div [ class "ui form follow-up" ] <|
         headerHelper
-            ++ [ viewLabel language Translate.FollowUpLabel
+            ++ [ viewLabel language label
                , viewCheckBoxSelectInput language
                     [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
                     []

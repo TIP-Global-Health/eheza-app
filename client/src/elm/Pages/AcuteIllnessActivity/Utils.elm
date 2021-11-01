@@ -244,8 +244,8 @@ symptomsTasksCompletedFromTotal measurements data task =
             )
 
 
-physicalExamTasksCompletedFromTotal : Bool -> AcuteIllnessMeasurements -> PhysicalExamData -> PhysicalExamTask -> ( Int, Int )
-physicalExamTasksCompletedFromTotal isChw measurements data task =
+physicalExamTasksCompletedFromTotal : NominalDate -> Bool -> Person -> AcuteIllnessMeasurements -> PhysicalExamData -> PhysicalExamTask -> ( Int, Int )
+physicalExamTasksCompletedFromTotal currentDate isChw person measurements data task =
     case task of
         PhysicalExamVitals ->
             let
@@ -260,13 +260,31 @@ physicalExamTasksCompletedFromTotal isChw measurements data task =
                 )
 
             else
-                ( taskCompleted form.sysBloodPressure
-                    + taskCompleted form.diaBloodPressure
-                    + taskCompleted form.heartRate
-                    + taskCompleted form.respiratoryRate
-                    + taskCompleted form.bodyTemperature
-                , 5
-                )
+                Maybe.map
+                    (\birthDate ->
+                        let
+                            ageYears =
+                                Gizra.NominalDate.diffYears birthDate currentDate
+
+                            ( ageDependentInputsCompleted, ageDependentInputsActive ) =
+                                if ageYears < 12 then
+                                    ( 0, 0 )
+
+                                else
+                                    ( taskCompleted form.sysBloodPressure
+                                        + taskCompleted form.diaBloodPressure
+                                    , 2
+                                    )
+                        in
+                        ( taskCompleted form.heartRate
+                            + taskCompleted form.respiratoryRate
+                            + taskCompleted form.bodyTemperature
+                            + ageDependentInputsCompleted
+                        , 3 + ageDependentInputsActive
+                        )
+                    )
+                    person.birthDate
+                    |> Maybe.withDefault ( 0, 0 )
 
         PhysicalExamCoreExam ->
             let
@@ -352,7 +370,7 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                         |> getMeasurementValueFunc
                         |> covidTestingFormWithDefault data.covidTestingForm
 
-                ( derrivedCompleted, derrivedActive ) =
+                ( derivedCompleted, derivedActive ) =
                     Maybe.map
                         (\testPerformed ->
                             if testPerformed then
@@ -377,8 +395,8 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                         form.testPerformed
                         |> Maybe.withDefault ( 0, 0 )
             in
-            ( taskCompleted form.testPerformed + derrivedCompleted
-            , 1 + derrivedActive
+            ( taskCompleted form.testPerformed + derivedCompleted
+            , 1 + derivedActive
             )
 
 
@@ -2484,19 +2502,17 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
                             if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
                                 if
                                     bloodPressureIndicatesSevereCovid19 measurements
-                                        && respiratoryRateElevatedForCovid19 currentDate person measurements
-                                        && lethargyAtSymptoms measurements
-                                        && lethargicOrUnconsciousAtAcuteFindings measurements
-                                        && acuteFindinsgRespiratoryDangerSignPresent measurements
+                                        || respiratoryRateElevatedForCovid19 currentDate person measurements
+                                        || lethargyAtSymptoms measurements
+                                        || lethargicOrUnconsciousAtAcuteFindings measurements
+                                        || acuteFindinsgRespiratoryDangerSignPresent measurements
                                 then
                                     Just DiagnosisSevereCovid19
 
                                 else if
                                     bloodPressureIndicatesCovid19WithPneumonia measurements
-                                        && stabbingChestPainAtSymptoms measurements
-                                        && -- @todo: revise
-                                           -- countRespiratorySymptoms measurements [] > 0 &&
-                                           (countGeneralSymptoms measurements [] > 0)
+                                        || (countRespiratorySymptoms measurements [] > 0)
+                                        || (countGeneralSymptoms measurements [] > 0)
                                         && cracklesAtCoreExam measurements
                                 then
                                     Just DiagnosisPneuminialCovid19
@@ -2984,13 +3000,6 @@ lethargyAtSymptoms : AcuteIllnessMeasurements -> Bool
 lethargyAtSymptoms measurements =
     getMeasurementValueFunc measurements.symptomsGeneral
         |> Maybe.map (symptomAppearsAtSymptomsDict Lethargy)
-        |> Maybe.withDefault False
-
-
-stabbingChestPainAtSymptoms : AcuteIllnessMeasurements -> Bool
-stabbingChestPainAtSymptoms measurements =
-    getMeasurementValueFunc measurements.symptomsRespiratory
-        |> Maybe.map (symptomAppearsAtSymptomsDict StabbingChestPain)
         |> Maybe.withDefault False
 
 
