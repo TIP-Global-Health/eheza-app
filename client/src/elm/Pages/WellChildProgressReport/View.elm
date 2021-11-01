@@ -24,7 +24,7 @@ import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
-        , PediatricCareMilestone
+        , PediatricCareMilestone(..)
         , WellChildEncounter
         , WellChildEncounterType(..)
         , ecdMilestoneWarnings
@@ -604,11 +604,21 @@ generatePartitionedWarningEntries db maybeAssembled =
                                                     Nothing
 
                                                 else
-                                                    Maybe.andThen (resolvePediatricCareMilestoneOnDate encounter.startDate) assembled.person.birthDate
-                                                        |> Maybe.map
-                                                            (\ecdMilestone ->
-                                                                ( encounter.startDate, ecdMilestone, warning )
-                                                            )
+                                                    let
+                                                        ecdMilestone =
+                                                            if List.member warning ecdMilestoneWarnings then
+                                                                Maybe.andThen (resolvePediatricCareMilestoneOnDate encounter.startDate) assembled.person.birthDate
+
+                                                            else
+                                                                -- Giving dummy value here, because ecd milestone is
+                                                                -- not applicable for Head Circumference warnings.
+                                                                Just Milestone4Years
+                                                    in
+                                                    Maybe.map
+                                                        (\milestone ->
+                                                            ( encounter.startDate, milestone, warning )
+                                                        )
+                                                        ecdMilestone
                                             )
                             in
                             if List.isEmpty warnings then
