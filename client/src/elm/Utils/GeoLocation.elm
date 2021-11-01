@@ -59,7 +59,7 @@ reverseGeoInfo =
         merge id loc accum =
             accum
                 |> Maybe.withDefault Dict.empty
-                |> Dict.insert loc.name ( id, loc )
+                |> Dict.insert (String.toLower loc.name) ( id, loc )
                 |> Just
 
         addGeo id loc accum =
@@ -78,10 +78,12 @@ reverseGeoInfo =
         ]
 
 
+
+
 getGeoLocation : Maybe ParentId -> Name -> Maybe ( GeoLocationId, GeoLocation )
 getGeoLocation parent name =
     Dict.get parent reverseGeoInfo
-        |> Maybe.andThen (Dict.get name)
+        |> Maybe.andThen (Dict.get (String.toLower name))
 
 
 getGeoProvinces : Dict GeoLocationId GeoLocation
