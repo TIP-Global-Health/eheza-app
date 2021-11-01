@@ -1264,89 +1264,73 @@ viewVitalsForm language currentDate config form =
         bodyTemperatureUpdateFunc value form_ =
             { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
 
-        agesSet =
+        ageInYears =
             Maybe.map
-                (\birthDate ->
-                    { days = Gizra.NominalDate.diffDays birthDate currentDate
-                    , years = Gizra.NominalDate.diffYears birthDate currentDate
-                    }
-                )
+                (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
                 config.birthDate
 
         bloodPressureSection =
-            let
-                ( redAlertsSys, redAlertsDia ) =
-                    Maybe.map
-                        (\ages ->
-                            let
-                                ( redAlertValueSys, redAlertValueDia ) =
-                                    if ages.days <= 1 then
-                                        ( 80, 50 )
-
-                                    else if ages.days <= 7 then
-                                        ( 100, 70 )
-
-                                    else if ages.years <= 6 then
-                                        ( 115, 80 )
-
-                                    else if ages.years <= 8 then
-                                        ( 120, 82 )
-
-                                    else if ages.years <= 9 then
-                                        ( 125, 84 )
-
-                                    else if ages.years <= 10 then
-                                        ( 130, 86 )
-
-                                    else if ages.years <= 12 then
-                                        ( 135, 88 )
-
-                                    else
-                                        ( 140, 90 )
-                            in
-                            ( [ [ (<) redAlertValueSys ] ], [ [ (<) redAlertValueDia ] ] )
-                        )
-                        agesSet
-                        |> Maybe.withDefault ( [], [] )
-            in
-            [ div [ class "ui grid" ]
-                [ div [ class "eleven wide column" ]
-                    [ viewLabel language Translate.BloodPressure ]
-                ]
-            , div [ class "ui grid systolic" ]
-                [ div [ class "twelve wide column" ]
-                    [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.sysBloodPressure
-                        redAlertsSys
+            Maybe.map
+                (\ageYears ->
+                    if ageYears < 12 then
+                        -- Blood presure is taken for patients that are
+                        -- 12 years old, or older.
                         []
-                    ]
-                ]
-            , viewMeasurementInput
-                language
-                form.sysBloodPressure
-                (config.setFloatInputMsg sysBloodPressureUpdateFunc)
-                "sys-blood-pressure"
-                Translate.MMHGUnit
-            , Pages.Utils.viewPreviousMeasurement language config.sysBloodPressurePreviousValue Translate.MMHGUnit
-            , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.diaBloodPressure
-                        redAlertsDia
-                        []
-                    ]
-                ]
-            , viewMeasurementInput
-                language
-                form.diaBloodPressure
-                (config.setFloatInputMsg diaBloodPressureUpdateFunc)
-                "dia-blood-pressure"
-                Translate.MMHGUnit
-            , Pages.Utils.viewPreviousMeasurement language config.diaBloodPressurePreviousValue Translate.MMHGUnit
-            , separator
-            ]
+
+                    else
+                        let
+                            ( redAlertsSys, redAlertsDia ) =
+                                let
+                                    ( redAlertValueSys, redAlertValueDia ) =
+                                        if ageYears <= 12 then
+                                            ( 135, 88 )
+
+                                        else
+                                            ( 140, 90 )
+                                in
+                                ( [ [ (<) redAlertValueSys ] ], [ [ (<) redAlertValueDia ] ] )
+                        in
+                        [ div [ class "ui grid" ]
+                            [ div [ class "eleven wide column" ]
+                                [ viewLabel language Translate.BloodPressure ]
+                            ]
+                        , div [ class "ui grid systolic" ]
+                            [ div [ class "twelve wide column" ]
+                                [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.sysBloodPressure
+                                    redAlertsSys
+                                    []
+                                ]
+                            ]
+                        , viewMeasurementInput
+                            language
+                            form.sysBloodPressure
+                            (config.setFloatInputMsg sysBloodPressureUpdateFunc)
+                            "sys-blood-pressure"
+                            Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language config.sysBloodPressurePreviousValue Translate.MMHGUnit
+                        , div [ class "ui grid" ]
+                            [ div [ class "twelve wide column" ]
+                                [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.diaBloodPressure
+                                    redAlertsDia
+                                    []
+                                ]
+                            ]
+                        , viewMeasurementInput
+                            language
+                            form.diaBloodPressure
+                            (config.setFloatInputMsg diaBloodPressureUpdateFunc)
+                            "dia-blood-pressure"
+                            Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language config.diaBloodPressurePreviousValue Translate.MMHGUnit
+                        , separator
+                        ]
+                )
+                ageInYears
+                |> Maybe.withDefault []
 
         heartRateSection =
             let
@@ -1359,19 +1343,19 @@ viewVitalsForm language currentDate config form =
 
                         _ ->
                             Maybe.map
-                                (\ages ->
+                                (\ageYears ->
                                     let
                                         ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ages.years == 0 then
+                                            if ageYears == 0 then
                                                 ( 110, 160 )
 
-                                            else if ages.years <= 2 then
+                                            else if ageYears <= 2 then
                                                 ( 100, 150 )
 
-                                            else if ages.years <= 5 then
+                                            else if ageYears <= 5 then
                                                 ( 95, 140 )
 
-                                            else if ages.years <= 12 then
+                                            else if ageYears <= 12 then
                                                 ( 80, 120 )
 
                                             else
@@ -1379,7 +1363,7 @@ viewVitalsForm language currentDate config form =
                                     in
                                     ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
                                 )
-                                agesSet
+                                ageInYears
                                 |> Maybe.withDefault ( [], [] )
             in
             [ div [ class "ui grid" ]
@@ -1412,13 +1396,13 @@ viewVitalsForm language currentDate config form =
 
                         _ ->
                             Maybe.map
-                                (\ages ->
+                                (\ageYears ->
                                     let
                                         ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ages.years == 0 then
+                                            if ageYears == 0 then
                                                 ( 30, 49 )
 
-                                            else if ages.years <= 5 then
+                                            else if ageYears <= 5 then
                                                 ( 24, 39 )
 
                                             else
@@ -1426,7 +1410,7 @@ viewVitalsForm language currentDate config form =
                                     in
                                     ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
                                 )
-                                agesSet
+                                ageInYears
                                 |> Maybe.withDefault ( [], [] )
             in
             [ div [ class "ui grid" ]
