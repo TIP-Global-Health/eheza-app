@@ -6,7 +6,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportI
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc, muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -732,10 +732,14 @@ diagnosisEntryStatusToString status =
 
 viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
 viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
+    let
+        orderedAssessments =
+            List.sortBy nutritionAssessmentToComparable assessments
+    in
     ( date
     , div [ class "entry diagnosis" ]
         [ div [ class "cell assesment" ] <|
-            List.map (translateNutritionAssement language >> List.singleton >> p []) assessments
+            List.map (translateNutritionAssement language >> List.singleton >> p []) orderedAssessments
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]

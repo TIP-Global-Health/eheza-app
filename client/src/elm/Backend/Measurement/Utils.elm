@@ -423,6 +423,37 @@ nutritionAssessmentFromString assesment =
             Nothing
 
 
+nutritionAssessmentToComparable : NutritionAssessment -> Int
+nutritionAssessmentToComparable assesment =
+    case assesment of
+        AssesmentAcuteMalnutritionModerate ->
+            1
+
+        AssesmentAcuteMalnutritionSevere ->
+            1
+
+        AssesmentUnderweightModerate ->
+            1
+
+        AssesmentUnderweightSevere ->
+            1
+
+        AssesmentMalnutritionSigns _ ->
+            1
+
+        AssesmentConsecutiveWeightLoss ->
+            1
+
+        NoNutritionAssessment ->
+            1
+
+        AssesmentDangerSignsNotPresent ->
+            2
+
+        AssesmentDangerSignsPresent ->
+            2
+
+
 postpartumMotherDangerSignToString : PostpartumMotherDangerSign -> String
 postpartumMotherDangerSignToString sign =
     case sign of
