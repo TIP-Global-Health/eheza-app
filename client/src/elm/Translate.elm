@@ -545,6 +545,7 @@ type TranslationId
     | ForIllustrativePurposesOnly
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
+    | FollowUpByChwLabel
     | FollowUpLabel
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
@@ -3906,6 +3907,11 @@ translationSet trans =
 
         FollowUpWithPatientOn ->
             { english = "Follow up with patient on"
+            , kinyarwanda = Nothing
+            }
+
+        FollowUpByChwLabel ->
+            { english = "CHW should follow up with patient in"
             , kinyarwanda = Nothing
             }
 
