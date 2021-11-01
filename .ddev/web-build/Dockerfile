@@ -1,5 +1,4 @@
-ARG BASE_IMAGE
-FROM $BASE_IMAGE
+FROM drud/ddev-webserver:v1.17.7
 # We need an ancient version of NodeJs.
 RUN apt-get purge nodejs --yes
 RUN curl -sL https://deb.nodesource.com/setup_8.x -o nodesource_setup.sh
