@@ -3357,7 +3357,7 @@ translationSet trans =
 
                 WellChildEncounter ->
                     { english = "Standard Pediatric Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kujyana Umwana mu Isuzumiro"
                     }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -4469,7 +4469,7 @@ translationSet trans =
 
                     else
                         { english = "Standard Pediatric Visit"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Kujyana Umwana mu Isuzumiro"
                         }
 
         IndividualEncounterTypes ->
