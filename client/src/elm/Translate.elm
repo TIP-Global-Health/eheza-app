@@ -3058,207 +3058,208 @@ translationSet trans =
             case sign of
                 FollowMothersEyes ->
                     { english = "Does the child follow their mothers eyes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana akurikiza amaso nyina"
                     }
 
                 MoveArmsAndLegs ->
                     { english = "Does the child move their arms and legs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana anyeganyeza amaboko n'amaguru"
                     }
 
                 RaiseHandsUp ->
                     { english = "Does the child raise their hands up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana azamura ibiganza"
                     }
 
                 Smile ->
                     { english = "Does the child smile"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana araseka"
                     }
 
                 RollSideways ->
                     { english = "Does the child roll from left to right and right to left"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana yihindukiza ku mpande, iburyo ni’ibumoso ikindi gihe akagana ibumoso n'iburyo"
                     }
 
                 BringHandsToMouth ->
                     { english = "Does the child bring their hands to their mouth"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana akoza ibiganza bye ku murwa"
                     }
 
                 HoldHeadWithoutSupport ->
                     { english = "Does the child hold their head steady without support"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana abasha kwemesha umutwe we ubwe ntawumufashe"
                     }
 
                 HoldAndShakeToys ->
                     { english = "Does the child hold and shake toys and swing at dangling toys"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gufata akanazunguza ibikinisho ndetse akabinyeganyeza iyo afite ibikinisho bivuga"
                     }
 
                 ReactToSuddenSounds ->
                     { english = "Does the child react to sudden noises or sounds"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana agaragaza ko yumvise amajwi cg urusaku bitunguranye"
                     }
 
                 UseConsonantSounds ->
                     { english = "Is the child using consonant sounds in babbling, for example “da, da, da”"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana akoresha amajwi yumvikanamo inyuguti igihe yivugisha, urugero:da,da,da,.."
+
                     }
 
                 RespondToSoundWithSound ->
                     { english = "Does the child respond to sound by making sound"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana asubirisha ijwi igihe yumvise irindi ijwi"
                     }
 
                 TurnHeadWhenCalled ->
                     { english = "Does the child turn their head when their name is called"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ahindukiza umutwe iyo hari uhamagaye izina rye"
                     }
 
                 SitWithoutSupport ->
                     { english = "Can the child sit without support for a short while, for example sit on the floor on their own"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kwicara akanya gato nta kintu cyangwa umuntu umufashe"
                     }
 
                 SmileBack ->
                     { english = "Does the child smile back at you"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana yaba agusekera iyo umusekeye"
                     }
 
                 RollTummyToBack ->
                     { english = "Can the child roll from their tummy to their back on their own"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kubura inda akagarama nta muntu umufashije"
                     }
 
                 ReachForToys ->
                     { english = "Does the child reach for nearby toys on their own"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gufata ibikinisho bimwegereye"
                     }
 
                 UseSimpleGestures ->
                     { english = "Does the child use simple gestures such as waving “bye-bye”"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana akoresha ibimenyetso byoroheje nko gupepera iyo musezeranaho"
                     }
 
                 StandOnTheirOwn ->
                     { english = "Can the child stand on their own"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora guhagarara nta muntu umufashe"
                     }
 
                 CopyDuringPlay ->
                     { english = "Does the child copy you during play"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana yigana ibyo urimo gukora igihe mukina"
                     }
 
                 SayMamaDada ->
                     { english = "Does the child say “mama” and “dada”"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kuvuga “mama” cyangwa “dada”"
                     }
 
                 CanHoldSmallObjects ->
                     { english = "Can the child hold small objects that fit inside their hands"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gufata ibintu bito bikwiye mu kiganza cye"
                     }
 
                 LooksWhenPointedAt ->
                     { english = "Does the child look at something when you point to it and say “look”"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kwerekeza amaso ku kintu cyose umweretse"
                     }
 
                 UseSingleWords ->
                     { english = "Does the child use several single words to get what they want"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana akoresha amagambo mato mato kandi yungikanye ashaka kugira icyo akubwira /agusaba"
                     }
 
                 WalkWithoutHelp ->
                     { english = "Does the child walk without help"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kugenda nta muntu umufashije"
                     }
 
                 PlayPretend ->
                     { english = "Does the child play pretend - like talking on a toy phone"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ajya akina asa nk'uvugira kuri telefoni"
                     }
 
                 PointToThingsOfInterest ->
                     { english = "Does the child point to interesting things"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana atunga intoki ibintu bimunejeje"
                     }
 
                 UseShortPhrases ->
                     { english = "Does the child use 2-4 word phrases"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gukora interuro igizwe n'amagambo 2 kugera kuri 4"
                     }
 
                 InterestedInOtherChildren ->
                     { english = "Does the child show interest in other children"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana agaragaza ko yishimiye abandi bana"
                     }
 
                 FollowSimpleInstructions ->
                     { english = "Does the child follow simple instructions"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana akurikiza amabwiriza yoroheje ahawe"
                     }
 
                 KickBall ->
                     { english = "Can the child kick a ball"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gutera umupira"
                     }
 
                 PointAtNamedObjects ->
                     { english = "Does the child point to something - like a toy or a picture - when you name it"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kukwereka ikintu agitunga urutoki iyo uvuze izina ryacyo, Urugero:Igikinisho cg ifoto"
                     }
 
                 DressThemselves ->
                     { english = "Can the child dress themselves"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kwiyambika"
                     }
 
                 WashHandsGoToToiled ->
                     { english = "Can the child wash their hands on their own and go to the toilet in the designated area on their own"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kwikarabya intoki, akanijyana mu bwiherero ahateganijwe wenyine"
                     }
 
                 KnowsColorsAndNumbers ->
                     { english = "Does the child know basic colors and numbers"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana azi amabara n'imibare  by'ibanze"
                     }
 
                 UseMediumPhrases ->
                     { english = "Does the child use 4-5 word sentences"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gukora interuro zigizwe n'amagambo 2 kugera kuri 4"
                     }
 
                 PlayMakeBelieve ->
                     { english = "Does the child play make-believe"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana akunda gukina yigana"
                     }
 
                 FollowThreeStepInstructions ->
                     { english = "Does the child follow 3-step commands - like “get dressed, comb your hair, and wash your face“"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gukurikiza amabwiriza nka 3 aherewe icyarimwe, Urugero:Ambara, Sokoza umusatsi unakarabe mu maso"
                     }
 
                 StandOnOneFootFiveSeconds ->
                     { english = "Can the child hop and stand on one foot for up to 5 seconds"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora guhagarara ku kaguru kamwe akandi kanenetse mu gihe cy'amasegonda 5"
                     }
 
                 UseLongPhrases ->
                     { english = "Does the child use 5-6 word sentences"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gukora interuro zigizwe n'amagambo atanu cyangwa atandatu"
                     }
 
                 ShareWithOtherChildren ->
                     { english = "Does the child share and take turns with other children"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora gusangira no kujya ahererekanya ibintu n'abandi bana"
                     }
 
                 CountToTen ->
                     { english = "Can the child count to 10"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ashobora kubara kugeza ku 10"
                     }
 
                 NoECDSigns ->
