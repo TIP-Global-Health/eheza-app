@@ -782,28 +782,27 @@ initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose ) =
             Date.add unit (dosesInterval * interval) birthDate
 
         VaccineDTP ->
-            Date.add Weeks 5 birthDate
+            Date.add Weeks 6 birthDate
                 |> Date.add unit (dosesInterval * interval)
 
         VaccinePCV13 ->
-            Date.add Weeks 5 birthDate
+            Date.add Weeks 6 birthDate
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineRotarix ->
-            Date.add Weeks 5 birthDate
+            Date.add Weeks 6 birthDate
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineIPV ->
-            Date.add Weeks 13 birthDate
+            Date.add Weeks 14 birthDate
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineMR ->
-            Date.add Weeks 35 birthDate
+            Date.add Weeks 36 birthDate
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineHPV ->
             Date.add Years 12 birthDate
-                |> Date.add Weeks -1
                 |> Date.add unit (dosesInterval * interval)
 
 
