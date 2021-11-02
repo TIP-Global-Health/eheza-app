@@ -888,7 +888,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
-        ( formForView, fullScreen ) =
+        ( formForView, fullScreen, allowSave ) =
             Maybe.andThen immunisationTaskToVaccineType activeTask
                 |> Maybe.map
                     (\vaccineType ->
@@ -937,10 +937,12 @@ viewImmunisationContent language currentDate isChw assembled db data =
                         in
                         ( viewVaccinationForm language currentDate isChw assembled vaccineType vaccinationForm
                         , False
+                        , vaccinationForm.viewMode == ViewModeInitial
                         )
                     )
                 |> Maybe.withDefault
                     ( viewVaccinationOverviewForm language currentDate assembled.person assembled.vaccinationProgress db
+                    , True
                     , True
                     )
 
@@ -993,6 +995,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
                         viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
+                |> showIf allowSave
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
