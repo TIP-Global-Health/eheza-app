@@ -630,6 +630,9 @@ expectImmunisationTask currentDate isChw assembled db task =
             _ ->
                 False
 
+    else if task == TaskHPV && assembled.person.gender == Male then
+        False
+
     else
         let
             futureVaccinations =
