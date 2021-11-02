@@ -50,6 +50,16 @@ update currentDate isChw id db msg model =
                     )
                 |> Maybe.withDefault form
 
+        resolveVaccinationForm vaccineType form =
+            Dict.get id db.wellChildMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (getMeasurementByVaccineTypeFunc vaccineType
+                        >> vaccinationFormWithDefault form
+                    )
+                |> Maybe.withDefault form
+
         generateNutritionAssessmentMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
@@ -662,6 +672,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
                     if value == True then
@@ -680,6 +691,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
                     if willReceive then
@@ -740,6 +752,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
                     { form | administrationNote = Just note }
@@ -766,6 +779,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
                     { form | vaccinationUpdateDate = Just date }
@@ -779,6 +793,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedModel =
                     Maybe.map
@@ -806,6 +821,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedDoses =
                     Maybe.map

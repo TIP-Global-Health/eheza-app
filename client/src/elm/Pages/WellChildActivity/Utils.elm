@@ -907,6 +907,42 @@ getFormByVaccineTypeFunc vaccineType =
             .rotarixForm
 
 
+getMeasurementByVaccineTypeFunc : VaccineType -> WellChildMeasurements -> Maybe VaccinationValue
+getMeasurementByVaccineTypeFunc vaccineType measurements =
+    case vaccineType of
+        VaccineBCG ->
+            measurements.bcgImmunisation
+                |> getMeasurementValueFunc
+
+        VaccineDTP ->
+            measurements.dtpImmunisation
+                |> getMeasurementValueFunc
+
+        VaccineHPV ->
+            measurements.hpvImmunisation
+                |> getMeasurementValueFunc
+
+        VaccineIPV ->
+            measurements.ipvImmunisation
+                |> getMeasurementValueFunc
+
+        VaccineMR ->
+            measurements.mrImmunisation
+                |> getMeasurementValueFunc
+
+        VaccineOPV ->
+            measurements.opvImmunisation
+                |> getMeasurementValueFunc
+
+        VaccinePCV13 ->
+            measurements.pcv13Immunisation
+                |> getMeasurementValueFunc
+
+        VaccineRotarix ->
+            measurements.rotarixImmunisation
+                |> getMeasurementValueFunc
+
+
 updateVaccinationFormByVaccineType : VaccineType -> VaccinationForm -> ImmunisationData -> ImmunisationData
 updateVaccinationFormByVaccineType vaccineType form data =
     case vaccineType of
@@ -1080,7 +1116,7 @@ fromVaccinationValue saved =
             , administrationDates = Just value.administrationDates
             , administrationNote = Just value.administrationNote
             , viewMode = ViewModeInitial
-            , updatePreviousVaccines = previousVaccinesUpdateAllowed value
+            , updatePreviousVaccines = Just False
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
             , vaccinationUpdateDate = Nothing
             , dateSelectorOpen = False
@@ -1099,7 +1135,7 @@ vaccinationFormWithDefault form saved =
             , administrationDates = or form.administrationDates (Just value.administrationDates)
             , administrationNote = or form.administrationNote (Just value.administrationNote)
             , viewMode = form.viewMode
-            , updatePreviousVaccines = or form.updatePreviousVaccines (previousVaccinesUpdateAllowed value)
+            , updatePreviousVaccines = or form.updatePreviousVaccines (Just False)
             , willReceiveVaccineToday = or form.willReceiveVaccineToday (value.administrationNote == AdministeredToday |> Just)
             , vaccinationUpdateDate = form.vaccinationUpdateDate
             , dateSelectorOpen = form.dateSelectorOpen
@@ -1127,24 +1163,6 @@ toVaccinationValue form =
             Maybe.withDefault AdministeredPreviously form.administrationNote
     in
     Just <| VaccinationValue administeredDoses administrationDates administrationNote
-
-
-previousVaccinesUpdateAllowed : VaccinationValue -> Maybe Bool
-previousVaccinesUpdateAllowed value =
-    Just <|
-        -- We know that previous vaccines were updated if:
-        -- 1. There's more than one dose administerd.
-        -- 2. There's one dose administered, and administration note says
-        --    that latest vaccine dose was not administered today.
-        case EverySet.size value.administeredDoses of
-            0 ->
-                False
-
-            1 ->
-                value.administrationNote /= AdministeredToday
-
-            _ ->
-                True
 
 
 generateRemianingECDSignsBeforeCurrentEncounter : NominalDate -> AssembledData -> List ECDSign
