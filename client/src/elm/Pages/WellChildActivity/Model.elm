@@ -46,7 +46,7 @@ type Msg
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
     | SetVaccinationFormViewMode VaccineType VaccinationFormViewMode
-    | SetAllowPreviousVaccinesUpdate VaccineType Bool
+    | SetUpdatePreviousVaccines VaccineType VaccineDose Bool
     | SetWillReceiveVaccineToday VaccineType VaccineDose Bool
     | SetAdministrationNote VaccineType AdministrationNote
     | ToggleDateSelectorInput VaccineType
@@ -262,7 +262,7 @@ type alias VaccinationForm =
 
     -- Form inner functionality inputs
     , viewMode : VaccinationFormViewMode
-    , allowPreviousVaccinesUpdate : Maybe Bool
+    , updatePreviousVaccines : Maybe Bool
     , willReceiveVaccineToday : Maybe Bool
     , vaccinationUpdateDate : Maybe NominalDate
     , dateSelectorOpen : Bool
@@ -275,7 +275,7 @@ emptyVaccinationForm =
     , administrationDates = Nothing
     , administrationNote = Nothing
     , viewMode = ViewModeInitial
-    , allowPreviousVaccinesUpdate = Nothing
+    , updatePreviousVaccines = Nothing
     , willReceiveVaccineToday = Nothing
     , vaccinationUpdateDate = Nothing
     , dateSelectorOpen = False

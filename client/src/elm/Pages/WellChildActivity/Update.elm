@@ -658,18 +658,23 @@ update currentDate isChw id db msg model =
             , []
             )
 
-        SetAllowPreviousVaccinesUpdate vaccineType value ->
+        SetUpdatePreviousVaccines vaccineType dose value ->
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
 
                 updatedForm =
-                    { form | allowPreviousVaccinesUpdate = Just value }
+                    if value == True then
+                        { form | viewMode = ViewModeVaccinationUpdate dose, updatePreviousVaccines = Nothing }
+
+                    else
+                        { form | updatePreviousVaccines = Just False }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none
             , []
             )
+                |> sequenceExtra (update currentDate isChw id db) [ SetWillReceiveVaccineToday vaccineType dose False ]
 
         SetWillReceiveVaccineToday vaccineType dose willReceive ->
             let
@@ -687,32 +692,44 @@ update currentDate isChw id db msg model =
 
                     else
                         let
-                            updatedDoses =
-                                Maybe.map
-                                    (EverySet.toList
-                                        >> List.sortBy vaccineDoseToComparable
-                                        >> List.reverse
-                                        >> List.drop 1
-                                        >> EverySet.fromList
-                                    )
-                                    form.administeredDoses
-
-                            updatedDates =
-                                Maybe.map
-                                    (EverySet.toList
-                                        >> List.sortWith Date.compare
-                                        >> List.reverse
-                                        >> List.drop 1
-                                        >> EverySet.fromList
-                                    )
-                                    form.administrationDates
+                            administeredDoses =
+                                Maybe.map EverySet.toList form.administeredDoses
+                                    |> Maybe.withDefault []
                         in
-                        { form
-                            | willReceiveVaccineToday = Just False
-                            , administeredDoses = updatedDoses
-                            , administrationDates = updatedDates
-                            , administrationNote = Nothing
-                        }
+                        if not <| List.member dose administeredDoses then
+                            { form
+                                | willReceiveVaccineToday = Nothing
+                                , administrationNote = Nothing
+                            }
+
+                        else
+                            let
+                                updatedDoses =
+                                    Maybe.map
+                                        (EverySet.toList
+                                            >> List.sortBy vaccineDoseToComparable
+                                            >> List.reverse
+                                            >> List.drop 1
+                                            >> EverySet.fromList
+                                        )
+                                        form.administeredDoses
+
+                                updatedDates =
+                                    Maybe.map
+                                        (EverySet.toList
+                                            >> List.sortWith Date.compare
+                                            >> List.reverse
+                                            >> List.drop 1
+                                            >> EverySet.fromList
+                                        )
+                                        form.administrationDates
+                            in
+                            { form
+                                | willReceiveVaccineToday = Just False
+                                , administeredDoses = updatedDoses
+                                , administrationDates = updatedDates
+                                , administrationNote = Nothing
+                            }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none

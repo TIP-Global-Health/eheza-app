@@ -938,14 +938,6 @@ updateVaccinationFormByVaccineType vaccineType form data =
             { data | rotarixForm = form }
 
 
-allVaccinesWithDoses : Dict VaccineType (List VaccineDose)
-allVaccinesWithDoses =
-    List.map
-        (\type_ -> ( type_, getAllDosesForVaccine type_ ))
-        allVaccineTypes
-        |> Dict.fromList
-
-
 getAllDosesForVaccine : VaccineType -> List VaccineDose
 getAllDosesForVaccine vaccineType =
     let
@@ -973,7 +965,7 @@ getLastDoseForVaccine vaccineType =
             VaccineDoseFourth
 
         VaccineDTP ->
-            VaccineDoseSecond
+            VaccineDoseThird
 
         VaccinePCV13 ->
             VaccineDoseThird
@@ -1077,7 +1069,7 @@ fromVaccinationValue saved =
             , administrationDates = Just value.administrationDates
             , administrationNote = Just value.administrationNote
             , viewMode = ViewModeInitial
-            , allowPreviousVaccinesUpdate = previousVaccinesUpdateAllowed value
+            , updatePreviousVaccines = previousVaccinesUpdateAllowed value
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
             , vaccinationUpdateDate = Nothing
             , dateSelectorOpen = False
@@ -1096,7 +1088,7 @@ vaccinationFormWithDefault form saved =
             , administrationDates = or form.administrationDates (Just value.administrationDates)
             , administrationNote = or form.administrationNote (Just value.administrationNote)
             , viewMode = form.viewMode
-            , allowPreviousVaccinesUpdate = or form.allowPreviousVaccinesUpdate (previousVaccinesUpdateAllowed value)
+            , updatePreviousVaccines = or form.updatePreviousVaccines (previousVaccinesUpdateAllowed value)
             , willReceiveVaccineToday = or form.willReceiveVaccineToday (value.administrationNote == AdministeredToday |> Just)
             , vaccinationUpdateDate = form.vaccinationUpdateDate
             , dateSelectorOpen = form.dateSelectorOpen
