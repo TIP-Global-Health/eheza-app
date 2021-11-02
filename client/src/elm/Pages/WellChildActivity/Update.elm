@@ -676,7 +676,12 @@ update currentDate isChw id db msg model =
 
                 updatedForm =
                     if value == True then
-                        { form | viewMode = ViewModeVaccinationUpdate dose, updatePreviousVaccines = Nothing }
+                        { form
+                            | viewMode = ViewModeVaccinationUpdate dose
+                            , updatePreviousVaccines = Nothing
+                            , willReceiveVaccineToday = Nothing
+                            , administrationNote = Nothing
+                        }
 
                     else
                         { form | updatePreviousVaccines = Just False }
@@ -685,7 +690,6 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate isChw id db) [ SetWillReceiveVaccineToday vaccineType dose False ]
 
         SetWillReceiveVaccineToday vaccineType dose willReceive ->
             let
@@ -707,17 +711,10 @@ update currentDate isChw id db msg model =
                             administeredDoses =
                                 Maybe.map EverySet.toList form.administeredDoses
                                     |> Maybe.withDefault []
-                        in
-                        if not <| List.member dose administeredDoses then
-                            { form
-                                | willReceiveVaccineToday = Nothing
-                                , administrationNote = Nothing
-                            }
 
-                        else
-                            let
-                                updatedDoses =
-                                    Maybe.map
+                            ( updatedDoses, updatedDates ) =
+                                if List.member dose administeredDoses then
+                                    ( Maybe.map
                                         (EverySet.toList
                                             >> List.sortBy vaccineDoseToComparable
                                             >> List.reverse
@@ -725,9 +722,7 @@ update currentDate isChw id db msg model =
                                             >> EverySet.fromList
                                         )
                                         form.administeredDoses
-
-                                updatedDates =
-                                    Maybe.map
+                                    , Maybe.map
                                         (EverySet.toList
                                             >> List.sortWith Date.compare
                                             >> List.reverse
@@ -735,13 +730,17 @@ update currentDate isChw id db msg model =
                                             >> EverySet.fromList
                                         )
                                         form.administrationDates
-                            in
-                            { form
-                                | willReceiveVaccineToday = Just False
-                                , administeredDoses = updatedDoses
-                                , administrationDates = updatedDates
-                                , administrationNote = Nothing
-                            }
+                                    )
+
+                                else
+                                    ( form.administeredDoses, form.administrationDates )
+                        in
+                        { form
+                            | willReceiveVaccineToday = Just False
+                            , administeredDoses = updatedDoses
+                            , administrationDates = updatedDates
+                            , administrationNote = Nothing
+                        }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none

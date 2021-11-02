@@ -1344,6 +1344,23 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
 
                                         else
                                             let
+                                                ( previousDosesInput, previousDosesTaskActive, previousDosesTaskCompleted ) =
+                                                    if form.willReceiveVaccineToday == Just True then
+                                                        ( [], 0, 0 )
+
+                                                    else
+                                                        ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineTypeLabel
+                                                          , viewBoolInput
+                                                                language
+                                                                form.updatePreviousVaccines
+                                                                (SetUpdatePreviousVaccines vaccineType nextDose)
+                                                                ""
+                                                                Nothing
+                                                          ]
+                                                        , taskCompleted form.updatePreviousVaccines
+                                                        , 1
+                                                        )
+
                                                 ( todaysDoseInputs, todaysDoseTasksActive, todaysDoseTasksCompleted ) =
                                                     if form.updatePreviousVaccines == Just False then
                                                         let
@@ -1382,17 +1399,9 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                     else
                                                         ( [], 0, 0 )
                                             in
-                                            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineTypeLabel
-                                              , viewBoolInput
-                                                    language
-                                                    form.updatePreviousVaccines
-                                                    (SetUpdatePreviousVaccines vaccineType nextDose)
-                                                    ""
-                                                    Nothing
-                                              ]
-                                                ++ todaysDoseInputs
-                                            , taskCompleted form.updatePreviousVaccines + todaysDoseTasksActive
-                                            , 1 + todaysDoseTasksCompleted
+                                            ( previousDosesInput ++ todaysDoseInputs
+                                            , previousDosesTaskActive + todaysDoseTasksActive
+                                            , previousDosesTaskCompleted + todaysDoseTasksCompleted
                                             )
                                     )
                                 |> Maybe.withDefault ( [], 0, 0 )
