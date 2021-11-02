@@ -630,9 +630,6 @@ expectImmunisationTask currentDate isChw assembled db task =
             _ ->
                 False
 
-    else if task == TaskHPV && assembled.person.gender == Male then
-        False
-
     else
         let
             futureVaccinations =
@@ -700,36 +697,36 @@ If there's no need for future vaccination, Nothing is returned.
 -}
 generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
 generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
-    List.map
-        (\vaccineType ->
-            let
-                nextVaccinationData =
-                    case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
-                        Just ( lastDoseAdministered, lastDoseDate ) ->
-                            nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
+    allVaccineTypesForPerson person
+        |> List.map
+            (\vaccineType ->
+                let
+                    nextVaccinationData =
+                        case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
+                            Just ( lastDoseAdministered, lastDoseDate ) ->
+                                nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
 
-                        Nothing ->
-                            -- There were no vaccination so far, so
-                            -- we offer first dose for today.
-                            let
-                                initialDate =
-                                    Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst )) person.birthDate
-                                        |> Maybe.withDefault currentDate
+                            Nothing ->
+                                -- There were no vaccination so far, so
+                                -- we offer first dose for today.
+                                let
+                                    initialDate =
+                                        Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst )) person.birthDate
+                                            |> Maybe.withDefault currentDate
 
-                                vaccinationDate =
-                                    if scheduleFirstDoseForToday then
-                                        Date.max initialDate currentDate
+                                    vaccinationDate =
+                                        if scheduleFirstDoseForToday then
+                                            Date.max initialDate currentDate
 
-                                    else
-                                        initialDate
-                            in
-                            Just ( VaccineDoseFirst, vaccinationDate )
-            in
-            -- Getting Nothing at nextVaccinationData indicates that
-            -- vacination cycle is completed for this vaccine.
-            ( vaccineType, nextVaccinationData )
-        )
-        allVaccineTypes
+                                        else
+                                            initialDate
+                                in
+                                Just ( VaccineDoseFirst, vaccinationDate )
+                in
+                -- Getting Nothing at nextVaccinationData indicates that
+                -- vacination cycle is completed for this vaccine.
+                ( vaccineType, nextVaccinationData )
+            )
 
 
 {-| Check if the first dose of vaccine may be administered to the person on the limit date.
@@ -1009,6 +1006,20 @@ getIntervalForVaccine vaccineType =
 
         VaccineHPV ->
             ( 6, Months )
+
+
+allVaccineTypesForPerson : Person -> List VaccineType
+allVaccineTypesForPerson person =
+    List.filter
+        (\vaccineType ->
+            case vaccineType of
+                VaccineHPV ->
+                    person.gender == Female
+
+                _ ->
+                    True
+        )
+        allVaccineTypes
 
 
 allVaccineTypes : List VaccineType
@@ -2004,8 +2015,8 @@ toNextVisitValue form =
             form.pediatricVisitDate
 
 
-generateVaccinationProgress : List WellChildMeasurements -> VaccinationProgressDict
-generateVaccinationProgress measurements =
+generateVaccinationProgress : Person -> List WellChildMeasurements -> VaccinationProgressDict
+generateVaccinationProgress person measurements =
     let
         bcgImmunisations =
             List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
@@ -2013,10 +2024,6 @@ generateVaccinationProgress measurements =
 
         dtpImmunisations =
             List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        hpvImmunisations =
-            List.filterMap (.hpvImmunisation >> getMeasurementValueFunc)
                 measurements
 
         ipvImmunisations =
@@ -2038,16 +2045,28 @@ generateVaccinationProgress measurements =
         rotarixImmunisations =
             List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
                 measurements
+
+        hpvProgress =
+            if person.gender == Female then
+                let
+                    hpvImmunisations =
+                        List.filterMap (.hpvImmunisation >> getMeasurementValueFunc)
+                            measurements
+                in
+                [ ( VaccineHPV, generateVaccinationProgressForVaccine hpvImmunisations ) ]
+
+            else
+                []
     in
     [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
     , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
-    , ( VaccineHPV, generateVaccinationProgressForVaccine hpvImmunisations )
     , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
     , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
     , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
     , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
     ]
+        ++ hpvProgress
         |> Dict.fromList
 
 
