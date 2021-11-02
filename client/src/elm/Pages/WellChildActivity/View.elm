@@ -1252,7 +1252,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                         |> Maybe.map Tuple.first
 
                                 dosesFromPreviousEncountersForView =
-                                    List.map (\( dose, date ) -> viewHistoryEntry dose StatusDone (Just date) False False)
+                                    List.map (\( dose, date ) -> viewHistoryEntry dose (Just date) False False)
                                         dosesFromPreviousEncountersData
 
                                 dosesFromCurrentEncounterForView =
@@ -1263,73 +1263,88 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                     (form.willReceiveVaccineToday /= Just True)
                                                         && (doseAllowedForDeletion == Just dose)
                                             in
-                                            viewHistoryEntry dose StatusDone (Just date) False allowDelete
+                                            viewHistoryEntry dose (Just date) False allowDelete
                                         )
                                         dosesFromCurrentEncounterData
 
-                                dosesMissingForView =
-                                    List.indexedMap
-                                        (\index dose ->
-                                            let
-                                                step =
-                                                    -- Index starts from 0.
-                                                    -- If there were no vaccinations given, we'll use
-                                                    -- expected due date of first dose, therefore, no
-                                                    -- need to add 1 interval.
-                                                    -- Otherwise, we want to add 1 interval to the
-                                                    -- date of last vaccination.
-                                                    if isNothing lastDoseData then
-                                                        index
+                                administeredDosesForView =
+                                    dosesFromPreviousEncountersForView
+                                        ++ dosesFromCurrentEncounterForView
 
-                                                    else
-                                                        index + 1
+                                dosesForView =
+                                    if List.isEmpty administeredDosesForView then
+                                        [ viewCustomLabel language Translate.VaccinationNoDosesAdministered "." "label" ]
 
-                                                expectedOnDate =
-                                                    Maybe.map Tuple.second lastDoseData
-                                                        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
-                                                        |> Date.add unit (step * interval)
-                                            in
-                                            if not <| Date.compare expectedOnDate currentDate == LT then
-                                                Nothing
+                                    else
+                                        administeredDosesForView
 
-                                            else
-                                                Just <|
-                                                    viewHistoryEntry dose
-                                                        StatusBehind
-                                                        Nothing
-                                                        (index == 0 && allowPreviousVaccinesUpdate)
-                                                        False
-                                        )
-                                        dosesMissing
-                                        |> Maybe.Extra.values
+                                nextDose =
+                                    List.head dosesMissing
+                                        |> Maybe.andThen
+                                            (\dose ->
+                                                let
+                                                    expectedOnDate =
+                                                        Maybe.map Tuple.second lastDoseData
+                                                            |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
+                                                            |> Date.add unit interval
+                                                in
+                                                if not <| Date.compare expectedOnDate currentDate == LT then
+                                                    Nothing
+
+                                                else
+                                                    Just dose
+                                            )
+
+                                -- dosesMissingForView =
+                                --     List.indexedMap
+                                --         (\index dose ->
+                                --             let
+                                --                 step =
+                                --                     -- Index starts from 0.
+                                --                     -- If there were no vaccinations given, we'll use
+                                --                     -- expected due date of first dose, therefore, no
+                                --                     -- need to add 1 interval.
+                                --                     -- Otherwise, we want to add 1 interval to the
+                                --                     -- date of last vaccination.
+                                --                     if isNothing lastDoseData then
+                                --                         index
+                                --
+                                --                     else
+                                --                         index + 1
+                                --
+                                --                 expectedOnDate =
+                                --                     Maybe.map Tuple.second lastDoseData
+                                --                         |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
+                                --                         |> Date.add unit (step * interval)
+                                --             in
+                                --             if not <| Date.compare expectedOnDate currentDate == LT then
+                                --                 Nothing
+                                --
+                                --             else
+                                --                 Just <|
+                                --                     viewHistoryEntry dose
+                                --                         StatusBehind
+                                --                         Nothing
+                                --                         (index == 0 && allowPreviousVaccinesUpdate)
+                                --                         False
+                                --         )
+                                --         dosesMissing
+                                --         |> Maybe.Extra.values
                             in
-                            [ div [ class "history" ] <|
-                                dosesFromPreviousEncountersForView
-                                    ++ dosesFromCurrentEncounterForView
-                                    ++ dosesMissingForView
+                            [ div [ class "history" ]
+                                dosesForView
                             ]
 
                         ViewModeVaccinationUpdate dose ->
                             [ div [ class "history" ]
-                                [ viewHistoryEntry dose StatusBehind Nothing False False ]
+                                [ viewHistoryEntry dose Nothing False False ]
                             ]
 
-                viewHistoryEntry dose status date updateAllowed deleteAllowed =
+                viewHistoryEntry dose date updateAllowed deleteAllowed =
                     let
                         dateForView =
                             Maybe.map formatDDMMyyyy date
                                 |> Maybe.withDefault "--/--/----"
-
-                        statusClass =
-                            case status of
-                                StatusDone ->
-                                    "done"
-
-                                StatusBehind ->
-                                    "behind"
-
-                                _ ->
-                                    ""
 
                         deleteButton =
                             Maybe.map
@@ -1345,7 +1360,6 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     in
                     div [ class "history-entry" ]
                         [ div [ class "dose" ] [ text <| String.fromInt <| vaccineDoseToComparable dose ]
-                        , div [ class <| "status " ++ statusClass ] [ text <| translate language <| Translate.VaccinationStatus status ]
                         , div [ class "date" ] [ text dateForView ]
                         , showIf updateAllowed <|
                             div

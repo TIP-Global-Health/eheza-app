@@ -1537,6 +1537,11 @@ div.page-activity.well-child {
 
       .ui.form.vaccination .history {
         padding: 20px 0;
+
+        .label {
+          font-weight: 500;
+          margin-left: 10px;
+        }
       }
 
       .ui.form.vaccination .history .history-entry {
@@ -1551,25 +1556,6 @@ div.page-activity.well-child {
           color: $color-white;
           font-size: 17px;
           padding: 0 10px;
-        }
-
-        .status {
-          border-radius: 10px;
-          color: $color-white;
-          font-size: 17px;
-          margin-left: 30px;
-          padding: 0 10px;
-          text-align: center;
-          text-transform: uppercase;
-          width: 100px;
-
-          &.done {
-            background: $color-blue;
-          }
-
-          &.behind{
-            background: $color-velvet;
-          }
         }
 
         .date {
