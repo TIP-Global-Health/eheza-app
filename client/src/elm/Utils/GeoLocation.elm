@@ -78,8 +78,6 @@ reverseGeoInfo =
         ]
 
 
-
-
 getGeoLocation : Maybe ParentId -> Name -> Maybe ( GeoLocationId, GeoLocation )
 getGeoLocation parent name =
     Dict.get parent reverseGeoInfo
