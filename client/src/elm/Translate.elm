@@ -1536,17 +1536,17 @@ translationSet trans =
 
         AdministerMebendezoleHelper ->
             { english = "Give the child one tablet by mouth"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ha umwana ikinini kimwe akinywe"
             }
 
         AdministerAlbendazoleHelper ->
             { english = "Give the child one tablet by mouth"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ha umwana ikinini kimwe akinywe"
             }
 
         AdministeVitaminAHelper ->
             { english = "Put the correct number of drops directly into the mouth of the child"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Shyira mu kanwa k'umwana ibitonyanga bigenwe"
             }
 
         Administered ->
@@ -4282,7 +4282,7 @@ translationSet trans =
 
         ImmunisationHistory ->
             { english = "Immunization History"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru ku nkingo yafashe"
             }
 
         IncompleteCervixPreviousPregnancy ->
