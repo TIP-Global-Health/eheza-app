@@ -5433,8 +5433,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NonAdministrationChildsCondition ->
-                    { english = "Childs Condition"
+                NonAdministrationTooIll ->
+                    { english = "Too Ill"
                     , kinyarwanda = Nothing
                     }
 
@@ -5480,8 +5480,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NonAdministrationChildsCondition ->
-                    { english = "Childs Condition"
+                NonAdministrationTooIll ->
+                    { english = "Too Ill"
                     , kinyarwanda = Nothing
                     }
 

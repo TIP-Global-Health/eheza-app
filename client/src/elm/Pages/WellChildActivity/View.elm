@@ -1373,7 +1373,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                                             [ viewQuestionLabel language Translate.WhyNot
                                                                             , viewCheckBoxSelectInput language
                                                                                 [ NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationKnownAllergy ]
-                                                                                [ NonAdministrationPatientUnableToAfford, NonAdministrationChildsCondition, NonAdministrationOther ]
+                                                                                [ NonAdministrationPatientUnableToAfford, NonAdministrationTooIll, NonAdministrationOther ]
                                                                                 form.administrationNote
                                                                                 (SetAdministrationNote vaccineType)
                                                                                 Translate.AdministrationNoteForWellChild
