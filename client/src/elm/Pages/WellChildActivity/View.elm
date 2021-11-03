@@ -1164,9 +1164,6 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     wasInitialOpvAdministeredByVaccinationForm birthDate form
                         || wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
 
-                -- if vaccineType == VaccineOPV then
-                -- else
-                --   False
                 expectedDoses =
                     if isChw then
                         [ VaccineDoseFirst ]

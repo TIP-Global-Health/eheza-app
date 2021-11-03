@@ -701,13 +701,13 @@ expectImmunisationTask currentDate isChw assembled db task =
 immunisationVaccinationTasks : List ImmunisationTask
 immunisationVaccinationTasks =
     [ TaskBCG
-    , TaskDTP
-    , TaskHPV
-    , TaskIPV
-    , TaskMR
     , TaskOPV
+    , TaskDTP
     , TaskPCV13
     , TaskRotarix
+    , TaskIPV
+    , TaskHPV
+    , TaskMR
     ]
 
 
@@ -2153,12 +2153,12 @@ generateVaccinationProgress person measurements =
                 []
     in
     [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
-    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
-    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
-    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
+    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
     , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
     , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
+    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
+    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     ]
         ++ hpvProgress
         |> Dict.fromList
