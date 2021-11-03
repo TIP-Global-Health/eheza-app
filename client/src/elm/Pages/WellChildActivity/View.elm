@@ -771,21 +771,6 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
     ]
 
 
-vacinationDateByPreviousDoseDate : Maybe NominalDate -> NominalDate -> ( VaccineType, VaccineDose ) -> NominalDate
-vacinationDateByPreviousDoseDate previousDoseDate birthDate ( vaccineType, dose ) =
-    Maybe.map
-        (\previousDate ->
-            let
-                ( interval, unit ) =
-                    getIntervalForVaccine vaccineType
-            in
-            -- Allow grace of one unit.
-            Date.add unit (interval - 1) previousDate
-        )
-        previousDoseDate
-        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, dose ))
-
-
 viewImmunisationContent :
     Language
     -> NominalDate
@@ -1175,14 +1160,21 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
     Maybe.map
         (\birthDate ->
             let
+                initialOpvAdministered =
+                    wasInitialOpvAdministeredByVaccinationForm birthDate form
+                        || wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+
+                -- if vaccineType == VaccineOPV then
+                -- else
+                --   False
                 expectedDoses =
                     if isChw then
                         [ VaccineDoseFirst ]
 
                     else
-                        getAllDosesForVaccine vaccineType
+                        getAllDosesForVaccine initialOpvAdministered vaccineType
                             |> List.filter
-                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person ( vaccineType, dose ))
+                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person initialOpvAdministered ( vaccineType, dose ))
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory
@@ -1337,7 +1329,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                 Maybe.map
                                                     (\( _, lastDoseDate ) -> Date.add unit interval lastDoseDate)
                                                     lastDoseData
-                                                    |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
+                                                    |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst ))
                                         in
                                         if Date.compare expectedOnDate currentDate == GT then
                                             -- We've not reached the date on which next dose
@@ -1414,13 +1406,13 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                 startDate =
                                     Maybe.andThen
                                         (\( lastDoseAdministered, lastDoseDate ) ->
-                                            nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
+                                            nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
                                         )
                                         lastDoseData
                                         |> Maybe.map Tuple.second
                                         -- No doses were given yet, so we will set start date to
                                         -- expected due date of first dose.
-                                        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
+                                        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst ))
                             in
                             ( [ div [ class "form-input date previous" ]
                                     [ viewLabel language Translate.SelectDate

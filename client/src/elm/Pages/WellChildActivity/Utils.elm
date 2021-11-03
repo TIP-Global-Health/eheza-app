@@ -636,12 +636,58 @@ expectImmunisationTask currentDate isChw assembled db task =
                 generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationHistory
                     |> Dict.fromList
 
+            ageInWeeks =
+                Maybe.map
+                    (\birthDate ->
+                        Date.diff Weeks birthDate currentDate
+                    )
+                    assembled.person.birthDate
+
             isTaskExpected vaccineType =
                 Dict.get vaccineType futureVaccinations
                     |> Maybe.Extra.join
                     |> Maybe.map
                         (\( dose, date ) ->
-                            not <| Date.compare date currentDate == GT
+                            let
+                                defaultCondition =
+                                    not <| Date.compare date currentDate == GT
+                            in
+                            if vaccineType == VaccineOPV then
+                                case dose of
+                                    VaccineDoseFirst ->
+                                        Maybe.map
+                                            (\ageWeeks ->
+                                                -- First dose of OPV vaccine is given within first 2
+                                                -- weeks from birth, or, starting from 6 weeks after birth.
+                                                -- In latter case, there're only 3 doses, and not 4.
+                                                if ageWeeks >= 2 && ageWeeks <= 5 then
+                                                    False
+
+                                                else
+                                                    defaultCondition
+                                            )
+                                            ageInWeeks
+                                            |> Maybe.withDefault False
+
+                                    VaccineDoseSecond ->
+                                        Maybe.map
+                                            (\ageWeeks ->
+                                                -- Second dose of OPV vaccine is given starting from
+                                                -- 6 weeks after birth.
+                                                if ageWeeks < 6 then
+                                                    False
+
+                                                else
+                                                    defaultCondition
+                                            )
+                                            ageInWeeks
+                                            |> Maybe.withDefault False
+
+                                    _ ->
+                                        defaultCondition
+
+                            else
+                                defaultCondition
                         )
                     |> Maybe.withDefault False
         in
@@ -676,14 +722,18 @@ generateSuggestedVaccinations currentDate isChw assembled =
         [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
 
     else
-        List.filter (expectVaccineForPerson currentDate assembled.person) allVaccineTypes
+        let
+            initialOpvAdministered =
+                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+        in
+        List.filter (expectVaccineForPerson currentDate assembled.person initialOpvAdministered) allVaccineTypes
             |> List.filterMap
                 (\vaccineType ->
                     let
                         suggestedDose =
                             case latestVaccinationDataForVaccine assembled.vaccinationHistory vaccineType of
                                 Just ( lastDoseAdministered, lastDoseDate ) ->
-                                    nextDoseForVaccine currentDate lastDoseDate lastDoseAdministered vaccineType
+                                    nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
 
                                 Nothing ->
                                     Just VaccineDoseFirst
@@ -697,6 +747,10 @@ If there's no need for future vaccination, Nothing is returned.
 -}
 generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
 generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
+    let
+        initialOpvAdministered =
+            wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+    in
     allVaccineTypesForPerson person
         |> List.map
             (\vaccineType ->
@@ -704,14 +758,14 @@ generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vacc
                     nextVaccinationData =
                         case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
                             Just ( lastDoseAdministered, lastDoseDate ) ->
-                                nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
+                                nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
 
                             Nothing ->
                                 -- There were no vaccination so far, so
                                 -- we offer first dose for today.
                                 let
                                     initialDate =
-                                        Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst )) person.birthDate
+                                        Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst )) person.birthDate
                                             |> Maybe.withDefault currentDate
 
                                     vaccinationDate =
@@ -731,9 +785,9 @@ generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vacc
 
 {-| Check if the first dose of vaccine may be administered to the person on the limit date.
 -}
-expectVaccineForPerson : NominalDate -> Person -> VaccineType -> Bool
-expectVaccineForPerson limitDate person vaccineType =
-    expectVaccineDoseForPerson limitDate person ( vaccineType, VaccineDoseFirst )
+expectVaccineForPerson : NominalDate -> Person -> Bool -> VaccineType -> Bool
+expectVaccineForPerson limitDate person initialOpvAdministered vaccineType =
+    expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, VaccineDoseFirst )
 
 
 {-| Check if a dose of vaccine may be administered to a person on the limit date.
@@ -741,14 +795,14 @@ For example, to check if the dose of vaccine may be administered today, we set
 limit date to current date. If we want to check in one year, we set the limit date
 to current date + 1 year.
 -}
-expectVaccineDoseForPerson : NominalDate -> Person -> ( VaccineType, VaccineDose ) -> Bool
-expectVaccineDoseForPerson limitDate person ( vaccineType, vaccineDose ) =
+expectVaccineDoseForPerson : NominalDate -> Person -> Bool -> ( VaccineType, VaccineDose ) -> Bool
+expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, vaccineDose ) =
     person.birthDate
         |> Maybe.map
             (\birthDate ->
                 let
                     expectedDate =
-                        initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose )
+                        initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose )
 
                     compared =
                         Date.compare expectedDate limitDate
@@ -765,8 +819,8 @@ expectVaccineDoseForPerson limitDate person ( vaccineType, vaccineDose ) =
         |> Maybe.withDefault False
 
 
-initialVaccinationDateByBirthDate : NominalDate -> ( VaccineType, VaccineDose ) -> NominalDate
-initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose ) =
+initialVaccinationDateByBirthDate : NominalDate -> Bool -> ( VaccineType, VaccineDose ) -> NominalDate
+initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose ) =
     let
         dosesInterval =
             vaccineDoseToComparable vaccineDose - 1
@@ -779,7 +833,20 @@ initialVaccinationDateByBirthDate birthDate ( vaccineType, vaccineDose ) =
             birthDate
 
         VaccineOPV ->
-            Date.add unit (dosesInterval * interval) birthDate
+            case vaccineDose of
+                VaccineDoseFirst ->
+                    birthDate
+
+                _ ->
+                    if initialOpvAdministered then
+                        -- Second dose is given starting from age of 6 weeks.
+                        Date.add Weeks 6 birthDate
+                            |> Date.add unit ((dosesInterval - 1) * interval)
+
+                    else
+                        -- Second dose is given starting from age of 10 weeks.
+                        Date.add Weeks 6 birthDate
+                            |> Date.add unit (dosesInterval * interval)
 
         VaccineDTP ->
             Date.add Weeks 6 birthDate
@@ -817,9 +884,9 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> VaccineType -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType =
-    if getLastDoseForVaccine vaccineType == lastDoseAdministered then
+nextVaccinationDataForVaccine : NominalDate -> Bool -> VaccineDose -> VaccineType -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
+    if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
         Nothing
 
     else
@@ -834,9 +901,9 @@ nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType =
                 )
 
 
-nextDoseForVaccine : NominalDate -> NominalDate -> VaccineDose -> VaccineType -> Maybe VaccineDose
-nextDoseForVaccine currentDate lastDoseDate lastDoseAdministered vaccineType =
-    nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
+nextDoseForVaccine : NominalDate -> NominalDate -> Bool -> VaccineDose -> VaccineType -> Maybe VaccineDose
+nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
+    nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
         |> Maybe.andThen
             (\( dose, dueDate ) ->
                 if Date.compare dueDate currentDate == GT then
@@ -970,11 +1037,11 @@ updateVaccinationFormByVaccineType vaccineType form data =
             { data | rotarixForm = form }
 
 
-getAllDosesForVaccine : VaccineType -> List VaccineDose
-getAllDosesForVaccine vaccineType =
+getAllDosesForVaccine : Bool -> VaccineType -> List VaccineDose
+getAllDosesForVaccine initialOpvAdministered vaccineType =
     let
         lastDose =
-            getLastDoseForVaccine vaccineType
+            getLastDoseForVaccine initialOpvAdministered vaccineType
     in
     List.filterMap
         (\dose ->
@@ -987,14 +1054,18 @@ getAllDosesForVaccine vaccineType =
         allVaccineDoses
 
 
-getLastDoseForVaccine : VaccineType -> VaccineDose
-getLastDoseForVaccine vaccineType =
+getLastDoseForVaccine : Bool -> VaccineType -> VaccineDose
+getLastDoseForVaccine initialOpvAdministered vaccineType =
     case vaccineType of
         VaccineBCG ->
             VaccineDoseFirst
 
         VaccineOPV ->
-            VaccineDoseFourth
+            if initialOpvAdministered then
+                VaccineDoseFourth
+
+            else
+                VaccineDoseThird
 
         VaccineDTP ->
             VaccineDoseThird
@@ -2112,6 +2183,48 @@ generateVaccinationProgressForVaccine vaccinations =
         vaccinations
         |> List.sortBy (Tuple.first >> vaccineDoseToComparable)
         |> Dict.fromList
+
+
+wasInitialOpvAdministeredByVaccinationProgress : Person -> VaccinationProgressDict -> Bool
+wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress =
+    let
+        firstDoseAdminstrationDate =
+            Dict.get VaccineOPV vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseFirst)
+    in
+    Maybe.map2
+        (\adminstrationDate birthDate ->
+            Date.diff Days birthDate adminstrationDate < 14
+        )
+        firstDoseAdminstrationDate
+        person.birthDate
+        |> Maybe.withDefault False
+
+
+wasInitialOpvAdministeredByVaccinationForm : NominalDate -> VaccinationForm -> Bool
+wasInitialOpvAdministeredByVaccinationForm birthDate form =
+    Maybe.map2
+        (\administeredDoses administrationDates ->
+            if EverySet.member VaccineDoseFirst administeredDoses then
+                let
+                    firstDoseAdminstrationDate =
+                        EverySet.toList administrationDates
+                            |> List.sortWith Date.compare
+                            |> List.head
+                in
+                Maybe.map
+                    (\adminstrationDate ->
+                        Date.diff Days birthDate adminstrationDate < 14
+                    )
+                    firstDoseAdminstrationDate
+                    |> Maybe.withDefault False
+
+            else
+                False
+        )
+        form.administeredDoses
+        form.administrationDates
+        |> Maybe.withDefault False
 
 
 
