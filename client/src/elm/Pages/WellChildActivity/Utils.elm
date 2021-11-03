@@ -1976,6 +1976,14 @@ generateNextDateForImmunisationVisit currentDate isChw assembled db =
 
             else
                 ( List.filterMap (Tuple.second >> Maybe.map Tuple.second) shortIntervalVaccinesData
+                    |> List.filter
+                        -- There can be a situation where IPV vaccine is to
+                        -- be administeredon latter date (first given at 14 weeks).
+                        -- We avoid this situation, and consider only dates that
+                        -- are due withing a month.
+                        (\administrationDate ->
+                            Date.diff Days currentDate administrationDate < 30
+                        )
                     |> List.sortWith Date.compare
                     -- Get the latest of all dates.
                     |> List.reverse
