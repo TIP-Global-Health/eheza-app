@@ -2549,7 +2549,8 @@ div.page-report.acute-illness {
       width: 8px;
     }
 
-    div.pane.actions-taken {
+    div.pane.actions-taken,
+    div.pane.next-steps {
       @include next-steps;
     }
 
@@ -2606,6 +2607,7 @@ div.page-report.well-child {
 }
 
 div.page-activity.well-child,
+div.page-report.acute-illness,
 div.page-report.well-child {
 
   .heading {
