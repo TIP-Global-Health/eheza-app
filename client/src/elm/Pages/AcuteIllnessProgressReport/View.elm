@@ -217,7 +217,7 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                         if isJust data.participant.outcome then
                             let
                                 endDate =
-                                    -- Illness resolution date  is stored at data.participant.endDate.
+                                    -- Illness resolution date is stored at data.participant.endDate.
                                     Maybe.withDefault date data.participant.endDate
                             in
                             viewAssessmentEntry endDate diagnosis AcuteIllnessResolved "green"
