@@ -58,19 +58,19 @@ generateNutritionAssessment currentDate zscores db assembled =
     Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue True db
 
 
-expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-expectActivity currentDate zscores child isChw data db activity =
+expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+expectActivity currentDate zscores isChw assembled db activity =
     case activity of
         -- Show for children that are at least 6 month old.
         Muac ->
-            ageInMonths currentDate child
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
         NextSteps ->
-            if mandatoryActivitiesCompleted currentDate zscores child isChw data db then
+            if mandatoryActivitiesCompleted currentDate zscores assembled.person isChw assembled db then
                 -- Any assesment require sending to HC.
-                generateNutritionAssessment currentDate zscores db data
+                generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
                     |> not
 
@@ -82,19 +82,19 @@ expectActivity currentDate zscores child isChw data db activity =
             True
 
 
-activityCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-activityCompleted currentDate zscores child isChw data db activity =
+activityCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+activityCompleted currentDate zscores isChw assembled db activity =
     let
         measurements =
-            data.measurements
+            assembled.measurements
     in
     case activity of
         Height ->
-            (not <| expectActivity currentDate zscores child isChw data db Height)
+            (not <| expectActivity currentDate zscores isChw assembled db Height)
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate zscores child isChw data db Muac)
+            (not <| expectActivity currentDate zscores isChw assembled db Muac)
                 || isJust measurements.muac
 
         Nutrition ->
@@ -107,7 +107,7 @@ activityCompleted currentDate zscores child isChw data db activity =
             isJust measurements.weight
 
         NextSteps ->
-            (not <| expectActivity currentDate zscores child isChw data db NextSteps)
+            (not <| expectActivity currentDate zscores isChw assembled db NextSteps)
                 || (isJust measurements.sendToHC
                         && isJust measurements.healthEducation
                         && isJust measurements.contributingFactors
@@ -116,9 +116,9 @@ activityCompleted currentDate zscores child isChw data db activity =
 
 
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryActivitiesCompleted currentDate zscores child isChw data db =
+mandatoryActivitiesCompleted currentDate zscores child isChw assembled db =
     allMandatoryActivities isChw
-        |> List.filter (not << activityCompleted currentDate zscores child isChw data db)
+        |> List.filter (not << activityCompleted currentDate zscores isChw assembled db)
         |> List.isEmpty
 
 

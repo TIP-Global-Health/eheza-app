@@ -17,6 +17,7 @@ import Maybe.Extra exposing (isJust)
 import Pages.NutritionActivity.Utils exposing (mandatoryActivitiesCompleted)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
+import Pages.NutritionEncounter.View exposing (allowEndingEcounter, partitionActivities)
 import Pages.NutritionProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
@@ -54,14 +55,32 @@ view language currentDate zscores id isChw db model =
                             |> RemoteData.map (\child_ -> ( participant_.person, child_ ))
                     )
 
+        assembledData =
+            generateAssembledData id db
+                |> RemoteData.toMaybe
+
+        ( endEnconterData, mandatoryNutritionAssessmentMeasurementsTaken ) =
+            Maybe.map2
+                (\assembled ( _, child ) ->
+                    let
+                        ( _, pendingActivities ) =
+                            partitionActivities currentDate zscores isChw db assembled
+                    in
+                    ( Just <|
+                        { showEndEncounterDialog = model.showEndEncounterDialog
+                        , allowEndEcounter = allowEndingEcounter isChw pendingActivities
+                        , closeEncounterMsg = CloseEncounter id
+                        , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
+                        }
+                    , mandatoryActivitiesCompleted currentDate zscores child isChw assembled db
+                    )
+                )
+                assembledData
+                (RemoteData.toMaybe childData)
+                |> Maybe.withDefault ( Nothing, False )
+
         initiator =
             InitiatorNutritionIndividual id
-
-        mandatoryNutritionAssessmentMeasurementsTaken =
-            Maybe.map2 (\assembled ( _, child ) -> mandatoryActivitiesCompleted currentDate zscores child isChw assembled db)
-                (generateAssembledData id db |> RemoteData.toMaybe)
-                (RemoteData.toMaybe childData)
-                |> Maybe.withDefault False
     in
     viewWebData language
         (viewProgressReport language
@@ -74,6 +93,7 @@ view language currentDate zscores id isChw db model =
             model.diagnosisMode
             SetActivePage
             SetDiagnosisMode
+            endEnconterData
         )
         identity
         childData
