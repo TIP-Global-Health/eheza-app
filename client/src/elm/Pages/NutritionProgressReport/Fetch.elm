@@ -3,6 +3,7 @@ module Pages.NutritionProgressReport.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Pages.AcuteIllnessParticipant.Fetch
 import Pages.NutritionEncounter.Fetch
 import Pages.Person.Fetch exposing (fetchFamilyMembers)
 import RemoteData exposing (RemoteData(..))
@@ -30,6 +31,7 @@ fetch id db =
                         , Backend.Model.FetchChildMeasurements participant.person
                         , Backend.Model.FetchExpectedSessions participant.person
                         ]
+                            ++ Pages.AcuteIllnessParticipant.Fetch.fetch participant.person db
                             ++ fetchFamilyMembers participant.person db
                     )
                 |> RemoteData.withDefault []

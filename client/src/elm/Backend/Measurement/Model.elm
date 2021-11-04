@@ -1107,7 +1107,7 @@ type AdministrationNote
     | NonAdministrationPatientDeclined
     | NonAdministrationPatientUnableToAfford
     | NonAdministrationHomeBirth
-    | NonAdministrationChildsCondition
+    | NonAdministrationTooIll
     | NonAdministrationOther
     | AdministeredToday
     | AdministeredPreviously

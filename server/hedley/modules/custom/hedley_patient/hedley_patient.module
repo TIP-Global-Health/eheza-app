@@ -41,10 +41,18 @@ function hedley_patient_node_update($node) {
     return;
   }
 
-  $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper_orig = entity_metadata_wrapper('node', $node->original);
-  $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
   $shards_orig = $wrapper_orig->field_shards->value(['identifier' => TRUE]);
+
+  if (empty($shards_orig)) {
+    // Having empty shards on update is a sign for person creation during
+    // patients import process. Therefore, know there's no content to
+    // recalculate shards for.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
   if (hedley_patient_arrays_equal($shards, $shards_orig)) {
     return;
@@ -92,7 +100,7 @@ function hedley_patient_recalculate_shards_for_person_content($nid) {
   // update those that do not match, so that they will get sent to the right
   // devices.
   // On first step, we fetch all content that is associated with person
-  // by person, adult and related to fields.
+  // by person, adult and related_to fields.
   // These are group and individual measurements, relationships,
   // PMTCT and individual participants.
   $query = db_select('node', 'n');

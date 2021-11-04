@@ -215,7 +215,12 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                 Maybe.map
                     (\( date, diagnosis ) ->
                         if isJust data.participant.outcome then
-                            viewAssessmentEntry date diagnosis AcuteIllnessResolved "green"
+                            let
+                                endDate =
+                                    -- Illness resolution date is stored at data.participant.endDate.
+                                    Maybe.withDefault date data.participant.endDate
+                            in
+                            viewAssessmentEntry endDate diagnosis AcuteIllnessResolved "green"
 
                         else
                             let
