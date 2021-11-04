@@ -1023,6 +1023,7 @@ type TranslationId
     | UterineMyoma
     | VaccinationCatchUpRequiredQuestion
     | VaccinationStatus VaccinationStatus
+    | VaccinationNoDosesAdministered
     | VaccineDoseAdministeredPreviouslyQuestion String
     | VaccineDoseAdministeredTodayQuestion String
     | VaccineType VaccineType
@@ -5530,8 +5531,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NonAdministrationChildsCondition ->
-                    { english = "Childs Condition"
+                NonAdministrationTooIll ->
+                    { english = "Too Ill"
                     , kinyarwanda = Nothing
                     }
 
@@ -5577,8 +5578,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NonAdministrationChildsCondition ->
-                    { english = "Childs Condition"
+                NonAdministrationTooIll ->
+                    { english = "Too Ill"
                     , kinyarwanda = Nothing
                     }
 
@@ -8314,6 +8315,11 @@ translationSet trans =
                     { english = "Up To Date"
                     , kinyarwanda = Nothing
                     }
+
+        VaccinationNoDosesAdministered ->
+            { english = "There are no recorded immunizations for this patient"
+            , kinyarwanda = Nothing
+            }
 
         VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
             { english = "Did the child receive any " ++ vaccineType ++ " vaccines prior to today that are not recorded above"

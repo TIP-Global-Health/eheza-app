@@ -50,6 +50,16 @@ update currentDate isChw id db msg model =
                     )
                 |> Maybe.withDefault form
 
+        resolveVaccinationForm vaccineType form =
+            Dict.get id db.wellChildMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (getMeasurementByVaccineTypeFunc vaccineType
+                        >> vaccinationFormWithDefault form
+                    )
+                |> Maybe.withDefault form
+
         generateNutritionAssessmentMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
@@ -660,13 +670,23 @@ update currentDate isChw id db msg model =
             , []
             )
 
-        SetAllowPreviousVaccinesUpdate vaccineType value ->
+        SetUpdatePreviousVaccines vaccineType dose value ->
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
-                    { form | allowPreviousVaccinesUpdate = Just value }
+                    if value == True then
+                        { form
+                            | viewMode = ViewModeVaccinationUpdate dose
+                            , updatePreviousVaccines = Nothing
+                            , willReceiveVaccineToday = Nothing
+                            , administrationNote = Nothing
+                        }
+
+                    else
+                        { form | updatePreviousVaccines = Just False }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none
@@ -677,6 +697,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
                     if willReceive then
@@ -689,25 +710,32 @@ update currentDate isChw id db msg model =
 
                     else
                         let
-                            updatedDoses =
-                                Maybe.map
-                                    (EverySet.toList
-                                        >> List.sortBy vaccineDoseToComparable
-                                        >> List.reverse
-                                        >> List.drop 1
-                                        >> EverySet.fromList
-                                    )
-                                    form.administeredDoses
+                            administeredDoses =
+                                Maybe.map EverySet.toList form.administeredDoses
+                                    |> Maybe.withDefault []
 
-                            updatedDates =
-                                Maybe.map
-                                    (EverySet.toList
-                                        >> List.sortWith Date.compare
-                                        >> List.reverse
-                                        >> List.drop 1
-                                        >> EverySet.fromList
+                            ( updatedDoses, updatedDates ) =
+                                if List.member dose administeredDoses then
+                                    ( Maybe.map
+                                        (EverySet.toList
+                                            >> List.sortBy vaccineDoseToComparable
+                                            >> List.reverse
+                                            >> List.drop 1
+                                            >> EverySet.fromList
+                                        )
+                                        form.administeredDoses
+                                    , Maybe.map
+                                        (EverySet.toList
+                                            >> List.sortWith Date.compare
+                                            >> List.reverse
+                                            >> List.drop 1
+                                            >> EverySet.fromList
+                                        )
+                                        form.administrationDates
                                     )
-                                    form.administrationDates
+
+                                else
+                                    ( form.administeredDoses, form.administrationDates )
                         in
                         { form
                             | willReceiveVaccineToday = Just False
@@ -725,6 +753,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
                     { form | administrationNote = Just note }
@@ -751,6 +780,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedForm =
                     { form | vaccinationUpdateDate = Just date }
@@ -764,6 +794,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedModel =
                     Maybe.map
@@ -791,6 +822,7 @@ update currentDate isChw id db msg model =
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
 
                 updatedDoses =
                     Maybe.map
