@@ -781,21 +781,6 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
     ]
 
 
-vacinationDateByPreviousDoseDate : Maybe NominalDate -> NominalDate -> ( VaccineType, VaccineDose ) -> NominalDate
-vacinationDateByPreviousDoseDate previousDoseDate birthDate ( vaccineType, dose ) =
-    Maybe.map
-        (\previousDate ->
-            let
-                ( interval, unit ) =
-                    getIntervalForVaccine vaccineType
-            in
-            -- Allow grace of one unit.
-            Date.add unit (interval - 1) previousDate
-        )
-        previousDoseDate
-        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, dose ))
-
-
 viewImmunisationContent :
     Language
     -> NominalDate
@@ -898,7 +883,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
-        ( formForView, fullScreen ) =
+        ( formForView, fullScreen, allowSave ) =
             Maybe.andThen immunisationTaskToVaccineType activeTask
                 |> Maybe.map
                     (\vaccineType ->
@@ -947,10 +932,12 @@ viewImmunisationContent language currentDate isChw assembled db data =
                         in
                         ( viewVaccinationForm language currentDate isChw assembled vaccineType vaccinationForm
                         , False
+                        , vaccinationForm.viewMode == ViewModeInitial
                         )
                     )
                 |> Maybe.withDefault
                     ( viewVaccinationOverviewForm language currentDate assembled.person assembled.vaccinationProgress db
+                    , True
                     , True
                     )
 
@@ -1003,6 +990,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
                         viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
+                |> showIf allowSave
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
@@ -1182,14 +1170,18 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
     Maybe.map
         (\birthDate ->
             let
+                initialOpvAdministered =
+                    wasInitialOpvAdministeredByVaccinationForm birthDate form
+                        || wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+
                 expectedDoses =
                     if isChw then
                         [ VaccineDoseFirst ]
 
                     else
-                        getAllDosesForVaccine vaccineType
+                        getAllDosesForVaccine initialOpvAdministered vaccineType
                             |> List.filter
-                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person ( vaccineType, dose ))
+                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person initialOpvAdministered ( vaccineType, dose ))
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory
@@ -1247,8 +1239,8 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     case form.viewMode of
                         ViewModeInitial ->
                             let
-                                allowPreviousVaccinesUpdate =
-                                    (form.allowPreviousVaccinesUpdate == Just True)
+                                updatePreviousVaccines =
+                                    (form.updatePreviousVaccines == Just True)
                                         && (form.administrationNote /= Just AdministeredToday)
 
                                 doseAllowedForDeletion =
@@ -1262,7 +1254,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                         |> Maybe.map Tuple.first
 
                                 dosesFromPreviousEncountersForView =
-                                    List.map (\( dose, date ) -> viewHistoryEntry dose StatusDone (Just date) False False)
+                                    List.map (\( dose, date ) -> viewHistoryEntry dose (Just date) False False)
                                         dosesFromPreviousEncountersData
 
                                 dosesFromCurrentEncounterForView =
@@ -1273,73 +1265,35 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                     (form.willReceiveVaccineToday /= Just True)
                                                         && (doseAllowedForDeletion == Just dose)
                                             in
-                                            viewHistoryEntry dose StatusDone (Just date) False allowDelete
+                                            viewHistoryEntry dose (Just date) False allowDelete
                                         )
                                         dosesFromCurrentEncounterData
 
-                                dosesMissingForView =
-                                    List.indexedMap
-                                        (\index dose ->
-                                            let
-                                                step =
-                                                    -- Index starts from 0.
-                                                    -- If there were no vaccinations given, we'll use
-                                                    -- expected due date of first dose, therefore, no
-                                                    -- need to add 1 interval.
-                                                    -- Otherwise, we want to add 1 interval to the
-                                                    -- date of last vaccination.
-                                                    if isNothing lastDoseData then
-                                                        index
+                                administeredDosesForView =
+                                    dosesFromPreviousEncountersForView
+                                        ++ dosesFromCurrentEncounterForView
 
-                                                    else
-                                                        index + 1
+                                dosesForView =
+                                    if List.isEmpty administeredDosesForView then
+                                        [ viewCustomLabel language Translate.VaccinationNoDosesAdministered "." "label" ]
 
-                                                expectedOnDate =
-                                                    Maybe.map Tuple.second lastDoseData
-                                                        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
-                                                        |> Date.add unit (step * interval)
-                                            in
-                                            if not <| Date.compare expectedOnDate currentDate == LT then
-                                                Nothing
-
-                                            else
-                                                Just <|
-                                                    viewHistoryEntry dose
-                                                        StatusBehind
-                                                        Nothing
-                                                        (index == 0 && allowPreviousVaccinesUpdate)
-                                                        False
-                                        )
-                                        dosesMissing
-                                        |> Maybe.Extra.values
+                                    else
+                                        administeredDosesForView
                             in
-                            [ div [ class "history" ] <|
-                                dosesFromPreviousEncountersForView
-                                    ++ dosesFromCurrentEncounterForView
-                                    ++ dosesMissingForView
+                            [ div [ class "history" ]
+                                dosesForView
                             ]
 
                         ViewModeVaccinationUpdate dose ->
                             [ div [ class "history" ]
-                                [ viewHistoryEntry dose StatusBehind Nothing False False ]
+                                [ viewHistoryEntry dose Nothing False False ]
                             ]
 
-                viewHistoryEntry dose status date updateAllowed deleteAllowed =
+                viewHistoryEntry dose date updateAllowed deleteAllowed =
                     let
                         dateForView =
                             Maybe.map formatDDMMyyyy date
                                 |> Maybe.withDefault "--/--/----"
-
-                        statusClass =
-                            case status of
-                                StatusDone ->
-                                    "done"
-
-                                StatusBehind ->
-                                    "behind"
-
-                                _ ->
-                                    ""
 
                         deleteButton =
                             Maybe.map
@@ -1355,7 +1309,6 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     in
                     div [ class "history-entry" ]
                         [ div [ class "dose" ] [ text <| String.fromInt <| vaccineDoseToComparable dose ]
-                        , div [ class <| "status " ++ statusClass ] [ text <| translate language <| Translate.VaccinationStatus status ]
                         , div [ class "date" ] [ text dateForView ]
                         , showIf updateAllowed <|
                             div
@@ -1372,90 +1325,101 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                             let
                                 vaccineTypeLabel =
                                     translate language <| Translate.WellChildVaccineLabel vaccineType
-
-                                ( derivedInputs, derivedTasksActive, derivedTasksCompleted ) =
-                                    Maybe.map2
-                                        (\todaysDose _ ->
-                                            let
-                                                -- This is the date starting from which we allow
-                                                -- vaccine administration for todays dose.
-                                                expectedOnDate =
-                                                    Maybe.map
-                                                        (\( _, lastDoseDate ) ->
-                                                            Date.add unit interval lastDoseDate
-                                                        )
-                                                        lastDoseData
-                                                        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
-                                            in
-                                            if Date.compare expectedOnDate currentDate == GT then
-                                                -- We've not reached the date on which tadays dose
-                                                -- administration is allowed, therefore, we do not
-                                                -- show the input.
-                                                ( [], 0, 0 )
-
-                                            else
-                                                let
-                                                    ( whyNotIpnut, whyNotTaskActive, whyNotTaskCompleted ) =
-                                                        if form.willReceiveVaccineToday == Just False then
-                                                            ( [ div [ class "why-not" ]
-                                                                    [ viewQuestionLabel language Translate.WhyNot
-                                                                    , viewCheckBoxSelectInput language
-                                                                        [ NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationKnownAllergy ]
-                                                                        [ NonAdministrationPatientUnableToAfford, NonAdministrationChildsCondition, NonAdministrationOther ]
-                                                                        form.administrationNote
-                                                                        (SetAdministrationNote vaccineType)
-                                                                        Translate.AdministrationNoteForWellChild
-                                                                    ]
-                                                              ]
-                                                            , taskCompleted form.administrationNote
-                                                            , 1
-                                                            )
-
-                                                        else
-                                                            ( [], 0, 0 )
-                                                in
-                                                ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredTodayQuestion vaccineTypeLabel
-                                                  , viewBoolInput
-                                                        language
-                                                        form.willReceiveVaccineToday
-                                                        (SetWillReceiveVaccineToday vaccineType todaysDose)
-                                                        ""
-                                                        Nothing
-                                                  ]
-                                                    ++ whyNotIpnut
-                                                , taskCompleted form.willReceiveVaccineToday + whyNotTaskActive
-                                                , 1 + whyNotTaskCompleted
-                                                )
-                                        )
-                                        (Maybe.Extra.or doseGivenToday (List.head dosesMissing))
-                                        form.allowPreviousVaccinesUpdate
-                                        |> Maybe.withDefault ( [], 0, 0 )
                             in
-                            ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineTypeLabel
-                              , viewBoolInput
-                                    language
-                                    form.allowPreviousVaccinesUpdate
-                                    (SetAllowPreviousVaccinesUpdate vaccineType)
-                                    ""
-                                    Nothing
-                              ]
-                                ++ derivedInputs
-                            , taskCompleted form.allowPreviousVaccinesUpdate + derivedTasksActive
-                            , 1 + derivedTasksCompleted
-                            )
+                            Maybe.Extra.or doseGivenToday (List.head dosesMissing)
+                                |> Maybe.map
+                                    (\nextDose ->
+                                        let
+                                            -- This is the date starting from which we allow
+                                            -- vaccine administration for todays dose.
+                                            expectedOnDate =
+                                                Maybe.map
+                                                    (\( _, lastDoseDate ) -> Date.add unit interval lastDoseDate)
+                                                    lastDoseData
+                                                    |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst ))
+                                        in
+                                        if Date.compare expectedOnDate currentDate == GT then
+                                            -- We've not reached the date on which next dose
+                                            -- administration is allowed, therefore, we do not
+                                            -- show the input.
+                                            ( [], 0, 0 )
+
+                                        else
+                                            let
+                                                ( previousDosesInput, previousDosesTaskActive, previousDosesTaskCompleted ) =
+                                                    if form.willReceiveVaccineToday == Just True then
+                                                        ( [], 0, 0 )
+
+                                                    else
+                                                        ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredPreviouslyQuestion vaccineTypeLabel
+                                                          , viewBoolInput
+                                                                language
+                                                                form.updatePreviousVaccines
+                                                                (SetUpdatePreviousVaccines vaccineType nextDose)
+                                                                ""
+                                                                Nothing
+                                                          ]
+                                                        , taskCompleted form.updatePreviousVaccines
+                                                        , 1
+                                                        )
+
+                                                ( todaysDoseInputs, todaysDoseTasksActive, todaysDoseTasksCompleted ) =
+                                                    if form.updatePreviousVaccines == Just False then
+                                                        let
+                                                            ( whyNotIpnut, whyNotTaskActive, whyNotTaskCompleted ) =
+                                                                if form.willReceiveVaccineToday == Just False then
+                                                                    ( [ div [ class "why-not" ]
+                                                                            [ viewQuestionLabel language Translate.WhyNot
+                                                                            , viewCheckBoxSelectInput language
+                                                                                [ NonAdministrationLackOfStock, NonAdministrationPatientDeclined, NonAdministrationKnownAllergy ]
+                                                                                [ NonAdministrationPatientUnableToAfford, NonAdministrationTooIll, NonAdministrationOther ]
+                                                                                form.administrationNote
+                                                                                (SetAdministrationNote vaccineType)
+                                                                                Translate.AdministrationNoteForWellChild
+                                                                            ]
+                                                                      ]
+                                                                    , taskCompleted form.administrationNote
+                                                                    , 1
+                                                                    )
+
+                                                                else
+                                                                    ( [], 0, 0 )
+                                                        in
+                                                        ( [ viewQuestionLabel language <| Translate.VaccineDoseAdministeredTodayQuestion vaccineTypeLabel
+                                                          , viewBoolInput
+                                                                language
+                                                                form.willReceiveVaccineToday
+                                                                (SetWillReceiveVaccineToday vaccineType nextDose)
+                                                                ""
+                                                                Nothing
+                                                          ]
+                                                            ++ whyNotIpnut
+                                                        , taskCompleted form.willReceiveVaccineToday + whyNotTaskActive
+                                                        , 1 + whyNotTaskCompleted
+                                                        )
+
+                                                    else
+                                                        ( [], 0, 0 )
+                                            in
+                                            ( previousDosesInput ++ todaysDoseInputs
+                                            , previousDosesTaskActive + todaysDoseTasksActive
+                                            , previousDosesTaskCompleted + todaysDoseTasksCompleted
+                                            )
+                                    )
+                                |> Maybe.withDefault ( [], 0, 0 )
 
                         ViewModeVaccinationUpdate dose ->
                             let
                                 startDate =
                                     Maybe.andThen
                                         (\( lastDoseAdministered, lastDoseDate ) ->
-                                            nextVaccinationDataForVaccine lastDoseDate lastDoseAdministered vaccineType
+                                            nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
                                         )
                                         lastDoseData
                                         |> Maybe.map Tuple.second
                                         -- No doses were given yet, so we will set start date to
                                         -- expected due date of first dose.
-                                        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate ( vaccineType, VaccineDoseFirst ))
+                                        |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst ))
                             in
                             ( [ div [ class "form-input date previous" ]
                                     [ viewLabel language Translate.SelectDate
