@@ -283,7 +283,7 @@ administrationNoteFromString reason =
             Just NonAdministrationHomeBirth
 
         "childs-condition" ->
-            Just NonAdministrationChildsCondition
+            Just NonAdministrationTooIll
 
         "other" ->
             Just NonAdministrationOther
@@ -316,7 +316,7 @@ administrationNoteToString reason =
         NonAdministrationHomeBirth ->
             "home-birth"
 
-        NonAdministrationChildsCondition ->
+        NonAdministrationTooIll ->
             "childs-condition"
 
         NonAdministrationOther ->
@@ -421,6 +421,37 @@ nutritionAssessmentFromString assesment =
 
         _ ->
             Nothing
+
+
+nutritionAssessmentToComparable : NutritionAssessment -> Int
+nutritionAssessmentToComparable assesment =
+    case assesment of
+        AssesmentAcuteMalnutritionModerate ->
+            1
+
+        AssesmentAcuteMalnutritionSevere ->
+            1
+
+        AssesmentUnderweightModerate ->
+            1
+
+        AssesmentUnderweightSevere ->
+            1
+
+        AssesmentMalnutritionSigns _ ->
+            1
+
+        AssesmentConsecutiveWeightLoss ->
+            1
+
+        NoNutritionAssessment ->
+            1
+
+        AssesmentDangerSignsNotPresent ->
+            2
+
+        AssesmentDangerSignsPresent ->
+            2
 
 
 postpartumMotherDangerSignToString : PostpartumMotherDangerSign -> String

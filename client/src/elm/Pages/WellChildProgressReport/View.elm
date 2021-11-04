@@ -6,7 +6,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportI
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc, muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -24,7 +24,7 @@ import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
-        , PediatricCareMilestone
+        , PediatricCareMilestone(..)
         , WellChildEncounter
         , WellChildEncounterType(..)
         , ecdMilestoneWarnings
@@ -604,11 +604,21 @@ generatePartitionedWarningEntries db maybeAssembled =
                                                     Nothing
 
                                                 else
-                                                    Maybe.andThen (resolvePediatricCareMilestoneOnDate encounter.startDate) assembled.person.birthDate
-                                                        |> Maybe.map
-                                                            (\ecdMilestone ->
-                                                                ( encounter.startDate, ecdMilestone, warning )
-                                                            )
+                                                    let
+                                                        ecdMilestone =
+                                                            if List.member warning ecdMilestoneWarnings then
+                                                                Maybe.andThen (resolvePediatricCareMilestoneOnDate encounter.startDate) assembled.person.birthDate
+
+                                                            else
+                                                                -- Giving dummy value here, because ecd milestone is
+                                                                -- not applicable for Head Circumference warnings.
+                                                                Just Milestone4Years
+                                                    in
+                                                    Maybe.map
+                                                        (\milestone ->
+                                                            ( encounter.startDate, milestone, warning )
+                                                        )
+                                                        ecdMilestone
                                             )
                             in
                             if List.isEmpty warnings then
@@ -722,10 +732,14 @@ diagnosisEntryStatusToString status =
 
 viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
 viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
+    let
+        orderedAssessments =
+            List.sortBy nutritionAssessmentToComparable assessments
+    in
     ( date
     , div [ class "entry diagnosis" ]
         [ div [ class "cell assesment" ] <|
-            List.map (translateNutritionAssement language >> List.singleton >> p []) assessments
+            List.map (translateNutritionAssement language >> List.singleton >> p []) orderedAssessments
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
         , div [ class "cell date" ] [ text <| formatDDMMYY date ]
