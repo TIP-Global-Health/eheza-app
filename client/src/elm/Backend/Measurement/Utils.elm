@@ -283,7 +283,7 @@ administrationNoteFromString reason =
             Just NonAdministrationHomeBirth
 
         "childs-condition" ->
-            Just NonAdministrationChildsCondition
+            Just NonAdministrationTooIll
 
         "other" ->
             Just NonAdministrationOther
@@ -316,7 +316,7 @@ administrationNoteToString reason =
         NonAdministrationHomeBirth ->
             "home-birth"
 
-        NonAdministrationChildsCondition ->
+        NonAdministrationTooIll ->
             "childs-condition"
 
         NonAdministrationOther ->

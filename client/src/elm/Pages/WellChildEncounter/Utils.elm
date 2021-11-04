@@ -54,14 +54,18 @@ generateAssembledData id db =
         previousMeasurements =
             getPreviousMeasurements previousMeasurementsWithDates
 
-        vaccinationHistory =
-            generateVaccinationProgress previousMeasurements
-
-        vaccinationProgress =
-            RemoteData.toMaybe measurements
-                |> Maybe.map (\measurements_ -> measurements_ :: previousMeasurements)
-                |> Maybe.withDefault previousMeasurements
-                |> generateVaccinationProgress
+        ( vaccinationHistory, vaccinationProgress ) =
+            RemoteData.toMaybe person
+                |> Maybe.map
+                    (\person_ ->
+                        ( generateVaccinationProgress person_ previousMeasurements
+                        , RemoteData.toMaybe measurements
+                            |> Maybe.map (\measurements_ -> measurements_ :: previousMeasurements)
+                            |> Maybe.withDefault previousMeasurements
+                            |> generateVaccinationProgress person_
+                        )
+                    )
+                |> Maybe.withDefault ( Dict.empty, Dict.empty )
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
