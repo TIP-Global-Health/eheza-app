@@ -3105,7 +3105,6 @@ translationSet trans =
                 UseConsonantSounds ->
                     { english = "Is the child using consonant sounds in babbling, for example “da, da, da”"
                     , kinyarwanda = Just "Umwana akoresha amajwi yumvikanamo inyuguti igihe yivugisha, urugero:da,da,da,.."
-
                     }
 
                 RespondToSoundWithSound ->

@@ -579,10 +579,7 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
 generatePartitionedWarningEntries :
     ModelIndexedDb
     -> Maybe AssembledData
-    ->
-        ( List ( NominalDate, PediatricCareMilestone, EncounterWarning )
-        , List ( NominalDate, PediatricCareMilestone, EncounterWarning )
-        )
+    -> ( List ( NominalDate, PediatricCareMilestone, EncounterWarning ), List ( NominalDate, PediatricCareMilestone, EncounterWarning ) )
 generatePartitionedWarningEntries db maybeAssembled =
     Maybe.map
         (\assembled ->
