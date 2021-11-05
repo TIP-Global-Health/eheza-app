@@ -225,16 +225,11 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     [ text <| translate language Translate.ParticipantDirectory ]
 
             caseManagementButton =
-                if isChw then
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
-                        ]
-                        [ text <| translate language Translate.CaseManagement
-                        ]
-
-                else
-                    emptyNode
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
+                    ]
+                    [ text <| translate language Translate.CaseManagement ]
         in
         [ generalInfo
         , clinicalButton
