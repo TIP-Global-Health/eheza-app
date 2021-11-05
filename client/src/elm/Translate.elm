@@ -8499,7 +8499,7 @@ translationSet trans =
                     }
 
                 VaccineMR ->
-                    { english = "There are 2 doses of Measles- Rubella - at 9 months and 15 months."
+                    { english = "There are 2 doses of Measles - Rubella - at 9 months and 15 months."
                     , kinyarwanda = Nothing
                     }
 
