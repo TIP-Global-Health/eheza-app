@@ -540,7 +540,8 @@
       'follow_up',
       'nutrition_follow_up',
       'prenatal_follow_up',
-      'well_child_follow_up'
+      'well_child_follow_up',
+      'acute_illness_trace_contact'
     ];
 
     function viewFollowUpMeasurements (shard) {

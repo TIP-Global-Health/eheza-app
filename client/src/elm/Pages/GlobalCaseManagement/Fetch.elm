@@ -107,6 +107,18 @@ fetch currentDate healthCenterId villageId db =
                 |> List.map Tuple.second
 
         --
+        --  Trace Contacts calculations.
+        --
+        -- @todo
+        -- prenatalFollowUps =
+        --     followUps
+        --         |> Maybe.map (generatePrenatalFollowUps db)
+        --         |> Maybe.withDefault Dict.empty
+        --
+        -- peopleForPrenatal =
+        --     Dict.keys prenatalFollowUps
+        --         |> List.map Tuple.second
+        --
         -- People for all types of follow ups.
         --
         people =
