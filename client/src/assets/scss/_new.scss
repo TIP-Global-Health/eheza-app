@@ -3182,7 +3182,8 @@ div.page-case-management {
       padding: 20px;
       text-align: center;
 
-      .follow-up-entry {
+      .follow-up-entry,
+      .trace-contact-entry {
         border-bottom: 1px solid $color-text;
         display: flex;
         margin-top: 15px;
@@ -3251,6 +3252,24 @@ div.page-case-management {
           background-size: 45px 50px;
           height: 50px;
           width: 45px;
+        }
+      }
+
+      .trace-contact-entry {
+
+        .name,
+        .reporter {
+          width: 150px;
+        }
+
+        .reporter {
+          align-self: center;
+          width: 145px;
+        }
+
+        .phone-number {
+          align-self: center;
+          width: 200px;
         }
       }
     }
