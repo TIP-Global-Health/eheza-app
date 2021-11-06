@@ -109,15 +109,11 @@ fetch currentDate healthCenterId db =
         --
         --  Trace Contacts calculations.
         --
-        -- @todo
-        -- prenatalFollowUps =
-        --     followUps
-        --         |> Maybe.map (generatePrenatalFollowUps db)
-        --         |> Maybe.withDefault Dict.empty
-        --
-        -- peopleForPrenatal =
-        --     Dict.keys prenatalFollowUps
-        --         |> List.map Tuple.second
+        traceReporters =
+            Maybe.map (.traceContacts >> Dict.values >> List.map .participantId)
+                followUps
+                |> Maybe.withDefault []
+
         --
         -- People for all types of follow ups.
         --
@@ -125,6 +121,7 @@ fetch currentDate healthCenterId db =
             peopleForNutrition
                 ++ peopleForAccuteIllness
                 ++ peopleForPrenatal
+                ++ traceReporters
                 |> EverySet.fromList
                 |> EverySet.toList
     in
