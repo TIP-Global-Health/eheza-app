@@ -381,6 +381,7 @@ type TranslationId
     | CaregiverNationalId
     | CaseManagement
     | CaseManagementFilterLabel CaseManagementFilter
+    | CaseManagementPaneHeader CaseManagementFilter
     | CentimeterShorthand
     | Celsius
     | CelsiusAbbrev
@@ -508,7 +509,6 @@ type TranslationId
     | EmptyString
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
-    | EncounterTypeFollowUpLabel IndividualEncounterType
     | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
@@ -2341,6 +2341,28 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        CaseManagementPaneHeader encounterType ->
+            case encounterType of
+                FilterAcuteIllness ->
+                    { english = "Acute Illness Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi wavuwe indwara zifatiyeho"
+                    }
+
+                FilterAntenatal ->
+                    { english = "Antenatal Care Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umugore utwite"
+                    }
+
+                FilterNutrition ->
+                    { english = "Child Nutrition Follow Up"
+                    , kinyarwanda = Just "Gukurikirana imirire y'umwana"
+                    }
+
+                FilterContactsTrace ->
+                    { english = "Covid Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
         CentimeterShorthand ->
             { english = "cm"
             , kinyarwanda = Just "cm"
@@ -3514,38 +3536,6 @@ translationSet trans =
                 AntenatalPage ->
                     { english = "Antenatal Care"
                     , kinyarwanda = Just "Isuzuma ku Mugore Utwite"
-                    }
-
-        EncounterTypeFollowUpLabel encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    { english = "Acute Illness Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi wavuwe indwara zifatiyeho"
-                    }
-
-                AntenatalEncounter ->
-                    { english = "Antenatal Care Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umugore utwite"
-                    }
-
-                HomeVisitEncounter ->
-                    { english = "Home Visit Follow Up"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = "Inmmunization Follow Up"
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Child Nutrition Follow Up"
-                    , kinyarwanda = Just "Gukurikirana imirire y'umwana"
-                    }
-
-                WellChildEncounter ->
-                    { english = "Standard Pediatric Visit Follow Up"
-                    , kinyarwanda = Nothing
                     }
 
         EncounterWarningForDiagnosisPane warning suffix ->

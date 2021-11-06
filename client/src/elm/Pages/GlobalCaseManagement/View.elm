@@ -283,10 +283,10 @@ viewFilters language filters model =
         |> div [ class "ui segment filters" ]
 
 
-viewItemHeading : Language -> IndividualEncounterType -> Html Msg
-viewItemHeading language encounterType =
+viewItemHeading : Language -> CaseManagementFilter -> Html Msg
+viewItemHeading language filter =
     div [ class "pane-heading" ]
-        [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
+        [ text <| translate language <| Translate.CaseManagementPaneHeader filter ]
 
 
 viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
@@ -308,7 +308,7 @@ viewNutritionPane language currentDate itemsDict db model =
                 List.map (viewNutritionFollowUpEntry language currentDate) entries
     in
     div [ class "pane" ]
-        [ viewItemHeading language NutritionEncounter
+        [ viewItemHeading language FilterNutrition
         , div [ class "pane-content" ] content
         ]
 
@@ -434,7 +434,7 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
                 List.map (viewAcuteIllnessFollowUpEntry language currentDate) entries
     in
     div [ class "pane" ]
-        [ viewItemHeading language AcuteIllnessEncounter
+        [ viewItemHeading language FilterAcuteIllness
         , div [ class "pane-content" ]
             content
         ]
@@ -572,7 +572,7 @@ viewPrenatalPane language currentDate itemsDict db model =
                 List.map (viewPrenatalFollowUpEntry language currentDate) entries
     in
     div [ class "pane" ]
-        [ viewItemHeading language AntenatalEncounter
+        [ viewItemHeading language FilterAntenatal
         , div [ class "pane-content" ]
             content
         ]
@@ -730,7 +730,7 @@ viewContactsTracingPane language currentDate itemsDict db model =
                 List.map (viewTraceContactEntry language db) entries
     in
     div [ class "pane" ]
-        [ viewItemHeading language AntenatalEncounter
+        [ viewItemHeading language FilterContactsTrace
         , div [ class "pane-content" ]
             content
         ]
