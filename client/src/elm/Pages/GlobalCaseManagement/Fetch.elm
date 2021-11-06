@@ -12,8 +12,8 @@ import Pages.GlobalCaseManagement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : NominalDate -> HealthCenterId -> VillageId -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate healthCenterId villageId db =
+fetch : NominalDate -> HealthCenterId -> ModelIndexedDb -> List MsgIndexedDb
+fetch currentDate healthCenterId db =
     let
         followUps =
             Dict.get healthCenterId db.followUpMeasurements
