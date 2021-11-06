@@ -48,7 +48,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
-import Pages.GlobalCaseManagement.Utils exposing (allEncounterTypes)
+import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
 import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
@@ -88,13 +88,13 @@ view language page currentDate healthCenterId isChw nurse model db =
                 ChwPage chwDashboardPage ->
                     case chwDashboardPage of
                         AcuteIllnessPage _ ->
-                            viewHeader language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (UserPage <| DashboardPage MainPage)
+                            viewHeader language (Translate.CaseManagementFilterLabel FilterAcuteIllness) (UserPage <| DashboardPage MainPage)
 
                         NutritionPage ->
-                            viewHeader language (Translate.EncounterTypeFileterLabel NutritionEncounter) (UserPage <| DashboardPage MainPage)
+                            viewHeader language (Translate.CaseManagementFilterLabel FilterNutrition) (UserPage <| DashboardPage MainPage)
 
                         AntenatalPage ->
-                            viewHeader language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (UserPage <| DashboardPage MainPage)
+                            viewHeader language (Translate.CaseManagementFilterLabel FilterAntenatal) (UserPage <| DashboardPage MainPage)
 
                 NursePage nurseDashboardPage ->
                     let
@@ -221,9 +221,9 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.EncounterTypeFileterLabel AcuteIllnessEncounter) (String.fromInt totalAcuteIllnessFollowUps)
-            , chwCard language (Translate.EncounterTypeFileterLabel NutritionEncounter) (String.fromInt totalNutritionFollowUps)
-            , chwCard language (Translate.EncounterTypeFileterLabel AntenatalEncounter) (String.fromInt totalPrenatalFollowUps)
+            [ chwCard language (Translate.CaseManagementFilterLabel FilterAcuteIllness) (String.fromInt totalAcuteIllnessFollowUps)
+            , chwCard language (Translate.CaseManagementFilterLabel FilterNutrition) (String.fromInt totalNutritionFollowUps)
+            , chwCard language (Translate.CaseManagementFilterLabel FilterAntenatal) (String.fromInt totalPrenatalFollowUps)
             ]
         ]
     ]
@@ -602,7 +602,7 @@ viewChwMenuButton language targetPage activePage =
         label =
             if isNothing activePage && targetPage == AcuteIllnessPage OverviewPage then
                 -- On Main page, and target is Acute Illness page.
-                Translate.EncounterTypeFileterLabel AcuteIllnessEncounter
+                Translate.CaseManagementFilterLabel FilterAcuteIllness
 
             else
                 Translate.EncounterTypePageLabel targetPage

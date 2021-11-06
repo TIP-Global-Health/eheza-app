@@ -4,10 +4,11 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..))
+import Backend.Measurement.Model exposing (AcuteIllnessTraceContact, FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
+import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
@@ -95,10 +96,13 @@ viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model 
                     viewPrenatalPane language currentDate prenatalFollowUps db model
 
                 panes =
-                    [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( AntenatalEncounter, prenatalFollowUpsPane ), ( NutritionEncounter, nutritionFollowUpsPane ) ]
+                    [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
+                    , ( FilterAntenatal, prenatalFollowUpsPane )
+                    , ( FilterNutrition, nutritionFollowUpsPane )
+                    ]
                         |> List.filterMap
                             (\( type_, pane ) ->
-                                if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
+                                if isNothing model.filter || model.filter == Just type_ then
                                     Just pane
 
                                 else
@@ -106,7 +110,7 @@ viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model 
                             )
             in
             div [ class "ui unstackable items" ] <|
-                viewFilters language model
+                viewFilters language chwFilters model
                     :: panes
         )
         maybeVillageId
@@ -115,7 +119,25 @@ viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model 
 
 viewContentForNurse : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
 viewContentForNurse language currentDate healthCenterId model db followUps =
-    text "viewContentForNurse"
+    let
+        contactsTracingPane =
+            viewContactsTracingPane language currentDate followUps.traceContacts db model
+
+        panes =
+            [ ( FilterContactsTrace, contactsTracingPane )
+            ]
+                |> List.filterMap
+                    (\( type_, pane ) ->
+                        if isNothing model.filter || model.filter == Just type_ then
+                            Just pane
+
+                        else
+                            Nothing
+                    )
+    in
+    div [ class "ui unstackable items" ] <|
+        viewFilters language nurseFilters model
+            :: panes
 
 
 viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
@@ -135,41 +157,45 @@ viewEntryPopUp language currentDate dialogState =
 viewStartFollowUpEncounterDialog : Language -> FollowUpEncounterDataType -> Html Msg
 viewStartFollowUpEncounterDialog language dataType =
     let
-        ( encounterType, personName ) =
-            case dataType of
-                FollowUpNutrition data ->
-                    ( HomeVisitEncounter, data.personName )
-
-                FollowUpAcuteIllness data ->
-                    ( AcuteIllnessEncounter, data.personName )
-
-                -- We should never get here, since Prenatal got
-                -- it's own dialog.
-                FollowUpPrenatal data ->
-                    ( AntenatalEncounter, data.personName )
-    in
-    div [ class "ui active modal" ]
-        [ div [ class "content" ]
-            [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
-            , text " "
-            , span [ class "person-name" ] [ text personName ]
-            , text "?"
-            ]
-        , div [ class "actions" ]
-            [ div [ class "two ui buttons" ]
-                [ button
-                    [ class "ui primary fluid button"
-                    , onClick <| StartFollowUpEncounter dataType
+        startFollowUpDialog encounterType personName =
+            div [ class "ui active modal" ]
+                [ div [ class "content" ]
+                    [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
+                    , text " "
+                    , span [ class "person-name" ] [ text personName ]
+                    , text "?"
                     ]
-                    [ text <| translate language Translate.Yes ]
-                , button
-                    [ class "ui fluid button"
-                    , onClick <| SetDialogState Nothing
+                , div [ class "actions" ]
+                    [ div [ class "two ui buttons" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| StartFollowUpEncounter dataType
+                            ]
+                            [ text <| translate language Translate.Yes ]
+                        , button
+                            [ class "ui fluid button"
+                            , onClick <| SetDialogState Nothing
+                            ]
+                            [ text <| translate language Translate.No ]
+                        ]
                     ]
-                    [ text <| translate language Translate.No ]
                 ]
-            ]
-        ]
+    in
+    case dataType of
+        FollowUpNutrition data ->
+            startFollowUpDialog HomeVisitEncounter data.personName
+
+        FollowUpAcuteIllness data ->
+            startFollowUpDialog AcuteIllnessEncounter data.personName
+
+        -- We should never get here, since Prenatal got
+        -- it's own dialog.
+        FollowUpPrenatal data ->
+            emptyNode
+
+        -- This is not a follow up encounter.
+        CaseManagementContactsTracing ->
+            emptyNode
 
 
 viewStartFollowUpPrenatalEncounterDialog : Language -> NominalDate -> FollowUpPrenatalData -> Html Msg
@@ -233,31 +259,28 @@ viewStartFollowUpPrenatalEncounterDialog language currentDate data =
         ]
 
 
-viewFilters : Language -> Model -> Html Msg
-viewFilters language model =
+viewFilters : Language -> List CaseManagementFilter -> Model -> Html Msg
+viewFilters language filters model =
     let
-        filters =
-            allEncounterTypes
-                |> List.map Just
-                |> List.append [ Nothing ]
-
         renderButton maybeFilter =
             let
                 label =
-                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
+                    Maybe.map Translate.CaseManagementFilterLabel maybeFilter
                         |> Maybe.withDefault Translate.All
             in
             button
                 [ classList
-                    [ ( "active", model.encounterTypeFilter == maybeFilter )
+                    [ ( "active", model.filter == maybeFilter )
                     , ( "primary ui button", True )
                     ]
-                , onClick <| SetEncounterTypeFilter maybeFilter
+                , onClick <| SetFilter maybeFilter
                 ]
                 [ translateText language label ]
     in
-    div [ class "ui segment filters" ] <|
-        List.map renderButton filters
+    List.map Just filters
+        |> List.append [ Nothing ]
+        |> List.map renderButton
+        |> div [ class "ui segment filters" ]
 
 
 viewItemHeading : Language -> IndividualEncounterType -> Html Msg
@@ -682,6 +705,98 @@ viewFollowUpEntry language dueOption personName popupData assessment =
         , div
             [ class "icon-forward"
             , onClick <| SetDialogState <| Just popupData
+            ]
+            []
+        ]
+
+
+viewContactsTracingPane :
+    Language
+    -> NominalDate
+    -> Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewContactsTracingPane language currentDate itemsDict db model =
+    let
+        entries =
+            generateContactsTracingEntries language currentDate itemsDict db
+
+        content =
+            if List.isEmpty entries then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                List.map (viewTraceContactEntry language db) entries
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language AntenatalEncounter
+        , div [ class "pane-content" ]
+            content
+        ]
+
+
+generateContactsTracingEntries :
+    Language
+    -> NominalDate
+    -> Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
+    -> ModelIndexedDb
+    -> List ContactsTracingEntry
+generateContactsTracingEntries language currentDate itemsDict db =
+    Dict.map (generateContactsTracingEntryData language currentDate db) itemsDict
+        |> Dict.values
+        |> Maybe.Extra.values
+
+
+generateContactsTracingEntryData :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> AcuteIllnessTraceContactId
+    -> AcuteIllnessTraceContact
+    -> Maybe ContactsTracingEntry
+generateContactsTracingEntryData language currentDate db itemId item =
+    let
+        name =
+            generateFullName item.value.firstName item.value.secondName
+
+        reporterName =
+            Dict.get item.participantId db.people
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map .name
+                |> Maybe.withDefault ""
+    in
+    ContactsTracingEntry itemId name item.value.phoneNumber reporterName
+        |> Just
+
+
+viewTraceContactEntry :
+    Language
+    -> ModelIndexedDb
+    -> ContactsTracingEntry
+    -> Html Msg
+viewTraceContactEntry language db entry =
+    let
+        dueOption =
+            --@todo
+            DueToday
+
+        dueLabel =
+            Translate.FollowUpDueOption dueOption
+                |> translateText language
+
+        dueClass =
+            viewDueClass dueOption
+    in
+    div [ class "trace-contact-entry" ]
+        [ div [ class "name" ] [ text entry.personName ]
+        , div [ class dueClass ] [ dueLabel ]
+        , div [ class "reporter" ] [ text entry.reporterName ]
+        , div [ class "phone-number" ] [ text entry.phoneNumber ]
+        , div
+            [ class "icon-forward"
+
+            -- , onClick <| SetDialogState <| Just popupData
             ]
             []
         ]

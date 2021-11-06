@@ -85,7 +85,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
-import Pages.GlobalCaseManagement.Model exposing (FollowUpDueOption(..))
+import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -380,6 +380,7 @@ type TranslationId
     | CaregiverName
     | CaregiverNationalId
     | CaseManagement
+    | CaseManagementFilterLabel CaseManagementFilter
     | CentimeterShorthand
     | Celsius
     | CelsiusAbbrev
@@ -505,7 +506,6 @@ type TranslationId
     | EgaHeader
     | EgaWeeks
     | EmptyString
-    | EncounterTypeFileterLabel IndividualEncounterType
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterTypeFollowUpLabel IndividualEncounterType
@@ -2319,6 +2319,28 @@ translationSet trans =
             , kinyarwanda = Just "Kuvura Uburwayi"
             }
 
+        CaseManagementFilterLabel filter ->
+            case filter of
+                FilterAcuteIllness ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Just "Uburwayi butunguranye"
+                    }
+
+                FilterAntenatal ->
+                    { english = "Antenatal Care"
+                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
+                    }
+
+                FilterNutrition ->
+                    { english = "Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterContactsTrace ->
+                    { english = "Contacts"
+                    , kinyarwanda = Nothing
+                    }
+
         CentimeterShorthand ->
             { english = "cm"
             , kinyarwanda = Just "cm"
@@ -3427,38 +3449,6 @@ translationSet trans =
             { english = ""
             , kinyarwanda = Just ""
             }
-
-        EncounterTypeFileterLabel encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    { english = "Acute Illness"
-                    , kinyarwanda = Just "Uburwayi butunguranye"
-                    }
-
-                AntenatalEncounter ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
-
-                HomeVisitEncounter ->
-                    { english = "Home Visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = "Inmmunization"
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Child Nutrition"
-                    , kinyarwanda = Just "Imirire y'umwana"
-                    }
-
-                WellChildEncounter ->
-                    { english = "Standard Pediatric Visit"
-                    , kinyarwanda = Nothing
-                    }
 
         EncounterTypeFollowUpQuestion encounterType ->
             case encounterType of
