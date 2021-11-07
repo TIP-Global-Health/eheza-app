@@ -30,6 +30,7 @@ import Pages.AcuteIllnessActivity.Utils
         , resolveORSDosage
         , resolveZincDosage
         , respiratoryRateAbnormalForAge
+        , viewAmoxicillinAdministrationInstructions
         )
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewTabletsPrescription)
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
@@ -951,10 +952,8 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             if amoxicillinPrescribed then
                 resolveAmoxicillinDosage date person
                     |> Maybe.map
-                        (\dosage ->
-                            [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" (Just date)
-                            , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
-                            ]
+                        (\( numberOfPills, pillMass, duration ) ->
+                            viewAmoxicillinAdministrationInstructions language numberOfPills pillMass duration (Just date)
                         )
                     |> Maybe.withDefault []
 

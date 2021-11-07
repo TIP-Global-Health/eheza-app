@@ -21,6 +21,7 @@ import Measurement.Utils
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
+import Translate exposing (TranslationId)
 
 
 expectActivity : NominalDate -> Bool -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
@@ -1445,7 +1446,7 @@ resolveZincDosage currentDate person =
             )
 
 
-resolveAmoxicillinDosage : NominalDate -> Person -> Maybe String
+resolveAmoxicillinDosage : NominalDate -> Person -> Maybe ( String, String, TranslationId )
 resolveAmoxicillinDosage currentDate person =
     ageInMonths currentDate person
         |> Maybe.andThen
@@ -1454,22 +1455,19 @@ resolveAmoxicillinDosage currentDate person =
                     Nothing
 
                 else if months < 5 then
-                    Just "1"
+                    Just ( "1", "125", Translate.ByMouthTwiceADayForXDays 5 )
 
                 else if months < 12 then
-                    Just "2"
+                    Just ( "2", "125", Translate.ByMouthTwiceADayForXDays 5 )
 
-                else if months < 30 then
-                    Just "3"
-                    --@todo: revise
-                    -- else if months < 60 then
-                    --     Just "4"
-                    --
-                    -- else
-                    --     Nothing
+                else if months < round (2.5 * 12) then
+                    Just ( "3", "125", Translate.ByMouthTwiceADayForXDays 5 )
+
+                else if months < (15 * 12) then
+                    Just ( "4", "125", Translate.ByMouthTwiceADayForXDays 5 )
 
                 else
-                    Just "4"
+                    Just ( "1", "500", Translate.ByMouthThreeTimesADayForXDays 5 )
             )
 
 
