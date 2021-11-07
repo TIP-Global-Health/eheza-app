@@ -30,9 +30,15 @@ import Pages.AcuteIllnessActivity.Utils
         , resolveORSDosage
         , resolveZincDosage
         , respiratoryRateAbnormalForAge
-        , viewAmoxicillinAdministrationInstructions
         )
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View
+    exposing
+        ( viewAdministeredMedicationLabel
+        , viewAmoxicillinAdministrationInstructions
+        , viewHCRecommendation
+        , viewOralSolutionPrescription
+        , viewTabletsPrescription
+        )
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
