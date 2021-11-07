@@ -1852,7 +1852,8 @@ expectLaboratoryTask currentDate isChw isFirstEncounter assembled task =
                                 not <| List.member diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ]
                             )
                             assembled.diagnosis
-                            |> Maybe.withDefault False
+                            |> -- No diagnosis, so we need to display the task.
+                               Maybe.withDefault True
                        )
 
             else
