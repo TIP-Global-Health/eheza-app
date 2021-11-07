@@ -1935,7 +1935,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
     let
         ( ageMonths0To2, ageMonths0To6, ageMonths2To60 ) =
             ageInMonths currentDate person
-                |> Maybe.map (\ageMonthss -> ( ageMonthss < 2, ageMonthss < 6, ageMonthss >= 2 && ageMonthss < 60 ))
+                |> Maybe.map (\ageMonths -> ( ageMonths < 2, ageMonths < 6, ageMonths >= 2 && ageMonths < 60 ))
                 |> Maybe.withDefault ( False, False, False )
 
         medicationPrescribed =
@@ -1998,7 +1998,7 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
 
         ageMonths0To6 =
             ageInMonths currentDate person
-                |> Maybe.map (\ageMonthss -> ageMonthss < 6)
+                |> Maybe.map (\ageMonths -> ageMonths < 6)
                 |> Maybe.withDefault False
     in
     case task of
