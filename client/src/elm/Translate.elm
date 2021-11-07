@@ -8494,7 +8494,7 @@ translationSet trans =
                     }
 
                 VaccineIPV ->
-                    { english = "There is only one dose of the inactivated vaccine."
+                    { english = "There is only one dose of the inactivated vaccine at 14 weeks."
                     , kinyarwanda = Nothing
                     }
 
