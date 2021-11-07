@@ -5551,7 +5551,7 @@ translationSet trans =
         AdministrationNote note ->
             case note of
                 NonAdministrationLackOfStock ->
-                    { english = "Lack of Stock"
+                    { english = "Out of Stock"
                     , kinyarwanda = Just "Nta miti iri mu bubiko"
                     }
 
@@ -5566,7 +5566,7 @@ translationSet trans =
                     }
 
                 NonAdministrationPatientUnableToAfford ->
-                    { english = "Patient unable to afford"
+                    { english = "Patient Unable to Afford"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
@@ -5591,7 +5591,7 @@ translationSet trans =
                     }
 
                 AdministeredPreviously ->
-                    { english = "Administered Previously"
+                    { english = "Already Received"
                     , kinyarwanda = Nothing
                     }
 
@@ -5613,7 +5613,7 @@ translationSet trans =
                     }
 
                 NonAdministrationPatientUnableToAfford ->
-                    { english = "Patient unable to afford"
+                    { english = "Patient Unable to Afford"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
