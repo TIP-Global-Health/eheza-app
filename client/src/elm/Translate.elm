@@ -371,6 +371,7 @@ type TranslationId
     | BrittleHair
     | ByMouthDaylyForXDays Int
     | ByMouthTwiceADayForXDays Int
+    | ByMouthThreeTimesADayForXDays Int
     | Call114
     | Called114Question
     | Cancel
@@ -2266,6 +2267,11 @@ translationSet trans =
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
+            , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
+            }
+
+        ByMouthThreeTimesADayForXDays days ->
+            { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
             }
 
@@ -5075,8 +5081,8 @@ translationSet trans =
         MedicationDistributionSign sign ->
             case sign of
                 Amoxicillin ->
-                    { english = "Amoxicillin (125mg)"
-                    , kinyarwanda = Just "Amoxicillin (125mg)"
+                    { english = "Amoxicillin"
+                    , kinyarwanda = Nothing
                     }
 
                 Coartem ->
@@ -5091,7 +5097,7 @@ translationSet trans =
 
                 Zinc ->
                     { english = "Zinc"
-                    , kinyarwanda = Just "Zinc"
+                    , kinyarwanda = Nothing
                     }
 
                 LemonJuiceOrHoney ->

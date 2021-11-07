@@ -3,6 +3,7 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewAdministeredMedicationCustomLabel
     , viewAdministeredMedicationLabel
     , viewAdministeredMedicationQuestion
+    , viewAmoxicillinAdministrationInstructions
     , viewHCRecommendation
     , viewHealthEducationLabel
     , viewOralSolutionPrescription
@@ -2214,11 +2215,9 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     in
                     ( resolveAmoxicillinDosage currentDate person
                         |> Maybe.map
-                            (\dosage ->
-                                div [ class "instructions respiratory-infection-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" Nothing
-                                    , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
-                                    ]
+                            (\( numberOfPills, pillMass, duration ) ->
+                                div [ class "instructions respiratory-infection-uncomplicated" ] <|
+                                    viewAmoxicillinAdministrationInstructions language numberOfPills pillMass duration Nothing
                             )
                         |> Maybe.withDefault emptyNode
                     , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
@@ -2355,6 +2354,24 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
             ++ questions
 
 
+viewAmoxicillinAdministrationInstructions : Language -> String -> String -> TranslationId -> Maybe NominalDate -> List (Html any)
+viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg duration maybeDate =
+    let
+        medicationLabelSuffix =
+            " (" ++ pillMassInMg ++ ")"
+    in
+    [ viewAdministeredMedicationCustomLabel
+        language
+        Translate.Administer
+        (Translate.MedicationDistributionSign Amoxicillin)
+        medicationLabelSuffix
+        "icon-pills"
+        ":"
+        maybeDate
+    , viewTabletsPrescription language numberOfPills duration
+    ]
+
+
 viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any
 viewAdministeredMedicationQuestion language medicineTranslationId =
     div [ class "label" ]
@@ -2370,17 +2387,17 @@ viewAdministeredMedicationQuestion language medicineTranslationId =
 
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
-    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass ":" maybeDate
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass ":" maybeDate
 
 
-viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> Maybe NominalDate -> Html any
-viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass suffix maybeDate =
+viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId medicineSuffix iconClass suffix maybeDate =
     let
         message =
             div [] <|
                 [ text <| translate language administerTranslationId
                 , text ": "
-                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
+                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ++ medicineSuffix ]
                 ]
                     ++ renderDatePart language maybeDate
                     ++ [ text <| " " ++ suffix ]
