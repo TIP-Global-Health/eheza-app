@@ -674,7 +674,7 @@ viewAcuteIllnessOverviewPage language encounters model =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
 
         covidCases =
-            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19 ] True encounters
+            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19Suspect ] True encounters
 
         malariaCases =
             countAcuteIllnessCasesByPossibleDiagnosises

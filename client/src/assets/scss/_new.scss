@@ -92,6 +92,15 @@
           background: url(#{$img-path}icon-capsule-blue.svg) center center no-repeat;
           background-size: 36px 50px;
         }
+
+        &.icon-house {
+          background: url(#{$img-path}icon-house.svg) center center no-repeat;
+          background-size: 36px 36px;
+          padding: 0 10px;
+          margin-right: 10px;
+          height: 36px;
+          width: 52px;
+        }
       }
     }
 
@@ -871,7 +880,9 @@ div.page-activity.acute-illness {
 
     .ui.form.medication-distribution,
     .ui.form.send-to-hc,
-    .ui.form.health-education {
+    .ui.form.isolation,
+    .ui.form.health-education,
+    .ui.form.follow-up {
 
       h2 {
         text-transform: uppercase;

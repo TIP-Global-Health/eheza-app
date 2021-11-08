@@ -9,7 +9,8 @@ module Measurement.View exposing
     , viewMeasurementFloatDiff
     , viewMother
     , viewReferToProgramForm
-    , viewSendToHCForm
+    , viewSendToHealthCenterForm
+    , viewSendToHospitalForm
     , viewVitalsForm
     , zScoreForHeightOrLength
     )
@@ -60,6 +61,7 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewConditionalAlert
+        , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -1086,7 +1088,7 @@ viewSendToHC language currentDate measurement form_ =
             sendToHCFormWithDefault form_ saved
 
         formContent =
-            viewSendToHCForm language
+            viewSendToHealthCenterForm language
                 currentDate
                 SetReferToHealthCenter
                 SetReasonForNotSendingToHC
@@ -1135,7 +1137,7 @@ viewSendToHC language currentDate measurement form_ =
         ]
 
 
-viewSendToHCForm :
+viewSendToHealthCenterForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
@@ -1144,8 +1146,43 @@ viewSendToHCForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToHealthCenterForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHealthCenter
+
+
+viewSendToHospitalForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToHospitalForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHospital
+
+
+viewSendToFacilityForm :
+    Language
+    -> NominalDate
+    -> ReferralFacility
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
+        headerHelper =
+            case facility of
+                FacilityHealthCenter ->
+                    emptyNode
+
+                FacilityHospital ->
+                    viewCustomLabel language Translate.AcuteIllnessHighRiskCaseHelper "." "instructions"
+
         sendToHCSection =
             let
                 sentToHealthCenter =
@@ -1168,7 +1205,7 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
                     else
                         []
             in
-            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            [ viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
             , viewBoolInput
                 language
                 form.referToHealthCenter
@@ -1204,10 +1241,11 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
                 |> Maybe.withDefault []
     in
     div [ class "ui form send-to-hc" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        [ headerHelper
+        , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
-            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+            , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
             ]
         ]
             ++ sendToHCSection

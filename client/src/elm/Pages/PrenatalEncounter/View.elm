@@ -228,7 +228,7 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                     div
                         [ classList
                             [ ( "diagnosis-wrapper", True )
-                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19 )
+                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19Suspect )
                             ]
                         ]
                         [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]

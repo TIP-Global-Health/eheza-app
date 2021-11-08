@@ -62,7 +62,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
-import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..))
+import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
 import Pages.AcuteIllnessActivity.Model
     exposing
         ( DangerSignsTask(..)
@@ -289,6 +289,8 @@ type TranslationId
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
     | AcuteIllnessHistory
+    | AcuteIllnessHighRiskCaseHelper
+    | AcuteIllnessLowRiskCaseHelper
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
@@ -331,6 +333,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AlertChwToFollowUp
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
@@ -367,6 +370,7 @@ type TranslationId
     | BrittleHair
     | ByMouthDaylyForXDays Int
     | ByMouthTwiceADayForXDays Int
+    | ByMouthThreeTimesADayForXDays Int
     | Call114
     | Called114Question
     | Cancel
@@ -401,7 +405,7 @@ type TranslationId
     | CloseAndContinue
     | ColorAlertIndication ColorAlertIndication
     | Completed
-    | CompleteHCReferralForm
+    | CompleteFacilityReferralForm ReferralFacility
     | CompletedHCReferralForm
     | Contacted114
     | ContactedHC
@@ -542,6 +546,7 @@ type TranslationId
     | ForIllustrativePurposesOnly
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
+    | FollowUpByChwLabel
     | FollowUpLabel
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
@@ -705,7 +710,7 @@ type TranslationId
     | NextImmunisationVisit
     | NextPediatricVisit
     | NextSteps
-    | NextStepsTask Pages.AcuteIllnessActivity.Model.NextStepsTask
+    | NextStepsTask Bool Pages.AcuteIllnessActivity.Model.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -780,7 +785,7 @@ type TranslationId
     | PatientGotAnySymptoms
     | PatientProgress
     | PatientInformation
-    | PatientIsolatedQuestion
+    | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
     | PediatricCareMilestone PediatricCareMilestone
@@ -852,7 +857,7 @@ type TranslationId
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
-    | ReferredPatientToHealthCenterQuestion
+    | ReferredPatientToFacilityQuestion ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -958,6 +963,7 @@ type TranslationId
     | SuspectedCovid19CaseAlertHelper
     | SuspectedCovid19CaseIsolate
     | SuspectedCovid19CaseContactHC
+    | SuspectedCovid19CasePerformRapidTest
     | Symptoms
     | SymptomsAtFirstEncounter
     | SymptomsGeneralSign SymptomsGeneralSign
@@ -970,7 +976,7 @@ type TranslationId
     | GroupEncounterLoading
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
-    | SendPatientToHC
+    | SendPatientToFacility ReferralFacility
     | SentPatientToHC
     | ShowAll
     | StartEndDate
@@ -1303,9 +1309,24 @@ translationSet trans =
 
         AcuteIllnessDiagnosis diagnosis ->
             case diagnosis of
-                DiagnosisCovid19 ->
+                DiagnosisCovid19Suspect ->
                     { english = "Suspected COVID-19"
                     , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
+                    }
+
+                DiagnosisSevereCovid19 ->
+                    { english = "Severe COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPneuminialCovid19 ->
+                    { english = "COVID-19 with signs of Pneumonia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLowRiskCovid19 ->
+                    { english = "Low risk COVID-19"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaComplicated ->
@@ -1365,9 +1386,24 @@ translationSet trans =
 
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
-                DiagnosisCovid19 ->
+                DiagnosisCovid19Suspect ->
                     { english = "Suspected COVID-19 case"
                     , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
+                    }
+
+                DiagnosisSevereCovid19 ->
+                    { english = "Severe COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPneuminialCovid19 ->
+                    { english = "COVID-19 with signs of Pneumonia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLowRiskCovid19 ->
+                    { english = "Low risk COVID-19"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaComplicated ->
@@ -1432,6 +1468,16 @@ translationSet trans =
 
         AcuteIllnessHistory ->
             { english = "Acute Illness History"
+            , kinyarwanda = Nothing
+            }
+
+        AcuteIllnessHighRiskCaseHelper ->
+            { english = "This patient is a high risk case and should be sent to a hospital for further treatment"
+            , kinyarwanda = Nothing
+            }
+
+        AcuteIllnessLowRiskCaseHelper ->
+            { english = "This patient is a low risk case and should be sent home to be monitored by a CHW"
             , kinyarwanda = Nothing
             }
 
@@ -2006,6 +2052,11 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
             }
 
+        AlertChwToFollowUp ->
+            { english = "Alert CHW to follow up with patient"
+            , kinyarwanda = Nothing
+            }
+
         And ->
             { english = "and"
             , kinyarwanda = Just "na"
@@ -2203,6 +2254,11 @@ translationSet trans =
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
+            , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
+            }
+
+        ByMouthThreeTimesADayForXDays days ->
+            { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
             }
 
@@ -2467,10 +2523,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        CompleteHCReferralForm ->
-            { english = "Complete a health center referral form"
-            , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
-            }
+        CompleteFacilityReferralForm facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Complete a health center referral form"
+                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
+                    }
+
+                FacilityHospital ->
+                    { english = "Complete a hospital referral form"
+                    , kinyarwanda = Nothing
+                    }
 
         CompletedHCReferralForm ->
             { english = "Completed health center referral form"
@@ -3854,6 +3917,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FollowUpByChwLabel ->
+            { english = "CHW should follow up with patient in"
+            , kinyarwanda = Nothing
+            }
+
         FollowUpLabel ->
             { english = "Follow up with the patient in"
             , kinyarwanda = Just "Gukurikirana umurwayi mu"
@@ -4980,8 +5048,8 @@ translationSet trans =
         MedicationDistributionSign sign ->
             case sign of
                 Amoxicillin ->
-                    { english = "Amoxicillin (125mg)"
-                    , kinyarwanda = Just "Amoxicillin (125mg)"
+                    { english = "Amoxicillin"
+                    , kinyarwanda = Nothing
                     }
 
                 Coartem ->
@@ -4996,7 +5064,7 @@ translationSet trans =
 
                 Zinc ->
                     { english = "Zinc"
-                    , kinyarwanda = Just "Zinc"
+                    , kinyarwanda = Nothing
                     }
 
                 LemonJuiceOrHoney ->
@@ -5326,12 +5394,18 @@ translationSet trans =
             , kinyarwanda = Just "Ibikurikiyeho"
             }
 
-        NextStepsTask task ->
+        NextStepsTask isChw task ->
             case task of
                 NextStepsIsolation ->
-                    { english = "Isolate Patient"
-                    , kinyarwanda = Just "Shyira umurwayi mu kato"
-                    }
+                    if isChw then
+                        { english = "Isolate Patient"
+                        , kinyarwanda = Just "Shyira umurwayi mu kato"
+                        }
+
+                    else
+                        { english = "Monitor at Home"
+                        , kinyarwanda = Nothing
+                        }
 
                 NextStepsContactHC ->
                     { english = "Contact Health Center"
@@ -5349,9 +5423,15 @@ translationSet trans =
                     }
 
                 Pages.AcuteIllnessActivity.Model.NextStepsSendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    }
+                    if isChw then
+                        { english = "Send to Health Center"
+                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                        }
+
+                    else
+                        { english = "Refer to Hospital"
+                        , kinyarwanda = Nothing
+                        }
 
                 Pages.AcuteIllnessActivity.Model.NextStepsHealthEducation ->
                     { english = "Health Education"
@@ -5433,7 +5513,7 @@ translationSet trans =
         AdministrationNote note ->
             case note of
                 NonAdministrationLackOfStock ->
-                    { english = "Lack of Stock"
+                    { english = "Out of Stock"
                     , kinyarwanda = Just "Nta miti iri mu bubiko"
                     }
 
@@ -5448,7 +5528,7 @@ translationSet trans =
                     }
 
                 NonAdministrationPatientUnableToAfford ->
-                    { english = "Patient unable to afford"
+                    { english = "Patient Unable to Afford"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
@@ -5473,7 +5553,7 @@ translationSet trans =
                     }
 
                 AdministeredPreviously ->
-                    { english = "Administered Previously"
+                    { english = "Already Received"
                     , kinyarwanda = Nothing
                     }
 
@@ -5495,7 +5575,7 @@ translationSet trans =
                     }
 
                 NonAdministrationPatientUnableToAfford ->
-                    { english = "Patient unable to afford"
+                    { english = "Patient Unable to Afford"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
@@ -6153,10 +6233,16 @@ translationSet trans =
             , kinyarwanda = Just "Amakuru k'umurwayi"
             }
 
-        PatientIsolatedQuestion ->
-            { english = "Have you isolated the patient"
-            , kinyarwanda = Just "Washyize umurwayi mu kato"
-            }
+        PatientIsolatedQuestion isChw ->
+            if isChw then
+                { english = "Have you isolated the patient"
+                , kinyarwanda = Just "Washyize umurwayi mu kato"
+                }
+
+            else
+                { english = "Is the patient able to self-isolate at home"
+                , kinyarwanda = Nothing
+                }
 
         PatientNotYetSeenAtHCLabel ->
             { english = " has not yet been seen at the health center for this pregnancy"
@@ -7021,10 +7107,17 @@ translationSet trans =
                     , kinyarwanda = Just "Umuvuduko w'amaraso"
                     }
 
-        ReferredPatientToHealthCenterQuestion ->
-            { english = "Have you referred the patient to the health center"
-            , kinyarwanda = Just "Waba wohereje umurwayi ku kigo nderabuzima"
-            }
+        ReferredPatientToFacilityQuestion facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Have you referred the patient to the health center"
+                    , kinyarwanda = Just "Waba wohereje umurwayi ku kigo nderabuzima"
+                    }
+
+                FacilityHospital ->
+                    { english = "Have you referred the patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
 
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
@@ -7737,7 +7830,12 @@ translationSet trans =
 
         SuspectedCovid19CaseContactHC ->
             { english = "Contact health center immediately"
-            , kinyarwanda = Just "Menyesha ikigo nderabuzima ako kanya "
+            , kinyarwanda = Just "Menyesha ikigo nderabuzima ako kanya"
+            }
+
+        SuspectedCovid19CasePerformRapidTest ->
+            { english = "Perform a rapid test immediately"
+            , kinyarwanda = Nothing
             }
 
         Symptoms ->
@@ -7973,10 +8071,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SendPatientToHC ->
-            { english = "Send patient to the health center"
-            , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima"
-            }
+        SendPatientToFacility facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Send patient to the health center"
+                    , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima"
+                    }
+
+                FacilityHospital ->
+                    { english = "Send patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
 
         SentPatientToHC ->
             { english = "Sent patient to the health center"

@@ -15,6 +15,16 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.AcuteIllnessActivity.Utils
+    exposing
+        ( activityCompleted
+        , expectActivity
+        , muacRedOnSubsequentVisit
+        , noImprovementOnSubsequentVisit
+        , respiratoryRateElevated
+        , sendToHCOnSubsequentVisitByNutrition
+        , talkedTo114
+        )
 import Pages.AcuteIllnessEncounter.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -67,6 +77,7 @@ viewHeaderAndContent language currentDate id isChw db model data =
         , viewModal <|
             warningPopup language
                 currentDate
+                isChw
                 isFirstEncounter
                 model.warningPopupState
                 SetWarningPopupState
@@ -74,21 +85,21 @@ viewHeaderAndContent language currentDate id isChw db model data =
         ]
 
 
-warningPopup : Language -> NominalDate -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
-warningPopup language currentDate isFirstEncounter state setStateMsg data =
+warningPopup : Language -> NominalDate -> Bool -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
+warningPopup language currentDate isChw isFirstEncounter state setStateMsg data =
     state
         |> Maybe.map
             (\diagnosis ->
                 if isFirstEncounter then
-                    viewWarningPopupFirstEncounter language setStateMsg diagnosis
+                    viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis
 
                 else
                     viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis data
             )
 
 
-viewWarningPopupFirstEncounter : Language -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
-viewWarningPopupFirstEncounter language setStateMsg diagnosis =
+viewWarningPopupFirstEncounter : Language -> Bool -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
+viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
     let
         infoHeading =
             [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
@@ -100,11 +111,15 @@ viewWarningPopupFirstEncounter language setStateMsg diagnosis =
 
         ( heading, content ) =
             case diagnosis of
-                DiagnosisCovid19 ->
+                DiagnosisCovid19Suspect ->
                     ( warningHeading
-                    , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                      , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                      ]
+                    , if isChw then
+                        [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                        , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                        ]
+
+                      else
+                        [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CasePerformRapidTest ] ]
                     )
 
                 _ ->
@@ -222,40 +237,40 @@ viewHeader language data =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id isChw model data =
-    (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
+    (viewPersonDetailsWithAlert language currentDate isChw data model.showAlertsDialog SetAlertsDialogState
         :: viewMainPageContent language currentDate id isChw data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewPersonDetailsWithAlert : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
-viewPersonDetailsWithAlert language currentDate data isDialogOpen setAlertsDialogStateMsg =
+viewPersonDetailsWithAlert : Language -> NominalDate -> Bool -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
+viewPersonDetailsWithAlert language currentDate isChw data isDialogOpen setAlertsDialogStateMsg =
     let
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
 
-        alertSign =
-            if diagnosis == Just DiagnosisCovid19 then
-                div
+        diagnosisTranslationId =
+            Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
+
+        alertSection =
+            if isChw && diagnosis == Just DiagnosisCovid19Suspect then
+                [ div
                     [ class "alerts"
                     , onClick <| setAlertsDialogStateMsg True
                     ]
                     [ img [ src "assets/images/exclamation-red.png" ] [] ]
-
-            else
-                emptyNode
-
-        diagnosisTranslationId =
-            Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
-    in
-    div [ class "item" ] <|
-        viewPersonDetails language currentDate data.person diagnosisTranslationId
-            ++ [ alertSign
-               , viewModal <|
+                , viewModal <|
                     alertsDialog language
                         isDialogOpen
                         setAlertsDialogStateMsg
-               ]
+                ]
+
+            else
+                []
+    in
+    div [ class "item" ] <|
+        viewPersonDetails language currentDate data.person diagnosisTranslationId
+            ++ alertSection
 
 
 alertsDialog : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
@@ -409,7 +424,7 @@ viewEndEncounterButton language isFirstEncounter measurements pendingActivities 
             if not isFirstEncounter then
                 List.isEmpty pendingActivities
 
-            else if diagnosis == Just DiagnosisCovid19 then
+            else if diagnosis == Just DiagnosisCovid19Suspect then
                 isJust measurements.isolation
                     && (talkedTo114 measurements || isJust measurements.hcContact)
 

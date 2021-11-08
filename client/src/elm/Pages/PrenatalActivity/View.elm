@@ -23,7 +23,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHCForm)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
@@ -1403,7 +1403,7 @@ viewNextStepsContent language currentDate assembled data =
                     measurements.sendToHC
                         |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language
+                        |> viewSendToHealthCenterForm language
                             currentDate
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
