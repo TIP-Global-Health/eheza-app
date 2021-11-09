@@ -14,7 +14,7 @@ import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -722,12 +722,21 @@ viewContactsTracingPane language currentDate itemsDict db model =
         entries =
             generateContactsTracingEntries language currentDate itemsDict db
 
+        heading =
+            div [ class "trace-contact-entry heading" ]
+                [ div [ class "name" ] [ translateText language Translate.ContactName ]
+                , div [ class "last-contact" ] [ translateText language Translate.LastContacted ]
+                , div [ class "reporter" ] [ translateText language Translate.IndexPatient ]
+                , div [ class "phone-number" ] [ translateText language Translate.TelephoneNumber ]
+                ]
+
         content =
             if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                List.map (viewTraceContactEntry language db) entries
+                heading
+                    :: List.map (viewTraceContactEntry language currentDate db) entries
     in
     div [ class "pane" ]
         [ viewItemHeading language FilterContactsTrace
@@ -772,25 +781,19 @@ generateContactsTracingEntryData language currentDate db itemId item =
 
 viewTraceContactEntry :
     Language
+    -> NominalDate
     -> ModelIndexedDb
     -> ContactsTracingEntry
     -> Html Msg
-viewTraceContactEntry language db entry =
+viewTraceContactEntry language currentDate db entry =
     let
-        dueOption =
+        lastContactDate =
             --@todo
-            DueToday
-
-        dueLabel =
-            Translate.FollowUpDueOption dueOption
-                |> translateText language
-
-        dueClass =
-            viewDueClass dueOption
+            currentDate
     in
     div [ class "trace-contact-entry" ]
         [ div [ class "name" ] [ text entry.personName ]
-        , div [ class dueClass ] [ dueLabel ]
+        , div [ class "last-contact" ] [ text <| formatDDMMYY lastContactDate ]
         , div [ class "reporter" ] [ text entry.reporterName ]
         , div [ class "phone-number" ] [ text entry.phoneNumber ]
         , div

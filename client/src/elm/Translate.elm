@@ -414,6 +414,7 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
+    | ContactName
     | ContactsTracingCompleteDetails
     | ContactsTracingHelper
     | ContactWithCOVID19SymptomsHelper
@@ -607,6 +608,7 @@ type TranslationId
     | Immunisation
     | ImmunisationHistory
     | IncompleteCervixPreviousPregnancy
+    | IndexPatient
     | IndividualEncounter
     | IndividualEncounterFirstVisit IndividualEncounterType
     | IndividualEncounterLabel IndividualEncounterType Bool
@@ -626,6 +628,7 @@ type TranslationId
     | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
     | LastChecked
+    | LastContacted
     | LastSuccesfulContactLabel
     | Legs
     | LegsCPESign LegsCPESign
@@ -2343,7 +2346,7 @@ translationSet trans =
                     }
 
                 FilterContactsTrace ->
-                    { english = "Contacts"
+                    { english = "Contact Tracing"
                     , kinyarwanda = Nothing
                     }
 
@@ -2365,7 +2368,7 @@ translationSet trans =
                     }
 
                 FilterContactsTrace ->
-                    { english = "Covid Follow Up"
+                    { english = "Contact Tracing"
                     , kinyarwanda = Nothing
                     }
 
@@ -2615,6 +2618,11 @@ translationSet trans =
         ContactedRecommendedSiteQuestion ->
             { english = "Did you contact the recommended site"
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
+            }
+
+        ContactName ->
+            { english = "Contact Name"
+            , kinyarwanda = Nothing
             }
 
         ContactsTracingCompleteDetails ->
@@ -4385,6 +4393,11 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize inkondo y'umura ntiyashoboye kwifunga neza "
             }
 
+        IndexPatient ->
+            { english = "Index Patient"
+            , kinyarwanda = Nothing
+            }
+
         IndividualEncounter ->
             { english = "Individual Encounter"
             , kinyarwanda = Just "Gukorera umuntu umwe"
@@ -4651,6 +4664,11 @@ translationSet trans =
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
+            }
+
+        LastContacted ->
+            { english = "Last Contacted"
+            , kinyarwanda = Nothing
             }
 
         LastSuccesfulContactLabel ->

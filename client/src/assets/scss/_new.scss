@@ -3133,7 +3133,7 @@ div.page-report.well-child {
   }
 
   .ui.report.unstackable.items .actions {
-    margin: 20px 0 0 0;    
+    margin: 20px 0 0 0;
   }
 }
 
@@ -3202,6 +3202,17 @@ div.page-case-management {
           width: 200px;
         }
 
+        .icon-forward {
+          align-self: center;
+          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+          background-size: 45px 50px;
+          height: 50px;
+          width: 45px;
+        }
+      }
+
+      .follow-up-entry {
+
         .due {
           align-self: center;
           border-radius: 10px;
@@ -3246,34 +3257,40 @@ div.page-case-management {
             margin-bottom: 0;
           }
         }
-
-        .icon-forward {
-          align-self: center;
-          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
-          background-size: 45px 50px;
-          height: 50px;
-          width: 45px;
-        }
       }
 
       .trace-contact-entry {
+
+        .last-contact,
+        .reporter,
+        .phone-number {
+          align-self: center;
+          font-weight: normal;
+        }
 
         .name {
           width: 150px;
         }
 
+        .last-contact {
+          width: 130px;
+        }
+
         .reporter {
-          align-self: center;
           font-size: 20px;
-          font-weight: normal;
           width: 145px;
         }
 
         .phone-number {
-          align-self: center;
           width: 200px;
         }
       }
+
+      .trace-contact-entry.heading div {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
     }
   }
 
