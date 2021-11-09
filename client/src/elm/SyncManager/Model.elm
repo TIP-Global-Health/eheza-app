@@ -49,12 +49,14 @@ authority.
 -}
 type BackendAuthorityEntity
     = BackendAuthorityAcuteFindings (BackendEntity AcuteFindings)
+    | BackendAuthorityAcuteIllnessContactsTracing (BackendEntity AcuteIllnessContactsTracing)
     | BackendAuthorityAcuteIllnessCoreExam (BackendEntity AcuteIllnessCoreExam)
     | BackendAuthorityAcuteIllnessDangerSigns (BackendEntity AcuteIllnessDangerSigns)
     | BackendAuthorityAcuteIllnessEncounter (BackendEntity AcuteIllnessEncounter)
     | BackendAuthorityAcuteIllnessFollowUp (BackendEntity AcuteIllnessFollowUp)
     | BackendAuthorityAcuteIllnessMuac (BackendEntity AcuteIllnessMuac)
     | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
+    | BackendAuthorityAcuteIllnessTraceContact (BackendEntity AcuteIllnessTraceContact)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
     | BackendAuthorityAppointmentConfirmation (BackendEntity PrenatalAppointmentConfirmation)
     | BackendAuthorityAttendance (BackendEntity Attendance)

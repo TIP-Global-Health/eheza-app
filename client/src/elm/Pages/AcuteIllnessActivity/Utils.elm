@@ -3,6 +3,7 @@ module Pages.AcuteIllnessActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Person.Model exposing (Person)
@@ -19,6 +20,7 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
 import Translate exposing (TranslationId)
@@ -733,6 +735,12 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
             in
             ( taskCompleted form.option
             , 1
+            )
+
+        NextStepsContactsTracing ->
+            -- We do not count tasks here.
+            ( 0
+            , 0
             )
 
 
@@ -1905,7 +1913,7 @@ resolveNextStepsTasks : NominalDate -> Bool -> Bool -> AssembledData -> List Nex
 resolveNextStepsTasks currentDate isChw isFirstEncounter data =
     if isFirstEncounter then
         -- The order is important. Do not change.
-        [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
+        [ NextStepsContactsTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw True data)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
@@ -1974,6 +1982,11 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
 
         NextStepsHealthEducation ->
             False
+
+        NextStepsContactsTracing ->
+            (diagnosis == Just DiagnosisSevereCovid19)
+                || (diagnosis == Just DiagnosisPneuminialCovid19)
+                || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsFollowUp ->
             if diagnosis == Just DiagnosisSevereCovid19 then
@@ -2073,6 +2086,9 @@ nextStepsTaskCompleted currentDate isChw isFirstEncounter assembled task =
 
         NextStepsFollowUp ->
             (not <| taskExpected NextStepsFollowUp) || isJust measurements.followUp
+
+        NextStepsContactsTracing ->
+            (not <| taskExpected NextStepsContactsTracing) || isJust measurements.contactsTracing
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,
@@ -3010,6 +3026,47 @@ acuteFindinsgRespiratoryDangerSignPresent measurements =
                 >> not
             )
         |> Maybe.withDefault False
+
+
+fromContactsTracingValue : Maybe (List ContactTraceEntry) -> ContactsTracingForm
+fromContactsTracingValue saved =
+    { state = ContactsTracingFormSummary
+    , contacts = generateContactsFromTraceEntries saved
+    , finished = False
+    }
+
+
+contactsTracingFormWithDefault : ContactsTracingForm -> Maybe (List ContactTraceEntry) -> ContactsTracingForm
+contactsTracingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { state = form.state
+                , contacts = or form.contacts (generateContactsFromTraceEntries saved)
+                , finished = form.finished
+                }
+            )
+
+
+generateContactsFromTraceEntries : Maybe (List ContactTraceEntry) -> Maybe (Dict PersonId ContactTraceEntry)
+generateContactsFromTraceEntries entries =
+    Maybe.map
+        (List.map (\entry -> ( entry.personId, entry ))
+            >> Dict.fromList
+        )
+        entries
+
+
+toContactsTracingValueWithDefault : Maybe (List ContactTraceEntry) -> ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValueWithDefault saved form =
+    contactsTracingFormWithDefault form saved
+        |> toContactsTracingValue
+
+
+toContactsTracingValue : ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValue form =
+    Maybe.map Dict.values form.contacts
 
 
 

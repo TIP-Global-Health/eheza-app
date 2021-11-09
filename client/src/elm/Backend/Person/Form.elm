@@ -1,49 +1,4 @@
-module Backend.Person.Form exposing
-    ( PersonForm
-    , allDigitsPattern
-    , applyDefaultValues
-    , birthDate
-    , birthDateEstimated
-    , cell
-    , district
-    , educationLevel
-    , emptyCreateForm
-    , emptyEditForm
-    , expectedAgeByForm
-    , firstName
-    , gender
-    , healthCenter
-    , hivStatus
-    , hmisNumber
-    , maritalStatus
-    , modeOfDelivery
-    , nationalIdNumber
-    , numberOfChildren
-    , phoneNumber
-    , photo
-    , province
-    , secondName
-    , sector
-    , ubudehe
-    , validateBirthDate
-    , validateCell
-    , validateDigitsOnly
-    , validateDistrict
-    , validateEducationLevel
-    , validateGender
-    , validateHealthCenterId
-    , validateHivStatus
-    , validateMaritalStatus
-    , validateModeOfDelivery
-    , validateNationalIdNumber
-    , validatePerson
-    , validateProvince
-    , validateSector
-    , validateUbudehe
-    , validateVillage
-    , village
-    , withDefault
-    )
+module Backend.Person.Form exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
@@ -58,7 +13,7 @@ import Backend.Person.Encoder
         , genderToString
         )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils exposing (expectedAgeByPerson, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
@@ -71,7 +26,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
 import Translate exposing (ValidationError(..))
-import Utils.Form exposing (fromDecoder, nullable)
+import Utils.Form exposing (fromDecoder, nullable, required)
 import Utils.GeoLocation exposing (geoInfo, getGeoLocation)
 
 
@@ -91,6 +46,15 @@ emptyEditForm =
         (validatePerson Nothing (toEntityUuid "1" |> EditPerson) Nothing)
 
 
+type alias ContactForm =
+    Form ValidationError Person
+
+
+emptyContactForm : ContactForm
+emptyContactForm =
+    initial [] validateContact
+
+
 {-| Given the birth date actually entered into the form, what age range are we
 looking at?
 -}
@@ -102,8 +66,8 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValues : NominalDate -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
-applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation form =
+applyDefaultValuesForPerson : NominalDate -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
+applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation form =
     let
         defaultProvince =
             if isChw then
@@ -367,16 +331,6 @@ validatePerson maybeRelated operation maybeCurrentDate =
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName string)
 
-        combineNames first second =
-            if String.trim first == "" then
-                String.trim second
-
-            else
-                [ String.trim second
-                , String.trim first
-                ]
-                    |> String.join " "
-
         withAllNames firstNameValue secondNameValue =
             validateBirthDate externalExpectedAge maybeCurrentDate
                 |> field birthDate
@@ -410,7 +364,7 @@ validatePerson maybeRelated operation maybeCurrentDate =
                                    )
             in
             succeed Person
-                |> andMap (succeed (combineNames firstNameValue secondNameValue))
+                |> andMap (succeed (generateFullName firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
@@ -432,6 +386,42 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
+                |> andMap (succeed False)
+                |> andMap (succeed Nothing)
+    in
+    andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
+
+
+validateContact : Validation ValidationError Person
+validateContact =
+    let
+        withFirstName firstNameValue =
+            andThen (withAllNames firstNameValue) (field secondName string)
+
+        withAllNames firstNameValue secondNameValue =
+            succeed Person
+                |> andMap (succeed (generateFullName firstNameValue secondNameValue))
+                |> andMap (succeed <| String.trim firstNameValue)
+                |> andMap (succeed <| String.trim secondNameValue)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed False)
+                |> andMap (succeed Male)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (field province validateProvinceForContact)
+                |> andMap (field district validateDistrictForContact)
+                |> andMap (field sector validateSectorForContact)
+                |> andMap (field cell validateCellForContact)
+                |> andMap (field village validateVillageForContact)
+                |> andMap (field phoneNumber validateRequiredPhoneNumber)
+                |> andMap (succeed Nothing)
                 |> andMap (succeed False)
                 |> andMap (succeed Nothing)
     in
@@ -506,6 +496,18 @@ validateProvince related =
         |> withDefault (Maybe.andThen .province related)
 
 
+validateProvinceForContact : Validation ValidationError (Maybe String)
+validateProvinceForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.provinces
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownProvince)
+            )
+        |> nullable
+
+
 validateDistrict : Maybe Person -> Validation ValidationError (Maybe String)
 validateDistrict related =
     int
@@ -517,6 +519,18 @@ validateDistrict related =
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
         |> withDefault (Maybe.andThen .district related)
+
+
+validateDistrictForContact : Validation ValidationError (Maybe String)
+validateDistrictForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.districts
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownDistrict)
+            )
+        |> nullable
 
 
 validateSector : Maybe Person -> Validation ValidationError (Maybe String)
@@ -532,6 +546,18 @@ validateSector related =
         |> withDefault (Maybe.andThen .sector related)
 
 
+validateSectorForContact : Validation ValidationError (Maybe String)
+validateSectorForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.sectors
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownSector)
+            )
+        |> nullable
+
+
 validateCell : Maybe Person -> Validation ValidationError (Maybe String)
 validateCell related =
     int
@@ -545,6 +571,18 @@ validateCell related =
         |> withDefault (Maybe.andThen .cell related)
 
 
+validateCellForContact : Validation ValidationError (Maybe String)
+validateCellForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.cells
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownCell)
+            )
+        |> nullable
+
+
 validateVillage : Maybe Person -> Validation ValidationError (Maybe String)
 validateVillage related =
     int
@@ -556,6 +594,18 @@ validateVillage related =
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
         |> withDefault (Maybe.andThen .village related)
+
+
+validateVillageForContact : Validation ValidationError (Maybe String)
+validateVillageForContact =
+    int
+        |> andThen
+            (\id ->
+                Dict.get (toEntityId id) geoInfo.villages
+                    |> Maybe.map (.name >> succeed)
+                    |> Maybe.withDefault (fail <| customError UnknownVillage)
+            )
+        |> nullable
 
 
 validateGender : Validation ValidationError Gender
@@ -656,6 +706,18 @@ validateHealthCenterId : Maybe Person -> Validation ValidationError (Maybe Healt
 validateHealthCenterId related =
     fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEntityUuid)
         |> withDefault (Maybe.andThen .healthCenterId related)
+
+
+validateRequiredPhoneNumber : Validation ValidationError (Maybe String)
+validateRequiredPhoneNumber =
+    string
+        |> mapError (\_ -> customError RequiredField)
+        |> andThen
+            (String.trim
+                >> format allDigitsPattern
+                >> mapError (\_ -> customError DigitsOnly)
+            )
+        |> required
 
 
 

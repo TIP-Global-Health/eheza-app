@@ -63,7 +63,7 @@ import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
 import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
-import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.Types
     exposing
         ( DangerSignsTask(..)
         , ExposureTask(..)
@@ -308,6 +308,7 @@ type TranslationId
     | ActivePage Page
     | AcuteIllnessActivityTitle AcuteIllnessActivity
     | AddChild
+    | AddContact
     | AddFamilyMember
     | AddFamilyMemberFor String
     | AddNewParticipant
@@ -411,6 +412,8 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
+    | ContactsTracingCompleteDetails
+    | ContactsTracingHelper
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
     | ContributingFactor ContributingFactorsSign
@@ -454,6 +457,7 @@ type TranslationId
     | DangerSignsTask DangerSignsTask
     | Date
     | DateConcludedEstimatedQuestion
+    | DateOfContact
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | DashboardLabel
@@ -540,6 +544,7 @@ type TranslationId
     | FetalPresentation FetalPresentation
     | Fetch
     | FilterByName
+    | Finish
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
@@ -710,7 +715,7 @@ type TranslationId
     | NextImmunisationVisit
     | NextPediatricVisit
     | NextSteps
-    | NextStepsTask Bool Pages.AcuteIllnessActivity.Model.NextStepsTask
+    | NextStepsTask Bool Pages.AcuteIllnessActivity.Types.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -861,7 +866,9 @@ type TranslationId
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
-    | RegisterHelper
+    | RegisterContactHelper
+    | RegisterParticipantHelper
+    | RegisterNewContact
     | RegisterNewParticipant
     | RegistratingHealthCenter
     | RegistrationSuccessful
@@ -906,6 +913,7 @@ type TranslationId
     | ScheduleFollowUp
     | Search
     | SearchByName
+    | SearchEhezaForExistingParticipants
     | SearchExistingParticipants
     | SearchHelper
     | SearchHelperFamilyMember
@@ -1548,6 +1556,11 @@ translationSet trans =
         AddChild ->
             { english = "Add Child"
             , kinyarwanda = Just "Ongeraho umwana"
+            }
+
+        AddContact ->
+            { english = "Add Contact"
+            , kinyarwanda = Nothing
             }
 
         AddFamilyMember ->
@@ -2560,6 +2573,16 @@ translationSet trans =
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
             }
 
+        ContactsTracingCompleteDetails ->
+            { english = "Please fill in contact details"
+            , kinyarwanda = Nothing
+            }
+
+        ContactsTracingHelper ->
+            { english = "Please record everyone that the patient has come into contact within 2 days of their symptoms beginning"
+            , kinyarwanda = Nothing
+            }
+
         ContactWithCOVID19SymptomsHelper ->
             { english = "Symptoms include: fever, dry cough, and shortness of breath"
             , kinyarwanda = Just "Ibimenyetso birimo: umuriro, inkorora y'akayi no guhumeka nabi"
@@ -2943,6 +2966,11 @@ translationSet trans =
 
         DateConcludedEstimatedQuestion ->
             { english = "What was the estimated due date for the child"
+            , kinyarwanda = Nothing
+            }
+
+        DateOfContact ->
+            { english = "Date of Contact"
             , kinyarwanda = Nothing
             }
 
@@ -3885,6 +3913,11 @@ translationSet trans =
         FilterByName ->
             { english = "Filter by name"
             , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
+            }
+
+        Finish ->
+            { english = "Finish"
+            , kinyarwanda = Nothing
             }
 
         FirstAntenatalVisit ->
@@ -5422,7 +5455,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.AcuteIllnessActivity.Model.NextStepsSendToHC ->
+                Pages.AcuteIllnessActivity.Types.NextStepsSendToHC ->
                     if isChw then
                         { english = "Send to Health Center"
                         , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
@@ -5433,14 +5466,19 @@ translationSet trans =
                         , kinyarwanda = Nothing
                         }
 
-                Pages.AcuteIllnessActivity.Model.NextStepsHealthEducation ->
+                Pages.AcuteIllnessActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.AcuteIllnessActivity.Model.NextStepsFollowUp ->
+                Pages.AcuteIllnessActivity.Types.NextStepsFollowUp ->
                     { english = "Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi"
+                    }
+
+                Pages.AcuteIllnessActivity.Types.NextStepsContactsTracing ->
+                    { english = "Contacts Tracing"
+                    , kinyarwanda = Nothing
                     }
 
         No ->
@@ -7134,9 +7172,19 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegisterHelper ->
+        RegisterContactHelper ->
             { english = "Not the participant you were looking for?"
             , kinyarwanda = Just "Umugenerwabikorwa ubonye si we washakaga?"
+            }
+
+        RegisterParticipantHelper ->
+            { english = "Not the contact you were looking for?"
+            , kinyarwanda = Nothing
+            }
+
+        RegisterNewContact ->
+            { english = "Register a new contact"
+            , kinyarwanda = Nothing
             }
 
         RegisterNewParticipant ->
@@ -7529,6 +7577,11 @@ translationSet trans =
         SearchByName ->
             { english = "Search by Name"
             , kinyarwanda = Just "Gushakisha izina"
+            }
+
+        SearchEhezaForExistingParticipants ->
+            { english = "Search E-Heza to see if the contact already exists"
+            , kinyarwanda = Nothing
             }
 
         SearchExistingParticipants ->

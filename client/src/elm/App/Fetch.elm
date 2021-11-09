@@ -2,10 +2,13 @@ module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
+import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllnessActivity.Fetch
+import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Fetch
 import Pages.AcuteIllnessOutcome.Fetch
 import Pages.AcuteIllnessParticipant.Fetch
@@ -222,9 +225,19 @@ fetch model =
                 Pages.AcuteIllnessEncounter.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (AcuteIllnessActivityPage id _) ->
-                Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
-                    |> List.map MsgIndexedDb
+            UserPage (AcuteIllnessActivityPage id activity) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            let
+                                activityPage =
+                                    Dict.get ( id, activity ) loggedIn.acuteIllnessActivityPages
+                                        |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
+                            in
+                            Pages.AcuteIllnessActivity.Fetch.fetch id activity model.indexedDb activityPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (HomeVisitEncounterPage id) ->
                 Pages.HomeVisitEncounter.Fetch.fetch id model.indexedDb

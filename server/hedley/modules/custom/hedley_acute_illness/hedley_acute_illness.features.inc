@@ -27,6 +27,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'acute_illness_contacts_tracing' => array(
+      'name' => t('Acute Illness Contacts Tracing'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'acute_illness_core_exam' => array(
       'name' => t('Acute Illness Core Exam'),
       'base' => 'node_content',
@@ -61,6 +69,14 @@ function hedley_acute_illness_node_info() {
     ),
     'acute_illness_nutrition' => array(
       'name' => t('Acute Illness Nutrition'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'acute_illness_trace_contact' => array(
+      'name' => t('Acute Illness Trace Contact'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

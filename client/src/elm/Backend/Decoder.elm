@@ -34,6 +34,9 @@ decodeRevision =
                     "acute_findings" ->
                         decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
 
+                    "acute_illness_contacts_tracing" ->
+                        decodeWithUuid AcuteIllnessContactsTracingRevision decodeAcuteIllnessContactsTracing
+
                     "acute_illness_core_exam" ->
                         decodeWithUuid AcuteIllnessCoreExamRevision decodeAcuteIllnessCoreExam
 
@@ -51,6 +54,9 @@ decodeRevision =
 
                     "acute_illness_nutrition" ->
                         decodeWithUuid AcuteIllnessNutritionRevision decodeAcuteIllnessNutrition
+
+                    "acute_illness_trace_contact" ->
+                        decodeWithUuid AcuteIllnessTraceContactRevision decodeAcuteIllnessTraceContact
 
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals

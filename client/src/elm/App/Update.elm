@@ -471,7 +471,7 @@ update msg model =
                                     data.acuteIllnessActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
-                                        |> Pages.AcuteIllnessActivity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Pages.AcuteIllnessActivity.Update.update currentDate model.healthCenterId id model.indexedDb subMsg
                             in
                             ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd

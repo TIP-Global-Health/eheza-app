@@ -13,6 +13,12 @@ import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
+generateFullName : String -> String -> String
+generateFullName first second =
+    String.join " " [ second, first ]
+        |> String.trim
+
+
 ageInYears : NominalDate -> Person -> Maybe Int
 ageInYears currentDate person =
     person.birthDate
@@ -128,6 +134,11 @@ initiatorToUrlFragmemt initiator =
 
         PrenatalNextStepsActivityOrigin encounterId ->
             "prenatal-next-steps-" ++ fromEntityUuid encounterId
+
+        AcuteIllnessContactsTracingActivityOrigin _ ->
+            -- Not in use, as at Acute Ilness patient is created
+            -- from a dedicated form.
+            ""
 
 
 initiatorFromUrlFragmemt : String -> Maybe Initiator

@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate
+import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
@@ -2418,6 +2418,49 @@ encodeAcuteIllnessNutritionValue nutritions =
 encodeHealthEducation : HealthEducation -> List ( String, Value )
 encodeHealthEducation =
     encodeAcuteIllnessMeasurement (encodeHealthEducationValueWithType "health_education")
+
+
+encodeAcuteIllnessContactsTracing : AcuteIllnessContactsTracing -> List ( String, Value )
+encodeAcuteIllnessContactsTracing =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessContactsTracingValue
+
+
+encodeAcuteIllnessContactsTracingValue : List ContactTraceEntry -> List ( String, Value )
+encodeAcuteIllnessContactsTracingValue entries =
+    [ ( "contacts_trace_data", list encodeContactTraceEntryToString entries )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_contacts_tracing" )
+    ]
+
+
+encodeContactTraceEntryToString : ContactTraceEntry -> Value
+encodeContactTraceEntryToString entry =
+    [ fromEntityUuid entry.personId, entry.firstName, entry.secondName, entry.phoneNumber, formatYYYYMMDD entry.contactDate ]
+        |> String.join "[&]"
+        |> string
+
+
+encodeAcuteIllnessTraceContact : AcuteIllnessTraceContact -> List ( String, Value )
+encodeAcuteIllnessTraceContact =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessTraceContactValue
+
+
+encodeAcuteIllnessTraceContactValue : ContactTraceEntry -> List ( String, Value )
+encodeAcuteIllnessTraceContactValue entry =
+    encodeContactTraceEntry entry
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "acute_illness_trace_contact" )
+           ]
+
+
+encodeContactTraceEntry : ContactTraceEntry -> List ( String, Value )
+encodeContactTraceEntry entry =
+    [ ( "referred_person", encodeEntityUuid entry.personId )
+    , ( "first_name", string entry.firstName )
+    , ( "second_name", string entry.secondName )
+    , ( "phone_number", string entry.phoneNumber )
+    , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
+    ]
 
 
 encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )

@@ -44,11 +44,13 @@ const HEDLEY_RESTFUL_SHARDED = [
   'session' => 'sessions',
   // Measurements.
   'acute_findings' => 'acute-findings',
+  'acute_illness_contacts_tracing' => 'acute-illness-contacts-tracing',
   'acute_illness_core_exam' => 'acute-illness-core-exam',
   'acute_illness_danger_signs' => 'acute-illness-danger-signs',
   'acute_illness_follow_up' => 'acute-illness-follow-up',
   'acute_illness_muac' => 'acute-illness-muacs',
   'acute_illness_nutrition' => 'acute-illness-nutritions',
+  'acute_illness_trace_contact' => 'acute-illness-trace-contact',
   'acute_illness_vitals' => 'acute-illness-vitals',
   'prenatal_follow_up' => 'prenatal-follow-up',
   'prenatal_send_to_hc' => 'prenatal-send-to-hc',

@@ -58,6 +58,7 @@ import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.Types
 import Pages.AcuteIllnessActivity.Utils
     exposing
         ( activityCompleted
@@ -2199,6 +2200,21 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         ( [ resetFormMsg, navigationMsg nextPage ]
                                         , updateNewbornEnroledMsg ++ createRelationshipMsg
                                         )
+
+                                    AcuteIllnessContactsTracingActivityOrigin encounterId ->
+                                        let
+                                            setContactsTracingFormStateMsg =
+                                                Pages.AcuteIllnessActivity.Model.ContactsTracingFormRecordContactDetails
+                                                    personId
+                                                    Pages.AcuteIllnessActivity.Model.emptyRecordContactDetailsData
+                                                    |> Pages.AcuteIllnessActivity.Model.SetContactsTracingFormState
+                                                    |> App.Model.MsgPageAcuteIllnessActivity encounterId Backend.AcuteIllnessActivity.Model.AcuteIllnessNextSteps
+                                                    |> App.Model.MsgLoggedIn
+                                                    |> List.singleton
+                                        in
+                                        ( setContactsTracingFormStateMsg
+                                        , []
+                                        )
                             )
                         |> Maybe.withDefault ( [], [] )
             in
@@ -2505,6 +2521,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        AcuteIllnessContactsTracingRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | contactsTracing = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AcuteIllnessCoreExamRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
@@ -2566,6 +2590,9 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 model
             , recalc
             )
+
+        AcuteIllnessTraceContactRevision uuid data ->
+            noChange
 
         AcuteIllnessVitalsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
@@ -4006,7 +4033,7 @@ generateMsgsForNewDiagnosis :
     -> Bool
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
     if isChw then
@@ -4020,7 +4047,7 @@ generateMsgsForNewDiagnosisForNurse :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
     case diagnosis of
@@ -4028,7 +4055,7 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
             [ -- Navigate to Acute Ilness Laboratory activty page.
               App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , -- Focus on Covid testing task.
-              Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryCovidTesting
+              Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Types.LaboratoryCovidTesting
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                 |> App.Model.MsgLoggedIn
 
@@ -4046,7 +4073,7 @@ generateCustomMsgsForNewDiagnosis :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Model.NextStepsTask
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     -> List App.Model.Msg
 generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
     case nextStep of

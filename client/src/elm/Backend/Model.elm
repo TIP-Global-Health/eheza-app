@@ -360,12 +360,14 @@ type MsgIndexedDb
 -}
 type Revision
     = AcuteFindingsRevision AcuteFindingsId AcuteFindings
+    | AcuteIllnessContactsTracingRevision AcuteIllnessContactsTracingId AcuteIllnessContactsTracing
     | AcuteIllnessCoreExamRevision AcuteIllnessCoreExamId AcuteIllnessCoreExam
     | AcuteIllnessDangerSignsRevision AcuteIllnessDangerSignsId AcuteIllnessDangerSigns
     | AcuteIllnessFollowUpRevision AcuteIllnessFollowUpId AcuteIllnessFollowUp
     | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
     | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    | AcuteIllnessTraceContactRevision AcuteIllnessTraceContactId AcuteIllnessTraceContact
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
     | AttendanceRevision AttendanceId Attendance
