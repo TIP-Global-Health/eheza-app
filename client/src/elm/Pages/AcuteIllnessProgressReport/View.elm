@@ -547,6 +547,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                         ]
                 )
                 allEncountersData
+                |> List.reverse
 
         viewNotTaken =
             td [] [ text <| translate language Translate.NotTaken ]
