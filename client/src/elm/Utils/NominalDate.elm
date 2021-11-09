@@ -94,6 +94,11 @@ renderAgeMonthsDaysParts language birthDate now =
     [ monthPart, dayPart ]
 
 
+renderAgeYearsMonths : Language -> NominalDate -> NominalDate -> String
+renderAgeYearsMonths language birthDate now =
+    "@todo"
+
+
 renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
 renderAgeMonthsDaysAbbrev language birthDate now =
     renderAgeMonthsDaysParts language birthDate now
