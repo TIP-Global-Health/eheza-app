@@ -1131,7 +1131,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                                 ( StatusUpToDate, "up-to-date" )
                         )
                         nextDue
-                        |> Maybe.withDefault ( StatusDone, "done" )
+                        |> Maybe.withDefault ( StatusCompleted, "completed" )
             in
             div [ class "entry vaccination" ]
                 [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]

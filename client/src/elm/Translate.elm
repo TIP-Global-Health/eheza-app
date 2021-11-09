@@ -8168,8 +8168,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                StatusDone ->
-                    { english = "Done"
+                StatusCompleted ->
+                    { english = "Completed"
                     , kinyarwanda = Nothing
                     }
 

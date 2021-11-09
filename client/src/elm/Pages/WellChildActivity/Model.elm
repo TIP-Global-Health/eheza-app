@@ -131,7 +131,7 @@ type WarningPopupType
 
 type VaccinationStatus
     = StatusBehind
-    | StatusDone
+    | StatusCompleted
     | StatusUpToDate
 
 
