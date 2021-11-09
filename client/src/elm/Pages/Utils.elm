@@ -523,6 +523,24 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
+viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
+    let
+        attributes =
+            if allowEndEcounter then
+                [ class "ui fluid primary button"
+                , onClick <| setDialogStateMsgs True
+                ]
+
+            else
+                [ class "ui fluid primary button disabled" ]
+    in
+    div [ class "actions" ]
+        [ button attributes
+            [ text <| translate language Translate.EndEncounter ]
+        ]
+
+
 viewRedAlertForSelect : List a -> List a -> Html any
 viewRedAlertForSelect actual normal =
     viewAlertForSelect "red" actual normal

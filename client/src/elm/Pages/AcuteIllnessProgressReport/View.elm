@@ -41,11 +41,11 @@ import Pages.AcuteIllnessActivity.View
         )
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData)
-import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
+import Pages.AcuteIllnessEncounter.View exposing (allowEndingEcounter, partitionActivities)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import Pages.WellChildProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -114,10 +114,10 @@ viewContent language currentDate id isChw initiator model data =
                     |> Maybe.withDefault []
 
         ( _, pendingActivities ) =
-            splitActivities currentDate isChw isFirstEncounter data
+            partitionActivities currentDate isChw isFirstEncounter data
 
         endEncounterDialog =
-            if model.showEndEncounetrDialog then
+            if model.showEndEncounterDialog then
                 Just <|
                     viewEndEncounterDialog language
                         Translate.EndEncounterQuestion
@@ -131,10 +131,13 @@ viewContent language currentDate id isChw initiator model data =
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
 
+        allowEndEcounter =
+            allowEndingEcounter isFirstEncounter data.measurements pendingActivities diagnosis
+
         endEncounterButton =
             case initiator of
                 InitiatorEncounterPage ->
-                    viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
+                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
 
                 _ ->
                     emptyNode

@@ -52,13 +52,13 @@ import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.NutritionActivity.View exposing (translateNutritionAssement)
 import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import Pages.WellChildActivity.Model exposing (VaccinationStatus(..))
 import Pages.WellChildActivity.Utils exposing (getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildActivity.View exposing (viewVaccinationOverview)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData, pediatricCareMilestoneToComparable, resolvePediatricCareMilestoneOnDate)
-import Pages.WellChildEncounter.View exposing (viewPersonDetails)
+import Pages.WellChildEncounter.View exposing (allowEndingEcounter, partitionActivities, viewPersonDetails)
 import Pages.WellChildProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -96,14 +96,31 @@ view language currentDate zscores id isChw db model =
                             |> RemoteData.map (\child_ -> ( participant_.person, child_ ))
                     )
 
-        initiator =
-            InitiatorWellChild id
-
-        mandatoryNutritionAssessmentMeasurementsTaken =
+        assembledData =
             generateAssembledData id db
                 |> RemoteData.toMaybe
-                |> Maybe.map (\assembled -> mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db)
-                |> Maybe.withDefault False
+
+        ( endEncounterData, mandatoryNutritionAssessmentMeasurementsTaken ) =
+            Maybe.map
+                (\assembled ->
+                    let
+                        ( _, pendingActivities ) =
+                            partitionActivities currentDate zscores isChw db assembled
+                    in
+                    ( Just <|
+                        { showEndEncounterDialog = model.showEndEncounterDialog
+                        , allowEndEcounter = allowEndingEcounter pendingActivities
+                        , closeEncounterMsg = CloseEncounter id
+                        , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
+                        }
+                    , mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db
+                    )
+                )
+                assembledData
+                |> Maybe.withDefault ( Nothing, False )
+
+        initiator =
+            InitiatorWellChild id
     in
     viewWebData language
         (viewProgressReport language
@@ -116,6 +133,7 @@ view language currentDate zscores id isChw db model =
             model.diagnosisMode
             SetActivePage
             SetDiagnosisMode
+            endEncounterData
         )
         identity
         childData
@@ -132,9 +150,10 @@ viewProgressReport :
     -> DiagnosisMode
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
+    -> Maybe (EndEncounterData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg ( childId, child ) =
+viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg endEnconterData ( childId, child ) =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -255,6 +274,25 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
 
                 ModeCompletedDiagnosis ->
                     []
+
+        ( endEncounterDialog, endEncounterButton ) =
+            Maybe.map
+                (\data ->
+                    ( if data.showEndEncounterDialog then
+                        Just <|
+                            viewEndEncounterDialog language
+                                Translate.EndEncounterQuestion
+                                Translate.OnceYouEndTheEncounter
+                                data.closeEncounterMsg
+                                (data.setEndEncounterDialogStateMsg False)
+
+                      else
+                        Nothing
+                    , viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
+                    )
+                )
+                endEnconterData
+                |> Maybe.withDefault ( Nothing, emptyNode )
     in
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
@@ -278,8 +316,8 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 maybeAssembled
             ]
                 ++ derivedContent
-
-        -- , viewModal endEncounterDialog
+                ++ [ endEncounterButton ]
+        , viewModal endEncounterDialog
         ]
 
 

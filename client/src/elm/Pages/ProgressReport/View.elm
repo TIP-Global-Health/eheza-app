@@ -34,6 +34,18 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             mandatoryActivitiesCompleted currentDate zscores session.offlineSession childId isChw db
     in
     viewWebData language
-        (viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db model.diagnosisMode SetActivePage SetDiagnosisMode)
+        (viewProgressReport
+            language
+            currentDate
+            zscores
+            isChw
+            initiator
+            mandatoryNutritionAssessmentMeasurementsTaken
+            db
+            model.diagnosisMode
+            SetActivePage
+            SetDiagnosisMode
+            Nothing
+        )
         identity
         childData

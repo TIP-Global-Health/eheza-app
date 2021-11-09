@@ -8365,8 +8365,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                StatusDone ->
-                    { english = "Done"
+                StatusCompleted ->
+                    { english = "Completed"
                     , kinyarwanda = Nothing
                     }
 
@@ -8691,12 +8691,12 @@ translationSet trans =
                     }
 
                 VaccineIPV ->
-                    { english = "There is only one dose of the inactivated vaccine."
+                    { english = "There is only one dose of the inactivated vaccine at 14 weeks."
                     , kinyarwanda = Nothing
                     }
 
                 VaccineMR ->
-                    { english = "There are 2 doses of OPV - at 9 months and 15 months."
+                    { english = "There are 2 doses of Measles - Rubella - at 9 months and 15 months."
                     , kinyarwanda = Nothing
                     }
 
