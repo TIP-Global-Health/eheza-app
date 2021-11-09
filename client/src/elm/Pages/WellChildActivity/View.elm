@@ -1141,7 +1141,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                                 ( StatusUpToDate, "up-to-date" )
                         )
                         nextDue
-                        |> Maybe.withDefault ( StatusDone, "done" )
+                        |> Maybe.withDefault ( StatusCompleted, "completed" )
             in
             div [ class "entry vaccination" ]
                 [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
@@ -2111,7 +2111,7 @@ viewMedicationAdministrationForm language currentDate assembled config form =
 
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
-    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass dosage Nothing
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass dosage Nothing
 
 
 viewNextStepsContent :

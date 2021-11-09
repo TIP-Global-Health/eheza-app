@@ -371,6 +371,7 @@ type TranslationId
     | BrittleHair
     | ByMouthDaylyForXDays Int
     | ByMouthTwiceADayForXDays Int
+    | ByMouthThreeTimesADayForXDays Int
     | Call114
     | Called114Question
     | Cancel
@@ -2266,6 +2267,11 @@ translationSet trans =
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
+            , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
+            }
+
+        ByMouthThreeTimesADayForXDays days ->
+            { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
             }
 
@@ -5055,8 +5061,8 @@ translationSet trans =
         MedicationDistributionSign sign ->
             case sign of
                 Amoxicillin ->
-                    { english = "Amoxicillin (125mg)"
-                    , kinyarwanda = Just "Amoxicillin (125mg)"
+                    { english = "Amoxicillin"
+                    , kinyarwanda = Nothing
                     }
 
                 Coartem ->
@@ -5071,7 +5077,7 @@ translationSet trans =
 
                 Zinc ->
                     { english = "Zinc"
-                    , kinyarwanda = Just "Zinc"
+                    , kinyarwanda = Nothing
                     }
 
                 LemonJuiceOrHoney ->
@@ -5525,7 +5531,7 @@ translationSet trans =
         AdministrationNote note ->
             case note of
                 NonAdministrationLackOfStock ->
-                    { english = "Lack of Stock"
+                    { english = "Out of Stock"
                     , kinyarwanda = Just "Nta miti iri mu bubiko"
                     }
 
@@ -5540,7 +5546,7 @@ translationSet trans =
                     }
 
                 NonAdministrationPatientUnableToAfford ->
-                    { english = "Patient unable to afford"
+                    { english = "Patient Unable to Afford"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
@@ -5565,7 +5571,7 @@ translationSet trans =
                     }
 
                 AdministeredPreviously ->
-                    { english = "Administered Previously"
+                    { english = "Already Received"
                     , kinyarwanda = Nothing
                     }
 
@@ -5587,7 +5593,7 @@ translationSet trans =
                     }
 
                 NonAdministrationPatientUnableToAfford ->
-                    { english = "Patient unable to afford"
+                    { english = "Patient Unable to Afford"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
@@ -8339,8 +8345,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                StatusDone ->
-                    { english = "Done"
+                StatusCompleted ->
+                    { english = "Completed"
                     , kinyarwanda = Nothing
                     }
 
@@ -8665,12 +8671,12 @@ translationSet trans =
                     }
 
                 VaccineIPV ->
-                    { english = "There is only one dose of the inactivated vaccine."
+                    { english = "There is only one dose of the inactivated vaccine at 14 weeks."
                     , kinyarwanda = Nothing
                     }
 
                 VaccineMR ->
-                    { english = "There are 2 doses of OPV - at 9 months and 15 months."
+                    { english = "There are 2 doses of Measles - Rubella - at 9 months and 15 months."
                     , kinyarwanda = Nothing
                     }
 

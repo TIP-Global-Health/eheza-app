@@ -31,14 +31,21 @@ import Pages.AcuteIllnessActivity.Utils
         , resolveZincDosage
         , respiratoryRateAbnormalForAge
         )
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationLabel, viewHCRecommendation, viewOralSolutionPrescription, viewTabletsPrescription)
+import Pages.AcuteIllnessActivity.View
+    exposing
+        ( viewAdministeredMedicationLabel
+        , viewAmoxicillinAdministrationInstructions
+        , viewHCRecommendation
+        , viewOralSolutionPrescription
+        , viewTabletsPrescription
+        )
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData)
-import Pages.AcuteIllnessEncounter.View exposing (splitActivities, viewEndEncounterButton)
+import Pages.AcuteIllnessEncounter.View exposing (allowEndingEcounter, partitionActivities)
 import Pages.AcuteIllnessProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import Pages.WellChildProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -107,10 +114,10 @@ viewContent language currentDate id isChw initiator model data =
                     |> Maybe.withDefault []
 
         ( _, pendingActivities ) =
-            splitActivities currentDate isChw isFirstEncounter data
+            partitionActivities currentDate isChw isFirstEncounter data
 
         endEncounterDialog =
-            if model.showEndEncounetrDialog then
+            if model.showEndEncounterDialog then
                 Just <|
                     viewEndEncounterDialog language
                         Translate.EndEncounterQuestion
@@ -124,10 +131,13 @@ viewContent language currentDate id isChw initiator model data =
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
 
+        allowEndEcounter =
+            allowEndingEcounter isFirstEncounter data.measurements pendingActivities diagnosis
+
         endEncounterButton =
             case initiator of
                 InitiatorEncounterPage ->
-                    viewEndEncounterButton language isFirstEncounter data.measurements pendingActivities diagnosis SetEndEncounterDialogState
+                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
 
                 _ ->
                     emptyNode
@@ -951,10 +961,8 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             if amoxicillinPrescribed then
                 resolveAmoxicillinDosage date person
                     |> Maybe.map
-                        (\dosage ->
-                            [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" (Just date)
-                            , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
-                            ]
+                        (\( numberOfPills, pillMass, duration ) ->
+                            viewAmoxicillinAdministrationInstructions language numberOfPills pillMass duration (Just date)
                         )
                     |> Maybe.withDefault []
 

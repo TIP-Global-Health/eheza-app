@@ -5,13 +5,13 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { showEndEncounetrDialog : Bool
+    { showEndEncounterDialog : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
-    { showEndEncounetrDialog = False
+    { showEndEncounterDialog = False
     }
 
 
