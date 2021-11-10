@@ -10,6 +10,7 @@ hooks:
     - exec: drush uli
   post-start:
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
+    - exec: "git checkout server/www/.gitignore"
     - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://ihangane.ddev.site:4443"
     - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y
