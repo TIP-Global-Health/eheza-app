@@ -24,6 +24,41 @@ additional_fqdns:
 - 8036-${shortgpurl}
 CONFIGEND
 
+# Forces proper external base URL.
+DRUPAL_BASE=$(gp url 8888)
+mkdir -p web/sites/all/drush
+cat <<DRUSH_CFG > web/sites/all/drush/drush.yml
+options:
+  uri: "$DRUPAL_BASE"
+DRUSH_CFG
+
+cat <<ELM_CFG > client/src/elm/LocalConfig.elm
+module LocalConfig exposing (localConfigs)
+
+import AssocList as Dict exposing (..)
+import Config.Model as Config exposing (Model)
+import Pusher.Model exposing (Cluster(..), PusherAppKey)
+
+
+local : Model
+local =
+    { backendUrl = "$DRUPAL_BASE"
+    , name = "local"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = True
+    , sandbox = False
+    }
+
+
+localConfigs : Dict String Model
+localConfigs =
+    Dict.fromList
+        -- Change "localhost" if you are serving this from a different local
+        -- URL.
+        [ ( "localhost", local )
+        ]
+ELM_CFG
+
 # We need host.docker.internal inside the container,
 # So add it via docker-compose.host-docker-internal.yaml
 hostip=$(awk "\$2 == \"$HOSTNAME\" { print \$1; }" /etc/hosts)

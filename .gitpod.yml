@@ -11,9 +11,9 @@ tasks:
       ddev composer install
     command: |
       .ddev/gitpod-setup-ddev.sh
-      ddev composer install
       cp .ddev/config.local.yaml.example .ddev/config.local.yaml
       ddev restart
+      ddev client-install
       nohup ddev gulp &
       gp await-port 3000 && gp preview $(gp url 3000)
       gp await-port 8888 && gp preview $(gp url 8888)
