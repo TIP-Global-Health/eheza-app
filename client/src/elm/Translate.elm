@@ -888,7 +888,8 @@ type TranslationId
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
-    | ReportResultsOfSearch Int
+    | ReportResultsOfContactsSearch Int
+    | ReportResultsOfParticipantsSearch Int
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
@@ -7191,12 +7192,12 @@ translationSet trans =
             }
 
         RegisterContactHelper ->
-            { english = "Not the participant you were looking for?"
-            , kinyarwanda = Just "Umugenerwabikorwa ubonye si we washakaga?"
+            { english = "Not the contact you were looking for?"
+            , kinyarwanda = Nothing
             }
 
         RegisterParticipantHelper ->
-            { english = "Not the contact you were looking for?"
+            { english = "Not the participant you were looking for?"
             , kinyarwanda = Nothing
             }
 
@@ -7285,7 +7286,19 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt remaining ++ " iyibutswa rya raporo"
             }
 
-        ReportResultsOfSearch total ->
+        ReportResultsOfContactsSearch total ->
+            case total of
+                1 ->
+                    { english = "There is 1 contract that matches your search."
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "There are " ++ String.fromInt total ++ " contacts that match your search."
+                    , kinyarwanda = Nothing
+                    }
+
+        ReportResultsOfParticipantsSearch total ->
             case total of
                 1 ->
                     { english = "There is 1 participant that matches your search."

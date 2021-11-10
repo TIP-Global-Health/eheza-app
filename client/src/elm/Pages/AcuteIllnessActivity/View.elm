@@ -3088,7 +3088,7 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
 
         viewSummary participants =
             Dict.size participants
-                |> Translate.ReportResultsOfSearch
+                |> Translate.ReportResultsOfContactsSearch
                 |> translate language
                 |> text
 
