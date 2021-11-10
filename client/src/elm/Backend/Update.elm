@@ -4056,7 +4056,7 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
               App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , -- Focus on Covid testing task.
               Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Types.LaboratoryCovidTesting
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.

@@ -598,7 +598,7 @@ viewNutritionSignsPane language currentDate firstEncounterData subsequentEncount
                     )
     in
     if List.isEmpty nutritions then
-        -- If there is no signs to display, we do not show the pane.
+        -- If there are no signs to display, we do not show the pane.
         -- Note that we do not record nutrition signs for adults.
         emptyNode
 

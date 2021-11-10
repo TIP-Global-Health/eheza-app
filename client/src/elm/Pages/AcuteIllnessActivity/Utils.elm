@@ -1895,7 +1895,7 @@ laboratoryTaskCompleted currentDate isChw assembled task =
 
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
-    [ LaboratoryMalariaTesting, LaboratoryCovidTesting ]
+    [ LaboratoryCovidTesting, LaboratoryMalariaTesting ]
 
 
 resolveNextStepFirstEncounter : NominalDate -> Bool -> AssembledData -> Maybe NextStepsTask
