@@ -374,15 +374,23 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                 ( derivedCompleted, derivedActive ) =
                     Maybe.map
                         (\testPerformed ->
+                            let
+                                ( isPregnantActive, isPregnantCompleted ) =
+                                    if isPersonAFertileWoman currentDate person then
+                                        if isJust form.isPregnant then
+                                            ( 1, 1 )
+
+                                        else
+                                            ( 1, 0 )
+
+                                    else
+                                        ( 0, 0 )
+                            in
                             if testPerformed then
                                 Maybe.map
                                     (\testPositive ->
-                                        if testPositive && personAFertileWoman then
-                                            if isJust form.isPregnant then
-                                                ( 2, 2 )
-
-                                            else
-                                                ( 1, 2 )
+                                        if testPositive then
+                                            ( 1 + isPregnantCompleted, 1 + isPregnantActive )
 
                                         else
                                             ( 1, 1 )
@@ -391,7 +399,9 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                                     |> Maybe.withDefault ( 0, 1 )
 
                             else
-                                ( taskCompleted form.administrationNote + taskCompleted form.isPregnant, 2 )
+                                ( taskCompleted form.administrationNote + isPregnantCompleted
+                                , 1 + isPregnantActive
+                                )
                         )
                         form.testPerformed
                         |> Maybe.withDefault ( 0, 0 )
