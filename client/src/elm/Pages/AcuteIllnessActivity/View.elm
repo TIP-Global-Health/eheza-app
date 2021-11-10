@@ -3286,16 +3286,9 @@ viewCreateContactForm language currentDate db data =
         requestStatus =
             case request of
                 Success _ ->
-                    -- We only show the success message until you make changes.
-                    if Set.isEmpty (Form.getChangedFields data) then
-                        div
-                            [ class "ui success message" ]
-                            [ div [ class "header" ] [ text <| translate language Translate.Success ]
-                            , div [] [ text <| translate language Translate.PersonHasBeenSaved ]
-                            ]
-
-                    else
-                        emptyNode
+                    -- We only want to report failures. In case
+                    -- of success, APP navigates to different page.
+                    emptyNode
 
                 Failure err ->
                     div
