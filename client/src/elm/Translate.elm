@@ -809,6 +809,7 @@ type TranslationId
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
+    | PlaceholderSearchContactName
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
@@ -6454,6 +6455,11 @@ translationSet trans =
         PlaceholderEnterWeight ->
             { english = "Enter weight here…"
             , kinyarwanda = Just "Andika ibiro hano…"
+            }
+
+        PlaceholderSearchContactName ->
+            { english = "Search contact name here"
+            , kinyarwanda = Nothing
             }
 
         PleaseSelectGroup ->

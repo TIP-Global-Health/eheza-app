@@ -3061,7 +3061,7 @@ viewContactsTracingFormSearchParticipants : Language -> NominalDate -> ModelInde
 viewContactsTracingFormSearchParticipants language currentDate db existingContacts data =
     let
         searchForm =
-            Pages.Utils.viewSearchForm language data.input Translate.PlaceholderEnterParticipantName SetContactsTracingInput
+            Pages.Utils.viewSearchForm language data.input Translate.PlaceholderSearchContactName SetContactsTracingInput
 
         searchValue =
             Maybe.withDefault "" data.search
