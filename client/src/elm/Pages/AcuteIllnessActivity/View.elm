@@ -2191,35 +2191,42 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         form_.nonAdministrationSigns
 
                 amoxicillinAdministration =
-                    let
-                        amoxicillinUpdateFunc value form_ =
-                            { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
-
-                        derivedQuestion =
-                            case form.amoxicillin of
-                                Just False ->
-                                    viewDerivedQuestion Amoxicillin MedicationAmoxicillin
-
-                                _ ->
-                                    []
-                    in
-                    ( resolveAmoxicillinDosage currentDate person
+                    resolveAmoxicillinDosage currentDate person
                         |> Maybe.map
                             (\( numberOfPills, pillMass, duration ) ->
-                                div [ class "instructions respiratory-infection-uncomplicated" ] <|
+                                let
+                                    amoxicillinUpdateFunc value form_ =
+                                        { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
+
+                                    derivedQuestion =
+                                        case form.amoxicillin of
+                                            Just False ->
+                                                viewDerivedQuestion Amoxicillin MedicationAmoxicillin
+
+                                            _ ->
+                                                []
+
+                                    administeredMedicationQuestion =
+                                        if pillMass == "500" then
+                                            viewQuestionLabel language Translate.AdministeredOneOfAboveMedicinesQuestion
+
+                                        else
+                                            viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
+                                in
+                                ( div [ class "instructions respiratory-infection-uncomplicated" ] <|
                                     viewAmoxicillinAdministrationInstructions language numberOfPills pillMass duration Nothing
+                                , [ administeredMedicationQuestion
+                                  , viewBoolInput
+                                        language
+                                        form.amoxicillin
+                                        (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
+                                        "amoxicillin-medication"
+                                        Nothing
+                                  ]
+                                    ++ derivedQuestion
+                                )
                             )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
-                      , viewBoolInput
-                            language
-                            form.amoxicillin
-                            (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
-                            "amoxicillin-medication"
-                            Nothing
-                      ]
-                        ++ derivedQuestion
-                    )
+                        |> Maybe.withDefault ( emptyNode, [] )
             in
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
@@ -2349,6 +2356,23 @@ viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg du
     let
         medicationLabelSuffix =
             " (" ++ pillMassInMg ++ ")"
+
+        alternateMedicineSection =
+            if pillMassInMg == "500" then
+                [ p [ class "or" ] [ text <| translate language Translate.Or ]
+                , viewAdministeredMedicationCustomLabel
+                    language
+                    Translate.Administer
+                    Translate.MedicationDoxycycline
+                    ""
+                    "icon-pills"
+                    ":"
+                    maybeDate
+                , viewTabletsPrescription language "1" (Translate.ByMouthTwiceADayForXDays 5)
+                ]
+
+            else
+                []
     in
     [ viewAdministeredMedicationCustomLabel
         language
@@ -2360,6 +2384,7 @@ viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg du
         maybeDate
     , viewTabletsPrescription language numberOfPills duration
     ]
+        ++ alternateMedicineSection
 
 
 viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any

@@ -104,6 +104,10 @@
       }
     }
 
+    .or {
+      text-transform: uppercase;
+    }
+
     .prescription {
       margin-left: 54px;
     }
@@ -3133,7 +3137,7 @@ div.page-report.well-child {
   }
 
   .ui.report.unstackable.items .actions {
-    margin: 20px 0 0 0;    
+    margin: 20px 0 0 0;
   }
 }
 

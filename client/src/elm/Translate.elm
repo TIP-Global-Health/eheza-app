@@ -321,6 +321,7 @@ type TranslationId
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
+    | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
     | Adherence Adherence
     | AdverseEventSinglePlural Int
@@ -665,6 +666,7 @@ type TranslationId
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
     | MedicationDistributionSign MedicationDistributionSign
+    | MedicationDoxycycline
     | MedicationDosesMissedQuestion
     | MedicationForFeverPast6Hours
     | MedicationHelpedEnding Bool
@@ -1621,6 +1623,11 @@ translationSet trans =
         AdministeredMedicationQuestion ->
             { english = "Have you administered"
             , kinyarwanda = Just "Watanze umuti"
+            }
+
+        AdministeredOneOfAboveMedicinesQuestion ->
+            { english = "Have you administered one of the above medicines to the patient"
+            , kinyarwanda = Nothing
             }
 
         AddressInformation ->
@@ -5124,6 +5131,11 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        MedicationDoxycycline ->
+            { english = "Doxycycline"
+            , kinyarwanda = Nothing
+            }
 
         MedicationDosesMissedQuestion ->
             { english = "Did you miss any doses of medications"
