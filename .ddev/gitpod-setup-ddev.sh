@@ -32,6 +32,7 @@ options:
   uri: "$DRUPAL_BASE"
 DRUSH_CFG
 
+ELM_BASE=$(gp url 3000)
 cat <<ELM_CFG > client/src/elm/LocalConfig.elm
 module LocalConfig exposing (localConfigs)
 
@@ -55,7 +56,7 @@ localConfigs =
     Dict.fromList
         -- Change "localhost" if you are serving this from a different local
         -- URL.
-        [ ( "localhost", local )
+        [ ( "$ELM_BASE", local )
         ]
 ELM_CFG
 
