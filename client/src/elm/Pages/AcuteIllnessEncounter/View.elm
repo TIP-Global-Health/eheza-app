@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.View exposing (splitActivities, view, viewEndEncounterButton, viewPersonDetailsWithAlert, warningPopup)
+module Pages.AcuteIllnessEncounter.View exposing (allowEndingEcounter, partitionActivities, view, viewPersonDetailsWithAlert, warningPopup)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
@@ -29,7 +29,7 @@ import Pages.AcuteIllnessEncounter.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.Utils exposing (viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -59,7 +59,7 @@ viewHeaderAndContent language currentDate id isChw db model data =
             viewContent language currentDate id isChw model data
 
         endEncounterDialog =
-            if model.showEndEncounetrDialog then
+            if model.showEndEncounterDialog then
                 Just <|
                     viewEndEncounterDialog language
                         Translate.EndEncounterQuestion
@@ -320,7 +320,7 @@ viewMainPageContent language currentDate id isChw data model =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            splitActivities currentDate isChw isFirstEncounter data
+            partitionActivities currentDate isChw isFirstEncounter data
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -399,10 +399,13 @@ viewMainPageContent language currentDate id isChw data model =
         diagnosis =
             Maybe.map Tuple.second data.diagnosis
 
+        allowEndEcounter =
+            allowEndingEcounter isFirstEncounter measurements pendingActivities diagnosis
+
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language isFirstEncounter measurements pendingActivities diagnosis SetEndEncounterDialogState
+                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
                 ]
     in
     [ tabs
@@ -410,49 +413,32 @@ viewMainPageContent language currentDate id isChw data model =
     ]
 
 
-splitActivities : NominalDate -> Bool -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
-splitActivities currentDate isChw isFirstEncounter data =
+partitionActivities : NominalDate -> Bool -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
+partitionActivities currentDate isChw isFirstEncounter data =
     getAllActivities isFirstEncounter
         |> List.filter (expectActivity currentDate isChw isFirstEncounter data)
         |> List.partition (activityCompleted currentDate isChw isFirstEncounter data)
 
 
-viewEndEncounterButton : Language -> Bool -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> (Bool -> msg) -> Html msg
-viewEndEncounterButton language isFirstEncounter measurements pendingActivities diagnosis setDialogStateMsgs =
-    let
-        allowEndEcounter =
-            if not isFirstEncounter then
-                List.isEmpty pendingActivities
+allowEndingEcounter : Bool -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> Bool
+allowEndingEcounter isFirstEncounter measurements pendingActivities diagnosis =
+    if not isFirstEncounter then
+        List.isEmpty pendingActivities
 
-            else if diagnosis == Just DiagnosisCovid19Suspect then
-                isJust measurements.isolation
-                    && (talkedTo114 measurements || isJust measurements.hcContact)
+    else if diagnosis == Just DiagnosisCovid19Suspect then
+        isJust measurements.isolation
+            && (talkedTo114 measurements || isJust measurements.hcContact)
 
-            else if isJust diagnosis then
-                case pendingActivities of
-                    [] ->
-                        True
+    else if isJust diagnosis then
+        case pendingActivities of
+            [] ->
+                True
 
-                    [ AcuteIllnessPriorTreatment ] ->
-                        True
+            [ AcuteIllnessPriorTreatment ] ->
+                True
 
-                    _ ->
-                        False
+            _ ->
+                False
 
-            else
-                List.isEmpty pendingActivities
-
-        attributes =
-            if allowEndEcounter then
-                [ class "ui fluid primary button"
-                , onClick <| setDialogStateMsgs True
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-    in
-    div [ class "actions" ]
-        [ button
-            attributes
-            [ text <| translate language Translate.EndEncounter ]
-        ]
+    else
+        List.isEmpty pendingActivities

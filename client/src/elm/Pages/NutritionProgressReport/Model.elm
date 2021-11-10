@@ -7,14 +7,14 @@ import Pages.WellChildProgressReport.Model exposing (DiagnosisMode(..))
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
-    , showEndEncounetrDialog : Bool
+    , showEndEncounterDialog : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
-    , showEndEncounetrDialog = False
+    , showEndEncounterDialog = False
     }
 
 
