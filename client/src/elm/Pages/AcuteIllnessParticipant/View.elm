@@ -137,6 +137,14 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id isChw db
                                         |> RemoteData.toMaybe
                                         |> Maybe.map Dict.toList
                                         |> Maybe.withDefault []
+                                        |> List.filter
+                                            (\( _, encounter ) ->
+                                                if isChw then
+                                                    encounter.encounterType == AcuteIllnessEncounterCHW
+
+                                                else
+                                                    encounter.encounterType == AcuteIllnessEncounterNurse
+                                            )
 
                                 maybeActiveEncounterId =
                                     List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
