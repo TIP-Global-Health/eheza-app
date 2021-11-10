@@ -3,7 +3,7 @@ module Gizra.NominalDate exposing
     , decodeYYYYMMDD, encodeYYYYMMDD
     , formatYYYYMMDD, formatMMDDYYYY
     , fromLocalDateTime
-    , diffDays, diffCalendarMonthsAndDays
+    , diffDays, diffCalendarMonthsAndDays, diffCalendarYearsAndMonths
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
     , allMonths, daysInMonth, diffCalendarMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, formatDDMMyyyy, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
@@ -269,6 +269,25 @@ diffCalendarMonthsAndDays low high =
         -- finished, so it can't matter how many days it has.
         { months = uncorrected.months - 1
         , days = uncorrected.days + daysInMonth (Date.year low) (Date.month low)
+        }
+
+
+diffCalendarYearsAndMonths : NominalDate -> NominalDate -> { years : Int, months : Int }
+diffCalendarYearsAndMonths low high =
+    let
+        uncorrected =
+            { months = Date.monthNumber high - Date.monthNumber low
+            , years = Date.year high - Date.year low
+            }
+    in
+    if uncorrected.months >= 0 then
+
+        uncorrected
+
+    else
+
+        { years = uncorrected.years - 1
+        , months = uncorrected.months + daysInMonth (Date.year low) (Date.month low)
         }
 
 
