@@ -3162,7 +3162,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                             ToggleContactsTracingDateSelector
                             SetContactsTracingDate
                             data.isDateSelectorOpen
-                            (Date.add Months -3 currentDate)
+                            (Date.add Days -10 currentDate)
                             currentDate
                             data.contactDate
 
