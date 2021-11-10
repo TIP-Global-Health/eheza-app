@@ -1319,14 +1319,20 @@ viewVitalsForm language currentDate config form =
                         let
                             ( redAlertsSys, redAlertsDia ) =
                                 let
-                                    ( redAlertValueSys, redAlertValueDia ) =
-                                        if ageYears <= 12 then
+                                    ( redAlertHighSys, redAlertHighDia ) =
+                                        if ageYears < 14 then
                                             ( 135, 88 )
 
                                         else
                                             ( 140, 90 )
                                 in
-                                ( [ [ (<) redAlertValueSys ] ], [ [ (<) redAlertValueDia ] ] )
+                                ( [ [ (<) redAlertHighSys ]
+                                  , [ (>) 110 ]
+                                  ]
+                                , [ [ (<) redAlertHighDia ]
+                                  , [ (>) 70 ]
+                                  ]
+                                )
                         in
                         [ div [ class "ui grid" ]
                             [ div [ class "eleven wide column" ]
@@ -1384,16 +1390,16 @@ viewVitalsForm language currentDate config form =
                                 (\ageYears ->
                                     let
                                         ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ageYears == 0 then
+                                            if ageYears < 1 then
                                                 ( 110, 160 )
 
-                                            else if ageYears <= 2 then
+                                            else if ageYears < 2 then
                                                 ( 100, 150 )
 
-                                            else if ageYears <= 5 then
+                                            else if ageYears < 5 then
                                                 ( 95, 140 )
 
-                                            else if ageYears <= 12 then
+                                            else if ageYears < 12 then
                                                 ( 80, 120 )
 
                                             else
@@ -1437,10 +1443,10 @@ viewVitalsForm language currentDate config form =
                                 (\ageYears ->
                                     let
                                         ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ageYears == 0 then
+                                            if ageYears < 1 then
                                                 ( 30, 49 )
 
-                                            else if ageYears <= 5 then
+                                            else if ageYears < 5 then
                                                 ( 24, 39 )
 
                                             else
