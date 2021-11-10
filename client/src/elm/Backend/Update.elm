@@ -4164,25 +4164,22 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw after id =
     Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id isChw after
         |> RemoteData.toMaybe
         |> Maybe.map
-            (\data ->
+            (\assembled ->
                 let
                     navigateToProgressReportMsg =
                         App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
-
-                    isFirstEncounter =
-                        List.isEmpty data.previousEncountersData
                 in
-                if not <| activityCompleted currentDate isChw isFirstEncounter data AcuteIllnessNextSteps then
+                if not <| activityCompleted currentDate isChw assembled AcuteIllnessNextSteps then
                     []
 
-                else if isFirstEncounter then
+                else if assembled.initialEncounter then
                     [ navigateToProgressReportMsg ]
 
-                else if noImprovementOnSubsequentVisit currentDate data.person data.measurements then
+                else if noImprovementOnSubsequentVisit currentDate assembled.person assembled.measurements then
                     [ navigateToProgressReportMsg ]
 
                 else
-                    [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage data.encounter.participant)) ]
+                    [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage assembled.encounter.participant)) ]
             )
         |> Maybe.withDefault []
 
