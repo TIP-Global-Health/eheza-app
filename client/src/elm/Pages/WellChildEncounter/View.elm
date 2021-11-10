@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, isAboveAgeOf2, isPersonAnAdult)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -23,7 +23,7 @@ import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
@@ -146,11 +146,23 @@ viewPersonDetails language currentDate person =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
 
+        isAboveAgeOf2Years =
+            isAboveAgeOf2 currentDate person
+                |> Maybe.withDefault True
+
         ( thumbnailClass, ageEntry ) =
             if isAdult then
                 ( "mother"
                 , ageInYears currentDate person
                     |> Maybe.map (\ageYears -> viewEntry Translate.AgeWord (Translate.YearsOld ageYears |> translate language))
+                    |> Maybe.withDefault emptyNode
+                )
+
+            else if isAboveAgeOf2Years then
+                ( "child"
+                , person.birthDate
+                    |> Maybe.map
+                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeYearsMonths language birthDate currentDate))
                     |> Maybe.withDefault emptyNode
                 )
 

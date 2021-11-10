@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
+module Utils.NominalDate exposing (endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderAgeYearsMonths, renderDate, startField)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -8,7 +8,7 @@ import Date
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, diffCalendarYearsAndMonths)
 import Html exposing (Html)
 import Maybe.Extra
 import Translate exposing (Language, translate)
@@ -96,7 +96,30 @@ renderAgeMonthsDaysParts language birthDate now =
 
 renderAgeYearsMonths : Language -> NominalDate -> NominalDate -> String
 renderAgeYearsMonths language birthDate now =
-    "@todo"
+    let
+        diff =
+            diffCalendarYearsAndMonths birthDate now
+
+        months =
+            diff.months
+
+        years =
+            diff.years
+    in
+    if months == 1 && years == 0 then
+        translate language <| Translate.AgeSingleMonthWithoutDay months
+
+    else if years > 1 && months == 1 then
+        translate language <| Translate.AgeYearsWithSingleMonth years months
+
+    else if years == 0 then
+        translate language <| Translate.AgeMonthsWithoutDay months
+
+    else if years > 1 && months == 0 then
+        translate language <| Translate.YearsOld years
+
+    else
+        translate language <| Translate.AgeYearsAndMonths years months
 
 
 renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String

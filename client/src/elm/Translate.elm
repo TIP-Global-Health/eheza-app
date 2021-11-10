@@ -331,6 +331,8 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AgeYearsWithSingleMonth Int Int
+    | AgeYearsAndMonths Int Int
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
@@ -2000,6 +2002,16 @@ translationSet trans =
         AgeSingleDayWithoutMonth months days ->
             { english = String.fromInt days ++ " day"
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
+            }
+
+        AgeYearsWithSingleMonth years month ->
+            { english = String.fromInt years ++ " years " ++ String.fromInt month ++ " month"
+            , kinyarwanda = Just <| " Imyaka " ++ String.fromInt years ++ " Ukwezi " ++ String.fromInt month
+            }
+
+        AgeYearsAndMonths years months ->
+            { english = String.fromInt years ++ " years " ++ String.fromInt months ++ " months"
+            , kinyarwanda = Just <| " Imyaka " ++ String.fromInt years ++ " Amezi " ++ String.fromInt months
             }
 
         And ->
@@ -8862,7 +8874,7 @@ translationSet trans =
 
         YearsOld int ->
             { english = String.fromInt int ++ " years old"
-            , kinyarwanda = Just (String.fromInt int)
+            , kinyarwanda = Just <| "Imyaka " ++ String.fromInt int
             }
 
         Yes ->

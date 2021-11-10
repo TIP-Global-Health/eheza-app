@@ -3,9 +3,9 @@ module Gizra.NominalDate exposing
     , decodeYYYYMMDD, encodeYYYYMMDD
     , formatYYYYMMDD, formatMMDDYYYY
     , fromLocalDateTime
-    , diffDays, diffCalendarMonthsAndDays, diffCalendarYearsAndMonths
+    , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, formatDDMMyyyy, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, formatDDMMyyyy, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -281,13 +281,11 @@ diffCalendarYearsAndMonths low high =
             }
     in
     if uncorrected.months >= 0 then
-
         uncorrected
 
     else
-
         { years = uncorrected.years - 1
-        , months = uncorrected.months + daysInMonth (Date.year low) (Date.month low)
+        , months = uncorrected.months - 1
         }
 
 
