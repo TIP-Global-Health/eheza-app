@@ -48,8 +48,12 @@ ports:
   - port: 8037
     onOpen: ignore
     visibility: private
-  # router http port that we're ignoring.
+  # Drupal
   - port: 8888
+    onOpen: ignore
+    visibility: public
+  # Elm
+  - port: 3000
     onOpen: ignore
     visibility: public
   # router https port that we're ignoring.
