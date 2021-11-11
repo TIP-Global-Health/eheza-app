@@ -2586,14 +2586,17 @@ div.page-report.acute-illness {
 
       &.red {
         background: $color-velvet;
+        border: 1px solid $color-velvet;
       }
 
       &.orange {
         background: $color-orange-light;
+        border: 1px solid $color-orange-light;
       }
 
       &.green {
         background: $color-cyan;
+        border: 1px solid $color-cyan;
       }
     }
 
