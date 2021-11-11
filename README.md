@@ -2,6 +2,21 @@
 
 [![Build Status](https://travis-ci.com/Gizra/ihangane.svg?token=p2M1EeCrd3dY32WxWj3X&branch=master)](https://travis-ci.com/Gizra/ihangane)
 
+<a href="https://gitpod.io/#https://github.com/Gizra/ihangane"><img src="https://gitpod.io/button/open-in-gitpod.svg"/></a>
+
+## GitPod
+
+The project is integrated with [GitPod](https://www.gitpod.io/docs/).
+Click on the badge above to try it out the project in action and start editing
+the source code! By default Drupal and Elm client is accessible publicly and you
+can access other DDEV services like Mailhog using the non-HTTPS port, for instance
+`8026-` should work for checking the outgoing mails.
+Primary ports:
+ - `8888` for Drupal
+ - `3000` for Elm frontend
+
+## Introduction
+
 This app is now using Progressive Web App techniques in order to load static
 assets (Javascript, images, CSS, etc.) while offline. This has several
 implications.

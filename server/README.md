@@ -22,50 +22,6 @@ Migrate content with either `ddev migrate default` or `ddev migrate sample`
 depending on whether you want minimal development content or a full set of
 sample content (takes much longer).
 
-### Native Install
-
-**Warning:** you need to setup [Drush](https://github.com/drush-ops/drush)
-first or the installation and update scripts will not work.
-
-#### Create config file
-
-Copy the example configuration file to config.sh:
-
-	$ cp default.config.sh config.sh
-
-Edit the configuration file, fill in the blanks.
-
-
-#### Run the install script
-
-Run the install script from within the root of the repository:
-
-	$ ./install
-
-You can login automatically when the installation is done. Add the -l argument
-when you run the install script.
-
-  $ ./install -l
-
-
-#### Configure web server
-
-Create a vhost for your webserver, point it to the `REPOSITORY/ROOT/www` folder.
-(Restart/reload your webserver).
-
-Add the local domain to your ```/etc/hosts``` file.
-
-Open the URL in your favorite browser.
-
-
-
-## Reinstall
-
-You can Reinstall the platform any type by running the install script.
-
-	$ ./install
-
-
 #### The install script will perform following steps:
 
 1. Delete the /www folder.
@@ -83,10 +39,6 @@ You can Reinstall the platform any type by running the install script.
 * The install script will not preserve the data located in the
   sites/default/files directory.
 * The install script will clear the database during the installation.
-
-**You need to take backups before you run the install script!**
-
-
 
 ## Upgrade
 
