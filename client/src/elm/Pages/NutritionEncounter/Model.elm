@@ -11,6 +11,7 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { selectedTab : Tab
+    , showEndEncounterDialog : Bool
     }
 
 
@@ -18,6 +19,7 @@ type Msg
     = CloseEncounter NutritionEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
+    | SetEndEncounterDialogState Bool
 
 
 type Tab
@@ -29,6 +31,7 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    , showEndEncounterDialog = False
     }
 
 

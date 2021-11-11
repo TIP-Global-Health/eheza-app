@@ -1,4 +1,4 @@
-module Pages.NutritionEncounter.View exposing (view)
+module Pages.NutritionEncounter.View exposing (allowEndingEcounter, partitionActivities, view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -20,6 +20,7 @@ import Pages.NutritionEncounter.Model exposing (..)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -45,10 +46,23 @@ viewHeaderAndContent language currentDate zscores id isChw db model data =
 
         content =
             viewContent language currentDate zscores id isChw db model data
+
+        endEncounterDialog =
+            if model.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-encounter nutrition" ]
         [ header
         , content
+        , viewModal endEncounterDialog
         ]
 
 
@@ -86,9 +100,7 @@ viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> Nutrition
 viewMainPageContent language currentDate zscores id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
-            getAllActivities
-                |> List.filter (expectActivity currentDate zscores data.person isChw data db)
-                |> List.partition (activityCompleted currentDate zscores data.person isChw data db)
+            partitionActivities currentDate zscores isChw db data
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -165,38 +177,36 @@ viewMainPageContent language currentDate zscores id isChw db data model =
                     ]
 
         allowEndEcounter =
-            let
-                mandatoryActivities =
-                    allMandatoryActivities isChw
-            in
-            pendingActivities
-                |> List.all
-                    (\activity ->
-                        -- Not an activity that is required to make a decision
-                        -- on next steps, and not the Next Steps activity itself.
-                        not (List.member activity mandatoryActivities)
-                            && (activity /= NextSteps)
-                    )
-
-        endEcounterButtonAttributes =
-            if allowEndEcounter then
-                [ class "ui fluid primary button"
-                , onClick <| CloseEncounter id
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
+            allowEndingEcounter isChw pendingActivities
 
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
+                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
                 ]
     in
     [ tabs
     , content
     ]
+
+
+partitionActivities : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> AssembledData -> ( List NutritionActivity, List NutritionActivity )
+partitionActivities currentDate zscores isChw db assembled =
+    List.filter (expectActivity currentDate zscores isChw assembled db) getAllActivities
+        |> List.partition (activityCompleted currentDate zscores isChw assembled db)
+
+
+allowEndingEcounter : Bool -> List NutritionActivity -> Bool
+allowEndingEcounter isChw pendingActivities =
+    let
+        mandatoryActivities =
+            allMandatoryActivities isChw
+    in
+    List.all
+        (\activity ->
+            -- Not an activity that is required to make a decision
+            -- on next steps, and not the Next Steps activity itself.
+            not (List.member activity mandatoryActivities)
+                && (activity /= NextSteps)
+        )
+        pendingActivities

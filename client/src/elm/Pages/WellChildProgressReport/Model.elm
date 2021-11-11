@@ -6,14 +6,14 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
-    , showEndEncounetrDialog : Bool
+    , showEndEncounterDialog : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
-    , showEndEncounetrDialog = False
+    , showEndEncounterDialog = False
     }
 
 
@@ -38,6 +38,14 @@ type WellChildProgressReportInitiator
     = InitiatorWellChild WellChildEncounterId
     | InitiatorNutritionIndividual NutritionEncounterId
     | InitiatorNutritionGroup SessionId PersonId
+
+
+type alias EndEncounterData msg =
+    { showEndEncounterDialog : Bool
+    , allowEndEcounter : Bool
+    , closeEncounterMsg : msg
+    , setEndEncounterDialogStateMsg : Bool -> msg
+    }
 
 
 type Msg

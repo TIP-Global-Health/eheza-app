@@ -74,7 +74,7 @@ update currentDate isChw id db msg model =
 
         generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildProgressReportPage id ]
 
         generateImmunisationMsgs nextTask =
             let

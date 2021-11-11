@@ -493,6 +493,24 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
+viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
+    let
+        attributes =
+            if allowEndEcounter then
+                [ class "ui fluid primary button"
+                , onClick <| setDialogStateMsgs True
+                ]
+
+            else
+                [ class "ui fluid primary button disabled" ]
+    in
+    div [ class "actions" ]
+        [ button attributes
+            [ text <| translate language Translate.EndEncounter ]
+        ]
+
+
 {-| The idea here is that we get lists for red alert conditions, and yellow
 alert conditions. If any of red conditions matches, we present red alert.
 If any of yellow conditions matches, we present yellow alert.
