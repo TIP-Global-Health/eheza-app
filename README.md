@@ -11,6 +11,9 @@ Click on the badge above to try it out the project in action and start editing
 the source code! By default Drupal and Elm client is accessible publicly and you
 can access other DDEV services like Mailhog using the non-HTTPS port, for instance
 `8026-` should work for checking the outgoing mails.
+Primary ports:
+ - `8888` for Drupal
+ - `3000` for Elm frontend
 
 ## Introduction
 
