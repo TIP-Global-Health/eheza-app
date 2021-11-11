@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/Gizra/ihangane.svg?token=p2M1EeCrd3dY32WxWj3X&branch=master)](https://travis-ci.com/Gizra/ihangane)
 
-<a href="https://gitpod.io/#https://github.com/Gizra/ihangane/tree/master"><img src="https://gitpod.io/button/open-in-gitpod.svg"/></a>
+<a href="https://gitpod.io/#https://github.com/Gizra/ihangane"><img src="https://gitpod.io/button/open-in-gitpod.svg"/></a>
 
 ## GitPod
 
