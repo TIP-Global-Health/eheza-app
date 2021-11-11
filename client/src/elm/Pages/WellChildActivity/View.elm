@@ -15,7 +15,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYY, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -1118,7 +1118,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                         |> Maybe.map Tuple.second
 
                 nextDueText =
-                    Maybe.map formatDDMMYY nextDue
+                    Maybe.map formatDDMMyyyy nextDue
                         |> Maybe.withDefault ""
 
                 ( status, statusClass ) =
@@ -1137,7 +1137,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                 [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
                 , Dict.values doses
                     |> List.sortWith Date.compare
-                    |> List.map (formatDDMMYY >> text >> List.singleton >> p [])
+                    |> List.map (formatDDMMyyyy >> text >> List.singleton >> p [])
                     |> div [ class "cell date" ]
                 , div [ class "cell next-due" ]
                     [ text nextDueText ]
