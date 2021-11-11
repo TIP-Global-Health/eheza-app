@@ -87,28 +87,24 @@ viewContent language currentDate id isChw initiator model assembled =
                 assembled.measurements
 
         firstEncounterData =
-            if assembled.initialEncounter then
+            if List.isEmpty assembled.previousEncountersData then
                 Just currentEncounterData
 
             else
                 List.head assembled.previousEncountersData
 
         subsequentEncountersData =
-            if assembled.initialEncounter then
-                []
-
-            else
-                firstEncounterData
-                    |> Maybe.map
-                        (\dataFirst ->
-                            let
-                                previousEncountersData =
-                                    assembled.previousEncountersData
-                                        |> List.filter (.id >> (/=) dataFirst.id)
-                            in
-                            previousEncountersData ++ [ currentEncounterData ]
-                        )
-                    |> Maybe.withDefault []
+            firstEncounterData
+                |> Maybe.map
+                    (\dataFirst ->
+                        let
+                            previousEncountersData =
+                                assembled.previousEncountersData
+                                    |> List.filter (.id >> (/=) dataFirst.id)
+                        in
+                        previousEncountersData ++ [ currentEncounterData ]
+                    )
+                |> Maybe.withDefault []
 
         ( _, pendingActivities ) =
             partitionActivities currentDate isChw assembled
@@ -204,59 +200,66 @@ viewAssessmentPane :
     -> AssembledData
     -> Html Msg
 viewAssessmentPane language currentDate firstEncounterData subsequentEncountersData assembled =
-    if isNothing assembled.diagnosis && isNothing assembled.previousDiagnosis then
-        emptyNode
+    let
+        encountersWithDiagnosis =
+            firstEncounterData
+                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
+                |> Maybe.withDefault []
+                |> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
+                |> List.reverse
+    in
+    case encountersWithDiagnosis of
+        [] ->
+            emptyNode
 
-    else
-        let
-            viewAssessmentEntry date diagnosis status background =
-                div [ class <| "entry " ++ background ]
-                    [ div [ class "title" ] [ text <| translate language Translate.Assessment ++ ":" ]
-                    , div [ class "assessment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
-                    , div [ class "date" ] [ text <| (translate language <| Translate.AcuteIllnessStatus status) ++ ": " ++ formatDDMMYY date ]
-                    ]
+        current :: previous ->
+            let
+                viewAssessmentEntry date diagnosis status background =
+                    div [ class <| "entry " ++ background ]
+                        [ div [ class "title" ] [ text <| translate language Translate.Assessment ++ ":" ]
+                        , div [ class "assessment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
+                        , div [ class "date" ] [ text <| (translate language <| Translate.AcuteIllnessStatus status) ++ ": " ++ formatDDMMYY date ]
+                        ]
 
-            currentAssessment =
-                Maybe.map
-                    (\( date, diagnosis ) ->
-                        if isJust assembled.participant.outcome then
-                            let
-                                endDate =
-                                    -- Illness resolution date is stored at assembled.participant.endDate.
-                                    Maybe.withDefault date assembled.participant.endDate
-                            in
-                            viewAssessmentEntry endDate diagnosis AcuteIllnessResolved "green"
+                ( currentAssessment, previousAssessments ) =
+                    if isJust assembled.participant.outcome then
+                        let
+                            endDate =
+                                -- Illness resolution date is stored at assembled.participant.endDate.
+                                Maybe.withDefault current.startDate assembled.participant.endDate
+                        in
+                        ( viewAssessmentEntry endDate current.diagnosis AcuteIllnessResolved "green"
+                        , []
+                        )
 
-                        else
-                            let
-                                status =
-                                    if isNothing assembled.previousDiagnosis then
-                                        AcuteIllnessBegan
+                    else
+                        let
+                            status =
+                                if List.isEmpty previous then
+                                    AcuteIllnessBegan
 
-                                    else
-                                        AcuteIllnessUpdated
-                            in
-                            viewAssessmentEntry date diagnosis status "red"
-                    )
-                    assembled.diagnosis
-                    |> Maybe.withDefault emptyNode
+                                else
+                                    AcuteIllnessUpdated
+                        in
+                        ( viewAssessmentEntry current.startDate current.diagnosis status "red"
+                        , List.indexedMap
+                            (\index encounter ->
+                                let
+                                    diagnosisStatus =
+                                        if (index + 1) == List.length previous then
+                                            AcuteIllnessBegan
 
-            previousAssessment =
-                Maybe.map
-                    (\( date, diagnosis ) ->
-                        if isJust assembled.participant.outcome then
-                            emptyNode
-
-                        else
-                            viewAssessmentEntry date diagnosis AcuteIllnessBegan "orange"
-                    )
-                    assembled.previousDiagnosis
-                    |> Maybe.withDefault emptyNode
-        in
-        div [ class "pane assessment" ]
-            [ currentAssessment
-            , previousAssessment
-            ]
+                                        else
+                                            AcuteIllnessUpdated
+                                in
+                                viewAssessmentEntry encounter.startDate encounter.diagnosis diagnosisStatus "orange"
+                            )
+                            previous
+                        )
+            in
+            div [ class "pane assessment" ] <|
+                currentAssessment
+                    :: previousAssessments
 
 
 viewSymptomsPane : Language -> NominalDate -> Maybe AcuteIllnessEncounterData -> Html Msg
