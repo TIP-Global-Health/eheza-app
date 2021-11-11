@@ -59,10 +59,6 @@ type alias AssembledData =
     -- subsequent encounters, where diagnoses was updated to
     -- Malaria (this is the only case when we allow to update a diagnosis).
     , diagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
-
-    -- In case diagnosis was updated to Malaria, stores the original
-    -- diagnosis that was determined at first encounter.
-    , previousDiagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
     }
 
 
