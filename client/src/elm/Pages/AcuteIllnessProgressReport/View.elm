@@ -141,7 +141,7 @@ viewContent language currentDate id isChw initiator model assembled =
             [ class "ui report unstackable items" ]
             [ viewPersonInfoPane language currentDate assembled.person
             , viewAssessmentPane language currentDate firstEncounterData subsequentEncountersData assembled
-            , viewSymptomsPane language currentDate firstEncounterData
+            , viewSymptomsPane language currentDate firstEncounterData subsequentEncountersData
             , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData assembled
             , viewNutritionSignsPane language currentDate firstEncounterData subsequentEncountersData assembled
             , viewTreatmentPane language currentDate firstEncounterData subsequentEncountersData assembled
@@ -262,13 +262,26 @@ viewAssessmentPane language currentDate firstEncounterData subsequentEncountersD
                     :: previousAssessments
 
 
-viewSymptomsPane : Language -> NominalDate -> Maybe AcuteIllnessEncounterData -> Html Msg
-viewSymptomsPane language currentDate firstEncounterData =
+viewSymptomsPane : Language -> NominalDate -> Maybe AcuteIllnessEncounterData -> List AcuteIllnessEncounterData -> Html Msg
+viewSymptomsPane language currentDate firstEncounterData subsequentEncountersData =
     let
-        symptomsTable =
+        mostRecentEcounterWithSymptoms =
             firstEncounterData
+                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
+                |> Maybe.withDefault []
+                |> List.reverse
+                |> List.filter
+                    (\encounter ->
+                        isJust encounter.measurements.symptomsGeneral
+                            || isJust encounter.measurements.symptomsRespiratory
+                            || isJust encounter.measurements.symptomsGI
+                    )
+                |> List.head
+
+        symptomsTable =
+            mostRecentEcounterWithSymptoms
                 |> Maybe.map
-                    (\dataFirst ->
+                    (\encounterData ->
                         let
                             symptomsMaxDuration getFunc measurement =
                                 measurement
@@ -277,9 +290,9 @@ viewSymptomsPane language currentDate firstEncounterData =
 
                             maxDuration =
                                 List.maximum
-                                    [ symptomsMaxDuration .value dataFirst.measurements.symptomsGeneral
-                                    , symptomsMaxDuration .value dataFirst.measurements.symptomsRespiratory
-                                    , symptomsMaxDuration (.value >> .signs) dataFirst.measurements.symptomsGI
+                                    [ symptomsMaxDuration .value encounterData.measurements.symptomsGeneral
+                                    , symptomsMaxDuration .value encounterData.measurements.symptomsRespiratory
+                                    , symptomsMaxDuration (.value >> .signs) encounterData.measurements.symptomsGI
                                     ]
                                     |> Maybe.withDefault 1
 
@@ -295,7 +308,7 @@ viewSymptomsPane language currentDate firstEncounterData =
                                         )
 
                             symptomsGeneral duration =
-                                dataFirst.measurements.symptomsGeneral
+                                encounterData.measurements.symptomsGeneral
                                     |> Maybe.map
                                         (Tuple.second
                                             >> .value
@@ -305,7 +318,7 @@ viewSymptomsPane language currentDate firstEncounterData =
                                     |> Maybe.withDefault []
 
                             symptomsRespiratory duration =
-                                dataFirst.measurements.symptomsRespiratory
+                                encounterData.measurements.symptomsRespiratory
                                     |> Maybe.map
                                         (Tuple.second
                                             >> .value
@@ -315,7 +328,7 @@ viewSymptomsPane language currentDate firstEncounterData =
                                     |> Maybe.withDefault []
 
                             symptomsGI duration =
-                                dataFirst.measurements.symptomsGI
+                                encounterData.measurements.symptomsGI
                                     |> Maybe.map
                                         (\measurement ->
                                             Tuple.second measurement
@@ -342,7 +355,7 @@ viewSymptomsPane language currentDate firstEncounterData =
                                     |> Maybe.withDefault []
 
                             values =
-                                List.repeat maxDuration dataFirst.startDate
+                                List.repeat maxDuration encounterData.startDate
                                     |> List.indexedMap
                                         (\index date ->
                                             ( Date.add Date.Days (-1 * index) date |> formatDDMMYY
