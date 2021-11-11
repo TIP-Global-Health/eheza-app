@@ -2372,36 +2372,33 @@ ageDependentARINextStep currentDate person =
 
 
 resolveAcuteIllnessDiagnosis : NominalDate -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis currentDate isChw data =
+resolveAcuteIllnessDiagnosis currentDate isChw assembled =
     let
-        isFirstEncounter =
-            List.isEmpty data.previousEncountersData
-
         covid19AcuteIllnessDiagnosis =
-            resolveCovid19AcuteIllnessDiagnosis currentDate data.person isChw data.measurements
+            resolveCovid19AcuteIllnessDiagnosis currentDate assembled.person isChw assembled.measurements
     in
-    if isFirstEncounter then
+    if assembled.initialEncounter then
         -- First we check for Covid19.
         if isJust covid19AcuteIllnessDiagnosis then
             covid19AcuteIllnessDiagnosis
 
         else
-            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person isChw data.measurements
+            resolveNonCovid19AcuteIllnessDiagnosis currentDate assembled.person isChw assembled.measurements
 
     else
-        malariaRapidTestResult data.measurements
+        malariaRapidTestResult assembled.measurements
             |> Maybe.andThen
                 (\testResult ->
                     case testResult of
                         RapidTestPositive ->
-                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                            if dangerSignPresentOnSubsequentVisit assembled.measurements then
                                 Just DiagnosisMalariaComplicated
 
                             else
                                 Just DiagnosisMalariaUncomplicated
 
                         RapidTestPositiveAndPregnant ->
-                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                            if dangerSignPresentOnSubsequentVisit assembled.measurements then
                                 Just DiagnosisMalariaComplicated
 
                             else

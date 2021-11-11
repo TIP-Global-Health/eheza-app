@@ -64,7 +64,10 @@ generateAssembledData currentDate id isChw db =
                 |> RemoteData.andMap (Success Nothing)
 
         ( currentDiagnosis, previousDiagnosis ) =
-            if isJust diagnosisByCurrentEncounterMeasurements then
+            if initialEncounter then
+                ( diagnosisByCurrentEncounterMeasurements, Nothing )
+
+            else if isJust diagnosisByCurrentEncounterMeasurements then
                 ( diagnosisByCurrentEncounterMeasurements, currentByPreviousEncounters )
 
             else

@@ -3983,7 +3983,7 @@ generateSuspectedDiagnosisMsgs : NominalDate -> Bool -> ModelIndexedDb -> ModelI
 generateSuspectedDiagnosisMsgs currentDate isChw before after id person =
     Maybe.map2
         (\assembledBefore assembledAfter ->
-            if List.isEmpty assembledAfter.previousEncountersData then
+            if assembledAfter.initialEncounter then
                 generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter
 
             else

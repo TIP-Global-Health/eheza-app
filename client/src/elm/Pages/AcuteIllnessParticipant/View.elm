@@ -419,6 +419,19 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
                         |> MsgBackend
                     )
 
+        nurseEncounterPerformed =
+            List.filter
+                (Tuple.second
+                    >> .encounterType
+                    >> (==) AcuteIllnessEncounterNurse
+                )
+                encounters
+                |> List.isEmpty
+                |> not
+
+        actionDisabled =
+            isNothing maybeActiveEncounterId && not isChw && nurseEncounterPerformed
+
         encounterType =
             if isChw then
                 AcuteIllnessEncounterCHW
@@ -435,7 +448,10 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
     in
     Just <|
         div
-            [ class "ui primary button active-illness"
+            [ classList
+                [ ( "ui primary button active-illness", True )
+                , ( "disabled", actionDisabled )
+                ]
             , onClick action
             ]
             [ div [ class "button-label" ]
