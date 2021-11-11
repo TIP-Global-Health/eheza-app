@@ -10,7 +10,7 @@ hooks:
     - exec: drush uli
   post-start:
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
-    # If DDEV creates server/www/, it is owner by root for some reasons,
+    # If DDEV creates server/www/, it is owned by root for some reasons,
     # so we have a placeholder .gitignore there, that ignores everything, but
     # the gitignore, during the install process, it gets altered, so we restore
     # it to avoid having untracked files.
