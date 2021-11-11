@@ -285,7 +285,7 @@ diffCalendarYearsAndMonths low high =
 
     else
         { years = uncorrected.years - 1
-        , months = uncorrected.months - 1
+        , months = uncorrected.months + 12
         }
 
 
