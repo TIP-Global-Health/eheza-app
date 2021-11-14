@@ -18,6 +18,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
+import Measurement.Model exposing (ReferralFacility(..))
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllnessActivity.Types exposing (NextStepsTask(..))
 import Pages.AcuteIllnessActivity.Utils
@@ -113,26 +114,6 @@ viewContent language currentDate id isChw initiator model assembled =
                 nurseEncounterIndex
                 |> Maybe.withDefault ( allEncountersData, [] )
 
-        firstEncounterData =
-            if List.isEmpty assembled.previousEncountersData then
-                Just currentEncounterData
-
-            else
-                List.head assembled.previousEncountersData
-
-        subsequentEncountersData =
-            firstEncounterData
-                |> Maybe.map
-                    (\dataFirst ->
-                        let
-                            previousEncountersData =
-                                assembled.previousEncountersData
-                                    |> List.filter (.id >> (/=) dataFirst.id)
-                        in
-                        previousEncountersData ++ [ currentEncounterData ]
-                    )
-                |> Maybe.withDefault []
-
         ( _, pendingActivities ) =
             partitionActivities currentDate isChw assembled
 
@@ -169,7 +150,7 @@ viewContent language currentDate id isChw initiator model assembled =
             , viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewTreatmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
-            , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData assembled
+            , viewActionsTakenPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewNextStepsPane language currentDate assembled
             , endEncounterButton
             ]
@@ -825,38 +806,38 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
 viewActionsTakenPane :
     Language
     -> NominalDate
-    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData assembled =
+viewActionsTakenPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
-        actionsTakenFirstEncounter =
-            firstEncounterData
-                |> Maybe.map
-                    (\dataFirst ->
-                        if dataFirst.diagnosis == DiagnosisCovid19Suspect then
-                            viewActionsTakenCovid19Suspect language dataFirst.startDate dataFirst.measurements
+        content =
+            firstInitialWithSubsequent
+                ++ secondInitialWithSubsequent
+                |> List.map
+                    (\encounterData ->
+                        if encounterData.diagnosis == DiagnosisCovid19Suspect then
+                            viewActionsTakenCovid19Suspect language encounterData.startDate encounterData.measurements
 
-                        else if List.member dataFirst.diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ] then
-                            viewActionsTakenCovid19Confirmed language dataFirst.startDate assembled.person dataFirst.diagnosis dataFirst.measurements
+                        else if List.member encounterData.diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ] then
+                            viewActionsTakenCovid19Confirmed
+                                language
+                                encounterData.startDate
+                                assembled.person
+                                encounterData.encounterType
+                                encounterData.diagnosis
+                                encounterData.measurements
 
                         else
-                            viewActionsTakenNonCovid19 language dataFirst.startDate assembled.person dataFirst.diagnosis dataFirst.measurements
-                    )
-                |> Maybe.withDefault emptyNode
-
-        actionsTakenSubsequentEncounters =
-            subsequentEncountersData
-                |> List.map
-                    (\dataSubsequent ->
-                        viewActionsTakenNonCovid19 language dataSubsequent.startDate assembled.person dataSubsequent.diagnosis dataSubsequent.measurements
+                            viewActionsTakenNonCovid19 language
+                                encounterData.startDate
+                                assembled.person
+                                encounterData.encounterType
+                                encounterData.diagnosis
+                                encounterData.measurements
                     )
                 |> List.reverse
-
-        content =
-            actionsTakenSubsequentEncounters
-                ++ [ actionsTakenFirstEncounter ]
                 |> div [ class "instructions" ]
     in
     div [ class "pane actions-taken" ]
@@ -911,19 +892,33 @@ viewActionsTakenCovid19Suspect language date measurements =
         |> div [ class "encounter-actions" ]
 
 
-viewActionsTakenCovid19Confirmed : Language -> NominalDate -> Person -> AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
-viewActionsTakenCovid19Confirmed language date person diagnosis measurements =
+viewActionsTakenCovid19Confirmed :
+    Language
+    -> NominalDate
+    -> Person
+    -> AcuteIllnessEncounterType
+    -> AcuteIllnessDiagnosis
+    -> AcuteIllnessMeasurements
+    -> Html Msg
+viewActionsTakenCovid19Confirmed language date person encounterType diagnosis measurements =
     viewPatientIsolatedAction language date measurements
         ++ viewActionsTakenMedicationDistribution language date person diagnosis measurements
-        ++ viewActionsTakenSendToHC language date measurements
+        ++ viewActionsTakenSendToHC language date encounterType measurements
         |> div [ class "encounter-actions" ]
 
 
-viewActionsTakenNonCovid19 : Language -> NominalDate -> Person -> AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Html Msg
-viewActionsTakenNonCovid19 language date person diagnosis measurements =
+viewActionsTakenNonCovid19 :
+    Language
+    -> NominalDate
+    -> Person
+    -> AcuteIllnessEncounterType
+    -> AcuteIllnessDiagnosis
+    -> AcuteIllnessMeasurements
+    -> Html Msg
+viewActionsTakenNonCovid19 language date person encounterType diagnosis measurements =
     viewActionsTakenMedicationDistribution language date person diagnosis measurements
         ++ viewContacedHCAction language date measurements
-        ++ viewActionsTakenSendToHC language date measurements
+        ++ viewActionsTakenSendToHC language date encounterType measurements
         ++ viewActionsTakenHealthEducation language date measurements
         |> div [ class "encounter-actions" ]
 
@@ -1115,11 +1110,18 @@ viewNonAdministrationReason language medicineTranslationId iconClass maybeDate r
         ]
 
 
-viewActionsTakenSendToHC : Language -> NominalDate -> AcuteIllnessMeasurements -> List (Html Msg)
-viewActionsTakenSendToHC language date measurements =
+viewActionsTakenSendToHC : Language -> NominalDate -> AcuteIllnessEncounterType -> AcuteIllnessMeasurements -> List (Html Msg)
+viewActionsTakenSendToHC language date encounterType measurements =
     let
         sendToHCSigns =
             getMeasurementValueFunc measurements.sendToHC
+
+        facility =
+            if encounterType == AcuteIllnessEncounterNurse then
+                FacilityHospital
+
+            else
+                FacilityHealthCenter
 
         completedForm =
             Maybe.map (.signs >> EverySet.member HandReferrerForm) sendToHCSigns
@@ -1127,7 +1129,7 @@ viewActionsTakenSendToHC language date measurements =
 
         completedFormAction =
             if completedForm then
-                [ viewActionTakenLabel language Translate.CompletedHCReferralForm "icon-forms" (Just date) ]
+                [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" (Just date) ]
 
             else
                 []
@@ -1138,7 +1140,7 @@ viewActionsTakenSendToHC language date measurements =
 
         sentToHCAction =
             if sentToHC then
-                [ viewActionTakenLabel language Translate.SentPatientToHC "icon-shuttle" (Just date) ]
+                [ viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" (Just date) ]
 
             else
                 []
