@@ -2,7 +2,7 @@ module Pages.AcuteIllnessProgressReport.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
@@ -81,10 +81,37 @@ viewContent language currentDate id isChw initiator model assembled =
 
         currentEncounterData =
             AcuteIllnessEncounterData id
+                assembled.encounter.encounterType
                 assembled.encounter.startDate
                 assembled.encounter.sequenceNumber
                 diagnosisByCurrentEncounterMeasurements
                 assembled.measurements
+
+        allEncountersData =
+            assembled.previousEncountersData ++ [ currentEncounterData ]
+
+        ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
+            let
+                nurseEncounterIndex =
+                    List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
+                        allEncountersData
+                        |> List.filter (Tuple.second >> (==) AcuteIllnessEncounterNurse)
+                        |> List.reverse
+                        |> List.head
+                        |> Maybe.map Tuple.first
+            in
+            Maybe.map
+                (\nurseIndex ->
+                    if nurseIndex == 0 then
+                        ( allEncountersData, [] )
+
+                    else
+                        ( List.take nurseIndex allEncountersData
+                        , List.drop nurseIndex allEncountersData
+                        )
+                )
+                nurseEncounterIndex
+                |> Maybe.withDefault ( allEncountersData, [] )
 
         firstEncounterData =
             if List.isEmpty assembled.previousEncountersData then
@@ -121,9 +148,6 @@ viewContent language currentDate id isChw initiator model assembled =
             else
                 Nothing
 
-        diagnosis =
-            Maybe.map Tuple.second assembled.diagnosis
-
         allowEndEcounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
@@ -140,11 +164,11 @@ viewContent language currentDate id isChw initiator model assembled =
         , div
             [ class "ui report unstackable items" ]
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewAssessmentPane language currentDate firstEncounterData subsequentEncountersData assembled
-            , viewSymptomsPane language currentDate firstEncounterData subsequentEncountersData
-            , viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData assembled
-            , viewNutritionSignsPane language currentDate firstEncounterData subsequentEncountersData assembled
-            , viewTreatmentPane language currentDate firstEncounterData subsequentEncountersData assembled
+            , viewAssessmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewSymptomsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent
+            , viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewTreatmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewActionsTakenPane language currentDate firstEncounterData subsequentEncountersData assembled
             , viewNextStepsPane language currentDate assembled
             , endEncounterButton
@@ -195,16 +219,15 @@ viewHeader language id initiator =
 viewAssessmentPane :
     Language
     -> NominalDate
-    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewAssessmentPane language currentDate firstEncounterData subsequentEncountersData assembled =
+viewAssessmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
         encountersWithDiagnosis =
-            firstEncounterData
-                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
-                |> Maybe.withDefault []
+            firstInitialWithSubsequent
+                ++ secondInitialWithSubsequent
                 |> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
                 |> List.reverse
     in
@@ -262,24 +285,18 @@ viewAssessmentPane language currentDate firstEncounterData subsequentEncountersD
                     :: previousAssessments
 
 
-viewSymptomsPane : Language -> NominalDate -> Maybe AcuteIllnessEncounterData -> List AcuteIllnessEncounterData -> Html Msg
-viewSymptomsPane language currentDate firstEncounterData subsequentEncountersData =
+viewSymptomsPane : Language -> NominalDate -> List AcuteIllnessEncounterData -> List AcuteIllnessEncounterData -> Html Msg
+viewSymptomsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent =
     let
-        mostRecentEcounterWithSymptoms =
-            firstEncounterData
-                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
-                |> Maybe.withDefault []
-                |> List.reverse
-                |> List.filter
-                    (\encounter ->
-                        isJust encounter.measurements.symptomsGeneral
-                            || isJust encounter.measurements.symptomsRespiratory
-                            || isJust encounter.measurements.symptomsGI
-                    )
-                |> List.head
+        initialWithSubsequent =
+            if List.isEmpty secondInitialWithSubsequent then
+                firstInitialWithSubsequent
+
+            else
+                secondInitialWithSubsequent
 
         symptomsTable =
-            mostRecentEcounterWithSymptoms
+            List.head initialWithSubsequent
                 |> Maybe.map
                     (\encounterData ->
                         let
@@ -434,17 +451,12 @@ viewTimeLineBottom =
 viewPhysicalExamPane :
     Language
     -> NominalDate
-    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewPhysicalExamPane language currentDate firstEncounterData subsequentEncountersData assembled =
+viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
-        allEncountersData =
-            firstEncounterData
-                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
-                |> Maybe.withDefault []
-
         maybeAgeMonths =
             ageInMonths currentDate assembled.person
 
@@ -468,100 +480,101 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
             ]
 
         rows =
-            List.map
-                (\encounterData ->
-                    let
-                        bodyTemperature =
-                            encounterData.measurements.vitals
-                                |> getMeasurementValueFunc
-                                |> Maybe.map .bodyTemperature
+            firstInitialWithSubsequent
+                ++ secondInitialWithSubsequent
+                |> List.map
+                    (\encounterData ->
+                        let
+                            bodyTemperature =
+                                encounterData.measurements.vitals
+                                    |> getMeasurementValueFunc
+                                    |> Maybe.map .bodyTemperature
 
-                        bodyTemperatureValue =
-                            Maybe.map
-                                (\value ->
-                                    String.fromFloat value ++ " " ++ translate language Translate.CelsiusAbbrev
-                                )
-                                bodyTemperature
+                            bodyTemperatureValue =
+                                Maybe.map
+                                    (\value ->
+                                        String.fromFloat value ++ " " ++ translate language Translate.CelsiusAbbrev
+                                    )
+                                    bodyTemperature
 
-                        bodyTemperatureWarning =
-                            Maybe.andThen
-                                (\bodyTemperature_ ->
-                                    if bodyTemperature_ < 35 || bodyTemperature_ >= 37.5 then
-                                        Just "red"
+                            bodyTemperatureWarning =
+                                Maybe.andThen
+                                    (\bodyTemperature_ ->
+                                        if bodyTemperature_ < 35 || bodyTemperature_ >= 37.5 then
+                                            Just "red"
 
-                                    else
-                                        Nothing
-                                )
-                                bodyTemperature
+                                        else
+                                            Nothing
+                                    )
+                                    bodyTemperature
 
-                        respiratoryRate =
-                            encounterData.measurements.vitals
-                                |> getMeasurementValueFunc
-                                |> Maybe.map .respiratoryRate
+                            respiratoryRate =
+                                encounterData.measurements.vitals
+                                    |> getMeasurementValueFunc
+                                    |> Maybe.map .respiratoryRate
 
-                        respiratoryRateValue =
-                            Maybe.map
-                                (\value ->
-                                    translate language <| Translate.BpmUnit value
-                                )
-                                respiratoryRate
+                            respiratoryRateValue =
+                                Maybe.map
+                                    (\value ->
+                                        translate language <| Translate.BpmUnit value
+                                    )
+                                    respiratoryRate
 
-                        respiratoryRateWarning =
-                            Maybe.andThen
-                                (\respiratoryRate_ ->
-                                    if respiratoryRateAbnormalForAge maybeAgeMonths respiratoryRate_ then
-                                        Just "red"
+                            respiratoryRateWarning =
+                                Maybe.andThen
+                                    (\respiratoryRate_ ->
+                                        if respiratoryRateAbnormalForAge maybeAgeMonths respiratoryRate_ then
+                                            Just "red"
 
-                                    else
-                                        Nothing
-                                )
-                                respiratoryRate
+                                        else
+                                            Nothing
+                                    )
+                                    respiratoryRate
 
-                        muac =
-                            encounterData.measurements
-                                |> .muac
-                                |> getMeasurementValueFunc
-                                |> Maybe.map (\(MuacInCm muac_) -> muac_)
+                            muac =
+                                encounterData.measurements
+                                    |> .muac
+                                    |> getMeasurementValueFunc
+                                    |> Maybe.map (\(MuacInCm muac_) -> muac_)
 
-                        muacValue =
-                            Maybe.map String.fromFloat muac
+                            muacValue =
+                                Maybe.map String.fromFloat muac
 
-                        muacWarning =
-                            Maybe.map
-                                (\muac_ ->
-                                    case muacIndication (MuacInCm muac_) of
-                                        ColorAlertRed ->
-                                            "red"
+                            muacWarning =
+                                Maybe.map
+                                    (\muac_ ->
+                                        case muacIndication (MuacInCm muac_) of
+                                            ColorAlertRed ->
+                                                "red"
 
-                                        ColorAlertYellow ->
-                                            "orange"
+                                            ColorAlertYellow ->
+                                                "orange"
 
-                                        ColorAlertGreen ->
-                                            "green"
-                                )
-                                muac
+                                            ColorAlertGreen ->
+                                                "green"
+                                    )
+                                    muac
 
-                        muacCell =
-                            if not showMuac then
-                                emptyNode
+                            muacCell =
+                                if not showMuac then
+                                    emptyNode
 
-                            else if isNothing muac then
-                                viewNotTaken
+                                else if isNothing muac then
+                                    viewNotTaken
 
-                            else if muacWarning == Just "green" then
-                                td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+                                else if muacWarning == Just "green" then
+                                    td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
-                            else
-                                viewValueWithAlert muacValue muacWarning "muac"
-                    in
-                    tr []
-                        [ td [ class "date" ] [ text <| formatDDMMYY encounterData.startDate ]
-                        , viewValueWithAlert bodyTemperatureValue bodyTemperatureWarning "body-temperature"
-                        , viewValueWithAlert respiratoryRateValue respiratoryRateWarning "respiratory-rate"
-                        , muacCell
-                        ]
-                )
-                allEncountersData
+                                else
+                                    viewValueWithAlert muacValue muacWarning "muac"
+                        in
+                        tr []
+                            [ td [ class "date" ] [ text <| formatDDMMYY encounterData.startDate ]
+                            , viewValueWithAlert bodyTemperatureValue bodyTemperatureWarning "body-temperature"
+                            , viewValueWithAlert respiratoryRateValue respiratoryRateWarning "respiratory-rate"
+                            , muacCell
+                            ]
+                    )
                 |> List.reverse
 
         viewNotTaken =
@@ -597,16 +610,15 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
 viewNutritionSignsPane :
     Language
     -> NominalDate
-    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewNutritionSignsPane language currentDate firstEncounterData subsequentEncountersData assembled =
+viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
         nutritions =
-            firstEncounterData
-                |> Maybe.map (\dataFirst -> dataFirst :: subsequentEncountersData)
-                |> Maybe.withDefault []
+            firstInitialWithSubsequent
+                ++ secondInitialWithSubsequent
                 |> List.filterMap
                     (.measurements
                         >> .nutrition
@@ -629,15 +641,15 @@ viewNutritionSignsPane language currentDate firstEncounterData subsequentEncount
 viewTreatmentPane :
     Language
     -> NominalDate
-    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewTreatmentPane language currentDate firstEncounterData subsequentEncountersData assembled =
+viewTreatmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     div [ class "pane treatment" ]
         [ viewPaneHeading language Translate.Treatment
         , div [ class "pane-content" ] <|
-            viewTreatmentSigns language currentDate assembled.initialEncounter firstEncounterData subsequentEncountersData
+            viewTreatmentSigns language currentDate assembled.initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent
         ]
 
 
@@ -645,17 +657,25 @@ viewTreatmentSigns :
     Language
     -> NominalDate
     -> Bool
-    -> Maybe AcuteIllnessEncounterData
+    -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> List (Html Msg)
-viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subsequentEncountersData =
-    firstEncounterData
+viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent =
+    let
+        initialWithSubsequent =
+            if List.isEmpty secondInitialWithSubsequent then
+                firstInitialWithSubsequent
+
+            else
+                secondInitialWithSubsequent
+    in
+    List.head initialWithSubsequent
         |> Maybe.map
-            (\dataFirst ->
-                if isFirstEncounter then
+            (\dataInitial ->
+                if initialEncounter then
                     let
                         treatmentReview =
-                            dataFirst.measurements.treatmentReview
+                            dataInitial.measurements.treatmentReview
                                 |> getMeasurementValueFunc
 
                         viewTreatmentSignInfo sign signHelped signTransId =
@@ -689,7 +709,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                 else
                     let
                         prescribedMedication =
-                            dataFirst.measurements.medicationDistribution
+                            dataInitial.measurements.medicationDistribution
                                 |> Maybe.map
                                     (Tuple.second
                                         >> .value
@@ -776,7 +796,8 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                         []
 
                     else
-                        subsequentEncountersData
+                        List.tail initialWithSubsequent
+                            |> Maybe.withDefault []
                             |> List.reverse
                             |> List.map
                                 (\dataSubsequent ->
@@ -817,7 +838,7 @@ viewActionsTakenPane language currentDate firstEncounterData subsequentEncounter
                         if dataFirst.diagnosis == DiagnosisCovid19Suspect then
                             viewActionsTakenCovid19Suspect language dataFirst.startDate dataFirst.measurements
 
-                        else if List.member dataFirst.diagnosis [ DiagnosisCovid19Suspect, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ] then
+                        else if List.member dataFirst.diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ] then
                             viewActionsTakenCovid19Confirmed language dataFirst.startDate assembled.person dataFirst.diagnosis dataFirst.measurements
 
                         else
