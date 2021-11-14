@@ -1285,6 +1285,7 @@ viewNutritionSigns language child measurements =
                             signs_ ->
                                 div [ class "entry nutrition-signs" ]
                                     [ List.map (Translate.ChildNutritionSignLabel >> translate language) signs_
+                                        |> List.sort
                                         |> String.join ", "
                                         |> text
                                         |> List.singleton

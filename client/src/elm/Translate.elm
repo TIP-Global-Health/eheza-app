@@ -321,6 +321,7 @@ type TranslationId
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
+    | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
     | Adherence Adherence
     | AdverseEventSinglePlural Int
@@ -665,6 +666,7 @@ type TranslationId
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
     | MedicationDistributionSign MedicationDistributionSign
+    | MedicationDoxycycline
     | MedicationDosesMissedQuestion
     | MedicationForFeverPast6Hours
     | MedicationHelpedEnding Bool
@@ -807,6 +809,7 @@ type TranslationId
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
+    | PlaceholderSearchContactName
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
@@ -885,7 +888,8 @@ type TranslationId
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
-    | ReportResultsOfSearch Int
+    | ReportResultsOfContactsSearch Int
+    | ReportResultsOfParticipantsSearch Int
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
@@ -1621,6 +1625,11 @@ translationSet trans =
         AdministeredMedicationQuestion ->
             { english = "Have you administered"
             , kinyarwanda = Just "Watanze umuti"
+            }
+
+        AdministeredOneOfAboveMedicinesQuestion ->
+            { english = "Have you administered one of the above medicines to the patient"
+            , kinyarwanda = Nothing
             }
 
         AddressInformation ->
@@ -5125,6 +5134,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        MedicationDoxycycline ->
+            { english = "Doxycycline"
+            , kinyarwanda = Nothing
+            }
+
         MedicationDosesMissedQuestion ->
             { english = "Did you miss any doses of medications"
             , kinyarwanda = Just "Waba hari imiti wibagiwe gufata"
@@ -6444,6 +6458,11 @@ translationSet trans =
             , kinyarwanda = Just "Andika ibiro hano…"
             }
 
+        PlaceholderSearchContactName ->
+            { english = "Search contact name here"
+            , kinyarwanda = Nothing
+            }
+
         PleaseSelectGroup ->
             { english = "Please select the relevant Group for the new encounter"
             , kinyarwanda = Nothing
@@ -7173,12 +7192,12 @@ translationSet trans =
             }
 
         RegisterContactHelper ->
-            { english = "Not the participant you were looking for?"
-            , kinyarwanda = Just "Umugenerwabikorwa ubonye si we washakaga?"
+            { english = "Not the contact you were looking for?"
+            , kinyarwanda = Nothing
             }
 
         RegisterParticipantHelper ->
-            { english = "Not the contact you were looking for?"
+            { english = "Not the participant you were looking for?"
             , kinyarwanda = Nothing
             }
 
@@ -7267,7 +7286,19 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt remaining ++ " iyibutswa rya raporo"
             }
 
-        ReportResultsOfSearch total ->
+        ReportResultsOfContactsSearch total ->
+            case total of
+                1 ->
+                    { english = "There is 1 contract that matches your search."
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "There are " ++ String.fromInt total ++ " contacts that match your search."
+                    , kinyarwanda = Nothing
+                    }
+
+        ReportResultsOfParticipantsSearch total ->
             case total of
                 1 ->
                     { english = "There is 1 participant that matches your search."

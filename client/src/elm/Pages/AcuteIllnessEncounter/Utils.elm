@@ -49,6 +49,9 @@ generateAssembledData currentDate id isChw db =
                 |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_.participant db)
                 |> Maybe.withDefault []
 
+        initialEncounter =
+            not isChw || List.isEmpty previousEncountersData
+
         assembled =
             RemoteData.map AssembledData (Success id)
                 |> RemoteData.andMap encounter
@@ -56,6 +59,7 @@ generateAssembledData currentDate id isChw db =
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
                 |> RemoteData.andMap (Success previousEncountersData)
+                |> RemoteData.andMap (Success initialEncounter)
                 |> RemoteData.andMap (Success Nothing)
                 |> RemoteData.andMap (Success Nothing)
 

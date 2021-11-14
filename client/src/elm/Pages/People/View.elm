@@ -230,7 +230,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
 
         viewSummary data =
             Dict.size data
-                |> Translate.ReportResultsOfSearch
+                |> Translate.ReportResultsOfParticipantsSearch
                 |> translate language
                 |> text
 

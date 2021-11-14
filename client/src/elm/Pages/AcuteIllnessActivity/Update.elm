@@ -2010,8 +2010,16 @@ update currentDate selectedHealthCenter id db msg model =
             case form.state of
                 ContactsTracingFormRecordContactDetails personId recordData ->
                     let
+                        updatedPhoneNumber =
+                            -- Allow empty value, or digits only.
+                            if String.isEmpty value || isJust (String.toInt value) then
+                                Just value
+
+                            else
+                                recordData.phoneNumber
+
                         updatedRecordData =
-                            { recordData | phoneNumber = Just value }
+                            { recordData | phoneNumber = updatedPhoneNumber }
 
                         updatedForm =
                             { form | state = ContactsTracingFormRecordContactDetails personId updatedRecordData }

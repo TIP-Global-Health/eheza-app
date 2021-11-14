@@ -40,23 +40,20 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id isChw db model =
     let
-        data =
+        assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity assembled
 
 
 viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw db model data =
+viewHeaderAndContent language currentDate id isChw db model assembled =
     let
-        isFirstEncounter =
-            List.isEmpty data.previousEncountersData
-
         header =
-            viewHeader language data
+            viewHeader language assembled
 
         content =
-            viewContent language currentDate id isChw model data
+            viewContent language currentDate id isChw model assembled
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -78,23 +75,22 @@ viewHeaderAndContent language currentDate id isChw db model data =
             warningPopup language
                 currentDate
                 isChw
-                isFirstEncounter
                 model.warningPopupState
                 SetWarningPopupState
-                data
+                assembled
         ]
 
 
-warningPopup : Language -> NominalDate -> Bool -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
-warningPopup language currentDate isChw isFirstEncounter state setStateMsg data =
+warningPopup : Language -> NominalDate -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
+warningPopup language currentDate isChw state setStateMsg assembled =
     state
         |> Maybe.map
             (\diagnosis ->
-                if isFirstEncounter then
+                if assembled.initialEncounter then
                     viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis
 
                 else
-                    viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis data
+                    viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis assembled
             )
 
 
@@ -143,27 +139,27 @@ viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
 
 
 viewWarningPopupSubsequentEncounter : Language -> NominalDate -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> AssembledData -> Html msg
-viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis data =
+viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis assembled =
     let
         isImproving =
-            not <| noImprovementOnSubsequentVisit currentDate data.person data.measurements
+            not <| noImprovementOnSubsequentVisit currentDate assembled.person assembled.measurements
 
         respiratoryDistress =
-            if respiratoryRateElevated currentDate data.person data.measurements then
+            if respiratoryRateElevated currentDate assembled.person assembled.measurements then
                 p [] [ text <| translate language Translate.RespiratoryDistress ]
 
             else
                 emptyNode
 
         severeAcuteMalnutrition =
-            if muacRedOnSubsequentVisit data.measurements then
+            if muacRedOnSubsequentVisit assembled.measurements then
                 p [] [ text <| translate language Translate.SevereAcuteMalnutrition ]
 
             else
                 emptyNode
 
         malnutritionWithComplications =
-            if sendToHCOnSubsequentVisitByNutrition data.measurements then
+            if sendToHCOnSubsequentVisitByNutrition assembled.measurements then
                 p [] [ text <| translate language Translate.MalnutritionWithComplications ]
 
             else
@@ -193,13 +189,10 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis d
 
 
 viewHeader : Language -> AssembledData -> Html Msg
-viewHeader language data =
+viewHeader language assembled =
     let
-        isFirstEncounter =
-            List.isEmpty data.previousEncountersData
-
         label =
-            if isFirstEncounter then
+            if assembled.initialEncounter then
                 Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
                     |> translate language
                     |> text
@@ -208,7 +201,7 @@ viewHeader language data =
             else
                 let
                     diagnosisLabel =
-                        Maybe.map Tuple.second data.diagnosis
+                        Maybe.map Tuple.second assembled.diagnosis
                             |> Maybe.map (Translate.AcuteIllnessDiagnosis >> translate language)
                             |> Maybe.withDefault ""
 
@@ -227,7 +220,7 @@ viewHeader language data =
             label
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -236,18 +229,18 @@ viewHeader language data =
 
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw model data =
-    (viewPersonDetailsWithAlert language currentDate isChw data model.showAlertsDialog SetAlertsDialogState
-        :: viewMainPageContent language currentDate id isChw data model
+viewContent language currentDate id isChw model assembled =
+    (viewPersonDetailsWithAlert language currentDate isChw assembled model.showAlertsDialog SetAlertsDialogState
+        :: viewMainPageContent language currentDate id isChw assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
 viewPersonDetailsWithAlert : Language -> NominalDate -> Bool -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
-viewPersonDetailsWithAlert language currentDate isChw data isDialogOpen setAlertsDialogStateMsg =
+viewPersonDetailsWithAlert language currentDate isChw assembled isDialogOpen setAlertsDialogStateMsg =
     let
         diagnosis =
-            Maybe.map Tuple.second data.diagnosis
+            Maybe.map Tuple.second assembled.diagnosis
 
         diagnosisTranslationId =
             Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
@@ -269,7 +262,7 @@ viewPersonDetailsWithAlert language currentDate isChw data isDialogOpen setAlert
                 []
     in
     div [ class "item" ] <|
-        viewPersonDetails language currentDate data.person diagnosisTranslationId
+        viewPersonDetails language currentDate assembled.person diagnosisTranslationId
             ++ alertSection
 
 
@@ -311,16 +304,13 @@ alertsDialog language isOpen setAlertsDialogStateMsg =
 
 
 viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id isChw data model =
+viewMainPageContent language currentDate id isChw assembled model =
     let
-        isFirstEncounter =
-            List.isEmpty data.previousEncountersData
-
         measurements =
-            data.measurements
+            assembled.measurements
 
         ( completedActivities, pendingActivities ) =
-            partitionActivities currentDate isChw isFirstEncounter data
+            partitionActivities currentDate isChw assembled
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -381,7 +371,7 @@ viewMainPageContent language currentDate id isChw data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| AcuteIllnessProgressReportPage InitiatorEncounterPage data.id)
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| AcuteIllnessProgressReportPage InitiatorEncounterPage assembled.id)
                     ]
 
             else
@@ -396,11 +386,8 @@ viewMainPageContent language currentDate id isChw data model =
                         ]
                     ]
 
-        diagnosis =
-            Maybe.map Tuple.second data.diagnosis
-
         allowEndEcounter =
-            allowEndingEcounter isFirstEncounter measurements pendingActivities diagnosis
+            allowEndingEcounter currentDate isChw assembled pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -413,32 +400,20 @@ viewMainPageContent language currentDate id isChw data model =
     ]
 
 
-partitionActivities : NominalDate -> Bool -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
-partitionActivities currentDate isChw isFirstEncounter data =
-    getAllActivities isFirstEncounter
-        |> List.filter (expectActivity currentDate isChw isFirstEncounter data)
-        |> List.partition (activityCompleted currentDate isChw isFirstEncounter data)
+partitionActivities : NominalDate -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
+partitionActivities currentDate isChw assembled =
+    getAllActivities assembled.initialEncounter
+        |> List.filter (expectActivity currentDate isChw assembled)
+        |> List.partition (activityCompleted currentDate isChw assembled)
 
 
-allowEndingEcounter : Bool -> AcuteIllnessMeasurements -> List AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> Bool
-allowEndingEcounter isFirstEncounter measurements pendingActivities diagnosis =
-    if not isFirstEncounter then
+allowEndingEcounter : NominalDate -> Bool -> AssembledData -> List AcuteIllnessActivity -> Bool
+allowEndingEcounter currentDate isChw assembled pendingActivities =
+    if not assembled.initialEncounter then
         List.isEmpty pendingActivities
 
-    else if diagnosis == Just DiagnosisCovid19Suspect then
-        isJust measurements.isolation
-            && (talkedTo114 measurements || isJust measurements.hcContact)
-
-    else if isJust diagnosis then
-        case pendingActivities of
-            [] ->
-                True
-
-            [ AcuteIllnessPriorTreatment ] ->
-                True
-
-            _ ->
-                False
+    else if expectActivity currentDate isChw assembled AcuteIllnessNextSteps then
+        activityCompleted currentDate isChw assembled AcuteIllnessNextSteps
 
     else
         List.isEmpty pendingActivities

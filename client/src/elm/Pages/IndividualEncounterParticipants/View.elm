@@ -148,7 +148,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
 
         viewSummary data =
             Dict.size data
-                |> Translate.ReportResultsOfSearch
+                |> Translate.ReportResultsOfParticipantsSearch
                 |> translate language
                 |> text
 
