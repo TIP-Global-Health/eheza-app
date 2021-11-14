@@ -788,7 +788,7 @@ viewTraceContactEntry :
 viewTraceContactEntry language currentDate db entry =
     let
         lastContactDate =
-            --@todo
+            --@todo in a follow up PR
             currentDate
     in
     div [ class "trace-contact-entry" ]
@@ -796,10 +796,6 @@ viewTraceContactEntry language currentDate db entry =
         , div [ class "last-contact" ] [ text <| formatDDMMYY lastContactDate ]
         , div [ class "reporter" ] [ text entry.reporterName ]
         , div [ class "phone-number" ] [ text entry.phoneNumber ]
-        , div
-            [ class "icon-forward"
-
-            -- , onClick <| SetDialogState <| Just popupData
-            ]
+        , div [ class "icon-forward" ]
             []
         ]
