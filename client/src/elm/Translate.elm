@@ -85,7 +85,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
-import Pages.GlobalCaseManagement.Model exposing (FollowUpDueOption(..))
+import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -382,6 +382,8 @@ type TranslationId
     | CaregiverName
     | CaregiverNationalId
     | CaseManagement
+    | CaseManagementFilterLabel CaseManagementFilter
+    | CaseManagementPaneHeader CaseManagementFilter
     | CentimeterShorthand
     | Celsius
     | CelsiusAbbrev
@@ -413,6 +415,7 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
+    | ContactName
     | ContactsTracingCompleteDetails
     | ContactsTracingHelper
     | ContactWithCOVID19SymptomsHelper
@@ -507,10 +510,8 @@ type TranslationId
     | EgaHeader
     | EgaWeeks
     | EmptyString
-    | EncounterTypeFileterLabel IndividualEncounterType
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
-    | EncounterTypeFollowUpLabel IndividualEncounterType
     | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
@@ -608,6 +609,7 @@ type TranslationId
     | Immunisation
     | ImmunisationHistory
     | IncompleteCervixPreviousPregnancy
+    | IndexPatient
     | IndividualEncounter
     | IndividualEncounterFirstVisit IndividualEncounterType
     | IndividualEncounterLabel IndividualEncounterType Bool
@@ -627,6 +629,7 @@ type TranslationId
     | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
     | LastChecked
+    | LastContacted
     | LastSuccesfulContactLabel
     | Legs
     | LegsCPESign LegsCPESign
@@ -2334,6 +2337,50 @@ translationSet trans =
             , kinyarwanda = Just "Kuvura Uburwayi"
             }
 
+        CaseManagementFilterLabel filter ->
+            case filter of
+                FilterAcuteIllness ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Just "Uburwayi butunguranye"
+                    }
+
+                FilterAntenatal ->
+                    { english = "Antenatal Care"
+                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
+                    }
+
+                FilterNutrition ->
+                    { english = "Home Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterContactsTrace ->
+                    { english = "Contact Tracing"
+                    , kinyarwanda = Nothing
+                    }
+
+        CaseManagementPaneHeader encounterType ->
+            case encounterType of
+                FilterAcuteIllness ->
+                    { english = "Acute Illness Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umurwayi wavuwe indwara zifatiyeho"
+                    }
+
+                FilterAntenatal ->
+                    { english = "Antenatal Care Follow Up"
+                    , kinyarwanda = Just "Gukurikirana umugore utwite"
+                    }
+
+                FilterNutrition ->
+                    { english = "Child Nutrition Follow Up"
+                    , kinyarwanda = Just "Gukurikirana imirire y'umwana"
+                    }
+
+                FilterContactsTrace ->
+                    { english = "Contact Tracing"
+                    , kinyarwanda = Nothing
+                    }
+
         CentimeterShorthand ->
             { english = "cm"
             , kinyarwanda = Just "cm"
@@ -2580,6 +2627,11 @@ translationSet trans =
         ContactedRecommendedSiteQuestion ->
             { english = "Did you contact the recommended site"
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
+            }
+
+        ContactName ->
+            { english = "Contact Name"
+            , kinyarwanda = Nothing
             }
 
         ContactsTracingCompleteDetails ->
@@ -3443,38 +3495,6 @@ translationSet trans =
             , kinyarwanda = Just ""
             }
 
-        EncounterTypeFileterLabel encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    { english = "Acute Illness"
-                    , kinyarwanda = Just "Uburwayi butunguranye"
-                    }
-
-                AntenatalEncounter ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
-
-                HomeVisitEncounter ->
-                    { english = "Home Visit"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = "Inmmunization"
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Child Nutrition"
-                    , kinyarwanda = Just "Imirire y'umwana"
-                    }
-
-                WellChildEncounter ->
-                    { english = "Standard Pediatric Visit"
-                    , kinyarwanda = Nothing
-                    }
-
         EncounterTypeFollowUpQuestion encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -3539,38 +3559,6 @@ translationSet trans =
                 AntenatalPage ->
                     { english = "Antenatal Care"
                     , kinyarwanda = Just "Isuzuma ku Mugore Utwite"
-                    }
-
-        EncounterTypeFollowUpLabel encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    { english = "Acute Illness Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi wavuwe indwara zifatiyeho"
-                    }
-
-                AntenatalEncounter ->
-                    { english = "Antenatal Care Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umugore utwite"
-                    }
-
-                HomeVisitEncounter ->
-                    { english = "Home Visit Follow Up"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = "Inmmunization Follow Up"
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Child Nutrition Follow Up"
-                    , kinyarwanda = Just "Gukurikirana imirire y'umwana"
-                    }
-
-                WellChildEncounter ->
-                    { english = "Standard Pediatric Visit Follow Up"
-                    , kinyarwanda = Nothing
                     }
 
         EncounterWarningForDiagnosisPane warning suffix ->
@@ -4414,6 +4402,11 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize inkondo y'umura ntiyashoboye kwifunga neza "
             }
 
+        IndexPatient ->
+            { english = "Index Patient"
+            , kinyarwanda = Nothing
+            }
+
         IndividualEncounter ->
             { english = "Individual Encounter"
             , kinyarwanda = Just "Gukorera umuntu umwe"
@@ -4680,6 +4673,11 @@ translationSet trans =
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
+            }
+
+        LastContacted ->
+            { english = "Last Contacted"
+            , kinyarwanda = Nothing
             }
 
         LastSuccesfulContactLabel ->

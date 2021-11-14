@@ -2592,7 +2592,12 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         AcuteIllnessTraceContactRevision uuid data ->
-            noChange
+            ( mapFollowUpMeasurements
+                healthCenterId
+                (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
+                model
+            , recalc
+            )
 
         AcuteIllnessVitalsRevision uuid data ->
             ( mapAcuteIllnessMeasurements

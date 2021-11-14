@@ -11,11 +11,9 @@ import Pages.GlobalCaseManagement.Fetch
 fetch : NominalDate -> HealthCenterId -> ModelIndexedDb -> Model -> List MsgIndexedDb
 fetch currentDate healthCenterId db model =
     [ FetchVillages, FetchComputedDashboard healthCenterId ]
-        ++ (case model.selectedVillageFilter of
-                -- For CHW, we fetch case management data.
-                Just villageId ->
-                    Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId villageId db
+        ++ (if isJust model.selectedVillageFilter then
+                Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId db
 
-                Nothing ->
-                    []
+            else
+                []
            )
