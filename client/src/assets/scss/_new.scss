@@ -3187,7 +3187,8 @@ div.page-case-management {
       padding: 20px;
       text-align: center;
 
-      .follow-up-entry {
+      .follow-up-entry,
+      .trace-contact-entry {
         border-bottom: 1px solid $color-text;
         display: flex;
         margin-top: 15px;
@@ -3204,6 +3205,17 @@ div.page-case-management {
           text-align: left;
           width: 200px;
         }
+
+        .icon-forward {
+          align-self: center;
+          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+          background-size: 45px 50px;
+          height: 50px;
+          width: 45px;
+        }
+      }
+
+      .follow-up-entry {
 
         .due {
           align-self: center;
@@ -3249,15 +3261,40 @@ div.page-case-management {
             margin-bottom: 0;
           }
         }
+      }
 
-        .icon-forward {
+      .trace-contact-entry {
+
+        .last-contact,
+        .reporter,
+        .phone-number {
           align-self: center;
-          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
-          background-size: 45px 50px;
-          height: 50px;
-          width: 45px;
+          font-weight: normal;
+        }
+
+        .name {
+          width: 150px;
+        }
+
+        .last-contact {
+          width: 130px;
+        }
+
+        .reporter {
+          font-size: 20px;
+          width: 145px;
+        }
+
+        .phone-number {
+          width: 200px;
         }
       }
+
+      .trace-contact-entry.heading div {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
     }
   }
 

@@ -4,16 +4,17 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..))
+import Backend.Measurement.Model exposing (AcuteIllnessTraceContact, FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
+import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -34,70 +35,100 @@ import Utils.WebData exposing (viewWebData)
 
 view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Model -> ModelIndexedDb -> Html Msg
 view language currentDate ( healthCenterId, maybeVillageId ) isChw model db =
-    maybeVillageId
-        |> Maybe.map
-            (\villageId ->
-                let
-                    header =
-                        div
-                            [ class "ui basic head segment" ]
-                            [ h1 [ class "ui header" ]
-                                [ translateText language Translate.CaseManagement ]
-                            , a
-                                [ class "link-back"
-                                , onClick <| SetActivePage PinCodePage
-                                ]
-                                [ span [ class "icon-back" ] [] ]
-                            ]
-
-                    followUps =
-                        Dict.get healthCenterId db.followUpMeasurements
-                            |> Maybe.withDefault NotAsked
-
-                    content =
-                        viewWebData language (viewContent language currentDate healthCenterId villageId isChw model db) identity followUps
-                in
-                div [ class "wrap wrap-alt-2 page-case-management" ]
-                    [ header
-                    , content
-                    , viewModal <|
-                        viewEntryPopUp language
-                            currentDate
-                            model.dialogState
+    let
+        header =
+            div
+                [ class "ui basic head segment" ]
+                [ h1 [ class "ui header" ]
+                    [ translateText language Translate.CaseManagement ]
+                , a
+                    [ class "link-back"
+                    , onClick <| SetActivePage PinCodePage
                     ]
-            )
+                    [ span [ class "icon-back" ] [] ]
+                ]
+
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.withDefault NotAsked
+
+        content =
+            if isChw then
+                viewWebData language (viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model db) identity followUps
+
+            else
+                viewWebData language (viewContentForNurse language currentDate healthCenterId model db) identity followUps
+    in
+    div [ class "wrap wrap-alt-2 page-case-management" ]
+        [ header
+        , content
+        , viewModal <|
+            viewEntryPopUp language
+                currentDate
+                model.dialogState
+        ]
+
+
+viewContentForChw : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model db followUps =
+    Maybe.map
+        (\villageId ->
+            let
+                nutritionFollowUps =
+                    generateNutritionFollowUps db followUps
+                        |> filterVillageResidents villageId identity db
+
+                nutritionFollowUpsPane =
+                    viewNutritionPane language currentDate nutritionFollowUps db model
+
+                acuteIllnessFollowUps =
+                    generateAcuteIllnessFollowUps db followUps
+                        |> filterVillageResidents villageId Tuple.second db
+
+                acuteIllnessFollowUpsPane =
+                    viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
+
+                prenatalFollowUps =
+                    generatePrenatalFollowUps db followUps
+                        |> filterVillageResidents villageId Tuple.second db
+
+                prenatalFollowUpsPane =
+                    viewPrenatalPane language currentDate prenatalFollowUps db model
+
+                panes =
+                    [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
+                    , ( FilterAntenatal, prenatalFollowUpsPane )
+                    , ( FilterNutrition, nutritionFollowUpsPane )
+                    ]
+                        |> List.filterMap
+                            (\( type_, pane ) ->
+                                if isNothing model.filter || model.filter == Just type_ then
+                                    Just pane
+
+                                else
+                                    Nothing
+                            )
+            in
+            div [ class "ui unstackable items" ] <|
+                viewFilters language chwFilters model
+                    :: panes
+        )
+        maybeVillageId
         |> Maybe.withDefault (Pages.PageNotFound.View.viewPage language (SetActivePage PinCodePage) (UserPage GlobalCaseManagementPage))
 
 
-viewContent : Language -> NominalDate -> HealthCenterId -> VillageId -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContent language currentDate healthCenterId villageId isChw model db followUps =
+viewContentForNurse : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForNurse language currentDate healthCenterId model db followUps =
     let
-        nutritionFollowUps =
-            generateNutritionFollowUps db followUps
-                |> filterVillageResidents villageId identity db
-
-        nutritionFollowUpsPane =
-            viewNutritionPane language currentDate nutritionFollowUps db model
-
-        acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps db followUps
-                |> filterVillageResidents villageId Tuple.second db
-
-        acuteIllnessFollowUpsPane =
-            viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
-
-        prenatalFollowUps =
-            generatePrenatalFollowUps db followUps
-                |> filterVillageResidents villageId Tuple.second db
-
-        prenatalFollowUpsPane =
-            viewPrenatalPane language currentDate prenatalFollowUps db model
+        contactsTracingPane =
+            viewContactsTracingPane language currentDate followUps.traceContacts db model
 
         panes =
-            [ ( AcuteIllnessEncounter, acuteIllnessFollowUpsPane ), ( AntenatalEncounter, prenatalFollowUpsPane ), ( NutritionEncounter, nutritionFollowUpsPane ) ]
+            [ ( FilterContactsTrace, contactsTracingPane )
+            ]
                 |> List.filterMap
                     (\( type_, pane ) ->
-                        if isNothing model.encounterTypeFilter || model.encounterTypeFilter == Just type_ then
+                        if isNothing model.filter || model.filter == Just type_ then
                             Just pane
 
                         else
@@ -105,7 +136,7 @@ viewContent language currentDate healthCenterId villageId isChw model db followU
                     )
     in
     div [ class "ui unstackable items" ] <|
-        viewFilters language model
+        viewFilters language nurseFilters model
             :: panes
 
 
@@ -126,41 +157,45 @@ viewEntryPopUp language currentDate dialogState =
 viewStartFollowUpEncounterDialog : Language -> FollowUpEncounterDataType -> Html Msg
 viewStartFollowUpEncounterDialog language dataType =
     let
-        ( encounterType, personName ) =
-            case dataType of
-                FollowUpNutrition data ->
-                    ( HomeVisitEncounter, data.personName )
-
-                FollowUpAcuteIllness data ->
-                    ( AcuteIllnessEncounter, data.personName )
-
-                -- We should never get here, since Prenatal got
-                -- it's own dialog.
-                FollowUpPrenatal data ->
-                    ( AntenatalEncounter, data.personName )
-    in
-    div [ class "ui active modal" ]
-        [ div [ class "content" ]
-            [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
-            , text " "
-            , span [ class "person-name" ] [ text personName ]
-            , text "?"
-            ]
-        , div [ class "actions" ]
-            [ div [ class "two ui buttons" ]
-                [ button
-                    [ class "ui primary fluid button"
-                    , onClick <| StartFollowUpEncounter dataType
+        startFollowUpDialog encounterType personName =
+            div [ class "ui active modal" ]
+                [ div [ class "content" ]
+                    [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
+                    , text " "
+                    , span [ class "person-name" ] [ text personName ]
+                    , text "?"
                     ]
-                    [ text <| translate language Translate.Yes ]
-                , button
-                    [ class "ui fluid button"
-                    , onClick <| SetDialogState Nothing
+                , div [ class "actions" ]
+                    [ div [ class "two ui buttons" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| StartFollowUpEncounter dataType
+                            ]
+                            [ text <| translate language Translate.Yes ]
+                        , button
+                            [ class "ui fluid button"
+                            , onClick <| SetDialogState Nothing
+                            ]
+                            [ text <| translate language Translate.No ]
+                        ]
                     ]
-                    [ text <| translate language Translate.No ]
                 ]
-            ]
-        ]
+    in
+    case dataType of
+        FollowUpNutrition data ->
+            startFollowUpDialog HomeVisitEncounter data.personName
+
+        FollowUpAcuteIllness data ->
+            startFollowUpDialog AcuteIllnessEncounter data.personName
+
+        -- We should never get here, since Prenatal got
+        -- it's own dialog.
+        FollowUpPrenatal data ->
+            emptyNode
+
+        -- This is not a follow up encounter.
+        CaseManagementContactsTracing ->
+            emptyNode
 
 
 viewStartFollowUpPrenatalEncounterDialog : Language -> NominalDate -> FollowUpPrenatalData -> Html Msg
@@ -224,37 +259,34 @@ viewStartFollowUpPrenatalEncounterDialog language currentDate data =
         ]
 
 
-viewFilters : Language -> Model -> Html Msg
-viewFilters language model =
+viewFilters : Language -> List CaseManagementFilter -> Model -> Html Msg
+viewFilters language filters model =
     let
-        filters =
-            allEncounterTypes
-                |> List.map Just
-                |> List.append [ Nothing ]
-
         renderButton maybeFilter =
             let
                 label =
-                    Maybe.map Translate.EncounterTypeFileterLabel maybeFilter
+                    Maybe.map Translate.CaseManagementFilterLabel maybeFilter
                         |> Maybe.withDefault Translate.All
             in
             button
                 [ classList
-                    [ ( "active", model.encounterTypeFilter == maybeFilter )
+                    [ ( "active", model.filter == maybeFilter )
                     , ( "primary ui button", True )
                     ]
-                , onClick <| SetEncounterTypeFilter maybeFilter
+                , onClick <| SetFilter maybeFilter
                 ]
                 [ translateText language label ]
     in
-    div [ class "ui segment filters" ] <|
-        List.map renderButton filters
+    List.map Just filters
+        |> List.append [ Nothing ]
+        |> List.map renderButton
+        |> div [ class "ui segment filters" ]
 
 
-viewItemHeading : Language -> IndividualEncounterType -> Html Msg
-viewItemHeading language encounterType =
+viewItemHeading : Language -> CaseManagementFilter -> Html Msg
+viewItemHeading language filter =
     div [ class "pane-heading" ]
-        [ text <| translate language <| Translate.EncounterTypeFollowUpLabel encounterType ]
+        [ text <| translate language <| Translate.CaseManagementPaneHeader filter ]
 
 
 viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
@@ -276,7 +308,7 @@ viewNutritionPane language currentDate itemsDict db model =
                 List.map (viewNutritionFollowUpEntry language currentDate) entries
     in
     div [ class "pane" ]
-        [ viewItemHeading language NutritionEncounter
+        [ viewItemHeading language FilterNutrition
         , div [ class "pane-content" ] content
         ]
 
@@ -402,7 +434,7 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
                 List.map (viewAcuteIllnessFollowUpEntry language currentDate) entries
     in
     div [ class "pane" ]
-        [ viewItemHeading language AcuteIllnessEncounter
+        [ viewItemHeading language FilterAcuteIllness
         , div [ class "pane-content" ]
             content
         ]
@@ -540,7 +572,7 @@ viewPrenatalPane language currentDate itemsDict db model =
                 List.map (viewPrenatalFollowUpEntry language currentDate) entries
     in
     div [ class "pane" ]
-        [ viewItemHeading language AntenatalEncounter
+        [ viewItemHeading language FilterAntenatal
         , div [ class "pane-content" ]
             content
         ]
@@ -674,5 +706,96 @@ viewFollowUpEntry language dueOption personName popupData assessment =
             [ class "icon-forward"
             , onClick <| SetDialogState <| Just popupData
             ]
+            []
+        ]
+
+
+viewContactsTracingPane :
+    Language
+    -> NominalDate
+    -> Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewContactsTracingPane language currentDate itemsDict db model =
+    let
+        entries =
+            generateContactsTracingEntries language currentDate itemsDict db
+
+        heading =
+            div [ class "trace-contact-entry heading" ]
+                [ div [ class "name" ] [ translateText language Translate.ContactName ]
+                , div [ class "last-contact" ] [ translateText language Translate.LastContacted ]
+                , div [ class "reporter" ] [ translateText language Translate.IndexPatient ]
+                , div [ class "phone-number" ] [ translateText language Translate.TelephoneNumber ]
+                ]
+
+        content =
+            if List.isEmpty entries then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                heading
+                    :: List.map (viewTraceContactEntry language currentDate db) entries
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language FilterContactsTrace
+        , div [ class "pane-content" ]
+            content
+        ]
+
+
+generateContactsTracingEntries :
+    Language
+    -> NominalDate
+    -> Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
+    -> ModelIndexedDb
+    -> List ContactsTracingEntry
+generateContactsTracingEntries language currentDate itemsDict db =
+    Dict.map (generateContactsTracingEntryData language currentDate db) itemsDict
+        |> Dict.values
+        |> Maybe.Extra.values
+
+
+generateContactsTracingEntryData :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> AcuteIllnessTraceContactId
+    -> AcuteIllnessTraceContact
+    -> Maybe ContactsTracingEntry
+generateContactsTracingEntryData language currentDate db itemId item =
+    let
+        name =
+            generateFullName item.value.firstName item.value.secondName
+
+        reporterName =
+            Dict.get item.participantId db.people
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map .name
+                |> Maybe.withDefault ""
+    in
+    ContactsTracingEntry itemId name item.value.phoneNumber reporterName
+        |> Just
+
+
+viewTraceContactEntry :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> ContactsTracingEntry
+    -> Html Msg
+viewTraceContactEntry language currentDate db entry =
+    let
+        lastContactDate =
+            --@todo in a follow up PR
+            currentDate
+    in
+    div [ class "trace-contact-entry" ]
+        [ div [ class "name" ] [ text entry.personName ]
+        , div [ class "last-contact" ] [ text <| formatDDMMYY lastContactDate ]
+        , div [ class "reporter" ] [ text entry.reporterName ]
+        , div [ class "phone-number" ] [ text entry.phoneNumber ]
+        , div [ class "icon-forward" ]
             []
         ]

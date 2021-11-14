@@ -24,8 +24,8 @@ update currentDate healthCenterId msg db model =
             , [ App.Model.SetActivePage page ]
             )
 
-        SetEncounterTypeFilter encounterType ->
-            ( { model | encounterTypeFilter = encounterType }
+        SetFilter filter ->
+            ( { model | filter = filter }
             , Cmd.none
             , []
             )
@@ -51,6 +51,10 @@ update currentDate healthCenterId msg db model =
 
                                     -- We should never get here, as Prenatal Encounter got it's own action.
                                     FollowUpPrenatal data ->
+                                        []
+
+                                    CaseManagementContactsTracing ->
+                                        -- We should never get here, as Contacts Tracing got it's own action.
                                         []
                             )
                         |> Maybe.withDefault []

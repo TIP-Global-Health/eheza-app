@@ -106,13 +106,12 @@ fetch model =
                     |> Maybe.withDefault []
 
             UserPage GlobalCaseManagementPage ->
-                Maybe.map2
-                    (\( healthCenterId, loggedIn ) villageId ->
-                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId villageId model.indexedDb
+                Maybe.map
+                    (\( healthCenterId, loggedIn ) ->
+                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
                             |> List.map MsgIndexedDb
                     )
                     (getLoggedInData model)
-                    model.villageId
                     |> Maybe.withDefault []
 
             UserPage (ClinicalProgressReportPage _ prenatalEncounterId) ->

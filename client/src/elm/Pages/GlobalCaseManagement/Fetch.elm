@@ -12,8 +12,8 @@ import Pages.GlobalCaseManagement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : NominalDate -> HealthCenterId -> VillageId -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate healthCenterId villageId db =
+fetch : NominalDate -> HealthCenterId -> ModelIndexedDb -> List MsgIndexedDb
+fetch currentDate healthCenterId db =
     let
         followUps =
             Dict.get healthCenterId db.followUpMeasurements
@@ -107,12 +107,21 @@ fetch currentDate healthCenterId villageId db =
                 |> List.map Tuple.second
 
         --
+        --  Trace Contacts calculations.
+        --
+        traceReporters =
+            Maybe.map (.traceContacts >> Dict.values >> List.map .participantId)
+                followUps
+                |> Maybe.withDefault []
+
+        --
         -- People for all types of follow ups.
         --
         people =
             peopleForNutrition
                 ++ peopleForAccuteIllness
                 ++ peopleForPrenatal
+                ++ traceReporters
                 |> EverySet.fromList
                 |> EverySet.toList
     in
