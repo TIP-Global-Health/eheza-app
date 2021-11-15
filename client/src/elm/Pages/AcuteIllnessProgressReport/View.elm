@@ -76,16 +76,12 @@ view language currentDate id isChw initiator db model =
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id isChw initiator model assembled =
     let
-        diagnosisByCurrentEncounterMeasurements =
-            resolveAcuteIllnessDiagnosis currentDate isChw assembled
-                |> Maybe.withDefault NoAcuteIllnessDiagnosis
-
         currentEncounterData =
             AcuteIllnessEncounterData id
                 assembled.encounter.encounterType
                 assembled.encounter.startDate
                 assembled.encounter.sequenceNumber
-                diagnosisByCurrentEncounterMeasurements
+                assembled.encounter.diagnosis
                 assembled.measurements
 
         allEncountersData =
@@ -1205,8 +1201,7 @@ viewNextStepsPane language currentDate assembled =
     else
         let
             instructions =
-                assembled.measurements.followUp
-                    |> getMeasurementValueFunc
+                getMeasurementValueFunc assembled.measurements.followUp
                     |> Maybe.andThen (EverySet.toList >> List.head)
                     |> Maybe.map
                         (\followUp ->
