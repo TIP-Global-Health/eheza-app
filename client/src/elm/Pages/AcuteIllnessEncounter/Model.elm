@@ -49,9 +49,11 @@ type alias AssembledData =
     , measurements : AcuteIllnessMeasurements
     , previousEncountersData : List AcuteIllnessEncounterData
 
-    -- During inital encounter full set of measurements is collected,
-    -- It can be executed by both nurse and CHW, while
-    -- subsequent encounter is done only by CHW.
+    -- Intial encounter is the one where all measurements are taken and
+    -- initial diagnosis is made.
+    -- For CHW, it's only the first encounter at illness.
+    -- For nurse, it's always an initial encounter, since
+    -- nurse can do only single encouter throughout the illness.
     , initialEncounter : Bool
 
     -- The diagnosis that we have right now.

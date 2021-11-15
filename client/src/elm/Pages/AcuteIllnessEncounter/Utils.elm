@@ -50,6 +50,11 @@ generateAssembledData currentDate id isChw db =
                 |> Maybe.withDefault []
 
         initialEncounter =
+            -- Intial encounter is the one where all measurements are taken and
+            -- initial diagnosis is made.
+            -- For CHW, it's only the first encounter at illness.
+            -- For nurse, it's always an initial encounter, since
+            -- nurse can do only single encouter throughout the illness.
             not isChw || List.isEmpty previousEncountersData
 
         assembled =
