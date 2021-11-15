@@ -1792,7 +1792,10 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                                     )
                                 |> Maybe.withDefault False
                     in
-                    if medicationOutOfStockOrPatientAlergic then
+                    if diagnosis /= Just DiagnosisPneuminialCovid19 then
+                        tasks
+
+                    else if medicationOutOfStockOrPatientAlergic then
                         [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
 
                     else

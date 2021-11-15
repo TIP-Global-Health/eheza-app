@@ -748,10 +748,11 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
             )
 
         NextStepsContactsTracing ->
-            -- We do not count tasks here.
-            ( 0
-            , 0
-            )
+            if data.contactsTracingForm.finished then
+                ( 1, 1 )
+
+            else
+                ( 0, 1 )
 
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
@@ -1988,8 +1989,13 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                 || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
                 || (diagnosis == Just DiagnosisSevereCovid19)
-                -- Medication was perscribed, but it's out of stock, or patient is alergic.
-                || (medicationPrescribed && sendToHCDueToMedicationNonAdministration measurements)
+                -- Medication was perscribed, but it's out of stock, or patient is alergic,
+                -- excluding case when medication is given for Covid19 (only when there's
+                -- Covid with Pneumonia).
+                || (medicationPrescribed
+                        && sendToHCDueToMedicationNonAdministration measurements
+                        && (diagnosis /= Just DiagnosisPneuminialCovid19)
+                   )
 
         NextStepsHealthEducation ->
             False
