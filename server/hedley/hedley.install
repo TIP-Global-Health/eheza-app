@@ -40,8 +40,6 @@ function hedley_install() {
   variable_set('restful_token_auth_expiration_period', 'P5Y');
 
   hedley_update_7013();
-
-  hedley_initial_sync_permissions();
 }
 
 /**
