@@ -2997,14 +2997,28 @@ vomitingAtSymptoms measurements =
 bloodPressureIndicatesSevereCovid19 : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesSevereCovid19 measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map (\value -> value.sys < 90 || value.dia < 60)
+        |> Maybe.map
+            (\value ->
+                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
+                    False
+
+                else
+                    value.sys < 90 || value.dia < 60
+            )
         |> Maybe.withDefault False
 
 
 bloodPressureIndicatesCovid19WithPneumonia : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesCovid19WithPneumonia measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map (\value -> value.sys <= 100)
+        |> Maybe.map
+            (\value ->
+                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
+                    False
+
+                else
+                    value.sys <= 100
+            )
         |> Maybe.withDefault False
 
 

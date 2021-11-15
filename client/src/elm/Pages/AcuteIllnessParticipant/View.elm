@@ -399,11 +399,7 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
                 |> Maybe.map Tuple.first
 
         encounterSequenceNumberForToday =
-            encounters
-                |> List.filter
-                    (\( _, encounter ) ->
-                        encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                    )
+            List.filter (Tuple.second >> .startDate >> (==) currentDate) encounters
                 |> List.sortBy (Tuple.second >> .sequenceNumber)
                 |> List.reverse
                 |> List.head

@@ -57,7 +57,7 @@ type alias AssembledData =
     , initialEncounter : Bool
 
     -- The diagnosis that we have right now.
-    -- This can be the diagnosis of first encounter, or one of
+    -- This can be the diagnosis of initial encounter, or one of
     -- subsequent encounters, where diagnoses was updated to
     -- Malaria (this is the only case when we allow to update a diagnosis).
     , diagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
