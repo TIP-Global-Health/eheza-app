@@ -70,6 +70,8 @@ import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import Pages.TraceContact.Model
+import Pages.TraceContact.Update
 import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.Update
 import Pages.WellChildEncounter.Model
@@ -566,6 +568,18 @@ update msg model =
                             in
                             ( { data | acuteIllnessOutcomePages = Dict.insert id subModel data.acuteIllnessOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageTraceContact id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Dict.get id data.traceContactPages
+                                        |> Maybe.withDefault Pages.TraceContact.Model.emptyModel
+                                        |> Pages.TraceContact.Update.update subMsg
+                            in
+                            ( { data | traceContactPages = Dict.insert id subModel data.traceContactPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTraceContact id) subCmd
                             , appMsgs
                             )
                 )

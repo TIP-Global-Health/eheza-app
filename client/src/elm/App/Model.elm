@@ -42,6 +42,7 @@ import Pages.PrenatalEncounter.Model
 import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
+import Pages.TraceContact.Model
 import Pages.WellChildActivity.Model
 import Pages.WellChildEncounter.Model
 import Pages.WellChildProgressReport.Model
@@ -243,8 +244,6 @@ type alias LoggedInModel =
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
-
-    -- A set of pages for every "open" editable session.
     , prenatalParticipantPages : Dict PersonId Pages.PrenatalParticipant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
@@ -263,6 +262,7 @@ type alias LoggedInModel =
     , wellChildEncounterPages : Dict WellChildEncounterId Pages.WellChildEncounter.Model.Model
     , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChildActivity.Model.Model
     , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChildProgressReport.Model.Model
+    , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     }
 
 
@@ -295,6 +295,7 @@ emptyLoggedInModel villageId nurse =
     , wellChildEncounterPages = Dict.empty
     , wellChildActivityPages = Dict.empty
     , wellChildProgressReportPages = Dict.empty
+    , traceContactPages = Dict.empty
     }
 
 
@@ -359,6 +360,7 @@ type MsgLoggedIn
     | MsgPageNutritionProgressReport NutritionEncounterId Pages.NutritionProgressReport.Model.Msg
     | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChildProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
+    | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
 
 
 type alias Flags =

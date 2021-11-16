@@ -63,6 +63,8 @@ import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View
+import Pages.TraceContact.Model
+import Pages.TraceContact.View
 import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.View
 import Pages.WellChildEncounter.Model
@@ -614,6 +616,20 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.WellChildProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
+                            |> flexPageWrapper model
+
+                    TraceContactPage traceContactId ->
+                        let
+                            page_ =
+                                Dict.get traceContactId loggedInModel.traceContactPages
+                                    |> Maybe.withDefault Pages.TraceContact.Model.emptyModel
+                        in
+                        Pages.TraceContact.View.view model.language
+                            currentDate
+                            traceContactId
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageTraceContact traceContactId)
                             |> flexPageWrapper model
 
             else

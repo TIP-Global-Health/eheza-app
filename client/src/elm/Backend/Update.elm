@@ -2505,6 +2505,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchTraceContact id ->
+            ( { model | traceContacts = Dict.insert id Loading model.traceContacts }
+            , sw.get acuteIllnessTraceContactEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTraceContact id)
+            , []
+            )
+
+        HandleFetchedTraceContact id data ->
+            ( { model | traceContacts = Dict.insert id data model.traceContacts }
+            , Cmd.none
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more

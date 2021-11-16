@@ -106,6 +106,7 @@ type alias ModelIndexedDb =
     , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
     , wellChildEncounters : Dict WellChildEncounterId (WebData WellChildEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+    , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
 
     -- Cache things organized in certain ways.
     , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
@@ -175,6 +176,7 @@ emptyModelIndexedDb =
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
+    , traceContacts = Dict.empty
     , personSearches = Dict.empty
     , postPerson = NotAsked
     , postPmtctParticipant = Dict.empty
@@ -276,6 +278,7 @@ type MsgIndexedDb
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchVillages
+    | FetchTraceContact AcuteIllnessTraceContactId
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
@@ -315,6 +318,7 @@ type MsgIndexedDb
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedVillages (WebData (Dict VillageId Village))
+    | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person

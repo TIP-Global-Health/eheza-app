@@ -9431,6 +9431,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                TraceContactPage _ ->
+                    { english = "Trace Contact"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

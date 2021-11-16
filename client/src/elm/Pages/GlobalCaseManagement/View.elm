@@ -796,6 +796,9 @@ viewTraceContactEntry language currentDate db entry =
         , div [ class "last-contact" ] [ text <| formatDDMMYY lastContactDate ]
         , div [ class "reporter" ] [ text entry.reporterName ]
         , div [ class "phone-number" ] [ text entry.phoneNumber ]
-        , div [ class "icon-forward" ]
+        , div
+            [ class "icon-forward"
+            , onClick <| SetActivePage <| UserPage (TraceContactPage entry.itemId)
+            ]
             []
         ]

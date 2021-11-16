@@ -266,6 +266,9 @@ pageToFragment current =
                 WellChildProgressReportPage id ->
                     Just <| "well-child-progress-report/" ++ fromEntityUuid id
 
+                TraceContactPage id ->
+                    Just <| "trace-contact/" ++ fromEntityUuid id
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -310,6 +313,7 @@ parser =
         , map (\id -> UserPage <| WellChildEncounterPage id) (s "well-child-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| WellChildActivityPage id activity) (s "well-child-activity" </> parseUuid </> parseWellChildActivity)
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
+        , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
