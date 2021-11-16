@@ -54,6 +54,7 @@ import Pages.NutritionProgressReport.Model
 import Pages.NutritionProgressReport.Update
 import Pages.Page exposing (..)
 import Pages.People.Update
+import Pages.Person.Model
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
@@ -294,13 +295,15 @@ update msg model =
                             , appMsgs
                             )
 
-                        MsgPageEditPerson subMsg ->
+                        MsgPageEditPerson id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.editPersonPage
+                                    Dict.get id data.editPersonPages
+                                        |> Maybe.withDefault Pages.Person.Model.emptyEditModel
+                                        |> Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb
                             in
-                            ( { data | editPersonPage = subModel }
-                            , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
+                            ( { data | editPersonPages = Dict.insert id subModel data.editPersonPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageEditPerson id) subCmd
                             , appMsgs
                             )
 

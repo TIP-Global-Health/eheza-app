@@ -236,7 +236,7 @@ type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , dashboardPage : Pages.Dashboard.Model.Model
     , globalCaseManagementPage : Pages.GlobalCaseManagement.Model.Model
-    , editPersonPage : Pages.Person.Model.Model
+    , editPersonPages : Dict PersonId Pages.Person.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
     , individualEncounterParticipantsPage : Pages.IndividualEncounterParticipants.Model.Model
@@ -271,7 +271,7 @@ emptyLoggedInModel villageId nurse =
     { createPersonPage = Pages.Person.Model.emptyCreateModel
     , dashboardPage = Pages.Dashboard.Model.emptyModel villageId
     , globalCaseManagementPage = Pages.GlobalCaseManagement.Model.emptyModel
-    , editPersonPage = Pages.Person.Model.emptyEditModel
+    , editPersonPages = Dict.empty
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
@@ -338,7 +338,7 @@ type MsgLoggedIn
     | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageDashboard DashboardPage Pages.Dashboard.Model.Msg
     | MsgPageGlobalCaseManagement Pages.GlobalCaseManagement.Model.Msg
-    | MsgPageEditPerson Pages.Person.Model.Msg
+    | MsgPageEditPerson PersonId Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg
     | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg

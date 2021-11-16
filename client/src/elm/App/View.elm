@@ -49,6 +49,7 @@ import Pages.NutritionProgressReport.View
 import Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
+import Pages.Person.Model
 import Pages.Person.View
 import Pages.PinCode.View
 import Pages.PregnancyOutcome.Model
@@ -369,15 +370,20 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     EditPersonPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.editPersonPages
+                                    |> Maybe.withDefault Pages.Person.Model.emptyEditModel
+                        in
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
                             model.villageId
                             isChw
                             (EditPerson id)
                             ParticipantDirectoryOrigin
-                            loggedInModel.editPersonPage
+                            page_
                             model.indexedDb
-                            |> Html.map (MsgLoggedIn << MsgPageEditPerson)
+                            |> Html.map (MsgLoggedIn << MsgPageEditPerson id)
                             |> flexPageWrapper model
 
                     PersonPage id initiator ->

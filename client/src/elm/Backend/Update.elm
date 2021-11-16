@@ -2240,7 +2240,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         |> RemoteData.map
                             (\person ->
                                 [ Pages.Person.Model.ResetEditForm
-                                    |> App.Model.MsgPageEditPerson
+                                    |> App.Model.MsgPageEditPerson personId
                                     |> App.Model.MsgLoggedIn
                                 , PersonPage personId ParticipantDirectoryOrigin
                                     |> UserPage
