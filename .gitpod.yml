@@ -11,9 +11,9 @@ tasks:
       ddev start
       ddev client-install
     command: |
+      rm .ddev/config.local.yaml
       export DDEV_NONINTERACTIVE=true
       .ddev/gitpod-setup-ddev.sh
-      rm .ddev/config.local.yaml
       nohup ddev gulp &
       export DDEV_NONINTERACTIVE=false
       gp await-port 3000 && gp preview $(gp url 3000)
