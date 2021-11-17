@@ -42,11 +42,14 @@ view language currentDate id db model =
                 |> Maybe.withDefault (viewContactDetails language currentDate traceContact)
 
         content =
-            personDetails
+            div [ class "ui unstackable items" ]
+                [ div [ class "item" ] personDetails
+                ]
     in
-    div [ class "page-encounter well-child" ] <|
-        viewHeader language
-            :: content
+    div [ class "page-encounter well-child" ]
+        [ viewHeader language
+        , content
+        ]
 
 
 viewHeader : Language -> Html Msg
