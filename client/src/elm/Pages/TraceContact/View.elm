@@ -6,15 +6,29 @@ import Backend.Measurement.Model exposing (ContactTraceEntry)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (generateFullName)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
+import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCheckBoxSelectInput, viewQuestionLabel, viewSaveAction)
+import Pages.Utils
+    exposing
+        ( isTaskCompleted
+        , taskCompleted
+        , tasksBarId
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewQuestionLabel
+        , viewSaveAction
+        )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions, viewPersonDetails)
 import RemoteData exposing (RemoteData)
 import Translate exposing (Language, TranslationId, translate)
@@ -116,8 +130,8 @@ viewTraceContactStep language currentDate model contact =
         StepInitiateContact data ->
             viewStepInitiateContact language currentDate contact data
 
-        StepRecordSymptoms ->
-            []
+        StepRecordSymptoms data ->
+            viewStepRecordSymptoms language currentDate data
 
         StepReferToHealthCenter ->
             []
@@ -186,8 +200,196 @@ viewStepInitiateContact language currentDate contact data =
     ]
 
 
+viewStepRecordSymptoms : Language -> NominalDate -> StepRecordSymptomsData -> List (Html Msg)
+viewStepRecordSymptoms language currentDate data =
+    let
+        tasks =
+            [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
--- div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
---     [ div [ class "ui five column grid" ] <|
---         List.map viewTask tasks
---     ]
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        SymptomsGeneral ->
+                            ( "symptoms-general", data.symptomsGeneralForm.completed )
+
+                        SymptomsRespiratory ->
+                            ( "symptoms-respiratory", data.symptomsRespiratoryForm.completed )
+
+                        SymptomsGI ->
+                            ( "symptoms-gi", data.symptomsGIForm.completed )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveSymptomsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.SymptomsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map
+                (\task ->
+                    ( task, symptomsTasksCompletedFromTotal data task )
+                )
+                tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just SymptomsGeneral ->
+                    viewSymptomsGeneralForm language currentDate data.symptomsGeneralForm
+
+                Just SymptomsRespiratory ->
+                    viewSymptomsRespiratoryForm language currentDate data.symptomsRespiratoryForm
+
+                Just SymptomsGI ->
+                    viewSymptomsGIForm language currentDate data.symptomsGIForm
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                SymptomsGeneral ->
+                                    SaveSymptomsGeneral nextTask
+
+                                SymptomsRespiratory ->
+                                    SaveSymptomsRespiratory nextTask
+
+                                SymptomsGI ->
+                                    SaveSymptomsGI nextTask
+                    in
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+symptomsTasksCompletedFromTotal : StepRecordSymptomsData -> SymptomsTask -> ( Int, Int )
+symptomsTasksCompletedFromTotal data task =
+    let
+        everySetGotValue set =
+            if EverySet.isEmpty set then
+                0
+
+            else
+                1
+    in
+    case task of
+        SymptomsGeneral ->
+            ( everySetGotValue data.symptomsGeneralForm.signs
+            , 1
+            )
+
+        SymptomsRespiratory ->
+            ( everySetGotValue data.symptomsRespiratoryForm.signs
+            , 1
+            )
+
+        SymptomsGI ->
+            ( everySetGotValue data.symptomsGIForm.signs
+            , 1
+            )
+
+
+viewSymptomsGeneralForm : Language -> NominalDate -> SymptomsGeneralForm -> Html Msg
+viewSymptomsGeneralForm language currentDate form =
+    let
+        signs =
+            Tuple.first allSymptomsGeneralSigns ++ [ Tuple.second allSymptomsGeneralSigns ]
+    in
+    div [ class "symptoms-form general" ]
+        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            signs
+            []
+            (EverySet.toList form.signs)
+            Nothing
+            ToggleSymptomsGeneralSign
+            Translate.SymptomsGeneralSign
+        ]
+
+
+viewSymptomsRespiratoryForm : Language -> NominalDate -> SymptomsRespiratoryForm -> Html Msg
+viewSymptomsRespiratoryForm language currentDate form =
+    let
+        signs =
+            Tuple.first allSymptomsRespiratorySigns ++ [ Tuple.second allSymptomsRespiratorySigns ]
+    in
+    div [ class "symptoms-form respiratory" ]
+        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            signs
+            []
+            (EverySet.toList form.signs)
+            Nothing
+            ToggleSymptomsRespiratorySign
+            Translate.SymptomsRespiratorySign
+        ]
+
+
+viewSymptomsGIForm : Language -> NominalDate -> SymptomsGIForm -> Html Msg
+viewSymptomsGIForm language currentDate form =
+    let
+        signs =
+            Tuple.first allSymptomsGISigns ++ [ Tuple.second allSymptomsGISigns ]
+    in
+    div [ class "symptoms-form gi" ]
+        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            signs
+            []
+            (EverySet.toList form.signs)
+            Nothing
+            ToggleSymptomsGISign
+            Translate.SymptomsGISign
+        ]
