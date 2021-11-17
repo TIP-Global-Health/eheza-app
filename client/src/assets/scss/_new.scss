@@ -869,6 +869,18 @@ div.page-encounter.prenatal {
   }
 }
 
+div.page-activity.trace-contact {
+
+  .contact-details {
+    font-weight: bold;
+
+    .blue {
+      color: $color-primary;
+    }
+  }
+
+}
+
 // Acute Illness Activity page
 div.page-activity.acute-illness {
 
@@ -2793,6 +2805,7 @@ div.page-report.acute-illness {
 
 div.page-report.acute-illness,
 div.page-encounter.well-child,
+div.page-activity.trace-contact,
 div.page-activity.well-child,
 div.page-report.well-child {
 

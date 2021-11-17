@@ -95,6 +95,7 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
+import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..))
@@ -347,6 +348,7 @@ type TranslationId
     | AreYouSure
     | Assessment
     | Asthma
+    | At
     | Attendance
     | Baby
     | BabyDiedOnDayOfBirthPreviousDelivery
@@ -414,6 +416,7 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
+    | ContactInitiatedQuesiton
     | ContactName
     | ContactsTracingCompleteDetails
     | ContactsTracingHelper
@@ -726,6 +729,7 @@ type TranslationId
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoContactReason NoContactReason
     | NoGroupsFound
     | NoMatchesFound
     | NutritionSigns
@@ -813,6 +817,7 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PlaceholderSearchContactName
+    | PleaseCall
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
@@ -2141,6 +2146,11 @@ translationSet trans =
             , kinyarwanda = Just "Asthma (Agahema)"
             }
 
+        At ->
+            { english = "at"
+            , kinyarwanda = Nothing
+            }
+
         Attendance ->
             { english = "Attendance"
             , kinyarwanda = Just "Ubwitabire"
@@ -2621,6 +2631,11 @@ translationSet trans =
         ContactedRecommendedSiteQuestion ->
             { english = "Did you contact the recommended site"
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
+            }
+
+        ContactInitiatedQuesiton ->
+            { english = "Where you able to speak with the contact"
+            , kinyarwanda = Nothing
             }
 
         ContactName ->
@@ -5517,6 +5532,23 @@ translationSet trans =
             , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
             }
 
+        NoContactReason reason ->
+            case reason of
+                ReasonNoAnser ->
+                    { english = "Did not answer"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonWrongContactInfo ->
+                    { english = "Wrong contact information"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonDeclinedFollowUp ->
+                    { english = "Declinded Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
         NoGroupsFound ->
             { english = "No groups found."
             , kinyarwanda = Nothing
@@ -6457,6 +6489,11 @@ translationSet trans =
 
         PlaceholderSearchContactName ->
             { english = "Search contact name here"
+            , kinyarwanda = Nothing
+            }
+
+        PleaseCall ->
+            { english = "Please call"
             , kinyarwanda = Nothing
             }
 

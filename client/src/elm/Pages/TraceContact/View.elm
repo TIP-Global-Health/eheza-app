@@ -14,6 +14,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCheckBoxSelectInput, viewQuestionLabel, viewSaveAction)
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions, viewPersonDetails)
 import RemoteData exposing (RemoteData)
 import Translate exposing (Language, TranslationId, translate)
@@ -41,12 +42,17 @@ view language currentDate id db model =
                 tracePerson
                 |> Maybe.withDefault (viewContactDetails language currentDate traceContact)
 
+        traceContentStepForm =
+            Maybe.map (viewTraceContactStep language currentDate model)
+                traceContact
+                |> Maybe.withDefault []
+
         content =
-            div [ class "ui unstackable items" ]
-                [ div [ class "item" ] personDetails
-                ]
+            div [ class "ui unstackable items" ] <|
+                [ div [ class "item" ] personDetails ]
+                    ++ traceContentStepForm
     in
-    div [ class "page-encounter well-child" ]
+    div [ class "page-activity trace-contact" ]
         [ viewHeader language
         , content
         ]
@@ -102,3 +108,86 @@ viewContactDetails language currentDate traceContact =
         )
         traceContact
         |> Maybe.withDefault []
+
+
+viewTraceContactStep : Language -> NominalDate -> Model -> ContactTraceEntry -> List (Html Msg)
+viewTraceContactStep language currentDate model contact =
+    case model.step of
+        StepInitiateContact data ->
+            viewStepInitiateContact language currentDate contact data
+
+        StepRecordSymptoms ->
+            []
+
+        StepReferToHealthCenter ->
+            []
+
+
+viewStepInitiateContact : Language -> NominalDate -> ContactTraceEntry -> StepInitiateContactData -> List (Html Msg)
+viewStepInitiateContact language currentDate contact data =
+    let
+        instructions =
+            p [ class "contact-details" ]
+                [ text <| translate language Translate.PleaseCall
+                , text " "
+                , span [ class "blue" ] [ text <| generateFullName contact.firstName contact.secondName ]
+                , text " "
+                , text <| translate language Translate.At
+                , text " "
+                , span [ class "blue" ] [ text contact.phoneNumber ]
+                ]
+
+        inputs =
+            [ viewQuestionLabel language Translate.ContactInitiatedQuesiton
+            , viewBoolInput
+                language
+                data.contactInitiated
+                SetContactInitiated
+                ""
+                Nothing
+            ]
+                ++ derivedInput
+
+        derivedInput =
+            if data.contactInitiated == Just False then
+                [ div [ class "why-not" ]
+                    [ viewQuestionLabel language Translate.WhyNot
+                    , viewCheckBoxSelectInput language
+                        [ ReasonNoAnser, ReasonWrongContactInfo, ReasonDeclinedFollowUp ]
+                        []
+                        data.noContactReason
+                        SetNoContactReason
+                        Translate.NoContactReason
+                    ]
+                ]
+
+            else
+                []
+
+        ( totalTasks, tasksCompleted ) =
+            ( 1 + derivedTaskActive
+            , taskCompleted data.contactInitiated + derivedTaskCompleted
+            )
+
+        ( derivedTaskActive, derivedTaskCompleted ) =
+            if data.contactInitiated == Just False then
+                ( 1, taskCompleted data.noContactReason )
+
+            else
+                ( 0, 0 )
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            instructions
+                :: inputs
+                ++ [ viewSaveAction language SaveStepInitiateContact (tasksCompleted /= totalTasks) ]
+        ]
+    ]
+
+
+
+-- div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+--     [ div [ class "ui five column grid" ] <|
+--         List.map viewTask tasks
+--     ]
