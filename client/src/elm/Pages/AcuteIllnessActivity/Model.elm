@@ -159,7 +159,7 @@ type alias SymptomsData =
     { symptomsGeneralForm : SymptomsGeneralForm
     , symptomsRespiratoryForm : SymptomsRespiratoryForm
     , symptomsGIForm : SymptomsGIForm
-    , activeTask : SymptomsTask
+    , activeTask : Maybe SymptomsTask
     }
 
 
@@ -168,7 +168,7 @@ emptySymptomsData =
     { symptomsGeneralForm = SymptomsGeneralForm Dict.empty False
     , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty False
     , symptomsGIForm = SymptomsGIForm Dict.empty False Nothing False
-    , activeTask = SymptomsGeneral
+    , activeTask = Nothing
     }
 
 

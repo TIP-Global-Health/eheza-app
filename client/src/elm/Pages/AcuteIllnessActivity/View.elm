@@ -440,6 +440,9 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
         tasks =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -454,7 +457,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                             ( "symptoms-gi", isJust measurements.symptomsGI )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -481,69 +484,67 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
             case data.activeTask of
-                SymptomsGeneral ->
+                Just SymptomsGeneral ->
                     measurements.symptomsGeneral
                         |> getMeasurementValueFunc
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
                         |> viewSymptomsGeneralForm language currentDate measurements
 
-                SymptomsRespiratory ->
+                Just SymptomsRespiratory ->
                     measurements.symptomsRespiratory
                         |> getMeasurementValueFunc
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
                         |> viewSymptomsRespiratoryForm language currentDate measurements
 
-                SymptomsGI ->
+                Just SymptomsGI ->
                     measurements.symptomsGI
                         |> getMeasurementValueFunc
                         |> symptomsGIFormWithDefault data.symptomsGIForm
                         |> viewSymptomsGIForm language currentDate measurements
 
-        getNextTask currentTask =
-            case currentTask of
-                SymptomsGeneral ->
-                    [ SymptomsRespiratory, SymptomsGI ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                Nothing ->
+                    emptyNode
 
-                SymptomsRespiratory ->
-                    [ SymptomsGI, SymptomsGeneral ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                SymptomsGI ->
-                    [ SymptomsGeneral, SymptomsRespiratory ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                SymptomsGeneral ->
+                                    SaveSymptomsGeneral personId measurements.symptomsGeneral nextTask
 
-                saveMsg =
-                    case data.activeTask of
-                        SymptomsGeneral ->
-                            SaveSymptomsGeneral personId measurements.symptomsGeneral nextTask
+                                SymptomsRespiratory ->
+                                    SaveSymptomsRespiratory personId measurements.symptomsRespiratory nextTask
 
-                        SymptomsRespiratory ->
-                            SaveSymptomsRespiratory personId measurements.symptomsRespiratory nextTask
-
-                        SymptomsGI ->
-                            SaveSymptomsGI personId measurements.symptomsGI nextTask
-            in
-            div [ class "actions symptoms" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                SymptomsGI ->
+                                    SaveSymptomsGI personId measurements.symptomsGI nextTask
+                    in
+                    div [ class "actions symptoms" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
