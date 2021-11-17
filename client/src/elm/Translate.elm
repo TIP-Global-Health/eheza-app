@@ -443,6 +443,7 @@ type TranslationId
     | CounselingTimingHeading CounselingTiming
     | CounselingTopic CounselingTopic
     | CounselorReviewed
+    | CovidContactTracing
     | CovidTestingInstructions
     | CounselorSignature
     | CSectionInPreviousDelivery
@@ -2849,6 +2850,11 @@ translationSet trans =
 
         CounselorReviewed ->
             { english = "I have reviewed the above with the participant."
+            , kinyarwanda = Nothing
+            }
+
+        CovidContactTracing ->
+            { english = "Covid Contact Tracing"
             , kinyarwanda = Nothing
             }
 

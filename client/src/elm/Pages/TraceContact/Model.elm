@@ -3,6 +3,7 @@ module Pages.TraceContact.Model exposing (..)
 --import Backend.Measurement.Model exposing (ChildTraceContactSign, TraceContactMeasurements, ObstetricHistoryValue)
 
 import Backend.Entities exposing (..)
+import Pages.Page exposing (Page)
 
 
 type alias Model =
@@ -10,7 +11,7 @@ type alias Model =
 
 
 type Msg
-    = NoOp
+    = SetActivePage Page
 
 
 emptyModel : Model
