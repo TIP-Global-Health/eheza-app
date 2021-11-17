@@ -39,7 +39,17 @@ function hedley_install() {
   // Set authentication token expiration period to 5 years.
   variable_set('restful_token_auth_expiration_period', 'P5Y');
 
+  // Perform several of the updates that aren't handled in
+  // `hedley_standard_install`, and are needed on a fresh install.
+  hedley_update_7002();
+  hedley_update_7003();
+  hedley_update_7004();
+  hedley_update_7005();
+  hedley_update_7012();
   hedley_update_7013();
+  hedley_update_7014();
+  hedley_update_7015();
+  hedley_update_7016();
 
   hedley_initial_sync_permissions();
 }
