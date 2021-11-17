@@ -16,6 +16,7 @@ hooks:
     # it to avoid having untracked files.
     - exec: "git checkout .gitignore"
     - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://ihangane.ddev.site:4443"
+    - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y
     - exec: composer install -d sites/default/files/composer
     # Run migration
