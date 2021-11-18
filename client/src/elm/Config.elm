@@ -93,7 +93,6 @@ ehezaGlobal =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
-    , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , sandbox = False
     }
@@ -103,7 +102,6 @@ ehezaGlobal =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
-    , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , sandbox = False
     }
@@ -113,7 +111,6 @@ ehezaGlobal =
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
     , name = "***REMOVED***"
-    , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , sandbox = False
     }
