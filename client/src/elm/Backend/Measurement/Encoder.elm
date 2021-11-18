@@ -6,6 +6,7 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Person.Utils exposing (genderToString)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
@@ -2435,7 +2436,14 @@ encodeAcuteIllnessContactsTracingValue entries =
 
 encodeContactTraceEntryToString : ContactTraceEntry -> Value
 encodeContactTraceEntryToString entry =
-    [ fromEntityUuid entry.personId, entry.firstName, entry.secondName, entry.phoneNumber, formatYYYYMMDD entry.contactDate ]
+    [ fromEntityUuid entry.personId
+    , entry.firstName
+    , entry.secondName
+    , genderToString entry.gender
+    , entry.phoneNumber
+    , entry.village
+    , formatYYYYMMDD entry.contactDate
+    ]
         |> String.join "[&]"
         |> string
 
@@ -2917,3 +2925,8 @@ encodeVaccinationValueWithType type_ value =
 encodeVaccinationDose : VaccineDose -> Value
 encodeVaccinationDose dose =
     vaccineDoseToString dose |> string
+
+
+
+-- encodeSymptomsRespiratorySign: SymptomsRespiratorySign -> Value
+-- encodeSymptomsRespiratorySign sign

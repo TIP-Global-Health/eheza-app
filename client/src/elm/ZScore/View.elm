@@ -58,7 +58,7 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
-import Backend.Person.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (Gender(..))
 import Float.Extra
 import Gizra.Html exposing (emptyNode)
 import Html exposing (Html)

@@ -6,7 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
-import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Date exposing (Unit(..))

@@ -707,3 +707,108 @@ nutritionSignToString sign =
 
         PoorAppetite ->
             "poor-appetite"
+
+
+symptomsGeneralSignToString : SymptomsGeneralSign -> String
+symptomsGeneralSignToString sign =
+    case sign of
+        BodyAches ->
+            "body-aches"
+
+        Chills ->
+            "chills"
+
+        SymptomGeneralFever ->
+            "fever"
+
+        Headache ->
+            "headache"
+
+        NightSweats ->
+            "night-sweats"
+
+        Lethargy ->
+            "lethargy"
+
+        PoorSuck ->
+            "poor-suck"
+
+        UnableToDrink ->
+            "unable-to-drink"
+
+        UnableToEat ->
+            "unable-to-eat"
+
+        IncreasedThirst ->
+            "increased-thirst"
+
+        DryMouth ->
+            "dry-mouth"
+
+        SevereWeakness ->
+            "severe-weakness"
+
+        YellowEyes ->
+            "yellow-eyes"
+
+        CokeColoredUrine ->
+            "coke-colored-urine"
+
+        SymptomsGeneralConvulsions ->
+            "convulsions"
+
+        SpontaneousBleeding ->
+            "spontaneos-bleeding"
+
+        NoSymptomsGeneral ->
+            "none"
+
+
+symptomsRespiratorySignToString : SymptomsRespiratorySign -> String
+symptomsRespiratorySignToString sign =
+    case sign of
+        BloodInSputum ->
+            "blood-in-sputum"
+
+        Cough ->
+            "cough"
+
+        NasalCongestion ->
+            "nasal-congestion"
+
+        ShortnessOfBreath ->
+            "shortness-of-breath"
+
+        SoreThroat ->
+            "sore-throat"
+
+        LossOfSmell ->
+            "loss-of-smell"
+
+        StabbingChestPain ->
+            "stabbing-chest-pain"
+
+        NoSymptomsRespiratory ->
+            "none"
+
+
+symptomsGISignToString : SymptomsGISign -> String
+symptomsGISignToString sign =
+    case sign of
+        SymptomGIAbdominalPain ->
+            "abdominal-pain"
+
+        BloodyDiarrhea ->
+            "bloody-diarrhea"
+
+        Nausea ->
+            "nausea"
+
+        NonBloodyDiarrhea ->
+            "non-bloody-diarrhea"
+
+        Vomiting ->
+            "vomiting"
+
+        NoSymptomsGI ->
+            "none"

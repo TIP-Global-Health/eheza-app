@@ -4,8 +4,9 @@ import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
+import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
@@ -197,3 +198,26 @@ getHealthCenterName healthCenterId db =
         healthCenterId
         (RemoteData.toMaybe db.healthCenters)
         |> Maybe.Extra.join
+
+
+genderToString : Gender -> String
+genderToString gender =
+    case gender of
+        Male ->
+            "male"
+
+        Female ->
+            "female"
+
+
+genderFromString : String -> Maybe Gender
+genderFromString s =
+    case s of
+        "female" ->
+            Just Female
+
+        "male" ->
+            Just Male
+
+        _ ->
+            Nothing

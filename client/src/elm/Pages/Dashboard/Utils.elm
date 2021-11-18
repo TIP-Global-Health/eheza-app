@@ -1304,15 +1304,15 @@ filterStatsByGender currentDate model stats =
     }
 
 
-applyGenderFilter : Model -> List { a | gender : Backend.Person.Model.Gender } -> List { a | gender : Backend.Person.Model.Gender }
+applyGenderFilter : Model -> List { a | gender : Backend.Measurement.Model.Gender } -> List { a | gender : Backend.Measurement.Model.Gender }
 applyGenderFilter model list =
     List.filter
         (\item ->
             case ( item.gender, model.beneficiariesGender ) of
-                ( Backend.Person.Model.Male, Pages.Dashboard.Model.Boys ) ->
+                ( Backend.Measurement.Model.Male, Pages.Dashboard.Model.Boys ) ->
                     True
 
-                ( Backend.Person.Model.Female, Pages.Dashboard.Model.Girls ) ->
+                ( Backend.Measurement.Model.Female, Pages.Dashboard.Model.Girls ) ->
                     True
 
                 _ ->

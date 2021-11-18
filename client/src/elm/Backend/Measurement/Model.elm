@@ -1262,9 +1262,16 @@ type alias ContactTraceEntry =
     { personId : PersonId
     , firstName : String
     , secondName : String
+    , gender : Gender
     , phoneNumber : String
+    , village : String
     , contactDate : NominalDate
     }
+
+
+type Gender
+    = Female
+    | Male
 
 
 

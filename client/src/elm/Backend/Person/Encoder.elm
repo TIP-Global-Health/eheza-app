@@ -1,6 +1,16 @@
-module Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodePerson, encodeUbudehe, genderToString)
+module Backend.Person.Encoder exposing
+    ( encodeEducationLevel
+    , encodeGender
+    , encodeHivStatus
+    , encodeMaritalStatus
+    , encodeModeOfDelivery
+    , encodePerson
+    , encodeUbudehe
+    )
 
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Model exposing (..)
+import Backend.Person.Utils exposing (genderToString)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -79,16 +89,6 @@ encodeGender : Gender -> Value
 encodeGender gender =
     string <|
         genderToString gender
-
-
-genderToString : Gender -> String
-genderToString gender =
-    case gender of
-        Male ->
-            "male"
-
-        Female ->
-            "female"
 
 
 encodeUbudehe : Ubudehe -> Int

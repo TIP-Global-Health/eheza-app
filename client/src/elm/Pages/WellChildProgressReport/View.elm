@@ -18,7 +18,7 @@ import Backend.NutritionEncounter.Utils
         , sortEncounterTuplesDesc
         , sortTuplesByDateDesc
         )
-import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model

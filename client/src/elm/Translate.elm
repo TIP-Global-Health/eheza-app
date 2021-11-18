@@ -37,7 +37,6 @@ import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
         ( EducationLevel(..)
-        , Gender(..)
         , HIVStatus(..)
         , MaritalStatus(..)
         , ModeOfDelivery(..)

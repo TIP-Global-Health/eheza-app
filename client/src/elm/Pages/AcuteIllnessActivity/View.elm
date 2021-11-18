@@ -3188,7 +3188,12 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
 
                     saveAction =
                         Maybe.map
-                            (ContactTraceEntry personId person.firstName person.secondName inputNumber
+                            (ContactTraceEntry personId
+                                person.firstName
+                                person.secondName
+                                person.gender
+                                inputNumber
+                                (Maybe.withDefault "" person.village)
                                 >> SaveTracedContact
                                 >> onClick
                                 >> List.singleton

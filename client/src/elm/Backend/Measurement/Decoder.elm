@@ -5,6 +5,8 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Person.Decoder exposing (decodeGender)
+import Backend.Person.Utils exposing (genderFromString)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
@@ -2775,13 +2777,29 @@ decodeContactTraceEntryFromString =
                         String.split "[&]" data
                 in
                 case parts of
-                    [ id, firstName, secondName, phoneNumber, contactDate ] ->
-                        Date.fromIsoString contactDate
-                            |> Result.toMaybe
-                            |> Maybe.map
-                                (\date ->
-                                    succeed (ContactTraceEntry (toEntityUuid id) firstName secondName phoneNumber date)
-                                )
+                    [ id, firstName, secondName, contactGender, phoneNumber, village, contactDate ] ->
+                        let
+                            date =
+                                Date.fromIsoString contactDate
+                                    |> Result.toMaybe
+
+                            gender =
+                                genderFromString contactGender
+                        in
+                        Maybe.map2
+                            (\date_ gender_ ->
+                                succeed <|
+                                    ContactTraceEntry
+                                        (toEntityUuid id)
+                                        firstName
+                                        secondName
+                                        gender_
+                                        phoneNumber
+                                        village
+                                        date_
+                            )
+                            date
+                            gender
                             |> Maybe.withDefault
                                 (fail <|
                                     contactDate
@@ -2806,7 +2824,9 @@ decodeContactTraceEntry =
         |> required "referred_person" decodeEntityUuid
         |> required "first_name" string
         |> required "second_name" string
+        |> required "gender" decodeGender
         |> required "phone_number" string
+        |> required "village" string
         |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
 
 
