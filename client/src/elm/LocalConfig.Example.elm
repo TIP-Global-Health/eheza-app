@@ -2,14 +2,12 @@ module LocalConfig exposing (localConfigs)
 
 import AssocList as Dict exposing (..)
 import Config.Model as Config exposing (Model)
-import Pusher.Model exposing (Cluster(..), PusherAppKey)
 
 
 local : Model
 local =
     { backendUrl = "https://ihangane.ddev.site:4443"
     , name = "local"
-    , pusherKey = PusherAppKey "" UsEast1
     , debug = True
     , sandbox = False
     }
