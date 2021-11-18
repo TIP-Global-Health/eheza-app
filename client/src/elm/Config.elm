@@ -8,97 +8,7 @@ import LocalConfig exposing (localConfigs)
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , debug = False
-    , sandbox = False
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , debug = False
-    , sandbox = False
-    }
-
-
-livePantheon : Model
-livePantheon =
-    { backendUrl = "https://***REMOVED***"
-    , name = "livePantheon"
-    , debug = False
-    , sandbox = False
-    }
-
-
-ehezaGlobal : Model
-ehezaGlobal =
-    { backendUrl = "https://***REMOVED***"
-    , name = "eheza-global"
-    , debug = False
-    , sandbox = False
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
     , name = "live-aos"
-    , debug = False
-    , sandbox = False
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , debug = False
-    , sandbox = False
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , debug = False
-    , sandbox = False
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , debug = False
-    , sandbox = True
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , debug = False
-    , sandbox = False
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-    , debug = False
-    , sandbox = False
-    }
-
-
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
     , debug = False
     , sandbox = False
     }
@@ -107,16 +17,5 @@ ehezaGlobal =
 configs : Dict String Model
 configs =
     Dict.fromList
-        [ ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", livePantheon )
-        , ( "***REMOVED***", ehezaGlobal )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "***REMOVED***", ***REMOVED*** )
-        ]
+        [ ( "***REMOVED***", ***REMOVED*** ) ]
         |> Dict.union localConfigs
