@@ -1188,6 +1188,75 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_symptoms_general'.
+  $field_bases['field_symptoms_general'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_symptoms_general',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'fever' => 'Fever',
+        'chills' => 'Chills',
+        'night-sweats' => 'Night sweats',
+        'body-aches' => 'Body aches',
+        'headache' => 'Headache',
+        'coke-colored-urine' => 'Coke colored urine',
+        'convulsions' => 'Convulsions',
+        'dry-mouth' => 'Dry mouth',
+        'increased-thirst' => 'Increased thirst',
+        'lethargy' => 'Lethargy',
+        'poor-suck' => 'Poor suck',
+        'severe-weakness' => 'Severe weakness',
+        'spontaneos-bleeding' => 'Spontaneos bleeding',
+        'unable-to-drink' => 'Unable to drink',
+        'unable-to-eat' => 'Unable to eat',
+        'yellow-eyes' => 'Yellow eyes',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_symptoms_gi'.
+  $field_bases['field_symptoms_gi'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_symptoms_gi',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'bloody-diarrhea' => 'Bloody diarrhea',
+        'non-bloody-diarrhea' => 'Non bloody diarrhea',
+        'nausea' => 'Nausea',
+        'vomiting' => 'Vomiting',
+        'abdominal-pain' => 'Abdominal pain',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_symptoms_gi_derived_signs'.
   $field_bases['field_symptoms_gi_derived_signs'] = array(
     'active' => 1,
@@ -1206,6 +1275,65 @@ function hedley_acute_illness_field_default_field_bases() {
       'allowed_values' => array(
         'intractable-vomiting' => 'Intractable Vomiting',
         'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_symptoms_respiratory'.
+  $field_bases['field_symptoms_respiratory'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_symptoms_respiratory',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'cough' => 'Cough',
+        'shortness-of-breath' => 'Shortness of breath',
+        'nasal-congestion' => 'Nasal congestion',
+        'blood-in-sputum' => 'Blood in sputum',
+        'sore-throat' => 'Sore throat',
+        'loss-of-smell' => 'Loss of smell',
+        'stabbing-chest-pain' => 'Stabbing chest pain',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_trace_outcome'.
+  $field_bases['field_trace_outcome'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_trace_outcome',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'no-answer' => 'No answer',
+        'wrong-contact-info' => 'Wrong contact information',
+        'declined-follow-up' => 'Declined Follow Up',
+        'no-symptoms' => 'No Symptoms',
+        'referred-to-hc' => 'Referred to HC',
       ),
       'allowed_values_function' => '',
     ),

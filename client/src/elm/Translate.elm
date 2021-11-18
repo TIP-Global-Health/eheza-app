@@ -5545,7 +5545,7 @@ translationSet trans =
                     }
 
                 ReasonDeclinedFollowUp ->
-                    { english = "Declinded Follow Up"
+                    { english = "Declined Follow Up"
                     , kinyarwanda = Nothing
                     }
 

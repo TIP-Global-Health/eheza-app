@@ -449,7 +449,7 @@ countAcuteIllnessCasesByTreatmentApproach encounters =
 {-| There's a difference betweeen non Covid and Covid cases, when making
 a decision if to send patient to health center.
 Covid case has a specific set of parameters, while non Covid has a simple logic -
-only those that Yes answered to quesiton about patien being refered to HC.
+only those that Yes answered to quesiton about patien being referred to HC.
 -}
 wasSentToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
 wasSentToHCByDiagnosis encounter =
@@ -469,7 +469,7 @@ wasSentToHCByDiagnosis encounter =
         -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
         -- should be taking care of this.
         _ ->
-            -- All that were refered sent to HC.
+            -- All that were referred sent to HC.
             EverySet.member ReferToHealthCenter encounter.sendToHCSigns
 
 
@@ -492,7 +492,7 @@ wasManagedAtHomeByDiagnosis encounter =
         -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
         -- should be taking care of this.
         _ ->
-            -- All that were not refered to HC are managed at home.
+            -- All that were not referred to HC are managed at home.
             not <| wasSentToHCByDiagnosis encounter
 
 
