@@ -14,7 +14,7 @@ update msg model =
     let
         generateSymptomsReviewMsgs nextTask =
             Maybe.map (\task -> [ SetActiveSymptomsTask task ]) nextTask
-                |> Maybe.withDefault []
+                |> Maybe.withDefault [ GenerateRecommendation ]
 
         noChange =
             ( model, Cmd.none, [] )
@@ -238,6 +238,55 @@ update msg model =
                     , []
                     )
                         |> sequenceExtra update extraMsgs
+
+                _ ->
+                    noChange
+
+        SetRecordSymptomsPopupState state ->
+            case model.step of
+                StepRecordSymptoms data ->
+                    let
+                        updatedData =
+                            { data | popupState = state }
+                    in
+                    ( { model | step = StepRecordSymptoms updatedData }
+                    , Cmd.none
+                    , []
+                    )
+
+                _ ->
+                    noChange
+
+        GenerateRecommendation ->
+            case model.step of
+                StepRecordSymptoms data ->
+                    let
+                        symptomsFound noneSign symptomsSet =
+                            if EverySet.isEmpty symptomsSet then
+                                False
+
+                            else if EverySet.toList symptomsSet == [ noneSign ] then
+                                False
+
+                            else
+                                True
+
+                        popupState =
+                            if
+                                symptomsFound NoSymptomsGeneral data.symptomsGeneralForm.signs
+                                    || symptomsFound NoSymptomsRespiratory data.symptomsRespiratoryForm.signs
+                                    || symptomsFound NoSymptomsGI data.symptomsGIForm.signs
+                            then
+                                StateSymptomsFound
+
+                            else
+                                StateSymptomsNotFound
+                    in
+                    ( model
+                    , Cmd.none
+                    , []
+                    )
+                        |> sequenceExtra update [ SetRecordSymptomsPopupState <| Just popupState ]
 
                 _ ->
                     noChange

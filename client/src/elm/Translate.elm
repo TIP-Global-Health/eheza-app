@@ -983,6 +983,7 @@ type TranslationId
     | SuspectedCovid19CaseIsolate
     | SuspectedCovid19CaseContactHC
     | SuspectedCovid19CasePerformRapidTest
+    | SuspectedCovid19CaseReferToHCForTesting
     | Symptoms
     | SymptomsAtFirstEncounter
     | SymptomsGeneralSign SymptomsGeneralSign
@@ -7952,6 +7953,11 @@ translationSet trans =
 
         SuspectedCovid19CasePerformRapidTest ->
             { english = "Perform a rapid test immediately"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseReferToHCForTesting ->
+            { english = "Refer to Health Center for testing"
             , kinyarwanda = Nothing
             }
 

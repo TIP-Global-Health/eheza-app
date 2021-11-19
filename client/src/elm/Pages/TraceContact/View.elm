@@ -1,6 +1,7 @@
 module Pages.TraceContact.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ContactTraceEntry)
 import Backend.Model exposing (ModelIndexedDb)
@@ -32,7 +33,7 @@ import Pages.Utils
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions, viewPersonDetails)
 import RemoteData exposing (RemoteData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (thumbnailImage)
+import Utils.Html exposing (thumbnailImage, viewModal)
 
 
 view : Language -> NominalDate -> AcuteIllnessTraceContactId -> ModelIndexedDb -> Model -> Html Msg
@@ -300,6 +301,8 @@ viewStepRecordSymptoms language currentDate data =
             , actions
             ]
         ]
+    , viewModal <|
+        viewWarningPopup language data.popupState
     ]
 
 
@@ -385,3 +388,32 @@ viewSymptomsGIForm language currentDate form =
             ToggleSymptomsGISign
             Translate.SymptomsGISign
         ]
+
+
+viewWarningPopup : Language -> Maybe RecordSymptomsPopupState -> Maybe (Html Msg)
+viewWarningPopup language popupState =
+    Maybe.map
+        (\state ->
+            let
+                warningHeading =
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                    ]
+            in
+            div [ class "ui active modal diagnosis-popup" ]
+                [ div [ class "content" ] <|
+                    [ div [ class "popup-heading-wrapper" ] warningHeading
+                    , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning DiagnosisCovid19Suspect ]
+                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseReferToHCForTesting ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| SetRecordSymptomsPopupState Nothing
+                        ]
+                        [ text <| translate language Translate.Continue ]
+                    ]
+                ]
+        )
+        popupState

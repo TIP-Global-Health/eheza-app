@@ -43,6 +43,7 @@ type alias StepRecordSymptomsData =
     , symptomsRespiratoryForm : SymptomsRespiratoryForm
     , symptomsGIForm : SymptomsGIForm
     , activeTask : Maybe SymptomsTask
+    , popupState : Maybe RecordSymptomsPopupState
     }
 
 
@@ -52,6 +53,7 @@ emptyStepRecordSymptomsData =
     , symptomsRespiratoryForm = SymptomsRespiratoryForm EverySet.empty False
     , symptomsGIForm = SymptomsGIForm EverySet.empty False
     , activeTask = Nothing
+    , popupState = Nothing
     }
 
 
@@ -73,6 +75,11 @@ type alias SymptomsGIForm =
     }
 
 
+type RecordSymptomsPopupState
+    = StateSymptomsFound
+    | StateSymptomsNotFound
+
+
 type Msg
     = SetActivePage Page
     | SetTraceContactStep TraceContactStep
@@ -88,3 +95,5 @@ type Msg
     | SaveSymptomsGeneral (Maybe SymptomsTask)
     | SaveSymptomsRespiratory (Maybe SymptomsTask)
     | SaveSymptomsGI (Maybe SymptomsTask)
+    | SetRecordSymptomsPopupState (Maybe RecordSymptomsPopupState)
+    | GenerateRecommendation
