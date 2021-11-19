@@ -26,6 +26,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Form
+import Form.Input
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
@@ -3318,7 +3319,40 @@ viewCreateContactForm language currentDate db data =
             List.map (Html.map RegisterContactMsgForm) <|
                 [ Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
                 , Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
+                , genderInput
                 ]
+
+        genderField =
+            Form.getFieldAsString Backend.Person.Form.gender data
+
+        genderInput =
+            let
+                label =
+                    div [ class "six wide column required" ]
+                        [ text <| translate language Translate.GenderLabel ++ ":" ]
+
+                maleOption =
+                    [ Form.Input.radioInput "male"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Male) ]
+                    ]
+
+                femaleOption =
+                    [ Form.Input.radioInput "female"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Female) ]
+                    ]
+            in
+            div [ class "ui grid" ] <|
+                label
+                    :: maleOption
+                    ++ femaleOption
 
         geoLocationDictToOptions dict =
             Dict.toList dict

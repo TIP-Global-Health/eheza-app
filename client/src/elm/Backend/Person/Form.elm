@@ -408,7 +408,7 @@ validateContact =
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
-                |> andMap (succeed Male)
+                |> andMap (field gender validateGender)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
