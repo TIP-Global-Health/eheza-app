@@ -801,6 +801,7 @@ type TranslationId
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
+    | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
@@ -849,6 +850,7 @@ type TranslationId
     | ProgressReport
     | ProgressTimeline
     | ProgressTrends
+    | ProvideHealthEducationAndInstructToIsolate
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
@@ -6342,6 +6344,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
                     }
 
+        PatientShowsNoSignsOfCovid ->
+            { english = "Patient shows no signs of Covid"
+            , kinyarwanda = Nothing
+            }
+
         PediatricVisit ->
             { english = "Pediatric Visit"
             , kinyarwanda = Nothing
@@ -6934,6 +6941,11 @@ translationSet trans =
         ProgressTrends ->
             { english = "Progress Trends"
             , kinyarwanda = Just "Uko ibipimo bigenda bizamuka"
+            }
+
+        ProvideHealthEducationAndInstructToIsolate ->
+            { english = "Provide health education and instruct them to self isolate at home"
+            , kinyarwanda = Nothing
             }
 
         PrenatalParticipant ->

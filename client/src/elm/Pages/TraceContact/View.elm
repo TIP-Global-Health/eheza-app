@@ -395,19 +395,30 @@ viewWarningPopup language popupState =
     Maybe.map
         (\state ->
             let
-                warningHeading =
-                    [ img [ src "assets/images/exclamation-red.png" ] []
-                    , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
-                    ]
+                content =
+                    case state of
+                        StateSymptomsFound ->
+                            [ div [ class "popup-heading-wrapper" ]
+                                [ img [ src "assets/images/exclamation-red.png" ] []
+                                , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                                ]
+                            , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning DiagnosisCovid19Suspect ]
+                            , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseReferToHCForTesting ]
+                            ]
+
+                        StateSymptomsNotFound ->
+                            [ div [ class "popup-title" ] [ text <| translate language Translate.PatientShowsNoSignsOfCovid ]
+                            , div [ class "popup-action" ] [ text <| translate language Translate.ProvideHealthEducationAndInstructToIsolate ]
+                            ]
             in
-            div [ class "ui active modal diagnosis-popup" ]
-                [ div [ class "content" ] <|
-                    [ div [ class "popup-heading-wrapper" ] warningHeading
-                    , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning DiagnosisCovid19Suspect ]
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseReferToHCForTesting ]
+            div
+                [ classList
+                    [ ( "ui active modal trace-contact-popup", True )
+                    , ( "cyan", state == StateSymptomsNotFound )
                     ]
-                , div
-                    [ class "actions" ]
+                ]
+                [ div [ class "content" ] content
+                , div [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
                         , onClick <| SetRecordSymptomsPopupState Nothing

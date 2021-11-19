@@ -1211,7 +1211,8 @@ input::placeholder {
 
   &.diagnosis-popup,
   &.open-pregnancy-popup,
-  &.danger-signs-popup {
+  &.danger-signs-popup,
+  &.trace-contact-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1266,23 +1267,6 @@ input::placeholder {
       }
     }
 
-    &.open-pregnancy-popup {
-
-      .popup-heading-wrapper {
-        margin-bottom: 50px;
-      }
-
-      .popup-action {
-        font-weight: bold;
-        padding: 0 15px;
-      }
-
-      .ui.fluid.button:last-child {
-        padding: 15px 5px;
-        line-height: 30px;
-      }
-    }
-
     > .actions > .button {
       background: $color-red-alert;
       margin-left: 0;
@@ -1294,6 +1278,47 @@ input::placeholder {
       .button {
         background-color: $color-primary;
       }
+    }
+  }
+
+  &.trace-contact-popup {
+
+    .content .popup-title {
+      margin-bottom: 30px;
+    }
+
+    .content .popup-action {
+      margin-bottom: 0;
+    }
+
+    &.cyan {
+      border-top: 15px solid $color-cyan;
+      padding-top: 2.5rem;
+
+      .popup-action {
+        font-size: 28px;
+      }
+
+      .button {
+        background-color: $color-cyan;
+      }
+    }
+  }
+
+  &.open-pregnancy-popup {
+
+    .popup-heading-wrapper {
+      margin-bottom: 50px;
+    }
+
+    .popup-action {
+      font-weight: bold;
+      padding: 0 15px;
+    }
+
+    .ui.fluid.button:last-child {
+      padding: 15px 5px;
+      line-height: 30px;
     }
   }
 
