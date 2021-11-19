@@ -3128,46 +3128,6 @@ function hedley_acute_illness_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-acute_illness_trace_contact-field_village'.
-  $field_instances['node-acute_illness_trace_contact-field_village'] = array(
-    'bundle' => 'acute_illness_trace_contact',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 13,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_village',
-    'label' => 'Village',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 11,
-    ),
-  );
-
   // Exported field_instance:
   // 'node-acute_illness_vitals-field_acute_illness_encounter'.
   $field_instances['node-acute_illness_vitals-field_acute_illness_encounter'] = array(
@@ -10130,7 +10090,6 @@ function hedley_acute_illness_field_default_field_instances() {
   t('UUID');
   t('Unable to Drink Period');
   t('Unable to Eat Period');
-  t('Village');
   t('Vomiting Period');
   t('Yellow Eyes Period');
 

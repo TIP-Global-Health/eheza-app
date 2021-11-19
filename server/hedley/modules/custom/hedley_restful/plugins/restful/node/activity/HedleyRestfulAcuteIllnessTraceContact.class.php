@@ -21,7 +21,6 @@ class HedleyRestfulAcuteIllnessTraceContact extends HedleyRestfulAcuteIllnessAct
     'field_contact_date',
     'field_date_concluded',
     'field_gender',
-    'field_village',
     'field_trace_outcome',
   ];
 

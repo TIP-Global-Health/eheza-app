@@ -97,12 +97,9 @@ viewContactDetails language currentDate traceContact =
                 name =
                     generateFullName contact.firstName contact.secondName
 
-                -- genderEntry =
-                --     viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
-                --
-                -- villageEntry =
-                --     Maybe.map (viewEntry Translate.Village) person.village
-                --         |> Maybe.withDefault emptyNode
+                genderEntry =
+                    viewEntry Translate.GenderLabel (translate language <| Translate.Gender contact.gender)
+
                 viewEntry labelTransId content =
                     p []
                         [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
@@ -114,9 +111,7 @@ viewContactDetails language currentDate traceContact =
             , div [ class "details" ]
                 [ h2 [ class "ui header" ]
                     [ text name ]
-
-                -- , genderEntry
-                -- , villageEntry
+                , genderEntry
                 ]
             ]
         )

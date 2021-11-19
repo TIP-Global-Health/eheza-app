@@ -6,6 +6,7 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Person.Encoder exposing (encodeGender)
 import Backend.Person.Utils exposing (genderToString)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
@@ -2441,7 +2442,6 @@ encodeContactTraceEntryToString entry =
     , entry.secondName
     , genderToString entry.gender
     , entry.phoneNumber
-    , entry.village
     , formatYYYYMMDD entry.contactDate
     ]
         |> String.join "[&]"
@@ -2466,6 +2466,7 @@ encodeContactTraceEntry entry =
     [ ( "referred_person", encodeEntityUuid entry.personId )
     , ( "first_name", string entry.firstName )
     , ( "second_name", string entry.secondName )
+    , ( "gender", encodeGender entry.gender )
     , ( "phone_number", string entry.phoneNumber )
     , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
     ]

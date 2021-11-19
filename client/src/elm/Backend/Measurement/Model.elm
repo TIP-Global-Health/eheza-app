@@ -1264,7 +1264,6 @@ type alias ContactTraceEntry =
     , secondName : String
     , gender : Gender
     , phoneNumber : String
-    , village : String
     , contactDate : NominalDate
     }
 

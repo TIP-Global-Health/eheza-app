@@ -3194,7 +3194,6 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                                 person.secondName
                                 person.gender
                                 inputNumber
-                                (Maybe.withDefault "" person.village)
                                 >> SaveTracedContact
                                 >> onClick
                                 >> List.singleton

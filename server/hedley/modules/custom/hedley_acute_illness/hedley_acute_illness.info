@@ -155,7 +155,6 @@ features[field_instance][] = node-acute_illness_trace_contact-field_symptoms_gi
 features[field_instance][] = node-acute_illness_trace_contact-field_symptoms_respiratory
 features[field_instance][] = node-acute_illness_trace_contact-field_trace_outcome
 features[field_instance][] = node-acute_illness_trace_contact-field_uuid
-features[field_instance][] = node-acute_illness_trace_contact-field_village
 features[field_instance][] = node-acute_illness_vitals-field_acute_illness_encounter
 features[field_instance][] = node-acute_illness_vitals-field_body_temperature
 features[field_instance][] = node-acute_illness_vitals-field_date_measured

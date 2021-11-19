@@ -2777,7 +2777,7 @@ decodeContactTraceEntryFromString =
                         String.split "[&]" data
                 in
                 case parts of
-                    [ id, firstName, secondName, contactGender, phoneNumber, village, contactDate ] ->
+                    [ id, firstName, secondName, contactGender, phoneNumber, contactDate ] ->
                         let
                             date =
                                 Date.fromIsoString contactDate
@@ -2795,7 +2795,6 @@ decodeContactTraceEntryFromString =
                                         secondName
                                         gender_
                                         phoneNumber
-                                        village
                                         date_
                             )
                             date
@@ -2826,7 +2825,6 @@ decodeContactTraceEntry =
         |> required "second_name" string
         |> required "gender" decodeGender
         |> required "phone_number" string
-        |> required "village" string
         |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
 
 
