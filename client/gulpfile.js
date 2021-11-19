@@ -14,6 +14,8 @@ var uglify = require('gulp-uglify');
 var $ = require("gulp-load-plugins")();
 // "del" is used to clean out directories and such
 var del = require("del");
+
+var rename = require("gulp-rename");
 // BrowserSync isn"t a gulp package, and needs to be loaded manually
 var browserSync = require("browser-sync");
 
@@ -471,8 +473,24 @@ gulp.task("build", gulpSequence("clean:dev", ["styles",
   "elm", "pwa:dev"
 ]));
 
+// Tweak config to include real environment.
+gulp.task("deploy:config", function() {
+  return gulp.src("src/elm/Config.Deploy.elm")
+    .pipe(rename('Config.elm'))
+    .pipe(gulp.dest("src/elm", {overwrite: true}))
+    .pipe($.size({
+      title: "Deploy-specific Elm config"
+    }));
+});
+
+// Revert config.
+gulp.task("deploy:revert", function() {
+  return exec("git checkout src/elm/Config.elm");
+});
+
+
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
-gulp.task("publish", gulpSequence(["build", "clean:prod"], ["minify", "cname",
+gulp.task("publish", gulpSequence("deploy:config", ["build", "clean:prod"], ["minify", "cname",
   "images"
-], "pwa:dev"));
+], "pwa:dev", "deploy:revert"));
