@@ -128,9 +128,6 @@ viewTraceContactStep language currentDate model contact =
         StepRecordSymptoms data ->
             viewStepRecordSymptoms language currentDate data
 
-        StepReferToHealthCenter ->
-            []
-
 
 viewStepInitiateContact : Language -> NominalDate -> ContactTraceEntry -> StepInitiateContactData -> List (Html Msg)
 viewStepInitiateContact language currentDate contact data =

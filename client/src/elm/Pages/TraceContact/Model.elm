@@ -19,7 +19,6 @@ emptyModel =
 type TraceContactStep
     = StepInitiateContact StepInitiateContactData
     | StepRecordSymptoms StepRecordSymptomsData
-    | StepReferToHealthCenter
 
 
 type alias StepInitiateContactData =

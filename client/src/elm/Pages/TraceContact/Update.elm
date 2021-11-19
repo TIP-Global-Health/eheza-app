@@ -4,6 +4,7 @@ import App.Model
 import Backend.Measurement.Model exposing (SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
 import Backend.Model
 import EverySet exposing (EverySet)
+import Gizra.Update exposing (sequenceExtra)
 import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
 import Pages.TraceContact.Model exposing (..)
 
@@ -11,6 +12,10 @@ import Pages.TraceContact.Model exposing (..)
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     let
+        generateSymptomsReviewMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveSymptomsTask task ]) nextTask
+                |> Maybe.withDefault []
+
         noChange =
             ( model, Cmd.none, [] )
     in
@@ -151,13 +156,91 @@ update msg model =
                     noChange
 
         SaveSymptomsGeneral nextTask ->
-            noChange
+            case model.step of
+                StepRecordSymptoms data ->
+                    let
+                        form =
+                            data.symptomsGeneralForm
+
+                        updatedForm =
+                            { form | completed = True }
+
+                        updatedData =
+                            { data | symptomsGeneralForm = updatedForm }
+
+                        extraMsgs =
+                            generateSymptomsReviewMsgs nextTask
+
+                        appMsgs =
+                            -- @todo
+                            []
+                    in
+                    ( { model | step = StepRecordSymptoms updatedData }
+                    , Cmd.none
+                    , []
+                    )
+                        |> sequenceExtra update extraMsgs
+
+                _ ->
+                    noChange
 
         SaveSymptomsRespiratory nextTask ->
-            noChange
+            case model.step of
+                StepRecordSymptoms data ->
+                    let
+                        form =
+                            data.symptomsRespiratoryForm
+
+                        updatedForm =
+                            { form | completed = True }
+
+                        updatedData =
+                            { data | symptomsRespiratoryForm = updatedForm }
+
+                        extraMsgs =
+                            generateSymptomsReviewMsgs nextTask
+
+                        appMsgs =
+                            -- @todo
+                            []
+                    in
+                    ( { model | step = StepRecordSymptoms updatedData }
+                    , Cmd.none
+                    , []
+                    )
+                        |> sequenceExtra update extraMsgs
+
+                _ ->
+                    noChange
 
         SaveSymptomsGI nextTask ->
-            noChange
+            case model.step of
+                StepRecordSymptoms data ->
+                    let
+                        form =
+                            data.symptomsGIForm
+
+                        updatedForm =
+                            { form | completed = True }
+
+                        updatedData =
+                            { data | symptomsGIForm = updatedForm }
+
+                        extraMsgs =
+                            generateSymptomsReviewMsgs nextTask
+
+                        appMsgs =
+                            -- @todo
+                            []
+                    in
+                    ( { model | step = StepRecordSymptoms updatedData }
+                    , Cmd.none
+                    , []
+                    )
+                        |> sequenceExtra update extraMsgs
+
+                _ ->
+                    noChange
 
 
 toggleSymptomsSign : SymptomsTask -> a -> a -> EverySet a -> EverySet a
