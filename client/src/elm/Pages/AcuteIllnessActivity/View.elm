@@ -489,7 +489,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
+            case activeTask of
                 Just SymptomsGeneral ->
                     measurements.symptomsGeneral
                         |> getMeasurementValueFunc
