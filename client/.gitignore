@@ -4,6 +4,7 @@ serve
 dist
 bower_components
 LocalConfig.elm
+Config.Deploy.elm
 errorShots
 elm.js
 index.html

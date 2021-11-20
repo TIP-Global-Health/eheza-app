@@ -70,6 +70,14 @@ when you run the upgrade script.
 
 ## Deploy to Pantheon
 
+### Prerequisites
+
+Prepare `Config.Deploy.elm` based on `Config.elm` that holds the
+infrastructure-related data for Elm. This file is gitignored, and it is
+used during Elm compilation, before the final artifact is pushed to Pantheon.
+
+### Steps
+
 ```
 ddev start
 ddev gulp publish
