@@ -14,6 +14,8 @@ This is a starting base to create Drupal 7 websites using an install profile.
 
 #### Steps
 
+(from repository root)
+
 	cp default.config.sh config.sh
 	cp .ddev/config.local.yaml.example .ddev/config.local.yaml
 	ddev restart
@@ -40,34 +42,6 @@ sample content (takes much longer).
   sites/default/files directory.
 * The install script will clear the database during the installation.
 
-## Upgrade
-
-It is also possible to upgrade Drupal core and contributed modules and themes
-without destroying the data in tha database and the sites/default directory.
-
-Run the upgrade script:
-
-	$ ./upgrade
-
-You can login automatically when the upgrade is finished. Add the -l argument
-when you run the upgrade script.
-
-  $ ./upgrade -l
-
-
-#### The upgrade script will perform following steps:
-
-1. Create a backup of the sites/default folder.
-2. Delete the /www folder.
-3. Recreate the /www folder.
-4. Download and extract all contrib modules, themes & libraries to the proper
-   subfolders of the profile.
-5. Download and extract Drupal 7 core in the /www folder.
-6. Makes a symlink within the /www/profiles directory to the
-   /hedley 7. directory.
-7. Restore the backup of the sites/default folder.
-
-
 ## Deploy to Pantheon
 
 ### Prerequisites
@@ -84,5 +58,4 @@ ddev gulp publish
 ddev robo deploy:pantheon
 ```
 
-See https://github.com/Gizra/ihangane/wiki/Deployment for more details.
 To generate the release notes, use `ddev robo generate:release-notes prev-tag`.
