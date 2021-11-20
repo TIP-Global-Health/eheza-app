@@ -15,6 +15,14 @@ Primary ports:
  - `8888` for Drupal
  - `3000` for Elm frontend
 
+### GitPod first steps
+1. Wait until the Drupal login page shows up
+1. Login with `admin` / `admin` into the Drupal backend.
+1. Choose "Remote Explorer" on the left and open port 3000 too, either in new browser window or in preview.
+1. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
+1. Use `1234` as the PIN code (tied to the user accounts at the Drupal side).
+1. Explore the system.
+
 ## Introduction
 
 This app is now using Progressive Web App techniques in order to load static
