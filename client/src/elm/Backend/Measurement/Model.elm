@@ -1265,12 +1265,26 @@ type alias ContactTraceEntry =
     , gender : Gender
     , phoneNumber : String
     , contactDate : NominalDate
+    , resolutionDate : NominalDate
+    , lastFollowUpDate : Maybe NominalDate
+    , generalSigns : Maybe (EverySet SymptomsGeneralSign)
+    , respiratorySigns : Maybe (EverySet SymptomsRespiratorySign)
+    , giSigns : Maybe (EverySet SymptomsGISign)
+    , traceOutcome : Maybe TraceOutcome
     }
 
 
 type Gender
     = Female
     | Male
+
+
+type TraceOutcome
+    = OutcomeNoAnswer
+    | OutcomeWrongContactInfo
+    | OutcomeDeclinedFollowUp
+    | OutcomeNoSymptoms
+    | OutcomeReferredToHC
 
 
 

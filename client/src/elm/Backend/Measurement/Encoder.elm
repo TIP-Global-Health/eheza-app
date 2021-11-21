@@ -2463,13 +2463,95 @@ encodeAcuteIllnessTraceContactValue entry =
 
 encodeContactTraceEntry : ContactTraceEntry -> List ( String, Value )
 encodeContactTraceEntry entry =
+    let
+        lastFollowUp =
+            Maybe.map
+                (\lastFollowUpDate ->
+                    [ ( "expected", Gizra.NominalDate.encodeYYYYMMDD lastFollowUpDate ) ]
+                )
+                entry.lastFollowUpDate
+                |> Maybe.withDefault []
+
+        signsGeneral =
+            Maybe.map
+                (\generalSigns ->
+                    [ ( "general_signs", encodeEverySet encodeSymptomsGeneralSign generalSigns ) ]
+                )
+                entry.generalSigns
+                |> Maybe.withDefault []
+
+        signsRespiratory =
+            Maybe.map
+                (\respiratorySigns ->
+                    [ ( "respiratory_signs", encodeEverySet encodeSymptomsRespiratorySign respiratorySigns ) ]
+                )
+                entry.respiratorySigns
+                |> Maybe.withDefault []
+
+        signsGI =
+            Maybe.map
+                (\giSigns ->
+                    [ ( "gi_signs", encodeEverySet encodeSymptomsGISign giSigns ) ]
+                )
+                entry.giSigns
+                |> Maybe.withDefault []
+
+        outcome =
+            Maybe.map
+                (\traceOutcome ->
+                    [ ( "trace_outcome", encodeTraceOutcome traceOutcome ) ]
+                )
+                entry.traceOutcome
+                |> Maybe.withDefault []
+    in
     [ ( "referred_person", encodeEntityUuid entry.personId )
     , ( "first_name", string entry.firstName )
     , ( "second_name", string entry.secondName )
     , ( "gender", encodeGender entry.gender )
     , ( "phone_number", string entry.phoneNumber )
     , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
     ]
+        ++ lastFollowUp
+        ++ signsGeneral
+        ++ signsRespiratory
+        ++ signsGI
+        ++ outcome
+
+
+encodeSymptomsGeneralSign : SymptomsGeneralSign -> Value
+encodeSymptomsGeneralSign sign =
+    symptomsGeneralSignToString sign |> string
+
+
+encodeSymptomsRespiratorySign : SymptomsRespiratorySign -> Value
+encodeSymptomsRespiratorySign sign =
+    symptomsRespiratorySignToString sign |> string
+
+
+encodeSymptomsGISign : SymptomsGISign -> Value
+encodeSymptomsGISign sign =
+    symptomsGISignToString sign |> string
+
+
+encodeTraceOutcome : TraceOutcome -> Value
+encodeTraceOutcome outcome =
+    string <|
+        case outcome of
+            OutcomeNoAnswer ->
+                "no-answer"
+
+            OutcomeWrongContactInfo ->
+                "wrong-contact-info"
+
+            OutcomeDeclinedFollowUp ->
+                "declined-follow-up"
+
+            OutcomeNoSymptoms ->
+                "no-symptoms"
+
+            OutcomeReferredToHC ->
+                "referred-to-hc"
 
 
 encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )

@@ -1556,7 +1556,7 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yarapfuye"
                     }
 
-                OutcomeReferredToHC ->
+                Backend.IndividualEncounterParticipant.Model.OutcomeReferredToHC ->
                     { english = "Referred to Health Center"
                     , kinyarwanda = Just "Yoherejwe ku kigo nderabuzima"
                     }

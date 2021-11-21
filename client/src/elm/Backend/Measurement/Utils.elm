@@ -764,6 +764,64 @@ symptomsGeneralSignToString sign =
             "none"
 
 
+symptomsGeneralSignFromString : String -> Maybe SymptomsGeneralSign
+symptomsGeneralSignFromString s =
+    case s of
+        "body-aches" ->
+            Just BodyAches
+
+        "chills" ->
+            Just Chills
+
+        "fever" ->
+            Just SymptomGeneralFever
+
+        "headache" ->
+            Just Headache
+
+        "night-sweats" ->
+            Just NightSweats
+
+        "lethargy" ->
+            Just Lethargy
+
+        "poor-suck" ->
+            Just PoorSuck
+
+        "unable-to-drink" ->
+            Just UnableToDrink
+
+        "unable-to-eat" ->
+            Just UnableToEat
+
+        "increased-thirst" ->
+            Just IncreasedThirst
+
+        "dry-mouth" ->
+            Just DryMouth
+
+        "severe-weakness" ->
+            Just SevereWeakness
+
+        "yellow-eyes" ->
+            Just YellowEyes
+
+        "coke-colored-urine" ->
+            Just CokeColoredUrine
+
+        "convulsions" ->
+            Just SymptomsGeneralConvulsions
+
+        "spontaneos-bleeding" ->
+            Just SpontaneousBleeding
+
+        "none" ->
+            Just NoSymptomsGeneral
+
+        _ ->
+            Nothing
+
+
 symptomsRespiratorySignToString : SymptomsRespiratorySign -> String
 symptomsRespiratorySignToString sign =
     case sign of
@@ -792,6 +850,37 @@ symptomsRespiratorySignToString sign =
             "none"
 
 
+symptomsRespiratorySignFromString : String -> Maybe SymptomsRespiratorySign
+symptomsRespiratorySignFromString s =
+    case s of
+        "blood-in-sputum" ->
+            Just BloodInSputum
+
+        "cough" ->
+            Just Cough
+
+        "nasal-congestion" ->
+            Just NasalCongestion
+
+        "shortness-of-breath" ->
+            Just ShortnessOfBreath
+
+        "sore-throat" ->
+            Just SoreThroat
+
+        "loss-of-smell" ->
+            Just LossOfSmell
+
+        "stabbing-chest-pain" ->
+            Just StabbingChestPain
+
+        "none" ->
+            Just NoSymptomsRespiratory
+
+        _ ->
+            Nothing
+
+
 symptomsGISignToString : SymptomsGISign -> String
 symptomsGISignToString sign =
     case sign of
@@ -812,3 +901,28 @@ symptomsGISignToString sign =
 
         NoSymptomsGI ->
             "none"
+
+
+symptomsGISignFromString : String -> Maybe SymptomsGISign
+symptomsGISignFromString s =
+    case s of
+        "abdominal-pain" ->
+            Just SymptomGIAbdominalPain
+
+        "bloody-diarrhea" ->
+            Just BloodyDiarrhea
+
+        "nausea" ->
+            Just Nausea
+
+        "non-bloody-diarrhea" ->
+            Just NonBloodyDiarrhea
+
+        "vomiting" ->
+            Just Vomiting
+
+        "none" ->
+            Just NoSymptomsGI
+
+        _ ->
+            Nothing

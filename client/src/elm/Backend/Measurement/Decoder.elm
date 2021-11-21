@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.Person.Utils exposing (genderFromString)
-import Date
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
@@ -2796,6 +2796,12 @@ decodeContactTraceEntryFromString =
                                         gender_
                                         phoneNumber
                                         date_
+                                        (Date.add Days 11 date_)
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
                             )
                             date
                             gender
@@ -2826,6 +2832,73 @@ decodeContactTraceEntry =
         |> required "gender" decodeGender
         |> required "phone_number" string
         |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "expected" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "symptoms_general" (nullable <| decodeEverySet decodeSymptomsGeneralSign)
+        |> required "symptoms_respiratory" (nullable <| decodeEverySet decodeSymptomsRespiratorySign)
+        |> required "symptoms_gi" (nullable <| decodeEverySet decodeSymptomsGISign)
+        |> required "trace_outcome" (nullable decodeTraceOutcome)
+
+
+decodeSymptomsGeneralSign : Decoder SymptomsGeneralSign
+decodeSymptomsGeneralSign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGeneralSignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGeneralSign")
+            )
+
+
+decodeSymptomsRespiratorySign : Decoder SymptomsRespiratorySign
+decodeSymptomsRespiratorySign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsRespiratorySignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsRespiratorySign")
+            )
+
+
+decodeSymptomsGISign : Decoder SymptomsGISign
+decodeSymptomsGISign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGISignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGISign")
+            )
+
+
+decodeTraceOutcome : Decoder TraceOutcome
+decodeTraceOutcome =
+    string
+        |> andThen
+            (\outcome ->
+                case outcome of
+                    "no-answer" ->
+                        succeed OutcomeNoAnswer
+
+                    "wrong-contact-info" ->
+                        succeed OutcomeWrongContactInfo
+
+                    "declined-follow-up" ->
+                        succeed OutcomeDeclinedFollowUp
+
+                    "no-symptoms" ->
+                        succeed OutcomeNoSymptoms
+
+                    "referred-to-hc" ->
+                        succeed OutcomeReferredToHC
+
+                    _ ->
+                        fail <|
+                            outcome
+                                ++ " is not a recognized TraceOutcome"
+            )
 
 
 decodeHealthEducation : Decoder HealthEducation

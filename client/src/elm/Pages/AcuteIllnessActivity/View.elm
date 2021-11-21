@@ -3189,14 +3189,22 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
 
                     saveAction =
                         Maybe.map
-                            (ContactTraceEntry personId
-                                person.firstName
-                                person.secondName
-                                person.gender
-                                inputNumber
-                                >> SaveTracedContact
-                                >> onClick
-                                >> List.singleton
+                            (\contactDate ->
+                                ContactTraceEntry personId
+                                    person.firstName
+                                    person.secondName
+                                    person.gender
+                                    inputNumber
+                                    contactDate
+                                    (Date.add Days 11 contactDate)
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    |> SaveTracedContact
+                                    |> onClick
+                                    |> List.singleton
                             )
                             data.contactDate
                             |> Maybe.withDefault []
