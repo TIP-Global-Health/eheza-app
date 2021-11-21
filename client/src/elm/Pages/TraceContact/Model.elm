@@ -92,8 +92,8 @@ type Msg
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
     | ToggleSymptomsRespiratorySign SymptomsRespiratorySign
     | ToggleSymptomsGISign SymptomsGISign
-    | SaveSymptomsGeneral (Maybe SymptomsTask)
-    | SaveSymptomsRespiratory (Maybe SymptomsTask)
-    | SaveSymptomsGI (Maybe SymptomsTask)
+    | SaveSymptomsGeneral ContactTraceEntry (Maybe SymptomsTask)
+    | SaveSymptomsRespiratory ContactTraceEntry (Maybe SymptomsTask)
+    | SaveSymptomsGI ContactTraceEntry (Maybe SymptomsTask)
     | SetRecordSymptomsPopupState (Maybe RecordSymptomsPopupState)
-    | GenerateRecommendation
+    | GenerateRecommendation ContactTraceEntry

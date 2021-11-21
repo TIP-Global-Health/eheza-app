@@ -127,7 +127,7 @@ viewTraceContactStep language currentDate model contact =
             viewStepInitiateContact language currentDate contact data
 
         StepRecordSymptoms data ->
-            viewStepRecordSymptoms language currentDate data
+            viewStepRecordSymptoms language currentDate contact data
 
 
 viewStepInitiateContact : Language -> NominalDate -> ContactTraceEntry -> StepInitiateContactData -> List (Html Msg)
@@ -193,8 +193,8 @@ viewStepInitiateContact language currentDate contact data =
     ]
 
 
-viewStepRecordSymptoms : Language -> NominalDate -> StepRecordSymptomsData -> List (Html Msg)
-viewStepRecordSymptoms language currentDate data =
+viewStepRecordSymptoms : Language -> NominalDate -> ContactTraceEntry -> StepRecordSymptomsData -> List (Html Msg)
+viewStepRecordSymptoms language currentDate contact data =
     let
         tasks =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
@@ -277,13 +277,13 @@ viewStepRecordSymptoms language currentDate data =
                         saveMsg =
                             case task of
                                 SymptomsGeneral ->
-                                    SaveSymptomsGeneral nextTask
+                                    SaveSymptomsGeneral contact nextTask
 
                                 SymptomsRespiratory ->
-                                    SaveSymptomsRespiratory nextTask
+                                    SaveSymptomsRespiratory contact nextTask
 
                                 SymptomsGI ->
-                                    SaveSymptomsGI nextTask
+                                    SaveSymptomsGI contact nextTask
                     in
                     viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
@@ -421,7 +421,7 @@ viewWarningPopup language popupState =
                 , div [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
-                        , onClick <| SetRecordSymptomsPopupState Nothing
+                        , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
                         ]
                         [ text <| translate language Translate.Continue ]
                     ]

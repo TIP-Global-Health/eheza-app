@@ -16,9 +16,9 @@ import Pages.TraceContact.Model exposing (..)
 update : NominalDate -> AcuteIllnessTraceContactId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
     let
-        generateSymptomsReviewMsgs nextTask =
+        generateSymptomsReviewMsgs contact nextTask =
             Maybe.map (\task -> [ SetActiveSymptomsTask task ]) nextTask
-                |> Maybe.withDefault [ GenerateRecommendation ]
+                |> Maybe.withDefault [ GenerateRecommendation contact ]
 
         noChange =
             ( model, Cmd.none, [] )
@@ -81,7 +81,7 @@ update currentDate id msg model =
                                     ( outcome, resolutionDate ) =
                                         case data.noContactReason of
                                             Just ReasonNoAnswer ->
-                                                ( Nothing, contact.resolutionDate )
+                                                ( Just OutcomeNoAnswer, contact.resolutionDate )
 
                                             Just ReasonWrongContactInfo ->
                                                 ( Just OutcomeWrongContactInfo, currentDate )
@@ -198,7 +198,7 @@ update currentDate id msg model =
                 _ ->
                     noChange
 
-        SaveSymptomsGeneral nextTask ->
+        SaveSymptomsGeneral contact nextTask ->
             case model.step of
                 StepRecordSymptoms data ->
                     let
@@ -212,11 +212,7 @@ update currentDate id msg model =
                             { data | symptomsGeneralForm = updatedForm }
 
                         extraMsgs =
-                            generateSymptomsReviewMsgs nextTask
-
-                        appMsgs =
-                            -- @todo
-                            []
+                            generateSymptomsReviewMsgs contact nextTask
                     in
                     ( { model | step = StepRecordSymptoms updatedData }
                     , Cmd.none
@@ -227,7 +223,7 @@ update currentDate id msg model =
                 _ ->
                     noChange
 
-        SaveSymptomsRespiratory nextTask ->
+        SaveSymptomsRespiratory contact nextTask ->
             case model.step of
                 StepRecordSymptoms data ->
                     let
@@ -241,11 +237,7 @@ update currentDate id msg model =
                             { data | symptomsRespiratoryForm = updatedForm }
 
                         extraMsgs =
-                            generateSymptomsReviewMsgs nextTask
-
-                        appMsgs =
-                            -- @todo
-                            []
+                            generateSymptomsReviewMsgs contact nextTask
                     in
                     ( { model | step = StepRecordSymptoms updatedData }
                     , Cmd.none
@@ -256,7 +248,7 @@ update currentDate id msg model =
                 _ ->
                     noChange
 
-        SaveSymptomsGI nextTask ->
+        SaveSymptomsGI contact nextTask ->
             case model.step of
                 StepRecordSymptoms data ->
                     let
@@ -270,11 +262,7 @@ update currentDate id msg model =
                             { data | symptomsGIForm = updatedForm }
 
                         extraMsgs =
-                            generateSymptomsReviewMsgs nextTask
-
-                        appMsgs =
-                            -- @todo
-                            []
+                            generateSymptomsReviewMsgs contact nextTask
                     in
                     ( { model | step = StepRecordSymptoms updatedData }
                     , Cmd.none
@@ -300,7 +288,7 @@ update currentDate id msg model =
                 _ ->
                     noChange
 
-        GenerateRecommendation ->
+        GenerateRecommendation contact ->
             case model.step of
                 StepRecordSymptoms data ->
                     let
@@ -324,10 +312,31 @@ update currentDate id msg model =
 
                             else
                                 StateSymptomsNotFound
+
+                        ( outcome, resolutionDate ) =
+                            case popupState of
+                                StateSymptomsFound ->
+                                    ( Just OutcomeReferredToHC, currentDate )
+
+                                StateSymptomsNotFound ->
+                                    ( Just OutcomeNoSymptoms, contact.resolutionDate )
+
+                        updated =
+                            { contact
+                                | lastFollowUpDate = Just currentDate
+                                , traceOutcome = outcome
+                                , resolutionDate = resolutionDate
+                                , generalSigns = Just data.symptomsGeneralForm.signs
+                                , respiratorySigns = Just data.symptomsRespiratoryForm.signs
+                                , giSigns = Just data.symptomsGIForm.signs
+                            }
                     in
                     ( model
                     , Cmd.none
-                    , []
+                    , [ Backend.TraceContact.Model.EditTraceContact updated
+                            |> Backend.Model.MsgTraceContact id
+                            |> App.Model.MsgIndexedDb
+                      ]
                     )
                         |> sequenceExtra (update currentDate id) [ SetRecordSymptomsPopupState <| Just popupState ]
 

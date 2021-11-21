@@ -775,7 +775,7 @@ generateContactsTracingEntryData language currentDate db itemId item =
                 |> Maybe.map .name
                 |> Maybe.withDefault ""
     in
-    ContactsTracingEntry itemId name item.value.phoneNumber reporterName
+    ContactsTracingEntry itemId name item.value.phoneNumber reporterName item.value.lastFollowUpDate
         |> Just
 
 
@@ -788,12 +788,12 @@ viewTraceContactEntry :
 viewTraceContactEntry language currentDate db entry =
     let
         lastContactDate =
-            --@todo in a follow up PR
-            currentDate
+            Maybe.map formatDDMMYY entry.lastFollowUpDate
+                |> Maybe.withDefault ""
     in
     div [ class "trace-contact-entry" ]
         [ div [ class "name" ] [ text entry.personName ]
-        , div [ class "last-contact" ] [ text <| formatDDMMYY lastContactDate ]
+        , div [ class "last-contact" ] [ text lastContactDate ]
         , div [ class "reporter" ] [ text entry.reporterName ]
         , div [ class "phone-number" ] [ text entry.phoneNumber ]
         , div
