@@ -579,7 +579,7 @@ update msg model =
                                 ( subModel, subCmd, appMsgs ) =
                                     Dict.get id data.traceContactPages
                                         |> Maybe.withDefault Pages.TraceContact.Model.emptyModel
-                                        |> Pages.TraceContact.Update.update subMsg
+                                        |> Pages.TraceContact.Update.update currentDate id subMsg
                             in
                             ( { data | traceContactPages = Dict.insert id subModel data.traceContactPages }
                             , Cmd.map (MsgLoggedIn << MsgPageTraceContact id) subCmd

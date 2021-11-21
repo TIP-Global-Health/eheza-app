@@ -160,7 +160,7 @@ viewStepInitiateContact language currentDate contact data =
                 [ div [ class "why-not" ]
                     [ viewQuestionLabel language Translate.WhyNot
                     , viewCheckBoxSelectInput language
-                        [ ReasonNoAnser, ReasonWrongContactInfo, ReasonDeclinedFollowUp ]
+                        [ ReasonNoAnswer, ReasonWrongContactInfo, ReasonDeclinedFollowUp ]
                         []
                         data.noContactReason
                         SetNoContactReason
@@ -188,7 +188,7 @@ viewStepInitiateContact language currentDate contact data =
         [ div [ class "full content" ] <|
             instructions
                 :: inputs
-                ++ [ viewSaveAction language SaveStepInitiateContact (tasksCompleted /= totalTasks) ]
+                ++ [ viewSaveAction language (SaveStepInitiateContact contact) (tasksCompleted /= totalTasks) ]
         ]
     ]
 

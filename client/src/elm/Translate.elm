@@ -5536,7 +5536,7 @@ translationSet trans =
 
         NoContactReason reason ->
             case reason of
-                ReasonNoAnser ->
+                ReasonNoAnswer ->
                     { english = "Did not answer"
                     , kinyarwanda = Nothing
                     }

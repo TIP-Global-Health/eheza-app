@@ -1,7 +1,7 @@
 module Pages.TraceContact.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (SymptomsGISign, SymptomsGeneralSign, SymptomsRespiratorySign)
+import Backend.Measurement.Model exposing (ContactTraceEntry, SymptomsGISign, SymptomsGeneralSign, SymptomsRespiratorySign)
 import EverySet exposing (EverySet)
 import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
 import Pages.Page exposing (Page)
@@ -33,7 +33,7 @@ emptyStepInitiateContactData =
 
 
 type NoContactReason
-    = ReasonNoAnser
+    = ReasonNoAnswer
     | ReasonWrongContactInfo
     | ReasonDeclinedFollowUp
 
@@ -86,7 +86,7 @@ type Msg
       -- StepInitiateContact
     | SetContactInitiated Bool
     | SetNoContactReason NoContactReason
-    | SaveStepInitiateContact
+    | SaveStepInitiateContact ContactTraceEntry
       -- StepRecordSymptoms
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign

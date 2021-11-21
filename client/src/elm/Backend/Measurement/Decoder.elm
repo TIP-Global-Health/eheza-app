@@ -2833,11 +2833,11 @@ decodeContactTraceEntry =
         |> required "phone_number" string
         |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
         |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "expected" (nullable Gizra.NominalDate.decodeYYYYMMDD)
-        |> required "symptoms_general" (nullable <| decodeEverySet decodeSymptomsGeneralSign)
-        |> required "symptoms_respiratory" (nullable <| decodeEverySet decodeSymptomsRespiratorySign)
-        |> required "symptoms_gi" (nullable <| decodeEverySet decodeSymptomsGISign)
-        |> required "trace_outcome" (nullable decodeTraceOutcome)
+        |> optional "last_follow_up_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "symptoms_general" (nullable <| decodeEverySet decodeSymptomsGeneralSign) Nothing
+        |> optional "symptoms_respiratory" (nullable <| decodeEverySet decodeSymptomsRespiratorySign) Nothing
+        |> optional "symptoms_gi" (nullable <| decodeEverySet decodeSymptomsGISign) Nothing
+        |> optional "trace_outcome" (nullable decodeTraceOutcome) Nothing
 
 
 decodeSymptomsGeneralSign : Decoder SymptomsGeneralSign

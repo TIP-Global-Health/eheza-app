@@ -2510,7 +2510,7 @@ encodeContactTraceEntry entry =
     , ( "gender", encodeGender entry.gender )
     , ( "phone_number", string entry.phoneNumber )
     , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
-    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD entry.resolutionDate )
     ]
         ++ lastFollowUp
         ++ signsGeneral

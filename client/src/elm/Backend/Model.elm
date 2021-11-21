@@ -35,6 +35,7 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
+import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Pages.Dashboard.Model
@@ -83,6 +84,7 @@ type alias ModelIndexedDb =
     , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
     , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
+    , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -193,6 +195,7 @@ emptyModelIndexedDb =
     , acuteIllnessEncounterRequests = Dict.empty
     , homeVisitEncounterRequests = Dict.empty
     , wellChildEncounterRequests = Dict.empty
+    , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
@@ -356,6 +359,7 @@ type MsgIndexedDb
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
     | MsgWellChildEncounter WellChildEncounterId Backend.WellChildEncounter.Model.Msg
+    | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | ResetFailedToFetchAuthorities
 

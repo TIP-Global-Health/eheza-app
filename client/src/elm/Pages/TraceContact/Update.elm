@@ -1,16 +1,20 @@
 module Pages.TraceContact.Update exposing (update)
 
 import App.Model
-import Backend.Measurement.Model exposing (SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
+import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..), TraceOutcome(..))
 import Backend.Model
+import Backend.TraceContact.Model
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : NominalDate -> AcuteIllnessTraceContactId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate id msg model =
     let
         generateSymptomsReviewMsgs nextTask =
             Maybe.map (\task -> [ SetActiveSymptomsTask task ]) nextTask
@@ -62,11 +66,50 @@ update msg model =
                 _ ->
                     noChange
 
-        SaveStepInitiateContact ->
-            ( { model | step = StepRecordSymptoms emptyStepRecordSymptomsData }
-            , Cmd.none
-            , []
-            )
+        SaveStepInitiateContact contact ->
+            case model.step of
+                StepInitiateContact data ->
+                    let
+                        ( extraMsgs, appMsgs ) =
+                            if data.contactInitiated == Just True then
+                                ( [ SetTraceContactStep <| StepRecordSymptoms emptyStepRecordSymptomsData ]
+                                , []
+                                )
+
+                            else
+                                let
+                                    ( outcome, resolutionDate ) =
+                                        case data.noContactReason of
+                                            Just ReasonNoAnswer ->
+                                                ( Nothing, contact.resolutionDate )
+
+                                            Just ReasonWrongContactInfo ->
+                                                ( Just OutcomeWrongContactInfo, currentDate )
+
+                                            Just ReasonDeclinedFollowUp ->
+                                                ( Just OutcomeDeclinedFollowUp, currentDate )
+
+                                            Nothing ->
+                                                ( Nothing, contact.resolutionDate )
+
+                                    updated =
+                                        { contact | lastFollowUpDate = Just currentDate, traceOutcome = outcome, resolutionDate = resolutionDate }
+                                in
+                                ( [ SetActivePage <| UserPage GlobalCaseManagementPage ]
+                                , [ Backend.TraceContact.Model.EditTraceContact updated
+                                        |> Backend.Model.MsgTraceContact id
+                                        |> App.Model.MsgIndexedDb
+                                  ]
+                                )
+                    in
+                    ( model
+                    , Cmd.none
+                    , appMsgs
+                    )
+                        |> sequenceExtra (update currentDate id) extraMsgs
+
+                _ ->
+                    noChange
 
         SetActiveSymptomsTask task ->
             case model.step of
@@ -179,7 +222,7 @@ update msg model =
                     , Cmd.none
                     , []
                     )
-                        |> sequenceExtra update extraMsgs
+                        |> sequenceExtra (update currentDate id) extraMsgs
 
                 _ ->
                     noChange
@@ -208,7 +251,7 @@ update msg model =
                     , Cmd.none
                     , []
                     )
-                        |> sequenceExtra update extraMsgs
+                        |> sequenceExtra (update currentDate id) extraMsgs
 
                 _ ->
                     noChange
@@ -237,7 +280,7 @@ update msg model =
                     , Cmd.none
                     , []
                     )
-                        |> sequenceExtra update extraMsgs
+                        |> sequenceExtra (update currentDate id) extraMsgs
 
                 _ ->
                     noChange
@@ -286,7 +329,7 @@ update msg model =
                     , Cmd.none
                     , []
                     )
-                        |> sequenceExtra update [ SetRecordSymptomsPopupState <| Just popupState ]
+                        |> sequenceExtra (update currentDate id) [ SetRecordSymptomsPopupState <| Just popupState ]
 
                 _ ->
                     noChange
