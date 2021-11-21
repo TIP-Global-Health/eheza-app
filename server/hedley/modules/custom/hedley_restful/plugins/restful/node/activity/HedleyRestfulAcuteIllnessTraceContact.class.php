@@ -30,7 +30,7 @@ class HedleyRestfulAcuteIllnessTraceContact extends HedleyRestfulAcuteIllnessAct
   protected $multiFields = [
     'field_symptoms_general',
     'field_symptoms_respiratory',
-    'field_symptoms_respiratory',
+    'field_symptoms_gi',
   ];
 
   /**
