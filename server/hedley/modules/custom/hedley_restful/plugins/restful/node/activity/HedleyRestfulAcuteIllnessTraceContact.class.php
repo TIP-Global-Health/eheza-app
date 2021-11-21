@@ -22,7 +22,7 @@ class HedleyRestfulAcuteIllnessTraceContact extends HedleyRestfulAcuteIllnessAct
     'field_date_concluded',
     'field_gender',
     'field_trace_outcome',
-    'last_follow_up_date',
+    'field_last_follow_up_date',
   ];
 
   /**
@@ -47,7 +47,7 @@ class HedleyRestfulAcuteIllnessTraceContact extends HedleyRestfulAcuteIllnessAct
   protected $dateFields = [
     'field_contact_date',
     'field_date_concluded',
-    'last_follow_up_date',
+    'field_last_follow_up_date',
   ];
 
 }
