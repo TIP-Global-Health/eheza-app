@@ -2467,7 +2467,7 @@ encodeContactTraceEntry entry =
         lastFollowUp =
             Maybe.map
                 (\lastFollowUpDate ->
-                    [ ( "expected", Gizra.NominalDate.encodeYYYYMMDD lastFollowUpDate ) ]
+                    [ ( "last_follow_up_date", Gizra.NominalDate.encodeYYYYMMDD lastFollowUpDate ) ]
                 )
                 entry.lastFollowUpDate
                 |> Maybe.withDefault []
