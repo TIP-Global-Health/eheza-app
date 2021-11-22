@@ -72,7 +72,9 @@ The installation script will perform following steps:
   sites/default/files directory.
 * The database is dropped during the installation.
 
-#### Deploy to Pantheon
+#### Deploy
+
+The default method assumes Pantheon as the hosting service provider.
 
 ##### Prerequisites
 
