@@ -37,12 +37,6 @@ isNewborn currentDate person =
         |> Maybe.map (\ageMonths -> ageMonths < 2)
 
 
-isAboveAgeOf2 : NominalDate -> Person -> Maybe Bool
-isAboveAgeOf2 currentDate person =
-    ageInMonths currentDate person
-        |> Maybe.map (\ageMonths -> ageMonths > 23)
-
-
 isPersonAnAdult : NominalDate -> Person -> Maybe Bool
 isPersonAnAdult currentDate person =
     isAdult currentDate person.birthDate

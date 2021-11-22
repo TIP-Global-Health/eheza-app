@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isAboveAgeOf2, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -147,8 +147,9 @@ viewPersonDetails language currentDate person =
                 |> Maybe.withDefault True
 
         isAboveAgeOf2Years =
-            isAboveAgeOf2 currentDate person
-                |> Maybe.withDefault True
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age >= 2)
+                |> Maybe.withDefault False
 
         ( thumbnailClass, ageEntry ) =
             if isAdult then
