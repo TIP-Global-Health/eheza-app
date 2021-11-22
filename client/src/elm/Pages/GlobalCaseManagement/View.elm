@@ -719,8 +719,37 @@ viewContactsTracingPane :
     -> Html Msg
 viewContactsTracingPane language currentDate itemsDict db model =
     let
+        filteredItemsDict =
+            Dict.filter
+                (\_ item ->
+                    let
+                        -- Resolution date initially is set to 11-th day
+                        -- after the contact.
+                        -- We know that item is not resolved, if resolution
+                        -- date is a future date.
+                        traceNotCompleted =
+                            Date.compare currentDate item.value.resolutionDate == LT
+
+                        -- Follow up is performed every 2 days.
+                        -- For example, if we had a follow up yesterday, we
+                        -- should not do another one today.
+                        -- We'll do one tomorrow.
+                        followUpScheduled =
+                            Maybe.map
+                                (\lastFollowUpDate ->
+                                    Date.diff Days lastFollowUpDate currentDate > 1
+                                )
+                                item.value.lastFollowUpDate
+                                |> -- There was no follow up so far, so we want
+                                   -- to perform it ASAP.
+                                   Maybe.withDefault True
+                    in
+                    traceNotCompleted && followUpScheduled
+                )
+                itemsDict
+
         entries =
-            generateContactsTracingEntries language currentDate itemsDict db
+            generateContactsTracingEntries language currentDate filteredItemsDict db
 
         heading =
             div [ class "trace-contact-entry heading" ]
