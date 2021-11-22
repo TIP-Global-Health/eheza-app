@@ -8,7 +8,7 @@
 
 ## Debug CI execution
 
-Apart from simply executing the same what Travis executes, you have the ability to inspect the container interactively after rthe execution if you start your container with an extra environment variable:
+Apart from simply executing the same what Travis executes, you have the ability to inspect the container interactively after the execution if you start your container with an extra environment variable:
 ```
 mkdir /tmp/travis-cache
 docker run -v /tmp/travis-cache:/tmp/travis-cache -it -p 8080:80 -e BUILD_WEBDRIVERIO=1 -e DOCKER_DEBUG=1 server
