@@ -28,7 +28,10 @@ Primary ports:
 3. Choose "Remote Explorer" on the left and open port 3000 too, either in new browser window or in preview.
 4. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
 5. Use `1234` as the PIN code (tied to the user accounts at the Drupal side).
-6. Explore the system.
+6. Initiate a sync process. The device status page allows you to initiate a manual sync with the backend.
+   You can also choose which health centers to sync, for instance "Nyange Health Center" for the tests.
+7. Choose the synced health center.
+8. Explore the system.
 
 Known issues:
  - Sometimes `gulp` fails to download all the Elm packages. Then locate the running process: `ps aux | grep gulp`, kill it, and launch it again: `ddev gulp`.
