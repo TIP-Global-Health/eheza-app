@@ -76,6 +76,8 @@ The installation script will perform following steps:
 Prepare `Config.Deploy.elm` based on `Config.elm` that holds the
 infrastructure-related data for Elm. This file is gitignored, and it is
 used during Elm compilation, before the final artifact is pushed to Pantheon.
+The source of truth for this deployment config is in the Pantheon artifact repository,
+can be found under the repository root, so most of the time, you can copy it from there.
 
 #### Steps
 
