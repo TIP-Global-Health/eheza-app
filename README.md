@@ -15,8 +15,8 @@ E-Heza captures essential data at the point of care to improve the health of mot
 
 The project is integrated with [GitPod](https://www.gitpod.io/docs/).
 Click on the badge above to try it out the project in action and start editing
-the source code! By default, Drupal and Elm client is accessible publicly and you
-can access other DDEV services like Mailhog using the non-HTTPS port, for instance
+the source code! By default, Drupal and Elm client is accessible publicly, and you
+can access other DDEV services like [Mailhog](https://github.com/mailhog/MailHog) using the non-HTTPS port, for instance
 `8026-` should work for checking the outgoing mails.
 Primary ports:
 - `8888` for Drupal
@@ -24,11 +24,14 @@ Primary ports:
 
 ### GitPod first steps
 1. Wait until the Drupal login page shows up
-1. Login with `admin` / `admin` into the Drupal backend.
-1. Choose "Remote Explorer" on the left and open port 3000 too, either in new browser window or in preview.
-1. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
-1. Use `1234` as the PIN code (tied to the user accounts at the Drupal side).
-1. Explore the system.
+2. Login with `admin` / `admin` into the Drupal backend.
+3. Choose "Remote Explorer" on the left and open port 3000 too, either in new browser window or in preview.
+4. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
+5. Use `1234` as the PIN code (tied to the user accounts at the Drupal side).
+6. Explore the system.
+
+Known issues:
+ - Sometimes `gulp` fails to download all the Elm packages. Then locate the running process: `ps aux | grep gulp`, kill it, and launch it again: `ddev gulp`.
 
 ## Develop locally with DDEV
 
@@ -62,9 +65,9 @@ The installation script will perform following steps:
 
 ***Warning!***
 
-* The install script will not preserve the data located in the
+* The process above will not preserve the data located in the
   sites/default/files directory.
-* The install script will clear the database during the installation.
+* The database is dropped during the installation.
 
 #### Deploy to Pantheon
 
@@ -118,3 +121,9 @@ downloaded from the WHO web site into three formats:
   unit-test the Elm code.
 
 This should all happen automatically when you run `ddev gulp`.
+
+#### Develop how-to
+
+After you edited an Elm file, and the compilation process is executed, the changes are not visible in the browser.
+To activate the new version you've just created, click on the "Version" indication in the top-right corner of the app.
+That will take you to a page which allows you to check for updates and activate updates.
