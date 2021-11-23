@@ -159,19 +159,19 @@ viewPersonDetails language currentDate person =
                     |> Maybe.withDefault emptyNode
                 )
 
-            else if isAboveAgeOf2Years then
-                ( "child"
-                , person.birthDate
-                    |> Maybe.map
-                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeYearsMonths language birthDate currentDate))
-                    |> Maybe.withDefault emptyNode
-                )
-
             else
+                let
+                    renderAgeFunc =
+                        if isAboveAgeOf2Years then
+                            renderAgeYearsMonths
+
+                        else
+                            renderAgeMonthsDays
+                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate))
+                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
                     |> Maybe.withDefault emptyNode
                 )
 

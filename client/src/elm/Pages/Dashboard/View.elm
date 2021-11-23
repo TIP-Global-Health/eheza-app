@@ -2021,7 +2021,7 @@ viewModalTableRow rowData =
         ]
 
 
-filterStatsByAge : NominalDate -> ({ years : Int, months : Int, days : Int } -> Bool) -> DashboardStats -> DashboardStats
+filterStatsByAge : NominalDate -> ({ months : Int, days : Int } -> Bool) -> DashboardStats -> DashboardStats
 filterStatsByAge currentDate func stats =
     let
         childrenBeneficiaries =
@@ -2040,7 +2040,7 @@ filterStatsByAge currentDate func stats =
     }
 
 
-applyAgeFilter : NominalDate -> ({ years : Int, months : Int, days : Int } -> Bool) -> List { a | birthDate : NominalDate } -> List { a | birthDate : NominalDate }
+applyAgeFilter : NominalDate -> ({ months : Int, days : Int } -> Bool) -> List { a | birthDate : NominalDate } -> List { a | birthDate : NominalDate }
 applyAgeFilter currentDate func list =
     List.filter (\item -> isDiffTruthy item.birthDate currentDate func) list
 

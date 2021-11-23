@@ -3,9 +3,9 @@ module Gizra.NominalDate exposing
     , decodeYYYYMMDD, encodeYYYYMMDD
     , formatYYYYMMDD, formatMMDDYYYY
     , fromLocalDateTime
-    , diffDays
+    , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsMonthsDays, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, formatDDMMyyyy, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, formatDDMMyyyy, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -203,7 +203,7 @@ diffYears low high =
 
 diffCalendarMonths : NominalDate -> NominalDate -> Int
 diffCalendarMonths low high =
-    diffCalendarYearsMonthsDays low high |> .months
+    diffCalendarMonthsAndDays low high |> .months
 
 
 {-| Difference between two dates, in terms of months and days. This is based on
@@ -241,13 +241,12 @@ parameter.
             --> { months = 2, days = 29 }
 
 -}
-diffCalendarYearsMonthsDays : NominalDate -> NominalDate -> { years : Int, months : Int, days : Int }
-diffCalendarYearsMonthsDays low high =
+diffCalendarMonthsAndDays : NominalDate -> NominalDate -> { months : Int, days : Int }
+diffCalendarMonthsAndDays low high =
     let
         uncorrected =
             { days = Date.day high - Date.day low
             , months = (Date.year high * 12 + Date.monthNumber high) - (Date.year low * 12 + Date.monthNumber low)
-            , years = Date.year high - Date.year low
             }
     in
     if uncorrected.days >= 0 then
@@ -268,17 +267,30 @@ diffCalendarYearsMonthsDays low high =
         -- month that is the "partial" month we're borrowing from ... all
         -- intervening months are full months, and the current month isn't
         -- finished, so it can't matter how many days it has.
-        { years = uncorrected.years - 1
-        , months = uncorrected.months - 1
+        { months = uncorrected.months - 1
         , days = uncorrected.days + daysInMonth (Date.year low) (Date.month low)
         }
 
 
+diffCalendarYearsAndMonths : NominalDate -> NominalDate -> { years : Int, months : Int }
+diffCalendarYearsAndMonths low high =
+    let
+        months =
+            diffCalendarMonthsAndDays low high |> .months
+
+        fullYears =
+            months // 12
+    in
+    { years = fullYears
+    , months = months - 12 * fullYears
+    }
+
+
 {-| Indicate of diff of nominal is a Truth value.
 -}
-isDiffTruthy : NominalDate -> NominalDate -> ({ years : Int, months : Int, days : Int } -> Bool) -> Bool
+isDiffTruthy : NominalDate -> NominalDate -> ({ months : Int, days : Int } -> Bool) -> Bool
 isDiffTruthy low high func =
-    diffCalendarYearsMonthsDays low high
+    diffCalendarMonthsAndDays low high
         |> func
 
 

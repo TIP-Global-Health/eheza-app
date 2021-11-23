@@ -8,7 +8,7 @@ import Date
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarYearsMonthsDays)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, diffCalendarYearsAndMonths)
 import Html exposing (Html)
 import Maybe.Extra
 import Translate exposing (Language, translate)
@@ -21,7 +21,7 @@ renderAgeMonthsDays : Language -> NominalDate -> NominalDate -> String
 renderAgeMonthsDays language birthDate now =
     let
         diff =
-            diffCalendarYearsMonthsDays birthDate now
+            diffCalendarMonthsAndDays birthDate now
 
         days =
             diff.days
@@ -58,7 +58,7 @@ renderAgeMonthsDaysParts : Language -> NominalDate -> NominalDate -> List (Maybe
 renderAgeMonthsDaysParts language birthDate now =
     let
         diff =
-            diffCalendarYearsMonthsDays birthDate now
+            diffCalendarMonthsAndDays birthDate now
 
         days =
             diff.days
@@ -98,7 +98,7 @@ renderAgeYearsMonths : Language -> NominalDate -> NominalDate -> String
 renderAgeYearsMonths language birthDate now =
     let
         diff =
-            diffCalendarYearsMonthsDays birthDate now
+            diffCalendarYearsAndMonths birthDate now
 
         months =
             diff.months
