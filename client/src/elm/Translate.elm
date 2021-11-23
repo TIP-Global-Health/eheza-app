@@ -410,7 +410,6 @@ type TranslationId
     | ColorAlertIndication ColorAlertIndication
     | Completed
     | CompleteFacilityReferralForm ReferralFacility
-    | CompletedHCReferralForm
     | Contacted114
     | ContactedHC
     | ContactedHCQuestion
@@ -992,7 +991,6 @@ type TranslationId
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
     | SendPatientToFacility ReferralFacility
-    | SentPatientToHC
     | ShowAll
     | StartEndDate
     | StrartNewAcuteIllnessHelper
@@ -2603,11 +2601,6 @@ translationSet trans =
                     { english = "Complete a hospital referral form"
                     , kinyarwanda = Nothing
                     }
-
-        CompletedHCReferralForm ->
-            { english = "Completed health center referral form"
-            , kinyarwanda = Just "Urupapuro rwohereza umurwayi ku kigo nderabuzima rwujujwe"
-            }
 
         Contacted114 ->
             { english = "Contacted 114"
@@ -8164,11 +8157,6 @@ translationSet trans =
                     { english = "Send patient to the hospital"
                     , kinyarwanda = Nothing
                     }
-
-        SentPatientToHC ->
-            { english = "Sent patient to the health center"
-            , kinyarwanda = Just "Kohereza umurwayi ku kigo nderabuzima"
-            }
 
         ShowAll ->
             { english = "Show All"

@@ -49,25 +49,24 @@ type alias AssembledData =
     , measurements : AcuteIllnessMeasurements
     , previousEncountersData : List AcuteIllnessEncounterData
 
-    -- During inital encounter full set of measurements is collected,
-    -- It can be executed by both nurse and CHW, while
-    -- subsequent encounter is done only by CHW.
+    -- Intial encounter is the one where all measurements are taken and
+    -- initial diagnosis is made.
+    -- For CHW, it's only the first encounter at illness.
+    -- For nurse, it's always an initial encounter, since
+    -- nurse can do only single encouter throughout the illness.
     , initialEncounter : Bool
 
     -- The diagnosis that we have right now.
-    -- This can be the diagnosis of first encounter, or one of
+    -- This can be the diagnosis of initial encounter, or one of
     -- subsequent encounters, where diagnoses was updated to
     -- Malaria (this is the only case when we allow to update a diagnosis).
     , diagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
-
-    -- In case diagnosis was updated to Malaria, stores the original
-    -- diagnosis that was determined at first encounter.
-    , previousDiagnosis : Maybe ( NominalDate, AcuteIllnessDiagnosis )
     }
 
 
 type alias AcuteIllnessEncounterData =
     { id : AcuteIllnessEncounterId
+    , encounterType : AcuteIllnessEncounterType
     , startDate : NominalDate
     , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis

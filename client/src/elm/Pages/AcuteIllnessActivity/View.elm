@@ -1768,6 +1768,8 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
 
                 -- If medication is prescribed, but it's out of stock, or partient
                 -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
+                -- An exclusion here is when patient is diagnosed with Covid and Pneumonia,
+                -- where the patient is monitored at home.
                 Just NextStepsMedicationDistribution ->
                     let
                         medicationDistributionForm =
@@ -1792,7 +1794,10 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                                     )
                                 |> Maybe.withDefault False
                     in
-                    if medicationOutOfStockOrPatientAlergic then
+                    if diagnosis == Just DiagnosisPneuminialCovid19 then
+                        tasks
+
+                    else if medicationOutOfStockOrPatientAlergic then
                         [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
 
                     else

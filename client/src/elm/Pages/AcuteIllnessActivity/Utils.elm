@@ -748,10 +748,11 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
             )
 
         NextStepsContactsTracing ->
-            -- We do not count tasks here.
-            ( 0
-            , 0
-            )
+            if data.contactsTracingForm.finished then
+                ( 1, 1 )
+
+            else
+                ( 0, 1 )
 
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
@@ -1988,8 +1989,13 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
                 || (diagnosis == Just DiagnosisUndeterminedMoreEvaluationNeeded)
                 || (diagnosis == Just DiagnosisSevereCovid19)
-                -- Medication was perscribed, but it's out of stock, or patient is alergic.
-                || (medicationPrescribed && sendToHCDueToMedicationNonAdministration measurements)
+                -- Medication was perscribed, but it's out of stock, or patient is alergic,
+                -- excluding case when medication is given for Covid19 (only when there's
+                -- Covid with Pneumonia).
+                || (medicationPrescribed
+                        && sendToHCDueToMedicationNonAdministration measurements
+                        && (diagnosis /= Just DiagnosisPneuminialCovid19)
+                   )
 
         NextStepsHealthEducation ->
             False
@@ -2372,36 +2378,33 @@ ageDependentARINextStep currentDate person =
 
 
 resolveAcuteIllnessDiagnosis : NominalDate -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis currentDate isChw data =
+resolveAcuteIllnessDiagnosis currentDate isChw assembled =
     let
-        isFirstEncounter =
-            List.isEmpty data.previousEncountersData
-
         covid19AcuteIllnessDiagnosis =
-            resolveCovid19AcuteIllnessDiagnosis currentDate data.person isChw data.measurements
+            resolveCovid19AcuteIllnessDiagnosis currentDate assembled.person isChw assembled.measurements
     in
-    if isFirstEncounter then
+    if assembled.initialEncounter then
         -- First we check for Covid19.
         if isJust covid19AcuteIllnessDiagnosis then
             covid19AcuteIllnessDiagnosis
 
         else
-            resolveNonCovid19AcuteIllnessDiagnosis currentDate data.person isChw data.measurements
+            resolveNonCovid19AcuteIllnessDiagnosis currentDate assembled.person isChw assembled.measurements
 
     else
-        malariaRapidTestResult data.measurements
+        malariaRapidTestResult assembled.measurements
             |> Maybe.andThen
                 (\testResult ->
                     case testResult of
                         RapidTestPositive ->
-                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                            if dangerSignPresentOnSubsequentVisit assembled.measurements then
                                 Just DiagnosisMalariaComplicated
 
                             else
                                 Just DiagnosisMalariaUncomplicated
 
                         RapidTestPositiveAndPregnant ->
-                            if dangerSignPresentOnSubsequentVisit data.measurements then
+                            if dangerSignPresentOnSubsequentVisit assembled.measurements then
                                 Just DiagnosisMalariaComplicated
 
                             else
@@ -2994,14 +2997,28 @@ vomitingAtSymptoms measurements =
 bloodPressureIndicatesSevereCovid19 : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesSevereCovid19 measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map (\value -> value.sys < 90 || value.dia < 60)
+        |> Maybe.map
+            (\value ->
+                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
+                    False
+
+                else
+                    value.sys < 90 || value.dia < 60
+            )
         |> Maybe.withDefault False
 
 
 bloodPressureIndicatesCovid19WithPneumonia : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesCovid19WithPneumonia measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map (\value -> value.sys <= 100)
+        |> Maybe.map
+            (\value ->
+                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
+                    False
+
+                else
+                    value.sys <= 100
+            )
         |> Maybe.withDefault False
 
 

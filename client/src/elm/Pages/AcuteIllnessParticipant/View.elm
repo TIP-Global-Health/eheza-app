@@ -137,6 +137,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id isChw db
                                         |> RemoteData.toMaybe
                                         |> Maybe.map Dict.toList
                                         |> Maybe.withDefault []
+                                        |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
 
                                 maybeActiveEncounterId =
                                     List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
@@ -239,6 +240,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id isChw
                                         |> RemoteData.toMaybe
                                         |> Maybe.map Dict.toList
                                         |> Maybe.withDefault []
+                                        |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
 
                                 maybeActiveEncounterId =
                                     List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
@@ -381,17 +383,23 @@ viewActiveIllnessForManagement :
     -> Maybe (Html Msg)
 viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw sessionId encounters diagnosis =
     let
+        -- Variable encounters  holds data for all encounters of the illness,
+        -- performed by both Nurse and CHW.
         maybeActiveEncounterId =
-            List.filter (Tuple.second >> isDailyEncounterActive currentDate) encounters
+            List.filter
+                (\( _, encounter ) ->
+                    -- To determine active encounter we filter to get only Nurse
+                    -- or CHW encounters, as nurse should not be able to enter
+                    -- encounter started by CHW, and vice versa.
+                    filterByEncounterTypeCondition isChw encounter
+                        && isDailyEncounterActive currentDate encounter
+                )
+                encounters
                 |> List.head
                 |> Maybe.map Tuple.first
 
         encounterSequenceNumberForToday =
-            encounters
-                |> List.filter
-                    (\( _, encounter ) ->
-                        encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                    )
+            List.filter (Tuple.second >> .startDate >> (==) currentDate) encounters
                 |> List.sortBy (Tuple.second >> .sequenceNumber)
                 |> List.reverse
                 |> List.head
@@ -406,6 +414,19 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
                         |> Backend.Model.PostAcuteIllnessEncounter
                         |> MsgBackend
                     )
+
+        nurseEncounterPerformed =
+            List.filter
+                (Tuple.second
+                    >> .encounterType
+                    >> (==) AcuteIllnessEncounterNurse
+                )
+                encounters
+                |> List.isEmpty
+                |> not
+
+        actionDisabled =
+            isNothing maybeActiveEncounterId && not isChw && nurseEncounterPerformed
 
         encounterType =
             if isChw then
@@ -423,7 +444,10 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
     in
     Just <|
         div
-            [ class "ui primary button active-illness"
+            [ classList
+                [ ( "ui primary button active-illness", True )
+                , ( "disabled", actionDisabled )
+                ]
             , onClick action
             ]
             [ div [ class "button-label" ]
@@ -446,6 +470,15 @@ viewActiveIllnessForOutcome :
 viewActiveIllnessForOutcome language currentDate isChw sessionId encounters diagnosis =
     Just <|
         viewButton language (navigateToRecordOutcomePage sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
+
+
+filterByEncounterTypeCondition : Bool -> AcuteIllnessEncounter -> Bool
+filterByEncounterTypeCondition isChw encounter =
+    if isChw then
+        encounter.encounterType == AcuteIllnessEncounterCHW
+
+    else
+        encounter.encounterType == AcuteIllnessEncounterNurse
 
 
 viewLabel : Language -> String -> TranslationId -> Html Msg

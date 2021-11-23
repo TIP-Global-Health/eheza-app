@@ -50,6 +50,11 @@ generateAssembledData currentDate id isChw db =
                 |> Maybe.withDefault []
 
         initialEncounter =
+            -- Intial encounter is the one where all measurements are taken and
+            -- initial diagnosis is made.
+            -- For CHW, it's only the first encounter at illness.
+            -- For nurse, it's always an initial encounter, since
+            -- nurse can do only single encouter throughout the illness.
             not isChw || List.isEmpty previousEncountersData
 
         assembled =
@@ -61,30 +66,29 @@ generateAssembledData currentDate id isChw db =
                 |> RemoteData.andMap (Success previousEncountersData)
                 |> RemoteData.andMap (Success initialEncounter)
                 |> RemoteData.andMap (Success Nothing)
-                |> RemoteData.andMap (Success Nothing)
 
-        ( currentDiagnosis, previousDiagnosis ) =
-            if isJust diagnosisByCurrentEncounterMeasurements then
-                ( diagnosisByCurrentEncounterMeasurements, currentByPreviousEncounters )
+        currentDiagnosis =
+            if initialEncounter || isJust diagnosisByCurrentEncounterMeasurements then
+                diagnosisByCurrentEncounterMeasurements
 
             else
-                ( currentByPreviousEncounters, previousByPreviousEncounters )
+                diagnosisByPreviousEncounters
 
         diagnosisByCurrentEncounterMeasurements =
             RemoteData.toMaybe assembled
                 |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate isChw)
                 |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
-        ( currentByPreviousEncounters, previousByPreviousEncounters ) =
+        diagnosisByPreviousEncounters =
             RemoteData.toMaybe encounter
                 |> Maybe.map
                     (.participant
                         >> getAcuteIllnessDiagnosisByPreviousEncounters id db
                     )
-                |> Maybe.withDefault ( Nothing, Nothing )
+                |> Maybe.withDefault Nothing
     in
     assembled
-        |> RemoteData.map (\data -> { data | diagnosis = currentDiagnosis, previousDiagnosis = previousDiagnosis })
+        |> RemoteData.map (\data -> { data | diagnosis = currentDiagnosis })
 
 
 generatePreviousMeasurements :
@@ -103,7 +107,13 @@ generatePreviousMeasurements currentEncounterId participantId db =
                 else
                     case Dict.get encounterId db.acuteIllnessMeasurements of
                         Just (Success measurements) ->
-                            Just (AcuteIllnessEncounterData encounterId encounter.startDate encounter.sequenceNumber encounter.diagnosis measurements)
+                            Just <|
+                                AcuteIllnessEncounterData encounterId
+                                    encounter.encounterType
+                                    encounter.startDate
+                                    encounter.sequenceNumber
+                                    encounter.diagnosis
+                                    measurements
 
                         _ ->
                             Nothing
@@ -148,33 +158,20 @@ getAcuteIllnessDiagnosisByPreviousEncounters :
     AcuteIllnessEncounterId
     -> ModelIndexedDb
     -> IndividualEncounterParticipantId
-    -> ( Maybe ( NominalDate, AcuteIllnessDiagnosis ), Maybe ( NominalDate, AcuteIllnessDiagnosis ) )
+    -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
 getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId =
-    let
-        encountersWithDiagnosis =
-            getAcuteIllnessEncountersForParticipant db participantId
-                |> List.filterMap
-                    (\( encounterId, encounter ) ->
-                        -- We do not want to get data of current encounter,
-                        -- and those that do not have diagnosis set.
-                        if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
-                            Nothing
+    getAcuteIllnessEncountersForParticipant db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter,
+                -- and those that do not have diagnosis set.
+                if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
+                    Nothing
 
-                        else
-                            Just ( encounter.startDate, encounter.diagnosis )
-                    )
-    in
-    case encountersWithDiagnosis of
-        [ current ] ->
-            ( Just current, Nothing )
-
-        [ current, previous ] ->
-            ( Just current, Just previous )
-
-        -- Since it's not possible to have more than 2 diagnosis,
-        -- we get here when there're no diagnosis at all.
-        _ ->
-            ( Nothing, Nothing )
+                else
+                    Just ( encounter.startDate, encounter.diagnosis )
+            )
+        |> List.head
 
 
 {-| Since there can be multiple encounters, resolved diagnosis is the one
