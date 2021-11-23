@@ -5,10 +5,10 @@ import Config.Model as Config exposing (Model)
 import LocalConfig exposing (localConfigs)
 
 
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "live-aos"
+liveExample : Model
+liveExample =
+    { backendUrl = "https://example-live.pantheonsite.io"
+    , name = "live-example"
     , debug = False
     , sandbox = False
     }
@@ -17,5 +17,5 @@ import LocalConfig exposing (localConfigs)
 configs : Dict String Model
 configs =
     Dict.fromList
-        [ ( "***REMOVED***", ***REMOVED*** ) ]
+        [ ( "example-live.pantheonsite.io", liveExample ) ]
         |> Dict.union localConfigs
