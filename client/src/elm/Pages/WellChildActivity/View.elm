@@ -1160,9 +1160,18 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
     Maybe.map
         (\birthDate ->
             let
-                initialOpvAdministered =
+                initialOpvAdministeredByForm =
                     wasInitialOpvAdministeredByVaccinationForm birthDate form
-                        || wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+
+                initialOpvAdministeredByProgress =
+                    wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+
+                initialOpvAdministered =
+                    if form.administeredDosesDirty then
+                        initialOpvAdministeredByForm
+
+                    else
+                        initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
                     if isChw then

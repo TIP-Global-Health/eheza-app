@@ -252,6 +252,7 @@ emptyImmunisationData =
 
 type alias VaccinationForm =
     { administeredDoses : Maybe (EverySet VaccineDose)
+    , administeredDosesDirty : Bool
     , administrationDates : Maybe (EverySet NominalDate)
 
     -- This is the note for suggesed dose for encounter.
@@ -273,6 +274,7 @@ type alias VaccinationForm =
 emptyVaccinationForm : VaccinationForm
 emptyVaccinationForm =
     { administeredDoses = Nothing
+    , administeredDosesDirty = False
     , administrationDates = Nothing
     , administrationNote = Nothing
     , administrationNoteDirty = False

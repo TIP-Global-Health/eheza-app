@@ -1183,6 +1183,7 @@ fromVaccinationValue saved =
     Maybe.map
         (\value ->
             { administeredDoses = Just value.administeredDoses
+            , administeredDosesDirty = True
             , administrationDates = Just value.administrationDates
             , administrationNote = Just value.administrationNote
             , administrationNoteDirty = False
@@ -1207,6 +1208,7 @@ vaccinationFormWithDefault form saved =
                     valueConsideringIsDirtyField form.administrationNoteDirty form.administrationNote value.administrationNote
             in
             { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
+            , administeredDosesDirty = form.administeredDosesDirty
             , administrationDates = or form.administrationDates (Just value.administrationDates)
             , administrationNote = administrationNote
             , administrationNoteDirty = form.administrationNoteDirty

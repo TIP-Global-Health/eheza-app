@@ -703,6 +703,7 @@ update currentDate isChw id db msg model =
                         { form
                             | willReceiveVaccineToday = Just True
                             , administeredDoses = insertIntoSet dose form.administeredDoses
+                            , administeredDosesDirty = True
                             , administrationDates = insertIntoSet currentDate form.administrationDates
                             , administrationNote = Just AdministeredToday
                             , administrationNoteDirty = True
@@ -740,6 +741,7 @@ update currentDate isChw id db msg model =
                         { form
                             | willReceiveVaccineToday = Just False
                             , administeredDoses = updatedDoses
+                            , administeredDosesDirty = True
                             , administrationDates = updatedDates
                             , administrationNote = Nothing
                             , administrationNoteDirty = True
@@ -804,6 +806,7 @@ update currentDate isChw id db msg model =
                                 updatedForm =
                                     { form
                                         | administeredDoses = insertIntoSet dose form.administeredDoses
+                                        , administeredDosesDirty = True
                                         , administrationDates = insertIntoSet date form.administrationDates
                                         , vaccinationUpdateDate = Nothing
                                         , viewMode = ViewModeInitial
@@ -844,6 +847,7 @@ update currentDate isChw id db msg model =
                 updatedForm =
                     { form
                         | administeredDoses = updatedDoses
+                        , administeredDosesDirty = True
                         , administrationDates = updatedDates
                     }
             in
