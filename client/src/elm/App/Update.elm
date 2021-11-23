@@ -133,15 +133,7 @@ init flags url key =
                             -- the UI we'll offer to show at a basic level. (An alternative would be
                             -- to fetch it only when we really, really need it).
                             Cmd.batch
-                                [ -- We'll leave out the pusherKey for the moment, until we're
-                                  -- actually using it.
-                                  {- pusherKey
-                                     ( config.pusherKey.key
-                                     , getClusterName config.pusherKey.cluster
-                                     , Pusher.Model.eventNames
-                                     )
-                                  -}
-                                  Task.perform Tick Time.now
+                                [ Task.perform Tick Time.now
                                 , fetchCachedDevice
                                 , Nav.pushUrl model.navigationKey (Url.toString model.url)
                                 ]

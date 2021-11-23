@@ -39,7 +39,6 @@ function hedley_view_export_advanced_queue_info() {
     'label' => t('View export'),
     'worker callback' => 'hedley_view_export_export_batch_worker',
     'groups' => ['report'],
-    'pusher integration' => TRUE,
     'retry after' => 10,
     // Each batch of the view consumes an attempt.
     'max attempts' => 1000,
