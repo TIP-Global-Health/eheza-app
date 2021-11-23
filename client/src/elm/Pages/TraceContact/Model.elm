@@ -1,7 +1,7 @@
 module Pages.TraceContact.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ContactTraceEntry, SymptomsGISign, SymptomsGeneralSign, SymptomsRespiratorySign)
+import Backend.Measurement.Model exposing (ContactTraceItem, SymptomsGISign, SymptomsGeneralSign, SymptomsRespiratorySign)
 import EverySet exposing (EverySet)
 import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
 import Pages.Page exposing (Page)
@@ -86,14 +86,14 @@ type Msg
       -- StepInitiateContact
     | SetContactInitiated Bool
     | SetNoContactReason NoContactReason
-    | SaveStepInitiateContact ContactTraceEntry
+    | SaveStepInitiateContact ContactTraceItem
       -- StepRecordSymptoms
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
     | ToggleSymptomsRespiratorySign SymptomsRespiratorySign
     | ToggleSymptomsGISign SymptomsGISign
-    | SaveSymptomsGeneral ContactTraceEntry (Maybe SymptomsTask)
-    | SaveSymptomsRespiratory ContactTraceEntry (Maybe SymptomsTask)
-    | SaveSymptomsGI ContactTraceEntry (Maybe SymptomsTask)
+    | SaveSymptomsGeneral ContactTraceItem (Maybe SymptomsTask)
+    | SaveSymptomsRespiratory ContactTraceItem (Maybe SymptomsTask)
+    | SaveSymptomsGI ContactTraceItem (Maybe SymptomsTask)
     | SetRecordSymptomsPopupState (Maybe RecordSymptomsPopupState)
-    | GenerateRecommendation ContactTraceEntry
+    | GenerateRecommendation ContactTraceItem

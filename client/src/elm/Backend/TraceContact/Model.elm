@@ -23,5 +23,5 @@ emptyModel =
 
 
 type Msg
-    = EditTraceContact ContactTraceEntry
+    = EditTraceContact ContactTraceItem
     | HandleSavedTraceContact (WebData ())

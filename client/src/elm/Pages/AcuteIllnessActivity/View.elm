@@ -2963,7 +2963,7 @@ viewContactsTracingForm language currentDate db contactsTracingFinished form =
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceEntry) -> List (Html Msg)
+viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceItem) -> List (Html Msg)
 viewContactsTracingFormSummary language currentDate db contactsTracingFinished contacts =
     let
         contactsForView =
@@ -2996,7 +2996,7 @@ viewContactsTracingFormSummary language currentDate db contactsTracingFinished c
     ]
 
 
-viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceEntry -> Html Msg
+viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceItem -> Html Msg
 viewTracedContact language currentDate db finished contact =
     let
         person =
@@ -3190,7 +3190,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                     saveAction =
                         Maybe.map
                             (\contactDate ->
-                                ContactTraceEntry personId
+                                ContactTraceItem personId
                                     person.firstName
                                     person.secondName
                                     person.gender

@@ -2762,13 +2762,13 @@ decodeAcuteIllnessNutrition =
 
 decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
 decodeAcuteIllnessContactsTracing =
-    decodeWithFallback [] (list decodeContactTraceEntryFromString)
+    decodeWithFallback [] (list decodeContactTraceItemFromString)
         |> field "contacts_trace_data"
         |> decodeAcuteIllnessMeasurement
 
 
-decodeContactTraceEntryFromString : Decoder ContactTraceEntry
-decodeContactTraceEntryFromString =
+decodeContactTraceItemFromString : Decoder ContactTraceItem
+decodeContactTraceItemFromString =
     string
         |> andThen
             (\data ->
@@ -2789,7 +2789,7 @@ decodeContactTraceEntryFromString =
                         Maybe.map2
                             (\date_ gender_ ->
                                 succeed <|
-                                    ContactTraceEntry
+                                    ContactTraceItem
                                         (toEntityUuid id)
                                         firstName
                                         secondName
@@ -2808,24 +2808,24 @@ decodeContactTraceEntryFromString =
                             |> Maybe.withDefault
                                 (fail <|
                                     contactDate
-                                        ++ " is not a valid date format at ContactTraceEntry"
+                                        ++ " is not a valid date format at ContactTraceItem"
                                 )
 
                     _ ->
                         fail <|
                             data
-                                ++ " is not a recognized ContactTraceEntry"
+                                ++ " is not a recognized ContactTraceItem"
             )
 
 
 decodeAcuteIllnessTraceContact : Decoder AcuteIllnessTraceContact
 decodeAcuteIllnessTraceContact =
-    decodeAcuteIllnessMeasurement decodeContactTraceEntry
+    decodeAcuteIllnessMeasurement decodeContactTraceItem
 
 
-decodeContactTraceEntry : Decoder ContactTraceEntry
-decodeContactTraceEntry =
-    succeed ContactTraceEntry
+decodeContactTraceItem : Decoder ContactTraceItem
+decodeContactTraceItem =
+    succeed ContactTraceItem
         |> required "referred_person" decodeEntityUuid
         |> required "first_name" string
         |> required "second_name" string

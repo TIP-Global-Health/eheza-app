@@ -102,7 +102,7 @@ type Msg
     | ToggleContactsTracingDateSelector
     | SetContactsTracingPhoneNumber String
     | SetContactsTracingFinished
-    | SaveTracedContact ContactTraceEntry
+    | SaveTracedContact ContactTraceItem
     | DeleteTracedContact PersonId
     | RegisterContactMsgForm Form.Msg
     | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
@@ -426,7 +426,7 @@ type alias MedicationDistributionForm =
 
 type alias ContactsTracingForm =
     { state : ContactsTracingFormState
-    , contacts : Maybe (Dict PersonId ContactTraceEntry)
+    , contacts : Maybe (Dict PersonId ContactTraceItem)
     , finished : Bool
     }
 

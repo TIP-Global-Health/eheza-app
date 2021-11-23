@@ -3056,43 +3056,43 @@ acuteFindinsgRespiratoryDangerSignPresent measurements =
         |> Maybe.withDefault False
 
 
-fromContactsTracingValue : Maybe (List ContactTraceEntry) -> ContactsTracingForm
+fromContactsTracingValue : Maybe (List ContactTraceItem) -> ContactsTracingForm
 fromContactsTracingValue saved =
     { state = ContactsTracingFormSummary
-    , contacts = generateContactsFromTraceEntries saved
+    , contacts = generateContactsFromTraceItems saved
     , finished = False
     }
 
 
-contactsTracingFormWithDefault : ContactsTracingForm -> Maybe (List ContactTraceEntry) -> ContactsTracingForm
+contactsTracingFormWithDefault : ContactsTracingForm -> Maybe (List ContactTraceItem) -> ContactsTracingForm
 contactsTracingFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 { state = form.state
-                , contacts = or form.contacts (generateContactsFromTraceEntries saved)
+                , contacts = or form.contacts (generateContactsFromTraceItems saved)
                 , finished = form.finished
                 }
             )
 
 
-generateContactsFromTraceEntries : Maybe (List ContactTraceEntry) -> Maybe (Dict PersonId ContactTraceEntry)
-generateContactsFromTraceEntries entries =
+generateContactsFromTraceItems : Maybe (List ContactTraceItem) -> Maybe (Dict PersonId ContactTraceItem)
+generateContactsFromTraceItems items =
     Maybe.map
-        (List.map (\entry -> ( entry.personId, entry ))
+        (List.map (\item -> ( item.personId, item ))
             >> Dict.fromList
         )
-        entries
+        items
 
 
-toContactsTracingValueWithDefault : Maybe (List ContactTraceEntry) -> ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValueWithDefault : Maybe (List ContactTraceItem) -> ContactsTracingForm -> Maybe (List ContactTraceItem)
 toContactsTracingValueWithDefault saved form =
     contactsTracingFormWithDefault form saved
         |> toContactsTracingValue
 
 
-toContactsTracingValue : ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValue : ContactsTracingForm -> Maybe (List ContactTraceItem)
 toContactsTracingValue form =
     Maybe.map Dict.values form.contacts
 

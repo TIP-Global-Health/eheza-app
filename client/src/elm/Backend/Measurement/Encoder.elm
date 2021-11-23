@@ -2427,22 +2427,22 @@ encodeAcuteIllnessContactsTracing =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessContactsTracingValue
 
 
-encodeAcuteIllnessContactsTracingValue : List ContactTraceEntry -> List ( String, Value )
-encodeAcuteIllnessContactsTracingValue entries =
-    [ ( "contacts_trace_data", list encodeContactTraceEntryToString entries )
+encodeAcuteIllnessContactsTracingValue : List ContactTraceItem -> List ( String, Value )
+encodeAcuteIllnessContactsTracingValue items =
+    [ ( "contacts_trace_data", list encodeContactTraceItemToString items )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_contacts_tracing" )
     ]
 
 
-encodeContactTraceEntryToString : ContactTraceEntry -> Value
-encodeContactTraceEntryToString entry =
-    [ fromEntityUuid entry.personId
-    , entry.firstName
-    , entry.secondName
-    , genderToString entry.gender
-    , entry.phoneNumber
-    , formatYYYYMMDD entry.contactDate
+encodeContactTraceItemToString : ContactTraceItem -> Value
+encodeContactTraceItemToString item =
+    [ fromEntityUuid item.personId
+    , item.firstName
+    , item.secondName
+    , genderToString item.gender
+    , item.phoneNumber
+    , formatYYYYMMDD item.contactDate
     ]
         |> String.join "[&]"
         |> string
@@ -2453,23 +2453,23 @@ encodeAcuteIllnessTraceContact =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessTraceContactValue
 
 
-encodeAcuteIllnessTraceContactValue : ContactTraceEntry -> List ( String, Value )
-encodeAcuteIllnessTraceContactValue entry =
-    encodeContactTraceEntry entry
+encodeAcuteIllnessTraceContactValue : ContactTraceItem -> List ( String, Value )
+encodeAcuteIllnessTraceContactValue item =
+    encodeContactTraceItem item
         ++ [ ( "deleted", bool False )
            , ( "type", string "acute_illness_trace_contact" )
            ]
 
 
-encodeContactTraceEntry : ContactTraceEntry -> List ( String, Value )
-encodeContactTraceEntry entry =
+encodeContactTraceItem : ContactTraceItem -> List ( String, Value )
+encodeContactTraceItem item =
     let
         lastFollowUp =
             Maybe.map
                 (\lastFollowUpDate ->
                     [ ( "last_follow_up_date", Gizra.NominalDate.encodeYYYYMMDD lastFollowUpDate ) ]
                 )
-                entry.lastFollowUpDate
+                item.lastFollowUpDate
                 |> Maybe.withDefault []
 
         signsGeneral =
@@ -2477,7 +2477,7 @@ encodeContactTraceEntry entry =
                 (\generalSigns ->
                     [ ( "symptoms_general", encodeEverySet encodeSymptomsGeneralSign generalSigns ) ]
                 )
-                entry.generalSigns
+                item.generalSigns
                 |> Maybe.withDefault []
 
         signsRespiratory =
@@ -2485,7 +2485,7 @@ encodeContactTraceEntry entry =
                 (\respiratorySigns ->
                     [ ( "symptoms_respiratory", encodeEverySet encodeSymptomsRespiratorySign respiratorySigns ) ]
                 )
-                entry.respiratorySigns
+                item.respiratorySigns
                 |> Maybe.withDefault []
 
         signsGI =
@@ -2493,7 +2493,7 @@ encodeContactTraceEntry entry =
                 (\giSigns ->
                     [ ( "symptoms_gi", encodeEverySet encodeSymptomsGISign giSigns ) ]
                 )
-                entry.giSigns
+                item.giSigns
                 |> Maybe.withDefault []
 
         outcome =
@@ -2501,16 +2501,16 @@ encodeContactTraceEntry entry =
                 (\traceOutcome ->
                     [ ( "trace_outcome", encodeTraceOutcome traceOutcome ) ]
                 )
-                entry.traceOutcome
+                item.traceOutcome
                 |> Maybe.withDefault []
     in
-    [ ( "referred_person", encodeEntityUuid entry.personId )
-    , ( "first_name", string entry.firstName )
-    , ( "second_name", string entry.secondName )
-    , ( "gender", encodeGender entry.gender )
-    , ( "phone_number", string entry.phoneNumber )
-    , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD entry.contactDate )
-    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD entry.resolutionDate )
+    [ ( "referred_person", encodeEntityUuid item.personId )
+    , ( "first_name", string item.firstName )
+    , ( "second_name", string item.secondName )
+    , ( "gender", encodeGender item.gender )
+    , ( "phone_number", string item.phoneNumber )
+    , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD item.contactDate )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD item.resolutionDate )
     ]
         ++ lastFollowUp
         ++ signsGeneral

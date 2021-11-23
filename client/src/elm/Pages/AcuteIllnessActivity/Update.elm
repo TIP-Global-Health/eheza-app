@@ -2039,11 +2039,11 @@ update currentDate selectedHealthCenter id db msg model =
             , []
             )
 
-        SaveTracedContact entry ->
+        SaveTracedContact item ->
             let
                 updatedContacts =
-                    Maybe.map (Dict.insert entry.personId entry) contactsTracingForm.contacts
-                        |> Maybe.withDefault (Dict.singleton entry.personId entry)
+                    Maybe.map (Dict.insert item.personId item) contactsTracingForm.contacts
+                        |> Maybe.withDefault (Dict.singleton item.personId item)
 
                 updatedForm =
                     { contactsTracingForm | contacts = Just updatedContacts, state = ContactsTracingFormSummary }

@@ -1251,14 +1251,14 @@ type alias CovidTestingValue =
 
 
 type alias AcuteIllnessContactsTracing =
-    AcuteIllnessMeasurement (List ContactTraceEntry)
+    AcuteIllnessMeasurement (List ContactTraceItem)
 
 
 type alias AcuteIllnessTraceContact =
-    AcuteIllnessMeasurement ContactTraceEntry
+    AcuteIllnessMeasurement ContactTraceItem
 
 
-type alias ContactTraceEntry =
+type alias ContactTraceItem =
     { personId : PersonId
     , firstName : String
     , secondName : String

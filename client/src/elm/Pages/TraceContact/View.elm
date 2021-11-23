@@ -3,7 +3,7 @@ module Pages.TraceContact.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ContactTraceEntry)
+import Backend.Measurement.Model exposing (ContactTraceItem)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (generateFullName)
@@ -90,7 +90,7 @@ viewHeader language =
         ]
 
 
-viewContactDetails : Language -> NominalDate -> Maybe ContactTraceEntry -> List (Html any)
+viewContactDetails : Language -> NominalDate -> Maybe ContactTraceItem -> List (Html any)
 viewContactDetails language currentDate traceContact =
     Maybe.map
         (\contact ->
@@ -120,7 +120,7 @@ viewContactDetails language currentDate traceContact =
         |> Maybe.withDefault []
 
 
-viewTraceContactStep : Language -> NominalDate -> Model -> ContactTraceEntry -> List (Html Msg)
+viewTraceContactStep : Language -> NominalDate -> Model -> ContactTraceItem -> List (Html Msg)
 viewTraceContactStep language currentDate model contact =
     case model.step of
         StepInitiateContact data ->
@@ -130,7 +130,7 @@ viewTraceContactStep language currentDate model contact =
             viewStepRecordSymptoms language currentDate contact data
 
 
-viewStepInitiateContact : Language -> NominalDate -> ContactTraceEntry -> StepInitiateContactData -> List (Html Msg)
+viewStepInitiateContact : Language -> NominalDate -> ContactTraceItem -> StepInitiateContactData -> List (Html Msg)
 viewStepInitiateContact language currentDate contact data =
     let
         instructions =
@@ -193,7 +193,7 @@ viewStepInitiateContact language currentDate contact data =
     ]
 
 
-viewStepRecordSymptoms : Language -> NominalDate -> ContactTraceEntry -> StepRecordSymptomsData -> List (Html Msg)
+viewStepRecordSymptoms : Language -> NominalDate -> ContactTraceItem -> StepRecordSymptomsData -> List (Html Msg)
 viewStepRecordSymptoms language currentDate contact data =
     let
         tasks =

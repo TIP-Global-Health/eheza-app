@@ -263,12 +263,12 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                 (HandleSavedContactsTracing personId value)
             )
 
-        HandleSavedContactsTracing personId entries data ->
+        HandleSavedContactsTracing personId items data ->
             let
                 createTraceContactMsgs =
                     case data of
                         Success () ->
-                            List.map (SaveTraceContact personId Nothing) entries
+                            List.map (SaveTraceContact personId Nothing) items
 
                         _ ->
                             []
