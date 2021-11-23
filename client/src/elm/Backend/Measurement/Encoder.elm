@@ -2475,7 +2475,7 @@ encodeContactTraceEntry entry =
         signsGeneral =
             Maybe.map
                 (\generalSigns ->
-                    [ ( "general_signs", encodeEverySet encodeSymptomsGeneralSign generalSigns ) ]
+                    [ ( "symptoms_general", encodeEverySet encodeSymptomsGeneralSign generalSigns ) ]
                 )
                 entry.generalSigns
                 |> Maybe.withDefault []
@@ -2483,7 +2483,7 @@ encodeContactTraceEntry entry =
         signsRespiratory =
             Maybe.map
                 (\respiratorySigns ->
-                    [ ( "respiratory_signs", encodeEverySet encodeSymptomsRespiratorySign respiratorySigns ) ]
+                    [ ( "symptoms_respiratory", encodeEverySet encodeSymptomsRespiratorySign respiratorySigns ) ]
                 )
                 entry.respiratorySigns
                 |> Maybe.withDefault []
@@ -2491,7 +2491,7 @@ encodeContactTraceEntry entry =
         signsGI =
             Maybe.map
                 (\giSigns ->
-                    [ ( "gi_signs", encodeEverySet encodeSymptomsGISign giSigns ) ]
+                    [ ( "symptoms_gi", encodeEverySet encodeSymptomsGISign giSigns ) ]
                 )
                 entry.giSigns
                 |> Maybe.withDefault []
