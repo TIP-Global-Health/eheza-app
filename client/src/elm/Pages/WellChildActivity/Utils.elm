@@ -706,8 +706,8 @@ immunisationVaccinationTasks =
     , TaskPCV13
     , TaskRotarix
     , TaskIPV
-    , TaskHPV
     , TaskMR
+    , TaskHPV
     ]
 
 
