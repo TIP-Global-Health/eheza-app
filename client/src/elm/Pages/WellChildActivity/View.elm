@@ -1233,6 +1233,14 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                     (form.updatePreviousVaccines == Just True)
                                         && (form.administrationNote /= Just AdministeredToday)
 
+                                noDoseGivenToday =
+                                    List.filter
+                                        (\( _, date ) ->
+                                            date == currentDate
+                                        )
+                                        dosesFromCurrentEncounterData
+                                        |> List.isEmpty
+
                                 doseAllowedForDeletion =
                                     List.filter
                                         (\( dose, date ) ->
@@ -1252,7 +1260,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                         (\( dose, date ) ->
                                             let
                                                 allowDelete =
-                                                    (form.willReceiveVaccineToday /= Just True)
+                                                    noDoseGivenToday
                                                         && (doseAllowedForDeletion == Just dose)
                                             in
                                             viewHistoryEntry dose (Just date) False allowDelete

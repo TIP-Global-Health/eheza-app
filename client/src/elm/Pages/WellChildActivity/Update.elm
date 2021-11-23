@@ -681,6 +681,7 @@ update currentDate isChw id db msg model =
                             , updatePreviousVaccines = Nothing
                             , willReceiveVaccineToday = Nothing
                             , administrationNote = Nothing
+                            , administrationNoteDirty = True
                         }
 
                     else
@@ -704,6 +705,7 @@ update currentDate isChw id db msg model =
                             , administeredDoses = insertIntoSet dose form.administeredDoses
                             , administrationDates = insertIntoSet currentDate form.administrationDates
                             , administrationNote = Just AdministeredToday
+                            , administrationNoteDirty = True
                         }
 
                     else
@@ -740,6 +742,7 @@ update currentDate isChw id db msg model =
                             , administeredDoses = updatedDoses
                             , administrationDates = updatedDates
                             , administrationNote = Nothing
+                            , administrationNoteDirty = True
                         }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
@@ -754,7 +757,7 @@ update currentDate isChw id db msg model =
                         |> resolveVaccinationForm vaccineType
 
                 updatedForm =
-                    { form | administrationNote = Just note }
+                    { form | administrationNote = Just note, administrationNoteDirty = True }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none

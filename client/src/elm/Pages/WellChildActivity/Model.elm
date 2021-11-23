@@ -259,6 +259,7 @@ type alias VaccinationForm =
     -- due to ability to uodate previous doses.
     -- In this case, we'll set 'AdministeredPreviously' value.
     , administrationNote : Maybe AdministrationNote
+    , administrationNoteDirty : Bool
 
     -- Form inner functionality inputs
     , viewMode : VaccinationFormViewMode
@@ -274,6 +275,7 @@ emptyVaccinationForm =
     { administeredDoses = Nothing
     , administrationDates = Nothing
     , administrationNote = Nothing
+    , administrationNoteDirty = False
     , viewMode = ViewModeInitial
     , updatePreviousVaccines = Nothing
     , willReceiveVaccineToday = Nothing
