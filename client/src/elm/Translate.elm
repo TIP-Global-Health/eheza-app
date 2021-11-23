@@ -8184,12 +8184,12 @@ translationSet trans =
             }
 
         VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
-            { english = "Did the child receive any " ++ vaccineType ++ " vaccines prior to today that are not recorded above"
+            { english = "Did the child receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
             , kinyarwanda = Nothing
             }
 
         VaccineDoseAdministeredTodayQuestion vaccineType ->
-            { english = "Will the child receive the " ++ vaccineType ++ " vaccine today"
+            { english = "Will the child receive the " ++ vaccineType ++ " immunization today"
             , kinyarwanda = Nothing
             }
 
