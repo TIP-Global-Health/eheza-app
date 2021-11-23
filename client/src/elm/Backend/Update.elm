@@ -2626,10 +2626,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         AcuteIllnessTraceContactRevision uuid data ->
-            ( mapFollowUpMeasurements
-                healthCenterId
-                (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
-                model
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
+                        model
+
+                traceContacts =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.traceContacts
+            in
+            ( { modelWithMappedFollowUp | traceContacts = traceContacts }
             , recalc
             )
 
