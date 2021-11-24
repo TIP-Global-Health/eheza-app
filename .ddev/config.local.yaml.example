@@ -10,6 +10,11 @@ hooks:
     - exec: drush uli
   post-start:
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
+    # If DDEV creates server/www/, it is owned by root for some reasons,
+    # so we have a placeholder .gitignore there, that ignores everything, but
+    # the gitignore, during the install process, it gets altered, so we restore
+    # it to avoid having untracked files.
+    - exec: "git checkout .gitignore"
     - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://ihangane.ddev.site:4443"
     - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y

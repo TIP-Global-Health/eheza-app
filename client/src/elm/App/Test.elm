@@ -6,7 +6,6 @@ import AssocList as Dict
 import Maybe exposing (withDefault)
 import Pages.Device.Model
 import Pages.PinCode.Model
-import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -67,7 +66,6 @@ testConfigModel =
         testConfig =
             { backendUrl = "http://ihanagane.local"
             , name = "local"
-            , pusherKey = PusherAppKey "" UsEast1
             , debug = True
             , sandbox = False
             }
