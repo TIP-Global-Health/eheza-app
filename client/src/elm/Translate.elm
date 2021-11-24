@@ -5481,8 +5481,8 @@ translationSet trans =
                     , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsContactsTracing ->
-                    { english = "Contacts Tracing"
+                Pages.AcuteIllnessActivity.Types.NextStepsContactTracing ->
+                    { english = "Contact Tracing"
                     , kinyarwanda = Nothing
                     }
 

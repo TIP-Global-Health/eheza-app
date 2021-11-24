@@ -747,7 +747,7 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
             , 1
             )
 
-        NextStepsContactsTracing ->
+        NextStepsContactTracing ->
             if data.contactsTracingForm.finished then
                 ( 1, 1 )
 
@@ -1925,7 +1925,7 @@ resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTa
 resolveNextStepsTasks currentDate isChw assembled =
     if assembled.initialEncounter then
         -- The order is important. Do not change.
-        [ NextStepsContactsTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
+        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw assembled then
@@ -2000,7 +2000,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
         NextStepsHealthEducation ->
             False
 
-        NextStepsContactsTracing ->
+        NextStepsContactTracing ->
             (diagnosis == Just DiagnosisSevereCovid19)
                 || (diagnosis == Just DiagnosisPneuminialCovid19)
                 || (diagnosis == Just DiagnosisLowRiskCovid19)
@@ -2104,8 +2104,8 @@ nextStepsTaskCompleted currentDate isChw assembled task =
         NextStepsFollowUp ->
             (not <| taskExpected NextStepsFollowUp) || isJust measurements.followUp
 
-        NextStepsContactsTracing ->
-            (not <| taskExpected NextStepsContactsTracing) || isJust measurements.contactsTracing
+        NextStepsContactTracing ->
+            (not <| taskExpected NextStepsContactTracing) || isJust measurements.contactsTracing
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,
