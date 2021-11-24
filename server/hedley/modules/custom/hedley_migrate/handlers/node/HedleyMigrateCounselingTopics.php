@@ -23,17 +23,29 @@ class HedleyMigrateCounselingTopics extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'title_field',
-    'field_kinyarwanda_title',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'title_field',
+        'field_kinyarwanda_title',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_kinyarwanda_title',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_kinyarwanda_title',
+      ]
+    );
+  }
 
 }

@@ -412,7 +412,7 @@ function hedley_restful_report_sync_incident($incident_type, $content_identifier
   ];
 
   $to = variable_get('hedley_restful_incident_notifiers_list', 'tip-incident@gizra.com');
-  $mail_result = drupal_mail('hedley_restful', 'incident_notificationy', $to, language_default(), $params);
+  $mail_result = drupal_mail('hedley_restful', 'incident_notification', $to, language_default(), $params);
   if (empty($mail_result['result'])) {
     watchdog('restful', 'Could not send incident notification email', [], WATCHDOG_ERROR);
   }

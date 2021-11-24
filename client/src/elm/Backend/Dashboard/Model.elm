@@ -7,10 +7,39 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
-import Backend.Measurement.Model exposing (Call114Sign, DangerSign, FamilyPlanningSign, FollowUpMeasurements, IsolationSign, SendToHCSign)
+import Backend.Measurement.Model
+    exposing
+        ( Call114Sign
+        , DangerSign
+        , FamilyPlanningSign
+        , FollowUpMeasurements
+        , HCContactSign
+        , HCRecommendation
+        , IsolationSign
+        , Recommendation114
+        , SendToHCSign
+        )
 import Backend.Person.Model exposing (Gender)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+
+
+type alias AssembledData =
+    { stats : DashboardStats
+    , acuteIllnessData : List AcuteIllnessDataItem
+    , prenatalData : List PrenatalDataItem
+    , caseManagementData : Maybe FollowUpMeasurements
+    , nutritionPageData : NutritionPageData
+    }
+
+
+type alias NutritionPageData =
+    { caseNutritionTotalsLastYear : List CaseNutritionTotal
+    , caseNutritionTotalsThisYear : List CaseNutritionTotal
+    , totalEncounters : Periods
+    , newCasesGraphData : Dict Int TotalBeneficiaries
+    , totalsGraphData : Dict Int TotalBeneficiaries
+    }
 
 
 {-| To void a cycle in dependency, we just define the zScore here.
@@ -20,17 +49,9 @@ type alias ZScore =
     Float
 
 
-type alias AssembledData =
-    { stats : DashboardStats
-    , acuteIllnessData : List AcuteIllnessDataItem
-    , prenatalData : List PrenatalDataItem
-    , caseManagementData : Maybe FollowUpMeasurements
-    }
-
-
-type alias DashboardStats =
+type alias DashboardStatsRaw =
     { caseManagement : CaseManagementData
-    , childrenBeneficiaries : List ChildrenBeneficiariesStats
+    , childrenBeneficiaries : ChildrenBeneficiariesData
     , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
     , missedSessions : List ParticipantStats
@@ -47,10 +68,10 @@ type alias DashboardStats =
     }
 
 
-emptyModel : DashboardStats
+emptyModel : DashboardStatsRaw
 emptyModel =
     { caseManagement = CaseManagementData Dict.empty Dict.empty
-    , childrenBeneficiaries = []
+    , childrenBeneficiaries = Dict.empty
     , completedPrograms = []
     , familyPlanning = []
     , missedSessions = []
@@ -60,6 +81,26 @@ emptyModel =
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
+    }
+
+
+type alias DashboardStats =
+    { caseManagement : CaseManagementPast2Years
+    , childrenBeneficiaries : List ChildrenBeneficiariesStats
+    , completedPrograms : List ParticipantStats
+    , familyPlanning : List FamilyPlanningStats
+    , missedSessions : List ParticipantStats
+    , totalEncounters : TotalEncountersData
+    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
+
+    -- UTC Date and time on which statistics were generated.
+    , timestamp : String
+    }
+
+
+type alias CaseManagementPast2Years =
+    { thisYear : List CaseManagement
+    , lastYear : List CaseManagement
     }
 
 
@@ -100,8 +141,13 @@ type alias CaseNutritionTotal =
     }
 
 
+type alias ChildrenBeneficiariesData =
+    Dict ProgramType (List ChildrenBeneficiariesStats)
+
+
 type alias ChildrenBeneficiariesStats =
-    { gender : Gender
+    { identifier : PersonIdentifier
+    , gender : Gender
     , birthDate : NominalDate
     , memberSince : NominalDate
     , name : String
@@ -187,6 +233,7 @@ type ProgramType
     | ProgramIndividual
     | ProgramPmtct
     | ProgramSorwathe
+    | ProgramChw
     | ProgramUnknown
 
 
@@ -228,7 +275,10 @@ type alias AcuteIllnessEncounterDataItem =
     , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , feverRecorded : Bool
-    , call114Signs : EverySet Call114Sign
     , isolationSigns : EverySet IsolationSign
     , sendToHCSigns : EverySet SendToHCSign
+    , call114Signs : EverySet Call114Sign
+    , recommendation114 : EverySet Recommendation114
+    , hcContactSigns : EverySet HCContactSign
+    , hcRecommendation : EverySet HCRecommendation
     }

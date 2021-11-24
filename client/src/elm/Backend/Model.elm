@@ -1,4 +1,4 @@
-module Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
+module Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -21,7 +21,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic, ClinicType)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
-import Backend.Dashboard.Model exposing (DashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -36,6 +36,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.Village.Model exposing (Village)
+import Pages.Dashboard.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
@@ -134,7 +135,7 @@ type alias ModelIndexedDb =
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
 
     -- Dashboard Statistics.
-    , computedDashboard : Dict HealthCenterId DashboardStats
+    , computedDashboards : Dict HealthCenterId ComputedDashboard
     , computedDashboardLastFetched : Time.Posix
     }
 
@@ -187,8 +188,30 @@ emptyModelIndexedDb =
     , sessions = Dict.empty
     , sessionsByClinic = Dict.empty
     , followUpMeasurements = Dict.empty
-    , computedDashboard = Dict.empty
+    , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
+    }
+
+
+{-| This is the data type we store for single health center statistics.
+It consist of raw statistics that we get from the backend, and a dictionary
+of assembeled data permutations we may need.
+We need this to avoid making heavy calculations (repeated every few seconds),
+that are need to present the dashboards page.
+We have different options for displaying data on page:
+
+  - Overall Statistics
+  - Statistics for single group type (FBF, PMTCT, ...)
+  - Statistics for selected village.
+
+To support this, each permutation of assembeled data is combination of
+selected program type and village (optional). This combinations serves
+as key of assembled data permutations dictionary).
+
+-}
+type alias ComputedDashboard =
+    { statsRaw : Backend.Dashboard.Model.DashboardStatsRaw
+    , assembledPermutations : Dict ( Pages.Dashboard.Model.FilterProgramType, Maybe VillageId ) Backend.Dashboard.Model.AssembledData
     }
 
 
@@ -201,6 +224,9 @@ type MsgIndexedDb
     | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
     | FetchComputedDashboard HealthCenterId
+      -- Request to generate assembled daya needed to display Dashboards
+      -- page for selected program type and village (optional).
+    | FetchComputedDashboardAssembledPermutation HealthCenterId Pages.Dashboard.Model.FilterProgramType (Maybe VillageId)
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
     | FetchEditableSession SessionId (List MsgIndexedDb)
@@ -241,7 +267,7 @@ type MsgIndexedDb
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     | HandleFetchedAcuteIllnessMeasurements AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
-    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStats))
+    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStatsRaw))
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
@@ -294,6 +320,8 @@ type MsgIndexedDb
     | HandlePostedNutritionEncounter IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
+      -- Operations we may want to perform when logout is clicked.
+    | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -334,7 +362,7 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
-    | DashboardStatsRevision HealthCenterId DashboardStats
+    | DashboardStatsRevision HealthCenterId DashboardStatsRaw
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp

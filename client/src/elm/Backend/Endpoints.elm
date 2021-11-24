@@ -9,8 +9,8 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTopic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
-import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
-import Backend.Dashboard.Model exposing (DashboardStats)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -107,9 +107,20 @@ encodeRelationshipParams params =
         ]
 
 
-computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStats ()
+computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStatsRaw ComputedDashboardParams
 computedDashboardEndpoint =
-    swEndpoint "statistics" decodeDashboardStats
+    swEndpoint "statistics" decodeDashboardStatsRaw
+        |> withParamsEncoder encodeComputedDashboardParams
+
+
+type alias ComputedDashboardParams =
+    { healthCenter : HealthCenterId
+    }
+
+
+encodeComputedDashboardParams : ComputedDashboardParams -> List ( String, String )
+encodeComputedDashboardParams params =
+    [ ( "healthCenter", fromEntityUuid params.healthCenter ) ]
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()

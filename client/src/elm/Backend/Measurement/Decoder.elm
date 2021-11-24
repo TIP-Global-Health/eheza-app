@@ -12,7 +12,7 @@ import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
-import Utils.Json exposing (decodeEverySet)
+import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
 
 decodeGroupMeasurement : Decoder value -> Decoder (Measurement SessionId value)
@@ -828,6 +828,7 @@ decodeLastMenstrualPeriod =
     succeed LastMenstrualPeriodValue
         |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
         |> required "confident" bool
+        |> required "confirmation" (decodeWithFallback False bool)
         |> decodePrenatalMeasurement
 
 
@@ -2358,8 +2359,8 @@ decodeCall114 : Decoder Call114
 decodeCall114 =
     succeed Call114Value
         |> required "114_contact" (decodeEverySet decodeCall114Sign)
-        |> required "114_recommendation" (decodeEverySet decodeRecommendation114)
-        |> required "site_recommendation" (decodeEverySet decodeRecommendationSite)
+        |> required "114_recommendation" (decodeEverySet (decodeWithFallback NoneOtherRecommendation114 decodeRecommendation114))
+        |> required "site_recommendation" (decodeEverySet (decodeWithFallback RecommendationSiteNotApplicable decodeRecommendationSite))
         |> decodeAcuteIllnessMeasurement
 
 

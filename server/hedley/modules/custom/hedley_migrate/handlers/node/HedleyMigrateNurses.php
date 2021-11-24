@@ -23,29 +23,47 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'title',
-    'field_role',
-    'field_health_centers',
-    'field_villages',
-    'field_pin_code',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'title',
+        'field_role',
+        'field_health_centers',
+        'field_villages',
+        'field_pin_code',
+        'created',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_pin_code',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_pin_code',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMultipleMappings = [
-    'field_role',
-  ];
+  protected function simpleMultipleMappings() {
+    $mappings = parent::simpleMultipleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_role',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateNurses constructor.

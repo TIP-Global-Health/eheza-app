@@ -131,21 +131,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $query = db_select('node', 'node');
 
     $query
-      ->fields('node', ['nid', 'vid', 'created', 'changed', 'type'])
+      ->fields('node', ['nid', 'vid', 'created', 'type'])
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
-
-    // Get the timestamp of the last revision. We'll also get a count of
-    // remaining nodes, but the timestamp of the last revision will also
-    // help us display how far out-of-date the client is.
-    $last_revision_query = clone $query;
-
-    $last_revision = $last_revision_query
-      ->orderBy('node.vid', 'DESC')
-      ->range(0, 1)
-      ->execute()
-      ->fetchObject();
-
-    $last_timestamp = $last_revision ? $last_revision->changed : 0;
 
     // Restrict to revisions the client doesn't already have.
     $query->condition('node.vid', $base, '>');
@@ -186,7 +173,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $return = [
       'base_revision' => $base,
-      'last_timestamp' => $last_timestamp,
+      // We temporary leave last_timestamp, until all
+      // clients update the APP, and do not expect to decode it.
+      'last_timestamp' => time(),
       'revision_count' => $count,
     ];
 
@@ -242,48 +231,28 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $query = db_select('node', 'node');
 
+    $query
+      ->fields('node', ['type', 'nid', 'vid', 'created'])
+      ->condition('node.type', array_keys($handlers_by_types), 'IN')
+      ->condition('node.vid', $base, '>');
+
     // Filter by Shards.
     hedley_general_join_field_to_query($query, 'node', 'field_shards', FALSE);
 
     // And the table which will give us the UUID of the shard.
     hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_shards.field_shards_target_id", 'field_uuid_shards');
 
-    $query
-      ->fields('node', ['type', 'nid', 'vid', 'created', 'changed'])
-      ->condition('field_uuid_shards.field_uuid_value', $uuid)
-      ->condition('node.type', array_keys($handlers_by_types), 'IN');
-
-    $query->distinct();
-
-    // Get the timestamp of the last revision. We'll also get a count of
-    // remaining revisions, but the timestamp of the last revision will also
-    // help us display how far out-of-date the client is.
-    $last_revision_query = clone $query;
-
-    $last_revision = $last_revision_query
-      ->orderBy('node.vid', 'DESC')
-      ->range(0, 1)
-      ->execute()
-      ->fetchObject();
-
-    $last_timestamp = $last_revision ? $last_revision->changed : 0;
-
-    // Restrict to revisions the client doesn't already have.
-    $query->condition('node.vid', $base, '>');
+    $query->condition('field_uuid_shards.field_uuid_value', $uuid);
 
     // First, get the total number of revisions that are greater than the base
     // revision. This will help the client show progress. Note that this
     // includes the revisions in the batch we will return (but not earlier
     // revisions).
-    $count_query = clone $query;
-    $count = $count_query
-      ->countQuery()
-      ->execute()
-      ->fetchField();
+    $count = $query->countQuery()->execute()->fetchField();
 
     // Then, get one batch worth of results.
     $batch = $query
-      ->orderBy('node.vid', 'ASC')
+      ->orderBy('node.vid')
       ->range(0, self::HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
@@ -317,51 +286,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output = array_merge($output, $rendered_items);
     }
 
-    // Get the HC node ID.
-    if ($health_center_id = hedley_restful_resolve_nid_for_uuid($uuid)) {
-      $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
-
-      $calculate_stats = FALSE;
-      // Check if we need to calculate the statistics for this HC.
-      if (!empty($cache_data) && !empty($request['stats_cache_hash'])) {
-        if ($cache_data != $request['stats_cache_hash']) {
-          // Cache hash from the frontend doesn't match the one we have in the
-          // backend, this means that stats has been changed because it's only
-          // reset when a measurement has changed.
-          $calculate_stats = TRUE;
-        }
-      }
-      else {
-        // We either don't have cache hash yet or this frontend doesn't have
-        // it, in any case, we will calculate the statistics and send it to
-        // the frontend.
-        // We don't cache here because each statistic has its own cache inside
-        // the function.
-        $calculate_stats = TRUE;
-
-        // In case the hash is not set at all but we have cached data, this
-        // means the worker has calculated the stats but we still didn't send
-        // it to the frontend, therefore we don't need to create another
-        // worker.
-        if (!empty($cache_data) && !isset($request['stats_cache_hash'])) {
-          $calculate_stats = FALSE;
-        }
-      }
-
-      if ($calculate_stats) {
-        // We need to create a worker which will calculate the data, if the
-        // worker already exists, the general function will know to not create
-        // a duplicated worker.
-        // The cache is set in the calculating function itself.
-        hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
-          'health_center_nid' => $health_center_id,
-        ]);
-      }
-    }
-
     return [
       'base_revision' => $base,
-      'last_timestamp' => $last_timestamp,
+      // We temporary leave last_timestamp, until all
+      // clients update the APP, and do not expect to decode it.
+      'last_timestamp' => time(),
       'revision_count' => $count,
       'batch' => $output,
     ];

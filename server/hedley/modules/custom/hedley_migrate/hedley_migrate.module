@@ -14,176 +14,52 @@ function hedley_migrate_migrate_api() {
   $api = [
     'api' => 2,
     'groups' => [
-      'missing' => [
-        'title' => t('Missing Data'),
-      ],
-      'batch_2019_02' => [
-        'title' => t('Batch data added 2019/02'),
-      ],
-      'batch_2019_03' => [
-        'title' => t('Batch data added 2019/03'),
-      ],
       'counseling' => [
         'title' => t('Counseling'),
       ],
       'forms' => [
         'title' => t('Forms'),
       ],
-      'batch_2019_04' => [
-        'title' => t('Batch data added 2019/04'),
-      ],
-      'batch_2019_04_2' => [
-        'title' => t('Second batch data added 2019/04'),
-      ],
-      'batch_2019_05' => [
-        'title' => t('Batch data added 2019/05'),
-      ],
-      'batch_2019_05_2' => [
-        'title' => t('Second batch data added 2019/05'),
-      ],
-      'batch_2019_05_3' => [
-        'title' => t('Third batch data added 2019/05'),
-      ],
-      'chw_deploy' => [
-        'title' => t('CHW deploy'),
-      ],
     ],
     'migrations' => [
-      'HedleyMigrateClinics_2019_02' => [
-        'class_name' => 'HedleyMigrateClinics201902',
-        'group_name' => 'batch_2019_02',
+      'HedleyMigrateAcuteFindings' => [
+        'class_name' => 'HedleyMigrateAcuteFindings',
       ],
-      'HedleyMigrateMothers_2019_02' => [
-        'class_name' => 'HedleyMigrateMothers201902',
-        'group_name' => 'batch_2019_02',
+      'HedleyMigrateAcuteIllnessDangerSigns' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessDangerSigns',
       ],
-      'HedleyMigrateChildren_2019_02' => [
-        'class_name' => 'HedleyMigrateChildren201902',
-        'group_name' => 'batch_2019_02',
+      'HedleyMigrateAcuteIllnessEncounters' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessEncounters',
       ],
-      'HedleyMigrateMothers_2019_03' => [
-        'class_name' => 'HedleyMigrateMothers201903',
-        'group_name' => 'batch_2019_03',
+      'HedleyMigrateAcuteIllnessMuac' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessMuac',
       ],
-      'HedleyMigrateChildren_2019_03' => [
-        'class_name' => 'HedleyMigrateChildren201903',
-        'group_name' => 'batch_2019_03',
+      'HedleyMigrateAcuteIllnessNutrition' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessNutrition',
       ],
-      'HedleyMigrateMothers_2019_04' => [
-        'class_name' => 'HedleyMigrateMothers201904',
-        'group_name' => 'batch_2019_04',
-      ],
-      'HedleyMigrateChildren_2019_04' => [
-        'class_name' => 'HedleyMigrateChildren201904',
-        'group_name' => 'batch_2019_04',
-      ],
-      'HedleyMigrateClinics_2019_04' => [
-        'class_name' => 'HedleyMigrateClinics201904',
-        'group_name' => 'batch_2019_04',
-      ],
-      'HedleyMigrateMothers_2019_04_2' => [
-        'class_name' => 'HedleyMigrateMothers2019042',
-        'group_name' => 'batch_2019_04_2',
-      ],
-      'HedleyMigrateChildren_2019_04_2' => [
-        'class_name' => 'HedleyMigrateChildren2019042',
-        'group_name' => 'batch_2019_04_2',
-      ],
-      'HedleyMigrateMothers_2019_05' => [
-        'class_name' => 'HedleyMigrateMothers201905',
-        'group_name' => 'batch_2019_05',
-      ],
-      'HedleyMigrateChildren_2019_05' => [
-        'class_name' => 'HedleyMigrateChildren201905',
-        'group_name' => 'batch_2019_05',
-      ],
-      'HedleyMigrateMothers_2019_05_2' => [
-        'class_name' => 'HedleyMigrateMothers2019052',
-        'group_name' => 'batch_2019_05_2',
-      ],
-      'HedleyMigrateChildren_2019_05_2' => [
-        'class_name' => 'HedleyMigrateChildren2019052',
-        'group_name' => 'batch_2019_05_2',
-      ],
-      'HedleyMigrateMothers_2019_05_3' => [
-        'class_name' => 'HedleyMigrateMothers2019053',
-        'group_name' => 'batch_2019_05_3',
-      ],
-      'HedleyMigrateChildren_2019_05_3' => [
-        'class_name' => 'HedleyMigrateChildren2019053',
-        'group_name' => 'batch_2019_05_3',
-      ],
-      'HedleyMigrateUsers' => [
-        'class_name' => 'HedleyMigrateUsers',
-      ],
-      'HedleyMigrateDevices' => [
-        'class_name' => 'HedleyMigrateDevices',
-      ],
-      'HedleyMigrateClinics' => [
-        'class_name' => 'HedleyMigrateClinics',
-      ],
-      'HedleyMigratePmtctParticipants' => [
-        'class_name' => 'HedleyMigratePmtctParticipants',
-      ],
-      'HedleyMigratePrenatalEncounters' => [
-        'class_name' => 'HedleyMigratePrenatalEncounters',
-      ],
-      'HedleyMigrateIndividualParticipants' => [
-        'class_name' => 'HedleyMigrateIndividualParticipants',
-      ],
-      'HedleyMigrateRelationships' => [
-        'class_name' => 'HedleyMigrateRelationships',
-      ],
-      'HedleyMigrateSessions' => [
-        'class_name' => 'HedleyMigrateSessions',
-      ],
-      'HedleyMigrateCatchmentAreas' => [
-        'class_name' => 'HedleyMigrateCatchmentAreas',
-      ],
-      'HedleyMigrateHealthCenters' => [
-        'class_name' => 'HedleyMigrateHealthCenters',
-      ],
-      'HedleyMigratePeople' => [
-        'class_name' => 'HedleyMigratePeople',
-      ],
-      'HedleyMigrateNurses' => [
-        'class_name' => 'HedleyMigrateNurses',
+      'HedleyMigrateAcuteIllnessVitals' => [
+        'class_name' => 'HedleyMigrateAcuteIllnessVitals',
       ],
       'HedleyMigrateAttendances' => [
         'class_name' => 'HedleyMigrateAttendances',
       ],
-      'HedleyMigrateFamilyPlannings' => [
-        'class_name' => 'HedleyMigrateFamilyPlannings',
+      'HedleyMigrateBreastExams' => [
+        'class_name' => 'HedleyMigrateBreastExams',
       ],
-      'HedleyMigrateHeights' => [
-        'class_name' => 'HedleyMigrateHeights',
+      'HedleyMigrateCall114' => [
+        'class_name' => 'HedleyMigrateCall114',
       ],
-      'HedleyMigrateMuacs' => [
-        'class_name' => 'HedleyMigrateMuacs',
+      'HedleyMigrateCatchmentAreas' => [
+        'class_name' => 'HedleyMigrateCatchmentAreas',
       ],
-      'HedleyMigrateNutritions' => [
-        'class_name' => 'HedleyMigrateNutritions',
+      'HedleyMigrateChildFbfs' => [
+        'class_name' => 'HedleyMigrateChildFbfs',
       ],
-      'HedleyMigratePhotos' => [
-        'class_name' => 'HedleyMigratePhotos',
+      'HedleyMigrateClinics' => [
+        'class_name' => 'HedleyMigrateClinics',
       ],
-      'HedleyMigrateWeights' => [
-        'class_name' => 'HedleyMigrateWeights',
-      ],
-      'HedleyMigrateVillages' => [
-        'class_name' => 'HedleyMigrateVillages',
-      ],
-      'HedleyMigrateMissingHeights' => [
-        'class_name' => 'HedleyMigrateMissingHeights',
-        'group_name' => 'missing',
-      ],
-      'HedleyMigrateMissingWeights' => [
-        'class_name' => 'HedleyMigrateMissingWeights',
-        'group_name' => 'missing',
-      ],
-      'HedleyMigrateMissingMuacs' => [
-        'class_name' => 'HedleyMigrateMissingMuacs',
-        'group_name' => 'missing',
+      'HedleyMigrateCorePhysicalExam' => [
+        'class_name' => 'HedleyMigrateCorePhysicalExam',
       ],
       'HedleyMigrateCounselingSchedules' => [
         'class_name' => 'HedleyMigrateCounselingSchedules',
@@ -197,13 +73,162 @@ function hedley_migrate_migrate_api() {
         'class_name' => 'HedleyMigrateCounselingTopics',
         'group_name' => 'counseling',
       ],
+      'HedleyMigrateDangerSigns' => [
+        'class_name' => 'HedleyMigrateDangerSigns',
+      ],
+      'HedleyMigrateDevices' => [
+        'class_name' => 'HedleyMigrateDevices',
+      ],
+      'HedleyMigrateExposure' => [
+        'class_name' => 'HedleyMigrateExposure',
+      ],
+      'HedleyMigrateFamilyPlannings' => [
+        'class_name' => 'HedleyMigrateFamilyPlannings',
+      ],
+      'HedleyMigrateHealthCenters' => [
+        'class_name' => 'HedleyMigrateHealthCenters',
+      ],
+      'HedleyMigrateHCContact' => [
+        'class_name' => 'HedleyMigrateHCContact',
+      ],
+      'HedleyMigrateHealthEducation' => [
+        'class_name' => 'HedleyMigrateHealthEducation',
+      ],
+      'HedleyMigrateHeights' => [
+        'class_name' => 'HedleyMigrateHeights',
+      ],
+      'HedleyMigrateIndividualParticipants' => [
+        'class_name' => 'HedleyMigrateIndividualParticipants',
+      ],
+      'HedleyMigrateIsolation' => [
+        'class_name' => 'HedleyMigrateIsolation',
+      ],
+      'HedleyMigrateLactations' => [
+        'class_name' => 'HedleyMigrateLactations',
+      ],
+      'HedleyMigrateLastMenstrualPeriod' => [
+        'class_name' => 'HedleyMigrateLastMenstrualPeriod',
+      ],
+      'HedleyMigrateMalariaTesting' => [
+        'class_name' => 'HedleyMigrateMalariaTesting',
+      ],
+      'HedleyMigrateMedicalHistory' => [
+        'class_name' => 'HedleyMigrateMedicalHistory',
+      ],
+      'HedleyMigrateMedication' => [
+        'class_name' => 'HedleyMigrateMedication',
+      ],
+      'HedleyMigrateMedicationDistribution' => [
+        'class_name' => 'HedleyMigrateMedicationDistribution',
+      ],
+      'HedleyMigrateMotherFbfs' => [
+        'class_name' => 'HedleyMigrateMotherFbfs',
+      ],
+      'HedleyMigrateMuacs' => [
+        'class_name' => 'HedleyMigrateMuacs',
+      ],
+      'HedleyMigrateNurses' => [
+        'class_name' => 'HedleyMigrateNurses',
+      ],
+      'HedleyMigrateNutritionEncounters' => [
+        'class_name' => 'HedleyMigrateNutritionEncounters',
+      ],
+      'HedleyMigrateNutritions' => [
+        'class_name' => 'HedleyMigrateNutritions',
+      ],
+      'HedleyMigrateNutritionHeight' => [
+        'class_name' => 'HedleyMigrateNutritionHeight',
+      ],
+      'HedleyMigrateNutritionMuac' => [
+        'class_name' => 'HedleyMigrateNutritionMuac',
+      ],
+      'HedleyMigrateNutritionNutritions' => [
+        'class_name' => 'HedleyMigrateNutritionNutritions',
+      ],
+      'HedleyMigrateNutritionPhoto' => [
+        'class_name' => 'HedleyMigrateNutritionPhoto',
+      ],
+      'HedleyMigrateNutritionWeight' => [
+        'class_name' => 'HedleyMigrateNutritionWeight',
+      ],
+      'HedleyMigrateObstetricHistory' => [
+        'class_name' => 'HedleyMigrateObstetricHistory',
+      ],
+      'HedleyMigrateObstetricHistoryStep2' => [
+        'class_name' => 'HedleyMigrateObstetricHistoryStep2',
+      ],
+      'HedleyMigrateObstetricalExam' => [
+        'class_name' => 'HedleyMigrateObstetricalExam',
+      ],
       'HedleyMigrateParticipantForms' => [
         'class_name' => 'HedleyMigrateParticipantForms',
         'group_name' => 'forms',
       ],
-      'HedleyMigrateVillagesChwDeploy' => [
-        'class_name' => 'HedleyMigrateVillagesChwDeploy',
-        'group_name' => 'chw_deploy',
+      'HedleyMigratePeople' => [
+        'class_name' => 'HedleyMigratePeople',
+      ],
+      'HedleyMigratePhotos' => [
+        'class_name' => 'HedleyMigratePhotos',
+      ],
+      'HedleyMigratePmtctParticipants' => [
+        'class_name' => 'HedleyMigratePmtctParticipants',
+      ],
+      'HedleyMigratePrenatalEncounters' => [
+        'class_name' => 'HedleyMigratePrenatalEncounters',
+      ],
+      'HedleyMigratePrenatalFamilyPlanning' => [
+        'class_name' => 'HedleyMigratePrenatalFamilyPlanning',
+      ],
+      'HedleyMigratePrenatalNutrition' => [
+        'class_name' => 'HedleyMigratePrenatalNutrition',
+      ],
+      'HedleyMigratePrenatalPhoto' => [
+        'class_name' => 'HedleyMigratePrenatalPhoto',
+      ],
+      'HedleyMigrateRelationships' => [
+        'class_name' => 'HedleyMigrateRelationships',
+      ],
+      'HedleyMigrateResource' => [
+        'class_name' => 'HedleyMigrateResource',
+      ],
+      'HedleyMigrateSendToHC' => [
+        'class_name' => 'HedleyMigrateSendToHC',
+      ],
+      'HedleyMigrateSessions' => [
+        'class_name' => 'HedleyMigrateSessions',
+      ],
+      'HedleyMigrateSocialHistory' => [
+        'class_name' => 'HedleyMigrateSocialHistory',
+      ],
+      'HedleyMigrateSymptomsGI' => [
+        'class_name' => 'HedleyMigrateSymptomsGI',
+      ],
+      'HedleyMigrateSymptomsGeneral' => [
+        'class_name' => 'HedleyMigrateSymptomsGeneral',
+      ],
+      'HedleyMigrateSymptomsRespiratory' => [
+        'class_name' => 'HedleyMigrateSymptomsRespiratory',
+      ],
+      'HedleyMigrateTravelHistory' => [
+        'class_name' => 'HedleyMigrateTravelHistory',
+      ],
+      'HedleyMigrateTreatmentHistory' => [
+        'class_name' => 'HedleyMigrateTreatmentHistory',
+      ],
+      'HedleyMigrateTreatmentOngoing' => [
+        'class_name' => 'HedleyMigrateTreatmentOngoing',
+      ],
+      'HedleyMigrateUsers' => [
+        'class_name' => 'HedleyMigrateUsers',
+      ],
+      'HedleyMigrateVillages' => [
+        'class_name' => 'HedleyMigrateVillages',
+      ],
+      'HedleyMigrateVitals' => [
+        'class_name' => 'HedleyMigrateVitals',
+      ],
+      'HedleyMigrateWeights' => [
+        'class_name' => 'HedleyMigrateWeights',
       ],
     ],
   ];
@@ -386,7 +411,7 @@ function hedley_migrate_generate_geolocation_structure_for_client() {
       // We know for sure that all other levels belong to same vocabulary.
       _hedley_migrate_get_children_by_parents($data[$index - 1]['tids']);
 
-    $data[$index]['structure'] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
+    $data[$index][$column] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
   }
 }
 
@@ -688,6 +713,23 @@ function hedley_migrate_resolve_for_export($type, $field, array $values) {
 }
 
 /**
+ * Generates Date field for export.
+ *
+ * @param string $date
+ *   Input date.
+ *
+ * @return string
+ *   Date as 'yyyy-mm-dd'. If empty, returns empty string.
+ */
+function hedley_migrate_export_date_field($date) {
+  if (empty($date)) {
+    return '';
+  }
+
+  return date('Y-m-d', $date);
+}
+
+/**
  * Generates DateTime field for export.
  *
  * Supports start and end dates.
@@ -701,7 +743,7 @@ function hedley_migrate_resolve_for_export($type, $field, array $values) {
  *   Start date as 'yyyy-mm-dd'.
  *   Optional End date (same format), piped by '|' separator.
  */
-function hedley_migrate_export_date_field(array $date, $force_end_date = FALSE) {
+function hedley_migrate_export_date2_field(array $date, $force_end_date = FALSE) {
   $time1 = strtotime($date['value']);
 
   if (empty($date['value2'])) {

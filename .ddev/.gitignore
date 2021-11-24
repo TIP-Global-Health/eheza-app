@@ -16,12 +16,14 @@
 /commands/.gitattributes
 /commands/db/mysql
 /commands/host/launch
-/commands/web/live
 /commands/web/xdebug
+/commands/web/live
 /config.*.y*ml
 /db_snapshots
 /import-db
 /import.yaml
+/mutagen
 /nginx_full/nginx-site.conf
 /sequelpro.spf
+/xhprof
 /**/README.*

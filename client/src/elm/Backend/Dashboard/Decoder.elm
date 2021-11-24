@@ -1,4 +1,4 @@
-module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
+module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
@@ -6,24 +6,43 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
-import Backend.Measurement.Decoder exposing (decodeCall114Sign, decodeDangerSign, decodeFamilyPlanningSign, decodeIsolationSign, decodeSendToHCSign)
-import Backend.Measurement.Model exposing (Call114Sign(..), DangerSign(..), IsolationSign(..), SendToHCSign(..))
+import Backend.Measurement.Decoder
+    exposing
+        ( decodeCall114Sign
+        , decodeDangerSign
+        , decodeFamilyPlanningSign
+        , decodeHCContactSign
+        , decodeHCRecommendation
+        , decodeIsolationSign
+        , decodeRecommendation114
+        , decodeSendToHCSign
+        )
+import Backend.Measurement.Model
+    exposing
+        ( Call114Sign(..)
+        , DangerSign(..)
+        , HCContactSign(..)
+        , HCRecommendation(..)
+        , IsolationSign(..)
+        , Recommendation114(..)
+        , SendToHCSign(..)
+        )
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
-import Gizra.Json exposing (decodeInt)
+import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
-import Utils.Json exposing (decodeEverySet)
+import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
 
-decodeDashboardStats : Decoder DashboardStats
-decodeDashboardStats =
-    succeed DashboardStats
+decodeDashboardStatsRaw : Decoder DashboardStatsRaw
+decodeDashboardStatsRaw =
+    succeed DashboardStatsRaw
         |> required "case_management" decodeCaseManagementData
-        |> required "children_beneficiaries" (list decodePeopleStats)
+        |> required "children_beneficiaries" decodeChildrenBeneficiariesData
         |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "missed_sessions" (list decodeParticipantStats)
@@ -60,7 +79,7 @@ decodeCaseManagementDataForYear =
 decodeCaseManagement : Decoder CaseManagement
 decodeCaseManagement =
     succeed CaseManagement
-        |> required "id" int
+        |> required "id" decodeInt
         |> required "name" string
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" decodeGender
@@ -70,16 +89,16 @@ decodeCaseManagement =
 decodeCaseNutrition : Decoder CaseNutrition
 decodeCaseNutrition =
     succeed CaseNutrition
-        |> required "stunting" decodeNutritionValueDict
-        |> required "underweight" decodeNutritionValueDict
-        |> required "wasting" decodeNutritionValueDict
-        |> required "muac" decodeNutritionValueDict
-        |> required "nutrition_signs" decodeNutritionValueDict
+        |> required "stunting" (decodeNutritionValueDict decodeZScoreNutritionValue)
+        |> required "underweight" (decodeNutritionValueDict decodeZScoreNutritionValue)
+        |> required "wasting" (decodeNutritionValueDict decodeZScoreNutritionValue)
+        |> required "muac" (decodeNutritionValueDict decodeMuacNutritionValue)
+        |> required "nutrition_signs" (decodeNutritionValueDict decodeZScoreNutritionValue)
 
 
-decodeNutritionValueDict : Decoder (Dict Int NutritionValue)
-decodeNutritionValueDict =
-    dict decodeNutritionValue
+decodeNutritionValueDict : Decoder NutritionValue -> Decoder (Dict Int NutritionValue)
+decodeNutritionValueDict decoder =
+    dict (decodeWithFallback (NutritionValue Neutral "X") decoder)
         |> andThen
             (\dict ->
                 LegacyDict.toList dict
@@ -92,35 +111,35 @@ decodeNutritionValueDict =
             )
 
 
-decodeNutritionValue : Decoder NutritionValue
-decodeNutritionValue =
-    succeed NutritionValue
-        |> required "class" decodeNutritionStatus
-        |> required "value" string
-
-
-decodeNutritionStatus : Decoder NutritionStatus
-decodeNutritionStatus =
-    string
+decodeZScoreNutritionValue : Decoder NutritionValue
+decodeZScoreNutritionValue =
+    float
         |> andThen
-            (\s ->
-                case s of
-                    "neutral" ->
-                        succeed Neutral
+            (\value ->
+                if value <= -3 then
+                    succeed <| NutritionValue Severe (String.fromFloat value)
 
-                    "good_nutrition" ->
-                        succeed Good
+                else if value <= -2 then
+                    succeed <| NutritionValue Moderate (String.fromFloat value)
 
-                    "moderate_nutrition" ->
-                        succeed Moderate
+                else
+                    succeed <| NutritionValue Good (String.fromFloat value)
+            )
 
-                    "severe_nutrition" ->
-                        succeed Severe
 
-                    _ ->
-                        fail <|
-                            s
-                                ++ " is not a recognized nutrition status."
+decodeMuacNutritionValue : Decoder NutritionValue
+decodeMuacNutritionValue =
+    decodeFloat
+        |> andThen
+            (\value ->
+                if value <= 11.5 then
+                    succeed <| NutritionValue Severe (String.fromFloat value)
+
+                else if value <= 12.5 then
+                    succeed <| NutritionValue Moderate (String.fromFloat value)
+
+                else
+                    succeed <| NutritionValue Good (String.fromFloat value)
             )
 
 
@@ -131,11 +150,27 @@ decodeBeneficiaries =
         |> required "moderate_nutrition" decodeInt
 
 
-decodePeopleStats : Decoder ChildrenBeneficiariesStats
-decodePeopleStats =
+decodeChildrenBeneficiariesData : Decoder (Dict ProgramType (List ChildrenBeneficiariesStats))
+decodeChildrenBeneficiariesData =
+    dict (list decodeChildrenBeneficiariesStats)
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) ->
+                            ( programTypeFromString k, v )
+                        )
+                    |> Dict.fromList
+                    |> succeed
+            )
+
+
+decodeChildrenBeneficiariesStats : Decoder ChildrenBeneficiariesStats
+decodeChildrenBeneficiariesStats =
     succeed ChildrenBeneficiariesStats
-        |> required "field_gender" decodeGender
-        |> required "field_birth_date" decodeYYYYMMDD
+        |> required "id" decodeInt
+        |> required "gender" decodeGender
+        |> required "birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD
         |> required "name" string
         |> required "mother_name" string
@@ -231,6 +266,9 @@ programTypeFromString string =
         "sorwathe" ->
             ProgramSorwathe
 
+        "chw" ->
+            ProgramChw
+
         _ ->
             ProgramUnknown
 
@@ -287,12 +325,15 @@ decodeAcuteIllnessEncounterDataItem : Decoder AcuteIllnessEncounterDataItem
 decodeAcuteIllnessEncounterDataItem =
     succeed AcuteIllnessEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
-        |> required "sequence_number" decodeInt
+        |> required "sequence_number" (decodeWithFallback 1 decodeInt)
         |> required "diagnosis" decodeAcuteIllnessDiagnosis
         |> required "fever" bool
-        |> required "call_114" (decodeEverySet (decodeWithFallback NoCall114Signs decodeCall114Sign))
         |> required "isolation" (decodeEverySet (decodeWithFallback NoIsolationSigns decodeIsolationSign))
         |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))
+        |> required "call_114" (decodeEverySet (decodeWithFallback NoCall114Signs decodeCall114Sign))
+        |> required "recommendation_114" (decodeEverySet (decodeWithFallback NoneOtherRecommendation114 decodeRecommendation114))
+        |> required "contact_hc" (decodeEverySet (decodeWithFallback NoHCContactSigns decodeHCContactSign))
+        |> required "recommendation_hc" (decodeEverySet (decodeWithFallback HCRecommendationNotApplicable decodeHCRecommendation))
 
 
 decodePrenatalDataItem : Decoder PrenatalDataItem
@@ -317,8 +358,3 @@ decodePrenatalEncounterDataItem =
 decodeDangerSignWithFallback : Decoder DangerSign
 decodeDangerSignWithFallback =
     decodeWithFallback NoDangerSign decodeDangerSign
-
-
-decodeWithFallback : a -> Decoder a -> Decoder a
-decodeWithFallback fallback decoder =
-    oneOf [ decoder, succeed fallback ]

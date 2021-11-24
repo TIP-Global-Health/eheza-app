@@ -723,6 +723,7 @@ encodeLastMenstrualPeriodValue : LastMenstrualPeriodValue -> List ( String, Valu
 encodeLastMenstrualPeriodValue value =
     [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
     , ( "confident", bool value.confident )
+    , ( "confirmation", bool value.confirmation )
     , ( "deleted", bool False )
     , ( "type", string "last_menstrual_period" )
     ]

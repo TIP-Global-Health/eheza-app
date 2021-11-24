@@ -23,12 +23,18 @@ class HedleyMigrateSessions extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_clinic',
-    'field_scheduled_date',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_clinic',
+        'field_scheduled_date',
+        'created',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateSessions constructor.

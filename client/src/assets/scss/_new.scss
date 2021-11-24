@@ -1036,7 +1036,7 @@ div.page-activity.acute-illness {
   }
 }
 
-// Prenatal Activity and Nutrition Activity pages
+// Prenatal, Nutrition and Home Visit activity pages
 div.page-activity.prenatal,
 div.page-activity.nutrition,
 div.page-activity.home-visit {
@@ -1435,6 +1435,12 @@ div.page-activity.home-visit {
           margin-top: 20px;
           width: 50%;
         }
+      }
+
+      .form.pregnancy-dating .chw-lmp {
+        font-size: 25px;
+        font-weight: 300;
+        margin-left: 40px;
       }
     }
   }

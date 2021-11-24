@@ -217,7 +217,6 @@ decodeDownloadSyncResponseGeneral =
     field "data"
         (succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
-            |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
             |> optional "device_name" string ""
         )
@@ -282,7 +281,6 @@ decodeDownloadSyncResponseAuthority =
     field "data"
         (succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
-            |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
             |> hardcoded ""
         )
@@ -293,7 +291,6 @@ decodeDownloadSyncResponseAuthorityStats =
     field "data"
         (succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
-            |> hardcoded (Time.millisToPosix 0)
             |> hardcoded 0
             |> hardcoded ""
         )
@@ -692,7 +689,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "statistics" ->
                         doDecode
-                            Backend.Dashboard.Decoder.decodeDashboardStats
+                            Backend.Dashboard.Decoder.decodeDashboardStatsRaw
                             BackendAuthorityDashboardStats
 
                     "symptoms_general" ->

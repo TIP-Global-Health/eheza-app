@@ -1,4 +1,4 @@
-module Backend.Dashboard.Encoder exposing (encodeDashboardStats)
+module Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
@@ -11,7 +11,10 @@ import Backend.Measurement.Encoder
         , encodeDangerSign
         , encodeEverySet
         , encodeFamilyPlanningSign
+        , encodeHCContactSign
+        , encodeHCRecommendation
         , encodeIsolationSign
+        , encodeRecommendation114
         , encodeSendToHCSign
         )
 import Backend.Person.Encoder exposing (encodeGender)
@@ -22,10 +25,10 @@ import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (fromEntityUuid)
 
 
-encodeDashboardStats : DashboardStats -> List ( String, Value )
-encodeDashboardStats stats =
+encodeDashboardStatsRaw : DashboardStatsRaw -> List ( String, Value )
+encodeDashboardStatsRaw stats =
     [ encodeCasesManagementData stats.caseManagement
-    , encodeChildrenBeneficiaries stats.childrenBeneficiaries
+    , encodeChildrenBeneficiariesData stats.childrenBeneficiaries
     , encodeCompletedPrograms stats.completedPrograms
     , encodeFamilyPlanning stats.familyPlanning
     , encodeMissedSessions stats.missedSessions
@@ -70,54 +73,49 @@ encodeCaseManagement caseManagement =
 
 encodeCaseNutrition : CaseNutrition -> List ( String, Value )
 encodeCaseNutrition caseNutrition =
-    [ ( "stunting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.stunting) )
-    , ( "underweight", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.underweight) )
-    , ( "wasting", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.wasting) )
-    , ( "muac", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.muac) )
-    , ( "nutrition_signs", dict String.fromInt (encodeNutritionValue >> object) (dictToLegacyDict caseNutrition.nutritionSigns) )
+    [ ( "stunting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.stunting) )
+    , ( "underweight", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.underweight) )
+    , ( "wasting", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.wasting) )
+    , ( "muac", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.muac) )
+    , ( "nutrition_signs", dict String.fromInt encodeNutritionValue (dictToLegacyDict caseNutrition.nutritionSigns) )
     ]
 
 
 dictToLegacyDict : Dict comparable v -> LegacyDict.Dict comparable v
-dictToLegacyDict dict =
-    Dict.toList dict
-        |> LegacyDict.fromList
+dictToLegacyDict =
+    Dict.toList >> LegacyDict.fromList
 
 
-encodeNutritionValue : NutritionValue -> List ( String, Value )
+encodeNutritionValue : NutritionValue -> Value
 encodeNutritionValue value =
-    [ ( "class", encodeNutritionStatus value.class )
-    , ( "value", string value.value )
-    ]
+    case value.class of
+        Neutral ->
+            null
+
+        _ ->
+            String.toFloat value.value
+                |> Maybe.map float
+                |> Maybe.withDefault null
 
 
-encodeNutritionStatus : NutritionStatus -> Value
-encodeNutritionStatus status =
-    string <|
-        case status of
-            Neutral ->
-                "neutral"
-
-            Good ->
-                "good_nutrition"
-
-            Moderate ->
-                "moderate_nutrition"
-
-            Severe ->
-                "severe_nutrition"
-
-
-encodeChildrenBeneficiaries : List ChildrenBeneficiariesStats -> ( String, Value )
-encodeChildrenBeneficiaries statsList =
-    ( "children_beneficiaries", list (encodeChildrenBeneficiariesStats >> object) statsList )
+encodeChildrenBeneficiariesData : Dict ProgramType (List ChildrenBeneficiariesStats) -> ( String, Value )
+encodeChildrenBeneficiariesData dict =
+    ( "children_beneficiaries"
+    , Dict.toList dict
+        |> List.map
+            (\( programType, casesList ) ->
+                ( programTypeToString programType, list (encodeChildrenBeneficiariesStats >> object) casesList )
+            )
+        |> object
+    )
 
 
 encodeChildrenBeneficiariesStats : ChildrenBeneficiariesStats -> List ( String, Value )
 encodeChildrenBeneficiariesStats stats =
-    [ ( "name", string stats.name )
-    , ( "field_gender", encodeGender stats.gender )
-    , ( "field_birth_date", encodeYYYYMMDD stats.birthDate )
+    [ ( "id", int stats.identifier )
+    , ( "name", string stats.name )
+    , ( "gender", encodeGender stats.gender )
+    , ( "birth_date", encodeYYYYMMDD stats.birthDate )
     , ( "created", encodeYYYYMMDD stats.memberSince )
     , ( "mother_name", string stats.motherName )
     , ( "phone_number", maybe string stats.phoneNumber )
@@ -206,6 +204,9 @@ programTypeToString programType =
         ProgramSorwathe ->
             "sorwathe"
 
+        ProgramChw ->
+            "chw"
+
         ProgramUnknown ->
             "unknown"
 
@@ -259,9 +260,12 @@ encodeAcuteIllnessEncounterDataItem item =
         , ( "sequence_number", int item.sequenceNumber )
         , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
         , ( "fever", bool item.feverRecorded )
-        , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
         , ( "isolation", encodeEverySet encodeIsolationSign item.isolationSigns )
         , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
+        , ( "call_114", encodeEverySet encodeCall114Sign item.call114Signs )
+        , ( "recommendation_114", encodeEverySet encodeRecommendation114 item.recommendation114 )
+        , ( "contact_hc", encodeEverySet encodeHCContactSign item.hcContactSigns )
+        , ( "recommendation_hc", encodeEverySet encodeHCRecommendation item.hcRecommendation )
         ]
 
 

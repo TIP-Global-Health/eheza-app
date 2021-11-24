@@ -1,0 +1,2 @@
+id,field_person,field_date_measured,field_nurse,created,field_acute_illness_encounter,field_treatment_ongoing,field_reason_for_not_taking,field_missed_doses,field_adverse_events
+194,74,2020-06-19,188,1592244289,1,taken-as-prescribed|feel-better,none,0,diarrhea|fatigue

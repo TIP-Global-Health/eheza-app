@@ -23,20 +23,32 @@ class HedleyMigrateRelationships extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_related_by',
-    'field_related_to',
-    'created',
-  ];
+  protected function csvColumns() {
+    $columns = parent::csvColumns();
+
+    return array_merge(
+      $columns, [
+        'id',
+        'field_person',
+        'field_related_by',
+        'field_related_to',
+        'created',
+      ]
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected $simpleMappings = [
-    'field_related_by',
-  ];
+  protected function simpleMappings() {
+    $mappings = parent::simpleMappings();
+
+    return array_merge(
+      $mappings, [
+        'field_related_by',
+      ]
+    );
+  }
 
   /**
    * HedleyMigrateRelationships constructor.
