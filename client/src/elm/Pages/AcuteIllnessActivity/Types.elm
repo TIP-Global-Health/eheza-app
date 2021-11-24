@@ -57,7 +57,7 @@ type NextStepsTask
     | NextStepsSendToHC
     | NextStepsHealthEducation
     | NextStepsFollowUp
-    | NextStepsContactsTracing
+    | NextStepsContactTracing
 
 
 

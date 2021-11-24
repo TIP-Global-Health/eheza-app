@@ -1617,7 +1617,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                             , isJust measurements.followUp
                             )
 
-                        NextStepsContactsTracing ->
+                        NextStepsContactTracing ->
                             ( "next-steps-contacts-tracing"
                             , isJust measurements.contactsTracing
                             )
@@ -1711,7 +1711,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate isChw
 
-                Just NextStepsContactsTracing ->
+                Just NextStepsContactTracing ->
                     measurements.contactsTracing
                         |> getMeasurementValueFunc
                         |> contactsTracingFormWithDefault data.contactsTracingForm
@@ -1821,7 +1821,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
         actions =
             Maybe.map
                 (\task ->
-                    if task == NextStepsContactsTracing && not contactsTracingFinished then
+                    if task == NextStepsContactTracing && not contactsTracingFinished then
                         emptyNode
 
                     else
@@ -1849,7 +1849,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                                     NextStepsFollowUp ->
                                         SaveFollowUp personId measurements.followUp nextTask
 
-                                    NextStepsContactsTracing ->
+                                    NextStepsContactTracing ->
                                         SaveContactsTracing personId measurements.contactsTracing nextTask
 
                             saveLabel =
@@ -1866,7 +1866,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
 
                             disabled =
                                 case task of
-                                    NextStepsContactsTracing ->
+                                    NextStepsContactTracing ->
                                         -- After traceing is finished and saved, we
                                         -- do not allow additional editing.
                                         isJust assembled.measurements.contactsTracing
@@ -1886,7 +1886,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                 |> Maybe.withDefault emptyNode
 
         fullScreen =
-            Maybe.map ((==) NextStepsContactsTracing) activeTask
+            Maybe.map ((==) NextStepsContactTracing) activeTask
                 |> Maybe.withDefault False
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
