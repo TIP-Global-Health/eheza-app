@@ -8,9 +8,6 @@ hedley/libraries
 hedley/modules/custom/hedley_device/composer.lock
 hedley/modules/custom/hedley_device/vendor
 
-# Temporary "build" files
-www
-
 # Local Configuration
 config.sh
 prepare_db_for_dev.sh
