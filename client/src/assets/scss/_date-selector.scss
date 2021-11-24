@@ -6,6 +6,14 @@ DateSelector
   background: $color-primary;
   height: 100%;
   width: 100%;
+
+  input,
+  select {
+    background-color: $color-white;
+    border: 2px solid $color-gray-border;
+    color: $color-text;
+    width: 50%;
+  }
 }
 
 .date-selector { font-size: 1em; width: 27em; height: 20em; line-height: 1em; background: #eeeeee; color: #333333; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
