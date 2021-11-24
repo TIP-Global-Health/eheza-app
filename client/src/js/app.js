@@ -2,7 +2,7 @@
 // a mechanism for it on Pantheon, since the request for the app doesn't hit
 // the PHP code.
 if ((location.hostname.endsWith('pantheonsite.io') || (location.hostname ===
-    '***REMOVED***')) && location.protocol == 'http:') {
+    'example-pantheonsite.io')) && location.protocol == 'http:') {
   // This will do a redirect
   location.protocol = 'https:';
 }
