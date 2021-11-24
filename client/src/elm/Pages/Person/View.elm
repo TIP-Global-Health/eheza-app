@@ -35,8 +35,9 @@ import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
-import Date exposing (Unit(..))
+import Date exposing (Date, Unit(..))
 import DateSelector.SelectorDropdown
+import DateSelector.SelectorPopup
 import Form exposing (Form)
 import Form.Field
 import Form.Input
@@ -57,7 +58,7 @@ import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo)
-import Utils.Html exposing (thumbnailImage, viewLoading)
+import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
@@ -1271,6 +1272,26 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             |> ul []
                         ]
                    ]
+
+        config =
+            { toggle = ToggleDateSelector
+            , select = DateSelected operation initiator
+            , isOpen = model.isDateSelectorOpen
+            , dateFrom = originBasedSettings.birthDateSelectorFrom
+            , dateTo = originBasedSettings.birthDateSelectorTo
+            , selected = selectedBirthDate
+            }
+
+        --                       , DateSelector.SelectorDropdown.view
+        --                           ToggleDateSelector
+        --                           (DateSelected operation initiator)
+        --                           model.isDateSelectorOpen
+        --                           originBasedSettings.birthDateSelectorFrom
+        --                           originBasedSettings.birthDateSelectorTo
+        --                           selectedBirthDate
+        --
+        calendarPopup =
+            viewModal <| viewCalendarPopup language config
     in
     div
         [ class "page-person-create" ]
@@ -1293,7 +1314,30 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     ]
                 ]
             ]
+        , calendarPopup
         ]
+
+
+type alias CalendarConfig msg =
+    { toggle : msg
+    , select : Date -> msg
+    , isOpen : Bool
+    , dateFrom : Date
+    , dateTo : Date
+    , selected : Maybe Date
+    }
+
+
+viewCalendarPopup : Language -> CalendarConfig msg -> Maybe (Html msg)
+viewCalendarPopup language config =
+    Just <|
+        div [ class "ui active modal calendar-popup" ]
+            [ DateSelector.SelectorPopup.view
+                config.select
+                config.dateFrom
+                config.dateTo
+                config.selected
+            ]
 
 
 viewTextInput : Language -> TranslationId -> String -> Bool -> Form e a -> Html Form.Msg

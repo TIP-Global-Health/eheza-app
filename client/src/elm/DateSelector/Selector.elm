@@ -1,4 +1,7 @@
-module DateSelector.Selector exposing (view)
+module DateSelector.Selector exposing
+    ( view
+    , viewPopup
+    )
 
 {-| Create a user interface for selecting dates.
 
@@ -13,6 +16,29 @@ import Html.Events exposing (on)
 import Json.Decode
 import Json.Encode
 import Time exposing (Month(..), Weekday(..))
+
+
+viewPopup : Date -> Date -> Maybe Date -> Html Date
+viewPopup minimum maximum maybeSelected =
+    div [ class "date-selector-popup" ]
+        [ div []
+            [ viewYearList minimum maximum maybeSelected ]
+
+        -- , div []
+        --     [ maybeSelected
+        --         |> Maybe.map (viewMonthList minimum maximum)
+        --         |> Maybe.withDefault viewMonthListDisabled
+        --     ]
+        -- , div []
+        --     [ case maybeSelected of
+        --         Just selected ->
+        --             viewDateTable minimum maximum selected
+        --
+        --         Nothing ->
+        --             viewDateTableDisabled minimum
+        --     ]
+        ]
+        |> Html.map (Date.clamp minimum maximum)
 
 
 groupsOf : Int -> List a -> List (List a)
@@ -191,6 +217,9 @@ viewYearList minimum maximum maybeSelected =
     let
         isInvertedMinMax =
             Date.compare minimum maximum == GT
+
+        _ =
+            Debug.log "years" years
 
         years =
             if isInvertedMinMax then

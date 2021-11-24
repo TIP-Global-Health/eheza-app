@@ -1209,6 +1209,13 @@ input::placeholder {
     }
   }
 
+  &.calendar-popup {
+    border-radius: 5px;
+    height: 900px;
+    margin-left: -370px;
+    width: 740px;
+  }
+
   &.diagnosis-popup,
   &.open-pregnancy-popup,
   &.danger-signs-popup {

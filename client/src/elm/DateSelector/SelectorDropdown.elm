@@ -1,6 +1,7 @@
 module DateSelector.SelectorDropdown exposing
     ( view
     , viewWithButton
+    , view2
     )
 
 {-| Create a button that displays a `DateSelector` view below itself when
@@ -47,6 +48,11 @@ necessary.
 view : msg -> (Date -> msg) -> Bool -> Date -> Date -> Maybe Date -> Html msg
 view toggle =
     viewWithButton (defaultViewButton toggle) toggle
+
+
+view2 : (Date -> msg) -> Date -> Date -> Maybe Date -> Html msg
+view2 toSelect minimum maximum selected =
+    DateSelector.Selector.view minimum maximum selected |> Html.map toSelect
 
 
 {-| This function is almost the same as `view`, but takes, as its first

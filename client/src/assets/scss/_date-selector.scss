@@ -2,6 +2,12 @@
 DateSelector
 */
 
+.date-selector-popup {
+  background: $color-primary;
+  height: 100%;
+  width: 100%;
+}
+
 .date-selector { font-size: 1em; width: 27em; height: 20em; line-height: 1em; background: #eeeeee; color: #333333; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
 .date-selector > div { float: left; height: 18em; overflow-y: auto; overflow-x: hidden; padding: 1em 0; border-left: 1px solid rgba(0, 0, 0, 0.1); margin-left: -1px; }
