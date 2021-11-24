@@ -1,6 +1,6 @@
 # Eheza App
 
-<a href="https://gitpod.io/#https://github.com/Gizra/eheza-app"><img src="https://gitpod.io/button/open-in-gitpod.svg"/></a>
+<a href="https://gitpod.io/#https://github.com/TIP-Global-Health/eheza-app"><img src="https://gitpod.io/button/open-in-gitpod.svg"/></a>
 
 ## Introduction
 
