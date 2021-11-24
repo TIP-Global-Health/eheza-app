@@ -5434,7 +5434,7 @@ translationSet trans =
                     }
 
                 NonAdministrationTooIll ->
-                    { english = "Too Ill"
+                    { english = "Too Sick"
                     , kinyarwanda = Nothing
                     }
 
@@ -5481,7 +5481,7 @@ translationSet trans =
                     }
 
                 NonAdministrationTooIll ->
-                    { english = "Too Ill"
+                    { english = "Too Sick"
                     , kinyarwanda = Nothing
                     }
 
