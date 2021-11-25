@@ -6,6 +6,8 @@ image:
 tasks:
   - name: Terminal
     init: |
+      npm install -g elm-format
+      npm install -g elm@latest-0.19.1
       export DDEV_NONINTERACTIVE=true
       cp .ddev/config.local.yaml.example .ddev/config.local.yaml
       ddev start
