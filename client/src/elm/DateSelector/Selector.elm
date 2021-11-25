@@ -17,27 +17,44 @@ import Json.Decode
 import Json.Encode
 import Maybe.Extra exposing (isNothing)
 import Time exposing (Month(..), Weekday(..))
+import Translate exposing (Language, translate)
 
 
-viewPopup : Date -> Date -> Maybe Date -> Html Date
-viewPopup minimum maximum maybeSelected =
+viewPopup : Language -> Date -> Date -> Maybe Date -> Html Date
+viewPopup language minimum maximum maybeSelected =
+    let
+        yearSection =
+            div [ class "year" ]
+                [ p [] [ text <| translate language Translate.Year ]
+                , viewYearSelectList minimum maximum maybeSelected
+                ]
+
+        monthSection =
+            div [ class "month" ] <|
+                p [] [ text <| translate language Translate.Month ]
+                    :: [ Maybe.map (viewMonthSelectList minimum maximum) maybeSelected
+                            |> Maybe.withDefault viewMonthSelectListDisabled
+                       ]
+
+        daysSection =
+            div [ class "days" ]
+                [ Maybe.map (viewDateTable minimum maximum) maybeSelected
+                    |> Maybe.withDefault (viewDateTableDisabled minimum)
+                ]
+
+        button =
+            div
+                [ class "ui button"
+
+                -- , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
+                ]
+                [ text <| translate language Translate.Close ]
+    in
     div [ class "date-selector-popup" ]
-        [ div []
-            [ viewYearSelectList minimum maximum maybeSelected ]
-        , div []
-            [ maybeSelected
-                |> Maybe.map (viewMonthSelectList minimum maximum)
-                |> Maybe.withDefault viewMonthSelectListDisabled
-            ]
-
-        -- , div []
-        --     [ case maybeSelected of
-        --         Just selected ->
-        --             viewDateTable minimum maximum selected
-        --
-        --         Nothing ->
-        --             viewDateTableDisabled minimum
-        --     ]
+        [ yearSection
+        , monthSection
+        , daysSection
+        , button
         ]
         |> Html.map (Date.clamp minimum maximum)
 

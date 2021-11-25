@@ -1332,7 +1332,7 @@ viewCalendarPopup : Language -> CalendarConfig msg -> Maybe (Html msg)
 viewCalendarPopup language config =
     Just <|
         div [ class "ui active modal calendar-popup" ]
-            [ DateSelector.SelectorPopup.view
+            [ DateSelector.SelectorPopup.view language
                 config.select
                 config.dateFrom
                 config.dateTo
