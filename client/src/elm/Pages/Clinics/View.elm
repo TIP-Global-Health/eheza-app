@@ -14,7 +14,7 @@ import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (Session)
 import Backend.Session.Utils exposing (isClosed)
 import Date exposing (Unit(..))
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -395,7 +395,7 @@ viewSession language currentDate sessionId session =
                 [ text <| translate language Translate.Attendance ]
     in
     tr []
-        [ td [] [ text <| formatDDMMYYYY session.startDate ]
-        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatDDMMYYYY session.endDate ]
+        [ td [] [ text <| formatDDMMyyyy session.startDate ]
+        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatDDMMyyyy session.endDate ]
         , td [] [ link ]
         ]
