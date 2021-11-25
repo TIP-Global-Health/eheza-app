@@ -935,6 +935,17 @@ h3.ui.header {
         }
       }
 
+      .date-input {
+        font-size: 2rem;
+        border: 2px solid $color-gray;
+        padding: 0 0.5em;
+        line-height: 45px;
+        text-align: center;
+        height: 50px;
+        width: 100%;
+        color: $color-text;
+      }
+
       .birtdate-label {
         margin-top: 45px;
       }

@@ -1,4 +1,4 @@
-module Pages.Person.Model exposing (Model, Msg(..), emptyCreateModel, emptyEditModel)
+module Pages.Person.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
@@ -11,7 +11,29 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { form : PersonForm
-    , isDateSelectorOpen : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyCreateModel : Model
+emptyCreateModel =
+    { form = Backend.Person.Form.emptyCreateForm
+    , dateSelectorPopupState = Nothing
+    }
+
+
+emptyEditModel : Model
+emptyEditModel =
+    { form = Backend.Person.Form.emptyEditForm
+    , dateSelectorPopupState = Nothing
+    }
+
+
+type alias DateSelectorConfig msg =
+    { select : Date -> msg
+    , close : msg
+    , dateFrom : Date
+    , dateTo : Date
     }
 
 
@@ -21,19 +43,5 @@ type Msg
     | ResetEditForm
     | SetActivePage Page
     | DropZoneComplete ParticipantDirectoryOperation Initiator DropZoneFile
-    | ToggleDateSelector
     | DateSelected ParticipantDirectoryOperation Initiator Date
-
-
-emptyCreateModel : Model
-emptyCreateModel =
-    { form = Backend.Person.Form.emptyCreateForm
-    , isDateSelectorOpen = False
-    }
-
-
-emptyEditModel : Model
-emptyEditModel =
-    { form = Backend.Person.Form.emptyEditForm
-    , isDateSelectorOpen = False
-    }
+    | SetDateSelectorState (Maybe (DateSelectorConfig Msg))

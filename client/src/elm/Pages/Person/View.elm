@@ -42,7 +42,7 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -743,6 +743,17 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 |> .value
                 |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
 
+        birthDateForView =
+            Maybe.map formatDDMMYYYY selectedBirthDate
+                |> Maybe.withDefault ""
+
+        dateSelectorConfig =
+            { select = DateSelected operation initiator
+            , close = SetDateSelectorState Nothing
+            , dateFrom = originBasedSettings.birthDateSelectorFrom
+            , dateTo = originBasedSettings.birthDateSelectorTo
+            }
+
         birthDateInput =
             div [ class "ui grid" ]
                 [ div
@@ -752,13 +763,11 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     [ class "seven wide column required" ]
                     [ text <| translate language Translate.DateOfBirth ++ ":"
                     , br [] []
-                    , DateSelector.SelectorDropdown.view
-                        ToggleDateSelector
-                        (DateSelected operation initiator)
-                        model.isDateSelectorOpen
-                        originBasedSettings.birthDateSelectorFrom
-                        originBasedSettings.birthDateSelectorTo
-                        selectedBirthDate
+                    , div
+                        [ class "date-input field"
+                        , onClick <| SetDateSelectorState (Just dateSelectorConfig)
+                        ]
+                        [ text birthDateForView ]
                     ]
                 , div
                     [ class "three wide column" ]
@@ -1272,26 +1281,6 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             |> ul []
                         ]
                    ]
-
-        config =
-            { toggle = ToggleDateSelector
-            , select = DateSelected operation initiator
-            , isOpen = model.isDateSelectorOpen
-            , dateFrom = originBasedSettings.birthDateSelectorFrom
-            , dateTo = originBasedSettings.birthDateSelectorTo
-            , selected = selectedBirthDate
-            }
-
-        --                       , DateSelector.SelectorDropdown.view
-        --                           ToggleDateSelector
-        --                           (DateSelected operation initiator)
-        --                           model.isDateSelectorOpen
-        --                           originBasedSettings.birthDateSelectorFrom
-        --                           originBasedSettings.birthDateSelectorTo
-        --                           selectedBirthDate
-        --
-        calendarPopup =
-            viewModal <| viewCalendarPopup language config
     in
     div
         [ class "page-person-create" ]
@@ -1314,30 +1303,24 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     ]
                 ]
             ]
-        , calendarPopup
+        , viewModal <| viewCalendarPopup language model.dateSelectorPopupState selectedBirthDate
         ]
 
 
-type alias CalendarConfig msg =
-    { toggle : msg
-    , select : Date -> msg
-    , isOpen : Bool
-    , dateFrom : Date
-    , dateTo : Date
-    , selected : Maybe Date
-    }
-
-
-viewCalendarPopup : Language -> CalendarConfig msg -> Maybe (Html msg)
-viewCalendarPopup language config =
-    Just <|
-        div [ class "ui active modal calendar-popup" ]
-            [ DateSelector.SelectorPopup.view language
-                config.select
-                config.dateFrom
-                config.dateTo
-                config.selected
-            ]
+viewCalendarPopup : Language -> Maybe (DateSelectorConfig msg) -> Maybe Date -> Maybe (Html msg)
+viewCalendarPopup language popupState selected =
+    Maybe.map
+        (\config ->
+            div [ class "ui active modal calendar-popup" ]
+                [ DateSelector.SelectorPopup.view language
+                    config.select
+                    config.close
+                    config.dateFrom
+                    config.dateTo
+                    selected
+                ]
+        )
+        popupState
 
 
 viewTextInput : Language -> TranslationId -> String -> Bool -> Form e a -> Html Form.Msg

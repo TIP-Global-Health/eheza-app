@@ -41,20 +41,11 @@ viewPopup language minimum maximum maybeSelected =
                 [ Maybe.map (viewDateTable minimum maximum) maybeSelected
                     |> Maybe.withDefault (viewDateTableDisabled minimum)
                 ]
-
-        button =
-            div
-                [ class "ui button"
-
-                -- , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
-                ]
-                [ text <| translate language Translate.Close ]
     in
-    div [ class "date-selector-popup" ]
+    div [ class "calendar" ]
         [ yearSection
         , monthSection
         , daysSection
-        , button
         ]
         |> Html.map (Date.clamp minimum maximum)
 
