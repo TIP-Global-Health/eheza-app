@@ -18,8 +18,8 @@ tasks:
       .ddev/gitpod-setup-ddev.sh
       nohup ddev gulp &
       export DDEV_NONINTERACTIVE=false
-      gp await-port 3000 && gp preview $(gp url 3000)
       gp await-port 8888 && gp preview $(gp url 8888)
+      gp await-port 3000 && gp preview $(gp url 3000)
 # VScode xdebug extension
 vscode:
   extensions:
