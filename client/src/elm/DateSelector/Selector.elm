@@ -10,6 +10,7 @@ module DateSelector.Selector exposing
 -}
 
 import Date exposing (Date, Interval(..), Unit(..), day, month, numberToMonth, year)
+import Gizra.NominalDate exposing (allMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -32,7 +33,7 @@ viewPopup language minimum maximum maybeSelected =
         monthSection =
             div [ class "month" ] <|
                 p [] [ text <| translate language Translate.Month ]
-                    :: [ Maybe.map (viewMonthSelectList minimum maximum) maybeSelected
+                    :: [ Maybe.map (viewMonthSelectList language minimum maximum) maybeSelected
                             |> Maybe.withDefault viewMonthSelectListDisabled
                        ]
 
@@ -109,8 +110,8 @@ viewYearSelectList minimum maximum maybeSelected =
         options
 
 
-viewMonthSelectList : Date -> Date -> Date -> Html Date
-viewMonthSelectList minimum maximum selectedDate =
+viewMonthSelectList : Language -> Date -> Date -> Date -> Html Date
+viewMonthSelectList language minimum maximum selectedDate =
     let
         isInvertedMinMax =
             Date.compare minimum maximum == GT
@@ -134,24 +135,28 @@ viewMonthSelectList minimum maximum selectedDate =
                 []
 
             else
-                List.indexedMap
-                    (\index month ->
-                        ( index + 1, month )
+                List.filter
+                    (\month ->
+                        let
+                            monthNumber =
+                                Date.monthToNumber month
+                        in
+                        monthNumber >= first && monthNumber <= last
                     )
-                    monthNames
-                    |> List.filter
-                        (\( monthNumber, _ ) ->
-                            monthNumber >= first && monthNumber <= last
-                        )
+                    allMonths
 
         options =
             List.map
-                (\( monthNumber, month ) ->
+                (\month ->
+                    let
+                        monthNumber =
+                            Date.monthToNumber month
+                    in
                     option
                         [ value <| String.fromInt monthNumber
                         , selected <| Date.monthNumber selectedDate == monthNumber
                         ]
-                        [ text month ]
+                        [ text <| translate language <| Translate.ResolveMonth False month ]
                 )
                 months
     in
