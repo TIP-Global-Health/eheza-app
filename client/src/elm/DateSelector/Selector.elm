@@ -544,6 +544,13 @@ viewDateTable minimum maximum selected =
 
                                                 else
                                                     Normal
+
+                                            cell =
+                                                if state == Selected then
+                                                    p [] [ text (day date |> String.fromInt) ]
+
+                                                else
+                                                    text (day date |> String.fromInt)
                                         in
                                         td
                                             [ class <| classNameFromState state
@@ -554,7 +561,7 @@ viewDateTable minimum maximum selected =
                                                 else
                                                     Json.Encode.null
                                             ]
-                                            [ text (day date |> String.fromInt) ]
+                                            [ cell ]
                                     )
                             )
                     )

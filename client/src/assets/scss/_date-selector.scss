@@ -57,6 +57,7 @@ DateSelector
       td {
         background-color: $color-white;
         border: 10px solid $color-primary;
+        border-radius: 24px;
         color: $color-text;
         font-size: 24px;
         font-weight: bold;
@@ -69,15 +70,16 @@ DateSelector
         color: $color-white;
       }
 
-      td.date-selector--disabled {
-        opacity: 0.6;
-      }
-
       td.date-selector--selected {
-        background-color: $color-yellow;
+        background-color: $color-green-dark;
         color: $color-white;
-      }
 
+        p {
+          border: 2px solid $color-white;
+          border-radius: 6px;
+          line-height: 68px;
+        }
+      }
 
     }
 
