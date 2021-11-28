@@ -1160,9 +1160,18 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
     Maybe.map
         (\birthDate ->
             let
-                initialOpvAdministered =
+                initialOpvAdministeredByForm =
                     wasInitialOpvAdministeredByVaccinationForm birthDate form
-                        || wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+
+                initialOpvAdministeredByProgress =
+                    wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+
+                initialOpvAdministered =
+                    if form.administeredDosesDirty then
+                        initialOpvAdministeredByForm
+
+                    else
+                        initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
                     if isChw then
@@ -1233,6 +1242,14 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                     (form.updatePreviousVaccines == Just True)
                                         && (form.administrationNote /= Just AdministeredToday)
 
+                                noDoseGivenToday =
+                                    List.filter
+                                        (\( _, date ) ->
+                                            date == currentDate
+                                        )
+                                        dosesFromCurrentEncounterData
+                                        |> List.isEmpty
+
                                 doseAllowedForDeletion =
                                     List.filter
                                         (\( dose, date ) ->
@@ -1252,7 +1269,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                         (\( dose, date ) ->
                                             let
                                                 allowDelete =
-                                                    (form.willReceiveVaccineToday /= Just True)
+                                                    noDoseGivenToday
                                                         && (doseAllowedForDeletion == Just dose)
                                             in
                                             viewHistoryEntry dose (Just date) False allowDelete
@@ -1309,7 +1326,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                         , showIf deleteAllowed <| deleteButton
                         ]
 
-                ( inputs, tasksActive, tasksCompleted ) =
+                ( inputs, tasksCompleted, tasksActive ) =
                     case form.viewMode of
                         ViewModeInitial ->
                             let
@@ -1336,7 +1353,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
 
                                         else
                                             let
-                                                ( previousDosesInput, previousDosesTaskActive, previousDosesTaskCompleted ) =
+                                                ( previousDosesInput, previousDosesTaskCompleted, previousDosesTaskActive ) =
                                                     if form.willReceiveVaccineToday == Just True then
                                                         ( [], 0, 0 )
 
@@ -1353,10 +1370,10 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                         , 1
                                                         )
 
-                                                ( todaysDoseInputs, todaysDoseTasksActive, todaysDoseTasksCompleted ) =
+                                                ( todaysDoseInputs, todaysDoseTasksCompleted, todaysDoseTasksActive ) =
                                                     if form.updatePreviousVaccines == Just False then
                                                         let
-                                                            ( whyNotIpnut, whyNotTaskActive, whyNotTaskCompleted ) =
+                                                            ( whyNotIpnut, whyNotTaskCompleted, whyNotTaskActive ) =
                                                                 if form.willReceiveVaccineToday == Just False then
                                                                     ( [ div [ class "why-not" ]
                                                                             [ viewQuestionLabel language Translate.WhyNot
@@ -1368,7 +1385,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                                                 Translate.AdministrationNoteForWellChild
                                                                             ]
                                                                       ]
-                                                                    , taskCompleted form.administrationNote
+                                                                    , taskCompletedWithException form.administrationNote AdministeredToday
                                                                     , 1
                                                                     )
 
@@ -1384,16 +1401,16 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                                 Nothing
                                                           ]
                                                             ++ whyNotIpnut
-                                                        , taskCompleted form.willReceiveVaccineToday + whyNotTaskActive
-                                                        , 1 + whyNotTaskCompleted
+                                                        , taskCompleted form.willReceiveVaccineToday + whyNotTaskCompleted
+                                                        , 1 + whyNotTaskActive
                                                         )
 
                                                     else
                                                         ( [], 0, 0 )
                                             in
                                             ( previousDosesInput ++ todaysDoseInputs
-                                            , previousDosesTaskActive + todaysDoseTasksActive
                                             , previousDosesTaskCompleted + todaysDoseTasksCompleted
+                                            , previousDosesTaskActive + todaysDoseTasksActive
                                             )
                                     )
                                 |> Maybe.withDefault ( [], 0, 0 )
@@ -1442,7 +1459,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                             , 1
                             )
             in
-            ( historySection ++ inputs, tasksActive, tasksCompleted )
+            ( historySection ++ inputs, tasksCompleted, tasksActive )
         )
         assembled.person.birthDate
         |> Maybe.withDefault ( [], 0, 1 )

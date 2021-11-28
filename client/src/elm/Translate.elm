@@ -5434,7 +5434,7 @@ translationSet trans =
                     }
 
                 NonAdministrationTooIll ->
-                    { english = "Too Ill"
+                    { english = "Too Sick"
                     , kinyarwanda = Nothing
                     }
 
@@ -5481,7 +5481,7 @@ translationSet trans =
                     }
 
                 NonAdministrationTooIll ->
-                    { english = "Too Ill"
+                    { english = "Too Sick"
                     , kinyarwanda = Nothing
                     }
 
@@ -8184,12 +8184,12 @@ translationSet trans =
             }
 
         VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
-            { english = "Did the child receive any " ++ vaccineType ++ " vaccines prior to today that are not recorded above"
+            { english = "Did the child receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
             , kinyarwanda = Nothing
             }
 
         VaccineDoseAdministeredTodayQuestion vaccineType ->
-            { english = "Will the child receive the " ++ vaccineType ++ " vaccine today"
+            { english = "Will the child receive the " ++ vaccineType ++ " immunization today"
             , kinyarwanda = Nothing
             }
 
@@ -8226,7 +8226,7 @@ translationSet trans =
                     }
 
                 VaccineMR ->
-                    { english = "Measles - Rubella Vaccine"
+                    { english = "Measles-Rubella Vaccine"
                     , kinyarwanda = Nothing
                     }
 
@@ -8499,7 +8499,7 @@ translationSet trans =
                     }
 
                 VaccineMR ->
-                    { english = "There are 2 doses of Measles - Rubella - at 9 months and 15 months."
+                    { english = "There are 2 doses of Measles-Rubella - at 9 months and 15 months."
                     , kinyarwanda = Nothing
                     }
 
@@ -8541,7 +8541,7 @@ translationSet trans =
                     }
 
                 VaccineMR ->
-                    { english = "Measles - Rubella (MR)"
+                    { english = "Measles-Rubella (MR)"
                     , kinyarwanda = Nothing
                     }
 
@@ -8583,7 +8583,7 @@ translationSet trans =
                     }
 
                 VaccineMR ->
-                    { english = "Measles - Rubella History"
+                    { english = "Measles-Rubella History"
                     , kinyarwanda = Nothing
                     }
 
