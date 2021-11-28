@@ -5,7 +5,6 @@ port module App.Ports exposing
     , cacheVillage
     , memoryQuota
     , persistentStorage
-    , pusherKey
     , scrollToElement
     , setLanguage
     , storageQuota
@@ -18,11 +17,6 @@ import App.Model exposing (MemoryQuota, StorageQuota)
 the browser is reloaded.
 -}
 port cachePinCode : String -> Cmd msg
-
-
-{-| Send Pusher key and cluster to JS.
--}
-port pusherKey : ( String, String, List String ) -> Cmd msg
 
 
 {-| Set the user's current language.

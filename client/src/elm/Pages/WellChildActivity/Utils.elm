@@ -706,8 +706,8 @@ immunisationVaccinationTasks =
     , TaskPCV13
     , TaskRotarix
     , TaskIPV
-    , TaskHPV
     , TaskMR
+    , TaskHPV
     ]
 
 
@@ -1183,8 +1183,10 @@ fromVaccinationValue saved =
     Maybe.map
         (\value ->
             { administeredDoses = Just value.administeredDoses
+            , administeredDosesDirty = True
             , administrationDates = Just value.administrationDates
             , administrationNote = Just value.administrationNote
+            , administrationNoteDirty = False
             , viewMode = ViewModeInitial
             , updatePreviousVaccines = Just False
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
@@ -1201,12 +1203,18 @@ vaccinationFormWithDefault form saved =
     unwrap
         form
         (\value ->
+            let
+                administrationNote =
+                    valueConsideringIsDirtyField form.administrationNoteDirty form.administrationNote value.administrationNote
+            in
             { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
+            , administeredDosesDirty = form.administeredDosesDirty
             , administrationDates = or form.administrationDates (Just value.administrationDates)
-            , administrationNote = or form.administrationNote (Just value.administrationNote)
+            , administrationNote = administrationNote
+            , administrationNoteDirty = form.administrationNoteDirty
             , viewMode = form.viewMode
             , updatePreviousVaccines = or form.updatePreviousVaccines (Just False)
-            , willReceiveVaccineToday = or form.willReceiveVaccineToday (value.administrationNote == AdministeredToday |> Just)
+            , willReceiveVaccineToday = or form.willReceiveVaccineToday (administrationNote == Just AdministeredToday |> Just)
             , vaccinationUpdateDate = form.vaccinationUpdateDate
             , dateSelectorOpen = form.dateSelectorOpen
             }
