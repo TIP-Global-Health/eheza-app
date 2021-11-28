@@ -1070,25 +1070,25 @@ encodePrenatalNutritionValue value =
     ]
 
 
-encodeResourceSign : ResourceSign -> Value
-encodeResourceSign sign =
+encodeMalariaPreventionSign : MalariaPreventionSign -> Value
+encodeMalariaPreventionSign sign =
     string <|
         case sign of
             MosquitoNet ->
                 "mosquito-net"
 
-            NoResource ->
+            NoMalariaPreventionSigns ->
                 "none"
 
 
-encodeResource : Resource -> List ( String, Value )
-encodeResource =
-    encodePrenatalMeasurement encodeResourceValue
+encodeMalariaPrevention : MalariaPrevention -> List ( String, Value )
+encodeMalariaPrevention =
+    encodePrenatalMeasurement encodeMalariaPreventionValue
 
 
-encodeResourceValue : EverySet ResourceSign -> List ( String, Value )
-encodeResourceValue value =
-    [ ( "resources", encodeEverySet encodeResourceSign value )
+encodeMalariaPreventionValue : EverySet MalariaPreventionSign -> List ( String, Value )
+encodeMalariaPreventionValue value =
+    [ ( "resources", encodeEverySet encodeMalariaPreventionSign value )
     , ( "deleted", bool False )
     , ( "type", string "resource" )
     ]

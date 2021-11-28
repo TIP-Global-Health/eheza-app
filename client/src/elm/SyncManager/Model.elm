@@ -121,7 +121,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
     | BackendAuthorityPrenatalEncounter (BackendEntity PrenatalEncounter)
     | BackendAuthorityRelationship (BackendEntity Relationship)
-    | BackendAuthorityResource (BackendEntity Resource)
+    | BackendAuthorityMalariaPrevention (BackendEntity MalariaPrevention)
     | BackendAuthoritySendToHC (BackendEntity SendToHC)
     | BackendAuthoritySession (BackendEntity Session)
     | BackendAuthoritySocialHistory (BackendEntity SocialHistory)

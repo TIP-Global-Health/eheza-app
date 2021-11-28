@@ -183,12 +183,12 @@ type PrenatalNutritionUuidType
     = PrenatalNutritionUuidType
 
 
-type alias ResourceId =
-    EntityUuid ResourceUuidType
+type alias MalariaPreventionId =
+    EntityUuid MalariaPreventionUuidType
 
 
-type ResourceUuidType
-    = ResourceUuidType
+type MalariaPreventionUuidType
+    = MalariaPreventionUuidType
 
 
 type alias SocialHistoryId =

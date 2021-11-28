@@ -132,7 +132,7 @@ expectActivity currentDate assembled activity =
                     assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
                             (\( _, measurements ) ->
-                                measurements.resource
+                                measurements.malariaPrevention
                                     |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
                                     |> Maybe.withDefault False
                             )
@@ -376,7 +376,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.familyPlanning
 
         Backend.PrenatalActivity.Model.MalariaPrevention ->
-            isJust assembled.measurements.resource
+            isJust assembled.measurements.malariaPrevention
 
         Medication ->
             isJust assembled.measurements.medication

@@ -582,8 +582,8 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityRelationship identifier ->
                 text <| "Relationship for person ID " ++ fromEntityUuid identifier.entity.person
 
-            BackendAuthorityResource identifier ->
-                viewMeasurement identifier "Resource"
+            BackendAuthorityMalariaPrevention identifier ->
+                viewMeasurement identifier "Malaria Prevention"
 
             BackendAuthoritySendToHC identifier ->
                 viewMeasurement identifier "Send to HC"

@@ -144,13 +144,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SaveResource personId valueId value ->
-            ( { model | saveResource = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value resourceEndpoint HandleSavedResource
+        SaveMalariaPrevention personId valueId value ->
+            ( { model | saveMalariaPrevention = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value malariaPreventionEndpoint HandleSavedMalariaPrevention
             )
 
-        HandleSavedResource data ->
-            ( { model | saveResource = data }
+        HandleSavedMalariaPrevention data ->
+            ( { model | saveMalariaPrevention = data }
             , Cmd.none
             )
 

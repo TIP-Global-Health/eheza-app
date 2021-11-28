@@ -3254,10 +3254,10 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        ResourceRevision uuid data ->
+        MalariaPreventionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | resource = Just ( uuid, data ) })
+                (\measurements -> { measurements | malariaPrevention = Just ( uuid, data ) })
                 model
             , recalc
             )

@@ -689,17 +689,17 @@ type alias PrenatalNutrition =
     PrenatalMeasurement PrenatalNutritionValue
 
 
-type ResourceSign
+type MalariaPreventionSign
     = MosquitoNet
-    | NoResource
+    | NoMalariaPreventionSigns
 
 
 type alias PrenatalPhoto =
     PrenatalMeasurement PhotoUrl
 
 
-type alias Resource =
-    PrenatalMeasurement (EverySet ResourceSign)
+type alias MalariaPrevention =
+    PrenatalMeasurement (EverySet MalariaPreventionSign)
 
 
 type SocialHistorySign
@@ -1626,7 +1626,7 @@ type alias PrenatalMeasurements =
     , obstetricHistoryStep2 : Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )
     , familyPlanning : Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning )
     , nutrition : Maybe ( PrenatalNutritionId, PrenatalNutrition )
-    , resource : Maybe ( ResourceId, Resource )
+    , malariaPrevention : Maybe ( MalariaPreventionId, MalariaPrevention )
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
@@ -1652,7 +1652,7 @@ emptyPrenatalMeasurements =
     , obstetricHistoryStep2 = Nothing
     , familyPlanning = Nothing
     , nutrition = Nothing
-    , resource = Nothing
+    , malariaPrevention = Nothing
     , socialHistory = Nothing
     , vitals = Nothing
     , prenatalPhoto = Nothing

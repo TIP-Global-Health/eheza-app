@@ -266,7 +266,7 @@ decodeRevision =
                         decodeWithUuid RelationshipRevision decodeRelationship
 
                     "resource" ->
-                        decodeWithUuid ResourceRevision decodeResource
+                        decodeWithUuid MalariaPreventionRevision decodeMalariaPrevention
 
                     "send_to_hc" ->
                         decodeWithUuid SendToHCRevision decodeSendToHC

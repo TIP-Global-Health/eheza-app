@@ -490,10 +490,10 @@ prenatalNutritionEndpoint =
         |> withValueEncoder (object << encodePrenatalNutrition)
 
 
-resourceEndpoint : ReadWriteEndPoint Error ResourceId Resource Resource ()
-resourceEndpoint =
-    swEndpoint "nodes/resource" decodeResource
-        |> withValueEncoder (object << encodeResource)
+malariaPreventionEndpoint : ReadWriteEndPoint Error MalariaPreventionId MalariaPrevention MalariaPrevention ()
+malariaPreventionEndpoint =
+    swEndpoint "nodes/resource" decodeMalariaPrevention
+        |> withValueEncoder (object << encodeMalariaPrevention)
 
 
 socialHistoryEndpoint : ReadWriteEndPoint Error SocialHistoryId SocialHistory SocialHistory ()

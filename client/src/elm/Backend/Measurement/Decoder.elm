@@ -106,7 +106,7 @@ decodePrenatalMeasurements =
         |> optional "obstetric_history_step2" (decodeHead decodeObstetricHistoryStep2) Nothing
         |> optional "prenatal_family_planning" (decodeHead decodePrenatalFamilyPlanning) Nothing
         |> optional "prenatal_nutrition" (decodeHead decodePrenatalNutrition) Nothing
-        |> optional "resource" (decodeHead decodeResource) Nothing
+        |> optional "resource" (decodeHead decodeMalariaPrevention) Nothing
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
@@ -1091,8 +1091,8 @@ decodePrenatalNutrition =
         |> decodePrenatalMeasurement
 
 
-decodeResourceSign : Decoder ResourceSign
-decodeResourceSign =
+decodeMalariaPreventionSign : Decoder MalariaPreventionSign
+decodeMalariaPreventionSign =
     string
         |> andThen
             (\s ->
@@ -1101,16 +1101,16 @@ decodeResourceSign =
                         succeed MosquitoNet
 
                     "none" ->
-                        succeed NoResource
+                        succeed NoMalariaPreventionSigns
 
                     _ ->
-                        fail <| s ++ " is not a recognized ResourceSign"
+                        fail <| s ++ " is not a recognized MalariaPreventionSign"
             )
 
 
-decodeResource : Decoder Resource
-decodeResource =
-    decodeEverySet decodeResourceSign
+decodeMalariaPrevention : Decoder MalariaPrevention
+decodeMalariaPrevention =
+    decodeEverySet decodeMalariaPreventionSign
         |> field "resources"
         |> decodePrenatalMeasurement
 

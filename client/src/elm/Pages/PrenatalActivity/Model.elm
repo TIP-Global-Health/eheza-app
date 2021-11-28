@@ -73,14 +73,12 @@ type Msg
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
-      -- PatientProvisionsMsgs
-    | SetActivePatientProvisionsTask PatientProvisionsTask
-      -- PatientProvisionsMsgs, Medication
+      -- MedicationMsgs
     | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
-    | SaveMedication PersonId (Maybe ( MedicationId, Medication )) (Maybe PatientProvisionsTask)
-      -- PatientProvisionsMsgs, Resources
-    | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
-    | SaveResources PersonId (Maybe ( ResourceId, Resource )) (Maybe PatientProvisionsTask)
+    | SaveMedication PersonId (Maybe ( MedicationId, Medication ))
+      -- MalariaPreventionMsgs
+    | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
+    | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
     | SetPostpartumMotherDangerSign PostpartumMotherDangerSign
@@ -120,7 +118,8 @@ type alias Model =
     , historyData : HistoryData
     , examinationData : ExaminationData
     , familyPlanningData : FamilyPlanningData
-    , patientProvisionsData : PatientProvisionsData
+    , malariaPreventionData : MalariaPreventionData
+    , medicationData : MedicationData
     , dangerSignsData : DangerSignsData
     , prenatalPhotoData : PrenatalPhotoData
     , birthPlanData : BirthPlanData
@@ -138,7 +137,8 @@ emptyModel =
     , historyData = emptyHistoryData
     , examinationData = emptyExaminationData
     , familyPlanningData = emptyFamilyPlanningData
-    , patientProvisionsData = emptyPatientProvisionsData
+    , malariaPreventionData = emptyMalariaPreventionData
+    , medicationData = emptyMedicationData
     , dangerSignsData = emptyDangerSignsData
     , prenatalPhotoData = emptyPrenatalPhotoData
     , birthPlanData = emptyBirthPlanData
@@ -226,19 +226,47 @@ emptyFamilyPlanningData =
     }
 
 
-type alias PatientProvisionsData =
-    { medicationForm : MedicationForm
-    , resourcesForm : ResourcesForm
-    , activeTask : PatientProvisionsTask
+type alias MalariaPreventionData =
+    { form : MalariaPreventionForm
     }
 
 
-emptyPatientProvisionsData : PatientProvisionsData
-emptyPatientProvisionsData =
-    { medicationForm = emptyMedicationForm
-    , resourcesForm = emptyResourcesForm
-    , activeTask = Medication
+emptyMalariaPreventionData : MalariaPreventionData
+emptyMalariaPreventionData =
+    { form = emptyMalariaPreventionForm
     }
+
+
+type alias MalariaPreventionForm =
+    { receivedMosquitoNet : Maybe Bool
+    }
+
+
+emptyMalariaPreventionForm : MalariaPreventionForm
+emptyMalariaPreventionForm =
+    MalariaPreventionForm Nothing
+
+
+type alias MedicationData =
+    { form : MedicationForm
+    }
+
+
+emptyMedicationData : MedicationData
+emptyMedicationData =
+    { form = emptyMedicationForm
+    }
+
+
+type alias MedicationForm =
+    { receivedIronFolicAcid : Maybe Bool
+    , receivedDewormingPill : Maybe Bool
+    }
+
+
+emptyMedicationForm : MedicationForm
+emptyMedicationForm =
+    MedicationForm Nothing Nothing
 
 
 type alias DangerSignsData =
@@ -598,32 +626,6 @@ type alias FamilyPlanningForm =
 emptyFamilyPlanningForm : FamilyPlanningForm
 emptyFamilyPlanningForm =
     FamilyPlanningForm Nothing
-
-
-type PatientProvisionsTask
-    = Medication
-    | Resources
-
-
-type alias MedicationForm =
-    { receivedIronFolicAcid : Maybe Bool
-    , receivedDewormingPill : Maybe Bool
-    }
-
-
-emptyMedicationForm : MedicationForm
-emptyMedicationForm =
-    MedicationForm Nothing Nothing
-
-
-type alias ResourcesForm =
-    { receivedMosquitoNet : Maybe Bool
-    }
-
-
-emptyResourcesForm : ResourcesForm
-emptyResourcesForm =
-    ResourcesForm Nothing
 
 
 type alias DangerSignsForm =

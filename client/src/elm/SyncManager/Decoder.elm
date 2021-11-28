@@ -685,8 +685,8 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "resource" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodeResource
-                            BackendAuthorityResource
+                            Backend.Measurement.Decoder.decodeMalariaPrevention
+                            BackendAuthorityMalariaPrevention
 
                     "send_to_hc" ->
                         doDecode

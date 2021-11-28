@@ -67,7 +67,7 @@ type alias Model =
     , saveObstetricHistoryStep2 : WebData ()
     , saveFamilyPlanning : WebData ()
     , saveNutrition : WebData ()
-    , saveResource : WebData ()
+    , saveMalariaPrevention : WebData ()
     , saveSocialHistory : WebData ()
     , saveVitals : WebData ()
     , savePrenatalPhoto : WebData ()
@@ -94,7 +94,7 @@ emptyModel =
     , saveObstetricHistoryStep2 = NotAsked
     , saveFamilyPlanning = NotAsked
     , saveNutrition = NotAsked
-    , saveResource = NotAsked
+    , saveMalariaPrevention = NotAsked
     , saveSocialHistory = NotAsked
     , saveVitals = NotAsked
     , savePrenatalPhoto = NotAsked
@@ -132,8 +132,8 @@ type Msg
     | HandleSavedFamilyPlanning (WebData ())
     | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
     | HandleSavedNutrition (WebData ())
-    | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
-    | HandleSavedResource (WebData ())
+    | SaveMalariaPrevention PersonId (Maybe MalariaPreventionId) (EverySet MalariaPreventionSign)
+    | HandleSavedMalariaPrevention (WebData ())
     | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
     | HandleSavedSocialHistory (WebData ())
     | SaveVitals PersonId (Maybe VitalsId) VitalsValue

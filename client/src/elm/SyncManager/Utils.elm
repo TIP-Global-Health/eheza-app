@@ -588,7 +588,7 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityRelationship identifier ->
             getIdentifier identifier "relationship"
 
-        BackendAuthorityResource identifier ->
+        BackendAuthorityMalariaPrevention identifier ->
             getIdentifier identifier "resource"
 
         BackendAuthoritySendToHC identifier ->
@@ -1116,8 +1116,8 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityRelationship identifier ->
             encode Backend.Relationship.Encoder.encodeRelationship identifier
 
-        BackendAuthorityResource identifier ->
-            encode Backend.Measurement.Encoder.encodeResource identifier
+        BackendAuthorityMalariaPrevention identifier ->
+            encode Backend.Measurement.Encoder.encodeMalariaPrevention identifier
 
         BackendAuthoritySession identifier ->
             encode Backend.Session.Encoder.encodeSession identifier
@@ -1607,8 +1607,8 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityRelationship identifier ->
             RelationshipRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityResource identifier ->
-            ResourceRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityMalariaPrevention identifier ->
+            MalariaPreventionRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthoritySendToHC identifier ->
             SendToHCRevision (toEntityUuid identifier.uuid) identifier.entity

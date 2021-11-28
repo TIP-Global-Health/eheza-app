@@ -409,6 +409,7 @@ type Revision
     | LactationRevision LactationId Lactation
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
     | MalariaTestingRevision MalariaTestingId MalariaTesting
+    | MalariaPreventionRevision MalariaPreventionId MalariaPrevention
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
     | MedicationDistributionRevision MedicationDistributionId MedicationDistribution
@@ -446,7 +447,6 @@ type Revision
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship
-    | ResourceRevision ResourceId Resource
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory

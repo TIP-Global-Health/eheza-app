@@ -174,12 +174,10 @@ viewActivity language currentDate activity data model =
             viewNextStepsContent language currentDate data model.nextStepsData
 
         Backend.PrenatalActivity.Model.MalariaPrevention ->
-            -- @todo
-            []
+            viewMalariaPreventionContent language currentDate data model.malariaPreventionData
 
         Backend.PrenatalActivity.Model.Medication ->
-            -- @todo
-            []
+            viewMedicationContent language currentDate data model.medicationData
 
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
@@ -818,169 +816,143 @@ viewFamilyPlanningContent language currentDate assembled data =
     ]
 
 
+viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
+viewMedicationContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.medication
+                |> getMeasurementValueFunc
+                |> medicationFormWithDefault data.form
 
---
--- viewPatientProvisionsContent : Language -> NominalDate -> AssembledData -> PatientProvisionsData -> List (Html Msg)
--- viewPatientProvisionsContent language currentDate assembled data =
---     let
---         showResourcesTask =
---             True
---
---         -- We show the question starting EGA week 20, and
---         -- as long as all preivious answers were 'No'.
---         showDewormingPillQuestion =
---             assembled.globalLmpDate
---                 |> Maybe.map
---                     (\lmpDate ->
---                         let
---                             currentWeek =
---                                 diffDays lmpDate currentDate // 7
---                         in
---                         if currentWeek < 20 then
---                             False
---
---                         else
---                             assembled.nursePreviousMeasurementsWithDates
---                                 |> List.filter
---                                     (\( _, measurements ) ->
---                                         measurements.medication
---                                             |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
---                                             |> Maybe.withDefault False
---                                     )
---                                 |> List.isEmpty
---                     )
---                 |> Maybe.withDefault False
---
---         tasks =
---             if showResourcesTask then
---                 [ Medication, Resources ]
---
---             else
---                 [ Medication ]
---
---         tasksCompletedFromTotalDict =
---             tasks
---                 |> List.map
---                     (\task ->
---                         ( task, patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task )
---                     )
---                 |> Dict.fromList
---
---         ( tasksCompleted, totalTasks ) =
---             Dict.get data.activeTask tasksCompletedFromTotalDict
---                 |> Maybe.withDefault ( 0, 0 )
---
---         viewTask task =
---             let
---                 ( iconClass, isCompleted ) =
---                     case task of
---                         Medication ->
---                             ( "medication", isJust assembled.measurements.medication )
---
---                         Resources ->
---                             ( "resources", isJust assembled.measurements.resource )
---
---                 isActive =
---                     task == data.activeTask
---
---                 attributes =
---                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
---                         :: (if isActive then
---                                 []
---
---                             else
---                                 [ onClick <| SetActivePatientProvisionsTask task ]
---                            )
---             in
---             div [ class "column" ]
---                 [ div attributes
---                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
---                     , text <| translate language (Translate.PatientProvisionsTask task)
---                     ]
---                 ]
---
---         viewForm =
---             case data.activeTask of
---                 Medication ->
---                     let
---                         form =
---                             assembled.measurements.medication
---                                 |> getMeasurementValueFunc
---                                 |> medicationFormWithDefault data.medicationForm
---
---                         questions =
---                             if showDewormingPillQuestion then
---                                 [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
---
---                             else
---                                 [ form.receivedIronFolicAcid ]
---                     in
---                     viewMedicationForm language currentDate assembled showDewormingPillQuestion form
---
---                 Resources ->
---                     let
---                         form =
---                             assembled.measurements.resource
---                                 |> getMeasurementValueFunc
---                                 |> resourceFormWithDefault data.resourcesForm
---                     in
---                     viewResourcesForm language currentDate assembled form
---
---         getNextTask currentTask =
---             if not showResourcesTask then
---                 Nothing
---
---             else
---                 case currentTask of
---                     Medication ->
---                         [ Resources ]
---                             |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
---                             |> List.head
---
---                     Resources ->
---                         [ Medication ]
---                             |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
---                             |> List.head
---
---         actions =
---             let
---                 nextTask =
---                     getNextTask data.activeTask
---
---                 saveAction =
---                     case data.activeTask of
---                         Medication ->
---                             SaveMedication
---                                 assembled.participant.person
---                                 assembled.measurements.medication
---                                 nextTask
---
---                         Resources ->
---                             SaveResources
---                                 assembled.participant.person
---                                 assembled.measurements.resource
---                                 nextTask
---             in
---             div [ class "actions examination" ]
---                 [ button
---                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
---                     , onClick saveAction
---                     ]
---                     [ text <| translate language Translate.Save ]
---                 ]
---     in
---     [ div [ class "ui task segment blue" ]
---         [ div [ class "ui five column grid" ] <|
---             List.map viewTask tasks
---         ]
---     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
---     , div [ class "ui full segment" ]
---         [ div [ class "full content" ]
---             [ viewForm
---             , actions
---             ]
---         ]
---     ]
+        -- We show the question starting EGA week 20, and
+        -- as long as all preivious answers were 'No'.
+        showDewormingPillQuestion =
+            assembled.globalLmpDate
+                |> Maybe.map
+                    (\lmpDate ->
+                        let
+                            currentWeek =
+                                diffDays lmpDate currentDate // 7
+                        in
+                        if currentWeek < 20 then
+                            False
+
+                        else
+                            assembled.nursePreviousMeasurementsWithDates
+                                |> List.filter
+                                    (\( _, measurements ) ->
+                                        measurements.medication
+                                            |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                            |> Maybe.withDefault False
+                                    )
+                                |> List.isEmpty
+                    )
+                |> Maybe.withDefault False
+
+        ( tasksCompleted, totalTasks ) =
+            let
+                tasks =
+                    if showDewormingPillQuestion then
+                        [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
+
+                    else
+                        [ form.receivedIronFolicAcid ]
+            in
+            ( List.map taskCompleted tasks
+                |> List.sum
+            , List.length tasks
+            )
+
+        receivedIronFolicAcidUpdateFunc value form_ =
+            { form_ | receivedIronFolicAcid = Just value }
+
+        receivedIronFolicAcidQuestion =
+            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
+            , viewBoolInput
+                language
+                form.receivedIronFolicAcid
+                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
+                "iron-folic-acid"
+                Nothing
+            ]
+
+        receivedDewormingPillQuestion =
+            if showDewormingPillQuestion then
+                let
+                    receivedDewormingPillUpdateFunc value form_ =
+                        { form_ | receivedDewormingPill = Just value }
+                in
+                [ viewQuestionLabel language Translate.ReceivedDewormingPill
+                , viewBoolInput
+                    language
+                    form.receivedDewormingPill
+                    (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
+                    "deworming-pill"
+                    Nothing
+                ]
+
+            else
+                []
+
+        questions =
+            receivedIronFolicAcidQuestion ++ receivedDewormingPillQuestion
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form medication" ]
+                questions
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveMedication assembled.participant.person assembled.measurements.medication
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewMalariaPreventionContent : Language -> NominalDate -> AssembledData -> MalariaPreventionData -> List (Html Msg)
+viewMalariaPreventionContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.malariaPrevention
+                |> getMeasurementValueFunc
+                |> malariaPreventionFormWithDefault data.form
+
+        tasksCompleted =
+            taskCompleted form.receivedMosquitoNet
+
+        totalTasks =
+            1
+
+        receivedMosquitoNetUpdateFunc value form_ =
+            { form_ | receivedMosquitoNet = Just value }
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form malaria-prevention" ]
+                [ viewQuestionLabel language Translate.ReceivedMosquitoNet
+                , viewBoolInput
+                    language
+                    form.receivedMosquitoNet
+                    (SetMalariaPreventionBoolInput receivedMosquitoNetUpdateFunc)
+                    "mosquito-net"
+                    Nothing
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveMalariaPrevention assembled.participant.person assembled.measurements.malariaPrevention
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 viewDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSignsData -> List (Html Msg)
@@ -2560,64 +2532,6 @@ viewBreastExamForm language currentDate assembled form =
             form.selfGuidance
             (SetBreastExamBoolInput selfGuidanceUpdateFunc)
             "self-guidance"
-            Nothing
-        ]
-
-
-viewMedicationForm : Language -> NominalDate -> AssembledData -> Bool -> MedicationForm -> Html Msg
-viewMedicationForm language currentDate assembled showDewormingPillQuestion form =
-    let
-        receivedIronFolicAcidUpdateFunc value form_ =
-            { form_ | receivedIronFolicAcid = Just value }
-
-        receivedIronFolicAcidQuestion =
-            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
-            , viewBoolInput
-                language
-                form.receivedIronFolicAcid
-                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
-                "iron-folic-acid"
-                Nothing
-            ]
-
-        receivedDewormingPillQuestion =
-            if showDewormingPillQuestion then
-                let
-                    receivedDewormingPillUpdateFunc value form_ =
-                        { form_ | receivedDewormingPill = Just value }
-                in
-                [ viewQuestionLabel language Translate.ReceivedDewormingPill
-                , viewBoolInput
-                    language
-                    form.receivedDewormingPill
-                    (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
-                    "deworming-pill"
-                    Nothing
-                ]
-
-            else
-                []
-
-        questions =
-            receivedIronFolicAcidQuestion ++ receivedDewormingPillQuestion
-    in
-    div [ class "ui form patient-provisions medication" ]
-        questions
-
-
-viewResourcesForm : Language -> NominalDate -> AssembledData -> ResourcesForm -> Html Msg
-viewResourcesForm language currentDate assembled form =
-    let
-        receivedMosquitoNetUpdateFunc value form_ =
-            { form_ | receivedMosquitoNet = Just value }
-    in
-    div [ class "ui form patient-provisions resources" ]
-        [ viewQuestionLabel language Translate.ReceivedMosquitoNet
-        , viewBoolInput
-            language
-            form.receivedMosquitoNet
-            (SetResourcesBoolInput receivedMosquitoNetUpdateFunc)
-            "mosquito-net"
             Nothing
         ]
 

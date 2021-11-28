@@ -852,14 +852,14 @@ toPrenatalNutritionValue form =
         |> andMap (Maybe.map MuacInCm form.muac)
 
 
-fromResourceValue : Maybe (EverySet ResourceSign) -> ResourcesForm
-fromResourceValue saved =
+fromMalariaPreventionValue : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
+fromMalariaPreventionValue saved =
     { receivedMosquitoNet = Maybe.map (EverySet.member MosquitoNet) saved
     }
 
 
-resourceFormWithDefault : ResourcesForm -> Maybe (EverySet ResourceSign) -> ResourcesForm
-resourceFormWithDefault form saved =
+malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
+malariaPreventionFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -869,15 +869,15 @@ resourceFormWithDefault form saved =
             )
 
 
-toResourceValueWithDefault : Maybe (EverySet ResourceSign) -> ResourcesForm -> Maybe (EverySet ResourceSign)
-toResourceValueWithDefault saved form =
-    resourceFormWithDefault form saved
-        |> toResourceValue
+toMalariaPreventionValueWithDefault : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
+toMalariaPreventionValueWithDefault saved form =
+    malariaPreventionFormWithDefault form saved
+        |> toMalariaPreventionValue
 
 
-toResourceValue : ResourcesForm -> Maybe (EverySet ResourceSign)
-toResourceValue form =
-    Maybe.map (toEverySet MosquitoNet NoResource) form.receivedMosquitoNet
+toMalariaPreventionValue : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
+toMalariaPreventionValue form =
+    Maybe.map (toEverySet MosquitoNet NoMalariaPreventionSigns) form.receivedMosquitoNet
 
 
 fromSocialHistoryValue : Maybe SocialHistoryValue -> SocialHistoryForm
@@ -1238,39 +1238,41 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             )
 
 
-patientProvisionsTasksCompletedFromTotal : AssembledData -> PatientProvisionsData -> Bool -> PatientProvisionsTask -> ( Int, Int )
-patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task =
-    case task of
-        Medication ->
-            let
-                form =
-                    assembled.measurements.medication
-                        |> getMeasurementValueFunc
-                        |> medicationFormWithDefault data.medicationForm
 
-                questions =
-                    if showDewormingPillQuestion then
-                        [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
-
-                    else
-                        [ form.receivedIronFolicAcid ]
-            in
-            ( questions
-                |> List.map taskCompleted
-                |> List.sum
-            , List.length questions
-            )
-
-        Resources ->
-            let
-                form =
-                    assembled.measurements.resource
-                        |> getMeasurementValueFunc
-                        |> resourceFormWithDefault data.resourcesForm
-            in
-            ( taskCompleted form.receivedMosquitoNet
-            , 1
-            )
+--
+-- patientProvisionsTasksCompletedFromTotal : AssembledData -> PatientProvisionsData -> Bool -> PatientProvisionsTask -> ( Int, Int )
+-- patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task =
+--     case task of
+--         Medication ->
+--             let
+--                 form =
+--                     assembled.measurements.medication
+--                         |> getMeasurementValueFunc
+--                         |> medicationFormWithDefault data.medicationForm
+--
+--                 questions =
+--                     if showDewormingPillQuestion then
+--                         [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
+--
+--                     else
+--                         [ form.receivedIronFolicAcid ]
+--             in
+--             ( questions
+--                 |> List.map taskCompleted
+--                 |> List.sum
+--             , List.length questions
+--             )
+--
+--         Resources ->
+--             let
+--                 form =
+--                     assembled.measurements.resource
+--                         |> getMeasurementValueFunc
+--                         |> resourceFormWithDefault data.resourcesForm
+--             in
+--             ( taskCompleted form.receivedMosquitoNet
+--             , 1
+--             )
 
 
 socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
