@@ -415,7 +415,7 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
-    | ContactInitiatedQuesiton
+    | ContactInitiatedQuestion
     | ContactName
     | ContactsTracingCompleteDetails
     | ContactsTracingHelper
@@ -1019,7 +1019,7 @@ type TranslationId
     | TelephoneNumber
     | Term
     | TermPregnancy
-    | TestPerformedQuesiton
+    | TestPerformedQuestion
     | TestResultQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
@@ -2635,7 +2635,7 @@ translationSet trans =
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
             }
 
-        ContactInitiatedQuesiton ->
+        ContactInitiatedQuestion ->
             { english = "Where you able to speak with the contact"
             , kinyarwanda = Nothing
             }
@@ -6963,7 +6963,7 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
-        TestPerformedQuesiton ->
+        TestPerformedQuestion ->
             { english = "Were you able to perform the test"
             , kinyarwanda = Nothing
             }

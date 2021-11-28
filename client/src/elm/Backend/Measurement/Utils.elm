@@ -926,3 +926,8 @@ symptomsGISignFromString s =
 
         _ ->
             Nothing
+
+
+covidIsolationPeriod : Int
+covidIsolationPeriod =
+    10

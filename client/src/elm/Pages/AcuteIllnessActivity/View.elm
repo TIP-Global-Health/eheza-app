@@ -1141,7 +1141,7 @@ viewCovidTestingForm language currentDate person form =
     in
     div [ class "ui form laboratory covid-testing" ] <|
         [ viewCustomLabel language Translate.CovidTestingInstructions "." "instructions"
-        , viewQuestionLabel language Translate.TestPerformedQuesiton
+        , viewQuestionLabel language Translate.TestPerformedQuestion
         , viewBoolInput
             language
             form.testPerformed
@@ -3196,7 +3196,9 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                                     person.gender
                                     inputNumber
                                     contactDate
-                                    (Date.add Days 11 contactDate)
+                                    -- Resolution date is set to the date on which
+                                    -- Covid  isolation is completed.
+                                    (Date.add Days (covidIsolationPeriod + 1) contactDate)
                                     Nothing
                                     Nothing
                                     Nothing

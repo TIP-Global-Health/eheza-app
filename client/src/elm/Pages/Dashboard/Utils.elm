@@ -449,7 +449,7 @@ countAcuteIllnessCasesByTreatmentApproach encounters =
 {-| There's a difference betweeen non Covid and Covid cases, when making
 a decision if to send patient to health center.
 Covid case has a specific set of parameters, while non Covid has a simple logic -
-only those that Yes answered to quesiton about patien being referred to HC.
+only those that Yes answered to question about patien being referred to HC.
 -}
 wasSentToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
 wasSentToHCByDiagnosis encounter =

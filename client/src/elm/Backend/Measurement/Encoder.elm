@@ -3008,8 +3008,3 @@ encodeVaccinationValueWithType type_ value =
 encodeVaccinationDose : VaccineDose -> Value
 encodeVaccinationDose dose =
     vaccineDoseToString dose |> string
-
-
-
--- encodeSymptomsRespiratorySign: SymptomsRespiratorySign -> Value
--- encodeSymptomsRespiratorySign sign

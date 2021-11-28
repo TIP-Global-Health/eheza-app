@@ -145,7 +145,7 @@ viewStepInitiateContact language currentDate contact data =
                 ]
 
         inputs =
-            [ viewQuestionLabel language Translate.ContactInitiatedQuesiton
+            [ viewQuestionLabel language Translate.ContactInitiatedQuestion
             , viewBoolInput
                 language
                 data.contactInitiated

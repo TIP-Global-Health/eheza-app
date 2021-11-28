@@ -723,8 +723,9 @@ viewContactsTracingPane language currentDate itemsDict db model =
             Dict.filter
                 (\_ item ->
                     let
-                        -- Resolution date initially is set to 11-th day
-                        -- after the contact.
+                        -- Initially, resolution date  is set to to on which
+                        -- Covid isolation period is completed, which is 11-th
+                        -- day after the contact.
                         -- We know that item is not resolved, if resolution
                         -- date is a future date.
                         traceNotCompleted =

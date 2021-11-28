@@ -2796,7 +2796,9 @@ decodeContactTraceItemFromString =
                                         gender_
                                         phoneNumber
                                         date_
-                                        (Date.add Days 11 date_)
+                                        -- Resolution date is set to the date on which
+                                        -- Covid  isolation is completed.
+                                        (Date.add Days (covidIsolationPeriod + 1) date_)
                                         Nothing
                                         Nothing
                                         Nothing
