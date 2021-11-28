@@ -511,6 +511,11 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-vaccination-history.svg);
 }
 
+.icon-task-malaria {
+  background-image: url(#{$img-path}icon-malaria-white.svg);
+  background-size: 100px 100px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {

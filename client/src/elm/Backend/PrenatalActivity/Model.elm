@@ -10,7 +10,6 @@ type PrenatalActivity
     | Examination
     | FamilyPlanning
     | History
-    | PatientProvisions
     | PregnancyDating
     | PrenatalPhoto
     | Laboratory
@@ -18,6 +17,8 @@ type PrenatalActivity
     | BirthPlan
     | NextSteps
     | PregnancyOutcome
+    | MalariaPrevention
+    | Medication
 
 
 type RiskFactor

@@ -51,9 +51,6 @@ encodeActivityAsString activity =
         History ->
             "history"
 
-        PatientProvisions ->
-            "patient-provisions"
-
         PregnancyDating ->
             "pregnancy-dating"
 
@@ -75,6 +72,12 @@ encodeActivityAsString activity =
         PregnancyOutcome ->
             "pregnancy-outcome"
 
+        MalariaPrevention ->
+            "malaria"
+
+        Medication ->
+            "medication"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -92,9 +95,6 @@ decodeActivityFromString s =
 
         "history" ->
             Just History
-
-        "patient-provisions" ->
-            Just PatientProvisions
 
         "pregnancy-dating" ->
             Just PregnancyDating
@@ -116,6 +116,12 @@ decodeActivityFromString s =
 
         "pregnancy-outcome" ->
             Just PregnancyOutcome
+
+        "malaria" ->
+            Just MalariaPrevention
+
+        "medication" ->
+            Just Medication
 
         _ ->
             Nothing

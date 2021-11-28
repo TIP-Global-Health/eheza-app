@@ -23,10 +23,28 @@ getAllActivities data =
     case data.encounter.encounterType of
         NurseEncounter ->
             if isFirstEncounter data then
-                [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
+                [ PregnancyDating
+                , History
+                , Examination
+                , FamilyPlanning
+                , Medication
+                , Backend.PrenatalActivity.Model.MalariaPrevention
+                , DangerSigns
+                , Laboratory
+                , PrenatalPhoto
+                ]
 
             else
-                [ DangerSigns, PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, PrenatalPhoto ]
+                [ DangerSigns
+                , PregnancyDating
+                , History
+                , Examination
+                , FamilyPlanning
+                , Medication
+                , Backend.PrenatalActivity.Model.MalariaPrevention
+                , Laboratory
+                , PrenatalPhoto
+                ]
 
         ChwFirstEncounter ->
             [ PregnancyDating, Laboratory, DangerSigns, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
@@ -93,13 +111,13 @@ generatePostCreateDestination encounterType hasNurseEncounter =
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
-expectActivity currentDate data activity =
-    case data.encounter.encounterType of
+expectActivity currentDate assembled activity =
+    case assembled.encounter.encounterType of
         NurseEncounter ->
             case activity of
                 PregnancyDating ->
                     -- Only show on first encounter
-                    isFirstEncounter data
+                    isFirstEncounter assembled
 
                 History ->
                     True
@@ -110,14 +128,28 @@ expectActivity currentDate data activity =
                 FamilyPlanning ->
                     True
 
-                PatientProvisions ->
+                Backend.PrenatalActivity.Model.MalariaPrevention ->
+                    assembled.nursePreviousMeasurementsWithDates
+                        |> List.filter
+                            (\( _, measurements ) ->
+                                measurements.resource
+                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
+                                    |> Maybe.withDefault False
+                            )
+                        |> List.isEmpty
+
+                Medication ->
                     True
 
                 DangerSigns ->
                     True
 
+                Laboratory ->
+                    -- @todo
+                    True
+
                 PrenatalPhoto ->
-                    expectPrenatalPhoto currentDate data
+                    expectPrenatalPhoto currentDate assembled
 
                 -- Unique Chw activities.
                 _ ->
@@ -127,21 +159,21 @@ expectActivity currentDate data activity =
             case activity of
                 PregnancyDating ->
                     -- Do not show, if patient already visited health center.
-                    isFirstEncounter data
+                    isFirstEncounter assembled
 
                 Laboratory ->
                     -- Do not show, if patient already visited health center.
-                    isFirstEncounter data
+                    isFirstEncounter assembled
 
                 DangerSigns ->
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate data DangerSigns
-                        && noDangerSigns data
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate data
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
                 -- Unique nurse activities.
                 _ ->
@@ -153,15 +185,15 @@ expectActivity currentDate data activity =
                     True
 
                 BirthPlan ->
-                    activityCompleted currentDate data DangerSigns
-                        && noDangerSigns data
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate data DangerSigns
-                        && noDangerSigns data
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate data
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
                 -- Unique nurse activities.
                 _ ->
@@ -173,11 +205,11 @@ expectActivity currentDate data activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate data DangerSigns
-                        && noDangerSigns data
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate data
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
                 -- Unique nurse activities.
                 _ ->
@@ -192,7 +224,7 @@ expectActivity currentDate data activity =
                     True
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate data
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
                 -- Unique nurse activities.
                 _ ->
@@ -315,83 +347,88 @@ generateDangerSignsList language data =
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool
-activityCompleted currentDate data activity =
+activityCompleted currentDate assembled activity =
     case activity of
         PregnancyDating ->
-            isJust data.measurements.lastMenstrualPeriod
+            isJust assembled.measurements.lastMenstrualPeriod
 
         History ->
-            if isFirstEncounter data then
+            if isFirstEncounter assembled then
                 -- First antenatal encounter - all tasks should be completed
-                isJust data.measurements.obstetricHistory
-                    && isJust data.measurements.obstetricHistoryStep2
-                    && isJust data.measurements.medicalHistory
-                    && isJust data.measurements.socialHistory
+                isJust assembled.measurements.obstetricHistory
+                    && isJust assembled.measurements.obstetricHistoryStep2
+                    && isJust assembled.measurements.medicalHistory
+                    && isJust assembled.measurements.socialHistory
 
             else
                 -- Subsequent antenatal encounter - only Social history task
                 -- needs to be completed.
-                isJust data.measurements.socialHistory
+                isJust assembled.measurements.socialHistory
 
         Examination ->
-            isJust data.measurements.vitals
-                && isJust data.measurements.nutrition
-                && isJust data.measurements.corePhysicalExam
-                && isJust data.measurements.obstetricalExam
-                && isJust data.measurements.breastExam
+            isJust assembled.measurements.vitals
+                && isJust assembled.measurements.nutrition
+                && isJust assembled.measurements.corePhysicalExam
+                && isJust assembled.measurements.obstetricalExam
+                && isJust assembled.measurements.breastExam
 
         FamilyPlanning ->
-            isJust data.measurements.familyPlanning
+            isJust assembled.measurements.familyPlanning
 
-        PatientProvisions ->
-            if shouldShowPatientProvisionsResourcesTask data then
-                isJust data.measurements.medication && isJust data.measurements.resource
+        Backend.PrenatalActivity.Model.MalariaPrevention ->
+            isJust assembled.measurements.resource
 
-            else
-                isJust data.measurements.medication
+        Medication ->
+            isJust assembled.measurements.medication
 
         DangerSigns ->
-            isJust data.measurements.dangerSigns
+            isJust assembled.measurements.dangerSigns
 
         PrenatalPhoto ->
-            isJust data.measurements.prenatalPhoto
+            isJust assembled.measurements.prenatalPhoto
 
         Laboratory ->
-            isJust data.measurements.pregnancyTest
+            if assembled.encounter.encounterType == NurseEncounter then
+                -- @todo
+                False
+
+            else
+                -- CHW only got one lab on first encounter
+                isJust assembled.measurements.pregnancyTest
 
         Backend.PrenatalActivity.Model.HealthEducation ->
-            isJust data.measurements.healthEducation
+            isJust assembled.measurements.healthEducation
 
         BirthPlan ->
-            isJust data.measurements.birthPlan
+            isJust assembled.measurements.birthPlan
 
         NextSteps ->
             let
                 nextStepsTasks =
-                    resolveNextStepsTasks currentDate data
+                    resolveNextStepsTasks currentDate assembled
             in
             case nextStepsTasks of
                 [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
-                    isJust data.measurements.appointmentConfirmation && isJust data.measurements.followUp
+                    isJust assembled.measurements.appointmentConfirmation && isJust assembled.measurements.followUp
 
                 [ NextStepsSendToHC, NextStepsFollowUp ] ->
-                    isJust data.measurements.sendToHC && isJust data.measurements.followUp
+                    isJust assembled.measurements.sendToHC && isJust assembled.measurements.followUp
 
                 [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                    isJust data.measurements.healthEducation
-                        && isJust data.participant.newborn
+                    isJust assembled.measurements.healthEducation
+                        && isJust assembled.participant.newborn
 
                 [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                    isJust data.measurements.sendToHC
-                        && isJust data.measurements.followUp
-                        && isJust data.measurements.healthEducation
-                        && isJust data.participant.newborn
+                    isJust assembled.measurements.sendToHC
+                        && isJust assembled.measurements.followUp
+                        && isJust assembled.measurements.healthEducation
+                        && isJust assembled.participant.newborn
 
                 _ ->
                     False
 
         PregnancyOutcome ->
-            isJust data.participant.dateConcluded
+            isJust assembled.participant.dateConcluded
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -720,18 +757,6 @@ expectPrenatalPhoto currentDate data =
             )
         -- We do not allow photo activity when Lmp date is not known.
         |> Maybe.withDefault False
-
-
-shouldShowPatientProvisionsResourcesTask : AssembledData -> Bool
-shouldShowPatientProvisionsResourcesTask assembled =
-    assembled.nursePreviousMeasurementsWithDates
-        |> List.filter
-            (\( _, measurements ) ->
-                measurements.resource
-                    |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
-                    |> Maybe.withDefault False
-            )
-        |> List.isEmpty
 
 
 isFirstEncounter : AssembledData -> Bool

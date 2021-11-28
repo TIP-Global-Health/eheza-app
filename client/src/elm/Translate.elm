@@ -92,7 +92,6 @@ import Pages.PrenatalActivity.Model
         ( ExaminationTask(..)
         , HistoryTask(..)
         , LmpRange(..)
-        , PatientProvisionsTask(..)
         )
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
@@ -800,7 +799,6 @@ type TranslationId
     | PatientInformation
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
-    | PatientProvisionsTask PatientProvisionsTask
     | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
@@ -6332,18 +6330,6 @@ translationSet trans =
             , kinyarwanda = Just " ntiyigeze asuzumwa ku kigo nderabuzima kuri iyi nda atwite"
             }
 
-        PatientProvisionsTask task ->
-            case task of
-                Medication ->
-                    { english = "Medication"
-                    , kinyarwanda = Nothing
-                    }
-
-                Resources ->
-                    { english = "Resources"
-                    , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
-                    }
-
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
             , kinyarwanda = Nothing
@@ -6669,11 +6655,6 @@ translationSet trans =
                     , kinyarwanda = Just "Amateka y'ibyamubayeho"
                     }
 
-                PatientProvisions ->
-                    { english = "Patient Provisions"
-                    , kinyarwanda = Just "Ibyo umubyeyi/umurwayi yahawe"
-                    }
-
                 PregnancyDating ->
                     { english = "Pregnancy Dating"
                     , kinyarwanda = Just "Igihe inda imaze"
@@ -6707,6 +6688,16 @@ translationSet trans =
                 Backend.PrenatalActivity.Model.PregnancyOutcome ->
                     { english = "Pregnancy Outcome"
                     , kinyarwanda = Just "Iherezo ry'inda"
+                    }
+
+                Backend.PrenatalActivity.Model.MalariaPrevention ->
+                    { english = "Malaria Prevention"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalActivity.Model.Medication ->
+                    { english = "Medication"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalAssesment assesment ->
