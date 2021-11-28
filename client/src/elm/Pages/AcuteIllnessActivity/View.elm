@@ -17,7 +17,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, muacValueFunc)
+import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementValueFunc, muacIndication, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
