@@ -839,11 +839,11 @@ type PrenatalTestResult
     | PrenatalTestIndeterminate
 
 
-type alias PrenatalHivTest =
-    PrenatalMeasurement PrenatalHivTestValue
+type alias PrenatalHIVTest =
+    PrenatalMeasurement PrenatalHIVTestValue
 
 
-type alias PrenatalHivTestValue =
+type alias PrenatalHIVTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : NominalDate
     , testResult : PrenatalTestResult
@@ -1855,6 +1855,14 @@ type alias PrenatalMeasurements =
     , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
     , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
     , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
+    , bloodGpRsTest : Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )
+    , hemoglobinTest : Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )
+    , hepatitisBTest : Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )
+    , hivTest : Maybe ( PrenatalHIVTestId, PrenatalHIVTest )
+    , malariaTest : Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )
+    , prenatalSyphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
+    , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
+    , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     }
 
 
@@ -1881,6 +1889,14 @@ emptyPrenatalMeasurements =
     , followUp = Nothing
     , sendToHC = Nothing
     , appointmentConfirmation = Nothing
+    , bloodGpRsTest = Nothing
+    , hemoglobinTest = Nothing
+    , hepatitisBTest = Nothing
+    , hivTest = Nothing
+    , malariaTest = Nothing
+    , prenatalSyphilisTest = Nothing
+    , syphilisTest = Nothing
+    , urineDipstickTest = Nothing
     }
 
 
