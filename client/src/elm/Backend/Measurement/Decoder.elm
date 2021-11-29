@@ -116,6 +116,14 @@ decodePrenatalMeasurements =
         |> optional "prenatal_follow_up" (decodeHead decodePrenatalFollowUp) Nothing
         |> optional "prenatal_send_to_hc" (decodeHead decodePrenatalSendToHc) Nothing
         |> optional "appointment_confirmation" (decodeHead decodeAppointmentConfirmation) Nothing
+        |> optional "prenatal_blood_gprs_test" (decodeHead decodePrenatalBloodGpRsTest) Nothing
+        |> optional "prenatal_hemoglobin_test" (decodeHead decodePrenatalHemoglobinTest) Nothing
+        |> optional "prenatal_hepatitis_b_test" (decodeHead decodePrenatalHepatitisBTest) Nothing
+        |> optional "prenatal_hiv_test" (decodeHead decodePrenatalHIVTest) Nothing
+        |> optional "prenatal_malaria_test" (decodeHead decodePrenatalMalariaTest) Nothing
+        |> optional "prenatal_random_blood_sugar_test" (decodeHead decodePrenatalRandomBloodSugarTest) Nothing
+        |> optional "prenatal_syphilis_test" (decodeHead decodePrenatalSyphilisTest) Nothing
+        |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -337,6 +345,134 @@ decodeAppointmentConfirmation =
     succeed PrenatalAppointmentConfirmationValue
         |> required "appointment_confirmation" Gizra.NominalDate.decodeYYYYMMDD
         |> decodePrenatalMeasurement
+
+
+decodePrenatalBloodGpRsTest : Decoder PrenatalBloodGpRsTest
+decodePrenatalBloodGpRsTest =
+    decodePrenatalMeasurement decodePrenatalBloodGpRsTestValue
+
+
+decodePrenatalHemoglobinTest : Decoder PrenatalHemoglobinTest
+decodePrenatalHemoglobinTest =
+    decodePrenatalMeasurement decodePrenatalHemoglobinTestValue
+
+
+decodePrenatalHepatitisBTest : Decoder PrenatalHepatitisBTest
+decodePrenatalHepatitisBTest =
+    decodePrenatalMeasurement decodePrenatalHepatitisBTestValue
+
+
+decodePrenatalHepatitisBTestValue : Decoder PrenatalHepatitisBTestValue
+decodePrenatalHepatitisBTestValue =
+    succeed PrenatalHepatitisBTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+
+
+decodePrenatalHIVTest : Decoder PrenatalHIVTest
+decodePrenatalHIVTest =
+    decodePrenatalMeasurement decodePrenatalHIVTestValue
+
+
+decodePrenatalHIVTestValue : Decoder PrenatalHIVTestValue
+decodePrenatalHIVTestValue =
+    succeed PrenatalHIVTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "test_result" decodePrenatalTestResult
+
+
+decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
+decodePrenatalMalariaTest =
+    decodePrenatalMeasurement decodePrenatalMalariaTestValue
+
+
+decodePrenatalMalariaTestValue : Decoder PrenatalMalariaTestValue
+decodePrenatalMalariaTestValue =
+    succeed PrenatalMalariaTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "test_result" decodePrenatalTestResult
+
+
+decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest
+decodePrenatalRandomBloodSugarTest =
+    decodePrenatalMeasurement decodePrenatalRandomBloodSugarTestValue
+
+
+decodePrenatalSyphilisTest : Decoder PrenatalSyphilisTest
+decodePrenatalSyphilisTest =
+    decodePrenatalMeasurement decodePrenatalSyphilisTestValue
+
+
+decodePrenatalSyphilisTestValue : Decoder PrenatalSyphilisTestValue
+decodePrenatalSyphilisTestValue =
+    succeed PrenatalSyphilisTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+
+
+decodePrenatalUrineDipstickTest : Decoder PrenatalUrineDipstickTest
+decodePrenatalUrineDipstickTest =
+    decodePrenatalMeasurement decodePrenatalUrineDipstickTestValue
+
+
+decodePrenatalTestExecutionNote : Decoder PrenatalTestExecutionNote
+decodePrenatalTestExecutionNote =
+    string
+        |> andThen
+            (\note ->
+                case note of
+                    "run-today" ->
+                        succeed TestNoteRunToday
+
+                    "run-previously" ->
+                        succeed TestNoteRunPreviously
+
+                    "lack-of-reagents" ->
+                        succeed TestNoteLackOfReagents
+
+                    "lack-of-other-supplies" ->
+                        succeed TestNoteLackOfOtherSupplies
+
+                    "no-equipment" ->
+                        succeed TestNoteNoEquipment
+
+                    "broken-equipment" ->
+                        succeed TestNoteBrokenEquipment
+
+                    "not-indicated" ->
+                        succeed TestNoteNotIndicated
+
+                    _ ->
+                        fail <|
+                            note
+                                ++ " is not a recognized PrenatalTestExecutionNote"
+            )
+
+
+decodePrenatalTestResult : Decoder PrenatalTestResult
+decodePrenatalTestResult =
+    string
+        |> andThen
+            (\note ->
+                case note of
+                    "positive" ->
+                        succeed PrenatalTestPositive
+
+                    "negative" ->
+                        succeed PrenatalTestNegative
+
+                    "indeterminate" ->
+                        succeed PrenatalTestIndeterminate
+
+                    _ ->
+                        fail <|
+                            note
+                                ++ " is not a recognized PrenatalTestExecutionNote"
+            )
 
 
 decodeHeight : Decoder Height
