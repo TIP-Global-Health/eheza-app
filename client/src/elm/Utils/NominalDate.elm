@@ -106,20 +106,28 @@ renderAgeYearsMonths language birthDate now =
         years =
             diff.years
     in
-    if months == 1 && years == 0 then
-        translate language <| Translate.AgeSingleMonthWithoutDay months
+    case years of
+        0 ->
+            case months of
+                1 ->
+                    translate language <| Translate.AgeSingleMonthWithoutDay months
 
-    else if years > 1 && months == 1 then
-        translate language <| Translate.AgeYearsWithSingleMonth years months
+                _ ->
+                    translate language <| Translate.AgeMonthsWithoutDay months
 
-    else if years == 0 then
-        translate language <| Translate.AgeMonthsWithoutDay months
+        1 ->
+            translate language <| Translate.AgeMonthsWithoutDay months
 
-    else if years > 1 && months == 0 then
-        translate language <| Translate.YearsOld years
+        _ ->
+            case months of
+                0 ->
+                    translate language <| Translate.YearsOld years
 
-    else
-        translate language <| Translate.AgeYearsAndMonths years months
+                1 ->
+                    translate language <| Translate.AgeYearsWithSingleMonth years months
+
+                _ ->
+                    translate language <| Translate.AgeYearsAndMonths years months
 
 
 renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
