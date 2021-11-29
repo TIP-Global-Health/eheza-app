@@ -609,7 +609,7 @@ viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondIni
 
     else
         div [ class "pane nutrition-signs" ]
-            [ viewPaneHeading language Translate.NutritionSigns
+            [ viewPaneHeading language Translate.NitritionSigns
             , div [ class "pane-content" ] <|
                 viewNutritionSigns language assembled.person nutritions
             ]
