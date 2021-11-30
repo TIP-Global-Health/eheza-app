@@ -8165,22 +8165,22 @@ translationSet trans =
             case status of
                 StatusBehind ->
                     { english = "Behind"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakozwe"
                     }
 
                 StatusCompleted ->
                     { english = "Completed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Byarakozwe"
                     }
 
                 StatusUpToDate ->
                     { english = "Up To Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Biri ku gihe"
                     }
 
         VaccinationNoDosesAdministered ->
             { english = "There are no recorded immunizations for this patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta makuru ku nkigo agaragara"
             }
 
         VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
