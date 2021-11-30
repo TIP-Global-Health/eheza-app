@@ -392,6 +392,13 @@ class RoboFile extends Tasks {
   }
 
   /**
+   * Generates the ANC report.
+   */
+  public function reportAnc() {
+    $this->_exec('cd /var/www/html/server/www && drush sql-cli < profiles/hedley/modules/custom/hedley_admin/scripts/anc-report.SQL');
+  }
+
+  /**
    * Generates the nutrition report.
    */
   public function reportNutrition() {
