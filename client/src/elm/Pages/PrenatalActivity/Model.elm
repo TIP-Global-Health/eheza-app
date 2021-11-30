@@ -301,12 +301,42 @@ emptyBirthPlanData =
 
 type alias LaboratoryData =
     { pregnancyTestForm : PregnancyTestForm
+    , bloodGpRsTest : PrenatalNonRDTForm
+    , hemoglobinTest : PrenatalNonRDTForm
+    , hepatitisBTest : PrenatalNonRDTForm
+    , hivTest : PrenatalRDTForm
+    , malariaTest : PrenatalRDTForm
+    , randomBloodSugarTest : PrenatalNonRDTForm
+    , syphilisTest : PrenatalNonRDTForm
+    , urineDipstickTest : PrenatalNonRDTForm
+    , activeTask : Maybe LaboratoryTask
     }
+
+
+type LaboratoryTask
+    = TaskPregnancyTest
+    | TaskBloodGpRsTest
+    | TaskHemoglobinTest
+    | TaskHepatitisBTest
+    | TaskHIVTest
+    | TaskMalariaTest
+    | TaskRandomBloodSugarTest
+    | TaskSyphilisTest
+    | TaskUrineDipstickTest
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { pregnancyTestForm = PregnancyTestForm Nothing
+    , bloodGpRsTest = emptyPrenatalNonRDTForm
+    , hemoglobinTest = emptyPrenatalNonRDTForm
+    , hepatitisBTest = emptyPrenatalNonRDTForm
+    , hivTest = emptyPrenatalRDTForm
+    , malariaTest = emptyPrenatalRDTForm
+    , randomBloodSugarTest = emptyPrenatalNonRDTForm
+    , syphilisTest = emptyPrenatalNonRDTForm
+    , urineDipstickTest = emptyPrenatalNonRDTForm
+    , activeTask = Nothing
     }
 
 
@@ -664,6 +694,31 @@ emptyBirthPlanForm =
 type alias PregnancyTestForm =
     { pregnancyTestResult : Maybe PregnancyTestResult
     }
+
+
+type alias PrenatalRDTForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    , isDateSelectorOpen : Bool
+    }
+
+
+emptyPrenatalRDTForm : PrenatalRDTForm
+emptyPrenatalRDTForm =
+    PrenatalRDTForm Nothing Nothing Nothing False
+
+
+type alias PrenatalNonRDTForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , isDateSelectorOpen : Bool
+    }
+
+
+emptyPrenatalNonRDTForm : PrenatalNonRDTForm
+emptyPrenatalNonRDTForm =
+    PrenatalNonRDTForm Nothing Nothing False
 
 
 type alias AppointmentConfirmationForm =
