@@ -178,7 +178,7 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'negative' => 'Negative',
         'non-hemolyzed-trace' => 'Non-Hemolyzed Trace',
-        'non-hemolyzed-oderate' => 'Non-Hemolyzed Moderate',
+        'non-hemolyzed-moderate' => 'Non-Hemolyzed Moderate',
         'hemolyzed-trace' => 'Hemolyzed Trace',
         'small' => 'Small',
         'moderate' => 'Moderate',
@@ -466,7 +466,7 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'run-today' => 'Run today',
         'run-previously' => 'Run Previously',
-        'lack-of-reagents|' => 'Lack of Reagents',
+        'lack-of-reagents' => 'Lack of Reagents',
         'lack-of-other-supplies' => 'Lack of Other Supplies',
         'no-equipment' => 'No Equipment',
         'broken-equipment' => 'Broken Equipment',
