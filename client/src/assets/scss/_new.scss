@@ -2558,9 +2558,6 @@ div.page-report.acute-illness {
       }
     }
 
-    div.actions {
-      margin: 20px 0 0 0;
-    }
   }
 }
 
@@ -2653,7 +2650,7 @@ div.page-report.well-child {
     padding: 0 10px;
     text-transform: uppercase;
 
-    &.done {
+    &.completed {
       background: $color-blue;
     }
 
@@ -2910,6 +2907,10 @@ div.page-report.well-child {
       font-weight: 600;
       padding: 15px 10px;
     }
+  }
+
+  .ui.report.unstackable.items .actions {
+    margin: 20px 0 0 0;    
   }
 }
 
