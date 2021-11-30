@@ -500,7 +500,7 @@ decodePrenatalUrineDipstickTestValue =
         |> optional "nitrite" (nullable decodeNitriteValue) Nothing
         |> optional "urobilinogen" (nullable decodeUrobilinogenValue) Nothing
         |> optional "haemoglobin" (nullable decodeHaemoglobinValue) Nothing
-        |> optional "specificGravity" (nullable decodeSpecificGravityValue) Nothing
+        |> optional "specific_gravity" (nullable decodeSpecificGravityValue) Nothing
         |> optional "ketone" (nullable decodeKetoneValue) Nothing
         |> optional "bilirubin" (nullable decodeBilirubinValue) Nothing
 
