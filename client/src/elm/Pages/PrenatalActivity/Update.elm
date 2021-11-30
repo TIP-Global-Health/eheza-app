@@ -1483,11 +1483,11 @@ update currentDate id db msg model =
                 updatedData =
                     let
                         updatedForm =
-                            model.laboratoryData.form
+                            model.laboratoryData.pregnancyTestForm
                                 |> (\form -> { form | pregnancyTestResult = result })
                     in
                     model.laboratoryData
-                        |> (\data -> { data | form = updatedForm })
+                        |> (\data -> { data | pregnancyTestForm = updatedForm })
             in
             ( { model | laboratoryData = updatedData }
             , Cmd.none
@@ -1520,7 +1520,7 @@ update currentDate id db msg model =
             , appMsgs
             )
 
-        SavePregnancyTesting personId saved ->
+        SavePregnancyTest personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1529,12 +1529,12 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    model.laboratoryData.form
-                        |> toPregnancyTestingValueWithDefault measurement
+                    model.laboratoryData.pregnancyTestForm
+                        |> toPregnancyTestValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.PrenatalEncounter.Model.SavePregnancyTesting personId measurementId value
+                                [ Backend.PrenatalEncounter.Model.SavePregnancyTest personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id

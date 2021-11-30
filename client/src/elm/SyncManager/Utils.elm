@@ -561,7 +561,7 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPmtctParticipant identifier ->
             getIdentifier identifier "pmtct_participant"
 
-        BackendAuthorityPregnancyTesting identifier ->
+        BackendAuthorityPregnancyTest identifier ->
             getIdentifier identifier "pregnancy_testing"
 
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
@@ -1113,8 +1113,8 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPmtctParticipant identifier ->
             encode Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier
 
-        BackendAuthorityPregnancyTesting identifier ->
-            encode Backend.Measurement.Encoder.encodePregnancyTesting identifier
+        BackendAuthorityPregnancyTest identifier ->
+            encode Backend.Measurement.Encoder.encodePregnancyTest identifier
 
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalBloodGpRsTest identifier
@@ -1628,8 +1628,8 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPmtctParticipant identifier ->
             PmtctParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityPregnancyTesting identifier ->
-            PregnancyTestingRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityPregnancyTest identifier ->
+            PregnancyTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             PrenatalBloodGpRsTestRevision (toEntityUuid identifier.uuid) identifier.entity

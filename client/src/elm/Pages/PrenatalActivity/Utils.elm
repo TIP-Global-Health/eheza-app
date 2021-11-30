@@ -923,37 +923,37 @@ toSocialHistoryValue form =
         |> andMap form.partnerTestingResult
 
 
-fromPregnancyTestingValue : Maybe PregnancyTestResult -> PregnancyTestingForm
-fromPregnancyTestingValue saved =
+fromPregnancyTestValue : Maybe PregnancyTestResult -> PregnancyTestForm
+fromPregnancyTestValue saved =
     { pregnancyTestResult = saved }
 
 
-pregnancyTestingFormWithDefault : PregnancyTestingForm -> Maybe PregnancyTestResult -> PregnancyTestingForm
-pregnancyTestingFormWithDefault form saved =
+pregnancyTestFormWithDefault : PregnancyTestForm -> Maybe PregnancyTestResult -> PregnancyTestForm
+pregnancyTestFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 let
                     formWithDefault =
-                        fromPregnancyTestingValue saved
+                        fromPregnancyTestValue saved
                 in
                 { pregnancyTestResult = or form.pregnancyTestResult formWithDefault.pregnancyTestResult
                 }
             )
 
 
-toPregnancyTestingValueWithDefault : Maybe PregnancyTestResult -> PregnancyTestingForm -> Maybe PregnancyTestResult
-toPregnancyTestingValueWithDefault saved form =
-    pregnancyTestingFormWithDefault form saved
+toPregnancyTestValueWithDefault : Maybe PregnancyTestResult -> PregnancyTestForm -> Maybe PregnancyTestResult
+toPregnancyTestValueWithDefault saved form =
+    pregnancyTestFormWithDefault form saved
         |> (\form_ ->
                 form_
            )
-        |> toPregnancyTestingValue
+        |> toPregnancyTestValue
 
 
-toPregnancyTestingValue : PregnancyTestingForm -> Maybe PregnancyTestResult
-toPregnancyTestingValue form =
+toPregnancyTestValue : PregnancyTestForm -> Maybe PregnancyTestResult
+toPregnancyTestValue form =
     form.pregnancyTestResult
 
 

@@ -642,8 +642,8 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "pregnancy_testing" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodePregnancyTesting
-                            BackendAuthorityPregnancyTesting
+                            Backend.Measurement.Decoder.decodePregnancyTest
+                            BackendAuthorityPregnancyTest
 
                     "prenatal_blood_gprs_test" ->
                         doDecode

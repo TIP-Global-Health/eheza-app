@@ -72,7 +72,7 @@ type alias Model =
     , saveVitals : WebData ()
     , savePrenatalPhoto : WebData ()
     , saveBirthPlan : WebData ()
-    , savePregnancyTesting : WebData ()
+    , savePregnancyTest : WebData ()
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
@@ -99,7 +99,7 @@ emptyModel =
     , saveVitals = NotAsked
     , savePrenatalPhoto = NotAsked
     , saveBirthPlan = NotAsked
-    , savePregnancyTesting = NotAsked
+    , savePregnancyTest = NotAsked
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
@@ -142,8 +142,8 @@ type Msg
     | HandleSavedPrenatalPhoto (WebData ())
     | SaveBirthPlan PersonId (Maybe BirthPlanId) BirthPlanValue
     | HandleSavedBirthPlan (WebData ())
-    | SavePregnancyTesting PersonId (Maybe PregnancyTestId) PregnancyTestResult
-    | HandleSavedPregnancyTesting (WebData ())
+    | SavePregnancyTest PersonId (Maybe PregnancyTestId) PregnancyTestResult
+    | HandleSavedPregnancyTest (WebData ())
     | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) PrenatalFollowUpValue

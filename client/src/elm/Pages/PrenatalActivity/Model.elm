@@ -92,7 +92,7 @@ type Msg
     | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan ))
       -- LABORATORYMsgs
     | SetPregnancyTestResult String
-    | SavePregnancyTesting PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
+    | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
@@ -300,13 +300,13 @@ emptyBirthPlanData =
 
 
 type alias LaboratoryData =
-    { form : PregnancyTestingForm
+    { pregnancyTestForm : PregnancyTestForm
     }
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
-    { form = PregnancyTestingForm Nothing
+    { pregnancyTestForm = PregnancyTestForm Nothing
     }
 
 
@@ -661,7 +661,7 @@ emptyBirthPlanForm =
     }
 
 
-type alias PregnancyTestingForm =
+type alias PregnancyTestForm =
     { pregnancyTestResult : Maybe PregnancyTestResult
     }
 

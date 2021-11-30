@@ -350,10 +350,10 @@ pmtctParticipantEndpoint =
         |> withParamsEncoder encodePmtctParticipantParams
 
 
-pregnancyTestingEndpoint : ReadWriteEndPoint Error PregnancyTestId PregnancyTest PregnancyTest ()
-pregnancyTestingEndpoint =
-    swEndpoint "nodes/pregnancy_testing" decodePregnancyTesting
-        |> withValueEncoder (object << encodePregnancyTesting)
+pregnancyTestEndpoint : ReadWriteEndPoint Error PregnancyTestId PregnancyTest PregnancyTest ()
+pregnancyTestEndpoint =
+    swEndpoint "nodes/pregnancy_testing" decodePregnancyTest
+        |> withValueEncoder (object << encodePregnancyTest)
 
 
 prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)

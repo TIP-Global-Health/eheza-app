@@ -823,7 +823,7 @@ type TranslationId
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
-    | PregnancyTestingResult PregnancyTestResult
+    | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
@@ -6589,7 +6589,7 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
             }
 
-        PregnancyTestingResult result ->
+        PregnancyTestResult result ->
             case result of
                 PregnancyTestPositive ->
                     { english = "Positive"

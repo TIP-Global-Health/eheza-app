@@ -111,7 +111,7 @@ decodePrenatalMeasurements =
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
         |> optional "birth_plan" (decodeHead decodeBirthPlan) Nothing
-        |> optional "pregnancy_testing" (decodeHead decodePregnancyTesting) Nothing
+        |> optional "pregnancy_testing" (decodeHead decodePregnancyTest) Nothing
         |> optional "prenatal_health_education" (decodeHead decodePrenatalHealthEducation) Nothing
         |> optional "prenatal_follow_up" (decodeHead decodePrenatalFollowUp) Nothing
         |> optional "prenatal_send_to_hc" (decodeHead decodePrenatalSendToHc) Nothing
@@ -224,8 +224,8 @@ decodeHead =
     map List.head << list << decodeWithEntityUuid
 
 
-decodePregnancyTesting : Decoder PregnancyTest
-decodePregnancyTesting =
+decodePregnancyTest : Decoder PregnancyTest
+decodePregnancyTest =
     decodePregnancyTestResult
         |> field "urine_pregnancy_test"
         |> decodePrenatalMeasurement

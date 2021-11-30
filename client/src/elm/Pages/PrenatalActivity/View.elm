@@ -1198,7 +1198,7 @@ viewLaboratoryContent language currentDate assembled data =
         form =
             assembled.measurements.pregnancyTest
                 |> getMeasurementValueFunc
-                |> pregnancyTestingFormWithDefault data.form
+                |> pregnancyTestFormWithDefault data.pregnancyTestForm
 
         totalTasks =
             1
@@ -1226,7 +1226,7 @@ viewLaboratoryContent language currentDate assembled data =
                                     [ value (pregnancyTestResultAsString result)
                                     , selected (form.pregnancyTestResult == Just result)
                                     ]
-                                    [ text <| translate language <| Translate.PregnancyTestingResult result ]
+                                    [ text <| translate language <| Translate.PregnancyTestResult result ]
                             )
                    )
                 |> select [ onInput SetPregnancyTestResult, class "form-input select" ]
@@ -1242,7 +1242,7 @@ viewLaboratoryContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyTesting assembled.participant.person assembled.measurements.pregnancyTest
+                , onClick <| SavePregnancyTest assembled.participant.person assembled.measurements.pregnancyTest
                 ]
                 [ text <| translate language Translate.Save ]
             ]
