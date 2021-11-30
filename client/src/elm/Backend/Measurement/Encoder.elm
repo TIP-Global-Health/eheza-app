@@ -241,6 +241,529 @@ encodeAppointmentConfirmationValue value =
     ]
 
 
+encodePrenatalBloodGpRsTest : PrenatalBloodGpRsTest -> List ( String, Value )
+encodePrenatalBloodGpRsTest =
+    encodePrenatalMeasurement encodePrenatalBloodGpRsTestValue
+
+
+encodePrenatalBloodGpRsTestValue : PrenatalBloodGpRsTestValue -> List ( String, Value )
+encodePrenatalBloodGpRsTestValue value =
+    let
+        results =
+            Maybe.map2
+                (\bloodGroup rhesus ->
+                    [ ( "blood_group", encodeBloodGroup bloodGroup )
+                    , ( "rhesus", encodeRhesus rhesus )
+                    ]
+                )
+                value.bloodGroup
+                value.rhesus
+                |> Maybe.withDefault []
+    in
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    ]
+        ++ results
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_blood_gprs_test" )
+           ]
+
+
+encodeBloodGroup : BloodGroup -> Value
+encodeBloodGroup value =
+    string <|
+        case value of
+            BloodGroupA ->
+                "a"
+
+            BloodGroupB ->
+                "b"
+
+            BloodGroupAB ->
+                "ab"
+
+            BloodGroupO ->
+                "o"
+
+
+encodeRhesus : Rhesus -> Value
+encodeRhesus value =
+    string <|
+        case value of
+            RhesusPositive ->
+                "positive"
+
+            RhesusNegative ->
+                "negative"
+
+
+encodePrenatalHemoglobinTest : PrenatalHemoglobinTest -> List ( String, Value )
+encodePrenatalHemoglobinTest =
+    encodePrenatalMeasurement encodePrenatalHemoglobinTestValue
+
+
+encodePrenatalHemoglobinTestValue : PrenatalHemoglobinTestValue -> List ( String, Value )
+encodePrenatalHemoglobinTestValue value =
+    let
+        result =
+            Maybe.map
+                (\hemoglobinCount ->
+                    [ ( "hemoglobin_count", float hemoglobinCount ) ]
+                )
+                value.hemoglobinCount
+                |> Maybe.withDefault []
+    in
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    ]
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hemoglobin_test" )
+           ]
+
+
+encodePrenatalHepatitisBTest : PrenatalHepatitisBTest -> List ( String, Value )
+encodePrenatalHepatitisBTest =
+    encodePrenatalMeasurement encodePrenatalHepatitisBTestValue
+
+
+encodePrenatalHepatitisBTestValue : PrenatalHepatitisBTestValue -> List ( String, Value )
+encodePrenatalHepatitisBTestValue value =
+    let
+        result =
+            Maybe.map
+                (\testResult ->
+                    [ ( "test_result", encodePrenatalTestResult testResult ) ]
+                )
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    ]
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hepatitis_b_test" )
+           ]
+
+
+encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
+encodePrenatalHIVTest =
+    encodePrenatalMeasurement encodePrenatalHIVTestValue
+
+
+encodePrenatalHIVTestValue : PrenatalHIVTestValue -> List ( String, Value )
+encodePrenatalHIVTestValue value =
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    , ( "test_result", encodePrenatalTestResult value.testResult )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_hiv_test" )
+    ]
+
+
+encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
+encodePrenatalMalariaTest =
+    encodePrenatalMeasurement encodePrenatalMalariaTestValue
+
+
+encodePrenatalMalariaTestValue : PrenatalMalariaTestValue -> List ( String, Value )
+encodePrenatalMalariaTestValue value =
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    , ( "test_result", encodePrenatalTestResult value.testResult )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_malaria_test" )
+    ]
+
+
+encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
+encodePrenatalRandomBloodSugarTest =
+    encodePrenatalMeasurement encodePrenatalRandomBloodSugarTestValue
+
+
+encodePrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarTestValue -> List ( String, Value )
+encodePrenatalRandomBloodSugarTestValue value =
+    let
+        result =
+            Maybe.map
+                (\sugarCount ->
+                    [ ( "sugar_count", int sugarCount ) ]
+                )
+                value.sugarCount
+                |> Maybe.withDefault []
+    in
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    ]
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_random_blood_sugar_test" )
+           ]
+
+
+encodePrenatalSyphilisTest : PrenatalSyphilisTest -> List ( String, Value )
+encodePrenatalSyphilisTest =
+    encodePrenatalMeasurement encodePrenatalSyphilisTestValue
+
+
+encodePrenatalSyphilisTestValue : PrenatalSyphilisTestValue -> List ( String, Value )
+encodePrenatalSyphilisTestValue value =
+    let
+        result =
+            Maybe.map
+                (\testResult ->
+                    [ ( "test_result", encodePrenatalTestResult testResult ) ]
+                )
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    ]
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_syphilis_test" )
+           ]
+
+
+encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
+encodePrenatalUrineDipstickTest =
+    encodePrenatalMeasurement encodePrenatalUrineDipstickTestValue
+
+
+encodePrenatalUrineDipstickTestValue : PrenatalUrineDipstickTestValue -> List ( String, Value )
+encodePrenatalUrineDipstickTestValue value =
+    let
+        encodeField encoder fieldName fieldValue =
+            Maybe.map
+                (\value_ ->
+                    [ ( "fieldName", encoder value_ ) ]
+                )
+                fieldValue
+                |> Maybe.withDefault []
+
+        protein =
+            encodeField encodeProteinValue "protein" value.protein
+
+        ph =
+            encodeField encodePHValue "ph" value.ph
+
+        glucose =
+            encodeField encodeGlucoseValue "glucose" value.glucose
+
+        leukocytes =
+            encodeField encodeLeukocytesValue "leukocytes" value.leukocytes
+
+        nitrite =
+            encodeField encodeNitriteValue "nitrite" value.nitrite
+
+        urobilinogen =
+            encodeField encodeUrobilinogenValue "urobilinogen" value.urobilinogen
+
+        haemoglobin =
+            encodeField encodeHaemoglobinValue "haemoglobin" value.haemoglobin
+
+        specificGravity =
+            encodeField encodeSpecificGravityValue "specific_gravity" value.specificGravity
+
+        ketone =
+            encodeField encodeKetoneValue "ketone" value.ketone
+
+        bilirubin =
+            encodeField encodeBilirubinValue "bilirubin" value.bilirubin
+    in
+    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    ]
+        ++ protein
+        ++ ph
+        ++ glucose
+        ++ leukocytes
+        ++ nitrite
+        ++ urobilinogen
+        ++ haemoglobin
+        ++ specificGravity
+        ++ ketone
+        ++ bilirubin
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_urine_dipstick_test" )
+           ]
+
+
+encodeProteinValue : ProteinValue -> Value
+encodeProteinValue value =
+    string <|
+        case value of
+            ProteinNegative ->
+                "negative"
+
+            Protein30 ->
+                "30"
+
+            Protein100 ->
+                "100"
+
+            Protein300 ->
+                "300"
+
+            Protein2000 ->
+                "2000"
+
+
+encodePHValue : PHValue -> Value
+encodePHValue value =
+    string <|
+        case value of
+            Ph50 ->
+                "5.0"
+
+            Ph60 ->
+                "6.0"
+
+            Ph65 ->
+                "6.5"
+
+            Ph70 ->
+                "7.0"
+
+            Ph75 ->
+                "7.5"
+
+            Ph80 ->
+                "8.0"
+
+            Ph85 ->
+                "8.5"
+
+
+encodeGlucoseValue : GlucoseValue -> Value
+encodeGlucoseValue value =
+    string <|
+        case value of
+            Glucose0 ->
+                "0"
+
+            GlucosePlus1 ->
+                "+1"
+
+            GlucosePlus2 ->
+                "+2"
+
+            GlucosePlus3 ->
+                "+3"
+
+            GlucosePlus4 ->
+                "+4"
+
+
+encodeLeukocytesValue : LeukocytesValue -> Value
+encodeLeukocytesValue value =
+    string <|
+        case value of
+            LeukocytesNegative ->
+                "negative"
+
+            LeukocytesSmall ->
+                "small"
+
+            LeukocytesMedium ->
+                "medium"
+
+            LeukocytesLarge ->
+                "large"
+
+            LeukocytesNotApplicable ->
+                "n-a"
+
+
+encodeNitriteValue : NitriteValue -> Value
+encodeNitriteValue value =
+    string <|
+        case value of
+            NitriteNegative ->
+                "negative"
+
+            NitritePlus ->
+                "+"
+
+            NitritePlusPlus ->
+                "++"
+
+            NitriteNotApplicable ->
+                "n-a"
+
+
+encodeUrobilinogenValue : UrobilinogenValue -> Value
+encodeUrobilinogenValue value =
+    string <|
+        case value of
+            Urobilinogen02 ->
+                "0.2"
+
+            Urobilinogen10 ->
+                "1"
+
+            Urobilinogen20 ->
+                "2"
+
+            Urobilinogen40 ->
+                "4"
+
+            Urobilinogen80 ->
+                "8"
+
+            UrobilinogenNotApplicable ->
+                "n-a"
+
+
+encodeHaemoglobinValue : HaemoglobinValue -> Value
+encodeHaemoglobinValue value =
+    string <|
+        case value of
+            HaemoglobinNegative ->
+                "negative"
+
+            HaemoglobinNonHemolyzedTrace ->
+                "non-hemolyzed-trace"
+
+            HaemoglobinNonHemolyzedModerate ->
+                "non-hemolyzed-moderate"
+
+            HaemoglobinHemolyzedTrace ->
+                "hemolyzed-trace"
+
+            HaemoglobinSmall ->
+                "small"
+
+            HaemoglobinModerate ->
+                "moderate"
+
+            HaemoglobinLarge ->
+                "large"
+
+            HaemoglobinNotApplicable ->
+                "n-a"
+
+
+encodeSpecificGravityValue : SpecificGravityValue -> Value
+encodeSpecificGravityValue value =
+    string <|
+        case value of
+            SpecificGravity1000 ->
+                "1.000"
+
+            SpecificGravity1005 ->
+                "1.005"
+
+            SpecificGravity1010 ->
+                "1.010"
+
+            SpecificGravity1015 ->
+                "1.015"
+
+            SpecificGravity1020 ->
+                "1.020"
+
+            SpecificGravity1025 ->
+                "1.025"
+
+            SpecificGravity1030 ->
+                "1.030"
+
+            SpecificGravityNotApplicable ->
+                "n-a"
+
+
+encodeKetoneValue : KetoneValue -> Value
+encodeKetoneValue value =
+    string <|
+        case value of
+            KetoneNegative ->
+                "negative"
+
+            Ketone5 ->
+                "5"
+
+            Ketone10 ->
+                "10"
+
+            Ketone15 ->
+                "15"
+
+            Ketone40 ->
+                "40"
+
+            Ketone80 ->
+                "80"
+
+            Ketone100 ->
+                "100"
+
+            KetoneNotApplicable ->
+                "n-a"
+
+
+encodeBilirubinValue : BilirubinValue -> Value
+encodeBilirubinValue value =
+    string <|
+        case value of
+            BilirubinNegative ->
+                "negative"
+
+            BilirubinSmall ->
+                "small"
+
+            BilirubinMedium ->
+                "medium"
+
+            BilirubinLarge ->
+                "large"
+
+            BilirubinotApplicable ->
+                "n-a"
+
+
+encodePrenatalTestExecutionNote : PrenatalTestExecutionNote -> Value
+encodePrenatalTestExecutionNote value =
+    string <|
+        case value of
+            TestNoteRunToday ->
+                "run-today"
+
+            TestNoteRunPreviously ->
+                "run-previously"
+
+            TestNoteLackOfReagents ->
+                "lack-of-reagents"
+
+            TestNoteLackOfOtherSupplies ->
+                "lack-of-other-supplies"
+
+            TestNoteNoEquipment ->
+                "no-equipment"
+
+            TestNoteBrokenEquipment ->
+                "broken-equipment"
+
+            TestNoteNotIndicated ->
+                "not-indicated"
+
+
+encodePrenatalTestResult : PrenatalTestResult -> Value
+encodePrenatalTestResult value =
+    string <|
+        case value of
+            PrenatalTestPositive ->
+                "positive"
+
+            PrenatalTestNegative ->
+                "negative"
+
+            PrenatalTestIndeterminate ->
+                "indeterminate"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")

@@ -494,7 +494,7 @@ decodePrenatalUrineDipstickTestValue =
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "protein" (nullable decodeProteinValue) Nothing
-        |> optional "ph" (nullable decodePhValue) Nothing
+        |> optional "ph" (nullable decodePHValue) Nothing
         |> optional "glucose" (nullable decodeGlucoseValue) Nothing
         |> optional "leukocytes" (nullable decodeLeukocytesValue) Nothing
         |> optional "nitrite" (nullable decodeNitriteValue) Nothing
@@ -533,8 +533,8 @@ decodeProteinValue =
             )
 
 
-decodePhValue : Decoder PhValue
-decodePhValue =
+decodePHValue : Decoder PHValue
+decodePHValue =
     string
         |> andThen
             (\value ->
@@ -563,7 +563,7 @@ decodePhValue =
                     _ ->
                         fail <|
                             value
-                                ++ " is not a recognized PhValue"
+                                ++ " is not a recognized PHValue"
             )
 
 
@@ -613,7 +613,7 @@ decodeLeukocytesValue =
                     "large" ->
                         succeed LeukocytesLarge
 
-                    "n-a|" ->
+                    "n-a" ->
                         succeed LeukocytesNotApplicable
 
                     _ ->

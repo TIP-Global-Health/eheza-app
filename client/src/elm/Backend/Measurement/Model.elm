@@ -926,7 +926,7 @@ type alias PrenatalUrineDipstickTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : NominalDate
     , protein : Maybe ProteinValue
-    , ph : Maybe PhValue
+    , ph : Maybe PHValue
     , glucose : Maybe GlucoseValue
     , leukocytes : Maybe LeukocytesValue
     , nitrite : Maybe NitriteValue
@@ -946,7 +946,7 @@ type ProteinValue
     | Protein2000
 
 
-type PhValue
+type PHValue
     = Ph50
     | Ph60
     | Ph65
