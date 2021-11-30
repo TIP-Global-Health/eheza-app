@@ -352,9 +352,70 @@ decodePrenatalBloodGpRsTest =
     decodePrenatalMeasurement decodePrenatalBloodGpRsTestValue
 
 
+decodePrenatalBloodGpRsTestValue : Decoder PrenatalBloodGpRsTestValue
+decodePrenatalBloodGpRsTestValue =
+    succeed PrenatalBloodGpRsTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "blood_group" (nullable decodeBloodGroup) Nothing
+        |> optional "rhesus" (nullable decodeRhesus) Nothing
+
+
+decodeBloodGroup : Decoder BloodGroup
+decodeBloodGroup =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "a" ->
+                        succeed BloodGroupA
+
+                    "b" ->
+                        succeed BloodGroupB
+
+                    "ab" ->
+                        succeed BloodGroupAB
+
+                    "o" ->
+                        succeed BloodGroupO
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized BloodGroup"
+            )
+
+
+decodeRhesus : Decoder Rhesus
+decodeRhesus =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "positive" ->
+                        succeed RhesusPositive
+
+                    "negative" ->
+                        succeed RhesusNegative
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized Rhesus"
+            )
+
+
 decodePrenatalHemoglobinTest : Decoder PrenatalHemoglobinTest
 decodePrenatalHemoglobinTest =
     decodePrenatalMeasurement decodePrenatalHemoglobinTestValue
+
+
+decodePrenatalHemoglobinTestValue : Decoder PrenatalHemoglobinTestValue
+decodePrenatalHemoglobinTestValue =
+    succeed PrenatalHemoglobinTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "hemoglobin_count" (nullable decodeFloat) Nothing
 
 
 decodePrenatalHepatitisBTest : Decoder PrenatalHepatitisBTest
@@ -401,6 +462,14 @@ decodePrenatalRandomBloodSugarTest =
     decodePrenatalMeasurement decodePrenatalRandomBloodSugarTestValue
 
 
+decodePrenatalRandomBloodSugarTestValue : Decoder PrenatalRandomBloodSugarTestValue
+decodePrenatalRandomBloodSugarTestValue =
+    succeed PrenatalRandomBloodSugarTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "sugar_count" (nullable decodeInt) Nothing
+
+
 decodePrenatalSyphilisTest : Decoder PrenatalSyphilisTest
 decodePrenatalSyphilisTest =
     decodePrenatalMeasurement decodePrenatalSyphilisTestValue
@@ -417,6 +486,336 @@ decodePrenatalSyphilisTestValue =
 decodePrenatalUrineDipstickTest : Decoder PrenatalUrineDipstickTest
 decodePrenatalUrineDipstickTest =
     decodePrenatalMeasurement decodePrenatalUrineDipstickTestValue
+
+
+decodePrenatalUrineDipstickTestValue : Decoder PrenatalUrineDipstickTestValue
+decodePrenatalUrineDipstickTestValue =
+    succeed PrenatalUrineDipstickTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "protein" (nullable decodeProteinValue) Nothing
+        |> optional "ph" (nullable decodePhValue) Nothing
+        |> optional "glucose" (nullable decodeGlucoseValue) Nothing
+        |> optional "leukocytes" (nullable decodeLeukocytesValue) Nothing
+        |> optional "nitrite" (nullable decodeNitriteValue) Nothing
+        |> optional "urobilinogen" (nullable decodeUrobilinogenValue) Nothing
+        |> optional "haemoglobin" (nullable decodeHaemoglobinValue) Nothing
+        |> optional "specificGravity" (nullable decodeSpecificGravityValue) Nothing
+        |> optional "ketone" (nullable decodeKetoneValue) Nothing
+        |> optional "bilirubin" (nullable decodeBilirubinValue) Nothing
+
+
+decodeProteinValue : Decoder ProteinValue
+decodeProteinValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "negative" ->
+                        succeed ProteinNegative
+
+                    "30" ->
+                        succeed Protein30
+
+                    "100" ->
+                        succeed Protein100
+
+                    "300" ->
+                        succeed Protein300
+
+                    "2000" ->
+                        succeed Protein2000
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized ProteinValue"
+            )
+
+
+decodePhValue : Decoder PhValue
+decodePhValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "5.0" ->
+                        succeed Ph50
+
+                    "6.0" ->
+                        succeed Ph60
+
+                    "6.5" ->
+                        succeed Ph65
+
+                    "7.0" ->
+                        succeed Ph70
+
+                    "7.5" ->
+                        succeed Ph75
+
+                    "8.0" ->
+                        succeed Ph80
+
+                    "8.5" ->
+                        succeed Ph85
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized PhValue"
+            )
+
+
+decodeGlucoseValue : Decoder GlucoseValue
+decodeGlucoseValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "0" ->
+                        succeed Glucose0
+
+                    "+1" ->
+                        succeed GlucosePlus1
+
+                    "+2" ->
+                        succeed GlucosePlus2
+
+                    "+3" ->
+                        succeed GlucosePlus3
+
+                    "+4" ->
+                        succeed GlucosePlus4
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized GlucoseValue"
+            )
+
+
+decodeLeukocytesValue : Decoder LeukocytesValue
+decodeLeukocytesValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "negative" ->
+                        succeed LeukocytesNegative
+
+                    "small" ->
+                        succeed LeukocytesSmall
+
+                    "medium" ->
+                        succeed LeukocytesMedium
+
+                    "large" ->
+                        succeed LeukocytesLarge
+
+                    "n-a|" ->
+                        succeed LeukocytesNotApplicable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized LeukocytesValue"
+            )
+
+
+decodeNitriteValue : Decoder NitriteValue
+decodeNitriteValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "negative" ->
+                        succeed NitriteNegative
+
+                    "+" ->
+                        succeed NitritePlus
+
+                    "++" ->
+                        succeed NitritePlusPlus
+
+                    "n-a" ->
+                        succeed NitriteNotApplicable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized NitriteValue"
+            )
+
+
+decodeUrobilinogenValue : Decoder UrobilinogenValue
+decodeUrobilinogenValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "0.2" ->
+                        succeed Urobilinogen02
+
+                    "1" ->
+                        succeed Urobilinogen10
+
+                    "2" ->
+                        succeed Urobilinogen20
+
+                    "4" ->
+                        succeed Urobilinogen40
+
+                    "8" ->
+                        succeed Urobilinogen80
+
+                    "n-a" ->
+                        succeed UrobilinogenNotApplicable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized UrobilinogenValue"
+            )
+
+
+decodeHaemoglobinValue : Decoder HaemoglobinValue
+decodeHaemoglobinValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "negative" ->
+                        succeed HaemoglobinNegative
+
+                    "non-hemolyzed-trace" ->
+                        succeed HaemoglobinNonHemolyzedTrace
+
+                    "non-hemolyzed-moderate" ->
+                        succeed HaemoglobinNonHemolyzedModerate
+
+                    "hemolyzed-trace" ->
+                        succeed HaemoglobinHemolyzedTrace
+
+                    "small" ->
+                        succeed HaemoglobinSmall
+
+                    "moderate" ->
+                        succeed HaemoglobinModerate
+
+                    "large" ->
+                        succeed HaemoglobinLarge
+
+                    "n-a" ->
+                        succeed HaemoglobinNotApplicable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized HaemoglobinValue"
+            )
+
+
+decodeSpecificGravityValue : Decoder SpecificGravityValue
+decodeSpecificGravityValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "1.000" ->
+                        succeed SpecificGravity1000
+
+                    "1.005" ->
+                        succeed SpecificGravity1005
+
+                    "1.010" ->
+                        succeed SpecificGravity1010
+
+                    "1.015" ->
+                        succeed SpecificGravity1015
+
+                    "1.020" ->
+                        succeed SpecificGravity1020
+
+                    "1.025" ->
+                        succeed SpecificGravity1025
+
+                    "1.030" ->
+                        succeed SpecificGravity1030
+
+                    "n-a" ->
+                        succeed SpecificGravityNotApplicable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized SpecificGravityValue"
+            )
+
+
+decodeKetoneValue : Decoder KetoneValue
+decodeKetoneValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "negative" ->
+                        succeed KetoneNegative
+
+                    "5" ->
+                        succeed Ketone5
+
+                    "10" ->
+                        succeed Ketone10
+
+                    "15" ->
+                        succeed Ketone15
+
+                    "40" ->
+                        succeed Ketone40
+
+                    "80" ->
+                        succeed Ketone80
+
+                    "100" ->
+                        succeed Ketone100
+
+                    "n-a" ->
+                        succeed KetoneNotApplicable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized KetoneValue"
+            )
+
+
+decodeBilirubinValue : Decoder BilirubinValue
+decodeBilirubinValue =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "negative" ->
+                        succeed BilirubinNegative
+
+                    "small" ->
+                        succeed BilirubinSmall
+
+                    "medium" ->
+                        succeed BilirubinMedium
+
+                    "large" ->
+                        succeed BilirubinLarge
+
+                    "n-a" ->
+                        succeed BilirubinotApplicable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized BilirubinValue"
+            )
 
 
 decodePrenatalTestExecutionNote : Decoder PrenatalTestExecutionNote

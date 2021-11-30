@@ -965,8 +965,7 @@ type GlucoseValue
 
 
 type LeukocytesValue
-    = Leukocytes
-    | LeukocytesNegative
+    = LeukocytesNegative
     | LeukocytesSmall
     | LeukocytesMedium
     | LeukocytesLarge
@@ -1001,8 +1000,7 @@ type HaemoglobinValue
 
 
 type SpecificGravityValue
-    = SpecificGravity
-    | SpecificGravity1000
+    = SpecificGravity1000
     | SpecificGravity1005
     | SpecificGravity1010
     | SpecificGravity1015
@@ -1860,7 +1858,7 @@ type alias PrenatalMeasurements =
     , hepatitisBTest : Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )
     , hivTest : Maybe ( PrenatalHIVTestId, PrenatalHIVTest )
     , malariaTest : Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )
-    , prenatalSyphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
+    , randomBloodSugarTest : Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )
     , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     }
@@ -1894,7 +1892,7 @@ emptyPrenatalMeasurements =
     , hepatitisBTest = Nothing
     , hivTest = Nothing
     , malariaTest = Nothing
-    , prenatalSyphilisTest = Nothing
+    , randomBloodSugarTest = Nothing
     , syphilisTest = Nothing
     , urineDipstickTest = Nothing
     }
