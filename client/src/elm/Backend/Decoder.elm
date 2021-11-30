@@ -241,6 +241,9 @@ decodeRevision =
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
+                    "prenatal_blood_gprs_test" ->
+                        decodeWithUuid PrenatalBloodGpRsTestRevision decodePrenatalBloodGpRsTest
+
                     "prenatal_encounter" ->
                         decodeWithUuid PrenatalEncounterRevision decodePrenatalEncounter
 
@@ -250,8 +253,20 @@ decodeRevision =
                     "prenatal_health_education" ->
                         decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
 
+                    "prenatal_hemoglobin_test" ->
+                        decodeWithUuid PrenatalHemoglobinTestRevision decodePrenatalHemoglobinTest
+
+                    "prenatal_hepatitis_b_test" ->
+                        decodeWithUuid PrenatalHepatitisBTestRevision decodePrenatalHepatitisBTest
+
+                    "prenatal_hiv_test" ->
+                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
                     "prenatal_follow_up" ->
                         decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
+                    "prenatal_malaria_test" ->
+                        decodeWithUuid PrenatalHIVTestRevision decodePrenatalHIVTest
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
@@ -259,8 +274,17 @@ decodeRevision =
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
 
+                    "prenatal_random_blood_sugar_test" ->
+                        decodeWithUuid PrenatalRandomBloodSugarTestRevision decodePrenatalRandomBloodSugarTest
+
                     "prenatal_send_to_hc" ->
                         decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
+
+                    "prenatal_syphilis_test" ->
+                        decodeWithUuid PrenatalSyphilisTestRevision decodePrenatalSyphilisTest
+
+                    "prenatal_urine_dipstick_test" ->
+                        decodeWithUuid PrenatalUrineDipstickTestRevision decodePrenatalUrineDipstickTest
 
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship
