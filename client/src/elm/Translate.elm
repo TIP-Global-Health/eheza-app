@@ -1052,6 +1052,7 @@ type TranslationId
     | WhyNot
     | WhyDifferentFbfAmount Activity
     | Year
+    | SingleYearOld Int
     | YearsOld Int
     | Yes
     | YouAreNotAnAdmin
@@ -8870,6 +8871,11 @@ translationSet trans =
         Year ->
             { english = "Year"
             , kinyarwanda = Just "Umwaka"
+            }
+
+        SingleYearOld age ->
+            { english = String.fromInt age ++ " year old"
+            , kinyarwanda = Just <| "Umwaka " ++ String.fromInt age
             }
 
         YearsOld int ->
