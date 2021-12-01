@@ -12,7 +12,7 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -211,7 +211,7 @@ viewAssessmentPane language currentDate isFirstEncounter firstEncounterData subs
                 div [ class <| "entry " ++ background ]
                     [ div [ class "title" ] [ text <| translate language Translate.Assessment ++ ":" ]
                     , div [ class "assessment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
-                    , div [ class "date" ] [ text <| (translate language <| Translate.AcuteIllnessStatus status) ++ ": " ++ formatDDMMyyyy date ]
+                    , div [ class "date" ] [ text <| (translate language <| Translate.AcuteIllnessStatus status) ++ ": " ++ formatDDMMYYYY date ]
                     ]
 
             currentAssessment =
@@ -340,7 +340,7 @@ viewSymptomsPane language currentDate isFirstEncounter firstEncounterData =
                                 List.repeat maxDuration dataFirst.startDate
                                     |> List.indexedMap
                                         (\index date ->
-                                            ( Date.add Date.Days (-1 * index) date |> formatDDMMyyyy
+                                            ( Date.add Date.Days (-1 * index) date |> formatDDMMYYYY
                                             , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
                                             )
                                         )
@@ -537,7 +537,7 @@ viewPhysicalExamPane language currentDate firstEncounterData subsequentEncounter
                                 viewValueWithAlert muacValue muacWarning "muac"
                     in
                     tr []
-                        [ td [ class "date" ] [ text <| formatDDMMyyyy encounterData.startDate ]
+                        [ td [ class "date" ] [ text <| formatDDMMYYYY encounterData.startDate ]
                         , viewValueWithAlert bodyTemperatureValue bodyTemperatureWarning "body-temperature"
                         , viewValueWithAlert respiratoryRateValue respiratoryRateWarning "respiratory-rate"
                         , muacCell
@@ -770,7 +770,7 @@ viewTreatmentSigns language currentDate isFirstEncounter firstEncounterData subs
                                                     [ div [ class "visit-date" ]
                                                         [ text <| translate language <| Translate.On
                                                         , text " "
-                                                        , text <| formatDDMMyyyy dataSubsequent.startDate
+                                                        , text <| formatDDMMYYYY dataSubsequent.startDate
                                                         , text " :"
                                                         ]
                                                     ]
@@ -1174,14 +1174,14 @@ viewNextStepsPane language currentDate data =
                                 , text " "
                                 , text <| String.toLower <| translate language Translate.On
                                 , text " "
-                                , text <| formatDDMMyyyy followUpDate
+                                , text <| formatDDMMYYYY followUpDate
                                 , text "."
                                 ]
 
                             else
                                 [ text <| translate language Translate.FollowUpWithPatientOn
                                 , text " "
-                                , text <| formatDDMMyyyy followUpDate
+                                , text <| formatDDMMYYYY followUpDate
                                 , text "."
                                 ]
                         )

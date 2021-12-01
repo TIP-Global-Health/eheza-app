@@ -65,7 +65,7 @@ import Form exposing (..)
 import Form.Field
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
@@ -332,7 +332,7 @@ applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation f
                 |> applyDefaultTextInput firstName defaultFirstName identity
                 |> applyDefaultTextInput secondName defaultSecondName identity
                 |> applyDefaultTextInput nationalIdNumber defaultNationalIdNumber identity
-                |> applyDefaultTextInput birthDate defaultBirthDate formatDDMMyyyy
+                |> applyDefaultTextInput birthDate defaultBirthDate formatYYYYMMDD
                 |> applyDefaultIsDateOfBirthEstimated
                 |> applyDefaultSelectInput hmisNumber defaultHmisNumber identity
                 |> applyDefaultGender

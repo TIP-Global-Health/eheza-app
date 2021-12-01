@@ -11,7 +11,7 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -165,7 +165,7 @@ viewPersonDetails language currentDate person =
         dateOfBirthEntry =
             Maybe.map
                 (\birthDate ->
-                    viewEntry Translate.DateOfBirth (formatDDMMyyyy birthDate)
+                    viewEntry Translate.DateOfBirth (formatDDMMYYYY birthDate)
                 )
                 person.birthDate
                 |> Maybe.withDefault emptyNode

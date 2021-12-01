@@ -14,7 +14,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -189,7 +189,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         chwLmpConfirmationSection dateToConfirm =
             [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
             , viewLabel language Translate.LmpLabel
-            , p [ class "chw-lmp" ] [ text <| formatDDMMyyyy dateToConfirm ]
+            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY dateToConfirm ]
             , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
             , viewBoolInput language form.chwLmpConfirmation (SetConfirmLmpDate dateToConfirm) "confirm-lmp" Nothing
             ]

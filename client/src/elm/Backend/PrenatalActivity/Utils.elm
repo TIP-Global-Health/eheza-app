@@ -25,7 +25,7 @@ import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), Prenata
 import Backend.Measurement.Utils exposing (heightValueFunc, muacValueFunc, weightValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
@@ -356,7 +356,7 @@ generateRecurringHighSeverityAlertData language currentDate isChw data alert =
                                     Just
                                         ( trans Translate.High ++ " " ++ transAlert alert
                                         , String.fromFloat sys ++ "/" ++ String.fromFloat dia ++ trans Translate.MMHGUnit
-                                        , formatDDMMyyyy date
+                                        , formatDDMMYYYY date
                                         )
 
                                 else
