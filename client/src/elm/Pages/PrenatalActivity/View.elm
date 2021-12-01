@@ -61,27 +61,27 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id isChw activity db model =
     let
-        data =
+        assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw activity model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw activity model data =
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw activity db model assembled =
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language id activity data
-        , viewContent language currentDate isChw activity model data
+        [ viewHeader language id activity assembled
+        , viewContent language currentDate isChw activity db model assembled
         , viewModal <|
             warningPopup language currentDate model.warningPopupState
         ]
 
 
 viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> AssembledData -> Html Msg
-viewHeader language id activity data =
+viewHeader language id activity assembled =
     let
         ( label_, icon ) =
-            generateActivityData activity data
+            generateActivityData activity assembled
 
         label =
             if icon == "appointment-confirmation" then
@@ -105,11 +105,11 @@ viewHeader language id activity data =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate isChw activity model data =
+viewContent : Language -> NominalDate -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate isChw data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate activity data model
+        viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewActivity language currentDate activity assembled db model
 
 
 warningPopup : Language -> NominalDate -> Maybe String -> Maybe (Html Msg)
@@ -140,44 +140,44 @@ warningPopup language currentDate dangerSigns =
             )
 
 
-viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate activity data model =
+viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate activity assembled db model =
     case activity of
         PregnancyDating ->
-            viewPregnancyDatingContent language currentDate data model.pregnancyDatingData
+            viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
 
         History ->
-            viewHistoryContent language currentDate data model.historyData
+            viewHistoryContent language currentDate assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate data model.examinationData
+            viewExaminationContent language currentDate assembled model.examinationData
 
         FamilyPlanning ->
-            viewFamilyPlanningContent language currentDate data model.familyPlanningData
+            viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
 
         DangerSigns ->
-            viewDangerSignsContent language currentDate data model.dangerSignsData
+            viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
         PrenatalPhoto ->
-            viewPrenatalPhotoContent language currentDate data model.prenatalPhotoData
+            viewPrenatalPhotoContent language currentDate assembled model.prenatalPhotoData
 
         Laboratory ->
-            viewLaboratoryContent language currentDate data model.laboratoryData
+            viewLaboratoryContent language currentDate assembled db model.laboratoryData
 
         Backend.PrenatalActivity.Model.HealthEducation ->
-            viewHealthEducationContent language currentDate data model.healthEducationData
+            viewHealthEducationContent language currentDate assembled model.healthEducationData
 
         BirthPlan ->
-            viewBirthPlanContent language currentDate data model.birthPlanData
+            viewBirthPlanContent language currentDate assembled model.birthPlanData
 
         NextSteps ->
-            viewNextStepsContent language currentDate data model.nextStepsData
+            viewNextStepsContent language currentDate assembled model.nextStepsData
 
         Backend.PrenatalActivity.Model.MalariaPrevention ->
-            viewMalariaPreventionContent language currentDate data model.malariaPreventionData
+            viewMalariaPreventionContent language currentDate assembled model.malariaPreventionData
 
         Backend.PrenatalActivity.Model.Medication ->
-            viewMedicationContent language currentDate data model.medicationData
+            viewMedicationContent language currentDate assembled model.medicationData
 
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
@@ -1191,9 +1191,243 @@ viewBirthPlanContent language currentDate assembled data =
     ]
 
 
-viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
-viewLaboratoryContent language currentDate assembled data =
-    -- @todo: by encounter type
+viewLaboratoryContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContent language currentDate assembled db data =
+    if assembled.encounter.encounterType == NurseEncounter then
+        viewLaboratoryContentForNurse language currentDate assembled db data
+
+    else
+        viewLaboratoryContentForChw language currentDate assembled data
+
+
+viewLaboratoryContentForNurse : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContentForNurse language currentDate assembled db data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectLaboratoryTask currentDate assembled db) laboratoryTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskHIVTest ->
+                            ( "laboratory-hiv"
+                            , isJust measurements.hivTest
+                            )
+
+                        TaskSyphilisTest ->
+                            ( "laboratory-syphilis"
+                            , isJust measurements.syphilisTest
+                            )
+
+                        TaskHepatitisBTest ->
+                            ( "laboratory-hepatitis-b"
+                            , isJust measurements.hepatitisBTest
+                            )
+
+                        TaskMalariaTest ->
+                            ( "laboratory-malaria"
+                            , isJust measurements.malariaTest
+                            )
+
+                        TaskBloodGpRsTest ->
+                            ( "laboratory-blood-group"
+                            , isJust measurements.bloodGpRsTest
+                            )
+
+                        TaskUrineDipstickTest ->
+                            ( "laboratory-urine-dipstick"
+                            , isJust measurements.urineDipstickTest
+                            )
+
+                        TaskHemoglobinTest ->
+                            ( "laboratory-hemoglobin"
+                            , isJust measurements.hemoglobinTest
+                            )
+
+                        TaskRandomBloodSugarTest ->
+                            ( "laboratory-blood-sugar"
+                            , isJust measurements.randomBloodSugarTest
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveLaboratoryTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalLaboratoryTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, laboratoryTasksCompletedFromTotal measurements data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskHIVTest ->
+                    measurements.hivTest
+                        |> getMeasurementValueFunc
+                        |> prenatalRDTFormWithDefault data.hivTest
+                        |> viewPrenatalRDTForm language currentDate
+                        |> List.singleton
+
+                Just TaskSyphilisTest ->
+                    measurements.syphilisTest
+                        |> getMeasurementValueFunc
+                        |> prenatalNonRDTFormWithDefault data.syphilisTest
+                        |> viewPrenatalNonRDTForm language currentDate
+                        |> List.singleton
+
+                Just TaskHepatitisBTest ->
+                    measurements.hepatitisBTest
+                        |> getMeasurementValueFunc
+                        |> prenatalNonRDTFormWithDefault data.hepatitisBTest
+                        |> viewPrenatalNonRDTForm language currentDate
+                        |> List.singleton
+
+                Just TaskMalariaTest ->
+                    measurements.malariaTest
+                        |> getMeasurementValueFunc
+                        |> prenatalRDTFormWithDefault data.malariaTest
+                        |> viewPrenatalRDTForm language currentDate
+                        |> List.singleton
+
+                Just TaskBloodGpRsTest ->
+                    measurements.bloodGpRsTest
+                        |> getMeasurementValueFunc
+                        |> prenatalNonRDTFormWithDefault data.bloodGpRsTest
+                        |> viewPrenatalNonRDTForm language currentDate
+                        |> List.singleton
+
+                Just TaskUrineDipstickTest ->
+                    measurements.urineDipstickTest
+                        |> getMeasurementValueFunc
+                        |> prenatalNonRDTFormWithDefault data.urineDipstickTest
+                        |> viewPrenatalNonRDTForm language currentDate
+                        |> List.singleton
+
+                Just TaskHemoglobinTest ->
+                    measurements.hemoglobinTest
+                        |> getMeasurementValueFunc
+                        |> prenatalNonRDTFormWithDefault data.hemoglobinTest
+                        |> viewPrenatalNonRDTForm language currentDate
+                        |> List.singleton
+
+                Just TaskRandomBloodSugarTest ->
+                    measurements.randomBloodSugarTest
+                        |> getMeasurementValueFunc
+                        |> prenatalNonRDTFormWithDefault data.randomBloodSugarTest
+                        |> viewPrenatalNonRDTForm language currentDate
+                        |> List.singleton
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        -- actions =
+        --    --
+        --     Maybe.map
+        --         (\task ->
+        --             let
+        --                 saveMsg =
+        --                     case task of
+        --                         TaskHIVTest ->
+        --                             SaveHIVTest personId measurements.hiv nextTask
+        --
+        --                         TaskSyphilisTest ->
+        --                             SaveSyphilisTest personId measurements.syphilisTest nextTask
+        --
+        --                         TaskHepatitisBTest ->
+        --                             SaveSyphilisTest personId measurements.hepatitisBTest nextTask
+        --
+        --                         TaskMalariaTest ->
+        --                             SaveSyphilisTest personId measurements.malariaTest nextTask
+        --
+        --                         TaskBloodGpRsTest ->
+        --                             SaveSyphilisTest personId measurements.bloodGpRsTest nextTask
+        --
+        --                         TaskUrineDipstickTest ->
+        --                             SaveSyphilisTest personId measurements.urineDipstickTest nextTask
+        --
+        --                         TaskHemoglobinTest ->
+        --                             SaveSyphilisTest personId measurements.hemoglobinTest nextTask
+        --
+        --                         TaskRandomBloodSugarTest ->
+        --                             SaveSyphilisTest personId measurements.randomBloodSugarTest nextTask
+        --             in
+        --             viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+        --         )
+        --         activeTask
+        --         |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm
+                ++ --[ actions ]
+                   []
+            )
+        ]
+    ]
+
+
+
+--@todo
+
+
+viewPrenatalRDTForm language currentDate form =
+    emptyNode
+
+
+
+--@todo
+
+
+viewPrenatalNonRDTForm language currentDate form =
+    emptyNode
+
+
+viewLaboratoryContentForChw : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContentForChw language currentDate assembled data =
     let
         form =
             assembled.measurements.pregnancyTest

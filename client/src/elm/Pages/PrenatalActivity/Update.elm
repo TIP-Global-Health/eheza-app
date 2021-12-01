@@ -1475,6 +1475,17 @@ update currentDate id db msg model =
             , []
             )
 
+        SetActiveLaboratoryTask task ->
+            let
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetPregnancyTestResult value ->
             let
                 result =

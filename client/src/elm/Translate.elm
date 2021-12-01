@@ -830,6 +830,7 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalLaboratoryTask Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
@@ -6811,6 +6812,48 @@ translationSet trans =
                 Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
                     { english = "Newborn Enrollment"
                     , kinyarwanda = Just "Kwandika uruhinja"
+                    }
+
+        PrenatalLaboratoryTask task ->
+            case task of
+                Pages.PrenatalActivity.Model.TaskHIVTest ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskSyphilisTest ->
+                    { english = "Syphilis - RPR"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHepatitisBTest ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskMalariaTest ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskBloodGpRsTest ->
+                    { english = "Blood Group"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskUrineDipstickTest ->
+                    { english = "Urine Dipstick"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHemoglobinTest ->
+                    { english = "Hemoglobin"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskRandomBloodSugarTest ->
+                    { english = "Random Blood Sugar"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalPhotoHelper ->

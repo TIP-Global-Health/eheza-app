@@ -3,6 +3,7 @@ module Pages.PrenatalActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
@@ -1583,3 +1584,32 @@ toUrineDipstickTestValueWithEmptyResults note date =
         Nothing
         Nothing
         Nothing
+
+
+laboratoryTasks : List LaboratoryTask
+laboratoryTasks =
+    [ TaskHIVTest
+    , TaskSyphilisTest
+    , TaskHepatitisBTest
+    , TaskMalariaTest
+    , TaskBloodGpRsTest
+    , TaskUrineDipstickTest
+    , TaskHemoglobinTest
+    , TaskRandomBloodSugarTest
+    ]
+
+
+expectLaboratoryTask : NominalDate -> AssembledData -> ModelIndexedDb -> LaboratoryTask -> Bool
+expectLaboratoryTask currentDate assembled db task =
+    case task of
+        -- @todo
+        _ ->
+            True
+
+
+laboratoryTasksCompletedFromTotal : PrenatalMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal measurements data task =
+    case task of
+        -- @todo
+        _ ->
+            ( 0, 1 )

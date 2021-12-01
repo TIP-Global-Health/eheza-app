@@ -91,6 +91,7 @@ type Msg
     | SetBirthPlanFamilyPlanning FamilyPlanningSign
     | SaveBirthPlan PersonId (Maybe ( BirthPlanId, BirthPlan ))
       -- LABORATORYMsgs
+    | SetActiveLaboratoryTask LaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
       -- HealtEducationMsgs
@@ -314,8 +315,7 @@ type alias LaboratoryData =
 
 
 type LaboratoryTask
-    = TaskPregnancyTest
-    | TaskBloodGpRsTest
+    = TaskBloodGpRsTest
     | TaskHemoglobinTest
     | TaskHepatitisBTest
     | TaskHIVTest
