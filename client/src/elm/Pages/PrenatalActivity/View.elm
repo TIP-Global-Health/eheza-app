@@ -1238,7 +1238,7 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
                             )
 
                         TaskMalariaTest ->
-                            ( "laboratory-malaria"
+                            ( "laboratory-malaria-testing"
                             , isJust measurements.malariaTest
                             )
 
