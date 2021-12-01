@@ -384,4 +384,18 @@ class RoboFile extends Tasks {
     return empty($result) ? NULL : json_decode($result);
   }
 
+  /**
+   * Generates the demographics report.
+   */
+  public function reportDemographics() {
+    $this->_exec('cd /var/www/html/server/www && drush sql-cli < profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.SQL');
+  }
+
+  /**
+   * Generates the nutrition report.
+   */
+  public function reportNutrition() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php');
+  }
+
 }
