@@ -6,9 +6,12 @@ FROM
   (SELECT
      COUNT(*) AS val
    FROM
-     field_data_field_individual_participant
+     field_data_field_individual_participant ip
+   LEFT JOIN
+     field_data_field_prenatal_encounter_type fdfpet ON ip.entity_id = fdfpet.entity_id
    WHERE
-       bundle = 'prenatal_encounter'
+     ip.bundle = 'prenatal_encounter' AND
+     fdfpet.field_prenatal_encounter_type_value='nurse'
    GROUP BY
      field_individual_participant_target_id) a
 GROUP BY
@@ -25,8 +28,11 @@ FROM
      field_data_field_individual_participant p
   LEFT JOIN
      field_data_field_expected_date_concluded edd ON p.field_individual_participant_target_id=edd.entity_id
+  LEFT JOIN
+       field_data_field_prenatal_encounter_type fdfpet ON p.entity_id = fdfpet.entity_id
    WHERE
      p.bundle = 'prenatal_encounter' AND
+     fdfpet.field_prenatal_encounter_type_value='nurse' AND
      date(edd.field_expected_date_concluded_value) > DATE_ADD(CURDATE(), INTERVAL 30 DAY)
   group by
     field_individual_participant_target_id) a
@@ -41,10 +47,13 @@ FROM
      COUNT(*) as val
    FROM
      field_data_field_individual_participant p
-  LEFT JOIN
+   LEFT JOIN
+       field_data_field_prenatal_encounter_type fdfpet ON p.entity_id = fdfpet.entity_id
+   LEFT JOIN
      field_data_field_expected_date_concluded edd ON p.field_individual_participant_target_id=edd.entity_id
    WHERE
      p.bundle = 'prenatal_encounter' AND
+     fdfpet.field_prenatal_encounter_type_value='nurse' AND
      date(edd.field_expected_date_concluded_value) < DATE_ADD(CURDATE(), INTERVAL 30 DAY)
   group by
     field_individual_participant_target_id) a
