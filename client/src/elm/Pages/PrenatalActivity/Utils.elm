@@ -1238,43 +1238,6 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             )
 
 
-
---
--- patientProvisionsTasksCompletedFromTotal : AssembledData -> PatientProvisionsData -> Bool -> PatientProvisionsTask -> ( Int, Int )
--- patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task =
---     case task of
---         Medication ->
---             let
---                 form =
---                     assembled.measurements.medication
---                         |> getMeasurementValueFunc
---                         |> medicationFormWithDefault data.medicationForm
---
---                 questions =
---                     if showDewormingPillQuestion then
---                         [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
---
---                     else
---                         [ form.receivedIronFolicAcid ]
---             in
---             ( questions
---                 |> List.map taskCompleted
---                 |> List.sum
---             , List.length questions
---             )
---
---         Resources ->
---             let
---                 form =
---                     assembled.measurements.resource
---                         |> getMeasurementValueFunc
---                         |> resourceFormWithDefault data.resourcesForm
---             in
---             ( taskCompleted form.receivedMosquitoNet
---             , 1
---             )
-
-
 socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
 socialHistoryHivTestingResultFromString result =
     case result of
