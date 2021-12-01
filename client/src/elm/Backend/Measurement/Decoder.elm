@@ -433,12 +433,12 @@ decodePrenatalHepatitisBTestValue =
 
 decodePrenatalHIVTest : Decoder PrenatalHIVTest
 decodePrenatalHIVTest =
-    decodePrenatalMeasurement decodePrenatalHIVTestValue
+    decodePrenatalMeasurement decodePrenatalLabsRDTValue
 
 
-decodePrenatalHIVTestValue : Decoder PrenatalHIVTestValue
-decodePrenatalHIVTestValue =
-    succeed PrenatalHIVTestValue
+decodePrenatalLabsRDTValue : Decoder PrenatalLabsRDTValue
+decodePrenatalLabsRDTValue =
+    succeed PrenatalLabsRDTValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
         |> required "test_result" decodePrenatalTestResult
@@ -446,15 +446,7 @@ decodePrenatalHIVTestValue =
 
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
 decodePrenatalMalariaTest =
-    decodePrenatalMeasurement decodePrenatalMalariaTestValue
-
-
-decodePrenatalMalariaTestValue : Decoder PrenatalMalariaTestValue
-decodePrenatalMalariaTestValue =
-    succeed PrenatalMalariaTestValue
-        |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "test_result" decodePrenatalTestResult
+    decodePrenatalMeasurement decodePrenatalLabsRDTValue
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest

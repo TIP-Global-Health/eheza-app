@@ -349,11 +349,11 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement encodePrenatalHIVTestValue
+    encodePrenatalMeasurement encodePrenatalLabsRDTValue
 
 
-encodePrenatalHIVTestValue : PrenatalHIVTestValue -> List ( String, Value )
-encodePrenatalHIVTestValue value =
+encodePrenatalLabsRDTValue : PrenatalLabsRDTValue -> List ( String, Value )
+encodePrenatalLabsRDTValue value =
     [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
     , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
     , ( "test_result", encodePrenatalTestResult value.testResult )
@@ -364,17 +364,7 @@ encodePrenatalHIVTestValue value =
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
-    encodePrenatalMeasurement encodePrenatalMalariaTestValue
-
-
-encodePrenatalMalariaTestValue : PrenatalMalariaTestValue -> List ( String, Value )
-encodePrenatalMalariaTestValue value =
-    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
-    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
-    , ( "test_result", encodePrenatalTestResult value.testResult )
-    , ( "deleted", bool False )
-    , ( "type", string "prenatal_malaria_test" )
-    ]
+    encodePrenatalMeasurement encodePrenatalLabsRDTValue
 
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )

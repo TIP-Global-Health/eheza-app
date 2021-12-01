@@ -301,14 +301,14 @@ emptyBirthPlanData =
 
 type alias LaboratoryData =
     { pregnancyTestForm : PregnancyTestForm
-    , bloodGpRsTest : PrenatalNonRDTForm
-    , hemoglobinTest : PrenatalNonRDTForm
-    , hepatitisBTest : PrenatalNonRDTForm
-    , hivTest : PrenatalRDTForm
-    , malariaTest : PrenatalRDTForm
-    , randomBloodSugarTest : PrenatalNonRDTForm
-    , syphilisTest : PrenatalNonRDTForm
-    , urineDipstickTest : PrenatalNonRDTForm
+    , bloodGpRsTest : PrenatalLabsNonRDTForm
+    , hemoglobinTest : PrenatalLabsNonRDTForm
+    , hepatitisBTest : PrenatalLabsNonRDTForm
+    , hivTest : PrenatalLabsRDTForm
+    , malariaTest : PrenatalLabsRDTForm
+    , randomBloodSugarTest : PrenatalLabsNonRDTForm
+    , syphilisTest : PrenatalLabsNonRDTForm
+    , urineDipstickTest : PrenatalLabsNonRDTForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -328,14 +328,14 @@ type LaboratoryTask
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { pregnancyTestForm = PregnancyTestForm Nothing
-    , bloodGpRsTest = emptyPrenatalNonRDTForm
-    , hemoglobinTest = emptyPrenatalNonRDTForm
-    , hepatitisBTest = emptyPrenatalNonRDTForm
-    , hivTest = emptyPrenatalRDTForm
-    , malariaTest = emptyPrenatalRDTForm
-    , randomBloodSugarTest = emptyPrenatalNonRDTForm
-    , syphilisTest = emptyPrenatalNonRDTForm
-    , urineDipstickTest = emptyPrenatalNonRDTForm
+    , bloodGpRsTest = emptyPrenatalLabsNonRDTForm
+    , hemoglobinTest = emptyPrenatalLabsNonRDTForm
+    , hepatitisBTest = emptyPrenatalLabsNonRDTForm
+    , hivTest = emptyPrenatalLabsRDTForm
+    , malariaTest = emptyPrenatalLabsRDTForm
+    , randomBloodSugarTest = emptyPrenatalLabsNonRDTForm
+    , syphilisTest = emptyPrenatalLabsNonRDTForm
+    , urineDipstickTest = emptyPrenatalLabsNonRDTForm
     , activeTask = Nothing
     }
 
@@ -696,7 +696,7 @@ type alias PregnancyTestForm =
     }
 
 
-type alias PrenatalRDTForm =
+type alias PrenatalLabsRDTForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
@@ -704,21 +704,21 @@ type alias PrenatalRDTForm =
     }
 
 
-emptyPrenatalRDTForm : PrenatalRDTForm
-emptyPrenatalRDTForm =
-    PrenatalRDTForm Nothing Nothing Nothing False
+emptyPrenatalLabsRDTForm : PrenatalLabsRDTForm
+emptyPrenatalLabsRDTForm =
+    PrenatalLabsRDTForm Nothing Nothing Nothing False
 
 
-type alias PrenatalNonRDTForm =
+type alias PrenatalLabsNonRDTForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , isDateSelectorOpen : Bool
     }
 
 
-emptyPrenatalNonRDTForm : PrenatalNonRDTForm
-emptyPrenatalNonRDTForm =
-    PrenatalNonRDTForm Nothing Nothing False
+emptyPrenatalLabsNonRDTForm : PrenatalLabsNonRDTForm
+emptyPrenatalLabsNonRDTForm =
+    PrenatalLabsNonRDTForm Nothing Nothing False
 
 
 type alias AppointmentConfirmationForm =
