@@ -869,8 +869,25 @@ div.page-encounter.prenatal {
   }
 }
 
+div.page-activity.trace-contact {
+
+  .contact-details {
+    font-weight: bold;
+
+    .blue {
+      color: $color-primary;
+    }
+  }
+
+  .ui.full.segment .symptoms-form .checkbox-select-input .ui.checkbox.activity {
+    margin-bottom: 25px;
+  }
+
+}
+
 // Acute Illness Activity page
-div.page-activity.acute-illness {
+div.page-activity.acute-illness,
+div.page-activity.trace-contact {
 
   .ui.full.segment {
 
@@ -2793,6 +2810,7 @@ div.page-report.acute-illness {
 
 div.page-report.acute-illness,
 div.page-encounter.well-child,
+div.page-activity.trace-contact,
 div.page-activity.well-child,
 div.page-report.well-child {
 

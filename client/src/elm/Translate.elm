@@ -37,7 +37,6 @@ import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
         ( EducationLevel(..)
-        , Gender(..)
         , HIVStatus(..)
         , MaritalStatus(..)
         , ModeOfDelivery(..)
@@ -95,6 +94,7 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , PatientProvisionsTask(..)
         )
+import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..))
@@ -347,6 +347,7 @@ type TranslationId
     | AreYouSure
     | Assessment
     | Asthma
+    | At
     | Attendance
     | Baby
     | BabyDiedOnDayOfBirthPreviousDelivery
@@ -414,6 +415,7 @@ type TranslationId
     | ContactedHC
     | ContactedHCQuestion
     | ContactedRecommendedSiteQuestion
+    | ContactInitiatedQuestion
     | ContactName
     | ContactsTracingCompleteDetails
     | ContactsTracingHelper
@@ -443,6 +445,7 @@ type TranslationId
     | CounselingTimingHeading CounselingTiming
     | CounselingTopic CounselingTopic
     | CounselorReviewed
+    | CovidContactTracing
     | CovidTestingInstructions
     | CounselorSignature
     | CSectionInPreviousDelivery
@@ -725,6 +728,7 @@ type TranslationId
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoContactReason NoContactReason
     | NoGroupsFound
     | NoMatchesFound
     | NutritionSigns
@@ -797,6 +801,7 @@ type TranslationId
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientProvisionsTask PatientProvisionsTask
+    | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
@@ -812,6 +817,7 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PlaceholderSearchContactName
+    | PleaseCall
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
@@ -844,6 +850,7 @@ type TranslationId
     | ProgressReport
     | ProgressTimeline
     | ProgressTrends
+    | ProvideHealthEducationAndInstructToIsolate
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
@@ -978,6 +985,7 @@ type TranslationId
     | SuspectedCovid19CaseIsolate
     | SuspectedCovid19CaseContactHC
     | SuspectedCovid19CasePerformRapidTest
+    | SuspectedCovid19CaseReferToHCForTesting
     | Symptoms
     | SymptomsAtFirstEncounter
     | SymptomsGeneralSign SymptomsGeneralSign
@@ -1011,7 +1019,7 @@ type TranslationId
     | TelephoneNumber
     | Term
     | TermPregnancy
-    | TestPerformedQuesiton
+    | TestPerformedQuestion
     | TestResultQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
@@ -1548,7 +1556,7 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yarapfuye"
                     }
 
-                OutcomeReferredToHC ->
+                Backend.IndividualEncounterParticipant.Model.OutcomeReferredToHC ->
                     { english = "Referred to Health Center"
                     , kinyarwanda = Just "Yoherejwe ku kigo nderabuzima"
                     }
@@ -2140,6 +2148,11 @@ translationSet trans =
             , kinyarwanda = Just "Asthma (Agahema)"
             }
 
+        At ->
+            { english = "at"
+            , kinyarwanda = Nothing
+            }
+
         Attendance ->
             { english = "Attendance"
             , kinyarwanda = Just "Ubwitabire"
@@ -2622,6 +2635,11 @@ translationSet trans =
             , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
             }
 
+        ContactInitiatedQuestion ->
+            { english = "Where you able to speak with the contact"
+            , kinyarwanda = Nothing
+            }
+
         ContactName ->
             { english = "Contact Name"
             , kinyarwanda = Nothing
@@ -2849,6 +2867,11 @@ translationSet trans =
 
         CounselorReviewed ->
             { english = "I have reviewed the above with the participant."
+            , kinyarwanda = Nothing
+            }
+
+        CovidContactTracing ->
+            { english = "Covid Contact Tracing"
             , kinyarwanda = Nothing
             }
 
@@ -5511,6 +5534,23 @@ translationSet trans =
             , kinyarwanda = Just "Ibikorwa byose byarangiye kubitabiriye."
             }
 
+        NoContactReason reason ->
+            case reason of
+                ReasonNoAnswer ->
+                    { english = "Did not answer"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonWrongContactInfo ->
+                    { english = "Wrong contact information"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonDeclinedFollowUp ->
+                    { english = "Declined Follow Up"
+                    , kinyarwanda = Nothing
+                    }
+
         NoGroupsFound ->
             { english = "No groups found."
             , kinyarwanda = Nothing
@@ -6304,6 +6344,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
                     }
 
+        PatientShowsNoSignsOfCovid ->
+            { english = "Patient shows no signs of Covid"
+            , kinyarwanda = Nothing
+            }
+
         PediatricVisit ->
             { english = "Pediatric Visit"
             , kinyarwanda = Nothing
@@ -6451,6 +6496,11 @@ translationSet trans =
 
         PlaceholderSearchContactName ->
             { english = "Search contact name here"
+            , kinyarwanda = Nothing
+            }
+
+        PleaseCall ->
+            { english = "Please call"
             , kinyarwanda = Nothing
             }
 
@@ -6893,6 +6943,11 @@ translationSet trans =
             , kinyarwanda = Just "Uko ibipimo bigenda bizamuka"
             }
 
+        ProvideHealthEducationAndInstructToIsolate ->
+            { english = "Provide health education and instruct them to self isolate at home"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalParticipant ->
             { english = "Antenatal Participant"
             , kinyarwanda = Just "Umubyeyi witabiriye kwipimisha inda"
@@ -6908,7 +6963,7 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
-        TestPerformedQuesiton ->
+        TestPerformedQuestion ->
             { english = "Were you able to perform the test"
             , kinyarwanda = Nothing
             }
@@ -7910,6 +7965,11 @@ translationSet trans =
 
         SuspectedCovid19CasePerformRapidTest ->
             { english = "Perform a rapid test immediately"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseReferToHCForTesting ->
+            { english = "Refer to Health Center for testing"
             , kinyarwanda = Nothing
             }
 
@@ -9428,6 +9488,11 @@ translateActivePage page =
 
                 WellChildProgressReportPage _ ->
                     { english = "Progress Report"
+                    , kinyarwanda = Nothing
+                    }
+
+                TraceContactPage _ ->
+                    { english = "Trace Contact"
                     , kinyarwanda = Nothing
                     }
 

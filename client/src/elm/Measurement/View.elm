@@ -39,7 +39,7 @@ import Backend.Measurement.Utils
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
-import Backend.Person.Model exposing (Gender, Person)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)

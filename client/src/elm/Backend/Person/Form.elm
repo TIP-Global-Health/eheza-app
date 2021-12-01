@@ -2,6 +2,7 @@ module Backend.Person.Form exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Encoder
     exposing
@@ -10,10 +11,9 @@ import Backend.Person.Encoder
         , encodeMaritalStatus
         , encodeModeOfDelivery
         , encodeUbudehe
-        , genderToString
         )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (expectedAgeByPerson, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils exposing (expectedAgeByPerson, genderToString, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
@@ -408,7 +408,7 @@ validateContact =
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
-                |> andMap (succeed Male)
+                |> andMap (field gender validateGender)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)

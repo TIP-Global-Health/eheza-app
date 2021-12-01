@@ -101,6 +101,10 @@ update currentDate selectedHealthCenter id db msg model =
         contactsTracingForm =
             resolveFormWithDefaults .contactsTracing Pages.AcuteIllnessActivity.Utils.contactsTracingFormWithDefault model.nextStepsData.contactsTracingForm
 
+        generateSymptomsReviewMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveSymptomsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+
         generatePhysicalExamMsgs nextTask =
             Maybe.map (\task -> [ SetActivePhysicalExamTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
@@ -133,7 +137,7 @@ update currentDate selectedHealthCenter id db msg model =
             let
                 updatedData =
                     model.symptomsData
-                        |> (\data -> { data | activeTask = task })
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | symptomsData = updatedData }
             , Cmd.none
@@ -262,21 +266,13 @@ update currentDate selectedHealthCenter id db msg model =
             , []
             )
 
-        SaveSymptomsGeneral personId saved nextTask_ ->
+        SaveSymptomsGeneral personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
                     getMeasurementValueFunc saved
-
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-                            , SymptomsGeneral
-                            )
 
                 form =
                     model.symptomsData.symptomsGeneralForm
@@ -284,37 +280,28 @@ update currentDate selectedHealthCenter id db msg model =
                 value =
                     toSymptomsGeneralValueWithDefault measurement form
 
+                extraMsgs =
+                    generateSymptomsReviewMsgs nextTask
+
                 appMsgs =
-                    (Backend.AcuteIllnessEncounter.Model.SaveSymptomsGeneral personId measurementId value
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsGeneral personId measurementId value
                         |> Backend.Model.MsgAcuteIllnessEncounter id
                         |> App.Model.MsgIndexedDb
-                    )
-                        :: backToActivitiesMsg
-
-                updatedData =
-                    model.symptomsData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> List.singleton
             in
-            ( { model | symptomsData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
-        SaveSymptomsRespiratory personId saved nextTask_ ->
+        SaveSymptomsRespiratory personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
                     getMeasurementValueFunc saved
-
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-                            , SymptomsGeneral
-                            )
 
                 form =
                     model.symptomsData.symptomsRespiratoryForm
@@ -322,23 +309,22 @@ update currentDate selectedHealthCenter id db msg model =
                 value =
                     toSymptomsRespiratoryValueWithDefault measurement form
 
+                extraMsgs =
+                    generateSymptomsReviewMsgs nextTask
+
                 appMsgs =
-                    (Backend.AcuteIllnessEncounter.Model.SaveSymptomsRespiratory personId measurementId value
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsRespiratory personId measurementId value
                         |> Backend.Model.MsgAcuteIllnessEncounter id
                         |> App.Model.MsgIndexedDb
-                    )
-                        :: backToActivitiesMsg
-
-                updatedData =
-                    model.symptomsData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> List.singleton
             in
-            ( { model | symptomsData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
-        SaveSymptomsGI personId saved nextTask_ ->
+        SaveSymptomsGI personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -346,35 +332,26 @@ update currentDate selectedHealthCenter id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-                            , SymptomsGeneral
-                            )
-
                 form =
                     model.symptomsData.symptomsGIForm
 
                 value =
                     toSymptomsGIValueWithDefault measurement form
 
+                extraMsgs =
+                    generateSymptomsReviewMsgs nextTask
+
                 appMsgs =
-                    (Backend.AcuteIllnessEncounter.Model.SaveSymptomsGI personId measurementId value
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsGI personId measurementId value
                         |> Backend.Model.MsgAcuteIllnessEncounter id
                         |> App.Model.MsgIndexedDb
-                    )
-                        :: backToActivitiesMsg
-
-                updatedData =
-                    model.symptomsData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> List.singleton
             in
-            ( { model | symptomsData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate selectedHealthCenter id db) extraMsgs
 
         SetActivePhysicalExamTask task ->
             let
@@ -2062,11 +2039,11 @@ update currentDate selectedHealthCenter id db msg model =
             , []
             )
 
-        SaveTracedContact entry ->
+        SaveTracedContact item ->
             let
                 updatedContacts =
-                    Maybe.map (Dict.insert entry.personId entry) contactsTracingForm.contacts
-                        |> Maybe.withDefault (Dict.singleton entry.personId entry)
+                    Maybe.map (Dict.insert item.personId item) contactsTracingForm.contacts
+                        |> Maybe.withDefault (Dict.singleton item.personId item)
 
                 updatedForm =
                     { contactsTracingForm | contacts = Just updatedContacts, state = ContactsTracingFormSummary }

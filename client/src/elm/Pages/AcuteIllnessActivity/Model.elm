@@ -102,7 +102,7 @@ type Msg
     | ToggleContactsTracingDateSelector
     | SetContactsTracingPhoneNumber String
     | SetContactsTracingFinished
-    | SaveTracedContact ContactTraceEntry
+    | SaveTracedContact ContactTraceItem
     | DeleteTracedContact PersonId
     | RegisterContactMsgForm Form.Msg
     | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
@@ -159,7 +159,7 @@ type alias SymptomsData =
     { symptomsGeneralForm : SymptomsGeneralForm
     , symptomsRespiratoryForm : SymptomsRespiratoryForm
     , symptomsGIForm : SymptomsGIForm
-    , activeTask : SymptomsTask
+    , activeTask : Maybe SymptomsTask
     }
 
 
@@ -168,7 +168,7 @@ emptySymptomsData =
     { symptomsGeneralForm = SymptomsGeneralForm Dict.empty False
     , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty False
     , symptomsGIForm = SymptomsGIForm Dict.empty False Nothing False
-    , activeTask = SymptomsGeneral
+    , activeTask = Nothing
     }
 
 
@@ -426,7 +426,7 @@ type alias MedicationDistributionForm =
 
 type alias ContactsTracingForm =
     { state : ContactsTracingFormState
-    , contacts : Maybe (Dict PersonId ContactTraceEntry)
+    , contacts : Maybe (Dict PersonId ContactTraceItem)
     , finished : Bool
     }
 

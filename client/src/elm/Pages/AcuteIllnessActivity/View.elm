@@ -17,7 +17,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, muacValueFunc)
+import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementValueFunc, muacIndication, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
@@ -26,6 +26,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Form
+import Form.Input
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
 import Html exposing (..)
@@ -440,6 +441,9 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
         tasks =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -454,7 +458,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                             ( "symptoms-gi", isJust measurements.symptomsGI )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -481,69 +485,67 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                SymptomsGeneral ->
+            case activeTask of
+                Just SymptomsGeneral ->
                     measurements.symptomsGeneral
                         |> getMeasurementValueFunc
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
                         |> viewSymptomsGeneralForm language currentDate measurements
 
-                SymptomsRespiratory ->
+                Just SymptomsRespiratory ->
                     measurements.symptomsRespiratory
                         |> getMeasurementValueFunc
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
                         |> viewSymptomsRespiratoryForm language currentDate measurements
 
-                SymptomsGI ->
+                Just SymptomsGI ->
                     measurements.symptomsGI
                         |> getMeasurementValueFunc
                         |> symptomsGIFormWithDefault data.symptomsGIForm
                         |> viewSymptomsGIForm language currentDate measurements
 
-        getNextTask currentTask =
-            case currentTask of
-                SymptomsGeneral ->
-                    [ SymptomsRespiratory, SymptomsGI ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                Nothing ->
+                    emptyNode
 
-                SymptomsRespiratory ->
-                    [ SymptomsGI, SymptomsGeneral ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                SymptomsGI ->
-                    [ SymptomsGeneral, SymptomsRespiratory ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                SymptomsGeneral ->
+                                    SaveSymptomsGeneral personId measurements.symptomsGeneral nextTask
 
-                saveMsg =
-                    case data.activeTask of
-                        SymptomsGeneral ->
-                            SaveSymptomsGeneral personId measurements.symptomsGeneral nextTask
+                                SymptomsRespiratory ->
+                                    SaveSymptomsRespiratory personId measurements.symptomsRespiratory nextTask
 
-                        SymptomsRespiratory ->
-                            SaveSymptomsRespiratory personId measurements.symptomsRespiratory nextTask
-
-                        SymptomsGI ->
-                            SaveSymptomsGI personId measurements.symptomsGI nextTask
-            in
-            div [ class "actions symptoms" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                SymptomsGI ->
+                                    SaveSymptomsGI personId measurements.symptomsGI nextTask
+                    in
+                    div [ class "actions symptoms" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
@@ -1139,7 +1141,7 @@ viewCovidTestingForm language currentDate person form =
     in
     div [ class "ui form laboratory covid-testing" ] <|
         [ viewCustomLabel language Translate.CovidTestingInstructions "." "instructions"
-        , viewQuestionLabel language Translate.TestPerformedQuesiton
+        , viewQuestionLabel language Translate.TestPerformedQuestion
         , viewBoolInput
             language
             form.testPerformed
@@ -2961,7 +2963,7 @@ viewContactsTracingForm language currentDate db contactsTracingFinished form =
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceEntry) -> List (Html Msg)
+viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceItem) -> List (Html Msg)
 viewContactsTracingFormSummary language currentDate db contactsTracingFinished contacts =
     let
         contactsForView =
@@ -2994,7 +2996,7 @@ viewContactsTracingFormSummary language currentDate db contactsTracingFinished c
     ]
 
 
-viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceEntry -> Html Msg
+viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceItem -> Html Msg
 viewTracedContact language currentDate db finished contact =
     let
         person =
@@ -3187,10 +3189,24 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
 
                     saveAction =
                         Maybe.map
-                            (ContactTraceEntry personId person.firstName person.secondName inputNumber
-                                >> SaveTracedContact
-                                >> onClick
-                                >> List.singleton
+                            (\contactDate ->
+                                ContactTraceItem personId
+                                    person.firstName
+                                    person.secondName
+                                    person.gender
+                                    inputNumber
+                                    contactDate
+                                    -- Resolution date is set to the date on which
+                                    -- Covid  isolation is completed.
+                                    (Date.add Days (covidIsolationPeriod + 1) contactDate)
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    |> SaveTracedContact
+                                    |> onClick
+                                    |> List.singleton
                             )
                             data.contactDate
                             |> Maybe.withDefault []
@@ -3312,7 +3328,40 @@ viewCreateContactForm language currentDate db data =
             List.map (Html.map RegisterContactMsgForm) <|
                 [ Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
                 , Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
+                , genderInput
                 ]
+
+        genderField =
+            Form.getFieldAsString Backend.Person.Form.gender data
+
+        genderInput =
+            let
+                label =
+                    div [ class "six wide column required" ]
+                        [ text <| translate language Translate.GenderLabel ++ ":" ]
+
+                maleOption =
+                    [ Form.Input.radioInput "male"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Male) ]
+                    ]
+
+                femaleOption =
+                    [ Form.Input.radioInput "female"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Female) ]
+                    ]
+            in
+            div [ class "ui grid" ] <|
+                label
+                    :: maleOption
+                    ++ femaleOption
 
         geoLocationDictToOptions dict =
             Dict.toList dict

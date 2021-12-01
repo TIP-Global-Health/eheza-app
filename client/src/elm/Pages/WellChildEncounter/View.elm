@@ -1,4 +1,4 @@
-module Pages.WellChildEncounter.View exposing (allowEndingEcounter, partitionActivities, view, viewPersonDetails)
+module Pages.WellChildEncounter.View exposing (allowEndingEcounter, partitionActivities, thumbnailDimensions, view, viewPersonDetails)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)

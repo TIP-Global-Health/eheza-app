@@ -14,7 +14,7 @@ module ZScore.Utils exposing
 {-| This module determines a ZScore for various measurements.
 -}
 
-import Backend.Person.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (Gender(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (orElseLazy)
 import RemoteData
