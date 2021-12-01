@@ -216,10 +216,10 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveFollowUp personId valueId value ->
             ( { model | saveFollowUp = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFollowUpEndpoint HandleSavedFollowup
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFollowUpEndpoint HandleSavedFollowUp
             )
 
-        HandleSavedFollowup data ->
+        HandleSavedFollowUp data ->
             ( { model | saveFollowUp = data }
             , Cmd.none
             )
@@ -241,5 +241,85 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedAppointmentConfirmation data ->
             ( { model | saveAppointmentConfirmation = data }
+            , Cmd.none
+            )
+
+        SaveHIVTest personId valueId value ->
+            ( { model | saveHIVTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHIVTestEndpoint HandleSavedHIVTest
+            )
+
+        HandleSavedHIVTest data ->
+            ( { model | saveHIVTest = data }
+            , Cmd.none
+            )
+
+        SaveSyphilisTest personId valueId value ->
+            ( { model | saveSyphilisTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSyphilisTestEndpoint HandleSavedSyphilisTest
+            )
+
+        HandleSavedSyphilisTest data ->
+            ( { model | saveSyphilisTest = data }
+            , Cmd.none
+            )
+
+        SaveHepatitisBTest personId valueId value ->
+            ( { model | saveHepatitisBTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHepatitisBTestEndpoint HandleSavedHepatitisBTest
+            )
+
+        HandleSavedHepatitisBTest data ->
+            ( { model | saveHepatitisBTest = data }
+            , Cmd.none
+            )
+
+        SaveMalariaTest personId valueId value ->
+            ( { model | saveMalariaTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMalariaTestEndpoint HandleSavedMalariaTest
+            )
+
+        HandleSavedMalariaTest data ->
+            ( { model | saveMalariaTest = data }
+            , Cmd.none
+            )
+
+        SaveBloodGpRsTest personId valueId value ->
+            ( { model | saveBloodGpRsTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalBloodGpRsTestEndpoint HandleSavedBloodGpRsTest
+            )
+
+        HandleSavedBloodGpRsTest data ->
+            ( { model | saveBloodGpRsTest = data }
+            , Cmd.none
+            )
+
+        SaveUrineDipstickTest personId valueId value ->
+            ( { model | saveUrineDipstickTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalUrineDipstickTestEndpoint HandleSavedUrineDipstickTest
+            )
+
+        HandleSavedUrineDipstickTest data ->
+            ( { model | saveUrineDipstickTest = data }
+            , Cmd.none
+            )
+
+        SaveHemoglobinTest personId valueId value ->
+            ( { model | saveHemoglobinTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHemoglobinTestEndpoint HandleSavedHemoglobinTest
+            )
+
+        HandleSavedHemoglobinTest data ->
+            ( { model | saveHemoglobinTest = data }
+            , Cmd.none
+            )
+
+        SaveRandomBloodSugarTest personId valueId value ->
+            ( { model | saveRandomBloodSugarTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalRandomBloodSugarTestEndpoint HandleSavedRandomBloodSugarTest
+            )
+
+        HandleSavedRandomBloodSugarTest data ->
+            ( { model | saveRandomBloodSugarTest = data }
             , Cmd.none
             )

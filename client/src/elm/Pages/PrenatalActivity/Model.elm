@@ -94,6 +94,14 @@ type Msg
     | SetActiveLaboratoryTask LaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
+    | SaveHIVTest PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
+    | SaveSyphilisTest PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
+    | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
+    | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
+    | SaveBloodGpRsTest PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
+    | SaveUrineDipstickTest PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
+    | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
+    | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
@@ -302,14 +310,14 @@ emptyBirthPlanData =
 
 type alias LaboratoryData =
     { pregnancyTestForm : PregnancyTestForm
-    , bloodGpRsTest : PrenatalLabsNonRDTForm
-    , hemoglobinTest : PrenatalLabsNonRDTForm
-    , hepatitisBTest : PrenatalLabsNonRDTForm
-    , hivTest : PrenatalLabsRDTForm
-    , malariaTest : PrenatalLabsRDTForm
-    , randomBloodSugarTest : PrenatalLabsNonRDTForm
-    , syphilisTest : PrenatalLabsNonRDTForm
-    , urineDipstickTest : PrenatalLabsNonRDTForm
+    , bloodGpRsTestForm : PrenatalLabsNonRDTForm
+    , hemoglobinTestForm : PrenatalLabsNonRDTForm
+    , hepatitisBTestForm : PrenatalLabsNonRDTForm
+    , hivTestForm : PrenatalLabsRDTForm
+    , malariaTestForm : PrenatalLabsRDTForm
+    , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
+    , syphilisTestForm : PrenatalLabsNonRDTForm
+    , urineDipstickTestForm : PrenatalLabsNonRDTForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -328,14 +336,14 @@ type LaboratoryTask
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { pregnancyTestForm = PregnancyTestForm Nothing
-    , bloodGpRsTest = emptyPrenatalLabsNonRDTForm
-    , hemoglobinTest = emptyPrenatalLabsNonRDTForm
-    , hepatitisBTest = emptyPrenatalLabsNonRDTForm
-    , hivTest = emptyPrenatalLabsRDTForm
-    , malariaTest = emptyPrenatalLabsRDTForm
-    , randomBloodSugarTest = emptyPrenatalLabsNonRDTForm
-    , syphilisTest = emptyPrenatalLabsNonRDTForm
-    , urineDipstickTest = emptyPrenatalLabsNonRDTForm
+    , bloodGpRsTestForm = emptyPrenatalLabsNonRDTForm
+    , hemoglobinTestForm = emptyPrenatalLabsNonRDTForm
+    , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
+    , hivTestForm = emptyPrenatalLabsRDTForm
+    , malariaTestForm = emptyPrenatalLabsRDTForm
+    , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
+    , syphilisTestForm = emptyPrenatalLabsNonRDTForm
+    , urineDipstickTestForm = emptyPrenatalLabsNonRDTForm
     , activeTask = Nothing
     }
 

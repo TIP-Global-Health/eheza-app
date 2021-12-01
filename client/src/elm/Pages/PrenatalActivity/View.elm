@@ -49,6 +49,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
+        , viewSaveAction
         , viewYellowAlertForSelect
         )
 import RemoteData exposing (RemoteData(..), WebData)
@@ -1294,56 +1295,56 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
                 Just TaskHIVTest ->
                     measurements.hivTest
                         |> getMeasurementValueFunc
-                        |> prenatalRDTFormWithDefault data.hivTest
+                        |> prenatalRDTFormWithDefault data.hivTestForm
                         |> viewPrenatalRDTForm language currentDate
                         |> List.singleton
 
                 Just TaskSyphilisTest ->
                     measurements.syphilisTest
                         |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.syphilisTest
+                        |> prenatalNonRDTFormWithDefault data.syphilisTestForm
                         |> viewPrenatalNonRDTForm language currentDate
                         |> List.singleton
 
                 Just TaskHepatitisBTest ->
                     measurements.hepatitisBTest
                         |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.hepatitisBTest
+                        |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
                         |> viewPrenatalNonRDTForm language currentDate
                         |> List.singleton
 
                 Just TaskMalariaTest ->
                     measurements.malariaTest
                         |> getMeasurementValueFunc
-                        |> prenatalRDTFormWithDefault data.malariaTest
+                        |> prenatalRDTFormWithDefault data.malariaTestForm
                         |> viewPrenatalRDTForm language currentDate
                         |> List.singleton
 
                 Just TaskBloodGpRsTest ->
                     measurements.bloodGpRsTest
                         |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.bloodGpRsTest
+                        |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
                         |> viewPrenatalNonRDTForm language currentDate
                         |> List.singleton
 
                 Just TaskUrineDipstickTest ->
                     measurements.urineDipstickTest
                         |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.urineDipstickTest
+                        |> prenatalNonRDTFormWithDefault data.urineDipstickTestForm
                         |> viewPrenatalNonRDTForm language currentDate
                         |> List.singleton
 
                 Just TaskHemoglobinTest ->
                     measurements.hemoglobinTest
                         |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.hemoglobinTest
+                        |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
                         |> viewPrenatalNonRDTForm language currentDate
                         |> List.singleton
 
                 Just TaskRandomBloodSugarTest ->
                     measurements.randomBloodSugarTest
                         |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.randomBloodSugarTest
+                        |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
                         |> viewPrenatalNonRDTForm language currentDate
                         |> List.singleton
 
@@ -1359,41 +1360,40 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
                 tasks
                 |> List.head
 
-        -- actions =
-        --    --
-        --     Maybe.map
-        --         (\task ->
-        --             let
-        --                 saveMsg =
-        --                     case task of
-        --                         TaskHIVTest ->
-        --                             SaveHIVTest personId measurements.hiv nextTask
-        --
-        --                         TaskSyphilisTest ->
-        --                             SaveSyphilisTest personId measurements.syphilisTest nextTask
-        --
-        --                         TaskHepatitisBTest ->
-        --                             SaveSyphilisTest personId measurements.hepatitisBTest nextTask
-        --
-        --                         TaskMalariaTest ->
-        --                             SaveSyphilisTest personId measurements.malariaTest nextTask
-        --
-        --                         TaskBloodGpRsTest ->
-        --                             SaveSyphilisTest personId measurements.bloodGpRsTest nextTask
-        --
-        --                         TaskUrineDipstickTest ->
-        --                             SaveSyphilisTest personId measurements.urineDipstickTest nextTask
-        --
-        --                         TaskHemoglobinTest ->
-        --                             SaveSyphilisTest personId measurements.hemoglobinTest nextTask
-        --
-        --                         TaskRandomBloodSugarTest ->
-        --                             SaveSyphilisTest personId measurements.randomBloodSugarTest nextTask
-        --             in
-        --             viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
-        --         )
-        --         activeTask
-        --         |> Maybe.withDefault emptyNode
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                TaskHIVTest ->
+                                    SaveHIVTest personId measurements.hivTest nextTask
+
+                                TaskSyphilisTest ->
+                                    SaveSyphilisTest personId measurements.syphilisTest nextTask
+
+                                TaskHepatitisBTest ->
+                                    SaveHepatitisBTest personId measurements.hepatitisBTest nextTask
+
+                                TaskMalariaTest ->
+                                    SaveMalariaTest personId measurements.malariaTest nextTask
+
+                                TaskBloodGpRsTest ->
+                                    SaveBloodGpRsTest personId measurements.bloodGpRsTest nextTask
+
+                                TaskUrineDipstickTest ->
+                                    SaveUrineDipstickTest personId measurements.urineDipstickTest nextTask
+
+                                TaskHemoglobinTest ->
+                                    SaveHemoglobinTest personId measurements.hemoglobinTest nextTask
+
+                                TaskRandomBloodSugarTest ->
+                                    SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+                    in
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
@@ -1402,10 +1402,8 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            (viewForm
-                ++ --[ actions ]
-                   []
-            )
+            viewForm
+                ++ [ actions ]
         ]
     ]
 
