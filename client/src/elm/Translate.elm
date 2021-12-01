@@ -1980,8 +1980,8 @@ translationSet trans =
             }
 
         AgeMonthsWithoutDay months ->
-            { english = String.fromInt months ++ " month"
-            , kinyarwanda = Just <| String.fromInt months ++ " Ukwezi"
+            { english = String.fromInt months ++ " months"
+            , kinyarwanda = Just <| String.fromInt months ++ " Amezi"
             }
 
         AgeSingleBoth months days ->
