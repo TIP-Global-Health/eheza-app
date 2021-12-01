@@ -392,6 +392,13 @@ class RoboFile extends Tasks {
   }
 
   /**
+   * Generates the pregnancy report.
+   */
+  public function reportPregnancy() {
+    $this->_exec('cd /var/www/html/server/www && drush sql-cli < profiles/hedley/modules/custom/hedley_admin/scripts/closed-pregnancies-report.SQL');
+  }
+
+  /**
    * Generates the nutrition report.
    */
   public function reportNutrition() {
