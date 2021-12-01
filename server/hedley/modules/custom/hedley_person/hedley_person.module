@@ -1009,7 +1009,7 @@ function hedley_person_create_pmtct_participant($adult_id, $child_id, $relation,
  *   Optional; The ID of node author. Defaults to global user ID.
  *
  * @return object
- *   Neely created node.
+ *   Newly created node.
  */
 function hedley_person_create_basic_node($type, $author_id = FALSE) {
   if (empty($author_id)) {
