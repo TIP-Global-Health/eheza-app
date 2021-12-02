@@ -1431,9 +1431,18 @@ toAppointmentConfirmationValue form =
 
 fromPrenatalRDTValue : Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm
 fromPrenatalRDTValue saved =
-    { executionNote = Maybe.map .executionNote saved
-    , executionDate = Maybe.map .executionDate saved
-    , testResult = Maybe.map .testResult saved
+    let
+        testPerformed =
+            Maybe.andThen .executionDate saved |> isJust
+
+        testPerformedToday =
+            Maybe.map .executionNote saved == Just TestNoteRunToday
+    in
+    { testPerformed = Just testPerformed
+    , testPerformedToday = Just testPerformedToday
+    , executionNote = Maybe.map .executionNote saved
+    , executionDate = Maybe.andThen .executionDate saved
+    , testResult = Maybe.andThen .testResult saved
     , isDateSelectorOpen = False
     }
 
@@ -1444,9 +1453,15 @@ prenatalRDTFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate (Just value.executionDate)
-                , testResult = or form.testResult (Just value.testResult)
+                let
+                    formWithDefault =
+                        fromPrenatalRDTValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testResult = or form.testResult value.testResult
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
             )
@@ -1460,23 +1475,30 @@ toPrenatalRDTValueWithDefault saved form =
 
 toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue
 toPrenatalRDTValue form =
-    Maybe.map3
-        (\executionNote executionDate testResult ->
+    Maybe.map
+        (\executionNote ->
             { executionNote = executionNote
-            , executionDate = executionDate
-            , testResult = testResult
+            , executionDate = form.executionDate
+            , testResult = form.testResult
             }
         )
         form.executionNote
-        form.executionDate
-        form.testResult
 
 
 fromPrenatalUrineDipstickTestValue : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
 fromPrenatalUrineDipstickTestValue saved =
-    { testVariant = Maybe.map .testVariant saved
+    let
+        testPerformed =
+            Maybe.andThen .executionDate saved |> isJust
+
+        testPerformedToday =
+            Maybe.map .executionNote saved == Just TestNoteRunToday
+    in
+    { testPerformed = Just testPerformed
+    , testPerformedToday = Just testPerformedToday
+    , testVariant = Maybe.andThen .testVariant saved
     , executionNote = Maybe.map .executionNote saved
-    , executionDate = Maybe.map .executionDate saved
+    , executionDate = Maybe.andThen .executionDate saved
     , isDateSelectorOpen = False
     }
 
@@ -1487,9 +1509,15 @@ prenatalUrineDipstickFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { testVariant = or form.testVariant (Just value.testVariant)
+                let
+                    formWithDefault =
+                        fromPrenatalUrineDipstickTestValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                , testVariant = or form.testVariant value.testVariant
                 , executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate (Just value.executionDate)
+                , executionDate = or form.executionDate value.executionDate
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
             )
@@ -1503,11 +1531,11 @@ toPrenatalUrineDipstickTestValueWithDefault saved form =
 
 toPrenatalUrineDipstickTestValue : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue
 toPrenatalUrineDipstickTestValue form =
-    Maybe.map3
-        (\testVariant executionNote executionDate ->
-            { testVariant = testVariant
+    Maybe.map
+        (\executionNote ->
+            { testVariant = form.testVariant
             , executionNote = executionNote
-            , executionDate = executionDate
+            , executionDate = form.executionDate
             , protein = Nothing
             , ph = Nothing
             , glucose = Nothing
@@ -1520,68 +1548,83 @@ toPrenatalUrineDipstickTestValue form =
             , bilirubin = Nothing
             }
         )
-        form.testVariant
         form.executionNote
-        form.executionDate
 
 
-fromPrenatalNonRDTValue : Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : NominalDate } -> PrenatalLabsNonRDTForm
+fromPrenatalNonRDTValue : Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate } -> PrenatalLabsNonRDTForm
 fromPrenatalNonRDTValue saved =
-    { executionNote = Maybe.map .executionNote saved
-    , executionDate = Maybe.map .executionDate saved
+    let
+        testPerformed =
+            Maybe.andThen .executionDate saved |> isJust
+
+        testPerformedToday =
+            Maybe.map .executionNote saved == Just TestNoteRunToday
+    in
+    { testPerformed = Just testPerformed
+    , testPerformedToday = Just testPerformedToday
+    , executionNote = Maybe.map .executionNote saved
+    , executionDate = Maybe.andThen .executionDate saved
     , isDateSelectorOpen = False
     }
 
 
-prenatalNonRDTFormWithDefault : PrenatalLabsNonRDTForm -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : NominalDate } -> PrenatalLabsNonRDTForm
+prenatalNonRDTFormWithDefault :
+    PrenatalLabsNonRDTForm
+    -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
+    -> PrenatalLabsNonRDTForm
 prenatalNonRDTFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate (Just value.executionDate)
+                let
+                    formWithDefault =
+                        fromPrenatalNonRDTValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
             )
 
 
 toPrenatalNonRDTValueWithDefault :
-    Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : NominalDate }
-    -> (PrenatalTestExecutionNote -> NominalDate -> { value | executionNote : PrenatalTestExecutionNote, executionDate : NominalDate })
+    Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
+    -> (PrenatalTestExecutionNote -> Maybe NominalDate -> { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate })
     -> PrenatalLabsNonRDTForm
-    -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : NominalDate }
+    -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
 toPrenatalNonRDTValueWithDefault saved withEmptyResultsFunc form =
     let
         formWithDefault =
             prenatalNonRDTFormWithDefault form saved
     in
-    Maybe.map2 withEmptyResultsFunc
+    Maybe.map (\executionNote -> withEmptyResultsFunc executionNote formWithDefault.executionDate)
         formWithDefault.executionNote
-        formWithDefault.executionDate
 
 
-toHepatitisBTestValueWithEmptyResults : PrenatalTestExecutionNote -> NominalDate -> PrenatalHepatitisBTestValue
+toHepatitisBTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHepatitisBTestValue
 toHepatitisBTestValueWithEmptyResults note date =
     PrenatalHepatitisBTestValue note date Nothing
 
 
-toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> NominalDate -> PrenatalSyphilisTestValue
+toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalSyphilisTestValue
 toSyphilisTestValueWithEmptyResults note date =
     PrenatalSyphilisTestValue note date Nothing
 
 
-toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> NominalDate -> PrenatalHemoglobinTestValue
+toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue
 toHemoglobinTestValueWithEmptyResults note date =
     PrenatalHemoglobinTestValue note date Nothing
 
 
-toRandomBloodSugarTestValueWithEmptyResults : PrenatalTestExecutionNote -> NominalDate -> PrenatalRandomBloodSugarTestValue
+toRandomBloodSugarTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalRandomBloodSugarTestValue
 toRandomBloodSugarTestValueWithEmptyResults note date =
     PrenatalRandomBloodSugarTestValue note date Nothing
 
 
-toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> NominalDate -> PrenatalBloodGpRsTestValue
+toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
 toBloodGpRsTestValueWithEmptyResults note date =
     PrenatalBloodGpRsTestValue note date Nothing Nothing
 

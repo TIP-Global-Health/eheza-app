@@ -356,7 +356,7 @@ decodePrenatalBloodGpRsTestValue : Decoder PrenatalBloodGpRsTestValue
 decodePrenatalBloodGpRsTestValue =
     succeed PrenatalBloodGpRsTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "blood_group" (nullable decodeBloodGroup) Nothing
         |> optional "rhesus" (nullable decodeRhesus) Nothing
 
@@ -414,7 +414,7 @@ decodePrenatalHemoglobinTestValue : Decoder PrenatalHemoglobinTestValue
 decodePrenatalHemoglobinTestValue =
     succeed PrenatalHemoglobinTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "hemoglobin_count" (nullable decodeFloat) Nothing
 
 
@@ -427,7 +427,7 @@ decodePrenatalHepatitisBTestValue : Decoder PrenatalHepatitisBTestValue
 decodePrenatalHepatitisBTestValue =
     succeed PrenatalHepatitisBTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
 
 
@@ -440,8 +440,8 @@ decodePrenatalLabsRDTValue : Decoder PrenatalLabsRDTValue
 decodePrenatalLabsRDTValue =
     succeed PrenatalLabsRDTValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "test_result" decodePrenatalTestResult
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
 
 
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
@@ -458,7 +458,7 @@ decodePrenatalRandomBloodSugarTestValue : Decoder PrenatalRandomBloodSugarTestVa
 decodePrenatalRandomBloodSugarTestValue =
     succeed PrenatalRandomBloodSugarTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "sugar_count" (nullable decodeInt) Nothing
 
 
@@ -471,7 +471,7 @@ decodePrenatalSyphilisTestValue : Decoder PrenatalSyphilisTestValue
 decodePrenatalSyphilisTestValue =
     succeed PrenatalSyphilisTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
 
 
@@ -483,9 +483,9 @@ decodePrenatalUrineDipstickTest =
 decodePrenatalUrineDipstickTestValue : Decoder PrenatalUrineDipstickTestValue
 decodePrenatalUrineDipstickTestValue =
     succeed PrenatalUrineDipstickTestValue
-        |> required "test_variant" decodePrenatalTestVariant
+        |> optional "test_variant" (nullable decodePrenatalTestVariant) Nothing
         |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "protein" (nullable decodeProteinValue) Nothing
         |> optional "ph" (nullable decodePHValue) Nothing
         |> optional "glucose" (nullable decodeGlucoseValue) Nothing
