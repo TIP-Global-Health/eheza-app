@@ -19,7 +19,8 @@ FROM
      field_individual_participant_target_id) a
 GROUP BY
   val",
-  "Of Active Preganancies (within 30 days of EDD AND not completed)" => "SELECT
+  "Of Active Preganancies (within 30 days of EDD AND not completed)" => "
+SELECT
   val,
   COUNT(*) AS counter
 FROM
@@ -38,7 +39,8 @@ FROM
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
-  "Of Completed Pregancies (30 days beyond EDD)" => "SELECT
+  "Of Completed Pregancies (30 days beyond EDD)" => "
+SELECT
   val,
   COUNT(*) AS counter
 FROM
@@ -59,9 +61,11 @@ FROM
 GROUP BY val",
 ];
 
+// For the upper end, we group the grouped counters all together, so let's say
+// 1 visit => 6
+// 5+ visits => 15.
 $group_limit = 5;
 foreach ($queries as $label => $query) {
-  // ANC report
   echo "# $label\n";
   $results = db_query($query)->fetchAll(PDO::FETCH_ASSOC);
   $sum_group_limit_or_above = 0;
