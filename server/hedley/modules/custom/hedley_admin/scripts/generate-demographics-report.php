@@ -67,11 +67,19 @@ SELECT
  *
  * @param $type
  *   Encounter type.
+ * @param $filter
+ *   Filter type 'hc' or NULL.
  *
  * @return int
  */
-function encounter_all_count($type) {
-  return db_query("SELECT COUNT(DISTINCT field_{$type}_encounter_target_id) FROM field_data_field_{$type}_encounter;")->fetchField();
+function encounter_all_count($type, $filter = NULL) {
+  if ($filter === 'hc' && $type == 'prenatal')  {
+    // Health center ANC.
+    return db_query("SELECT COUNT(DISTINCT field_prenatal_encounter_target_id) FROM field_data_field_prenatal_encounter e left join field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id where field_prenatal_encounter_type_value='nurse'")->fetchField();
+  }
+  else {
+    return db_query("SELECT COUNT(DISTINCT field_{$type}_encounter_target_id) FROM field_data_field_{$type}_encounter;")->fetchField();
+  }
 }
 
 /**
@@ -79,10 +87,16 @@ function encounter_all_count($type) {
  *
  * @param $type
  *   Encounter type.
+ * @param $filter
+ *   Filter type 'hc' or NULL.*
  *
  * @return int
  */
-function encounter_unique_count($type) {
+function encounter_unique_count($type, $filter = NULL) {
+  if ($filter === 'hc' && $type == 'prenatal') {
+    // Health center ANC.
+    return db_query("SELECT COUNT(DISTINCT field_person_target_id) FROM field_data_field_prenatal_encounter e LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id LEFT JOIN field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id where field_prenatal_encounter_type_value='nurse'")->fetchField();
+  }
   return db_query("SELECT COUNT(DISTINCT field_person_target_id) FROM field_data_field_{$type}_encounter e LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id;")->fetchField();
 }
 
@@ -192,6 +206,11 @@ drush_print($text_table->render());
 
 drush_print("## ENCOUNTERS");
 
+/**
+ * Gathers group encounter visits by type.
+ *
+ * @return array
+ */
 function group_encounter_all() {
   return db_query("
   SELECT
@@ -246,6 +265,11 @@ GROUP BY
   ")->fetchAllAssoc('type');
 }
 
+/**
+ * Gathers group encounter patients by type.
+ *
+ * @return array
+ */
 function group_encounter_unique() {
   return db_query("
   SELECT
@@ -300,14 +324,21 @@ GROUP BY
   ")->fetchAllAssoc('type');
 }
 
-
-
 $encounters = [
   [
-    'ANC',
+    'ANC (total)',
     encounter_all_count('prenatal'),
     encounter_unique_count('prenatal'),
-
+  ],
+  [
+    '   Health Center',
+    encounter_all_count('prenatal', 'hc'),
+    encounter_unique_count('prenatal', 'hc'),
+  ],
+  [
+    '   CHW',
+    encounter_all_count('prenatal') - encounter_all_count('prenatal', 'hc'),
+    encounter_unique_count('prenatal') - encounter_unique_count('prenatal', 'hc'),
   ],
   [
     'Acute Illness',
