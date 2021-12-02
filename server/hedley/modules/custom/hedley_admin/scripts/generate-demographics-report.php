@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Generates 'Nutrition' report for past.
+ * Generates 'Demographics' report.
  *
  * Counts occurrences of malnutrition indicators (moderate and severe).
  *
