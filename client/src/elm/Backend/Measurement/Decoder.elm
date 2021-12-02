@@ -483,6 +483,7 @@ decodePrenatalUrineDipstickTest =
 decodePrenatalUrineDipstickTestValue : Decoder PrenatalUrineDipstickTestValue
 decodePrenatalUrineDipstickTestValue =
     succeed PrenatalUrineDipstickTestValue
+        |> required "test_variant" decodePrenatalTestVariant
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "protein" (nullable decodeProteinValue) Nothing
@@ -495,6 +496,25 @@ decodePrenatalUrineDipstickTestValue =
         |> optional "specific_gravity" (nullable decodeSpecificGravityValue) Nothing
         |> optional "ketone" (nullable decodeKetoneValue) Nothing
         |> optional "bilirubin" (nullable decodeBilirubinValue) Nothing
+
+
+decodePrenatalTestVariant : Decoder PrenatalTestVariant
+decodePrenatalTestVariant =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "short" ->
+                        succeed VariantShortTest
+
+                    "long" ->
+                        succeed VariantLongTest
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized PrenatalTestVariant"
+            )
 
 
 decodeProteinValue : Decoder ProteinValue

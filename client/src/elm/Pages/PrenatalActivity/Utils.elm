@@ -1472,6 +1472,59 @@ toPrenatalRDTValue form =
         form.testResult
 
 
+fromPrenatalUrineDipstickTestValue : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
+fromPrenatalUrineDipstickTestValue saved =
+    { testVariant = Maybe.map .testVariant saved
+    , executionNote = Maybe.map .executionNote saved
+    , executionDate = Maybe.map .executionDate saved
+    , isDateSelectorOpen = False
+    }
+
+
+prenatalUrineDipstickFormWithDefault : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
+prenatalUrineDipstickFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { testVariant = or form.testVariant (Just value.testVariant)
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate (Just value.executionDate)
+                , isDateSelectorOpen = form.isDateSelectorOpen
+                }
+            )
+
+
+toPrenatalUrineDipstickTestValueWithDefault : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickTestValueWithDefault saved form =
+    prenatalUrineDipstickFormWithDefault form saved
+        |> toPrenatalUrineDipstickTestValue
+
+
+toPrenatalUrineDipstickTestValue : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickTestValue form =
+    Maybe.map3
+        (\testVariant executionNote executionDate ->
+            { testVariant = testVariant
+            , executionNote = executionNote
+            , executionDate = executionDate
+            , protein = Nothing
+            , ph = Nothing
+            , glucose = Nothing
+            , leukocytes = Nothing
+            , nitrite = Nothing
+            , urobilinogen = Nothing
+            , haemoglobin = Nothing
+            , specificGravity = Nothing
+            , ketone = Nothing
+            , bilirubin = Nothing
+            }
+        )
+        form.testVariant
+        form.executionNote
+        form.executionDate
+
+
 fromPrenatalNonRDTValue : Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : NominalDate } -> PrenatalLabsNonRDTForm
 fromPrenatalNonRDTValue saved =
     { executionNote = Maybe.map .executionNote saved
@@ -1531,22 +1584,6 @@ toRandomBloodSugarTestValueWithEmptyResults note date =
 toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> NominalDate -> PrenatalBloodGpRsTestValue
 toBloodGpRsTestValueWithEmptyResults note date =
     PrenatalBloodGpRsTestValue note date Nothing Nothing
-
-
-toUrineDipstickTestValueWithEmptyResults : PrenatalTestExecutionNote -> NominalDate -> PrenatalUrineDipstickTestValue
-toUrineDipstickTestValueWithEmptyResults note date =
-    PrenatalUrineDipstickTestValue note
-        date
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
 
 
 laboratoryTasks : List LaboratoryTask

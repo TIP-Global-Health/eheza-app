@@ -916,7 +916,8 @@ type alias PrenatalUrineDipstickTest =
 
 
 type alias PrenatalUrineDipstickTestValue =
-    { executionNote : PrenatalTestExecutionNote
+    { testVariant : PrenatalTestVariant
+    , executionNote : PrenatalTestExecutionNote
     , executionDate : NominalDate
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
@@ -929,6 +930,11 @@ type alias PrenatalUrineDipstickTestValue =
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
+
+
+type PrenatalTestVariant
+    = VariantShortTest
+    | VariantLongTest
 
 
 type ProteinValue

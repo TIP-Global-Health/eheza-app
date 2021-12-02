@@ -463,7 +463,8 @@ encodePrenatalUrineDipstickTestValue value =
         bilirubin =
             encodeField encodeBilirubinValue "bilirubin" value.bilirubin
     in
-    [ ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    [ ( "test_variant", encodePrenatalTestVariant value.testVariant )
+    , ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
     , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
     ]
         ++ protein
@@ -479,6 +480,17 @@ encodePrenatalUrineDipstickTestValue value =
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_urine_dipstick_test" )
            ]
+
+
+encodePrenatalTestVariant : PrenatalTestVariant -> Value
+encodePrenatalTestVariant value =
+    string <|
+        case value of
+            VariantShortTest ->
+                "short"
+
+            VariantLongTest ->
+                "long"
 
 
 encodeProteinValue : ProteinValue -> Value

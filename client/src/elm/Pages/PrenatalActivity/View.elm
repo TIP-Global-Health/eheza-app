@@ -1330,7 +1330,7 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
                 Just TaskUrineDipstickTest ->
                     measurements.urineDipstickTest
                         |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.urineDipstickTestForm
+                        |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
                         |> viewPrenatalNonRDTForm language currentDate
                         |> List.singleton
 

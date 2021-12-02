@@ -317,7 +317,7 @@ type alias LaboratoryData =
     , malariaTestForm : PrenatalLabsRDTForm
     , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
-    , urineDipstickTestForm : PrenatalLabsNonRDTForm
+    , urineDipstickTestForm : PrenatalUrineDipstickForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -343,7 +343,7 @@ emptyLaboratoryData =
     , malariaTestForm = emptyPrenatalLabsRDTForm
     , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
-    , urineDipstickTestForm = emptyPrenatalLabsNonRDTForm
+    , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
     , activeTask = Nothing
     }
 
@@ -727,6 +727,19 @@ type alias PrenatalLabsNonRDTForm =
 emptyPrenatalLabsNonRDTForm : PrenatalLabsNonRDTForm
 emptyPrenatalLabsNonRDTForm =
     PrenatalLabsNonRDTForm Nothing Nothing False
+
+
+type alias PrenatalUrineDipstickForm =
+    { testVariant : Maybe PrenatalTestVariant
+    , executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , isDateSelectorOpen : Bool
+    }
+
+
+emptyPrenatalUrineDipstickForm : PrenatalUrineDipstickForm
+emptyPrenatalUrineDipstickForm =
+    PrenatalUrineDipstickForm Nothing Nothing Nothing False
 
 
 type alias AppointmentConfirmationForm =

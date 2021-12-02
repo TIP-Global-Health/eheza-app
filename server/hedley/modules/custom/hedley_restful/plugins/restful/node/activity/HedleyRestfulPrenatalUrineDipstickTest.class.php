@@ -14,6 +14,7 @@ class HedleyRestfulPrenatalUrineDipstickTest extends HedleyRestfulPrenatalActivi
    * {@inheritdoc}
    */
   protected $fields = [
+    'field_test_variant',
     'field_test_execution_note',
     'field_execution_date',
     'field_protein',

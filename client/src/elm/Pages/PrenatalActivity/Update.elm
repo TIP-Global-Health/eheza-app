@@ -1714,7 +1714,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.urineDipstickTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toUrineDipstickTestValueWithEmptyResults
+                        |> toPrenatalUrineDipstickTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
