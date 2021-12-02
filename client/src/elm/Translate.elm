@@ -834,10 +834,12 @@ type TranslationId
     | PrenatalLaboratoryTaskLabel Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskResult Pages.PrenatalActivity.Model.LaboratoryTask
+    | PrenatalLaboratoryTaskResultsHelper
     | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
+    | PrenatalUrineDipstickTestVariant PrenatalTestVariant
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -1026,6 +1028,7 @@ type TranslationId
     | TestPerformedQuestion
     | TestPerformedTodayQuestion
     | TestResultQuestion
+    | TestVariantQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
     | To
@@ -6988,6 +6991,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratoryTaskResultsHelper ->
+            { english = "When ready, update test results via case management"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalPhotoHelper ->
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
             , kinyarwanda = Just "Fata ifoto y'inda y'umubyeyi hanyuma uyimwereke arebe uko yakuze/yiyongereye."
@@ -7044,6 +7052,18 @@ translationSet trans =
 
                 PrenatalTestIndeterminate ->
                     { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalUrineDipstickTestVariant variant ->
+            case variant of
+                VariantShortTest ->
+                    { english = "Short Dip"
+                    , kinyarwanda = Nothing
+                    }
+
+                VariantLongTest ->
+                    { english = "Long Dip"
                     , kinyarwanda = Nothing
                     }
 
@@ -7190,6 +7210,11 @@ translationSet trans =
 
         TestPerformedTodayQuestion ->
             { english = "Did you perform this test today"
+            , kinyarwanda = Nothing
+            }
+
+        TestVariantQuestion ->
+            { english = "Which type of test was run"
             , kinyarwanda = Nothing
             }
 
