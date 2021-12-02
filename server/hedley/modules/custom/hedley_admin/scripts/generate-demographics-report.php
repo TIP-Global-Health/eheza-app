@@ -2,12 +2,10 @@
 
 /**
  * @file
- * Generates 'Nutrition' report for past.
- *
- * Counts occurrences of malnutrition indicators (moderate and severe).
+ * Generates 'Demographics' report.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php.
+ * profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php.
  */
 
 require_once __DIR__ . '/report_common.inc';
