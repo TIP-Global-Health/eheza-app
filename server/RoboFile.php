@@ -392,6 +392,13 @@ class RoboFile extends Tasks {
   }
 
   /**
+   * Generates the acute illness report.
+   */
+  public function reportAcuteIllness() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-report.php');
+  }
+
+  /**
    * Generates the nutrition report.
    */
   public function reportNutrition() {
