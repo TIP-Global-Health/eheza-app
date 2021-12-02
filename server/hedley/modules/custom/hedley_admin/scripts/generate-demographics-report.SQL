@@ -212,7 +212,7 @@ HAVING
       COUNT(DISTINCT field_prenatal_encounter_target_id) + COUNT(DISTINCT field_acute_illness_encounter_target_id) > 1;
 
 SELECT '----------------------' AS '';
-SELECT 'Groups report:' AS '';
+SELECT 'Groups report (all):' AS '';
 SELECT
   CONCAT(UPPER(field_group_type_value), ' encounters:  ', COUNT(*)) AS ''
 FROM
@@ -259,6 +259,58 @@ FROM
     AND class.entity_id IS NOT NULL
     GROUP BY
       field_group_type_value, field_person_target_id, field_session_target_id
+  ) b
+GROUP BY
+  field_group_type_value;
+
+SELECT '----------------------' AS '';
+SELECT 'Groups report (unique):' AS '';
+SELECT
+  CONCAT(UPPER(field_group_type_value), ' encounters:  ', COUNT(*)) AS ''
+FROM
+  (
+    SELECT
+      field_group_type_value,
+      p.field_person_target_id,
+      sess_rel.field_session_target_id
+    FROM
+      field_data_field_session sess_rel
+        LEFT JOIN field_data_field_clinic c ON sess_rel.field_session_target_id = c.entity_id
+        LEFT JOIN field_data_field_group_type gt ON field_clinic_target_id = gt.entity_id
+        LEFT JOIN field_data_field_person p ON p.entity_id = sess_rel.entity_id
+        LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
+    WHERE
+        sess_rel.bundle IN ('attendance', 'birth_plan', 'breast_exam', 'child_fbf', 'contributing_factors',
+                            'core_physical_exam',
+                            'danger_signs', 'family_planning', 'follow_up', 'group_health_education',
+                            'group_send_to_hc', 'height',
+                            'lactation', 'last_menstrual_period', 'medical_history', 'medication',
+                            'mother_fbf', 'muac', 'nutrition',
+                            'nutrition_height', 'nutrition_muac', 'nutrition_nutrition', 'nutrition_photo',
+                            'nutrition_weight',
+                            'obstetric_history', 'obstetric_history_step2', 'obstetrical_exam', 'photo',
+                            'pregnancy_testing',
+                            'prenatal_family_planning', 'prenatal_health_education', 'prenatal_nutrition',
+                            'prenatal_photo',
+                            'resource', 'social_history', 'vitals', 'weight', 'acute_findings',
+                            'acute_illness_danger_signs',
+                            'acute_illness_follow_up', 'acute_illness_muac', 'acute_illness_nutrition',
+                            'acute_illness_vitals',
+                            'call_114', 'exposure', 'hc_contact', 'health_education', 'isolation',
+                            'malaria_testing',
+                            'medication_distribution', 'send_to_hc', 'symptoms_general', 'symptoms_gi',
+                            'symptoms_respiratory',
+                            'travel_history', 'treatment_history', 'treatment_ongoing',
+                            'participant_consent', 'nutrition_caring',
+                            'nutrition_contributing_factors', 'nutrition_feeding', 'nutrition_follow_up',
+                            'nutrition_food_security',
+                            'nutrition_health_education', 'nutrition_hygiene', 'nutrition_send_to_hc',
+                            'appointment_confirmation',
+                            'prenatal_follow_up', 'prenatal_send_to_hc', 'counseling_session')
+    AND field_group_type_value IS NOT NULL
+    AND class.entity_id IS NOT NULL
+    GROUP BY
+      field_group_type_value, field_person_target_id
   ) b
 GROUP BY
   field_group_type_value;
