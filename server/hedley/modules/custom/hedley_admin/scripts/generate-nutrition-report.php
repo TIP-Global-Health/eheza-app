@@ -10,12 +10,7 @@
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php.
  */
 
-if (!drupal_is_cli()) {
-  // Prevent execution from browser.
-  return;
-}
-
-require_once __DIR__ . '/HedleyAdminTextTable.php';
+require_once __DIR__ . '/report_common.inc';
 
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
