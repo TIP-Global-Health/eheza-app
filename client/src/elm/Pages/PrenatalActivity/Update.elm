@@ -22,7 +22,7 @@ import Backend.Measurement.Model
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Date exposing (Unit(..))
@@ -1561,6 +1561,91 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SetHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.hivTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.hivTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.hivTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVTestResult value ->
+            let
+                form =
+                    model.laboratoryData.hivTestForm
+
+                updatedForm =
+                    { form | testResult = prenatalTestResultFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleHIVTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.hivTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveHIVTest personId saved nextTask ->
             let
                 measurementId =
@@ -1588,6 +1673,74 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetSyphilisTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.syphilisTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSyphilisTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.syphilisTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSyphilisTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.syphilisTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleSyphilisTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.syphilisTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveSyphilisTest personId saved nextTask ->
             let
@@ -1617,6 +1770,74 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetHepatitisBTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.hepatitisBTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHepatitisBTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.hepatitisBTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHepatitisBTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.hepatitisBTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleHepatitisBTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.hepatitisBTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveHepatitisBTest personId saved nextTask ->
             let
                 measurementId =
@@ -1644,6 +1865,91 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMalariaTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMalariaTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMalariaTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMalariaTestResult value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestForm
+
+                updatedForm =
+                    { form | testResult = prenatalTestResultFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleMalariaTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.malariaTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveMalariaTest personId saved nextTask ->
             let
@@ -1673,6 +1979,74 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetBloodGpRsTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.bloodGpRsTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodGpRsTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodGpRsTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleBloodGpRsTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveBloodGpRsTest personId saved nextTask ->
             let
                 measurementId =
@@ -1700,6 +2074,91 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetUrineDipstickTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetUrineDipstickTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetUrineDipstickTestVariant value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | testVariant = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetUrineDipstickTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleUrineDipstickTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveUrineDipstickTest personId saved nextTask ->
             let
@@ -1729,6 +2188,74 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetHemoglobinTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.hemoglobinTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHemoglobinTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.hemoglobinTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHemoglobinTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.hemoglobinTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleHemoglobinTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.hemoglobinTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveHemoglobinTest personId saved nextTask ->
             let
                 measurementId =
@@ -1756,6 +2283,74 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetRandomBloodSugarTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRandomBloodSugarTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRandomBloodSugarTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleRandomBloodSugarTestDateSelector ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveRandomBloodSugarTest personId saved nextTask ->
             let

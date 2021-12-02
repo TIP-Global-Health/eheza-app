@@ -94,13 +94,48 @@ type Msg
     | SetActiveLaboratoryTask LaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
+    | SetHIVTestFormBoolInput (Bool -> PrenatalLabsRDTForm -> PrenatalLabsRDTForm) Bool
+    | SetHIVTestExecutionNote PrenatalTestExecutionNote
+    | SetHIVTestExecutionDate NominalDate
+    | SetHIVTestResult String
+    | ToggleHIVTestDateSelector
     | SaveHIVTest PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
+    | SetSyphilisTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetSyphilisTestExecutionNote PrenatalTestExecutionNote
+    | SetSyphilisTestExecutionDate NominalDate
+    | ToggleSyphilisTestDateSelector
     | SaveSyphilisTest PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
+    | SetHepatitisBTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetHepatitisBTestExecutionNote PrenatalTestExecutionNote
+    | SetHepatitisBTestExecutionDate NominalDate
+    | ToggleHepatitisBTestDateSelector
     | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
+    | SetMalariaTestFormBoolInput (Bool -> PrenatalLabsRDTForm -> PrenatalLabsRDTForm) Bool
+    | SetMalariaTestExecutionNote PrenatalTestExecutionNote
+    | SetMalariaTestExecutionDate NominalDate
+    | SetMalariaTestResult String
+    | ToggleMalariaTestDateSelector
     | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
+    | SetBloodGpRsTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetBloodGpRsTestExecutionNote PrenatalTestExecutionNote
+    | SetBloodGpRsTestExecutionDate NominalDate
+    | ToggleBloodGpRsTestDateSelector
     | SaveBloodGpRsTest PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
+    | SetUrineDipstickTestFormBoolInput (Bool -> PrenatalUrineDipstickForm -> PrenatalUrineDipstickForm) Bool
+    | SetUrineDipstickTestExecutionNote PrenatalTestExecutionNote
+    | SetUrineDipstickTestVariant PrenatalTestVariant
+    | SetUrineDipstickTestExecutionDate NominalDate
+    | ToggleUrineDipstickTestDateSelector
     | SaveUrineDipstickTest PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
+    | SetHemoglobinTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetHemoglobinTestExecutionNote PrenatalTestExecutionNote
+    | SetHemoglobinTestExecutionDate NominalDate
+    | ToggleHemoglobinTestDateSelector
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetRandomBloodSugarTestExecutionNote PrenatalTestExecutionNote
+    | SetRandomBloodSugarTestExecutionDate NominalDate
+    | ToggleRandomBloodSugarTestDateSelector
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool

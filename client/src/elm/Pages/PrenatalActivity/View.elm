@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalTestResultToString, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -1296,56 +1296,56 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
                     measurements.hivTest
                         |> getMeasurementValueFunc
                         |> prenatalRDTFormWithDefault data.hivTestForm
-                        |> viewPrenatalRDTForm language currentDate
+                        |> viewPrenatalRDTForm language currentDate TaskHIVTest
                         |> List.singleton
 
                 Just TaskSyphilisTest ->
                     measurements.syphilisTest
                         |> getMeasurementValueFunc
                         |> prenatalNonRDTFormWithDefault data.syphilisTestForm
-                        |> viewPrenatalNonRDTForm language currentDate
+                        |> viewPrenatalNonRDTForm language currentDate TaskSyphilisTest
                         |> List.singleton
 
                 Just TaskHepatitisBTest ->
                     measurements.hepatitisBTest
                         |> getMeasurementValueFunc
                         |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
-                        |> viewPrenatalNonRDTForm language currentDate
+                        |> viewPrenatalNonRDTForm language currentDate TaskHepatitisBTest
                         |> List.singleton
 
                 Just TaskMalariaTest ->
                     measurements.malariaTest
                         |> getMeasurementValueFunc
                         |> prenatalRDTFormWithDefault data.malariaTestForm
-                        |> viewPrenatalRDTForm language currentDate
+                        |> viewPrenatalRDTForm language currentDate TaskMalariaTest
                         |> List.singleton
 
                 Just TaskBloodGpRsTest ->
                     measurements.bloodGpRsTest
                         |> getMeasurementValueFunc
                         |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
-                        |> viewPrenatalNonRDTForm language currentDate
+                        |> viewPrenatalNonRDTForm language currentDate TaskBloodGpRsTest
                         |> List.singleton
 
                 Just TaskUrineDipstickTest ->
                     measurements.urineDipstickTest
                         |> getMeasurementValueFunc
                         |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
-                        |> viewPrenatalNonRDTForm language currentDate
+                        |> viewPrenatalUrineDipstickForm language currentDate
                         |> List.singleton
 
                 Just TaskHemoglobinTest ->
                     measurements.hemoglobinTest
                         |> getMeasurementValueFunc
                         |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
-                        |> viewPrenatalNonRDTForm language currentDate
+                        |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
                         |> List.singleton
 
                 Just TaskRandomBloodSugarTest ->
                     measurements.randomBloodSugarTest
                         |> getMeasurementValueFunc
                         |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
-                        |> viewPrenatalNonRDTForm language currentDate
+                        |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
                         |> List.singleton
 
                 Nothing ->
@@ -1406,22 +1406,6 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
                 ++ [ actions ]
         ]
     ]
-
-
-
---@todo
-
-
-viewPrenatalRDTForm language currentDate form =
-    emptyNode
-
-
-
---@todo
-
-
-viewPrenatalNonRDTForm language currentDate form =
-    emptyNode
 
 
 viewLaboratoryContentForChw : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
@@ -2823,6 +2807,175 @@ viewNewbornEnrolmentForm language currentDate assembled =
                             Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
             ]
             [ text <| translate language Translate.EnrolNewborn ]
+        ]
+
+
+
+--@todo
+
+
+viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> Html Msg
+viewPrenatalRDTForm language currentDate task form =
+    let
+        msgsConfig =
+            case task of
+                TaskHIVTest ->
+                    Just
+                        { setBoolInputMsg = SetHIVTestFormBoolInput
+                        , setExecutionNoteMsg = SetHIVTestExecutionNote
+                        , setExecutionDateMsg = SetHIVTestExecutionDate
+                        , setTestResultMsg = SetHIVTestResult
+                        , toggleDateSelectorMsg = ToggleHIVTestDateSelector
+                        }
+
+                TaskMalariaTest ->
+                    -- Just { setBoolInputMsg = SetMalariaTestFormBoolInput }
+                    Nothing
+
+                _ ->
+                    Nothing
+
+        inputs =
+            Maybe.map
+                (\msgs ->
+                    let
+                        derivedInputs =
+                            Maybe.map
+                                (\testPerformed ->
+                                    if testPerformed then
+                                        let
+                                            derivedSection =
+                                                Maybe.map
+                                                    (\testPerformedToday ->
+                                                        let
+                                                            emptyOption =
+                                                                if isNothing form.testResult then
+                                                                    option
+                                                                        [ value ""
+                                                                        , selected True
+                                                                        ]
+                                                                        [ text "" ]
+
+                                                                else
+                                                                    emptyNode
+                                                        in
+                                                        [ viewLabel language <| Translate.PrenatalLaboratoryTaskDate task
+                                                        , if testPerformedToday then
+                                                            p [] [ text <| formatDDMMYYYY currentDate ]
+
+                                                          else
+                                                            DateSelector.SelectorDropdown.view
+                                                                msgs.toggleDateSelectorMsg
+                                                                msgs.setExecutionDateMsg
+                                                                form.isDateSelectorOpen
+                                                                (Date.add Days -30 currentDate)
+                                                                currentDate
+                                                                form.executionDate
+                                                        , viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
+                                                        , emptyOption
+                                                            :: List.map
+                                                                (\result ->
+                                                                    option
+                                                                        [ value (prenatalTestResultToString result)
+                                                                        , selected (form.testResult == Just result)
+                                                                        ]
+                                                                        [ text <| translate language <| Translate.PrenatalTestResult result ]
+                                                                )
+                                                                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                                                            |> select
+                                                                [ onInput msgs.setTestResultMsg
+                                                                , class "form-input test-result"
+                                                                ]
+                                                        ]
+                                                    )
+                                                    form.testPerformedToday
+                                                    |> Maybe.withDefault []
+                                        in
+                                        [ viewQuestionLabel language Translate.TestPerformedTodayQuestion
+                                        , viewBoolInput
+                                            language
+                                            form.testPerformedToday
+                                            (msgs.setBoolInputMsg
+                                                (\value form_ ->
+                                                    { form_
+                                                        | testPerformedToday = Just value
+                                                        , executionNote = Just TestNoteRunToday
+                                                        , executionDate = Just currentDate
+                                                    }
+                                                )
+                                            )
+                                            "test-performed-today"
+                                            Nothing
+                                        ]
+                                            ++ derivedSection
+
+                                    else
+                                        [ div [ class "why-not" ]
+                                            [ viewQuestionLabel language Translate.WhyNot
+                                            , viewCheckBoxSelectInput language
+                                                [ TestNoteLackOfReagents
+                                                , TestNoteLackOfOtherSupplies
+                                                , TestNoteBrokenEquipment
+                                                ]
+                                                [ TestNoteNoEquipment
+                                                , TestNoteNotIndicated
+                                                ]
+                                                form.executionNote
+                                                msgs.setExecutionNoteMsg
+                                                Translate.PrenatalTestExecutionNote
+                                            ]
+                                        ]
+                                )
+                                form.testPerformed
+                                |> Maybe.withDefault []
+                    in
+                    [ viewQuestionLabel language Translate.TestPerformedQuestion
+                    , viewBoolInput
+                        language
+                        form.testPerformed
+                        (msgs.setBoolInputMsg
+                            (\value form_ ->
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedToday = Nothing
+                                    , executionNote = Nothing
+                                }
+                            )
+                        )
+                        "test-performed"
+                        Nothing
+                    ]
+                        ++ derivedInputs
+                )
+                msgsConfig
+                |> Maybe.withDefault []
+    in
+    div [ class "ui form laboratory rdt" ] <|
+        viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label"
+            :: inputs
+
+
+
+--@todo
+
+
+viewPrenatalUrineDipstickForm : Language -> NominalDate -> PrenatalUrineDipstickForm -> Html Msg
+viewPrenatalUrineDipstickForm language currentDate form =
+    div
+        [ class "ui form laboratory urine-dipstick" ]
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskUrineDipstickTest) "" "label"
+        ]
+
+
+
+--@todo
+
+
+viewPrenatalNonRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> Html Msg
+viewPrenatalNonRDTForm language currentDate task form =
+    div
+        [ class "ui form laboratory non-rdt" ]
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label"
         ]
 
 

@@ -868,21 +868,10 @@ decodePrenatalTestResult : Decoder PrenatalTestResult
 decodePrenatalTestResult =
     string
         |> andThen
-            (\note ->
-                case note of
-                    "positive" ->
-                        succeed PrenatalTestPositive
-
-                    "negative" ->
-                        succeed PrenatalTestNegative
-
-                    "indeterminate" ->
-                        succeed PrenatalTestIndeterminate
-
-                    _ ->
-                        fail <|
-                            note
-                                ++ " is not a recognized PrenatalTestExecutionNote"
+            (\s ->
+                prenatalTestResultFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalTestResult")
             )
 
 

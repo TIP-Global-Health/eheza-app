@@ -800,17 +800,8 @@ encodePrenatalTestExecutionNote value =
 
 
 encodePrenatalTestResult : PrenatalTestResult -> Value
-encodePrenatalTestResult value =
-    string <|
-        case value of
-            PrenatalTestPositive ->
-                "positive"
-
-            PrenatalTestNegative ->
-                "negative"
-
-            PrenatalTestIndeterminate ->
-                "indeterminate"
+encodePrenatalTestResult =
+    prenatalTestResultToString >> string
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
