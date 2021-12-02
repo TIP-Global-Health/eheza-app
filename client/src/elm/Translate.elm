@@ -331,9 +331,9 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
-    | AgeSingleYearOld Int
-    | AgeSingleYearWithSingleMonth Int Int
-    | AgeSingleYearWithMonths Int Int
+    | AgeOneYearOld
+    | AgeOneYearAndOneMonth
+    | AgeOneYearWithMonths Int
     | AgeYearsWithSingleMonth Int Int
     | AgeYearsAndMonths Int Int
     | All
@@ -2007,19 +2007,19 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
             }
 
-        AgeSingleYearOld year ->
-            { english = String.fromInt year ++ " year old"
-            , kinyarwanda = Just <| "Umwaka " ++ String.fromInt year
+        AgeOneYearOld ->
+            { english = "One year old"
+            , kinyarwanda = Just "Umwaka umwe"
             }
 
-        AgeSingleYearWithSingleMonth year month ->
-            { english = String.fromInt year ++ " year " ++ String.fromInt month ++ " month"
-            , kinyarwanda = Just <| " Umwaka " ++ String.fromInt year ++ " Ukwezi " ++ String.fromInt month
+        AgeOneYearAndOneMonth ->
+            { english = "One year and one month"
+            , kinyarwanda = Just " Umwaka n'ukwezi kumwe"
             }
 
-        AgeSingleYearWithMonths year months ->
-            { english = String.fromInt year ++ " years " ++ String.fromInt months ++ " months"
-            , kinyarwanda = Just <| " Umwaka " ++ String.fromInt year ++ " Amezi " ++ String.fromInt months
+        AgeOneYearWithMonths months ->
+            { english = "1 year " ++ String.fromInt months ++ " months"
+            , kinyarwanda = Just <| " Umwaka n'amezi " ++ String.fromInt months
             }
 
         AgeYearsWithSingleMonth years month ->

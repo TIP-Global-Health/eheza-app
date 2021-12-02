@@ -118,13 +118,13 @@ renderAgeYearsMonths language birthDate now =
         1 ->
             case months of
                 0 ->
-                    translate language <| Translate.AgeSingleYearOld years
+                    translate language <| Translate.AgeOneYearOld
 
                 1 ->
-                    translate language <| Translate.AgeSingleYearWithSingleMonth years months
+                    translate language <| Translate.AgeOneYearAndOneMonth
 
                 _ ->
-                    translate language <| Translate.AgeSingleYearWithMonths years months
+                    translate language <| Translate.AgeOneYearWithMonths months
 
         _ ->
             case months of
