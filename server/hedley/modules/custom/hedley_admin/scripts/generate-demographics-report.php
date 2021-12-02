@@ -4,8 +4,6 @@
  * @file
  * Generates 'Demographics' report.
  *
- * Counts occurrences of malnutrition indicators (moderate and severe).
- *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php.
  */
