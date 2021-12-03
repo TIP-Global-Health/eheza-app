@@ -719,8 +719,38 @@ viewContactsTracingPane :
     -> Html Msg
 viewContactsTracingPane language currentDate itemsDict db model =
     let
+        filteredItemsDict =
+            Dict.filter
+                (\_ item ->
+                    let
+                        -- Initially, resolution date  is set to to on which
+                        -- Covid isolation period is completed, which is 11-th
+                        -- day after the contact.
+                        -- We know that item is not resolved, if resolution
+                        -- date is a future date.
+                        traceNotCompleted =
+                            Date.compare currentDate item.value.resolutionDate == LT
+
+                        -- Follow up is performed every 2 days.
+                        -- For example, if we had a follow up yesterday, we
+                        -- should not do another one today.
+                        -- We'll do one tomorrow.
+                        followUpScheduled =
+                            Maybe.map
+                                (\lastFollowUpDate ->
+                                    Date.diff Days lastFollowUpDate currentDate > 1
+                                )
+                                item.value.lastFollowUpDate
+                                |> -- There was no follow up so far, so we want
+                                   -- to perform it ASAP.
+                                   Maybe.withDefault True
+                    in
+                    traceNotCompleted && followUpScheduled
+                )
+                itemsDict
+
         entries =
-            generateContactsTracingEntries language currentDate itemsDict db
+            generateContactsTracingEntries language currentDate filteredItemsDict db
 
         heading =
             div [ class "trace-contact-entry heading" ]
@@ -775,7 +805,7 @@ generateContactsTracingEntryData language currentDate db itemId item =
                 |> Maybe.map .name
                 |> Maybe.withDefault ""
     in
-    ContactsTracingEntry itemId name item.value.phoneNumber reporterName
+    ContactsTracingEntry itemId name item.value.phoneNumber reporterName item.value.lastFollowUpDate
         |> Just
 
 
@@ -788,14 +818,17 @@ viewTraceContactEntry :
 viewTraceContactEntry language currentDate db entry =
     let
         lastContactDate =
-            --@todo in a follow up PR
-            currentDate
+            Maybe.map formatDDMMYYYY entry.lastFollowUpDate
+                |> Maybe.withDefault ""
     in
     div [ class "trace-contact-entry" ]
         [ div [ class "name" ] [ text entry.personName ]
-        , div [ class "last-contact" ] [ text <| formatDDMMYYYY lastContactDate ]
+        , div [ class "last-contact" ] [ text lastContactDate ]
         , div [ class "reporter" ] [ text entry.reporterName ]
         , div [ class "phone-number" ] [ text entry.phoneNumber ]
-        , div [ class "icon-forward" ]
+        , div
+            [ class "icon-forward"
+            , onClick <| SetActivePage <| UserPage (TraceContactPage entry.itemId)
+            ]
             []
         ]

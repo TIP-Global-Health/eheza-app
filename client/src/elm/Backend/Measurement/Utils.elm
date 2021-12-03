@@ -707,3 +707,227 @@ nutritionSignToString sign =
 
         PoorAppetite ->
             "poor-appetite"
+
+
+symptomsGeneralSignToString : SymptomsGeneralSign -> String
+symptomsGeneralSignToString sign =
+    case sign of
+        BodyAches ->
+            "body-aches"
+
+        Chills ->
+            "chills"
+
+        SymptomGeneralFever ->
+            "fever"
+
+        Headache ->
+            "headache"
+
+        NightSweats ->
+            "night-sweats"
+
+        Lethargy ->
+            "lethargy"
+
+        PoorSuck ->
+            "poor-suck"
+
+        UnableToDrink ->
+            "unable-to-drink"
+
+        UnableToEat ->
+            "unable-to-eat"
+
+        IncreasedThirst ->
+            "increased-thirst"
+
+        DryMouth ->
+            "dry-mouth"
+
+        SevereWeakness ->
+            "severe-weakness"
+
+        YellowEyes ->
+            "yellow-eyes"
+
+        CokeColoredUrine ->
+            "coke-colored-urine"
+
+        SymptomsGeneralConvulsions ->
+            "convulsions"
+
+        SpontaneousBleeding ->
+            "spontaneos-bleeding"
+
+        NoSymptomsGeneral ->
+            "none"
+
+
+symptomsGeneralSignFromString : String -> Maybe SymptomsGeneralSign
+symptomsGeneralSignFromString s =
+    case s of
+        "body-aches" ->
+            Just BodyAches
+
+        "chills" ->
+            Just Chills
+
+        "fever" ->
+            Just SymptomGeneralFever
+
+        "headache" ->
+            Just Headache
+
+        "night-sweats" ->
+            Just NightSweats
+
+        "lethargy" ->
+            Just Lethargy
+
+        "poor-suck" ->
+            Just PoorSuck
+
+        "unable-to-drink" ->
+            Just UnableToDrink
+
+        "unable-to-eat" ->
+            Just UnableToEat
+
+        "increased-thirst" ->
+            Just IncreasedThirst
+
+        "dry-mouth" ->
+            Just DryMouth
+
+        "severe-weakness" ->
+            Just SevereWeakness
+
+        "yellow-eyes" ->
+            Just YellowEyes
+
+        "coke-colored-urine" ->
+            Just CokeColoredUrine
+
+        "convulsions" ->
+            Just SymptomsGeneralConvulsions
+
+        "spontaneos-bleeding" ->
+            Just SpontaneousBleeding
+
+        "none" ->
+            Just NoSymptomsGeneral
+
+        _ ->
+            Nothing
+
+
+symptomsRespiratorySignToString : SymptomsRespiratorySign -> String
+symptomsRespiratorySignToString sign =
+    case sign of
+        BloodInSputum ->
+            "blood-in-sputum"
+
+        Cough ->
+            "cough"
+
+        NasalCongestion ->
+            "nasal-congestion"
+
+        ShortnessOfBreath ->
+            "shortness-of-breath"
+
+        SoreThroat ->
+            "sore-throat"
+
+        LossOfSmell ->
+            "loss-of-smell"
+
+        StabbingChestPain ->
+            "stabbing-chest-pain"
+
+        NoSymptomsRespiratory ->
+            "none"
+
+
+symptomsRespiratorySignFromString : String -> Maybe SymptomsRespiratorySign
+symptomsRespiratorySignFromString s =
+    case s of
+        "blood-in-sputum" ->
+            Just BloodInSputum
+
+        "cough" ->
+            Just Cough
+
+        "nasal-congestion" ->
+            Just NasalCongestion
+
+        "shortness-of-breath" ->
+            Just ShortnessOfBreath
+
+        "sore-throat" ->
+            Just SoreThroat
+
+        "loss-of-smell" ->
+            Just LossOfSmell
+
+        "stabbing-chest-pain" ->
+            Just StabbingChestPain
+
+        "none" ->
+            Just NoSymptomsRespiratory
+
+        _ ->
+            Nothing
+
+
+symptomsGISignToString : SymptomsGISign -> String
+symptomsGISignToString sign =
+    case sign of
+        SymptomGIAbdominalPain ->
+            "abdominal-pain"
+
+        BloodyDiarrhea ->
+            "bloody-diarrhea"
+
+        Nausea ->
+            "nausea"
+
+        NonBloodyDiarrhea ->
+            "non-bloody-diarrhea"
+
+        Vomiting ->
+            "vomiting"
+
+        NoSymptomsGI ->
+            "none"
+
+
+symptomsGISignFromString : String -> Maybe SymptomsGISign
+symptomsGISignFromString s =
+    case s of
+        "abdominal-pain" ->
+            Just SymptomGIAbdominalPain
+
+        "bloody-diarrhea" ->
+            Just BloodyDiarrhea
+
+        "nausea" ->
+            Just Nausea
+
+        "non-bloody-diarrhea" ->
+            Just NonBloodyDiarrhea
+
+        "vomiting" ->
+            Just Vomiting
+
+        "none" ->
+            Just NoSymptomsGI
+
+        _ ->
+            Nothing
+
+
+covidIsolationPeriod : Int
+covidIsolationPeriod =
+    10

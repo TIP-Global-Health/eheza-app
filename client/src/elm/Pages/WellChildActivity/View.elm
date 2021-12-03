@@ -53,6 +53,7 @@ import Pages.Utils
         , viewMeasurementInput
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewSaveAction
         )
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
@@ -2419,18 +2420,3 @@ viewPhotoContent language currentDate assembled form =
             ]
         ]
     ]
-
-
-
--- HELPER FUNCTIONS
-
-
-viewSaveAction : Language -> Msg -> Bool -> Html Msg
-viewSaveAction language saveMsg disabled =
-    div [ class "actions" ]
-        [ button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-            , onClick saveMsg
-            ]
-            [ text <| translate language Translate.Save ]
-        ]

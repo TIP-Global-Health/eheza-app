@@ -127,6 +127,7 @@ type alias ContactsTracingEntry =
     , personName : String
     , phoneNumber : String
     , reporterName : String
+    , lastFollowUpDate : Maybe NominalDate
     }
 
 

@@ -5,7 +5,9 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
-import Date
+import Backend.Person.Decoder exposing (decodeGender)
+import Backend.Person.Utils exposing (genderFromString)
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
@@ -2760,13 +2762,13 @@ decodeAcuteIllnessNutrition =
 
 decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
 decodeAcuteIllnessContactsTracing =
-    decodeWithFallback [] (list decodeContactTraceEntryFromString)
+    decodeWithFallback [] (list decodeContactTraceItemFromString)
         |> field "contacts_trace_data"
         |> decodeAcuteIllnessMeasurement
 
 
-decodeContactTraceEntryFromString : Decoder ContactTraceEntry
-decodeContactTraceEntryFromString =
+decodeContactTraceItemFromString : Decoder ContactTraceItem
+decodeContactTraceItemFromString =
     string
         |> andThen
             (\data ->
@@ -2775,39 +2777,130 @@ decodeContactTraceEntryFromString =
                         String.split "[&]" data
                 in
                 case parts of
-                    [ id, firstName, secondName, phoneNumber, contactDate ] ->
-                        Date.fromIsoString contactDate
-                            |> Result.toMaybe
-                            |> Maybe.map
-                                (\date ->
-                                    succeed (ContactTraceEntry (toEntityUuid id) firstName secondName phoneNumber date)
-                                )
+                    [ id, firstName, secondName, contactGender, phoneNumber, contactDate ] ->
+                        let
+                            date =
+                                Date.fromIsoString contactDate
+                                    |> Result.toMaybe
+
+                            gender =
+                                genderFromString contactGender
+                        in
+                        Maybe.map2
+                            (\date_ gender_ ->
+                                succeed <|
+                                    ContactTraceItem
+                                        (toEntityUuid id)
+                                        firstName
+                                        secondName
+                                        gender_
+                                        phoneNumber
+                                        date_
+                                        -- Resolution date is set to the date on which
+                                        -- Covid  isolation is completed.
+                                        (Date.add Days (covidIsolationPeriod + 1) date_)
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                            )
+                            date
+                            gender
                             |> Maybe.withDefault
                                 (fail <|
                                     contactDate
-                                        ++ " is not a valid date format at ContactTraceEntry"
+                                        ++ " is not a valid date format at ContactTraceItem"
                                 )
 
                     _ ->
                         fail <|
                             data
-                                ++ " is not a recognized ContactTraceEntry"
+                                ++ " is not a recognized ContactTraceItem"
             )
 
 
 decodeAcuteIllnessTraceContact : Decoder AcuteIllnessTraceContact
 decodeAcuteIllnessTraceContact =
-    decodeAcuteIllnessMeasurement decodeContactTraceEntry
+    decodeAcuteIllnessMeasurement decodeContactTraceItem
 
 
-decodeContactTraceEntry : Decoder ContactTraceEntry
-decodeContactTraceEntry =
-    succeed ContactTraceEntry
+decodeContactTraceItem : Decoder ContactTraceItem
+decodeContactTraceItem =
+    succeed ContactTraceItem
         |> required "referred_person" decodeEntityUuid
         |> required "first_name" string
         |> required "second_name" string
+        |> required "gender" decodeGender
         |> required "phone_number" string
         |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "last_follow_up_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "symptoms_general" (nullable <| decodeEverySet decodeSymptomsGeneralSign) Nothing
+        |> optional "symptoms_respiratory" (nullable <| decodeEverySet decodeSymptomsRespiratorySign) Nothing
+        |> optional "symptoms_gi" (nullable <| decodeEverySet decodeSymptomsGISign) Nothing
+        |> optional "trace_outcome" (nullable decodeTraceOutcome) Nothing
+
+
+decodeSymptomsGeneralSign : Decoder SymptomsGeneralSign
+decodeSymptomsGeneralSign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGeneralSignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGeneralSign")
+            )
+
+
+decodeSymptomsRespiratorySign : Decoder SymptomsRespiratorySign
+decodeSymptomsRespiratorySign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsRespiratorySignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsRespiratorySign")
+            )
+
+
+decodeSymptomsGISign : Decoder SymptomsGISign
+decodeSymptomsGISign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGISignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGISign")
+            )
+
+
+decodeTraceOutcome : Decoder TraceOutcome
+decodeTraceOutcome =
+    string
+        |> andThen
+            (\outcome ->
+                case outcome of
+                    "no-answer" ->
+                        succeed OutcomeNoAnswer
+
+                    "wrong-contact-info" ->
+                        succeed OutcomeWrongContactInfo
+
+                    "declined-follow-up" ->
+                        succeed OutcomeDeclinedFollowUp
+
+                    "no-symptoms" ->
+                        succeed OutcomeNoSymptoms
+
+                    "referred-to-hc" ->
+                        succeed OutcomeReferredToHC
+
+                    _ ->
+                        fail <|
+                            outcome
+                                ++ " is not a recognized TraceOutcome"
+            )
 
 
 decodeHealthEducation : Decoder HealthEducation
