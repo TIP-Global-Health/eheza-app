@@ -2630,7 +2630,7 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row .date {
       color: $color-text;
       font-weight: 600;
-      margin: auto 0 auto auto;
+      margin: auto 0 auto 15px;
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row .timeline {
@@ -2644,7 +2644,7 @@ div.page-report.acute-illness {
         justify-content: center;
 
         img {
-          margin-left: -6px;
+          margin-left: 20px;
           width: 12px;
         }
 
@@ -2666,7 +2666,7 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row ul {
       display: inline-block;
       list-style-type: none;
-      margin: 0;
+      margin: 0 0 0 15px;
       padding: 0;
 
       &:last-child {
