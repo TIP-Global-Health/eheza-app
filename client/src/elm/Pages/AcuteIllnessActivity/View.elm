@@ -28,7 +28,7 @@ import EverySet
 import Form
 import Form.Input
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -3049,7 +3049,7 @@ viewTracedContact language currentDate db finished contact =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.DateOfContact ++ ": " ]
-                        , span [] [ formatDDMMYY contact.contactDate |> text ]
+                        , span [] [ formatDDMMYYYY contact.contactDate |> text ]
                         ]
                     ]
                 , action
