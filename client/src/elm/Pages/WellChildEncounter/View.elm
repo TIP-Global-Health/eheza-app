@@ -23,7 +23,7 @@ import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
@@ -146,6 +146,11 @@ viewPersonDetails language currentDate person =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
 
+        isAboveAgeOf2Years =
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age >= 2)
+                |> Maybe.withDefault False
+
         ( thumbnailClass, ageEntry ) =
             if isAdult then
                 ( "mother"
@@ -155,10 +160,18 @@ viewPersonDetails language currentDate person =
                 )
 
             else
+                let
+                    renderAgeFunc =
+                        if isAboveAgeOf2Years then
+                            renderAgeYearsMonths
+
+                        else
+                            renderAgeMonthsDays
+                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeMonthsDays language birthDate currentDate))
+                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
                     |> Maybe.withDefault emptyNode
                 )
 

@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffMonths, diffWeeks, diffYears, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -48,7 +48,6 @@ type alias NominalDateRange =
     { start : NominalDate
     , end : NominalDate
     }
-
 
 
 {-| Convert a nominal date to formatted string.
@@ -251,6 +250,20 @@ diffCalendarMonthsAndDays low high =
         { months = uncorrected.months - 1
         , days = uncorrected.days + daysInMonth (Date.year low) (Date.month low)
         }
+
+
+diffCalendarYearsAndMonths : NominalDate -> NominalDate -> { years : Int, months : Int }
+diffCalendarYearsAndMonths low high =
+    let
+        months =
+            diffCalendarMonthsAndDays low high |> .months
+
+        fullYears =
+            months // 12
+    in
+    { years = fullYears
+    , months = months - 12 * fullYears
+    }
 
 
 {-| Indicate of diff of nominal is a Truth value.

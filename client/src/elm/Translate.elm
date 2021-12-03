@@ -331,6 +331,11 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AgeOneYearOld
+    | AgeOneYearAndOneMonth
+    | AgeOneYearWithMonths Int
+    | AgeYearsWithSingleMonth Int Int
+    | AgeYearsAndMonths Int Int
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
@@ -1978,8 +1983,8 @@ translationSet trans =
             }
 
         AgeMonthsWithoutDay months ->
-            { english = String.fromInt months ++ " month"
-            , kinyarwanda = Just <| String.fromInt months ++ " Ukwezi"
+            { english = String.fromInt months ++ " months"
+            , kinyarwanda = Just <| String.fromInt months ++ " Amezi"
             }
 
         AgeSingleBoth months days ->
@@ -2000,6 +2005,31 @@ translationSet trans =
         AgeSingleDayWithoutMonth months days ->
             { english = String.fromInt days ++ " day"
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
+            }
+
+        AgeOneYearOld ->
+            { english = "One year old"
+            , kinyarwanda = Just "Umwaka umwe"
+            }
+
+        AgeOneYearAndOneMonth ->
+            { english = "One year and one month"
+            , kinyarwanda = Just "Umwaka n'ukwezi kumwe"
+            }
+
+        AgeOneYearWithMonths months ->
+            { english = "One year and " ++ String.fromInt months ++ " months"
+            , kinyarwanda = Just <| "Umwaka n'amezi " ++ String.fromInt months
+            }
+
+        AgeYearsWithSingleMonth years month ->
+            { english = String.fromInt years ++ " years " ++ String.fromInt month ++ " month"
+            , kinyarwanda = Just <| " Imyaka " ++ String.fromInt years ++ " Ukwezi " ++ String.fromInt month
+            }
+
+        AgeYearsAndMonths years months ->
+            { english = String.fromInt years ++ " years " ++ String.fromInt months ++ " months"
+            , kinyarwanda = Just <| " Imyaka " ++ String.fromInt years ++ " Amezi " ++ String.fromInt months
             }
 
         And ->
@@ -8862,7 +8892,7 @@ translationSet trans =
 
         YearsOld int ->
             { english = String.fromInt int ++ " years old"
-            , kinyarwanda = Just (String.fromInt int)
+            , kinyarwanda = Just <| "Imyaka " ++ String.fromInt int
             }
 
         Yes ->
