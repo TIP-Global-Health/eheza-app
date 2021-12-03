@@ -1,6 +1,11 @@
 <?php
 
+// This report shows the number of visits a woman has had in each pregnancy
+// in three ways.
+// Pregnancy visit: ANC for humans, `prenatal` in Drupal.
+
 $queries = [
+  // As the group of all pregnancies.
   "# Patients who have had " =>   "
 SELECT
   val,
@@ -19,7 +24,13 @@ FROM
      field_individual_participant_target_id) a
 GROUP BY
   val",
-  "Of Active Preganancies (within 30 days of EDD AND not completed)" => "
+  // As the group of pregnancies which is current - defined as NOT > 30 days
+  // past the EDD and AND NOT "closed" (e.g. if today is November 1, my pregnancy
+  // is current if it is Nov 15 of the same year and the pregnancy
+  // has not been closed). The closed-ness of the pregnancy was introduced
+  // recently, so this filter is not added there.
+  // @todo later, after 1-2 years, it might make sense to add closed filter.
+  "Of Active Pregnancies (within 30 days of EDD AND not completed)" => "
 SELECT
   val,
   COUNT(*) AS counter
@@ -39,7 +50,9 @@ FROM
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
-  "Of Completed Pregancies (30 days beyond EDD)" => "
+  // As a group of pregnancies that is completed - defined as > 30 past the EDD OR "closed"
+  // @todo introduce "closed" when meaningful
+  "Of Completed Pregnancies (30 days beyond EDD)" => "
 SELECT
   val,
   COUNT(*) AS counter
