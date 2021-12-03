@@ -388,7 +388,14 @@ class RoboFile extends Tasks {
    * Generates the demographics report.
    */
   public function reportDemographics() {
-    $this->_exec('cd /var/www/html/server/www && drush sql-cli < profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.SQL');
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php');
+  }
+
+  /**
+   * Generates the acute illness report.
+   */
+  public function reportAcuteIllness() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-report.php');
   }
 
   /**
