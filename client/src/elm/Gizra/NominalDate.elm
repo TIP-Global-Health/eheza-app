@@ -50,7 +50,6 @@ type alias NominalDateRange =
     }
 
 
-
 {-| Convert a nominal date to formatted string.
 
     formatMMDDYYYY (date 2017 5 22) --> "22-05-2017"
