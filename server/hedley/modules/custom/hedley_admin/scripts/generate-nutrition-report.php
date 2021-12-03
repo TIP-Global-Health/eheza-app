@@ -128,7 +128,6 @@ while ($processed < $total) {
 
   $count = count($ids);
   $processed += $count;
-  progress_bar($processed, $total);
 }
 
 drush_print('Done!');
