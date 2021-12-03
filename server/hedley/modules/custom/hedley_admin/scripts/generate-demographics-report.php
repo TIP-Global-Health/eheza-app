@@ -10,6 +10,15 @@
 
 require_once __DIR__ . '/report_common.inc';
 
+// We need to filter for all the measurements at several places,
+// but it's a bad idea to hardcode the list, so we generate a piece of SQL
+// here in advance.
+$types = hedley_general_get_measurement_types();
+array_walk($types, function (&$val) {
+  $val = "'$val'";
+});
+$measurement_types_sql_list = join(', ', $types);
+
 /**
  * Fetches registered / classified count from the temporary helper table.
  *
@@ -108,10 +117,11 @@ foreach ($commands as $command) {
   if (empty($command)) {
     continue;
   }
+  $command = str_replace('__MEASUREMENT_TYPES_LIST__', $measurement_types_sql_list, $command);
   db_query($command);
 }
-$group_encounter_all = group_encounter_all();
-$group_encounter_unique = group_encounter_unique();
+$group_encounter_all = group_encounter_all($measurement_types_sql_list);
+$group_encounter_unique = group_encounter_unique($measurement_types_sql_list);
 drush_print("Ready to print the report.\n\n");
 
 drush_print("# Demographics report  - " . date('D/m/Y'));
@@ -209,7 +219,7 @@ drush_print("## ENCOUNTERS");
  *
  * @return array
  */
-function group_encounter_all() {
+function group_encounter_all($measurement_types_list) {
   return db_query("
   SELECT
   field_group_type_value as type, COUNT(*) as counter
@@ -226,33 +236,7 @@ FROM
         LEFT JOIN field_data_field_person p ON p.entity_id = sess_rel.entity_id
         LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
     WHERE
-        sess_rel.bundle IN ('attendance', 'birth_plan', 'breast_exam', 'child_fbf', 'contributing_factors',
-                            'core_physical_exam',
-                            'danger_signs', 'family_planning', 'follow_up', 'group_health_education',
-                            'group_send_to_hc', 'height',
-                            'lactation', 'last_menstrual_period', 'medical_history', 'medication',
-                            'mother_fbf', 'muac', 'nutrition',
-                            'nutrition_height', 'nutrition_muac', 'nutrition_nutrition', 'nutrition_photo',
-                            'nutrition_weight',
-                            'obstetric_history', 'obstetric_history_step2', 'obstetrical_exam', 'photo',
-                            'pregnancy_testing',
-                            'prenatal_family_planning', 'prenatal_health_education', 'prenatal_nutrition',
-                            'prenatal_photo',
-                            'resource', 'social_history', 'vitals', 'weight', 'acute_findings',
-                            'acute_illness_danger_signs',
-                            'acute_illness_follow_up', 'acute_illness_muac', 'acute_illness_nutrition',
-                            'acute_illness_vitals',
-                            'call_114', 'exposure', 'hc_contact', 'health_education', 'isolation',
-                            'malaria_testing',
-                            'medication_distribution', 'send_to_hc', 'symptoms_general', 'symptoms_gi',
-                            'symptoms_respiratory',
-                            'travel_history', 'treatment_history', 'treatment_ongoing',
-                            'participant_consent', 'nutrition_caring',
-                            'nutrition_contributing_factors', 'nutrition_feeding', 'nutrition_follow_up',
-                            'nutrition_food_security',
-                            'nutrition_health_education', 'nutrition_hygiene', 'nutrition_send_to_hc',
-                            'appointment_confirmation',
-                            'prenatal_follow_up', 'prenatal_send_to_hc', 'counseling_session')
+        sess_rel.bundle IN ($measurement_types_list)
     AND field_group_type_value IS NOT NULL
     AND class.entity_id IS NOT NULL
     GROUP BY
@@ -268,7 +252,7 @@ GROUP BY
  *
  * @return array
  */
-function group_encounter_unique() {
+function group_encounter_unique($measurement_types_list) {
   return db_query("
   SELECT
   field_group_type_value as type, COUNT(*) as counter
@@ -285,33 +269,7 @@ FROM
         LEFT JOIN field_data_field_person p ON p.entity_id = sess_rel.entity_id
         LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
     WHERE
-        sess_rel.bundle IN ('attendance', 'birth_plan', 'breast_exam', 'child_fbf', 'contributing_factors',
-    'core_physical_exam',
-    'danger_signs', 'family_planning', 'follow_up', 'group_health_education',
-    'group_send_to_hc', 'height',
-    'lactation', 'last_menstrual_period', 'medical_history', 'medication',
-    'mother_fbf', 'muac', 'nutrition',
-    'nutrition_height', 'nutrition_muac', 'nutrition_nutrition', 'nutrition_photo',
-    'nutrition_weight',
-    'obstetric_history', 'obstetric_history_step2', 'obstetrical_exam', 'photo',
-    'pregnancy_testing',
-    'prenatal_family_planning', 'prenatal_health_education', 'prenatal_nutrition',
-    'prenatal_photo',
-    'resource', 'social_history', 'vitals', 'weight', 'acute_findings',
-    'acute_illness_danger_signs',
-    'acute_illness_follow_up', 'acute_illness_muac', 'acute_illness_nutrition',
-    'acute_illness_vitals',
-    'call_114', 'exposure', 'hc_contact', 'health_education', 'isolation',
-    'malaria_testing',
-    'medication_distribution', 'send_to_hc', 'symptoms_general', 'symptoms_gi',
-    'symptoms_respiratory',
-    'travel_history', 'treatment_history', 'treatment_ongoing',
-    'participant_consent', 'nutrition_caring',
-    'nutrition_contributing_factors', 'nutrition_feeding', 'nutrition_follow_up',
-    'nutrition_food_security',
-    'nutrition_health_education', 'nutrition_hygiene', 'nutrition_send_to_hc',
-    'appointment_confirmation',
-    'prenatal_follow_up', 'prenatal_send_to_hc', 'counseling_session')
+        sess_rel.bundle IN ($measurement_types_list)
   AND field_group_type_value IS NOT NULL
   AND class.entity_id IS NOT NULL
     GROUP BY
