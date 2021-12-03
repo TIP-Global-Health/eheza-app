@@ -3224,7 +3224,7 @@ translationSet trans =
 
                 KnowsColorsAndNumbers ->
                     { english = "Does the child know basic colors and numbers"
-                    , kinyarwanda = Just "Umwana azi amabara n'imibare  by'ibanze"
+                    , kinyarwanda = Just "Umwana azi amabara n'imibare by'ibanze"
                     }
 
                 UseMediumPhrases ->
@@ -5462,7 +5462,7 @@ translationSet trans =
 
                 NonAdministrationKnownAllergy ->
                     { english = "Known Allergy or Reaction"
-                    , kinyarwanda = Just "Agira ingaruka zizwi kubera uru rukingo/umuti?"
+                    , kinyarwanda = Just "Agira ingaruka zizwi kubera uru rukingo/umuti"
                     }
 
                 NonAdministrationPatientDeclined ->
@@ -6747,7 +6747,7 @@ translationSet trans =
 
         PriorDiagnosis ->
             { english = "Prior Diagnosis"
-            , kinyarwanda = Just "uburwayi yagize/yigeze kurwara"
+            , kinyarwanda = Just "Uburwayi yagize/yigeze kurwara"
             }
 
         ProvidedHealthEducationAction ->
@@ -8438,12 +8438,12 @@ translationSet trans =
             case task of
                 VaccineBCG ->
                     { english = "BCG protects your child from getting the worst complications of tuberculosis, which can affect the lungs and could be deadly for young children."
-                    , kinyarwanda = Just "Urukingo rw'igituntu rurinda umwana ibyago byo kuba yakwandura igituntu,ndeste nibyago byashamikiraho bishobora kwibasira ibihaha ,ibi bikaba byanahitana umwana akiri muto."
+                    , kinyarwanda = Just "Urukingo rw'igituntu rurinda umwana ibyago byo kuba yakwandura igituntu, ndeste nibyago byashamikiraho bishobora kwibasira ibihaha, ibi bikaba byanahitana umwana akiri muto."
                     }
 
                 VaccineDTP ->
                     { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), liver failure (Hepatitis B), diarrhea (Diptheria)."
-                    , kinyarwanda = Just "Rurinda umwana indwara ya tetanosi, kokolishe, umwijima wo mubwoko bwa B, n'impiswi"
+                    , kinyarwanda = Just "Rurinda umwana indwara ya tetanosi, kokolishe, umwijima wo mubwoko bwa B, n'impiswi."
                     }
 
                 VaccineHPV ->
@@ -8463,29 +8463,29 @@ translationSet trans =
 
                 VaccineOPV ->
                     { english = "OPV prevents the child from contracting the Polio Virus, which affects the spinal cord and can cause paralysis."
-                    , kinyarwanda = Just "Uru rukingo rurinda umwana kwandura Virusi itera indwara y'imbasa, iyo virusi ifata ururenda ruba mu ruti rw'umugongo bigatera umwana ubumuga bw'ingingo(Amaguru cg amaboko)"
+                    , kinyarwanda = Just "Uru rukingo rurinda umwana kwandura Virusi itera indwara y'imbasa, iyo virusi ifata ururenda ruba mu ruti rw'umugongo bigatera umwana ubumuga bw'ingingo (Amaguru cg amaboko)."
                     }
 
                 VaccinePCV13 ->
                     { english = "Protects against any disease caused by a specific bacteria that can lead to lung infections."
-                    , kinyarwanda = Just "Rurinda umwana indwara ziterwa n'udukoko twangiza ibihaha"
+                    , kinyarwanda = Just "Rurinda umwana indwara ziterwa n'udukoko twangiza ibihaha."
                     }
 
                 VaccineRotarix ->
                     { english = "Protects against diarrhea caused by the Rotavirus. Diarrhea is the 3rd leading cause of death of children in Rwanda."
-                    , kinyarwanda = Just "Rurinda umwana impiswi ziterwa n'udukoko twa rotavirusi, Impiswi ni impamvu ya gatatu itera imfu z'abana mu Rwanda"
+                    , kinyarwanda = Just "Rurinda umwana impiswi ziterwa n'udukoko twa rotavirusi. Impiswi ni impamvu ya gatatu itera imfu z'abana mu Rwanda."
                     }
 
         WellChildImmunisationDosage task ->
             case task of
                 VaccineBCG ->
                     { english = "There is one dose of BCG and it is given at birth."
-                    , kinyarwanda = Just "Urukingo rw'igituntu rutangwa inshuro imwe umwana akimara kuvuka"
+                    , kinyarwanda = Just "Urukingo rw'igituntu rutangwa inshuro imwe umwana akimara kuvuka."
                     }
 
                 VaccineDTP ->
                     { english = "There are 3 doses of DTP-HepB-Hib - 6 weeks, 10 weeks, and 14 weeks."
-                    , kinyarwanda = Just "Umwana ahabwa inshuro eshatu inkingo zikurikira:(urukingo rw'agakwega, Hepatite yo mubwoko bwa B, nigihuka)  yujuje ibyumweru 6,ibyumweru 10, no ku byumweru 14)"
+                    , kinyarwanda = Just "Umwana ahabwa inshuro eshatu inkingo zikurikira:(urukingo rw'agakwega, Hepatite yo mubwoko bwa B, nigihuka) yujuje ibyumweru 6, ibyumweru 10, no ku byumweru 14."
                     }
 
                 VaccineHPV ->
@@ -8495,27 +8495,27 @@ translationSet trans =
 
                 VaccineIPV ->
                     { english = "There is only one dose of the inactivated vaccine at 14 weeks."
-                    , kinyarwanda = Just "Uru rukingo aruhabwa inshuro imwe gusa"
+                    , kinyarwanda = Just "Uru rukingo aruhabwa inshuro imwe gusa ku byumweru 14."
                     }
 
                 VaccineMR ->
                     { english = "There are 2 doses of Measles-Rubella - at 9 months and 15 months."
-                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'Iseru na Rubeyole inshuro 2: Afite Amezi 9, n'amezi 15"
+                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'Iseru na Rubeyole inshuro 2: Afite Amezi 9, n'amezi 15."
                     }
 
                 VaccineOPV ->
                     { english = "There are 4 doses of OPV - at birth, 6 weeks, 10 weeks, and 14 weeks."
-                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'imbasa inshuro 4:Akivuka, ku byumweru 6, ku byumweru 10 no ku byumweru 14"
+                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'imbasa inshuro 4:Akivuka, ku byumweru 6, ku byumweru 10 no ku byumweru 14."
                     }
 
                 VaccinePCV13 ->
                     { english = "There are 3 doses of PCV 13 - 6 weeks, 10 weeks, and 14 weeks."
-                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'umusonga inshuro 3:Ku byumweru 6, ku byumweru 10 no ku byumweru 14"
+                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'umusonga inshuro 3:Ku byumweru 6, ku byumweru 10 no ku byumweru 14."
                     }
 
                 VaccineRotarix ->
                     { english = "There are 2 doses of Rotarix - 6 weeks and 10 weeks."
-                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'impiswi inshuro 2:Ku byumweru 6, no ku byumweru 10"
+                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'impiswi inshuro 2:Ku byumweru 6, no ku byumweru 10."
                     }
 
         WellChildImmunisationHeader task ->
@@ -8738,7 +8738,7 @@ translationSet trans =
 
                 SymptomSevereEdema ->
                     { english = "Severe Edema"
-                    , kinyarwanda = Just "Kubyimba bikabije ( Cyane ibirenge cg intonki)"
+                    , kinyarwanda = Just "Kubyimba bikabije (Cyane ibirenge cg intonki)"
                     }
 
                 SymptomPalmoplantarPallor ->
