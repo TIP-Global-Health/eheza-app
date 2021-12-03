@@ -107,9 +107,6 @@ function encounter_unique_count($type, $filter = NULL) {
   return db_query("SELECT COUNT(DISTINCT field_person_target_id) FROM field_data_field_{$type}_encounter e LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id;")->fetchField();
 }
 
-
-
-drush_print("Bootstrapping demographics data calculation");
 $bootstrap_data_structures = file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL');
 $commands = explode(';', $bootstrap_data_structures);
 $k = 0;
@@ -122,7 +119,6 @@ foreach ($commands as $command) {
 }
 $group_encounter_all = group_encounter_all($measurement_types_sql_list);
 $group_encounter_unique = group_encounter_unique($measurement_types_sql_list);
-drush_print("Ready to print the report.\n\n");
 
 drush_print("# Demographics report  - " . date('D/m/Y'));
 
