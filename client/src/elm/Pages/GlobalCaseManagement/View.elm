@@ -14,7 +14,7 @@ import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -793,7 +793,7 @@ viewTraceContactEntry language currentDate db entry =
     in
     div [ class "trace-contact-entry" ]
         [ div [ class "name" ] [ text entry.personName ]
-        , div [ class "last-contact" ] [ text <| formatDDMMYY lastContactDate ]
+        , div [ class "last-contact" ] [ text <| formatDDMMYYYY lastContactDate ]
         , div [ class "reporter" ] [ text entry.reporterName ]
         , div [ class "phone-number" ] [ text entry.phoneNumber ]
         , div [ class "icon-forward" ]
