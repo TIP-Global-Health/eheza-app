@@ -2014,12 +2014,12 @@ translationSet trans =
 
         AgeOneYearAndOneMonth ->
             { english = "One year and one month"
-            , kinyarwanda = Just " Umwaka n'ukwezi kumwe"
+            , kinyarwanda = Just "Umwaka n'ukwezi kumwe"
             }
 
         AgeOneYearWithMonths months ->
-            { english = "1 year " ++ String.fromInt months ++ " months"
-            , kinyarwanda = Just <| " Umwaka n'amezi " ++ String.fromInt months
+            { english = "One year and " ++ String.fromInt months ++ " months"
+            , kinyarwanda = Just <| "Umwaka n'amezi " ++ String.fromInt months
             }
 
         AgeYearsWithSingleMonth years month ->
