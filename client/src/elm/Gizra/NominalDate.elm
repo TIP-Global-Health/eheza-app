@@ -1,11 +1,11 @@
 module Gizra.NominalDate exposing
     ( NominalDate
     , decodeYYYYMMDD, encodeYYYYMMDD
-    , formatYYYYMMDD, formatMMDDYYYY
+    , formatYYYYMMDD
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, formatDDMMyyyy, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffMonths, diffWeeks, diffYears, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -50,15 +50,6 @@ type alias NominalDateRange =
     }
 
 
-{-| Convert a nominal date to formatted string.
-
-    formatMMDDYYYY (date 2017 5 22) --> "05-22-2017"
-
--}
-formatMMDDYYYY : NominalDate -> String
-formatMMDDYYYY =
-    Date.format "MM-dd-yyyy"
-
 
 {-| Convert a nominal date to formatted string.
 
@@ -67,16 +58,6 @@ formatMMDDYYYY =
 -}
 formatDDMMYYYY : NominalDate -> String
 formatDDMMYYYY =
-    Date.format "dd-MM-yyyy"
-
-
-formatDDMMYY : NominalDate -> String
-formatDDMMYY =
-    Date.format "dd/MM/yy"
-
-
-formatDDMMyyyy : NominalDate -> String
-formatDDMMyyyy =
     Date.format "dd/MM/yyyy"
 
 

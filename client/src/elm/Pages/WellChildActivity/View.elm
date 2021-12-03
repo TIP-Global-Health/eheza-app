@@ -15,7 +15,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYY, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -1118,7 +1118,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                         |> Maybe.map Tuple.second
 
                 nextDueText =
-                    Maybe.map formatDDMMYY nextDue
+                    Maybe.map formatDDMMYYYY nextDue
                         |> Maybe.withDefault ""
 
                 ( status, statusClass ) =
@@ -1137,7 +1137,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                 [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
                 , Dict.values doses
                     |> List.sortWith Date.compare
-                    |> List.map (formatDDMMYY >> text >> List.singleton >> p [])
+                    |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
                     |> div [ class "cell date" ]
                 , div [ class "cell next-due" ]
                     [ text nextDueText ]
@@ -1299,7 +1299,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                 viewHistoryEntry dose date updateAllowed deleteAllowed =
                     let
                         dateForView =
-                            Maybe.map formatDDMMyyyy date
+                            Maybe.map formatDDMMYYYY date
                                 |> Maybe.withDefault "--/--/----"
 
                         deleteButton =
@@ -2339,7 +2339,7 @@ viewNextVisitForm language currentDate isChw assembled db form =
             Maybe.map
                 (\date ->
                     [ viewLabel language label
-                    , div [ class "date" ] [ text <| formatDDMMyyyy date ]
+                    , div [ class "date" ] [ text <| formatDDMMYYYY date ]
                     ]
                 )
                 value
