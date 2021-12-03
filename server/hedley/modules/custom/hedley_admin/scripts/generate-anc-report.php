@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/report_common.inc';
+
 // This report shows the number of visits a woman has had in each pregnancy
 // in three ways.
 // Pregnancy visit: ANC for humans, `prenatal` in Drupal.
@@ -79,19 +81,26 @@ GROUP BY val",
 // 5+ visits => 15.
 $group_limit = 5;
 foreach ($queries as $label => $query) {
-  echo "# $label\n";
+  $table = new HedleyAdminTextTable([$label, 'Counter']);
+  $data = [];
   $results = db_query($query)->fetchAll(PDO::FETCH_ASSOC);
   $sum_group_limit_or_above = 0;
   foreach ($results as $result) {
     if ($result['val'] < $group_limit) {
-      print $result['val'] . " visits\t" . $result['counter'] . "\n";
+      $data[] = [
+        $result['val'] . ' visits',
+        $result['counter'],
+      ];
     }
     else {
       $sum_group_limit_or_above += $result['counter'];
     }
   }
   if (!empty($sum_group_limit_or_above)) {
-    print "$group_limit+ visits\t$sum_group_limit_or_above\n";
+    $data[] = [
+      $group_limit . '+ visits',
+      $sum_group_limit_or_above,
+    ];
   }
-  echo "\n\n";
+  drush_print($table->render($data));
 }
