@@ -392,6 +392,13 @@ class RoboFile extends Tasks {
   }
 
   /**
+   * Generates the ANC report.
+   */
+  public function reportAnc() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php');
+  }
+
+  /**
    * Generates the pregnancy report.
    */
   public function reportPregnancy() {
