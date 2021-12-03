@@ -34,7 +34,7 @@ import Backend.WellChildEncounter.Model
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDMMYY, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -617,10 +617,7 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
 generatePartitionedWarningEntries :
     ModelIndexedDb
     -> Maybe AssembledData
-    ->
-        ( List ( NominalDate, PediatricCareMilestone, EncounterWarning )
-        , List ( NominalDate, PediatricCareMilestone, EncounterWarning )
-        )
+    -> ( List ( NominalDate, PediatricCareMilestone, EncounterWarning ), List ( NominalDate, PediatricCareMilestone, EncounterWarning ) )
 generatePartitionedWarningEntries db maybeAssembled =
     Maybe.map
         (\assembled ->
@@ -740,7 +737,7 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
                 [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                 , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
                     [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
-                , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+                , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
                 , div
                     [ class "icon-forward"
                     , onClick <|
@@ -780,7 +777,7 @@ viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
             List.map (translateNutritionAssement language >> List.singleton >> p []) orderedAssessments
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
-        , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+        , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )
 
@@ -796,7 +793,7 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
         [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning milestoneForDaignosisPane ]
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
-        , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+        , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )
 
@@ -1291,7 +1288,7 @@ viewNutritionSigns language child measurements =
                                         |> List.singleton
                                         |> div [ class "cell name" ]
                                     , div [ class "cell date" ]
-                                        [ text <| formatDDMMYY dateMeasured ]
+                                        [ text <| formatDDMMYYYY dateMeasured ]
                                     ]
                                     |> Just
                     )
@@ -1317,7 +1314,7 @@ viewPhotos language child measurements =
                 div
                     [ class "report card" ]
                     [ div [ class "content" ]
-                        [ text <| formatDDMMYY photo.dateMeasured ]
+                        [ text <| formatDDMMYYYY photo.dateMeasured ]
                     , viewPhotoUrl photo.value
                     ]
             )
@@ -1358,7 +1355,7 @@ viewNextAppointmentPane language currentDate child individualWellChildMeasuremen
                                 div [ class "entry next-appointment" ]
                                     [ div [ class "cell type" ] [ text <| translate language label ]
                                     , div [ class "cell location" ] [ text healthCenter ]
-                                    , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+                                    , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
                                     ]
                         in
                         Maybe.Extra.values [ immunisationEntry, pediatricVisitDate ]

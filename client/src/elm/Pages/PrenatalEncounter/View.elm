@@ -35,7 +35,7 @@ import Pages.PrenatalEncounter.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -194,6 +194,11 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
 
+        isAboveAgeOf2Years =
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age >= 2)
+                |> Maybe.withDefault False
+
         ( thumbnailClass, maybeAge ) =
             if isAdult then
                 ( "mother"
@@ -202,10 +207,18 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                 )
 
             else
+                let
+                    renderAgeFunc =
+                        if isAboveAgeOf2Years then
+                            renderAgeYearsMonths
+
+                        else
+                            renderAgeMonthsDays
+                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
+                        (\birthDate -> renderAgeFunc language birthDate currentDate)
                 )
     in
     [ div [ class "ui image" ]

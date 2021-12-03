@@ -14,7 +14,7 @@ import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -818,7 +818,7 @@ viewTraceContactEntry :
 viewTraceContactEntry language currentDate db entry =
     let
         lastContactDate =
-            Maybe.map formatDDMMYY entry.lastFollowUpDate
+            Maybe.map formatDDMMYYYY entry.lastFollowUpDate
                 |> Maybe.withDefault ""
     in
     div [ class "trace-contact-entry" ]

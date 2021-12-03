@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (VaccineDose, VaccineType, WellChildMe
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildEncounter.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.Page exposing (Page)
 
 
