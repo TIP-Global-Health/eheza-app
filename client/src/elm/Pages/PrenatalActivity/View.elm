@@ -2920,7 +2920,7 @@ viewPrenatalUrineDipstickForm language currentDate form =
                             []
 
                         else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label header" ]
+                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
                 in
                 ( testVariantSection ++ performedTestSection ++ testResultSection
                 , performedTestTasksCompleted + testVariantTasksCompleted
@@ -2931,7 +2931,7 @@ viewPrenatalUrineDipstickForm language currentDate form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskUrineDipstickTest) "" "label"
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -3183,7 +3183,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                                             msgs.setExecutionDateMsg
                                             form.isDateSelectorOpen
                                             (Date.add Days -30 currentDate)
-                                            currentDate
+                                            (Date.add Days -1 currentDate)
                                             form.executionDate
                                         ]
                                     , taskCompleted form.executionDate
