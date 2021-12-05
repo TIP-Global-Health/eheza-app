@@ -382,6 +382,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'pediatric_visit_date',
           'contact_date',
           'last_follow_up_date',
+          'execution_date',
         ];
 
         $multiDateFields = [

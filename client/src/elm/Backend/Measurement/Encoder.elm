@@ -364,11 +364,11 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement encodePrenatalLabsRDTValue
+    encodePrenatalMeasurement (encodePrenatalLabsRDTValueWithType "prenatal_hiv_test")
 
 
-encodePrenatalLabsRDTValue : PrenatalLabsRDTValue -> List ( String, Value )
-encodePrenatalLabsRDTValue value =
+encodePrenatalLabsRDTValueWithType : String -> PrenatalLabsRDTValue -> List ( String, Value )
+encodePrenatalLabsRDTValueWithType type_ value =
     let
         executionDate =
             Maybe.map
@@ -386,13 +386,13 @@ encodePrenatalLabsRDTValue value =
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_hiv_test" )
+           , ( "type", string type_ )
            ]
 
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
-    encodePrenatalMeasurement encodePrenatalLabsRDTValue
+    encodePrenatalMeasurement (encodePrenatalLabsRDTValueWithType "prenatal_malaria_test")
 
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
