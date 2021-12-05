@@ -2862,7 +2862,7 @@ viewPrenatalRDTForm language currentDate task form =
                                                 [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
                                             |> select
                                                 [ onInput setResultMsg
-                                                , class "form-input test-result"
+                                                , class "form-input select"
                                                 ]
                                       ]
                                     , taskCompleted form.testResult
@@ -2881,7 +2881,7 @@ viewPrenatalRDTForm language currentDate task form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label"
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -2920,7 +2920,7 @@ viewPrenatalUrineDipstickForm language currentDate form =
                             []
 
                         else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label header" ]
                 in
                 ( testVariantSection ++ performedTestSection ++ testResultSection
                 , performedTestTasksCompleted + testVariantTasksCompleted
@@ -2968,7 +2968,7 @@ viewPrenatalNonRDTForm language currentDate task form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label"
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -3174,16 +3174,18 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         let
                             ( executionDateContent, executionDateTasksCompleted, executionDateTasksTotal ) =
                                 if testPerformedToday then
-                                    ( p [] [ text <| formatDDMMYYYY currentDate ], 0, 0 )
+                                    ( p [ class "test-date" ] [ text <| formatDDMMYYYY currentDate ], 0, 0 )
 
                                 else
-                                    ( DateSelector.SelectorDropdown.view
-                                        msgs.toggleDateSelectorMsg
-                                        msgs.setExecutionDateMsg
-                                        form.isDateSelectorOpen
-                                        (Date.add Days -30 currentDate)
-                                        currentDate
-                                        form.executionDate
+                                    ( div [ class "form-input date" ]
+                                        [ DateSelector.SelectorDropdown.view
+                                            msgs.toggleDateSelectorMsg
+                                            msgs.setExecutionDateMsg
+                                            form.isDateSelectorOpen
+                                            (Date.add Days -30 currentDate)
+                                            currentDate
+                                            form.executionDate
+                                        ]
                                     , taskCompleted form.executionDate
                                     , 1
                                     )
