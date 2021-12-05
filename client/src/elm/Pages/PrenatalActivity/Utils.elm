@@ -7,14 +7,14 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement, noDangerSigns)
+import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement, isFirstEncounter, noDangerSigns)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -958,11 +958,6 @@ toPregnancyTestValue form =
     form.pregnancyTestResult
 
 
-calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
-calculateBmi maybeHeight maybeWeight =
-    Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
-
-
 historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> ( Int, Int )
 historyTasksCompletedFromTotal assembled data task =
     case task of
@@ -1644,7 +1639,86 @@ laboratoryTasks =
 
 expectLaboratoryTask : NominalDate -> AssembledData -> ModelIndexedDb -> LaboratoryTask -> Bool
 expectLaboratoryTask currentDate assembled db task =
-    case task of
-        -- @todo
-        _ ->
-            True
+    if assembled.encounter.encounterType /= NurseEncounter then
+        False
+
+    else
+        let
+            testsDates =
+                generatePreviousLaboratoryTestsDatesDict currentDate assembled
+
+            isInitialTest test =
+                Dict.get test testsDates
+                    |> Maybe.map List.isEmpty
+                    |> Maybe.withDefault True
+
+            isRepeatingTestOnWeek week test =
+                Maybe.map
+                    (\lmpDate ->
+                        if diffWeeks lmpDate currentDate < week then
+                            isInitialTest test
+
+                        else
+                            let
+                                lastTestWeek =
+                                    Dict.get test testsDates
+                                        |> Maybe.map (List.map (\testsDate -> diffWeeks testsDate currentDate))
+                                        |> Maybe.withDefault []
+                                        |> List.sort
+                                        |> List.reverse
+                                        |> List.head
+                            in
+                            Maybe.map (\testWeek -> testWeek < week) lastTestWeek
+                                |> Maybe.withDefault True
+                    )
+                    assembled.globalLmpDate
+                    |> Maybe.withDefault (isInitialTest test)
+        in
+        case task of
+            TaskHIVTest ->
+                isRepeatingTestOnWeek 38 TaskHIVTest
+
+            TaskSyphilisTest ->
+                isRepeatingTestOnWeek 38 TaskSyphilisTest
+
+            TaskHepatitisBTest ->
+                isRepeatingTestOnWeek 34 TaskHepatitisBTest
+
+            TaskMalariaTest ->
+                True
+
+            TaskBloodGpRsTest ->
+                isInitialTest TaskBloodGpRsTest
+
+            TaskUrineDipstickTest ->
+                True
+
+            TaskHemoglobinTest ->
+                True
+
+            TaskRandomBloodSugarTest ->
+                -- First ?? @todo
+                isInitialTest TaskRandomBloodSugarTest
+
+
+generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
+generatePreviousLaboratoryTestsDatesDict currentDate assembled =
+    let
+        generateTestDates getFunc =
+            List.filterMap
+                (Tuple.second
+                    >> getFunc
+                    >> Maybe.map (Tuple.second >> .dateMeasured)
+                )
+                assembled.nursePreviousMeasurementsWithDates
+    in
+    [ ( TaskHIVTest, generateTestDates .hivTest )
+    , ( TaskSyphilisTest, generateTestDates .syphilisTest )
+    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest )
+    , ( TaskMalariaTest, generateTestDates .malariaTest )
+    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest )
+    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest )
+    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest )
+    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest )
+    ]
+        |> Dict.fromList

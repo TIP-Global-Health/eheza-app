@@ -12,7 +12,6 @@ import Backend.PrenatalActivity.Utils
     exposing
         ( generateHighRiskAlertData
         , generateHighSeverityAlertData
-        , generateRecurringHighSeverityAlertData
         , getActivityIcon
         )
 import Backend.PrenatalEncounter.Model
