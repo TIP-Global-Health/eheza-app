@@ -1282,74 +1282,72 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, laboratoryTasksCompletedFromTotal measurements data task )) tasks
+        formHtmlAndTasks =
+            List.map
+                (\task ->
+                    ( task
+                    , case task of
+                        TaskHIVTest ->
+                            measurements.hivTest
+                                |> getMeasurementValueFunc
+                                |> prenatalRDTFormWithDefault data.hivTestForm
+                                |> viewPrenatalRDTForm language currentDate TaskHIVTest
+
+                        TaskSyphilisTest ->
+                            measurements.syphilisTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.syphilisTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskSyphilisTest
+
+                        TaskHepatitisBTest ->
+                            measurements.hepatitisBTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskHepatitisBTest
+
+                        TaskMalariaTest ->
+                            measurements.malariaTest
+                                |> getMeasurementValueFunc
+                                |> prenatalRDTFormWithDefault data.malariaTestForm
+                                |> viewPrenatalRDTForm language currentDate TaskMalariaTest
+
+                        TaskBloodGpRsTest ->
+                            measurements.bloodGpRsTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskBloodGpRsTest
+
+                        TaskUrineDipstickTest ->
+                            measurements.urineDipstickTest
+                                |> getMeasurementValueFunc
+                                |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
+                                |> viewPrenatalUrineDipstickForm language currentDate
+
+                        TaskHemoglobinTest ->
+                            measurements.hemoglobinTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
+
+                        TaskRandomBloodSugarTest ->
+                            measurements.randomBloodSugarTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
+                    )
+                )
+                tasks
                 |> Dict.fromList
 
-        ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
-                |> Maybe.withDefault ( 0, 0 )
+        tasksCompletedFromTotalDict =
+            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                formHtmlAndTasks
 
-        viewForm =
-            case activeTask of
-                Just TaskHIVTest ->
-                    measurements.hivTest
-                        |> getMeasurementValueFunc
-                        |> prenatalRDTFormWithDefault data.hivTestForm
-                        |> viewPrenatalRDTForm language currentDate TaskHIVTest
-                        |> List.singleton
-
-                Just TaskSyphilisTest ->
-                    measurements.syphilisTest
-                        |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.syphilisTestForm
-                        |> viewPrenatalNonRDTForm language currentDate TaskSyphilisTest
-                        |> List.singleton
-
-                Just TaskHepatitisBTest ->
-                    measurements.hepatitisBTest
-                        |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
-                        |> viewPrenatalNonRDTForm language currentDate TaskHepatitisBTest
-                        |> List.singleton
-
-                Just TaskMalariaTest ->
-                    measurements.malariaTest
-                        |> getMeasurementValueFunc
-                        |> prenatalRDTFormWithDefault data.malariaTestForm
-                        |> viewPrenatalRDTForm language currentDate TaskMalariaTest
-                        |> List.singleton
-
-                Just TaskBloodGpRsTest ->
-                    measurements.bloodGpRsTest
-                        |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
-                        |> viewPrenatalNonRDTForm language currentDate TaskBloodGpRsTest
-                        |> List.singleton
-
-                Just TaskUrineDipstickTest ->
-                    measurements.urineDipstickTest
-                        |> getMeasurementValueFunc
-                        |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
-                        |> viewPrenatalUrineDipstickForm language currentDate
-                        |> List.singleton
-
-                Just TaskHemoglobinTest ->
-                    measurements.hemoglobinTest
-                        |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
-                        |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
-                        |> List.singleton
-
-                Just TaskRandomBloodSugarTest ->
-                    measurements.randomBloodSugarTest
-                        |> getMeasurementValueFunc
-                        |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
-                        |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
-                        |> List.singleton
-
-                Nothing ->
-                    []
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.andThen
+                (\task -> Dict.get task formHtmlAndTasks)
+                activeTask
+                |> Maybe.withDefault ( emptyNode, 0, 0 )
 
         nextTask =
             List.filter
@@ -1402,8 +1400,7 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewForm
-                ++ [ actions ]
+            [ viewForm, actions ]
         ]
     ]
 
@@ -2810,13 +2807,13 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
-viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> Html Msg
+viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalRDTForm language currentDate task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate task form
 
-        derivedContent =
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.testPerformed == Just True then
                 let
                     ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
@@ -2828,14 +2825,14 @@ viewPrenatalRDTForm language currentDate task form =
                                 Just SetHIVTestResult
 
                             TaskMalariaTest ->
-                                Just SetHIVTestResult
+                                Just SetMalariaTestResult
 
                             _ ->
                                 Nothing
 
-                    testResultSection =
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
-                            []
+                            ( [], 0, 0 )
 
                         else
                             Maybe.map
@@ -2852,59 +2849,71 @@ viewPrenatalRDTForm language currentDate task form =
                                             else
                                                 emptyNode
                                     in
-                                    [ viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
-                                    , emptyOption
-                                        :: List.map
-                                            (\result ->
-                                                option
-                                                    [ value (prenatalTestResultToString result)
-                                                    , selected (form.testResult == Just result)
-                                                    ]
-                                                    [ text <| translate language <| Translate.PrenatalTestResult result ]
-                                            )
-                                            [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
-                                        |> select
-                                            [ onInput setResultMsg
-                                            , class "form-input test-result"
-                                            ]
-                                    ]
+                                    ( [ viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
+                                      , emptyOption
+                                            :: List.map
+                                                (\result ->
+                                                    option
+                                                        [ value (prenatalTestResultToString result)
+                                                        , selected (form.testResult == Just result)
+                                                        ]
+                                                        [ text <| translate language <| Translate.PrenatalTestResult result ]
+                                                )
+                                                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                                            |> select
+                                                [ onInput setResultMsg
+                                                , class "form-input test-result"
+                                                ]
+                                      ]
+                                    , taskCompleted form.testResult
+                                    , 1
+                                    )
                                 )
                                 setTestResultMsg
-                                |> Maybe.withDefault []
+                                |> Maybe.withDefault ( [], 0, 0 )
                 in
-                performedTestSection ++ testResultSection
+                ( performedTestSection ++ testResultSection
+                , performedTestTasksCompleted + testResultTasksCompleted
+                , performedTestTasksTotal + testResultTasksTotal
+                )
 
             else
-                []
+                ( [], 0, 0 )
     in
-    div [ class "ui form laboratory rdt" ] <|
+    ( div [ class "ui form laboratory rdt" ] <|
         [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label"
         ]
             ++ initialSection
-            ++ derivedContent
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
 
 
-viewPrenatalUrineDipstickForm : Language -> NominalDate -> PrenatalUrineDipstickForm -> Html Msg
+viewPrenatalUrineDipstickForm : Language -> NominalDate -> PrenatalUrineDipstickForm -> ( Html Msg, Int, Int )
 viewPrenatalUrineDipstickForm language currentDate form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate TaskUrineDipstickTest form
 
-        derivedContent =
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.testPerformed == Just True then
                 let
                     ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
                         contentAndTasksForPerformedLaboratoryTest language currentDate TaskUrineDipstickTest form
 
-                    testVariantSection =
-                        [ viewQuestionLabel language Translate.TestVariantQuestion
-                        , viewCheckBoxSelectInput language
-                            [ VariantShortTest ]
-                            [ VariantLongTest ]
-                            form.testVariant
-                            SetUrineDipstickTestVariant
-                            Translate.PrenatalUrineDipstickTestVariant
-                        ]
+                    ( testVariantSection, testVariantTasksCompleted, testVariantTasksTotal ) =
+                        ( [ viewQuestionLabel language Translate.TestVariantQuestion
+                          , viewCheckBoxSelectInput language
+                                [ VariantShortTest ]
+                                [ VariantLongTest ]
+                                form.testVariant
+                                SetUrineDipstickTestVariant
+                                Translate.PrenatalUrineDipstickTestVariant
+                          ]
+                        , taskCompleted form.testVariant
+                        , 1
+                        )
 
                     testResultSection =
                         if isNothing form.executionDate then
@@ -2913,25 +2922,31 @@ viewPrenatalUrineDipstickForm language currentDate form =
                         else
                             [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
                 in
-                testVariantSection ++ performedTestSection ++ testResultSection
+                ( testVariantSection ++ performedTestSection ++ testResultSection
+                , performedTestTasksCompleted + testVariantTasksCompleted
+                , performedTestTasksTotal + testVariantTasksTotal
+                )
 
             else
-                []
+                ( [], 0, 0 )
     in
-    div [ class "ui form laboratory urine-dipstick" ] <|
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
         [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskUrineDipstickTest) "" "label"
         ]
             ++ initialSection
-            ++ derivedContent
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
 
 
-viewPrenatalNonRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> Html Msg
+viewPrenatalNonRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalNonRDTForm language currentDate task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate task form
 
-        derivedContent =
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.testPerformed == Just True then
                 let
                     ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
@@ -2944,16 +2959,22 @@ viewPrenatalNonRDTForm language currentDate task form =
                         else
                             [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
                 in
-                performedTestSection ++ testResultSection
+                ( performedTestSection ++ testResultSection
+                , performedTestTasksCompleted
+                , performedTestTasksTotal
+                )
 
             else
-                []
+                ( [], 0, 0 )
     in
-    div [ class "ui form laboratory non-rdt" ] <|
+    ( div [ class "ui form laboratory non-rdt" ] <|
         [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label"
         ]
             ++ initialSection
-            ++ derivedContent
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
 
 
 contentAndTasksLaboratoryTestInitial :
@@ -2974,6 +2995,7 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                     | testPerformed = Just value
                     , testPerformedToday = Nothing
                     , executionNote = Nothing
+                    , executionDate = Nothing
                 }
 
         msgs =

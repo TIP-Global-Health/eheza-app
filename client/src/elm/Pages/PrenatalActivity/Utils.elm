@@ -1648,11 +1648,3 @@ expectLaboratoryTask currentDate assembled db task =
         -- @todo
         _ ->
             True
-
-
-laboratoryTasksCompletedFromTotal : PrenatalMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal measurements data task =
-    case task of
-        -- @todo
-        _ ->
-            ( 0, 1 )
