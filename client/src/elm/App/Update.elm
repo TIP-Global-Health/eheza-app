@@ -1,5 +1,6 @@
 module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import App.Fetch
 import App.Model exposing (..)
 import App.Ports exposing (..)
@@ -910,6 +911,9 @@ update msg model =
                 cmd =
                     case activePage of
                         UserPage (SessionPage _ (ChildPage _)) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (SessionPage _ (ActivityPage (ChildActivity ChildPicture))) ->
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
