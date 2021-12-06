@@ -3676,7 +3676,7 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
             (\assembledAfter ->
                 let
                     mandatoryActivitiesCompleted =
-                        Pages.PrenatalEncounter.Utils.mandatoryActivitiesForNextStepsCompleted
+                        Pages.PrenatalActivity.Utils.mandatoryActivitiesForNextStepsCompleted
                             currentDate
                             assembledAfter
 
@@ -3709,7 +3709,7 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                 else
                     let
                         dangerSignsList =
-                            Pages.PrenatalEncounter.Utils.generateDangerSignsList language
+                            Pages.PrenatalActivity.Utils.generateDangerSignsList language
                                 assembledAfter
                     in
                     if List.isEmpty dangerSignsList then

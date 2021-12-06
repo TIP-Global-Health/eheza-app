@@ -137,7 +137,7 @@ generateHighRiskAlertData language measurements factor =
             translate language (Translate.HighRiskFactor factor_)
     in
     case factor of
-        Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+        HighRiskConvulsionsAndUnconsciousPreviousDelivery ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
@@ -152,7 +152,7 @@ generateHighRiskAlertData language measurements factor =
                             Nothing
                     )
 
-        Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+        HighRiskConvulsionsPreviousDelivery ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->

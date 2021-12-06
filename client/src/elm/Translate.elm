@@ -4285,12 +4285,12 @@ translationSet trans =
 
         HighRiskFactor factor ->
             case factor of
-                Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                HighRiskConvulsionsAndUnconsciousPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                HighRiskConvulsionsPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery"
                     , kinyarwanda = Nothing
                     }

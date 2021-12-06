@@ -163,7 +163,7 @@ viewActivity language currentDate activity assembled db model =
             viewPrenatalPhotoContent language currentDate assembled model.prenatalPhotoData
 
         Laboratory ->
-            viewLaboratoryContent language currentDate assembled db model.laboratoryData
+            viewLaboratoryContent language currentDate assembled model.laboratoryData
 
         Backend.PrenatalActivity.Model.HealthEducation ->
             viewHealthEducationContent language currentDate assembled model.healthEducationData
@@ -1192,17 +1192,17 @@ viewBirthPlanContent language currentDate assembled data =
     ]
 
 
-viewLaboratoryContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> LaboratoryData -> List (Html Msg)
-viewLaboratoryContent language currentDate assembled db data =
+viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContent language currentDate assembled data =
     if assembled.encounter.encounterType == NurseEncounter then
-        viewLaboratoryContentForNurse language currentDate assembled db data
+        viewLaboratoryContentForNurse language currentDate assembled data
 
     else
         viewLaboratoryContentForChw language currentDate assembled data
 
 
-viewLaboratoryContentForNurse : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> LaboratoryData -> List (Html Msg)
-viewLaboratoryContentForNurse language currentDate assembled db data =
+viewLaboratoryContentForNurse : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContentForNurse language currentDate assembled data =
     let
         personId =
             assembled.participant.person
@@ -1214,7 +1214,7 @@ viewLaboratoryContentForNurse language currentDate assembled db data =
             assembled.measurements
 
         tasks =
-            List.filter (expectLaboratoryTask currentDate assembled db) laboratoryTasks
+            List.filter (expectLaboratoryTask currentDate assembled) laboratoryTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)

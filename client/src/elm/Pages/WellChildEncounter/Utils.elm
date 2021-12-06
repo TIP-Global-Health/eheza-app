@@ -11,7 +11,7 @@ import Backend.WellChildActivity.Model exposing (..)
 import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.WellChildActivity.Utils exposing (generateVaccinationProgress, getPreviousMeasurements)

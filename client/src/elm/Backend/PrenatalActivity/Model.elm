@@ -41,8 +41,8 @@ type RiskFactor
 
 
 type HighRiskFactor
-    = ConvulsionsAndUnconsciousPreviousDelivery
-    | ConvulsionsPreviousDelivery
+    = HighRiskConvulsionsAndUnconsciousPreviousDelivery
+    | HighRiskConvulsionsPreviousDelivery
 
 
 type HighSeverityAlert
@@ -93,7 +93,9 @@ type PregnancyTrimester
 
 allHighRiskFactors : List HighRiskFactor
 allHighRiskFactors =
-    [ ConvulsionsPreviousDelivery, ConvulsionsAndUnconsciousPreviousDelivery ]
+    [ HighRiskConvulsionsPreviousDelivery
+    , HighRiskConvulsionsAndUnconsciousPreviousDelivery
+    ]
 
 
 allHighSeverityAlerts : List HighSeverityAlert
