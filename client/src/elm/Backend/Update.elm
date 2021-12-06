@@ -1162,6 +1162,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ BarcodeScanRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ AcuteIllnessDangerSignsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -2231,6 +2241,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | breastExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        BarcodeScanRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | barcodeScan = Just ( uuid, data ) })
                 model
             , recalc
             )

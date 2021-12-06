@@ -631,6 +631,14 @@ type HealthEducationUuidType
     = HealthEducationUuidType
 
 
+type alias BarcodeScanId =
+    EntityUuid BarcodeScanUuidType
+
+
+type BarcodeScanUuidType
+    = BarcodeScanUuidType
+
+
 type alias NutritionSendToHCId =
     EntityUuid NutritionSendToHCIdUuidType
 

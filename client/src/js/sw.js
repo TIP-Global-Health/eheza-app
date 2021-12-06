@@ -45,6 +45,7 @@ var tableForType = {
     acute_illness_vitals: 'shards',
     appointment_confirmation: 'shards',
     attendance: 'shards',
+    barcode_scan: 'shards',
     breast_exam: 'shards',
     birth_plan: 'shards',
     call_114: 'shards',

@@ -218,6 +218,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveBarcodeScan personId valueId value ->
+            ( { model | saveBarcodeScan = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value barcodeScanEndpoint HandleSavedBarcodeScan
+            )
+
+        HandleSavedBarcodeScan data ->
+            ( { model | saveBarcodeScan = data }
+            , Cmd.none
+            )
+
         SaveFollowUp personId valueId value ->
             ( { model | saveFollowUp = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessFollowUpEndpoint HandleSavedFollowUp

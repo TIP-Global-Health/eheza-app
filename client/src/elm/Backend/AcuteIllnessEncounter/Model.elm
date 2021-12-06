@@ -53,6 +53,7 @@ type alias Model =
     , saveAcuteIllnessDangerSigns : WebData ()
     , saveNutrition : WebData ()
     , saveHealthEducation : WebData ()
+    , saveBarcodeScan : WebData ()
     , saveFollowUp : WebData ()
     }
 
@@ -79,6 +80,7 @@ emptyModel =
     , saveAcuteIllnessDangerSigns = NotAsked
     , saveNutrition = NotAsked
     , saveHealthEducation = NotAsked
+    , saveBarcodeScan = NotAsked
     , saveFollowUp = NotAsked
     }
 
@@ -140,5 +142,7 @@ type Msg
     | HandleSavedNutrition (WebData ())
     | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
+    | SaveBarcodeScan PersonId (Maybe BarcodeScanId) String
+    | HandleSavedBarcodeScan (WebData ())
     | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) (EverySet FollowUpOption)
     | HandleSavedFollowUp (WebData ())

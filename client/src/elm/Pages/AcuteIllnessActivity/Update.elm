@@ -17,6 +17,7 @@ import Backend.Measurement.Model
         , MalariaRapidTestResult(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
+        , PhotoUrl(..)
         , ReasonForNotIsolating(..)
         , Recommendation114(..)
         , RecommendationSite(..)
@@ -28,6 +29,7 @@ import Backend.Measurement.Model
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toHealthEducationValueWithDefault, toSendToHCValueWithDefault)
 import Pages.AcuteIllnessActivity.Model exposing (..)
@@ -669,13 +671,72 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                appMsgs =
+                newValue =
                     model.laboratoryData.malariaTestingForm
                         |> toMalariaTestingValueWithDefault measurement
+
+                saveMsg =
+                    newValue
+                        |> unwrap
+                            []
+                            (Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId
+                                >> Backend.Model.MsgAcuteIllnessEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+            in
+            if newValue == Just RapidTestUnableToRun then
+                let
+                    -- Navigate to Encounter page, as RDT did not run,
+                    -- and we don't need to take photo of it's barcode.
+                    navigationMsg =
+                        App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                in
+                ( model
+                , Cmd.none
+                , navigationMsg :: saveMsg
+                )
+
+            else
+                ( model
+                , Cmd.none
+                , saveMsg
+                )
+                    -- RDT ran, therfore, we move to 'Barcode photo' task.
+                    |> sequenceExtra (update currentDate id db) [ SetActiveLaboratoryTask LaboratoryBarcodeScan ]
+
+        SetBarcode value ->
+            let
+                form =
+                    model.laboratoryData.barcodeScanForm
+
+                updatedForm =
+                    { form | barcode = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | barcodeScanForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveBarcodeScan personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.barcodeScanForm
+                        |> toBarcodeScanValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId value
+                                [ Backend.AcuteIllnessEncounter.Model.SaveBarcodeScan personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id

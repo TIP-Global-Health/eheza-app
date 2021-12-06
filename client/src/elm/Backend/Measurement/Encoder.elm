@@ -2423,3 +2423,16 @@ encodeReasonForNotProvidingHealthEducation reason =
 
             NoReasonForNotProvidingHealthEducation ->
                 "none"
+
+
+encodeBarcodeScan : BarcodeScan -> List ( String, Value )
+encodeBarcodeScan =
+    encodeAcuteIllnessMeasurement encodeBarcodeScanValue
+
+
+encodeBarcodeScanValue : String -> List ( String, Value )
+encodeBarcodeScanValue value =
+    [ ( "barcode", string value )
+    , ( "deleted", bool False )
+    , ( "type", string "barcode_scan" )
+    ]

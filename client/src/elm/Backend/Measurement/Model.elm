@@ -1208,6 +1208,10 @@ type HealthEducationSign
     | NoHealthEducationSigns
 
 
+type alias BarcodeScan =
+    AcuteIllnessMeasurement String
+
+
 type alias AcuteIllnessFollowUp =
     AcuteIllnessMeasurement (EverySet FollowUpOption)
 
@@ -1384,6 +1388,7 @@ type alias AcuteIllnessMeasurements =
     , dangerSigns : Maybe ( AcuteIllnessDangerSignsId, AcuteIllnessDangerSigns )
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
+    , barcodeScan : Maybe ( BarcodeScanId, BarcodeScan )
     , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
     }
 

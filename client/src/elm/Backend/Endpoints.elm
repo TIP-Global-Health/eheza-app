@@ -637,6 +637,12 @@ healthEducationEndpoint =
         |> withValueEncoder (object << encodeHealthEducation)
 
 
+barcodeScanEndpoint : ReadWriteEndPoint Error BarcodeScanId BarcodeScan BarcodeScan ()
+barcodeScanEndpoint =
+    swEndpoint "nodes/barcode_scan" decodeBarcodeScan
+        |> withValueEncoder (object << encodeBarcodeScan)
+
+
 nutritionSendToHCEndpoint : ReadWriteEndPoint Error NutritionSendToHCId NutritionSendToHC NutritionSendToHC ()
 nutritionSendToHCEndpoint =
     swEndpoint "nodes/nutrition_send_to_hc" decodeNutritionSendToHC

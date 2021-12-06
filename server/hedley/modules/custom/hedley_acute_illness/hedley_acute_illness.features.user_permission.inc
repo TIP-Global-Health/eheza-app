@@ -71,6 +71,16 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create barcode_scan content'.
+  $permissions['create barcode_scan content'] = array(
+    'name' => 'create barcode_scan content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create call_114 content'.
   $permissions['create call_114 content'] = array(
     'name' => 'create call_114 content',
@@ -265,6 +275,15 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any barcode_scan content'.
+  $permissions['delete any barcode_scan content'] = array(
+    'name' => 'delete any barcode_scan content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any call_114 content'.
   $permissions['delete any call_114 content'] = array(
     'name' => 'delete any call_114 content',
@@ -439,6 +458,15 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'delete own acute_illness_vitals content'.
   $permissions['delete own acute_illness_vitals content'] = array(
     'name' => 'delete own acute_illness_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own barcode_scan content'.
+  $permissions['delete own barcode_scan content'] = array(
+    'name' => 'delete own barcode_scan content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -624,6 +652,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit any acute_illness_vitals content'.
   $permissions['edit any acute_illness_vitals content'] = array(
     'name' => 'edit any acute_illness_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any barcode_scan content'.
+  $permissions['edit any barcode_scan content'] = array(
+    'name' => 'edit any barcode_scan content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -824,6 +862,16 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit own acute_illness_vitals content'.
   $permissions['edit own acute_illness_vitals content'] = array(
     'name' => 'edit own acute_illness_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own barcode_scan content'.
+  $permissions['edit own barcode_scan content'] = array(
+    'name' => 'edit own barcode_scan content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

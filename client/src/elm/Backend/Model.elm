@@ -348,6 +348,7 @@ type Revision
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
     | AttendanceRevision AttendanceId Attendance
+    | BarcodeScanRevision BarcodeScanId BarcodeScan
     | BreastExamRevision BreastExamId BreastExam
     | BirthPlanRevision BirthPlanId BirthPlan
     | Call114Revision Call114Id Call114

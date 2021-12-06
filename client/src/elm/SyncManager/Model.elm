@@ -57,6 +57,7 @@ type BackendAuthorityEntity
     | BackendAuthorityAppointmentConfirmation (BackendEntity PrenatalAppointmentConfirmation)
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
+    | BackendAuthorityBarcodeScan (BackendEntity BarcodeScan)
     | BackendAuthorityBirthPlan (BackendEntity BirthPlan)
     | BackendAuthorityChildFbf (BackendEntity Fbf)
     | BackendAuthorityCall114 (BackendEntity Call114)

@@ -146,6 +146,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_danger_signs" (decodeHead decodeAcuteIllnessDangerSigns) Nothing
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
+        |> optional "barcode_scan" (decodeHead decodeBarcodeScan) Nothing
         |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
 
 
@@ -2687,6 +2688,12 @@ decodeReasonForNotProvidingHealthEducation =
                             reason
                                 ++ " is not a recognized ReasonForNotProvidingHealthEducation"
             )
+
+
+decodeBarcodeScan : Decoder BarcodeScan
+decodeBarcodeScan =
+    field "barcode" string
+        |> decodeAcuteIllnessMeasurement
 
 
 decodeNutritionAssesment : Decoder (EverySet NutritionAssesment)

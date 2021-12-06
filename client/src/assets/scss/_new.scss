@@ -878,6 +878,21 @@ div.page-activity.acute-illness {
       }
     }
 
+    .ui.form.laboratory.barcode {
+
+      .form-input.barcode-input {
+        margin-bottom: 5px;
+        margin-top: 20px;
+
+        input,
+        input:focus {
+          border: 2px solid $color-gray;
+          text-align: center;
+          width: 350px;
+        }
+      }
+    }
+
     .label {
       margin-bottom: 5px;
     }

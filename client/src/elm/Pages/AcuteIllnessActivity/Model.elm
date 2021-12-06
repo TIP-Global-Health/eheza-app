@@ -7,6 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 type Msg
@@ -43,6 +44,8 @@ type Msg
     | SetRapidTestResult String
     | SetIsPregnant Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
+    | SetBarcode String
+    | SaveBarcodeScan PersonId (Maybe ( BarcodeScanId, BarcodeScan ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -235,6 +238,7 @@ type alias NutritionForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
+    , barcodeScanForm : BarcodeScanForm
     , activeTask : LaboratoryTask
     }
 
@@ -242,17 +246,24 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
+    , barcodeScanForm = BarcodeScanForm Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
 
 type LaboratoryTask
     = LaboratoryMalariaTesting
+    | LaboratoryBarcodeScan
 
 
 type alias MalariaTestingForm =
     { rapidTestResult : Maybe MalariaRapidTestResult
     , isPregnant : Maybe Bool
+    }
+
+
+type alias BarcodeScanForm =
+    { barcode : Maybe String
     }
 
 

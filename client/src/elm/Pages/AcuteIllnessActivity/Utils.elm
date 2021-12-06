@@ -259,6 +259,17 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
             , 1 + isPregnantActive
             )
 
+        LaboratoryBarcodeScan ->
+            let
+                form =
+                    measurements.barcodeScan
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> barcodeScanFormWithDefault data.barcodeScanForm
+            in
+            ( taskCompleted form.barcode
+            , 1
+            )
+
 
 exposureTasksCompletedFromTotal : AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
 exposureTasksCompletedFromTotal measurements data task =
@@ -918,6 +929,23 @@ toMalariaTestingValueWithDefault saved form =
 toMalariaTestingValue : MalariaTestingForm -> Maybe MalariaRapidTestResult
 toMalariaTestingValue form =
     form.rapidTestResult
+
+
+barcodeScanFormWithDefault : BarcodeScanForm -> Maybe String -> BarcodeScanForm
+barcodeScanFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\savedBarcode ->
+                { barcode = or form.barcode (Just savedBarcode)
+                }
+            )
+
+
+toBarcodeScanValueWithDefault : Maybe String -> BarcodeScanForm -> Maybe String
+toBarcodeScanValueWithDefault saved form =
+    barcodeScanFormWithDefault form saved
+        |> .barcode
 
 
 fromTravelHistoryValue : Maybe (EverySet TravelHistorySign) -> TravelHistoryForm

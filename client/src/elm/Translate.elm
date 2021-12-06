@@ -339,6 +339,8 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BarcodeScanHelper
+    | BarcodeScanEnterLotNumber
     | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -1974,6 +1976,16 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        BarcodeScanHelper ->
+            { english = "Take a picture of the barcode on the RDT package"
+            , kinyarwanda = Just "Fata ifoto ya kodi iri ku gapaki k'igikoresho gipima malariya cya TDR"
+            }
+
+        BarcodeScanEnterLotNumber ->
+            { english = "Enter the Lot number"
+            , kinyarwanda = Nothing
+            }
+
         BeginNewEncounter ->
             { english = "Begin a New Encounter"
             , kinyarwanda = Just "Tangira igikorwa gishya"
@@ -2807,8 +2819,8 @@ translationSet trans =
             }
 
         DropzoneDefaultMessage ->
-            { english = "Touch here to take a photo, or drop a photo file here."
-            , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
+            { english = "Touch here to take a photo"
+            , kinyarwanda = Just "Kora hano kugira ngo ufate ifoto ya kodi ndangamuti"
             }
 
         DueDate ->
@@ -3937,6 +3949,11 @@ translationSet trans =
                     , kinyarwanda = Just "Malariya"
                     }
 
+                LaboratoryBarcodeScan ->
+                    { english = "RDT Scan"
+                    , kinyarwanda = Just "Ifoto ya kodi iri ku gikoresho gipima Malariya"
+                    }
+
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
@@ -4814,7 +4831,7 @@ translationSet trans =
             }
 
         NotAvailable ->
-            { english = "not available"
+            { english = "Not available"
             , kinyarwanda = Just "Ntibiboneste"
             }
 

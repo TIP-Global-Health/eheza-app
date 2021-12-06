@@ -1875,6 +1875,23 @@ input::placeholder {
   }
 }
 
+.icon-laboratory-barcode {
+  .active &:after {
+    background-image: url(#{$img-path}icon-barcode-white.svg), url(#{$img-path}icon-selected-circle.svg);
+    background-size: cover;
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-barcode-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-size: cover;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-barcode-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-size: cover;
+  }
+}
+
 .icon-exposure-travel {
   .active &:after {
     background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-selected-circle.svg);

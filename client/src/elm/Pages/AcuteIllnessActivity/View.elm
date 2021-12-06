@@ -54,6 +54,7 @@ import Pages.Utils
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewTextInput
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -960,7 +961,16 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             AcuteIllnessLaboratory
 
         tasks =
-            [ LaboratoryMalariaTesting ]
+            LaboratoryMalariaTesting
+                :: (if rdtExecuted then
+                        [ LaboratoryBarcodeScan ]
+
+                    else
+                        []
+                   )
+
+        rdtExecuted =
+            malariaRapidTestExecuted measurements
 
         viewTask task =
             let
@@ -969,6 +979,11 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
                             , isJust measurements.malariaTesting
+                            )
+
+                        LaboratoryBarcodeScan ->
+                            ( "laboratory-barcode"
+                            , isJust measurements.barcodeScan
                             )
 
                 isActive =
@@ -1010,12 +1025,21 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate person
 
+                LaboratoryBarcodeScan ->
+                    measurements.barcodeScan
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> barcodeScanFormWithDefault data.barcodeScanForm
+                        |> viewBarcodeScanForm language currentDate
+
         actions =
             let
                 saveMsg =
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
                             SaveMalariaTesting personId measurements.malariaTesting
+
+                        LaboratoryBarcodeScan ->
+                            SaveBarcodeScan personId measurements.barcodeScan
             in
             div [ class "actions malaria-testing" ]
                 [ button
@@ -1089,6 +1113,18 @@ viewMalariaTestingForm language currentDate person form =
         , resultInput
         ]
             ++ isPregnantInput
+
+
+viewBarcodeScanForm : Language -> NominalDate -> BarcodeScanForm -> Html Msg
+viewBarcodeScanForm language currentDate form =
+    let
+        barcodeUppercase =
+            Maybe.map String.toUpper form.barcode
+    in
+    div [ class "ui form laboratory barcode" ]
+        [ viewLabel language Translate.BarcodeScanEnterLotNumber
+        , viewTextInput language barcodeUppercase SetBarcode "barcode-input"
+        ]
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
