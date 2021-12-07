@@ -1093,3 +1093,11 @@ type alias PrenatalUrineDipstickTestId =
 
 type PrenatalUrineDipstickTestUuidType
     = PrenatalUrineDipstickTestUuidType
+
+
+type alias PrenatalLabsResultsId =
+    EntityUuid PrenatalLabsResultsUuidType
+
+
+type PrenatalLabsResultsUuidType
+    = PrenatalLabsResultsUuidType
