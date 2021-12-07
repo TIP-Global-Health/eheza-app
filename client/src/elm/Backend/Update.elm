@@ -1081,6 +1081,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         in
                         ( newModel, extraMsgs )
 
+                processRevisionAndUpdateLabsResults participantId encounterId test executionNote =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generatePrenatalLabsResultsMsgs currentDate newModel test executionNote)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
                 processWellChildSymptomsReviewRevision participantId encounterId value =
                     if downloadingContent then
                         []
@@ -1618,6 +1634,90 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalSyphilisTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestSyphilis
+                                data.value.executionNote
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalHepatitisBTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHepatitisB
+                                data.value.executionNote
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalUrineDipstickTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestUrineDipstick
+                                data.value.executionNote
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalBloodGpRsTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestBloodGpRs
+                                data.value.executionNote
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalHemoglobinTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHemoglobin
+                                data.value.executionNote
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalRandomBloodSugarTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestRandomBloodSugar
+                                data.value.executionNote
                     in
                     ( newModel
                     , Cmd.none
@@ -3738,6 +3838,64 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
             )
             (RemoteData.toMaybe <| Pages.PrenatalEncounter.Utils.generateAssembledData id after)
             |> Maybe.withDefault []
+
+
+generatePrenatalLabsResultsMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.PrenatalLaboratoryTest
+    -> Backend.Measurement.Model.PrenatalTestExecutionNote
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalLabsResultsMsgs currentDate after test executionNote id =
+    Pages.PrenatalEncounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    testExecuted =
+                        List.member executionNote [ Backend.Measurement.Model.TestNoteRunToday, Backend.Measurement.Model.TestNoteRunPreviously ]
+
+                    ( labsResultsId, labsResultsValue ) =
+                        Maybe.map
+                            (\( resultsId, measurement ) ->
+                                ( Just resultsId
+                                , measurement.value
+                                    |> (\value ->
+                                            { value
+                                                | performedTests =
+                                                    if testExecuted then
+                                                        EverySet.insert test value.performedTests
+
+                                                    else
+                                                        EverySet.remove test value.performedTests
+                                            }
+                                       )
+                                )
+                            )
+                            assembled.measurements.labsResults
+                            |> Maybe.withDefault
+                                ( Nothing
+                                , let
+                                    performedTests =
+                                        if testExecuted then
+                                            EverySet.singleton test
+
+                                        else
+                                            EverySet.empty
+                                  in
+                                  Backend.Measurement.Model.PrenatalLabsResultsValue
+                                    performedTests
+                                    EverySet.empty
+                                    Nothing
+                                )
+                in
+                Backend.PrenatalEncounter.Model.SaveLabsResults assembled.participant.person labsResultsId labsResultsValue
+                    |> Backend.Model.MsgPrenatalEncounter id
+                    |> App.Model.MsgIndexedDb
+                    |> List.singleton
+            )
+        |> Maybe.withDefault []
 
 
 generateNutritionAssessmentIndividualMsgs :

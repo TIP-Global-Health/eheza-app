@@ -85,6 +85,7 @@ type alias Model =
     , saveUrineDipstickTest : WebData ()
     , saveHemoglobinTest : WebData ()
     , saveRandomBloodSugarTest : WebData ()
+    , saveLabsResults : WebData ()
     }
 
 
@@ -120,6 +121,7 @@ emptyModel =
     , saveUrineDipstickTest = NotAsked
     , saveHemoglobinTest = NotAsked
     , saveRandomBloodSugarTest = NotAsked
+    , saveLabsResults = NotAsked
     }
 
 
@@ -184,3 +186,5 @@ type Msg
     | HandleSavedHemoglobinTest (WebData ())
     | SaveRandomBloodSugarTest PersonId (Maybe PrenatalRandomBloodSugarTestId) PrenatalRandomBloodSugarTestValue
     | HandleSavedRandomBloodSugarTest (WebData ())
+    | SaveLabsResults PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue
+    | HandleSavedLabsResults (WebData ())
