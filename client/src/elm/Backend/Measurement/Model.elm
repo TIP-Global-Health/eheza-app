@@ -1028,6 +1028,26 @@ type BilirubinValue
     | BilirubinotApplicable
 
 
+type alias PrenatalLabsResults =
+    PrenatalMeasurement PrenatalLabsResultsValue
+
+
+type alias PrenatalLabsResultsValue =
+    { performedTests : Maybe (EverySet PrenatalLaboratoryTest)
+    , completedTests : Maybe (EverySet PrenatalLaboratoryTest)
+    , resolutionDate : Maybe NominalDate
+    }
+
+
+type PrenatalLaboratoryTest
+    = TestBloodGpRs
+    | TestHemoglobin
+    | TestHepatitisB
+    | TestRandomBloodSugar
+    | TestSyphilis
+    | TestUrineDipstick
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1860,6 +1880,7 @@ type alias PrenatalMeasurements =
     , randomBloodSugarTest : Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )
     , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
+    , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
     }
 
 
@@ -1894,6 +1915,7 @@ emptyPrenatalMeasurements =
     , randomBloodSugarTest = Nothing
     , syphilisTest = Nothing
     , urineDipstickTest = Nothing
+    , labsResults = Nothing
     }
 
 
