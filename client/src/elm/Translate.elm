@@ -1342,7 +1342,7 @@ translationSet trans =
 
                 DiagnosisSevereCovid19 ->
                     { english = "Severe COVID-19"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 bukabije"
                     }
 
                 DiagnosisPneuminialCovid19 ->
@@ -1352,7 +1352,7 @@ translationSet trans =
 
                 DiagnosisLowRiskCovid19 ->
                     { english = "Low risk COVID-19"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 budakabije"
                     }
 
                 DiagnosisMalariaComplicated ->
@@ -1429,7 +1429,7 @@ translationSet trans =
 
                 DiagnosisLowRiskCovid19 ->
                     { english = "Low risk COVID-19"
-                    , kinyarwanda = Just "Ibyago bike byo kwandura covid-19"
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 budakabije"
                     }
 
                 DiagnosisMalariaComplicated ->
@@ -2907,7 +2907,7 @@ translationSet trans =
 
         CovidTestingInstructions ->
             { english = "Perform a COVID-19 Rapid Test to confirm patient’s diagnosis"
-            , kinyarwanda = Just "Kora ikizamini cyihuse cya Koronavirusi kugira ngo hemezwe icyo umurwayi arwaye"
+            , kinyarwanda = Just "Kora ikizamini cyihuse cya Covid-19 kugira ngo hemezwe icyo umurwayi arwaye"
             }
 
         CounselorSignature ->
@@ -4713,7 +4713,7 @@ translationSet trans =
 
                 LaboratoryCovidTesting ->
                     { english = "Covid Rapid Test"
-                    , kinyarwanda = Just "Ikizamini cya Koronavirusi cyihuse"
+                    , kinyarwanda = Just "Ikizamini cya Covid-19 cyihuse"
                     }
 
         LastChecked ->
