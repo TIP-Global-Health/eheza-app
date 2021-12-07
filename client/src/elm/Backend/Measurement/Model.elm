@@ -812,6 +812,223 @@ type alias PrenatalAppointmentConfirmation =
     PrenatalMeasurement PrenatalAppointmentConfirmationValue
 
 
+type alias PrenatalMalariaTest =
+    PrenatalMeasurement PrenatalMalariaTestValue
+
+
+type alias PrenatalMalariaTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , testResult : PrenatalTestResult
+    }
+
+
+type PrenatalTestExecutionNote
+    = TestNoteRunToday
+    | TestNoteRunPreviously
+    | TestNoteLackOfReagents
+    | TestNoteLackOfOtherSupplies
+    | TestNoteNoEquipment
+    | TestNoteBrokenEquipment
+    | TestNoteNotIndicated
+
+
+type PrenatalTestResult
+    = PrenatalTestPositive
+    | PrenatalTestNegative
+    | PrenatalTestIndeterminate
+
+
+type alias PrenatalHIVTest =
+    PrenatalMeasurement PrenatalHIVTestValue
+
+
+type alias PrenatalHIVTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , testResult : PrenatalTestResult
+    }
+
+
+type alias PrenatalHepatitisBTest =
+    PrenatalMeasurement PrenatalHepatitisBTestValue
+
+
+type alias PrenatalHepatitisBTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
+type alias PrenatalSyphilisTest =
+    PrenatalMeasurement PrenatalSyphilisTestValue
+
+
+type alias PrenatalSyphilisTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
+type alias PrenatalHemoglobinTest =
+    PrenatalMeasurement PrenatalHemoglobinTestValue
+
+
+type alias PrenatalHemoglobinTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , hemoglobinCount : Maybe Float
+    }
+
+
+type alias PrenatalRandomBloodSugarTest =
+    PrenatalMeasurement PrenatalRandomBloodSugarTestValue
+
+
+type alias PrenatalRandomBloodSugarTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , sugarCount : Maybe Int
+    }
+
+
+type alias PrenatalBloodGpRsTest =
+    PrenatalMeasurement PrenatalBloodGpRsTestValue
+
+
+type alias PrenatalBloodGpRsTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , bloodGroup : Maybe BloodGroup
+    , rhesus : Maybe Rhesus
+    }
+
+
+type BloodGroup
+    = BloodGroupA
+    | BloodGroupB
+    | BloodGroupAB
+    | BloodGroupO
+
+
+type Rhesus
+    = RhesusPositive
+    | RhesusNegative
+
+
+type alias PrenatalUrineDipstickTest =
+    PrenatalMeasurement PrenatalUrineDipstickTestValue
+
+
+type alias PrenatalUrineDipstickTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : NominalDate
+    , protein : Maybe ProteinValue
+    , ph : Maybe PHValue
+    , glucose : Maybe GlucoseValue
+    , leukocytes : Maybe LeukocytesValue
+    , nitrite : Maybe NitriteValue
+    , urobilinogen : Maybe UrobilinogenValue
+    , haemoglobin : Maybe HaemoglobinValue
+    , specificGravity : Maybe SpecificGravityValue
+    , ketone : Maybe KetoneValue
+    , bilirubin : Maybe BilirubinValue
+    }
+
+
+type ProteinValue
+    = ProteinNegative
+    | Protein30
+    | Protein100
+    | Protein300
+    | Protein2000
+
+
+type PHValue
+    = Ph50
+    | Ph60
+    | Ph65
+    | Ph70
+    | Ph75
+    | Ph80
+    | Ph85
+
+
+type GlucoseValue
+    = Glucose0
+    | GlucosePlus1
+    | GlucosePlus2
+    | GlucosePlus3
+    | GlucosePlus4
+
+
+type LeukocytesValue
+    = LeukocytesNegative
+    | LeukocytesSmall
+    | LeukocytesMedium
+    | LeukocytesLarge
+    | LeukocytesNotApplicable
+
+
+type NitriteValue
+    = NitriteNegative
+    | NitritePlus
+    | NitritePlusPlus
+    | NitriteNotApplicable
+
+
+type UrobilinogenValue
+    = Urobilinogen02
+    | Urobilinogen10
+    | Urobilinogen20
+    | Urobilinogen40
+    | Urobilinogen80
+    | UrobilinogenNotApplicable
+
+
+type HaemoglobinValue
+    = HaemoglobinNegative
+    | HaemoglobinNonHemolyzedTrace
+    | HaemoglobinNonHemolyzedModerate
+    | HaemoglobinHemolyzedTrace
+    | HaemoglobinSmall
+    | HaemoglobinModerate
+    | HaemoglobinLarge
+    | HaemoglobinNotApplicable
+
+
+type SpecificGravityValue
+    = SpecificGravity1000
+    | SpecificGravity1005
+    | SpecificGravity1010
+    | SpecificGravity1015
+    | SpecificGravity1020
+    | SpecificGravity1025
+    | SpecificGravity1030
+    | SpecificGravityNotApplicable
+
+
+type KetoneValue
+    = KetoneNegative
+    | Ketone5
+    | Ketone10
+    | Ketone15
+    | Ketone40
+    | Ketone80
+    | Ketone100
+    | KetoneNotApplicable
+
+
+type BilirubinValue
+    = BilirubinNegative
+    | BilirubinSmall
+    | BilirubinMedium
+    | BilirubinLarge
+    | BilirubinotApplicable
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1636,6 +1853,14 @@ type alias PrenatalMeasurements =
     , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
     , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
     , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
+    , bloodGpRsTest : Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )
+    , hemoglobinTest : Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )
+    , hepatitisBTest : Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )
+    , hivTest : Maybe ( PrenatalHIVTestId, PrenatalHIVTest )
+    , malariaTest : Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )
+    , randomBloodSugarTest : Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )
+    , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
+    , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     }
 
 
@@ -1662,6 +1887,14 @@ emptyPrenatalMeasurements =
     , followUp = Nothing
     , sendToHC = Nothing
     , appointmentConfirmation = Nothing
+    , bloodGpRsTest = Nothing
+    , hemoglobinTest = Nothing
+    , hepatitisBTest = Nothing
+    , hivTest = Nothing
+    , malariaTest = Nothing
+    , randomBloodSugarTest = Nothing
+    , syphilisTest = Nothing
+    , urineDipstickTest = Nothing
     }
 
 

@@ -3179,10 +3179,10 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        PrenatalHealthEducationRevision uuid data ->
+        PrenatalBloodGpRsTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements -> { measurements | bloodGpRsTest = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3225,6 +3225,46 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalHealthEducationRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHemoglobinTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hemoglobinTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHepatitisBTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hepatitisBTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHIVTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalMalariaTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | malariaTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalNutritionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -3241,10 +3281,34 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalRandomBloodSugarTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalSendToHCRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalSyphilisTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | syphilisTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalUrineDipstickTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
                 model
             , recalc
             )

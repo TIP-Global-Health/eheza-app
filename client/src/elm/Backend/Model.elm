@@ -439,13 +439,21 @@ type Revision
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PregnancyTestingRevision PregnancyTestId PregnancyTest
-    | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
-    | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
-    | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
-    | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
-    | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
+    | PrenatalBloodGpRsTestRevision PrenatalBloodGpRsTestId PrenatalBloodGpRsTest
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
+    | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
+    | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
+    | PrenatalHemoglobinTestRevision PrenatalHemoglobinTestId PrenatalHemoglobinTest
+    | PrenatalHepatitisBTestRevision PrenatalHepatitisBTestId PrenatalHepatitisBTest
+    | PrenatalHIVTestRevision PrenatalHIVTestId PrenatalHIVTest
+    | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
+    | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
+    | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
+    | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
+    | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
+    | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
