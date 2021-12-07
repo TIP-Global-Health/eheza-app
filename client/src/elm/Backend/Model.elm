@@ -438,7 +438,7 @@ type Revision
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
-    | PregnancyTestingRevision PregnancyTestId PregnancyTest
+    | PregnancyTestRevision PregnancyTestId PregnancyTest
     | PrenatalBloodGpRsTestRevision PrenatalBloodGpRsTestId PrenatalBloodGpRsTest
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning

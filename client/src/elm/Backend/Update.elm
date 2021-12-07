@@ -1614,7 +1614,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PregnancyTestingRevision uuid data ] ->
+                [ PregnancyTestRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -3171,7 +3171,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        PregnancyTestingRevision uuid data ->
+        PregnancyTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
@@ -3676,7 +3676,7 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
             (\assembledAfter ->
                 let
                     mandatoryActivitiesCompleted =
-                        Pages.PrenatalEncounter.Utils.mandatoryActivitiesForNextStepsCompleted
+                        Pages.PrenatalActivity.Utils.mandatoryActivitiesForNextStepsCompleted
                             currentDate
                             assembledAfter
 
@@ -3709,7 +3709,7 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                 else
                     let
                         dangerSignsList =
-                            Pages.PrenatalEncounter.Utils.generateDangerSignsList language
+                            Pages.PrenatalActivity.Utils.generateDangerSignsList language
                                 assembledAfter
                     in
                     if List.isEmpty dangerSignsList then

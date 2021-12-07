@@ -236,7 +236,7 @@ decodeRevision =
                         decodeWithUuid PhotoRevision decodePhoto
 
                     "pregnancy_testing" ->
-                        decodeWithUuid PregnancyTestingRevision decodePregnancyTesting
+                        decodeWithUuid PregnancyTestRevision decodePregnancyTest
 
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
@@ -260,13 +260,13 @@ decodeRevision =
                         decodeWithUuid PrenatalHepatitisBTestRevision decodePrenatalHepatitisBTest
 
                     "prenatal_hiv_test" ->
-                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+                        decodeWithUuid PrenatalHIVTestRevision decodePrenatalHIVTest
 
                     "prenatal_follow_up" ->
                         decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
 
                     "prenatal_malaria_test" ->
-                        decodeWithUuid PrenatalHIVTestRevision decodePrenatalHIVTest
+                        decodeWithUuid PrenatalMalariaTestRevision decodePrenatalMalariaTest
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition

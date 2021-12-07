@@ -828,15 +828,23 @@ type TranslationId
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
-    | PregnancyTestingResult PregnancyTestResult
+    | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalLaboratoryTask Pages.PrenatalActivity.Model.LaboratoryTask
+    | PrenatalLaboratoryTaskLabel Pages.PrenatalActivity.Model.LaboratoryTask
+    | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Model.LaboratoryTask
+    | PrenatalLaboratoryTaskResult Pages.PrenatalActivity.Model.LaboratoryTask
+    | PrenatalLaboratoryTaskResultsHelper
     | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
+    | PrenatalTestExecutionNote PrenatalTestExecutionNote
+    | PrenatalTestResult PrenatalTestResult
+    | PrenatalUrineDipstickTestVariant PrenatalTestVariant
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -1023,7 +1031,9 @@ type TranslationId
     | Term
     | TermPregnancy
     | TestPerformedQuestion
+    | TestPerformedTodayQuestion
     | TestResultQuestion
+    | TestVariantQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
     | To
@@ -4275,12 +4285,12 @@ translationSet trans =
 
         HighRiskFactor factor ->
             case factor of
-                Backend.PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                HighRiskConvulsionsAndUnconsciousPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                HighRiskConvulsionsPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery"
                     , kinyarwanda = Nothing
                     }
@@ -6619,7 +6629,7 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
             }
 
-        PregnancyTestingResult result ->
+        PregnancyTestResult result ->
             case result of
                 PregnancyTestPositive ->
                     { english = "Positive"
@@ -6843,10 +6853,249 @@ translationSet trans =
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
+        PrenatalLaboratoryTask task ->
+            case task of
+                Pages.PrenatalActivity.Model.TaskHIVTest ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskSyphilisTest ->
+                    { english = "Syphilis - RPR"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHepatitisBTest ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskMalariaTest ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskBloodGpRsTest ->
+                    { english = "Blood Group"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskUrineDipstickTest ->
+                    { english = "Urine Dipstick"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHemoglobinTest ->
+                    { english = "Hemoglobin"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskRandomBloodSugarTest ->
+                    { english = "Random Blood Sugar"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryTaskLabel task ->
+            case task of
+                Pages.PrenatalActivity.Model.TaskHIVTest ->
+                    { english = "HIV RDT"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskSyphilisTest ->
+                    { english = "Syphilis - RPR"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHepatitisBTest ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskMalariaTest ->
+                    { english = "Malaria RDT"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskBloodGpRsTest ->
+                    { english = "Blood Group + Rhesus"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskUrineDipstickTest ->
+                    { english = "Urine Dipstick"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHemoglobinTest ->
+                    { english = "Hemoglobin"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskRandomBloodSugarTest ->
+                    { english = "Random Blood Sugar"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryTaskDate task ->
+            case task of
+                Pages.PrenatalActivity.Model.TaskHIVTest ->
+                    { english = "HIV Antibody Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskSyphilisTest ->
+                    { english = "Syphilis - RPR Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHepatitisBTest ->
+                    { english = "Hepatitis B Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskMalariaTest ->
+                    { english = "Malaria RDT Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskBloodGpRsTest ->
+                    { english = "Blood Group + Rhesus Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskUrineDipstickTest ->
+                    { english = "Urine Dipstick Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHemoglobinTest ->
+                    { english = "Hemoglobin Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskRandomBloodSugarTest ->
+                    { english = "Random Blood Sugar Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryTaskResult task ->
+            case task of
+                Pages.PrenatalActivity.Model.TaskHIVTest ->
+                    { english = "HIV Antibody Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskSyphilisTest ->
+                    { english = "Syphilis - RPR Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHepatitisBTest ->
+                    { english = "Hepatitis B Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskMalariaTest ->
+                    { english = "Malaria RDT Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskBloodGpRsTest ->
+                    { english = "Blood Group + Rhesus Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskUrineDipstickTest ->
+                    { english = "Urine Dipstick Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskHemoglobinTest ->
+                    { english = "Hemoglobin Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.TaskRandomBloodSugarTest ->
+                    { english = "Random Blood Sugar Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryTaskResultsHelper ->
+            { english = "When ready, update test results via case management"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalPhotoHelper ->
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
             , kinyarwanda = Just "Fata ifoto y'inda y'umubyeyi hanyuma uyimwereke arebe uko yakuze/yiyongereye."
             }
+
+        PrenatalTestExecutionNote note ->
+            case note of
+                TestNoteRunToday ->
+                    { english = "Run Today"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestNoteRunPreviously ->
+                    { english = "Run Previously"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestNoteLackOfReagents ->
+                    { english = "Lack of Reagents"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestNoteLackOfOtherSupplies ->
+                    { english = "Lack of Other Supplies"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestNoteNoEquipment ->
+                    { english = "No Equipment"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestNoteBrokenEquipment ->
+                    { english = "Broken Equipment"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestNoteNotIndicated ->
+                    { english = "Not Indicated"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalTestResult result ->
+            case result of
+                PrenatalTestPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalTestNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalTestIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalUrineDipstickTestVariant variant ->
+            case variant of
+                VariantShortTest ->
+                    { english = "Short Dip"
+                    , kinyarwanda = Nothing
+                    }
+
+                VariantLongTest ->
+                    { english = "Long Dip"
+                    , kinyarwanda = Nothing
+                    }
 
         PreTerm ->
             { english = "Pre Term"
@@ -6986,6 +7235,16 @@ translationSet trans =
 
         TestPerformedQuestion ->
             { english = "Were you able to perform the test"
+            , kinyarwanda = Nothing
+            }
+
+        TestPerformedTodayQuestion ->
+            { english = "Did you perform this test today"
+            , kinyarwanda = Nothing
+            }
+
+        TestVariantQuestion ->
+            { english = "Which type of test was run"
             , kinyarwanda = Nothing
             }
 

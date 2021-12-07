@@ -3,17 +3,18 @@ module Pages.PrenatalActivity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement, noDangerSigns)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -25,7 +26,441 @@ import Pages.Utils
         , viewBoolInput
         , viewQuestionLabel
         )
-import Translate exposing (Language)
+import Translate exposing (Language, translate)
+
+
+isFirstEncounter : AssembledData -> Bool
+isFirstEncounter assembled =
+    List.isEmpty assembled.nursePreviousMeasurementsWithDates
+
+
+expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
+expectActivity currentDate assembled activity =
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            case activity of
+                PregnancyDating ->
+                    -- Only show on first encounter
+                    isFirstEncounter assembled
+
+                History ->
+                    True
+
+                Examination ->
+                    True
+
+                FamilyPlanning ->
+                    True
+
+                Backend.PrenatalActivity.Model.MalariaPrevention ->
+                    assembled.nursePreviousMeasurementsWithDates
+                        |> List.filter
+                            (\( _, measurements ) ->
+                                measurements.malariaPrevention
+                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
+                                    |> Maybe.withDefault False
+                            )
+                        |> List.isEmpty
+
+                Medication ->
+                    True
+
+                DangerSigns ->
+                    True
+
+                Laboratory ->
+                    -- Always True, as there are sub activities that should be
+                    -- presented on every encounter.
+                    True
+
+                PrenatalPhoto ->
+                    expectPrenatalPhoto currentDate assembled
+
+                -- Unique Chw activities.
+                _ ->
+                    False
+
+        ChwFirstEncounter ->
+            case activity of
+                PregnancyDating ->
+                    -- Do not show, if patient already visited health center.
+                    isFirstEncounter assembled
+
+                Laboratory ->
+                    -- Do not show, if patient already visited health center.
+                    isFirstEncounter assembled
+
+                DangerSigns ->
+                    True
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+        ChwSecondEncounter ->
+            case activity of
+                DangerSigns ->
+                    True
+
+                BirthPlan ->
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+        ChwThirdPlusEncounter ->
+            case activity of
+                DangerSigns ->
+                    True
+
+                Backend.PrenatalActivity.Model.HealthEducation ->
+                    activityCompleted currentDate assembled DangerSigns
+                        && noDangerSigns assembled
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+        ChwPostpartumEncounter ->
+            case activity of
+                PregnancyOutcome ->
+                    True
+
+                DangerSigns ->
+                    True
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+
+                -- Unique nurse activities.
+                _ ->
+                    False
+
+
+activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool
+activityCompleted currentDate assembled activity =
+    case activity of
+        PregnancyDating ->
+            isJust assembled.measurements.lastMenstrualPeriod
+
+        History ->
+            if isFirstEncounter assembled then
+                -- First antenatal encounter - all tasks should be completed
+                isJust assembled.measurements.obstetricHistory
+                    && isJust assembled.measurements.obstetricHistoryStep2
+                    && isJust assembled.measurements.medicalHistory
+                    && isJust assembled.measurements.socialHistory
+
+            else
+                -- Subsequent antenatal encounter - only Social history task
+                -- needs to be completed.
+                isJust assembled.measurements.socialHistory
+
+        Examination ->
+            isJust assembled.measurements.vitals
+                && isJust assembled.measurements.nutrition
+                && isJust assembled.measurements.corePhysicalExam
+                && isJust assembled.measurements.obstetricalExam
+                && isJust assembled.measurements.breastExam
+
+        FamilyPlanning ->
+            isJust assembled.measurements.familyPlanning
+
+        Backend.PrenatalActivity.Model.MalariaPrevention ->
+            isJust assembled.measurements.malariaPrevention
+
+        Medication ->
+            isJust assembled.measurements.medication
+
+        DangerSigns ->
+            isJust assembled.measurements.dangerSigns
+
+        PrenatalPhoto ->
+            isJust assembled.measurements.prenatalPhoto
+
+        Laboratory ->
+            if assembled.encounter.encounterType == NurseEncounter then
+                List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
+
+            else
+                -- CHW only got one lab on first encounter
+                isJust assembled.measurements.pregnancyTest
+
+        Backend.PrenatalActivity.Model.HealthEducation ->
+            isJust assembled.measurements.healthEducation
+
+        BirthPlan ->
+            isJust assembled.measurements.birthPlan
+
+        NextSteps ->
+            let
+                nextStepsTasks =
+                    resolveNextStepsTasks currentDate assembled
+            in
+            case nextStepsTasks of
+                [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
+                    isJust assembled.measurements.appointmentConfirmation && isJust assembled.measurements.followUp
+
+                [ NextStepsSendToHC, NextStepsFollowUp ] ->
+                    isJust assembled.measurements.sendToHC && isJust assembled.measurements.followUp
+
+                [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
+                    isJust assembled.measurements.healthEducation
+                        && isJust assembled.participant.newborn
+
+                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
+                    isJust assembled.measurements.sendToHC
+                        && isJust assembled.measurements.followUp
+                        && isJust assembled.measurements.healthEducation
+                        && isJust assembled.participant.newborn
+
+                _ ->
+                    False
+
+        PregnancyOutcome ->
+            isJust assembled.participant.dateConcluded
+
+
+resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate data =
+    case data.encounter.encounterType of
+        -- We should never get here, as Next Steps
+        -- displayed only for CHW.
+        NurseEncounter ->
+            []
+
+        _ ->
+            -- The order is important. Do not change.
+            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
+                |> List.filter (expectNextStepsTasks currentDate data)
+
+
+expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTasks currentDate data task =
+    let
+        dangerSigns =
+            dangerSignsPresent data
+    in
+    case task of
+        NextStepsAppointmentConfirmation ->
+            not dangerSigns && data.encounter.encounterType /= ChwPostpartumEncounter
+
+        NextStepsFollowUp ->
+            case data.encounter.encounterType of
+                ChwPostpartumEncounter ->
+                    dangerSigns
+
+                _ ->
+                    True
+
+        NextStepsSendToHC ->
+            dangerSigns
+
+        NextStepsHealthEducation ->
+            data.encounter.encounterType == ChwPostpartumEncounter
+
+        NextStepsNewbornEnrolment ->
+            data.encounter.encounterType == ChwPostpartumEncounter
+
+
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate data =
+    case data.encounter.encounterType of
+        NurseEncounter ->
+            -- There're no mandatory activities for nurse encounters.
+            True
+
+        ChwFirstEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
+                        && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
+                        && activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwSecondEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data BirthPlan
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwThirdPlusEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate data DangerSigns
+            in
+            if dangerSignsPresent data then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwPostpartumEncounter ->
+            activityCompleted currentDate data PregnancyOutcome
+                && activityCompleted currentDate data DangerSigns
+
+
+expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
+expectPrenatalPhoto currentDate data =
+    let
+        periods =
+            -- Periods, where we want to have 1 photo:
+            --  1. 12 weeks, or less.
+            --  2. Between week 13 and week 27.
+            --  3. Week 28, or more.
+            [ [ (>) 13 ], [ (>) 28, (<=) 13 ], [ (<=) 28 ] ]
+
+        nursePreviousMeasurements =
+            List.map Tuple.second data.nursePreviousMeasurementsWithDates
+    in
+    data.globalLmpDate
+        |> Maybe.map
+            (\lmpDate ->
+                let
+                    currentWeek =
+                        diffDays lmpDate currentDate // 7
+
+                    conditionsForCurrentWeek =
+                        periods
+                            |> List.filter
+                                (\periodConditions ->
+                                    List.all (\condition -> condition currentWeek == True) periodConditions
+                                )
+                            |> List.head
+                in
+                conditionsForCurrentWeek
+                    |> Maybe.map
+                        (\conditions ->
+                            -- There should be no encounters that are  within dates range,
+                            -- that got a photo measurement.
+                            data.nursePreviousMeasurementsWithDates
+                                |> List.filterMap
+                                    (\( encounterDate, measurements ) ->
+                                        let
+                                            encounterWeek =
+                                                diffDays lmpDate encounterDate // 7
+                                        in
+                                        -- Encounter is within dates range, and it's has a photo measurement.
+                                        if
+                                            List.all (\condition -> condition encounterWeek == True) conditions
+                                                && isJust measurements.prenatalPhoto
+                                        then
+                                            Just encounterDate
+
+                                        else
+                                            Nothing
+                                    )
+                                |> List.isEmpty
+                        )
+                    -- There are no period conditions, meaning we're not within required dates
+                    -- range. Therefore, we do not allow photo activity.
+                    |> Maybe.withDefault False
+            )
+        -- We do not allow photo activity when Lmp date is not known.
+        |> Maybe.withDefault False
+
+
+noDangerSigns : AssembledData -> Bool
+noDangerSigns data =
+    let
+        getDangerSignsType getFunc =
+            data.measurements.dangerSigns
+                |> Maybe.map (Tuple.second >> .value >> getFunc >> EverySet.toList)
+                |> Maybe.withDefault []
+
+        dangerSignsEmpty emptySign signsList =
+            List.isEmpty signsList || signsList == [ emptySign ]
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSignsEmpty =
+                    getDangerSignsType .postpartumMother
+                        |> dangerSignsEmpty NoPostpartumMotherDangerSigns
+
+                childSignsEmpty =
+                    getDangerSignsType .postpartumChild
+                        |> dangerSignsEmpty NoPostpartumChildDangerSigns
+            in
+            motherSignsEmpty && childSignsEmpty
+
+        _ ->
+            getDangerSignsType .signs
+                |> dangerSignsEmpty NoDangerSign
+
+
+dangerSignsPresent : AssembledData -> Bool
+dangerSignsPresent data =
+    isJust data.measurements.dangerSigns && not (noDangerSigns data)
+
+
+generateDangerSignsList : Language -> AssembledData -> List String
+generateDangerSignsList language data =
+    let
+        getDangerSignsListForType getFunc translateFunc noSignsValue =
+            data.measurements.dangerSigns
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> getFunc
+                        >> EverySet.toList
+                        >> List.filter ((/=) noSignsValue)
+                        >> List.map (translateFunc >> translate language)
+                    )
+                |> Maybe.withDefault []
+    in
+    case data.encounter.encounterType of
+        ChwPostpartumEncounter ->
+            let
+                motherSigns =
+                    getDangerSignsListForType .postpartumMother Translate.PostpartumMotherDangerSign NoPostpartumMotherDangerSigns
+
+                childSigns =
+                    getDangerSignsListForType .postpartumChild Translate.PostpartumChildDangerSign NoPostpartumChildDangerSigns
+            in
+            motherSigns ++ childSigns
+
+        _ ->
+            getDangerSignsListForType .signs Translate.DangerSign NoDangerSign
+
+
+getMotherHeightMeasurement : PrenatalMeasurements -> Maybe HeightInCm
+getMotherHeightMeasurement measurements =
+    measurements.nutrition
+        |> Maybe.map (Tuple.second >> .value >> .height)
 
 
 generatePrenatalAssesment : AssembledData -> PrenatalAssesment
@@ -923,43 +1358,38 @@ toSocialHistoryValue form =
         |> andMap form.partnerTestingResult
 
 
-fromPregnancyTestingValue : Maybe PregnancyTestResult -> PregnancyTestingForm
-fromPregnancyTestingValue saved =
+fromPregnancyTestValue : Maybe PregnancyTestResult -> PregnancyTestForm
+fromPregnancyTestValue saved =
     { pregnancyTestResult = saved }
 
 
-pregnancyTestingFormWithDefault : PregnancyTestingForm -> Maybe PregnancyTestResult -> PregnancyTestingForm
-pregnancyTestingFormWithDefault form saved =
+pregnancyTestFormWithDefault : PregnancyTestForm -> Maybe PregnancyTestResult -> PregnancyTestForm
+pregnancyTestFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 let
                     formWithDefault =
-                        fromPregnancyTestingValue saved
+                        fromPregnancyTestValue saved
                 in
                 { pregnancyTestResult = or form.pregnancyTestResult formWithDefault.pregnancyTestResult
                 }
             )
 
 
-toPregnancyTestingValueWithDefault : Maybe PregnancyTestResult -> PregnancyTestingForm -> Maybe PregnancyTestResult
-toPregnancyTestingValueWithDefault saved form =
-    pregnancyTestingFormWithDefault form saved
+toPregnancyTestValueWithDefault : Maybe PregnancyTestResult -> PregnancyTestForm -> Maybe PregnancyTestResult
+toPregnancyTestValueWithDefault saved form =
+    pregnancyTestFormWithDefault form saved
         |> (\form_ ->
                 form_
            )
-        |> toPregnancyTestingValue
+        |> toPregnancyTestValue
 
 
-toPregnancyTestingValue : PregnancyTestingForm -> Maybe PregnancyTestResult
-toPregnancyTestingValue form =
+toPregnancyTestValue : PregnancyTestForm -> Maybe PregnancyTestResult
+toPregnancyTestValue form =
     form.pregnancyTestResult
-
-
-calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
-calculateBmi maybeHeight maybeWeight =
-    Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
 
 
 historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> ( Int, Int )
@@ -1119,7 +1549,7 @@ historyTasksCompletedFromTotal assembled data task =
 
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
-examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
+examinationTasksCompletedFromTotal assembled data firstEncounter task =
     case task of
         Vitals ->
             let
@@ -1142,7 +1572,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
         NutritionAssessment ->
             let
                 hideHeightInput =
-                    not isFirstEncounter
+                    not firstEncounter
 
                 form_ =
                     assembled.measurements.nutrition
@@ -1426,3 +1856,338 @@ toAppointmentConfirmationValueWithDefault saved form =
 toAppointmentConfirmationValue : AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue
 toAppointmentConfirmationValue form =
     Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate
+
+
+fromPrenatalRDTValue : Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm
+fromPrenatalRDTValue saved =
+    let
+        testPerformed =
+            Maybe.andThen .executionDate saved |> isJust
+
+        testPerformedToday =
+            Maybe.map .executionNote saved == Just TestNoteRunToday
+    in
+    { testPerformed = Just testPerformed
+    , testPerformedToday = Just testPerformedToday
+    , executionNote = Maybe.map .executionNote saved
+    , executionDate = Maybe.andThen .executionDate saved
+    , testResult = Maybe.andThen .testResult saved
+    , isDateSelectorOpen = False
+    }
+
+
+prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm
+prenatalRDTFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromPrenatalRDTValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testResult = or form.testResult value.testResult
+                , isDateSelectorOpen = form.isDateSelectorOpen
+                }
+            )
+
+
+toPrenatalRDTValueWithDefault : Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue
+toPrenatalRDTValueWithDefault saved form =
+    prenatalRDTFormWithDefault form saved
+        |> toPrenatalRDTValue
+
+
+toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue
+toPrenatalRDTValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            }
+        )
+        form.executionNote
+
+
+fromPrenatalUrineDipstickTestValue : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
+fromPrenatalUrineDipstickTestValue saved =
+    let
+        testPerformed =
+            Maybe.andThen .executionDate saved |> isJust
+
+        testPerformedToday =
+            Maybe.map .executionNote saved == Just TestNoteRunToday
+    in
+    { testPerformed = Just testPerformed
+    , testPerformedToday = Just testPerformedToday
+    , testVariant = Maybe.andThen .testVariant saved
+    , executionNote = Maybe.map .executionNote saved
+    , executionDate = Maybe.andThen .executionDate saved
+    , isDateSelectorOpen = False
+    }
+
+
+prenatalUrineDipstickFormWithDefault : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
+prenatalUrineDipstickFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromPrenatalUrineDipstickTestValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                , testVariant = or form.testVariant value.testVariant
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , isDateSelectorOpen = form.isDateSelectorOpen
+                }
+            )
+
+
+toPrenatalUrineDipstickTestValueWithDefault : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickTestValueWithDefault saved form =
+    prenatalUrineDipstickFormWithDefault form saved
+        |> toPrenatalUrineDipstickTestValue
+
+
+toPrenatalUrineDipstickTestValue : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickTestValue form =
+    Maybe.map
+        (\executionNote ->
+            { testVariant = form.testVariant
+            , executionNote = executionNote
+            , executionDate = form.executionDate
+            , protein = Nothing
+            , ph = Nothing
+            , glucose = Nothing
+            , leukocytes = Nothing
+            , nitrite = Nothing
+            , urobilinogen = Nothing
+            , haemoglobin = Nothing
+            , specificGravity = Nothing
+            , ketone = Nothing
+            , bilirubin = Nothing
+            }
+        )
+        form.executionNote
+
+
+fromPrenatalNonRDTValue : Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate } -> PrenatalLabsNonRDTForm
+fromPrenatalNonRDTValue saved =
+    let
+        testPerformed =
+            Maybe.andThen .executionDate saved |> isJust
+
+        testPerformedToday =
+            Maybe.map .executionNote saved == Just TestNoteRunToday
+    in
+    { testPerformed = Just testPerformed
+    , testPerformedToday = Just testPerformedToday
+    , executionNote = Maybe.map .executionNote saved
+    , executionDate = Maybe.andThen .executionDate saved
+    , isDateSelectorOpen = False
+    }
+
+
+prenatalNonRDTFormWithDefault :
+    PrenatalLabsNonRDTForm
+    -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
+    -> PrenatalLabsNonRDTForm
+prenatalNonRDTFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    formWithDefault =
+                        fromPrenatalNonRDTValue saved
+                in
+                { testPerformed = or form.testPerformed formWithDefault.testPerformed
+                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , isDateSelectorOpen = form.isDateSelectorOpen
+                }
+            )
+
+
+toPrenatalNonRDTValueWithDefault :
+    Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
+    -> (PrenatalTestExecutionNote -> Maybe NominalDate -> { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate })
+    -> PrenatalLabsNonRDTForm
+    -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
+toPrenatalNonRDTValueWithDefault saved withEmptyResultsFunc form =
+    let
+        formWithDefault =
+            prenatalNonRDTFormWithDefault form saved
+    in
+    Maybe.map (\executionNote -> withEmptyResultsFunc executionNote formWithDefault.executionDate)
+        formWithDefault.executionNote
+
+
+toHepatitisBTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHepatitisBTestValue
+toHepatitisBTestValueWithEmptyResults note date =
+    PrenatalHepatitisBTestValue note date Nothing
+
+
+toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalSyphilisTestValue
+toSyphilisTestValueWithEmptyResults note date =
+    PrenatalSyphilisTestValue note date Nothing
+
+
+toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue
+toHemoglobinTestValueWithEmptyResults note date =
+    PrenatalHemoglobinTestValue note date Nothing
+
+
+toRandomBloodSugarTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalRandomBloodSugarTestValue
+toRandomBloodSugarTestValueWithEmptyResults note date =
+    PrenatalRandomBloodSugarTestValue note date Nothing
+
+
+toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
+toBloodGpRsTestValueWithEmptyResults note date =
+    PrenatalBloodGpRsTestValue note date Nothing Nothing
+
+
+laboratoryTasks : List LaboratoryTask
+laboratoryTasks =
+    [ TaskHIVTest
+    , TaskSyphilisTest
+    , TaskHepatitisBTest
+    , TaskMalariaTest
+    , TaskBloodGpRsTest
+    , TaskUrineDipstickTest
+    , TaskHemoglobinTest
+    , TaskRandomBloodSugarTest
+    ]
+
+
+laboratoryTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+laboratoryTaskCompleted currentDate assembled task =
+    let
+        measurements =
+            assembled.measurements
+
+        taskExpected =
+            expectLaboratoryTask currentDate assembled
+    in
+    case task of
+        TaskHIVTest ->
+            (not <| taskExpected TaskHIVTest) || isJust measurements.hivTest
+
+        TaskSyphilisTest ->
+            (not <| taskExpected TaskSyphilisTest) || isJust measurements.syphilisTest
+
+        TaskHepatitisBTest ->
+            (not <| taskExpected TaskHepatitisBTest) || isJust measurements.hepatitisBTest
+
+        TaskMalariaTest ->
+            (not <| taskExpected TaskMalariaTest) || isJust measurements.malariaTest
+
+        TaskBloodGpRsTest ->
+            (not <| taskExpected TaskBloodGpRsTest) || isJust measurements.bloodGpRsTest
+
+        TaskUrineDipstickTest ->
+            (not <| taskExpected TaskUrineDipstickTest) || isJust measurements.urineDipstickTest
+
+        TaskHemoglobinTest ->
+            (not <| taskExpected TaskHemoglobinTest) || isJust measurements.hemoglobinTest
+
+        TaskRandomBloodSugarTest ->
+            (not <| taskExpected TaskRandomBloodSugarTest) || isJust measurements.randomBloodSugarTest
+
+
+expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryTask currentDate assembled task =
+    if assembled.encounter.encounterType /= NurseEncounter then
+        False
+
+    else
+        let
+            testsDates =
+                generatePreviousLaboratoryTestsDatesDict currentDate assembled
+
+            isInitialTest test =
+                Dict.get test testsDates
+                    |> Maybe.map List.isEmpty
+                    |> Maybe.withDefault True
+
+            isRepeatingTestOnWeek week test =
+                Maybe.map
+                    (\lmpDate ->
+                        if diffWeeks lmpDate currentDate < week then
+                            isInitialTest test
+
+                        else
+                            let
+                                lastTestWeek =
+                                    Dict.get test testsDates
+                                        |> Maybe.map (List.map (\testsDate -> diffWeeks testsDate currentDate))
+                                        |> Maybe.withDefault []
+                                        |> List.sort
+                                        |> List.reverse
+                                        |> List.head
+                            in
+                            Maybe.map (\testWeek -> testWeek < week) lastTestWeek
+                                |> Maybe.withDefault True
+                    )
+                    assembled.globalLmpDate
+                    |> Maybe.withDefault (isInitialTest test)
+        in
+        case task of
+            TaskHIVTest ->
+                isRepeatingTestOnWeek 38 TaskHIVTest
+
+            TaskSyphilisTest ->
+                isRepeatingTestOnWeek 38 TaskSyphilisTest
+
+            TaskHepatitisBTest ->
+                isRepeatingTestOnWeek 34 TaskHepatitisBTest
+
+            TaskMalariaTest ->
+                True
+
+            TaskBloodGpRsTest ->
+                isInitialTest TaskBloodGpRsTest
+
+            TaskUrineDipstickTest ->
+                True
+
+            TaskHemoglobinTest ->
+                True
+
+            TaskRandomBloodSugarTest ->
+                -- First ?? @todo
+                isInitialTest TaskRandomBloodSugarTest
+
+
+generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
+generatePreviousLaboratoryTestsDatesDict currentDate assembled =
+    let
+        generateTestDates getFunc =
+            List.filterMap
+                (Tuple.second
+                    >> getFunc
+                    >> Maybe.map (Tuple.second >> .dateMeasured)
+                )
+                assembled.nursePreviousMeasurementsWithDates
+    in
+    [ ( TaskHIVTest, generateTestDates .hivTest )
+    , ( TaskSyphilisTest, generateTestDates .syphilisTest )
+    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest )
+    , ( TaskMalariaTest, generateTestDates .malariaTest )
+    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest )
+    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest )
+    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest )
+    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest )
+    ]
+        |> Dict.fromList

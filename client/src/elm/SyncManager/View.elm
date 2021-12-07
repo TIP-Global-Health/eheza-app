@@ -555,7 +555,7 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
-            BackendAuthorityPregnancyTesting identifier ->
+            BackendAuthorityPregnancyTest identifier ->
                 viewMeasurement identifier "Pregnancy Testing"
 
             BackendAuthorityPrenatalEncounter identifier ->

@@ -1304,16 +1304,16 @@ div.page-activity.home-visit {
 
   .ui.full.segment {
 
-      .activity-helper {
-        margin-bottom: 5px;
-      }
+    .activity-helper {
+      margin-bottom: 5px;
+    }
 
-      .range-helper {
-        margin-top: 0;
-      }
+    .range-helper {
+      margin-top: 0;
+    }
 
-      .form-input {
-        margin-bottom: 30px;
+    .form-input {
+      margin-bottom: 30px;
 
       // Pregnanacy Dating Inputs
       &.select {
@@ -1339,6 +1339,7 @@ div.page-activity.home-visit {
 
           input {
             border: 0;
+            color: $color-text;
             padding: 5px;
           }
         }
@@ -1677,6 +1678,10 @@ div.page-activity.home-visit {
         margin-bottom: 20px;
       }
 
+      .ui.form {
+        min-height: 210px;
+      }
+
       .checkbox-select-input {
         margin-bottom: 20px;
       }
@@ -1702,6 +1707,18 @@ div.page-activity.home-visit {
         font-size: 25px;
         font-weight: 300;
         margin-left: 40px;
+      }
+
+      .form.laboratory {
+
+        .label.header {
+          font-size: 24px;
+          margin-bottom: 30px;
+        }
+
+        .test-date {
+          font-size: 23px;
+        }
       }
     }
   }

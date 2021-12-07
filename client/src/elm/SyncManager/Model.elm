@@ -111,7 +111,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPerson (BackendEntity Person)
     | BackendAuthorityPhoto (BackendEntity Photo)
     | BackendAuthorityPmtctParticipant (BackendEntity PmtctParticipant)
-    | BackendAuthorityPregnancyTesting (BackendEntity PregnancyTest)
+    | BackendAuthorityPregnancyTest (BackendEntity PregnancyTest)
     | BackendAuthorityPrenatalBloodGpRsTest (BackendEntity PrenatalBloodGpRsTest)
     | BackendAuthorityPrenatalEncounter (BackendEntity PrenatalEncounter)
     | BackendAuthorityPrenatalFamilyPlanning (BackendEntity PrenatalFamilyPlanning)

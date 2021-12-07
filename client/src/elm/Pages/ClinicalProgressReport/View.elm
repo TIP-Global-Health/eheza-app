@@ -17,9 +17,7 @@ import Backend.PrenatalActivity.Model
         )
 import Backend.PrenatalActivity.Utils
     exposing
-        ( generateMedicalDiagnosisAlertData
-        , generateObstetricalDiagnosisAlertData
-        , generateRiskFactorAlertData
+        ( generateRiskFactorAlertData
         , getEncounterTrimesterData
         )
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
@@ -34,7 +32,6 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)

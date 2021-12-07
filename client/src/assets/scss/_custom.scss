@@ -2070,6 +2070,104 @@ input::placeholder {
   }
 }
 
+.icon-laboratory-blood-sugar {
+  .active &:after {
+    background-image: url(#{$img-path}icon-blood-sugar-white-blue.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-blood-sugar-white-gray.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-blood-sugar-gray.svg);
+  }
+}
+
+.icon-laboratory-blood-group {
+  .active &:after {
+    background-image: url(#{$img-path}icon-blood-group-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-blood-group-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-blood-group-gray.svg);
+  }
+}
+
+.icon-laboratory-hemoglobin {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hemoglobin-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hemoglobin-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hemoglobin-gray.svg);
+  }
+}
+
+.icon-laboratory-hepatitis-b {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hepatitis-b-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hepatitis-b-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hepatitis-b-gray.svg);
+  }
+}
+
+.icon-laboratory-hiv {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hiv-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hiv-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hiv-gray.svg);
+  }
+}
+
+.icon-laboratory-syphilis {
+  .active &:after {
+    background-image: url(#{$img-path}icon-syphilis-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-syphilis-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-syphilis-gray.svg);
+  }
+}
+
+.icon-laboratory-urine-dipstick {
+  .active &:after {
+    background-image: url(#{$img-path}icon-urine-dipstick-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-urine-dipstick-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-urine-dipstick-gray.svg);
+  }
+}
+
 .icon-exposure-travel {
   .active &:after {
     background-image: url(#{$img-path}icon-travel-white.svg);

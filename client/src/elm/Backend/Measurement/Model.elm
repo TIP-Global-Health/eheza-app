@@ -813,14 +813,7 @@ type alias PrenatalAppointmentConfirmation =
 
 
 type alias PrenatalMalariaTest =
-    PrenatalMeasurement PrenatalMalariaTestValue
-
-
-type alias PrenatalMalariaTestValue =
-    { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
-    , testResult : PrenatalTestResult
-    }
+    PrenatalMeasurement PrenatalLabsRDTValue
 
 
 type PrenatalTestExecutionNote
@@ -840,13 +833,13 @@ type PrenatalTestResult
 
 
 type alias PrenatalHIVTest =
-    PrenatalMeasurement PrenatalHIVTestValue
+    PrenatalMeasurement PrenatalLabsRDTValue
 
 
-type alias PrenatalHIVTestValue =
+type alias PrenatalLabsRDTValue =
     { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
-    , testResult : PrenatalTestResult
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
     }
 
 
@@ -856,7 +849,7 @@ type alias PrenatalHepatitisBTest =
 
 type alias PrenatalHepatitisBTestValue =
     { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
+    , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     }
 
@@ -867,7 +860,7 @@ type alias PrenatalSyphilisTest =
 
 type alias PrenatalSyphilisTestValue =
     { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
+    , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     }
 
@@ -878,7 +871,7 @@ type alias PrenatalHemoglobinTest =
 
 type alias PrenatalHemoglobinTestValue =
     { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
+    , executionDate : Maybe NominalDate
     , hemoglobinCount : Maybe Float
     }
 
@@ -889,7 +882,7 @@ type alias PrenatalRandomBloodSugarTest =
 
 type alias PrenatalRandomBloodSugarTestValue =
     { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
+    , executionDate : Maybe NominalDate
     , sugarCount : Maybe Int
     }
 
@@ -900,7 +893,7 @@ type alias PrenatalBloodGpRsTest =
 
 type alias PrenatalBloodGpRsTestValue =
     { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
+    , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
     }
@@ -923,8 +916,9 @@ type alias PrenatalUrineDipstickTest =
 
 
 type alias PrenatalUrineDipstickTestValue =
-    { executionNote : PrenatalTestExecutionNote
-    , executionDate : NominalDate
+    { testVariant : Maybe PrenatalTestVariant
+    , executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
     , glucose : Maybe GlucoseValue
@@ -936,6 +930,11 @@ type alias PrenatalUrineDipstickTestValue =
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
+
+
+type PrenatalTestVariant
+    = VariantShortTest
+    | VariantLongTest
 
 
 type ProteinValue

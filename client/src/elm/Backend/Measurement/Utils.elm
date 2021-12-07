@@ -931,3 +931,32 @@ symptomsGISignFromString s =
 covidIsolationPeriod : Int
 covidIsolationPeriod =
     10
+
+
+prenatalTestResultToString : PrenatalTestResult -> String
+prenatalTestResultToString value =
+    case value of
+        PrenatalTestPositive ->
+            "positive"
+
+        PrenatalTestNegative ->
+            "negative"
+
+        PrenatalTestIndeterminate ->
+            "indeterminate"
+
+
+prenatalTestResultFromString : String -> Maybe PrenatalTestResult
+prenatalTestResultFromString value =
+    case value of
+        "positive" ->
+            Just PrenatalTestPositive
+
+        "negative" ->
+            Just PrenatalTestNegative
+
+        "indeterminate" ->
+            Just PrenatalTestIndeterminate
+
+        _ ->
+            Nothing

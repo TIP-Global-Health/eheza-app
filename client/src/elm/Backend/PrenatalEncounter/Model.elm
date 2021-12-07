@@ -72,11 +72,19 @@ type alias Model =
     , saveVitals : WebData ()
     , savePrenatalPhoto : WebData ()
     , saveBirthPlan : WebData ()
-    , savePregnancyTesting : WebData ()
+    , savePregnancyTest : WebData ()
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
     , saveAppointmentConfirmation : WebData ()
+    , saveHIVTest : WebData ()
+    , saveSyphilisTest : WebData ()
+    , saveHepatitisBTest : WebData ()
+    , saveMalariaTest : WebData ()
+    , saveBloodGpRsTest : WebData ()
+    , saveUrineDipstickTest : WebData ()
+    , saveHemoglobinTest : WebData ()
+    , saveRandomBloodSugarTest : WebData ()
     }
 
 
@@ -99,11 +107,19 @@ emptyModel =
     , saveVitals = NotAsked
     , savePrenatalPhoto = NotAsked
     , saveBirthPlan = NotAsked
-    , savePregnancyTesting = NotAsked
+    , savePregnancyTest = NotAsked
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
     , saveAppointmentConfirmation = NotAsked
+    , saveHIVTest = NotAsked
+    , saveSyphilisTest = NotAsked
+    , saveHepatitisBTest = NotAsked
+    , saveMalariaTest = NotAsked
+    , saveBloodGpRsTest = NotAsked
+    , saveUrineDipstickTest = NotAsked
+    , saveHemoglobinTest = NotAsked
+    , saveRandomBloodSugarTest = NotAsked
     }
 
 
@@ -142,13 +158,29 @@ type Msg
     | HandleSavedPrenatalPhoto (WebData ())
     | SaveBirthPlan PersonId (Maybe BirthPlanId) BirthPlanValue
     | HandleSavedBirthPlan (WebData ())
-    | SavePregnancyTesting PersonId (Maybe PregnancyTestId) PregnancyTestResult
-    | HandleSavedPregnancyTesting (WebData ())
+    | SavePregnancyTest PersonId (Maybe PregnancyTestId) PregnancyTestResult
+    | HandleSavedPregnancyTest (WebData ())
     | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) PrenatalFollowUpValue
-    | HandleSavedFollowup (WebData ())
+    | HandleSavedFollowUp (WebData ())
     | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())
+    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalLabsRDTValue
+    | HandleSavedHIVTest (WebData ())
+    | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) PrenatalSyphilisTestValue
+    | HandleSavedSyphilisTest (WebData ())
+    | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) PrenatalHepatitisBTestValue
+    | HandleSavedHepatitisBTest (WebData ())
+    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalLabsRDTValue
+    | HandleSavedMalariaTest (WebData ())
+    | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) PrenatalBloodGpRsTestValue
+    | HandleSavedBloodGpRsTest (WebData ())
+    | SaveUrineDipstickTest PersonId (Maybe PrenatalUrineDipstickTestId) PrenatalUrineDipstickTestValue
+    | HandleSavedUrineDipstickTest (WebData ())
+    | SaveHemoglobinTest PersonId (Maybe PrenatalHemoglobinTestId) PrenatalHemoglobinTestValue
+    | HandleSavedHemoglobinTest (WebData ())
+    | SaveRandomBloodSugarTest PersonId (Maybe PrenatalRandomBloodSugarTestId) PrenatalRandomBloodSugarTestValue
+    | HandleSavedRandomBloodSugarTest (WebData ())

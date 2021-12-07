@@ -504,6 +504,31 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_test_variant'.
+  $field_bases['field_test_variant'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_test_variant',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'short' => 'Short',
+        'long' => 'Long',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_urobilinogen'.
   $field_bases['field_urobilinogen'] = array(
     'active' => 1,
