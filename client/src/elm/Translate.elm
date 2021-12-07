@@ -1499,12 +1499,12 @@ translationSet trans =
 
         AcuteIllnessHighRiskCaseHelper ->
             { english = "This patient is a high risk case and should be sent to a hospital for further treatment"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi afite ibyago byinshi byo kuba yaranduye Covid-19, agomba koherezwa ku bitaro bakamuha ubuvuzi bwimbitse"
             }
 
         AcuteIllnessLowRiskCaseHelper ->
             { english = "This patient is a low risk case and should be sent home to be monitored by a CHW"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi nta byago afite byo kuba yaranduye Covid-19, agomba koherezwa mu rugo agakurikiranwa n'umujyanama w'ubuzima"
             }
 
         AcuteIllnessNew ->
