@@ -804,6 +804,52 @@ encodePrenatalTestResult =
     prenatalTestResultToString >> string
 
 
+encodePrenatalLabsResults : PrenatalLabsResults -> List ( String, Value )
+encodePrenatalLabsResults =
+    encodePrenatalMeasurement encodePrenatalLabsResultsValue
+
+
+encodePrenatalLabsResultsValue : PrenatalLabsResultsValue -> List ( String, Value )
+encodePrenatalLabsResultsValue value =
+    let
+        resolutionDate =
+            Maybe.map
+                (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
+    in
+    [ ( "performed_tests", encodeEverySet encodePrenatalLaboratoryTest value.performedTests )
+    , ( "completed_tests", encodeEverySet encodePrenatalLaboratoryTest value.completedTests )
+    ]
+        ++ resolutionDate
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_labs_results" )
+           ]
+
+
+encodePrenatalLaboratoryTest : PrenatalLaboratoryTest -> Value
+encodePrenatalLaboratoryTest value =
+    string <|
+        case value of
+            TestSyphilis ->
+                "syphilis"
+
+            TestHepatitisB ->
+                "hepatitis-b"
+
+            TestBloodGpRs ->
+                "blood-group"
+
+            TestUrineDipstick ->
+                "urine-dipstick"
+
+            TestHemoglobin ->
+                "hemoglobin"
+
+            TestRandomBloodSugar ->
+                "random-blood-sugar"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
