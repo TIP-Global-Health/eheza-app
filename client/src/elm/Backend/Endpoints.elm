@@ -980,3 +980,9 @@ prenatalUrineDipstickTestEndpoint : ReadWriteEndPoint Error PrenatalUrineDipstic
 prenatalUrineDipstickTestEndpoint =
     swEndpoint "nodes/prenatal_urine_dipstick_test" decodePrenatalUrineDipstickTest
         |> withValueEncoder (object << encodePrenatalUrineDipstickTest)
+
+
+prenatalLabsResultsEndpoint : ReadWriteEndPoint Error PrenatalLabsResultsId PrenatalLabsResults PrenatalLabsResults ()
+prenatalLabsResultsEndpoint =
+    swEndpoint "nodes/prenatal_labs_results" decodePrenatalLabsResults
+        |> withValueEncoder (object << encodePrenatalLabsResults)
