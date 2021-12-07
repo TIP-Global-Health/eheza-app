@@ -115,6 +115,7 @@ var tableForType = {
     prenatal_hemoglobin_test: 'shards',
     prenatal_hepatitis_b_test: 'shards',
     prenatal_hiv_test: 'shards',
+    prenatal_labs_results: 'shards',
     prenatal_malaria_test: 'shards',
     prenatal_nutrition: 'shards',
     prenatal_random_blood_sugar_test: 'shards',
