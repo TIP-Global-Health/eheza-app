@@ -124,6 +124,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_random_blood_sugar_test" (decodeHead decodePrenatalRandomBloodSugarTest) Nothing
         |> optional "prenatal_syphilis_test" (decodeHead decodePrenatalSyphilisTest) Nothing
         |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
+        |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -872,6 +873,50 @@ decodePrenatalTestResult =
                 prenatalTestResultFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalTestResult")
+            )
+
+
+decodePrenatalLabsResults : Decoder PrenatalLabsResults
+decodePrenatalLabsResults =
+    decodePrenatalMeasurement decodePrenatalLabsResultsValue
+
+
+decodePrenatalLabsResultsValue : Decoder PrenatalLabsResultsValue
+decodePrenatalLabsResultsValue =
+    succeed PrenatalLabsResultsValue
+        |> required "performed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
+        |> required "completed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+
+
+decodePrenatalLaboratoryTest : Decoder PrenatalLaboratoryTest
+decodePrenatalLaboratoryTest =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "syphilis" ->
+                        succeed TestSyphilis
+
+                    "hepatitis-b" ->
+                        succeed TestHepatitisB
+
+                    "blood-group" ->
+                        succeed TestBloodGpRs
+
+                    "urine-dipstick" ->
+                        succeed TestUrineDipstick
+
+                    "hemoglobin" ->
+                        succeed TestHemoglobin
+
+                    "random-blood-sugar" ->
+                        succeed TestRandomBloodSugar
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized PrenatalLaboratoryTest"
             )
 
 
