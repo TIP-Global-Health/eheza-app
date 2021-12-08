@@ -614,8 +614,6 @@ viewPatientProgressPane language currentDate isChw data =
             , allTrimesters
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
-            , div [ class "caption photos" ] [ text <| translate language Translate.ProgressPhotos ++ ":" ]
-            , progressPhotos
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
             , div [ class "trends-section" ]
                 [ viewMarkers
@@ -632,6 +630,8 @@ viewPatientProgressPane language currentDate isChw data =
                     , illustrativePurposes language
                     ]
                 ]
+            , div [ class "caption photos" ] [ text <| translate language Translate.ProgressPhotos ++ ":" ]
+            , progressPhotos
             ]
         ]
 
