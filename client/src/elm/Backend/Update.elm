@@ -3856,11 +3856,17 @@ generatePrenatalLabsResultsMsgs currentDate after test executionNote id =
                     testExecuted =
                         List.member executionNote [ Backend.Measurement.Model.TestNoteRunToday, Backend.Measurement.Model.TestNoteRunPreviously ]
 
-                    ( labsResultsId, labsResultsValue ) =
-                        Maybe.map
-                            (\( resultsId, measurement ) ->
-                                ( Just resultsId
-                                , measurement.value
+                    createEditMsg labsResultsId labsResultsValue =
+                        Backend.PrenatalEncounter.Model.SaveLabsResults assembled.participant.person labsResultsId labsResultsValue
+                            |> Backend.Model.MsgPrenatalEncounter id
+                            |> App.Model.MsgIndexedDb
+                            |> List.singleton
+                in
+                Maybe.map
+                    (\( resultsId, measurement ) ->
+                        let
+                            resultsValue =
+                                measurement.value
                                     |> (\value ->
                                             { value
                                                 | performedTests =
@@ -3871,29 +3877,24 @@ generatePrenatalLabsResultsMsgs currentDate after test executionNote id =
                                                         EverySet.remove test value.performedTests
                                             }
                                        )
-                                )
-                            )
-                            assembled.measurements.labsResults
-                            |> Maybe.withDefault
-                                ( Nothing
-                                , let
-                                    performedTests =
-                                        if testExecuted then
-                                            EverySet.singleton test
+                        in
+                        createEditMsg (Just resultsId) resultsValue
+                    )
+                    assembled.measurements.labsResults
+                    |> Maybe.withDefault
+                        (if testExecuted then
+                            let
+                                resultsValue =
+                                    Backend.Measurement.Model.PrenatalLabsResultsValue
+                                        (EverySet.singleton test)
+                                        EverySet.empty
+                                        Nothing
+                            in
+                            createEditMsg Nothing resultsValue
 
-                                        else
-                                            EverySet.empty
-                                  in
-                                  Backend.Measurement.Model.PrenatalLabsResultsValue
-                                    performedTests
-                                    EverySet.empty
-                                    Nothing
-                                )
-                in
-                Backend.PrenatalEncounter.Model.SaveLabsResults assembled.participant.person labsResultsId labsResultsValue
-                    |> Backend.Model.MsgPrenatalEncounter id
-                    |> App.Model.MsgIndexedDb
-                    |> List.singleton
+                         else
+                            []
+                        )
             )
         |> Maybe.withDefault []
 
