@@ -406,6 +406,7 @@ type TranslationId
     | Children
     | ChildrenNames
     | ChildrenNationalId
+    | ChwActivity
     | Clear
     | ClickTheCheckMark
     | ClinicType ClinicType
@@ -2549,6 +2550,11 @@ translationSet trans =
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
+            }
+
+        ChwActivity ->
+            { english = "CHW Activity"
+            , kinyarwanda = Nothing
             }
 
         Clear ->
