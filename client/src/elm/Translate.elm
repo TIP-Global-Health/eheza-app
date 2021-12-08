@@ -840,6 +840,8 @@ type TranslationId
     | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskResult Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskResultsHelper
+    | PrenatalLabsCaseManagementState
+    | PrenatalLabsCaseManagementType
     | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
@@ -2408,6 +2410,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FilterPrenatalLabs ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Nothing
+                    }
+
         CaseManagementPaneHeader encounterType ->
             case encounterType of
                 FilterAcuteIllness ->
@@ -2427,6 +2434,11 @@ translationSet trans =
 
                 FilterContactsTrace ->
                     { english = "Contact Tracing"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterPrenatalLabs ->
+                    { english = "Lab Results"
                     , kinyarwanda = Nothing
                     }
 
@@ -7023,6 +7035,16 @@ translationSet trans =
 
         PrenatalLaboratoryTaskResultsHelper ->
             { english = "When ready, update test results via case management"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsCaseManagementState ->
+            { english = "Pending"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsCaseManagementType ->
+            { english = "ANC Lab Results"
             , kinyarwanda = Nothing
             }
 

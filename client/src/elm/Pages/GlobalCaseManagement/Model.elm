@@ -29,6 +29,7 @@ type CaseManagementFilter
     | FilterAntenatal
     | FilterNutrition
     | FilterContactsTrace
+    | FilterPrenatalLabs
 
 
 type FollowUpDueOption
@@ -122,12 +123,19 @@ type alias FollowUpPrenatalData =
     }
 
 
-type alias ContactsTracingEntry =
+type alias ContactsTracingEntryData =
     { itemId : AcuteIllnessTraceContactId
     , personName : String
     , phoneNumber : String
     , reporterName : String
     , lastFollowUpDate : Maybe NominalDate
+    }
+
+
+type alias PrenatalLabsEntryData =
+    { personId : PersonId
+    , personName : String
+    , encounterId : PrenatalEncounterId
     }
 
 
