@@ -1972,6 +1972,7 @@ type alias FollowUpMeasurements =
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
+    , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     }
 
 

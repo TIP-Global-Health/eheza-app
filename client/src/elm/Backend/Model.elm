@@ -109,6 +109,7 @@ type alias ModelIndexedDb =
     , wellChildEncounters : Dict WellChildEncounterId (WebData WellChildEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
+    , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
 
     -- Cache things organized in certain ways.
     , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
@@ -179,6 +180,7 @@ emptyModelIndexedDb =
     , participantsByPerson = Dict.empty
     , people = Dict.empty
     , traceContacts = Dict.empty
+    , prenatalLabs = Dict.empty
     , personSearches = Dict.empty
     , postPerson = NotAsked
     , postPmtctParticipant = Dict.empty
