@@ -742,6 +742,7 @@ type alias PregnancyTestForm =
 type alias PrenatalLabsRDTForm =
     { testPerformed : Maybe Bool
     , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
     , executionNote : Maybe PrenatalTestExecutionNote
     , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
@@ -752,12 +753,13 @@ type alias PrenatalLabsRDTForm =
 
 emptyPrenatalLabsRDTForm : PrenatalLabsRDTForm
 emptyPrenatalLabsRDTForm =
-    PrenatalLabsRDTForm Nothing Nothing Nothing False Nothing Nothing False
+    PrenatalLabsRDTForm Nothing Nothing False Nothing False Nothing Nothing False
 
 
 type alias PrenatalLabsNonRDTForm =
     { testPerformed : Maybe Bool
     , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
     , executionNote : Maybe PrenatalTestExecutionNote
     , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
@@ -767,12 +769,13 @@ type alias PrenatalLabsNonRDTForm =
 
 emptyPrenatalLabsNonRDTForm : PrenatalLabsNonRDTForm
 emptyPrenatalLabsNonRDTForm =
-    PrenatalLabsNonRDTForm Nothing Nothing Nothing False Nothing False
+    PrenatalLabsNonRDTForm Nothing Nothing False Nothing False Nothing False
 
 
 type alias PrenatalUrineDipstickForm =
     { testPerformed : Maybe Bool
     , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
     , testVariant : Maybe PrenatalTestVariant
     , executionNote : Maybe PrenatalTestExecutionNote
     , executionNoteDirty : Bool
@@ -783,7 +786,7 @@ type alias PrenatalUrineDipstickForm =
 
 emptyPrenatalUrineDipstickForm : PrenatalUrineDipstickForm
 emptyPrenatalUrineDipstickForm =
-    PrenatalUrineDipstickForm Nothing Nothing Nothing Nothing False Nothing False
+    PrenatalUrineDipstickForm Nothing Nothing False Nothing Nothing False Nothing False
 
 
 type alias AppointmentConfirmationForm =
