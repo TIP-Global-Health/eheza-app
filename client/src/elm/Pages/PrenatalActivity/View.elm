@@ -2994,6 +2994,7 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                 { form_
                     | testPerformed = Just value
                     , testPerformedToday = Nothing
+                    , testPerformedTodayDirty = True
                     , executionNote = Nothing
                     , executionNoteDirty = True
                     , executionDate = Nothing
@@ -3115,6 +3116,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                     in
                     { form_
                         | testPerformedToday = Just value
+                        , testPerformedTodayDirty = True
                         , executionNote = executionNote
                         , executionNoteDirty = True
                         , executionDate = executionDate

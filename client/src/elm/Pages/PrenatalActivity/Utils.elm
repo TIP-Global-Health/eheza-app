@@ -1858,28 +1858,6 @@ toAppointmentConfirmationValue form =
     Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate
 
 
-fromPrenatalRDTValue : Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm
-fromPrenatalRDTValue saved =
-    let
-        testPerformed =
-            Maybe.andThen .executionDate saved |> isJust
-
-        executionNote =
-            Maybe.map .executionNote saved
-
-        testPerformedToday =
-            executionNote == Just TestNoteRunToday
-    in
-    { testPerformed = Just testPerformed
-    , testPerformedToday = Just testPerformedToday
-    , executionNote = executionNote
-    , executionNoteDirty = False
-    , executionDate = Maybe.andThen .executionDate saved
-    , testResult = Maybe.andThen .testResult saved
-    , isDateSelectorOpen = False
-    }
-
-
 prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm
 prenatalRDTFormWithDefault form saved =
     saved
@@ -1887,11 +1865,15 @@ prenatalRDTFormWithDefault form saved =
             form
             (\value ->
                 let
-                    formWithDefault =
-                        fromPrenatalRDTValue saved
+                    testPerformedFromValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed formWithDefault.testPerformed
-                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
@@ -1919,28 +1901,6 @@ toPrenatalRDTValue form =
         form.executionNote
 
 
-fromPrenatalUrineDipstickTestValue : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
-fromPrenatalUrineDipstickTestValue saved =
-    let
-        testPerformed =
-            Maybe.andThen .executionDate saved |> isJust
-
-        executionNote =
-            Maybe.map .executionNote saved
-
-        testPerformedToday =
-            executionNote == Just TestNoteRunToday
-    in
-    { testPerformed = Just testPerformed
-    , testPerformedToday = Just testPerformedToday
-    , testVariant = Maybe.andThen .testVariant saved
-    , executionNote = executionNote
-    , executionNoteDirty = False
-    , executionDate = Maybe.andThen .executionDate saved
-    , isDateSelectorOpen = False
-    }
-
-
 prenatalUrineDipstickFormWithDefault : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
 prenatalUrineDipstickFormWithDefault form saved =
     saved
@@ -1948,11 +1908,15 @@ prenatalUrineDipstickFormWithDefault form saved =
             form
             (\value ->
                 let
-                    formWithDefault =
-                        fromPrenatalUrineDipstickTestValue saved
+                    testPerformedFromValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed formWithDefault.testPerformed
-                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , testVariant = or form.testVariant value.testVariant
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
@@ -1990,27 +1954,6 @@ toPrenatalUrineDipstickTestValue form =
         form.executionNote
 
 
-fromPrenatalNonRDTValue : Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate } -> PrenatalLabsNonRDTForm
-fromPrenatalNonRDTValue saved =
-    let
-        testPerformed =
-            Maybe.andThen .executionDate saved |> isJust
-
-        executionNote =
-            Maybe.map .executionNote saved
-
-        testPerformedToday =
-            executionNote == Just TestNoteRunToday
-    in
-    { testPerformed = Just testPerformed
-    , testPerformedToday = Just testPerformedToday
-    , executionNote = executionNote
-    , executionNoteDirty = False
-    , executionDate = Maybe.andThen .executionDate saved
-    , isDateSelectorOpen = False
-    }
-
-
 prenatalNonRDTFormWithDefault :
     PrenatalLabsNonRDTForm
     -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
@@ -2021,11 +1964,15 @@ prenatalNonRDTFormWithDefault form saved =
             form
             (\value ->
                 let
-                    formWithDefault =
-                        fromPrenatalNonRDTValue saved
+                    testPerformedFromValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed formWithDefault.testPerformed
-                , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
+                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
