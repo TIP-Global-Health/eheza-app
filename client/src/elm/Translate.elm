@@ -9708,6 +9708,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalLabResultsPage _ ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Nothing
+                    }
+
                 IndividualEncounterTypesPage ->
                     { english = "Encounter Types"
                     , kinyarwanda = Nothing

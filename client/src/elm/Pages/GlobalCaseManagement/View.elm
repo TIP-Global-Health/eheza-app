@@ -927,6 +927,9 @@ viewPrenatalLabsEntry language data =
         [ div [ class "name" ] [ text data.personName ]
         , div [ class "due overdue" ] [ translateText language Translate.PrenatalLabsCaseManagementState ]
         , div [ class "assesment center" ] [ translateText language Translate.PrenatalLabsCaseManagementType ]
-        , div [ class "icon-forward" ]
+        , div
+            [ class "icon-forward"
+            , onClick <| SetActivePage <| UserPage <| PrenatalLabResultsPage data.encounterId
+            ]
             []
         ]
