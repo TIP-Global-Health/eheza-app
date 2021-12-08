@@ -8929,7 +8929,7 @@ translationSet trans =
                     }
 
                 Pages.WellChildActivity.Model.TaskMR ->
-                    { english = "Measles - Rubella"
+                    { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                     }
 
@@ -9103,7 +9103,7 @@ translationSet trans =
                     }
 
                 VaccineMR ->
-                    { english = "Measles - Rubella"
+                    { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                     }
 
