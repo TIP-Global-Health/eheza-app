@@ -1584,7 +1584,7 @@ update currentDate id db msg model =
                     model.laboratoryData.hivTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -1697,7 +1697,7 @@ update currentDate id db msg model =
                     model.laboratoryData.syphilisTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -1793,7 +1793,7 @@ update currentDate id db msg model =
                     model.laboratoryData.hepatitisBTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -1889,7 +1889,7 @@ update currentDate id db msg model =
                     model.laboratoryData.malariaTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2002,7 +2002,7 @@ update currentDate id db msg model =
                     model.laboratoryData.bloodGpRsTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2098,7 +2098,7 @@ update currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2211,7 +2211,7 @@ update currentDate id db msg model =
                     model.laboratoryData.hemoglobinTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2307,7 +2307,7 @@ update currentDate id db msg model =
                     model.laboratoryData.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | executionNote = Just value }
+                    { form | executionNote = Just value, executionNoteDirty = True }
 
                 updatedData =
                     model.laboratoryData

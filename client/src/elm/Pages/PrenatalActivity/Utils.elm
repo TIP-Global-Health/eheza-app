@@ -1864,12 +1864,16 @@ fromPrenatalRDTValue saved =
         testPerformed =
             Maybe.andThen .executionDate saved |> isJust
 
+        executionNote =
+            Maybe.map .executionNote saved
+
         testPerformedToday =
-            Maybe.map .executionNote saved == Just TestNoteRunToday
+            executionNote == Just TestNoteRunToday
     in
     { testPerformed = Just testPerformed
     , testPerformedToday = Just testPerformedToday
-    , executionNote = Maybe.map .executionNote saved
+    , executionNote = executionNote
+    , executionNoteDirty = False
     , executionDate = Maybe.andThen .executionDate saved
     , testResult = Maybe.andThen .testResult saved
     , isDateSelectorOpen = False
@@ -1888,7 +1892,8 @@ prenatalRDTFormWithDefault form saved =
                 in
                 { testPerformed = or form.testPerformed formWithDefault.testPerformed
                 , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
-                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testResult = or form.testResult value.testResult
                 , isDateSelectorOpen = form.isDateSelectorOpen
@@ -1920,13 +1925,17 @@ fromPrenatalUrineDipstickTestValue saved =
         testPerformed =
             Maybe.andThen .executionDate saved |> isJust
 
+        executionNote =
+            Maybe.map .executionNote saved
+
         testPerformedToday =
-            Maybe.map .executionNote saved == Just TestNoteRunToday
+            executionNote == Just TestNoteRunToday
     in
     { testPerformed = Just testPerformed
     , testPerformedToday = Just testPerformedToday
     , testVariant = Maybe.andThen .testVariant saved
-    , executionNote = Maybe.map .executionNote saved
+    , executionNote = executionNote
+    , executionNoteDirty = False
     , executionDate = Maybe.andThen .executionDate saved
     , isDateSelectorOpen = False
     }
@@ -1945,7 +1954,8 @@ prenatalUrineDipstickFormWithDefault form saved =
                 { testPerformed = or form.testPerformed formWithDefault.testPerformed
                 , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
                 , testVariant = or form.testVariant value.testVariant
-                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
@@ -1986,12 +1996,16 @@ fromPrenatalNonRDTValue saved =
         testPerformed =
             Maybe.andThen .executionDate saved |> isJust
 
+        executionNote =
+            Maybe.map .executionNote saved
+
         testPerformedToday =
-            Maybe.map .executionNote saved == Just TestNoteRunToday
+            executionNote == Just TestNoteRunToday
     in
     { testPerformed = Just testPerformed
     , testPerformedToday = Just testPerformedToday
-    , executionNote = Maybe.map .executionNote saved
+    , executionNote = executionNote
+    , executionNoteDirty = False
     , executionDate = Maybe.andThen .executionDate saved
     , isDateSelectorOpen = False
     }
@@ -2012,7 +2026,8 @@ prenatalNonRDTFormWithDefault form saved =
                 in
                 { testPerformed = or form.testPerformed formWithDefault.testPerformed
                 , testPerformedToday = or form.testPerformedToday formWithDefault.testPerformedToday
-                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
