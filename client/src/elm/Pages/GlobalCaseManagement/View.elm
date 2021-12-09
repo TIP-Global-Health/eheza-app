@@ -850,16 +850,9 @@ viewPrenatalLabsPane language currentDate itemsDict db model =
                 (\_ item ->
                     let
                         itemNotResolved =
-                            Maybe.map
-                                (\resolutionDate ->
-                                    -- We know that item is not resolved, if resolution
-                                    -- date is a future date.
-                                    Date.compare currentDate resolutionDate == LT
-                                )
-                                item.value.resolutionDate
-                                |> -- No resolution date is set, meaning that
-                                   -- item is not resolved.
-                                   Maybe.withDefault True
+                            -- We know that item is not resolved, if resolution
+                            -- date is a future date.
+                            Date.compare currentDate item.value.resolutionDate == LT
 
                         labsResultsPending =
                             EverySet.size item.value.completedTests < EverySet.size item.value.performedTests
@@ -912,8 +905,15 @@ generatePrenatalLabsEntryData language currentDate db item =
                         |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map .name
                         |> Maybe.withDefault ""
+
+                state =
+                    if Date.diff Days currentDate item.value.resolutionDate < 8 then
+                        PrenatalLabsEntryClosingSoon
+
+                    else
+                        PrenatalLabsEntryPending
             in
-            PrenatalLabsEntryData item.participantId name encounterId
+            PrenatalLabsEntryData item.participantId name encounterId state
         )
         item.encounterId
 
@@ -923,9 +923,20 @@ viewPrenatalLabsEntry :
     -> PrenatalLabsEntryData
     -> Html Msg
 viewPrenatalLabsEntry language data =
+    let
+        entryStateClass =
+            "due "
+                ++ (case data.state of
+                        PrenatalLabsEntryClosingSoon ->
+                            "overdue"
+
+                        PrenatalLabsEntryPending ->
+                            "this-week"
+                   )
+    in
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text data.personName ]
-        , div [ class "due overdue" ] [ translateText language Translate.PrenatalLabsCaseManagementState ]
+        , div [ class entryStateClass ] [ translateText language <| Translate.PrenatalLabsEntryState data.state ]
         , div [ class "assesment center" ] [ translateText language Translate.PrenatalLabsCaseManagementType ]
         , div
             [ class "icon-forward"

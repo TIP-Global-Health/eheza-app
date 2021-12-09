@@ -887,7 +887,7 @@ decodePrenatalLabsResultsValue =
     succeed PrenatalLabsResultsValue
         |> required "performed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
         |> required "completed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
-        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
 
 
 decodePrenatalLaboratoryTest : Decoder PrenatalLaboratoryTest

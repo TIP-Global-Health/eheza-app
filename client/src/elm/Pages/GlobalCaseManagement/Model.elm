@@ -136,7 +136,13 @@ type alias PrenatalLabsEntryData =
     { personId : PersonId
     , personName : String
     , encounterId : PrenatalEncounterId
+    , state : PrenatalLabsEntryState
     }
+
+
+type PrenatalLabsEntryState
+    = PrenatalLabsEntryPending
+    | PrenatalLabsEntryClosingSoon
 
 
 type Msg

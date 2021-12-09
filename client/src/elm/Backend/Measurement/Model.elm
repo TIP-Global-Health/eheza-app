@@ -1035,7 +1035,7 @@ type alias PrenatalLabsResults =
 type alias PrenatalLabsResultsValue =
     { performedTests : EverySet PrenatalLaboratoryTest
     , completedTests : EverySet PrenatalLaboratoryTest
-    , resolutionDate : Maybe NominalDate
+    , resolutionDate : NominalDate
     }
 
 
