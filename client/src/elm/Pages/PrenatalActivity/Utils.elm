@@ -2153,3 +2153,31 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest )
     ]
         |> Dict.fromList
+
+
+laboratoryTaskIconClass : LaboratoryTask -> String
+laboratoryTaskIconClass task =
+    case task of
+        TaskHIVTest ->
+            "laboratory-hiv"
+
+        TaskSyphilisTest ->
+            "laboratory-syphilis"
+
+        TaskHepatitisBTest ->
+            "laboratory-hepatitis-b"
+
+        TaskMalariaTest ->
+            "laboratory-malaria-testing"
+
+        TaskBloodGpRsTest ->
+            "laboratory-blood-group"
+
+        TaskUrineDipstickTest ->
+            "laboratory-urine-dipstick"
+
+        TaskHemoglobinTest ->
+            "laboratory-hemoglobin"
+
+        TaskRandomBloodSugarTest ->
+            "laboratory-blood-sugar"

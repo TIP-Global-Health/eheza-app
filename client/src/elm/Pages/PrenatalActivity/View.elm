@@ -1221,50 +1221,14 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
-                    case task of
-                        TaskHIVTest ->
-                            ( "laboratory-hiv"
-                            , isJust measurements.hivTest
-                            )
-
-                        TaskSyphilisTest ->
-                            ( "laboratory-syphilis"
-                            , isJust measurements.syphilisTest
-                            )
-
-                        TaskHepatitisBTest ->
-                            ( "laboratory-hepatitis-b"
-                            , isJust measurements.hepatitisBTest
-                            )
-
-                        TaskMalariaTest ->
-                            ( "laboratory-malaria-testing"
-                            , isJust measurements.malariaTest
-                            )
-
-                        TaskBloodGpRsTest ->
-                            ( "laboratory-blood-group"
-                            , isJust measurements.bloodGpRsTest
-                            )
-
-                        TaskUrineDipstickTest ->
-                            ( "laboratory-urine-dipstick"
-                            , isJust measurements.urineDipstickTest
-                            )
-
-                        TaskHemoglobinTest ->
-                            ( "laboratory-hemoglobin"
-                            , isJust measurements.hemoglobinTest
-                            )
-
-                        TaskRandomBloodSugarTest ->
-                            ( "laboratory-blood-sugar"
-                            , isJust measurements.randomBloodSugarTest
-                            )
+                iconClass =
+                    laboratoryTaskIconClass task
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    laboratoryTaskCompleted currentDate assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
