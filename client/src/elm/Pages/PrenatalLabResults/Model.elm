@@ -11,29 +11,44 @@ import Pages.PrenatalActivity.Model exposing (LaboratoryTask)
 type Msg
     = SetActivePage Page
     | SetActiveTask LaboratoryTask
+    | SetHepatitisBTestResult String
+    | SetSyphilisTestResult String
 
 
 type alias Model =
-    { -- pregnancyTestForm : PregnancyTestForm
-      -- , bloodGpRsTestForm : PrenatalLabsNonRDTForm
+    { -- , bloodGpRsTestForm : PrenatalLabsNonRDTForm
       -- , hemoglobinTestForm : PrenatalLabsNonRDTForm
-      -- , hepatitisBTestForm : PrenatalLabsNonRDTForm
-      -- , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
-      -- , syphilisTestForm : PrenatalLabsNonRDTForm
-      -- , urineDipstickTestForm : PrenatalUrineDipstickForm
-      activeTask : Maybe LaboratoryTask
+      hepatitisBTestForm : PrenatalTestResultForm
+
+    -- , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
+    , syphilisTestForm : PrenatalTestResultForm
+
+    -- , urineDipstickTestForm : PrenatalUrineDipstickForm
+    , activeTask : Maybe LaboratoryTask
     }
 
 
 emptyModel : Model
 emptyModel =
-    { --  pregnancyTestForm = PregnancyTestForm Nothing
-      -- , bloodGpRsTestForm = emptyPrenatalLabsNonRDTForm
+    { -- , bloodGpRsTestForm = emptyPrenatalLabsNonRDTForm
       -- , hemoglobinTestForm = emptyPrenatalLabsNonRDTForm
-      -- , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
-      --
-      -- , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
-      -- , syphilisTestForm = emptyPrenatalLabsNonRDTForm
-      -- , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
-      activeTask = Nothing
+      hepatitisBTestForm = emptyPrenatalTestResultForm
+
+    -- , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
+    , syphilisTestForm = emptyPrenatalTestResultForm
+
+    -- , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
+    , activeTask = Nothing
     }
+
+
+type alias PrenatalTestResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
+emptyPrenatalTestResultForm : PrenatalTestResultForm
+emptyPrenatalTestResultForm =
+    PrenatalTestResultForm Nothing Nothing Nothing

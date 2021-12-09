@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
@@ -26,6 +26,32 @@ update currentDate id db msg model =
 
         SetActiveTask task ->
             ( { model | activeTask = Just task }
+            , Cmd.none
+            , []
+            )
+
+        SetHepatitisBTestResult value ->
+            let
+                form =
+                    model.hepatitisBTestForm
+
+                updatedForm =
+                    { form | testResult = prenatalTestResultFromString value }
+            in
+            ( { model | hepatitisBTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetSyphilisTestResult value ->
+            let
+                form =
+                    model.syphilisTestForm
+
+                updatedForm =
+                    { form | testResult = prenatalTestResultFromString value }
+            in
+            ( { model | syphilisTestForm = updatedForm }
             , Cmd.none
             , []
             )

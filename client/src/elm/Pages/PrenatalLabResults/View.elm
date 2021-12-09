@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -30,6 +30,7 @@ import Pages.PrenatalLabResults.Utils exposing (..)
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -135,126 +136,194 @@ viewLabResults language currentDate assembled data =
                     ]
                 ]
 
+        formHtmlAndTasks =
+            List.map
+                (\task ->
+                    ( task
+                    , case task of
+                        TaskHIVTest ->
+                            ( emptyNode, 0, 0 )
+
+                        TaskSyphilisTest ->
+                            measurements.syphilisTest
+                                |> getMeasurementValueFunc
+                                |> prenatalTestResultFormWithDefault data.syphilisTestForm
+                                |> prenatalTestResultFormAndTasks language currentDate TaskSyphilisTest
+
+                        TaskHepatitisBTest ->
+                            measurements.hepatitisBTest
+                                |> getMeasurementValueFunc
+                                |> prenatalTestResultFormWithDefault data.hepatitisBTestForm
+                                |> prenatalTestResultFormAndTasks language currentDate TaskHepatitisBTest
+
+                        TaskMalariaTest ->
+                            ( emptyNode, 0, 0 )
+
+                        -- TaskBloodGpRsTest ->
+                        --     measurements.bloodGpRsTest
+                        --         |> getMeasurementValueFunc
+                        --         |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
+                        --         |> viewPrenatalNonRDTForm language currentDate TaskBloodGpRsTest
+                        --
+                        -- TaskUrineDipstickTest ->
+                        --     measurements.urineDipstickTest
+                        --         |> getMeasurementValueFunc
+                        --         |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
+                        --         |> viewPrenatalUrineDipstickForm language currentDate
+                        --
+                        -- TaskHemoglobinTest ->
+                        --     measurements.hemoglobinTest
+                        --         |> getMeasurementValueFunc
+                        --         |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
+                        --         |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
+                        --
+                        -- TaskRandomBloodSugarTest ->
+                        --     measurements.randomBloodSugarTest
+                        --         |> getMeasurementValueFunc
+                        --         |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
+                        --         |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
+                        _ ->
+                            ( emptyNode, 0, 0 )
+                    )
+                )
+                tasks
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                formHtmlAndTasks
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.andThen
+                (\task -> Dict.get task formHtmlAndTasks)
+                activeTask
+                |> Maybe.withDefault ( emptyNode, 0, 0 )
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        -- actions =
+        --     Maybe.map
+        --         (\task ->
+        --             let
+        --                 saveMsg =
+        --                     case task of
+        --                         TaskHIVTest ->
+        --                             SaveHIVTest personId measurements.hivTest nextTask
         --
-        --     formHtmlAndTasks =
-        --         List.map
-        --             (\task ->
-        --                 ( task
-        --                 , case task of
-        --                     TaskHIVTest ->
-        --                         measurements.hivTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalRDTFormWithDefault data.hivTestForm
-        --                             |> viewPrenatalRDTForm language currentDate TaskHIVTest
+        --                         TaskSyphilisTest ->
+        --                             SaveSyphilisTest personId measurements.syphilisTest nextTask
         --
-        --                     TaskSyphilisTest ->
-        --                         measurements.syphilisTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalNonRDTFormWithDefault data.syphilisTestForm
-        --                             |> viewPrenatalNonRDTForm language currentDate TaskSyphilisTest
+        --                         TaskHepatitisBTest ->
+        --                             SaveHepatitisBTest personId measurements.hepatitisBTest nextTask
         --
-        --                     TaskHepatitisBTest ->
-        --                         measurements.hepatitisBTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
-        --                             |> viewPrenatalNonRDTForm language currentDate TaskHepatitisBTest
+        --                         TaskMalariaTest ->
+        --                             SaveMalariaTest personId measurements.malariaTest nextTask
         --
-        --                     TaskMalariaTest ->
-        --                         measurements.malariaTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalRDTFormWithDefault data.malariaTestForm
-        --                             |> viewPrenatalRDTForm language currentDate TaskMalariaTest
+        --                         TaskBloodGpRsTest ->
+        --                             SaveBloodGpRsTest personId measurements.bloodGpRsTest nextTask
         --
-        --                     TaskBloodGpRsTest ->
-        --                         measurements.bloodGpRsTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
-        --                             |> viewPrenatalNonRDTForm language currentDate TaskBloodGpRsTest
+        --                         TaskUrineDipstickTest ->
+        --                             SaveUrineDipstickTest personId measurements.urineDipstickTest nextTask
         --
-        --                     TaskUrineDipstickTest ->
-        --                         measurements.urineDipstickTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
-        --                             |> viewPrenatalUrineDipstickForm language currentDate
+        --                         TaskHemoglobinTest ->
+        --                             SaveHemoglobinTest personId measurements.hemoglobinTest nextTask
         --
-        --                     TaskHemoglobinTest ->
-        --                         measurements.hemoglobinTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
-        --                             |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
-        --
-        --                     TaskRandomBloodSugarTest ->
-        --                         measurements.randomBloodSugarTest
-        --                             |> getMeasurementValueFunc
-        --                             |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
-        --                             |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
-        --                 )
-        --             )
-        --             tasks
-        --             |> Dict.fromList
-        --
-        --     tasksCompletedFromTotalDict =
-        --         Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-        --             formHtmlAndTasks
-        --
-        --     ( viewForm, tasksCompleted, totalTasks ) =
-        --         Maybe.andThen
-        --             (\task -> Dict.get task formHtmlAndTasks)
-        --             activeTask
-        --             |> Maybe.withDefault ( emptyNode, 0, 0 )
-        --
-        --     nextTask =
-        --         List.filter
-        --             (\task ->
-        --                 (Just task /= activeTask)
-        --                     && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-        --             )
-        --             tasks
-        --             |> List.head
-        --
-        --     actions =
-        --         Maybe.map
-        --             (\task ->
-        --                 let
-        --                     saveMsg =
-        --                         case task of
-        --                             TaskHIVTest ->
-        --                                 SaveHIVTest personId measurements.hivTest nextTask
-        --
-        --                             TaskSyphilisTest ->
-        --                                 SaveSyphilisTest personId measurements.syphilisTest nextTask
-        --
-        --                             TaskHepatitisBTest ->
-        --                                 SaveHepatitisBTest personId measurements.hepatitisBTest nextTask
-        --
-        --                             TaskMalariaTest ->
-        --                                 SaveMalariaTest personId measurements.malariaTest nextTask
-        --
-        --                             TaskBloodGpRsTest ->
-        --                                 SaveBloodGpRsTest personId measurements.bloodGpRsTest nextTask
-        --
-        --                             TaskUrineDipstickTest ->
-        --                                 SaveUrineDipstickTest personId measurements.urineDipstickTest nextTask
-        --
-        --                             TaskHemoglobinTest ->
-        --                                 SaveHemoglobinTest personId measurements.hemoglobinTest nextTask
-        --
-        --                             TaskRandomBloodSugarTest ->
-        --                                 SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
-        --                 in
-        --                 viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
-        --             )
-        --             activeTask
-        --             |> Maybe.withDefault emptyNode
+        --                         TaskRandomBloodSugarTest ->
+        --                             SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+        --             in
+        --             viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+        --         )
+        --         activeTask
+        --         |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm
 
-    -- , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-    -- , div [ class "ui full segment" ]
-    --     [ div [ class "full content" ] <|
-    --         [ viewForm, actions ]
-    --     ]
+            -- , actions
+            ]
+        ]
     ]
+
+
+prenatalTestResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalTestResultForm -> ( Html Msg, Int, Int )
+prenatalTestResultFormAndTasks language currentDate task form =
+    let
+        setTestResultMsg =
+            case task of
+                TaskHepatitisBTest ->
+                    Just SetHepatitisBTestResult
+
+                TaskSyphilisTest ->
+                    Just SetSyphilisTestResult
+
+                _ ->
+                    Nothing
+
+        executionDateSection =
+            Maybe.map
+                (\executionDate ->
+                    [ viewLabel language <| Translate.PrenatalLaboratoryTaskDate task
+                    , p [ class "test-date" ] [ text <| formatDDMMYYYY executionDate ]
+                    ]
+                )
+                form.executionDate
+                |> Maybe.withDefault []
+
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            Maybe.map
+                (\setResultMsg ->
+                    let
+                        emptyOption =
+                            if isNothing form.testResult then
+                                option
+                                    [ value ""
+                                    , selected True
+                                    ]
+                                    [ text "" ]
+
+                            else
+                                emptyNode
+                    in
+                    ( [ viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
+                      , emptyOption
+                            :: List.map
+                                (\result ->
+                                    option
+                                        [ value (prenatalTestResultToString result)
+                                        , selected (form.testResult == Just result)
+                                        ]
+                                        [ text <| translate language <| Translate.PrenatalTestResult result ]
+                                )
+                                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                            |> select
+                                [ onInput setResultMsg
+                                , class "form-input select"
+                                ]
+                      ]
+                    , taskCompleted form.testResult
+                    , 1
+                    )
+                )
+                setTestResultMsg
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header" ]
+            ++ executionDateSection
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
