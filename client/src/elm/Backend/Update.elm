@@ -24,6 +24,7 @@ import Backend.Measurement.Utils
         ( getMeasurementValueFunc
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
+        , prenatalLabExpirationPeriod
         , splitChildMeasurements
         , splitMotherMeasurements
         )
@@ -3882,6 +3883,7 @@ generatePrenatalLabsResultsMsgs currentDate after test executionNote id =
 
                                                     else
                                                         EverySet.remove test value.performedTests
+                                                , resolutionDate = Date.add Days (prenatalLabExpirationPeriod + 1) currentDate
                                             }
                                        )
                         in
@@ -3895,7 +3897,7 @@ generatePrenatalLabsResultsMsgs currentDate after test executionNote id =
                                     Backend.Measurement.Model.PrenatalLabsResultsValue
                                         (EverySet.singleton test)
                                         EverySet.empty
-                                        Nothing
+                                        (Date.add Days (prenatalLabExpirationPeriod + 1) currentDate)
                             in
                             createEditMsg Nothing resultsValue
 

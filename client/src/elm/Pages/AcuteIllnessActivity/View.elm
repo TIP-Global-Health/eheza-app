@@ -3169,7 +3169,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                             ToggleContactsTracingDateSelector
                             SetContactsTracingDate
                             data.isDateSelectorOpen
-                            (Date.add Days -10 currentDate)
+                            (Date.add Days (-1 * covidIsolationPeriod) currentDate)
                             currentDate
                             data.contactDate
 

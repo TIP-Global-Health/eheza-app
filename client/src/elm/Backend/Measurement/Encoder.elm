@@ -811,17 +811,10 @@ encodePrenatalLabsResults =
 
 encodePrenatalLabsResultsValue : PrenatalLabsResultsValue -> List ( String, Value )
 encodePrenatalLabsResultsValue value =
-    let
-        resolutionDate =
-            Maybe.map
-                (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.resolutionDate
-                |> Maybe.withDefault []
-    in
     [ ( "performed_tests", encodeEverySet encodePrenatalLaboratoryTest value.performedTests )
     , ( "completed_tests", encodeEverySet encodePrenatalLaboratoryTest value.completedTests )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
     ]
-        ++ resolutionDate
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_labs_results" )
            ]

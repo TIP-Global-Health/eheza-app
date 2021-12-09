@@ -545,6 +545,12 @@
       'prenatal_labs_results'
     ];
 
+    // Follow Ups that get resolved using date_concluded field.
+    var resolvedFollowUpMeasurementsTypes = [
+      'acute_illness_trace_contact',
+      'prenatal_labs_results'
+    ];
+
     function viewFollowUpMeasurements (shard) {
         // Load all types of follow up measurements that belong to provided healh center.
         var query = dbSync.shards.where('type').anyOf(followUpMeasurementsTypes).and(function (item) {
@@ -563,10 +569,10 @@
                 var today = new Date();
 
                 nodes.forEach(function (node) {
-                    if (node.type === 'acute_illness_trace_contact') {
+                    if (resolvedFollowUpMeasurementsTypes.includes(node.type)) {
                       // Do not load resolved items.
                       var resolutionDate = new Date(node.date_concluded);
-                      if (resolutionDate <= today) {
+                      if (resolutionDate < today) {
                         return;
                       }
                     }
