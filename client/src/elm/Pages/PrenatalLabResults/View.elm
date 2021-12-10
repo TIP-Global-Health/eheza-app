@@ -272,16 +272,6 @@ prenatalTestResultFormAndTasks language currentDate task form =
                 _ ->
                     Nothing
 
-        executionDateSection =
-            Maybe.map
-                (\executionDate ->
-                    [ viewLabel language <| Translate.PrenatalLaboratoryTaskDate task
-                    , p [ class "test-date" ] [ text <| formatDDMMYYYY executionDate ]
-                    ]
-                )
-                form.executionDate
-                |> Maybe.withDefault []
-
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             Maybe.map
                 (\setResultMsg ->
@@ -321,9 +311,61 @@ prenatalTestResultFormAndTasks language currentDate task form =
                 |> Maybe.withDefault ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header" ]
-            ++ executionDateSection
+        resultFormHeaderSection language currentDate form.executionDate task
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
     )
+
+
+prenatalBloodGpRsResultFormAndTasks : Language -> NominalDate -> PrenatalBloodGpRsResultForm -> ( Html Msg, Int, Int )
+prenatalBloodGpRsResultFormAndTasks language currentDate form =
+    ( div [ class "ui form laboratory hemoglobin-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
+    , 0
+    , 0
+    )
+
+
+prenatalUrineDipstickResultFormAndTasks : Language -> NominalDate -> PrenatalUrineDipstickResultForm -> ( Html Msg, Int, Int )
+prenatalUrineDipstickResultFormAndTasks language currentDate form =
+    ( div [ class "ui form laboratory hemoglobin-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
+    , 0
+    , 0
+    )
+
+
+prenatalHemoglobinResultFormAndTasks : Language -> NominalDate -> PrenatalHemoglobinResultForm -> ( Html Msg, Int, Int )
+prenatalHemoglobinResultFormAndTasks language currentDate form =
+    ( div [ class "ui form laboratory hemoglobin-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
+    , 0
+    , 0
+    )
+
+
+prenatalRandomBloodSugarResultFormAndTasks : Language -> NominalDate -> PrenatalRandomBloodSugarResultForm -> ( Html Msg, Int, Int )
+prenatalRandomBloodSugarResultFormAndTasks language currentDate form =
+    ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
+    , 0
+    , 0
+    )
+
+
+resultFormHeaderSection : Language -> NominalDate -> Maybe NominalDate -> LaboratoryTask -> List (Html Msg)
+resultFormHeaderSection language currentDate executionDate task =
+    let
+        executionDateSection =
+            Maybe.map
+                (\date ->
+                    [ viewLabel language <| Translate.PrenatalLaboratoryTaskDate task
+                    , p [ class "test-date" ] [ text <| formatDDMMYYYY date ]
+                    ]
+                )
+                executionDate
+                |> Maybe.withDefault []
+    in
+    viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        :: executionDateSection

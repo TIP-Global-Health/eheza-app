@@ -16,28 +16,24 @@ type Msg
 
 
 type alias Model =
-    { -- , bloodGpRsTestForm : PrenatalLabsNonRDTForm
-      -- , hemoglobinTestForm : PrenatalLabsNonRDTForm
-      hepatitisBTestForm : PrenatalTestResultForm
-
-    -- , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
+    { bloodGpRsTestForm : PrenatalBloodGpRsResultForm
+    , hemoglobinTestForm : PrenatalHemoglobinResultForm
+    , hepatitisBTestForm : PrenatalTestResultForm
+    , randomBloodSugarTestForm : PrenatalRandomBloodSugarResultForm
     , syphilisTestForm : PrenatalTestResultForm
-
-    -- , urineDipstickTestForm : PrenatalUrineDipstickForm
+    , urineDipstickTestForm : PrenatalUrineDipstickResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
 
 emptyModel : Model
 emptyModel =
-    { -- , bloodGpRsTestForm = emptyPrenatalLabsNonRDTForm
-      -- , hemoglobinTestForm = emptyPrenatalLabsNonRDTForm
-      hepatitisBTestForm = emptyPrenatalTestResultForm
-
-    -- , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
+    { bloodGpRsTestForm = emptyPrenatalBloodGpRsResultForm
+    , hemoglobinTestForm = emptyPrenatalHemoglobinResultForm
+    , hepatitisBTestForm = emptyPrenatalTestResultForm
+    , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarResultForm
     , syphilisTestForm = emptyPrenatalTestResultForm
-
-    -- , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
+    , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
     , activeTask = Nothing
     }
 
@@ -52,3 +48,75 @@ type alias PrenatalTestResultForm =
 emptyPrenatalTestResultForm : PrenatalTestResultForm
 emptyPrenatalTestResultForm =
     PrenatalTestResultForm Nothing Nothing Nothing
+
+
+type alias PrenatalBloodGpRsResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , bloodGroup : Maybe BloodGroup
+    , rhesus : Maybe Rhesus
+    }
+
+
+emptyPrenatalBloodGpRsResultForm : PrenatalBloodGpRsResultForm
+emptyPrenatalBloodGpRsResultForm =
+    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing
+
+
+type alias PrenatalUrineDipstickResultForm =
+    { testVariant : Maybe PrenatalTestVariant
+    , executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , protein : Maybe ProteinValue
+    , ph : Maybe PHValue
+    , glucose : Maybe GlucoseValue
+    , leukocytes : Maybe LeukocytesValue
+    , nitrite : Maybe NitriteValue
+    , urobilinogen : Maybe UrobilinogenValue
+    , haemoglobin : Maybe HaemoglobinValue
+    , specificGravity : Maybe SpecificGravityValue
+    , ketone : Maybe KetoneValue
+    , bilirubin : Maybe BilirubinValue
+    }
+
+
+emptyPrenatalUrineDipstickResultForm : PrenatalUrineDipstickResultForm
+emptyPrenatalUrineDipstickResultForm =
+    { testVariant = Nothing
+    , executionNote = Nothing
+    , executionDate = Nothing
+    , protein = Nothing
+    , ph = Nothing
+    , glucose = Nothing
+    , leukocytes = Nothing
+    , nitrite = Nothing
+    , urobilinogen = Nothing
+    , haemoglobin = Nothing
+    , specificGravity = Nothing
+    , ketone = Nothing
+    , bilirubin = Nothing
+    }
+
+
+type alias PrenatalHemoglobinResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hemoglobinCount : Maybe Float
+    }
+
+
+emptyPrenatalHemoglobinResultForm : PrenatalHemoglobinResultForm
+emptyPrenatalHemoglobinResultForm =
+    PrenatalHemoglobinResultForm Nothing Nothing Nothing
+
+
+type alias PrenatalRandomBloodSugarResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , sugarCount : Maybe Int
+    }
+
+
+emptyPrenatalRandomBloodSugarResultForm : PrenatalRandomBloodSugarResultForm
+emptyPrenatalRandomBloodSugarResultForm =
+    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing
