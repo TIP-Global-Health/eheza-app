@@ -1020,6 +1020,482 @@ rhesusFromString value =
             Nothing
 
 
+proteinValueToString : ProteinValue -> String
+proteinValueToString value =
+    case value of
+        ProteinNegative ->
+            "negative"
+
+        Protein30 ->
+            "30"
+
+        Protein100 ->
+            "100"
+
+        Protein300 ->
+            "300"
+
+        Protein2000 ->
+            "2000"
+
+
+proteinValueFromString : String -> Maybe ProteinValue
+proteinValueFromString value =
+    case value of
+        "negative" ->
+            Just ProteinNegative
+
+        "30" ->
+            Just Protein30
+
+        "100" ->
+            Just Protein100
+
+        "300" ->
+            Just Protein300
+
+        "2000" ->
+            Just Protein2000
+
+        _ ->
+            Nothing
+
+
+phValueToString : PHValue -> String
+phValueToString value =
+    case value of
+        Ph50 ->
+            "5.0"
+
+        Ph60 ->
+            "6.0"
+
+        Ph65 ->
+            "6.5"
+
+        Ph70 ->
+            "7.0"
+
+        Ph75 ->
+            "7.5"
+
+        Ph80 ->
+            "8.0"
+
+        Ph85 ->
+            "8.5"
+
+
+phValueFromString : String -> Maybe PHValue
+phValueFromString value =
+    case value of
+        "5.0" ->
+            Just Ph50
+
+        "6.0" ->
+            Just Ph60
+
+        "6.5" ->
+            Just Ph65
+
+        "7.0" ->
+            Just Ph70
+
+        "7.5" ->
+            Just Ph75
+
+        "8.0" ->
+            Just Ph80
+
+        "8.5" ->
+            Just Ph85
+
+        _ ->
+            Nothing
+
+
+glucoseValueToString : GlucoseValue -> String
+glucoseValueToString value =
+    case value of
+        Glucose0 ->
+            "0"
+
+        GlucosePlus1 ->
+            "+1"
+
+        GlucosePlus2 ->
+            "+2"
+
+        GlucosePlus3 ->
+            "+3"
+
+        GlucosePlus4 ->
+            "+4"
+
+
+glucoseValueFromString : String -> Maybe GlucoseValue
+glucoseValueFromString value =
+    case value of
+        "0" ->
+            Just Glucose0
+
+        "+1" ->
+            Just GlucosePlus1
+
+        "+2" ->
+            Just GlucosePlus2
+
+        "+3" ->
+            Just GlucosePlus3
+
+        "+4" ->
+            Just GlucosePlus4
+
+        _ ->
+            Nothing
+
+
+leukocytesValueToString : LeukocytesValue -> String
+leukocytesValueToString value =
+    case value of
+        LeukocytesNegative ->
+            "negative"
+
+        LeukocytesSmall ->
+            "small"
+
+        LeukocytesMedium ->
+            "medium"
+
+        LeukocytesLarge ->
+            "large"
+
+        LeukocytesNotApplicable ->
+            "n-a"
+
+
+leukocytesValueFromString : String -> Maybe LeukocytesValue
+leukocytesValueFromString value =
+    case value of
+        "negative" ->
+            Just LeukocytesNegative
+
+        "small" ->
+            Just LeukocytesSmall
+
+        "medium" ->
+            Just LeukocytesMedium
+
+        "large" ->
+            Just LeukocytesLarge
+
+        "n-a" ->
+            Just LeukocytesNotApplicable
+
+        _ ->
+            Nothing
+
+
+nitriteValueToString : NitriteValue -> String
+nitriteValueToString value =
+    case value of
+        NitriteNegative ->
+            "negative"
+
+        NitritePlus ->
+            "+"
+
+        NitritePlusPlus ->
+            "++"
+
+        NitriteNotApplicable ->
+            "n-a"
+
+
+nitriteValueFromString : String -> Maybe NitriteValue
+nitriteValueFromString value =
+    case value of
+        "negative" ->
+            Just NitriteNegative
+
+        "+" ->
+            Just NitritePlus
+
+        "++" ->
+            Just NitritePlusPlus
+
+        "n-a" ->
+            Just NitriteNotApplicable
+
+        _ ->
+            Nothing
+
+
+urobilinogenValueToString : UrobilinogenValue -> String
+urobilinogenValueToString value =
+    case value of
+        Urobilinogen02 ->
+            "0.2"
+
+        Urobilinogen10 ->
+            "1"
+
+        Urobilinogen20 ->
+            "2"
+
+        Urobilinogen40 ->
+            "4"
+
+        Urobilinogen80 ->
+            "8"
+
+        UrobilinogenNotApplicable ->
+            "n-a"
+
+
+urobilinogenValueFromString : String -> Maybe UrobilinogenValue
+urobilinogenValueFromString value =
+    case value of
+        "0.2" ->
+            Just Urobilinogen02
+
+        "1" ->
+            Just Urobilinogen10
+
+        "2" ->
+            Just Urobilinogen20
+
+        "4" ->
+            Just Urobilinogen40
+
+        "8" ->
+            Just Urobilinogen80
+
+        "n-a" ->
+            Just UrobilinogenNotApplicable
+
+        _ ->
+            Nothing
+
+
+haemoglobinValueToString : HaemoglobinValue -> String
+haemoglobinValueToString value =
+    case value of
+        HaemoglobinNegative ->
+            "negative"
+
+        HaemoglobinNonHemolyzedTrace ->
+            "non-hemolyzed-trace"
+
+        HaemoglobinNonHemolyzedModerate ->
+            "non-hemolyzed-moderate"
+
+        HaemoglobinHemolyzedTrace ->
+            "hemolyzed-trace"
+
+        HaemoglobinSmall ->
+            "small"
+
+        HaemoglobinModerate ->
+            "moderate"
+
+        HaemoglobinLarge ->
+            "large"
+
+        HaemoglobinNotApplicable ->
+            "n-a"
+
+
+haemoglobinValueFromString : String -> Maybe HaemoglobinValue
+haemoglobinValueFromString value =
+    case value of
+        "negative" ->
+            Just HaemoglobinNegative
+
+        "non-hemolyzed-trace" ->
+            Just HaemoglobinNonHemolyzedTrace
+
+        "non-hemolyzed-moderate" ->
+            Just HaemoglobinNonHemolyzedModerate
+
+        "hemolyzed-trace" ->
+            Just HaemoglobinHemolyzedTrace
+
+        "small" ->
+            Just HaemoglobinSmall
+
+        "moderate" ->
+            Just HaemoglobinModerate
+
+        "large" ->
+            Just HaemoglobinLarge
+
+        "n-a" ->
+            Just HaemoglobinNotApplicable
+
+        _ ->
+            Nothing
+
+
+specificGravityValueToString : SpecificGravityValue -> String
+specificGravityValueToString value =
+    case value of
+        SpecificGravity1000 ->
+            "1.000"
+
+        SpecificGravity1005 ->
+            "1.005"
+
+        SpecificGravity1010 ->
+            "1.010"
+
+        SpecificGravity1015 ->
+            "1.015"
+
+        SpecificGravity1020 ->
+            "1.020"
+
+        SpecificGravity1025 ->
+            "1.025"
+
+        SpecificGravity1030 ->
+            "1.030"
+
+        SpecificGravityNotApplicable ->
+            "n-a"
+
+
+specificGravityValueFromString : String -> Maybe SpecificGravityValue
+specificGravityValueFromString value =
+    case value of
+        "1.000" ->
+            Just SpecificGravity1000
+
+        "1.005" ->
+            Just SpecificGravity1005
+
+        "1.010" ->
+            Just SpecificGravity1010
+
+        "1.015" ->
+            Just SpecificGravity1015
+
+        "1.020" ->
+            Just SpecificGravity1020
+
+        "1.025" ->
+            Just SpecificGravity1025
+
+        "1.030" ->
+            Just SpecificGravity1030
+
+        "n-a" ->
+            Just SpecificGravityNotApplicable
+
+        _ ->
+            Nothing
+
+
+ketoneValueToString : KetoneValue -> String
+ketoneValueToString value =
+    case value of
+        KetoneNegative ->
+            "negative"
+
+        Ketone5 ->
+            "5"
+
+        Ketone10 ->
+            "10"
+
+        Ketone15 ->
+            "15"
+
+        Ketone40 ->
+            "40"
+
+        Ketone80 ->
+            "80"
+
+        Ketone100 ->
+            "100"
+
+        KetoneNotApplicable ->
+            "n-a"
+
+
+ketoneValueFromString : String -> Maybe KetoneValue
+ketoneValueFromString value =
+    case value of
+        "negative" ->
+            Just KetoneNegative
+
+        "5" ->
+            Just Ketone5
+
+        "10" ->
+            Just Ketone10
+
+        "15" ->
+            Just Ketone15
+
+        "40" ->
+            Just Ketone40
+
+        "80" ->
+            Just Ketone80
+
+        "100" ->
+            Just Ketone100
+
+        "n-a" ->
+            Just KetoneNotApplicable
+
+        _ ->
+            Nothing
+
+
+bilirubinValueToString : BilirubinValue -> String
+bilirubinValueToString value =
+    case value of
+        BilirubinNegative ->
+            "negative"
+
+        BilirubinSmall ->
+            "small"
+
+        BilirubinMedium ->
+            "medium"
+
+        BilirubinLarge ->
+            "large"
+
+        BilirubinotApplicable ->
+            "n-a"
+
+
+bilirubinValueFromString : String -> Maybe BilirubinValue
+bilirubinValueFromString value =
+    case value of
+        "negative" ->
+            Just BilirubinNegative
+
+        "small" ->
+            Just BilirubinSmall
+
+        "medium" ->
+            Just BilirubinMedium
+
+        "large" ->
+            Just BilirubinLarge
+
+        "n-a" ->
+            Just BilirubinotApplicable
+
+        _ ->
+            Nothing
+
+
 {-| If lab results are not provided within 14 days, we consider the expired,
 and do not provide option of filling the results.
 -}

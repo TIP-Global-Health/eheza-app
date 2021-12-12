@@ -284,22 +284,13 @@ prenatalTestResultFormAndTasks language currentDate task form =
                             else
                                 emptyNode
                     in
-                    ( [ viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
-                      , emptyOption
-                            :: List.map
-                                (\result ->
-                                    option
-                                        [ value (prenatalTestResultToString result)
-                                        , selected (form.testResult == Just result)
-                                        ]
-                                        [ text <| translate language <| Translate.PrenatalTestResult result ]
-                                )
-                                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
-                            |> select
-                                [ onInput setResultMsg
-                                , class "form-input select"
-                                ]
-                      ]
+                    ( viewSelectInput language
+                        (Translate.PrenatalLaboratoryTaskResult task)
+                        form.testResult
+                        Translate.PrenatalTestResult
+                        prenatalTestResultToString
+                        [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                        setResultMsg
                     , taskCompleted form.testResult
                     , 1
                     )
@@ -319,45 +310,20 @@ prenatalBloodGpRsResultFormAndTasks : Language -> NominalDate -> PrenatalBloodGp
 prenatalBloodGpRsResultFormAndTasks language currentDate form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            let
-                emptyOptionForSelect value =
-                    if isNothing value then
-                        emptySelectOption True
-
-                    else
-                        emptyNode
-            in
-            ( [ viewLabel language Translate.PrenatalLaboratoryBloodGroupResult
-              , emptyOptionForSelect form.bloodGroup
-                    :: List.map
-                        (\bloodGroup ->
-                            option
-                                [ value (bloodGroupToString bloodGroup)
-                                , selected (form.bloodGroup == Just bloodGroup)
-                                ]
-                                [ text <| translate language <| Translate.BloodGroup bloodGroup ]
-                        )
-                        [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
-                    |> select
-                        [ onInput SetBloodGroup
-                        , class "form-input select"
-                        ]
-              , viewLabel language Translate.PrenatalLaboratoryRhesusResult
-              , emptyOptionForSelect form.rhesus
-                    :: List.map
-                        (\rhesus ->
-                            option
-                                [ value (rhesusToString rhesus)
-                                , selected (form.rhesus == Just rhesus)
-                                ]
-                                [ text <| translate language <| Translate.Rhesus rhesus ]
-                        )
-                        [ RhesusPositive, RhesusNegative ]
-                    |> select
-                        [ onInput SetRhesus
-                        , class "form-input select"
-                        ]
-              ]
+            ( viewSelectInput language
+                Translate.PrenatalLaboratoryBloodGroupResult
+                form.bloodGroup
+                Translate.BloodGroup
+                bloodGroupToString
+                [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
+                SetBloodGroup
+                ++ viewSelectInput language
+                    Translate.PrenatalLaboratoryRhesusResult
+                    form.rhesus
+                    Translate.Rhesus
+                    rhesusToString
+                    [ RhesusPositive, RhesusNegative ]
+                    SetRhesus
             , taskCompleted form.bloodGroup + taskCompleted form.rhesus
             , 2
             )
@@ -372,6 +338,43 @@ prenatalBloodGpRsResultFormAndTasks language currentDate form =
 
 prenatalUrineDipstickResultFormAndTasks : Language -> NominalDate -> PrenatalUrineDipstickResultForm -> ( Html Msg, Int, Int )
 prenatalUrineDipstickResultFormAndTasks language currentDate form =
+    -- let
+    --     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+    --         ( [ viewLabel language Translate.PrenatalLaboratoryBloodGroupResult
+    --           , emptyOptionForSelect form.bloodGroup
+    --                 :: List.map
+    --                     (\bloodGroup ->
+    --                         option
+    --                             [ value (bloodGroupToString bloodGroup)
+    --                             , selected (form.bloodGroup == Just bloodGroup)
+    --                             ]
+    --                             [ text <| translate language <| Translate.BloodGroup bloodGroup ]
+    --                     )
+    --                     [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
+    --                 |> select
+    --                     [ onInput SetBloodGroup
+    --                     , class "form-input select"
+    --                     ]
+    --           , viewLabel language Translate.PrenatalLaboratoryRhesusResult
+    --           , emptyOptionForSelect form.rhesus
+    --                 :: List.map
+    --                     (\rhesus ->
+    --                         option
+    --                             [ value (rhesusToString rhesus)
+    --                             , selected (form.rhesus == Just rhesus)
+    --                             ]
+    --                             [ text <| translate language <| Translate.Rhesus rhesus ]
+    --                     )
+    --                     [ RhesusPositive, RhesusNegative ]
+    --                 |> select
+    --                     [ onInput SetRhesus
+    --                     , class "form-input select"
+    --                     ]
+    --           ]
+    --         , taskCompleted form.bloodGroup + taskCompleted form.rhesus
+    --         , 2
+    --         )
+    -- in
     ( div [ class "ui form laboratory hemoglobin-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
     , 0
@@ -412,3 +415,40 @@ resultFormHeaderSection language currentDate executionDate task =
     in
     viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
         :: executionDateSection
+
+
+viewSelectInput :
+    Language
+    -> TranslationId
+    -> Maybe a
+    -> (a -> TranslationId)
+    -> (a -> String)
+    -> List a
+    -> (String -> Msg)
+    -> List (Html Msg)
+viewSelectInput language labelTransId formValue valueTransId valueToStringFunc valuesList setMsg =
+    [ viewLabel language labelTransId
+    , emptyOptionForSelect formValue
+        :: List.map
+            (\item ->
+                option
+                    [ value (valueToStringFunc item)
+                    , selected (formValue == Just item)
+                    ]
+                    [ text <| translate language <| valueTransId item ]
+            )
+            valuesList
+        |> select
+            [ onInput setMsg
+            , class "form-input select"
+            ]
+    ]
+
+
+emptyOptionForSelect : Maybe a -> Html any
+emptyOptionForSelect value =
+    if isNothing value then
+        emptySelectOption True
+
+    else
+        emptyNode
