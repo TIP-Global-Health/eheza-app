@@ -367,24 +367,10 @@ decodeBloodGroup : Decoder BloodGroup
 decodeBloodGroup =
     string
         |> andThen
-            (\value ->
-                case value of
-                    "a" ->
-                        succeed BloodGroupA
-
-                    "b" ->
-                        succeed BloodGroupB
-
-                    "ab" ->
-                        succeed BloodGroupAB
-
-                    "o" ->
-                        succeed BloodGroupO
-
-                    _ ->
-                        fail <|
-                            value
-                                ++ " is not a recognized BloodGroup"
+            (\s ->
+                bloodGroupFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized BloodGroup")
             )
 
 
@@ -392,18 +378,10 @@ decodeRhesus : Decoder Rhesus
 decodeRhesus =
     string
         |> andThen
-            (\value ->
-                case value of
-                    "positive" ->
-                        succeed RhesusPositive
-
-                    "negative" ->
-                        succeed RhesusNegative
-
-                    _ ->
-                        fail <|
-                            value
-                                ++ " is not a recognized Rhesus"
+            (\s ->
+                rhesusFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized Rhesus")
             )
 
 
@@ -435,12 +413,12 @@ decodePrenatalHepatitisBTestValue =
 
 decodePrenatalHIVTest : Decoder PrenatalHIVTest
 decodePrenatalHIVTest =
-    decodePrenatalMeasurement decodePrenatalLabsRDTValue
+    decodePrenatalMeasurement decodePrenatalRapidTestValue
 
 
-decodePrenatalLabsRDTValue : Decoder PrenatalLabsRDTValue
-decodePrenatalLabsRDTValue =
-    succeed PrenatalLabsRDTValue
+decodePrenatalRapidTestValue : Decoder PrenatalRapidTestValue
+decodePrenatalRapidTestValue =
+    succeed PrenatalRapidTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
@@ -448,7 +426,7 @@ decodePrenatalLabsRDTValue =
 
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
 decodePrenatalMalariaTest =
-    decodePrenatalMeasurement decodePrenatalLabsRDTValue
+    decodePrenatalMeasurement decodePrenatalRapidTestValue
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest

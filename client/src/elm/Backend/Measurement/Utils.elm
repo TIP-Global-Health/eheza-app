@@ -962,6 +962,64 @@ prenatalTestResultFromString value =
             Nothing
 
 
+bloodGroupToString : BloodGroup -> String
+bloodGroupToString value =
+    case value of
+        BloodGroupA ->
+            "a"
+
+        BloodGroupB ->
+            "b"
+
+        BloodGroupAB ->
+            "ab"
+
+        BloodGroupO ->
+            "o"
+
+
+bloodGroupFromString : String -> Maybe BloodGroup
+bloodGroupFromString value =
+    case value of
+        "a" ->
+            Just BloodGroupA
+
+        "b" ->
+            Just BloodGroupB
+
+        "ab" ->
+            Just BloodGroupAB
+
+        "o" ->
+            Just BloodGroupO
+
+        _ ->
+            Nothing
+
+
+rhesusToString : Rhesus -> String
+rhesusToString value =
+    case value of
+        RhesusPositive ->
+            "positive"
+
+        RhesusNegative ->
+            "negative"
+
+
+rhesusFromString : String -> Maybe Rhesus
+rhesusFromString value =
+    case value of
+        "positive" ->
+            Just RhesusPositive
+
+        "negative" ->
+            Just RhesusNegative
+
+        _ ->
+            Nothing
+
+
 {-| If lab results are not provided within 14 days, we consider the expired,
 and do not provide option of filling the results.
 -}

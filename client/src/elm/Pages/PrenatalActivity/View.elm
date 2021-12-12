@@ -32,7 +32,8 @@ import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
+        ( emptySelectOption
+        , isTaskCompleted
         , taskAllCompleted
         , taskCompleted
         , tasksBarId
@@ -1385,11 +1386,7 @@ viewLaboratoryContentForChw language currentDate assembled data =
 
         emptyOption =
             if isNothing form.pregnancyTestResult then
-                option
-                    [ value ""
-                    , selected (form.pregnancyTestResult == Nothing)
-                    ]
-                    [ text "" ]
+                emptySelectOption True
 
             else
                 emptyNode
@@ -2804,11 +2801,7 @@ viewPrenatalRDTForm language currentDate task form =
                                     let
                                         emptyOption =
                                             if isNothing form.testResult then
-                                                option
-                                                    [ value ""
-                                                    , selected True
-                                                    ]
-                                                    [ text "" ]
+                                                emptySelectOption True
 
                                             else
                                                 emptyNode

@@ -359,6 +359,7 @@ type TranslationId
     | Back
     | BackendError
     | BeginNewEncounter
+    | BloodGroup BloodGroup
     | BloodPressure
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
@@ -835,6 +836,8 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalLaboratoryBloodGroupResult
+    | PrenatalLaboratoryRhesusResult
     | PrenatalLaboratoryTask Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskLabel Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Model.LaboratoryTask
@@ -926,6 +929,7 @@ type TranslationId
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
+    | Rhesus Rhesus
     | RhNegative
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -2227,6 +2231,28 @@ translationSet trans =
             { english = "Begin a New Encounter"
             , kinyarwanda = Just "Tangira igikorwa gishya"
             }
+
+        BloodGroup value ->
+            case value of
+                BloodGroupA ->
+                    { english = "A"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodGroupB ->
+                    { english = "B"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodGroupAB ->
+                    { english = "AB"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodGroupO ->
+                    { english = "O"
+                    , kinyarwanda = Nothing
+                    }
 
         BloodPressure ->
             { english = "Blood Pressure"
@@ -6865,6 +6891,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
+        PrenatalLaboratoryBloodGroupResult ->
+            { english = "Blood Group Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryRhesusResult ->
+            { english = "Rhesus Test Result"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryTask task ->
             case task of
                 Pages.PrenatalActivity.Model.TaskHIVTest ->
@@ -7816,6 +7852,18 @@ translationSet trans =
             { english = "Review Prior Diagnosis"
             , kinyarwanda = Just "Kureba uburwayi yagize/yigeze kurwara"
             }
+
+        Rhesus value ->
+            case value of
+                RhesusPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                RhesusNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
 
         RhNegative ->
             { english = "RH Negative"

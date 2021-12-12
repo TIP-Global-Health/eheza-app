@@ -724,3 +724,12 @@ viewSaveAction language saveMsg disabled =
             ]
             [ text <| translate language Translate.Save ]
         ]
+
+
+emptySelectOption : Bool -> Html any
+emptySelectOption isSelected =
+    option
+        [ value ""
+        , selected isSelected
+        ]
+        [ text "" ]

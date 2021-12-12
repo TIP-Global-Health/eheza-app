@@ -111,7 +111,7 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .randomBloodSugarTest
 
 
-prenatalTestResultFormWithDefault : PrenatalTestResultForm -> Maybe PrenatalLabsRDTValue -> PrenatalTestResultForm
+prenatalTestResultFormWithDefault : PrenatalTestResultForm -> Maybe PrenatalRapidTestValue -> PrenatalTestResultForm
 prenatalTestResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -124,19 +124,165 @@ prenatalTestResultFormWithDefault form saved =
             )
 
 
-toPrenatalTestResultsValueWithDefault : Maybe PrenatalLabsRDTValue -> PrenatalTestResultForm -> Maybe PrenatalLabsRDTValue
+toPrenatalTestResultsValueWithDefault : Maybe PrenatalRapidTestValue -> PrenatalTestResultForm -> Maybe PrenatalRapidTestValue
 toPrenatalTestResultsValueWithDefault saved form =
     prenatalTestResultFormWithDefault form saved
         |> toPrenatalTestResultsValue
 
 
-toPrenatalTestResultsValue : PrenatalTestResultForm -> Maybe PrenatalLabsRDTValue
+toPrenatalTestResultsValue : PrenatalTestResultForm -> Maybe PrenatalRapidTestValue
 toPrenatalTestResultsValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            }
+        )
+        form.executionNote
+
+
+prenatalBloodGpRsResultFormWithDefault : PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue -> PrenatalBloodGpRsResultForm
+prenatalBloodGpRsResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , bloodGroup = or form.bloodGroup value.bloodGroup
+                , rhesus = or form.rhesus value.rhesus
+                }
+            )
+
+
+toPrenatalBloodGpRsResultsValueWithDefault : Maybe PrenatalBloodGpRsTestValue -> PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue
+toPrenatalBloodGpRsResultsValueWithDefault saved form =
+    prenatalBloodGpRsResultFormWithDefault form saved
+        |> toPrenatalBloodGpRsResultsValue
+
+
+toPrenatalBloodGpRsResultsValue : PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue
+toPrenatalBloodGpRsResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , bloodGroup = form.bloodGroup
+            , rhesus = form.rhesus
+            }
+        )
+        form.executionNote
+
+
+prenatalHemoglobinResultFormWithDefault : PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue -> PrenatalHemoglobinResultForm
+prenatalHemoglobinResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , hemoglobinCount = or form.hemoglobinCount value.hemoglobinCount
+                }
+            )
+
+
+toPrenatalHemoglobinResultsValueWithDefault : Maybe PrenatalHemoglobinTestValue -> PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue
+toPrenatalHemoglobinResultsValueWithDefault saved form =
+    prenatalHemoglobinResultFormWithDefault form saved
+        |> toPrenatalHemoglobinResultsValue
+
+
+toPrenatalHemoglobinResultsValue : PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue
+toPrenatalHemoglobinResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , hemoglobinCount = form.hemoglobinCount
+            }
+        )
+        form.executionNote
+
+
+prenatalRandomBloodSugarResultFormWithDefault : PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm
+prenatalRandomBloodSugarResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , sugarCount = or form.sugarCount value.sugarCount
+                }
+            )
+
+
+toPrenatalRandomBloodSugarResultsValueWithDefault : Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarResultsValueWithDefault saved form =
+    prenatalRandomBloodSugarResultFormWithDefault form saved
+        |> toPrenatalRandomBloodSugarResultsValue
+
+
+toPrenatalRandomBloodSugarResultsValue : PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , sugarCount = form.sugarCount
+            }
+        )
+        form.executionNote
+
+
+prenatalUrineDipstickResultFormWithDefault : PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickResultForm
+prenatalUrineDipstickResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { testVariant = or form.testVariant value.testVariant
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , protein = or form.protein value.protein
+                , ph = or form.ph value.ph
+                , glucose = or form.glucose value.glucose
+                , leukocytes = or form.leukocytes value.leukocytes
+                , nitrite = or form.nitrite value.nitrite
+                , urobilinogen = or form.urobilinogen value.urobilinogen
+                , haemoglobin = or form.haemoglobin value.haemoglobin
+                , specificGravity = or form.specificGravity value.specificGravity
+                , ketone = or form.ketone value.ketone
+                , bilirubin = or form.bilirubin value.bilirubin
+                }
+            )
+
+
+toPrenatalUrineDipstickResultsValueWithDefault : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickResultsValueWithDefault saved form =
+    prenatalUrineDipstickResultFormWithDefault form saved
+        |> toPrenatalUrineDipstickResultsValue
+
+
+toPrenatalUrineDipstickResultsValue : PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { testVariant = form.testVariant
+            , executionNote = executionNote
+            , executionDate = form.executionDate
+            , protein = form.protein
+            , ph = form.ph
+            , glucose = form.glucose
+            , leukocytes = form.leukocytes
+            , nitrite = form.nitrite
+            , urobilinogen = form.urobilinogen
+            , haemoglobin = form.haemoglobin
+            , specificGravity = form.specificGravity
+            , ketone = form.ketone
+            , bilirubin = form.bilirubin
             }
         )
         form.executionNote

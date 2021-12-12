@@ -56,7 +56,8 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
     exposing
-        ( isTaskCompleted
+        ( emptySelectOption
+        , isTaskCompleted
         , taskAllCompleted
         , taskCompleted
         , tasksBarId
@@ -1046,11 +1047,7 @@ viewMalariaTestingForm language currentDate person form =
     let
         emptyOption =
             if isNothing form.rapidTestResult then
-                option
-                    [ value ""
-                    , selected (form.rapidTestResult == Nothing)
-                    ]
-                    [ text "" ]
+                emptySelectOption True
 
             else
                 emptyNode

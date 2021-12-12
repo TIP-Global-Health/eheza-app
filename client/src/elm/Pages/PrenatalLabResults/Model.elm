@@ -13,6 +13,8 @@ type Msg
     | SetActiveTask LaboratoryTask
     | SetHepatitisBTestResult String
     | SetSyphilisTestResult String
+    | SetBloodGroup String
+    | SetRhesus String
 
 
 type alias Model =

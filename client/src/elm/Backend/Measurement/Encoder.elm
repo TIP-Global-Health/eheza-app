@@ -275,31 +275,13 @@ encodePrenatalBloodGpRsTestValue value =
 
 
 encodeBloodGroup : BloodGroup -> Value
-encodeBloodGroup value =
-    string <|
-        case value of
-            BloodGroupA ->
-                "a"
-
-            BloodGroupB ->
-                "b"
-
-            BloodGroupAB ->
-                "ab"
-
-            BloodGroupO ->
-                "o"
+encodeBloodGroup =
+    bloodGroupToString >> string
 
 
 encodeRhesus : Rhesus -> Value
-encodeRhesus value =
-    string <|
-        case value of
-            RhesusPositive ->
-                "positive"
-
-            RhesusNegative ->
-                "negative"
+encodeRhesus =
+    rhesusToString >> string
 
 
 encodePrenatalHemoglobinTest : PrenatalHemoglobinTest -> List ( String, Value )
@@ -364,11 +346,11 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement (encodePrenatalLabsRDTValueWithType "prenatal_hiv_test")
+    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_hiv_test")
 
 
-encodePrenatalLabsRDTValueWithType : String -> PrenatalLabsRDTValue -> List ( String, Value )
-encodePrenatalLabsRDTValueWithType type_ value =
+encodePrenatalRapidTestValueWithType : String -> PrenatalRapidTestValue -> List ( String, Value )
+encodePrenatalRapidTestValueWithType type_ value =
     let
         executionDate =
             Maybe.map
@@ -392,7 +374,7 @@ encodePrenatalLabsRDTValueWithType type_ value =
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
-    encodePrenatalMeasurement (encodePrenatalLabsRDTValueWithType "prenatal_malaria_test")
+    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_malaria_test")
 
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )

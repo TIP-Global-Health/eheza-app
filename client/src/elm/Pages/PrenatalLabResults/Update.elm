@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
+import Backend.Measurement.Utils exposing (bloodGroupFromString, getMeasurementValueFunc, prenatalTestResultFromString, rhesusFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
@@ -52,6 +52,32 @@ update currentDate id db msg model =
                     { form | testResult = prenatalTestResultFromString value }
             in
             ( { model | syphilisTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodGroup value ->
+            let
+                form =
+                    model.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | bloodGroup = bloodGroupFromString value }
+            in
+            ( { model | bloodGpRsTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetRhesus value ->
+            let
+                form =
+                    model.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | rhesus = rhesusFromString value }
+            in
+            ( { model | bloodGpRsTestForm = updatedForm }
             , Cmd.none
             , []
             )

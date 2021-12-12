@@ -813,7 +813,7 @@ type alias PrenatalAppointmentConfirmation =
 
 
 type alias PrenatalMalariaTest =
-    PrenatalMeasurement PrenatalLabsRDTValue
+    PrenatalMeasurement PrenatalRapidTestValue
 
 
 type PrenatalTestExecutionNote
@@ -833,10 +833,10 @@ type PrenatalTestResult
 
 
 type alias PrenatalHIVTest =
-    PrenatalMeasurement PrenatalLabsRDTValue
+    PrenatalMeasurement PrenatalRapidTestValue
 
 
-type alias PrenatalLabsRDTValue =
+type alias PrenatalRapidTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult

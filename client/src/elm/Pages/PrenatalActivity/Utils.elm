@@ -1858,7 +1858,7 @@ toAppointmentConfirmationValue form =
     Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate
 
 
-prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm
+prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm
 prenatalRDTFormWithDefault form saved =
     saved
         |> unwrap
@@ -1883,13 +1883,13 @@ prenatalRDTFormWithDefault form saved =
             )
 
 
-toPrenatalRDTValueWithDefault : Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue
+toPrenatalRDTValueWithDefault : Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
 toPrenatalRDTValueWithDefault saved form =
     prenatalRDTFormWithDefault form saved
         |> toPrenatalRDTValue
 
 
-toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue
+toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
 toPrenatalRDTValue form =
     Maybe.map
         (\executionNote ->
