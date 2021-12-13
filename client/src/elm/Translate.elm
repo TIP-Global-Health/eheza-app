@@ -3990,12 +3990,12 @@ translationSet trans =
 
         FollowUpWithPatientOn ->
             { english = "Follow up with patient on"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukurikirana Umurwayi Ku itariki"
             }
 
         FollowUpByChwLabel ->
             { english = "CHW should follow up with patient in"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umujyanama w'ubuzima agomba gukurikirana umurwayi mu"
             }
 
         FollowUpLabel ->
@@ -4450,7 +4450,7 @@ translationSet trans =
 
         IndexPatient ->
             { english = "Index Patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'umurwayi"
             }
 
         IndividualEncounter ->
@@ -4723,7 +4723,7 @@ translationSet trans =
 
         LastContacted ->
             { english = "Last Contacted"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igihe baheruka guhurira"
             }
 
         LastSuccesfulContactLabel ->
@@ -5004,7 +5004,7 @@ translationSet trans =
 
                 RapidTestPositiveAndPregnant ->
                     { english = "Positive and Pregnant"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ubwandu kandi aratwite"
                     }
 
                 RapidTestIndeterminate ->
@@ -5521,7 +5521,7 @@ translationSet trans =
 
                     else
                         { english = "Refer to Hospital"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Ohereza ku Bitaro"
                         }
 
                 Pages.AcuteIllnessActivity.Types.NextStepsHealthEducation ->
@@ -5568,17 +5568,17 @@ translationSet trans =
             case reason of
                 ReasonNoAnswer ->
                     { english = "Did not answer"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntago yitabye"
                     }
 
                 ReasonWrongContactInfo ->
                     { english = "Wrong contact information"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru atariyo"
                     }
 
                 ReasonDeclinedFollowUp ->
                     { english = "Declined Follow Up"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yanze gukurikiranwa"
                     }
 
         NoGroupsFound ->
@@ -7366,7 +7366,7 @@ translationSet trans =
             case total of
                 1 ->
                     { english = "There is 1 contract that matches your search."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hagaragaye umuntu 1 uhuye nuwo washakaga."
                     }
 
                 _ ->
