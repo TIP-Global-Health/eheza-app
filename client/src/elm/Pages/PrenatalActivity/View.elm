@@ -2903,7 +2903,7 @@ viewPrenatalUrineDipstickForm language currentDate form =
                         contentAndTasksForPerformedLaboratoryTest language currentDate TaskUrineDipstickTest form
 
                     ( testVariantSection, testVariantTasksCompleted, testVariantTasksTotal ) =
-                        ( [ viewQuestionLabel language Translate.TestVariantQuestion
+                        ( [ viewQuestionLabel language Translate.TestVariantUrineDipstickQuestion
                           , viewCheckBoxSelectInput language
                                 [ VariantShortTest ]
                                 [ VariantLongTest ]

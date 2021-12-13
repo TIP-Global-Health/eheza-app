@@ -1033,7 +1033,7 @@ type TranslationId
     | TestPerformedQuestion
     | TestPerformedTodayQuestion
     | TestResultQuestion
-    | TestVariantQuestion
+    | TestVariantUrineDipstickQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
     | To
@@ -7243,8 +7243,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TestVariantQuestion ->
-            { english = "Which type of test was run"
+        TestVariantUrineDipstickQuestion ->
+            { english = "Which type of urine dipstick test was run"
             , kinyarwanda = Nothing
             }
 
