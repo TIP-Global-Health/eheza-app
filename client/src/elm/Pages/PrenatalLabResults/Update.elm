@@ -212,7 +212,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetHemoglobinCount value ->
+        SetHemoglobin value ->
             let
                 form =
                     model.hemoglobinTestForm
@@ -221,6 +221,19 @@ update currentDate id db msg model =
                     { form | hemoglobinCount = String.toFloat value }
             in
             ( { model | hemoglobinTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetRandomBloodSugar value ->
+            let
+                form =
+                    model.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | sugarCount = String.toFloat value }
+            in
+            ( { model | randomBloodSugarTestForm = updatedForm }
             , Cmd.none
             , []
             )

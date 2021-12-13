@@ -25,7 +25,8 @@ type Msg
     | SetSpecificGravity String
     | SetKetone String
     | SetBilirubin String
-    | SetHemoglobinCount String
+    | SetHemoglobin String
+    | SetRandomBloodSugar String
 
 
 type alias Model =
@@ -126,7 +127,7 @@ emptyPrenatalHemoglobinResultForm =
 type alias PrenatalRandomBloodSugarResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
-    , sugarCount : Maybe Int
+    , sugarCount : Maybe Float
     }
 
 

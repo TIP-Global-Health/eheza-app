@@ -439,7 +439,7 @@ decodePrenatalRandomBloodSugarTestValue =
     succeed PrenatalRandomBloodSugarTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "sugar_count" (nullable decodeInt) Nothing
+        |> optional "sugar_count" (nullable decodeFloat) Nothing
 
 
 decodePrenatalSyphilisTest : Decoder PrenatalSyphilisTest

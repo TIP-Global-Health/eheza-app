@@ -179,13 +179,11 @@ viewLabResults language currentDate assembled data =
                                 |> prenatalHemoglobinResultFormWithDefault data.hemoglobinTestForm
                                 |> prenatalHemoglobinResultFormAndTasks language currentDate
 
-                        -- TaskRandomBloodSugarTest ->
-                        --     measurements.randomBloodSugarTest
-                        --         |> getMeasurementValueFunc
-                        --         |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
-                        --         |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
-                        _ ->
-                            ( emptyNode, 0, 0 )
+                        TaskRandomBloodSugarTest ->
+                            measurements.randomBloodSugarTest
+                                |> getMeasurementValueFunc
+                                |> prenatalRandomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+                                |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
                     )
                 )
                 tasks
@@ -508,7 +506,7 @@ prenatalHemoglobinResultFormAndTasks language currentDate form =
             ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
               , viewMeasurementInput language
                     form.hemoglobinCount
-                    SetHemoglobinCount
+                    SetHemoglobin
                     "hemoglobin-count"
                     Translate.UnitGramsPerDeciliter
               ]
@@ -526,10 +524,24 @@ prenatalHemoglobinResultFormAndTasks language currentDate form =
 
 prenatalRandomBloodSugarResultFormAndTasks : Language -> NominalDate -> PrenatalRandomBloodSugarResultForm -> ( Html Msg, Int, Int )
 prenatalRandomBloodSugarResultFormAndTasks language currentDate form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.PrenatalLaboratoryRandomBloodSugarTestResult
+              , viewMeasurementInput language
+                    form.sugarCount
+                    SetRandomBloodSugar
+                    "sugar-count"
+                    Translate.UnitMilliGramsPerDeciliter
+              ]
+            , taskCompleted form.sugarCount
+            , 1
+            )
+    in
     ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
-    , 0
-    , 0
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
     )
 
 

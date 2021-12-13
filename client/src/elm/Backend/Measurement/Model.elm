@@ -883,7 +883,7 @@ type alias PrenatalRandomBloodSugarTest =
 type alias PrenatalRandomBloodSugarTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
-    , sugarCount : Maybe Int
+    , sugarCount : Maybe Float
     }
 
 
