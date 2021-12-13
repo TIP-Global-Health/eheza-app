@@ -1945,6 +1945,9 @@ encondeMedicationDistributionSign sign =
             VitaminA ->
                 "vitamin-a"
 
+            Paracetamol ->
+                "paracetamol"
+
             NoMedicationDistributionSigns ->
                 "none"
 
@@ -1964,6 +1967,9 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationZinc reason ->
                 "zinc-" ++ administrationNoteToString reason
+
+            MedicationParacetamol reason ->
+                "paracetamol-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

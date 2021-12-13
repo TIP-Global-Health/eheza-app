@@ -786,6 +786,8 @@ type TranslationId
     | PaleConjuctiva
     | Pallor
     | Para
+    | ParacetamolPrescriptionForAdult
+    | ParacetamolPrescriptionForChild
     | ParentsAliveAndHealthyQuestion
     | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
@@ -5173,6 +5175,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Paracetamol ->
+                    { english = "Paracetamol"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -6253,6 +6260,16 @@ translationSet trans =
 
         Para ->
             { english = "Para"
+            , kinyarwanda = Nothing
+            }
+
+        ParacetamolPrescriptionForAdult ->
+            { english = "Every 4-6 hours as needed. Not to exceed 4g in 24h."
+            , kinyarwanda = Nothing
+            }
+
+        ParacetamolPrescriptionForChild ->
+            { english = "@todo"
             , kinyarwanda = Nothing
             }
 

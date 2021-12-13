@@ -21,7 +21,7 @@ import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementV
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman, isPersonAnAdult)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
@@ -1796,7 +1796,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                                     )
                                 |> Maybe.withDefault False
                     in
-                    if diagnosis == Just DiagnosisPneuminialCovid19 then
+                    if List.member diagnosis [ Just DiagnosisPneuminialCovid19, Just DiagnosisLowRiskCovid19 ] then
                         tasks
 
                     else if medicationOutOfStockOrPatientAlergic then
@@ -2348,6 +2348,36 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                 Just DiagnosisPneuminialCovid19 ->
                     amoxicillinAdministration
 
+                Just DiagnosisLowRiskCovid19 ->
+                    let
+                        paracetamolUpdateFunc value form_ =
+                            { form_ | paracetamol = Just value, nonAdministrationSigns = updateNonAdministrationSigns Paracetamol MedicationParacetamol value form_ }
+
+                        derivedQuestion =
+                            case form.paracetamol of
+                                Just False ->
+                                    viewDerivedQuestion Paracetamol MedicationParacetamol
+
+                                _ ->
+                                    []
+                    in
+                    ( isPersonAnAdult currentDate person
+                        |> Maybe.map
+                            (viewParacetamolAdministrationInstructions language Nothing
+                                >> div [ class "instructions simple-covid19" ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Paracetamol)
+                      , viewBoolInput
+                            language
+                            form.paracetamol
+                            (SetMedicationDistributionBoolInput paracetamolUpdateFunc)
+                            "paracetamol-medication"
+                            Nothing
+                      ]
+                        ++ derivedQuestion
+                    )
+
                 _ ->
                     ( emptyNode, [] )
     in
@@ -2392,6 +2422,29 @@ viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg du
     , viewTabletsPrescription language numberOfPills duration
     ]
         ++ alternateMedicineSection
+
+
+viewParacetamolAdministrationInstructions : Language -> Maybe NominalDate -> Bool -> List (Html any)
+viewParacetamolAdministrationInstructions language maybeDate isAdult =
+    let
+        ( medicationLabelSuffix, prescription ) =
+            if isAdult then
+                ( " (1g)", Translate.ParacetamolPrescriptionForAdult )
+
+            else
+                ( " (15mg per kg)", Translate.ParacetamolPrescriptionForChild )
+    in
+    [ viewAdministeredMedicationCustomLabel
+        language
+        Translate.Administer
+        (Translate.MedicationDistributionSign Paracetamol)
+        medicationLabelSuffix
+        "icon-pills"
+        ":"
+        maybeDate
+    , div [ class "prescription" ]
+        [ text <| translate language prescription ]
+    ]
 
 
 viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any

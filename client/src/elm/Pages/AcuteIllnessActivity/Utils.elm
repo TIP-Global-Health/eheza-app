@@ -679,6 +679,11 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
                     , 1 + derivedQuestionExists form.amoxicillin
                     )
 
+                Just DiagnosisLowRiskCovid19 ->
+                    ( taskCompleted form.paracetamol + derivedQuestionCompleted Paracetamol MedicationParacetamol form.paracetamol
+                    , 1 + derivedQuestionExists form.paracetamol
+                    )
+
                 _ ->
                     ( 0, 1 )
 
@@ -1371,6 +1376,7 @@ fromMedicationDistributionValue saved =
     , ors = Maybe.map (.distributionSigns >> EverySet.member ORS) saved
     , zinc = Maybe.map (.distributionSigns >> EverySet.member Zinc) saved
     , lemonJuiceOrHoney = Maybe.map (.distributionSigns >> EverySet.member LemonJuiceOrHoney) saved
+    , paracetamol = Maybe.map (.distributionSigns >> EverySet.member Paracetamol) saved
     , nonAdministrationSigns = Maybe.map .nonAdministrationSigns saved
     }
 
@@ -1386,6 +1392,7 @@ medicationDistributionFormWithDefault form saved =
                 , ors = or form.ors (EverySet.member ORS value.distributionSigns |> Just)
                 , zinc = or form.zinc (EverySet.member Zinc value.distributionSigns |> Just)
                 , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value.distributionSigns |> Just)
+                , paracetamol = or form.paracetamol (EverySet.member Paracetamol value.distributionSigns |> Just)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
@@ -1406,6 +1413,7 @@ toMedicationDistributionValue form =
             , ifNullableTrue ORS form.ors
             , ifNullableTrue Zinc form.zinc
             , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
+            , ifNullableTrue Paracetamol form.zinc
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
@@ -1525,6 +1533,9 @@ nonAdministrationReasonToSign sign reason =
 
         Zinc ->
             MedicationZinc reason
+
+        Paracetamol ->
+            MedicationParacetamol reason
 
         _ ->
             NoMedicationNonAdministrationSigns
@@ -1964,6 +1975,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
                 || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
                 || (diagnosis == Just DiagnosisPneuminialCovid19)
+                || (diagnosis == Just DiagnosisLowRiskCovid19)
     in
     case task of
         NextStepsIsolation ->
@@ -2150,6 +2162,9 @@ resolveMedicationsNonAdministrationReasons measurements =
 
                         MedicationZinc reason ->
                             Just ( Zinc, reason )
+
+                        MedicationParacetamol reason ->
+                            Just ( Paracetamol, reason )
 
                         NoMedicationNonAdministrationSigns ->
                             Nothing
