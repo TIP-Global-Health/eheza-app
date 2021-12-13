@@ -43,7 +43,6 @@ Primary ports:
 
 #### Installation
 
-        cp default.config.sh config.sh
         cp .ddev/config.local.yaml.example .ddev/config.local.yaml
         ddev restart
 
