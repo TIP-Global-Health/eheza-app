@@ -33,7 +33,6 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
-        , viewMeasurementInput
         , viewQuestionLabel
         )
 import RemoteData exposing (RemoteData(..), WebData)

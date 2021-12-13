@@ -25,6 +25,7 @@ type Msg
     | SetSpecificGravity String
     | SetKetone String
     | SetBilirubin String
+    | SetHemoglobinCount String
 
 
 type alias Model =

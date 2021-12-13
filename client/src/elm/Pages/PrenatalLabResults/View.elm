@@ -39,6 +39,7 @@ import Pages.Utils
         , viewConditionalAlert
         , viewCustomLabel
         , viewLabel
+        , viewMeasurementInput
         , viewQuestionLabel
         , viewSaveAction
         )
@@ -172,12 +173,12 @@ viewLabResults language currentDate assembled data =
                                 |> prenatalUrineDipstickResultFormWithDefault data.urineDipstickTestForm
                                 |> prenatalUrineDipstickResultFormAndTasks language currentDate
 
-                        -- TaskHemoglobinTest ->
-                        --     measurements.hemoglobinTest
-                        --         |> getMeasurementValueFunc
-                        --         |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
-                        --         |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
-                        --
+                        TaskHemoglobinTest ->
+                            measurements.hemoglobinTest
+                                |> getMeasurementValueFunc
+                                |> prenatalHemoglobinResultFormWithDefault data.hemoglobinTestForm
+                                |> prenatalHemoglobinResultFormAndTasks language currentDate
+
                         -- TaskRandomBloodSugarTest ->
                         --     measurements.randomBloodSugarTest
                         --         |> getMeasurementValueFunc
@@ -502,10 +503,24 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
 
 prenatalHemoglobinResultFormAndTasks : Language -> NominalDate -> PrenatalHemoglobinResultForm -> ( Html Msg, Int, Int )
 prenatalHemoglobinResultFormAndTasks language currentDate form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
+              , viewMeasurementInput language
+                    form.hemoglobinCount
+                    SetHemoglobinCount
+                    "hemoglobin-count"
+                    Translate.UnitGramsPerDeciliter
+              ]
+            , taskCompleted form.hemoglobinCount
+            , 1
+            )
+    in
     ( div [ class "ui form laboratory hemoglobin-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
-    , 0
-    , 0
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
     )
 
 

@@ -211,3 +211,16 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetHemoglobinCount value ->
+            let
+                form =
+                    model.hemoglobinTestForm
+
+                updatedForm =
+                    { form | hemoglobinCount = String.toFloat value }
+            in
+            ( { model | hemoglobinTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )

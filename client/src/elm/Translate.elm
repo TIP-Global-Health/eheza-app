@@ -859,6 +859,8 @@ type TranslationId
     | PrenatalLaboratoryKetoneValue KetoneValue
     | PrenatalLaboratoryBilirubinTestResult
     | PrenatalLaboratoryBilirubinValue BilirubinValue
+    | PrenatalLaboratoryHemoglobinTestResult
+    | PrenatalLaboratoryRandomBloodSugarTestResult
     | PrenatalLaboratoryTask Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskLabel Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Model.LaboratoryTask
@@ -1077,6 +1079,8 @@ type TranslationId
     | TwoVisits
     | Type
     | UbudeheLabel
+    | UnitGramsPerDeciliter
+    | UnitMilliGramsPerDeciliter
     | Unknown
     | Update
     | UpdateError
@@ -7308,6 +7312,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratoryHemoglobinTestResult ->
+            { english = "Hemoglobin Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryRandomBloodSugarTestResult ->
+            { english = "Random BloodS ugar Test Result"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryTask task ->
             case task of
                 Pages.PrenatalActivity.Model.TaskHIVTest ->
@@ -9154,6 +9168,16 @@ translationSet trans =
 
         UbudeheLabel ->
             { english = "Ubudehe: "
+            , kinyarwanda = Nothing
+            }
+
+        UnitGramsPerDeciliter ->
+            { english = "g/dL"
+            , kinyarwanda = Nothing
+            }
+
+        UnitMilliGramsPerDeciliter ->
+            { english = "mg/dL"
             , kinyarwanda = Nothing
             }
 

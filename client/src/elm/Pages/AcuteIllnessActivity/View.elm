@@ -68,7 +68,6 @@ import Pages.Utils
         , viewCheckBoxValueInput
         , viewCustomLabel
         , viewLabel
-        , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
