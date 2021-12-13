@@ -7318,7 +7318,7 @@ translationSet trans =
             }
 
         PrenatalLaboratoryRandomBloodSugarTestResult ->
-            { english = "Random BloodS ugar Test Result"
+            { english = "Random Blood Sugar Test Result"
             , kinyarwanda = Nothing
             }
 
