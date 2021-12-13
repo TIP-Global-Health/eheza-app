@@ -7,6 +7,7 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewHCRecommendation
     , viewHealthEducationLabel
     , viewOralSolutionPrescription
+    , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
     )
 
