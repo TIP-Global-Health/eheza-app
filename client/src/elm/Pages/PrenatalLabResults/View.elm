@@ -208,40 +208,44 @@ viewLabResults language currentDate assembled data =
                 tasks
                 |> List.head
 
-        -- actions =
-        --     Maybe.map
-        --         (\task ->
-        --             let
-        --                 saveMsg =
-        --                     case task of
-        --                         TaskHIVTest ->
-        --                             SaveHIVTest personId measurements.hivTest nextTask
-        --
-        --                         TaskSyphilisTest ->
-        --                             SaveSyphilisTest personId measurements.syphilisTest nextTask
-        --
-        --                         TaskHepatitisBTest ->
-        --                             SaveHepatitisBTest personId measurements.hepatitisBTest nextTask
-        --
-        --                         TaskMalariaTest ->
-        --                             SaveMalariaTest personId measurements.malariaTest nextTask
-        --
-        --                         TaskBloodGpRsTest ->
-        --                             SaveBloodGpRsTest personId measurements.bloodGpRsTest nextTask
-        --
-        --                         TaskUrineDipstickTest ->
-        --                             SaveUrineDipstickTest personId measurements.urineDipstickTest nextTask
-        --
-        --                         TaskHemoglobinTest ->
-        --                             SaveHemoglobinTest personId measurements.hemoglobinTest nextTask
-        --
-        --                         TaskRandomBloodSugarTest ->
-        --                             SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
-        --             in
-        --             viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
-        --         )
-        --         activeTask
-        --         |> Maybe.withDefault emptyNode
+        actions =
+            Maybe.andThen
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                TaskHIVTest ->
+                                    Nothing
+
+                                TaskSyphilisTest ->
+                                    SaveSyphilisResult personId measurements.syphilisTest nextTask |> Just
+
+                                TaskHepatitisBTest ->
+                                    SaveHepatitisBResult personId measurements.hepatitisBTest nextTask |> Just
+
+                                TaskMalariaTest ->
+                                    Nothing
+
+                                TaskBloodGpRsTest ->
+                                    SaveBloodGpRsResult personId measurements.bloodGpRsTest nextTask |> Just
+
+                                TaskUrineDipstickTest ->
+                                    SaveUrineDipstickResult personId measurements.urineDipstickTest nextTask |> Just
+
+                                TaskHemoglobinTest ->
+                                    SaveHemoglobinResult personId measurements.hemoglobinTest nextTask |> Just
+
+                                TaskRandomBloodSugarTest ->
+                                    SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest nextTask |> Just
+                    in
+                    Maybe.map
+                        (\msg ->
+                            viewSaveAction language msg (tasksCompleted /= totalTasks)
+                        )
+                        saveMsg
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
@@ -251,8 +255,7 @@ viewLabResults language currentDate assembled data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             [ viewForm
-
-            -- , actions
+            , actions
             ]
         ]
     ]

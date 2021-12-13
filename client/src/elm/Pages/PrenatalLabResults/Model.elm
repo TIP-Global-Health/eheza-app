@@ -11,10 +11,13 @@ import Pages.PrenatalActivity.Model exposing (LaboratoryTask)
 type Msg
     = SetActivePage Page
     | SetActiveTask LaboratoryTask
-    | SetHepatitisBTestResult String
     | SetSyphilisTestResult String
+    | SaveSyphilisResult PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
+    | SetHepatitisBTestResult String
+    | SaveHepatitisBResult PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
     | SetBloodGroup String
     | SetRhesus String
+    | SaveBloodGpRsResult PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
     | SetProtein String
     | SetPH String
     | SetGlucose String
@@ -25,8 +28,11 @@ type Msg
     | SetSpecificGravity String
     | SetKetone String
     | SetBilirubin String
+    | SaveUrineDipstickResult PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
     | SetHemoglobin String
+    | SaveHemoglobinResult PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugar String
+    | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
 
 
 type alias Model =
