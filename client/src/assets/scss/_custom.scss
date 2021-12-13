@@ -1889,7 +1889,7 @@ input::placeholder {
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-utritionassessment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
