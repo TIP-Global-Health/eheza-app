@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (bloodGroupToString, getMeasurementValueFunc, prenatalTestResultToString, rhesusToString)
+import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -166,12 +166,12 @@ viewLabResults language currentDate assembled data =
                                 |> prenatalBloodGpRsResultFormWithDefault data.bloodGpRsTestForm
                                 |> prenatalBloodGpRsResultFormAndTasks language currentDate
 
-                        -- TaskUrineDipstickTest ->
-                        --     measurements.urineDipstickTest
-                        --         |> getMeasurementValueFunc
-                        --         |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
-                        --         |> viewPrenatalUrineDipstickForm language currentDate
-                        --
+                        TaskUrineDipstickTest ->
+                            measurements.urineDipstickTest
+                                |> getMeasurementValueFunc
+                                |> prenatalUrineDipstickResultFormWithDefault data.urineDipstickTestForm
+                                |> prenatalUrineDipstickResultFormAndTasks language currentDate
+
                         -- TaskHemoglobinTest ->
                         --     measurements.hemoglobinTest
                         --         |> getMeasurementValueFunc
@@ -311,16 +311,16 @@ prenatalBloodGpRsResultFormAndTasks language currentDate form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( viewSelectInput language
-                Translate.PrenatalLaboratoryBloodGroupResult
+                Translate.PrenatalLaboratoryBloodGroupTestResult
                 form.bloodGroup
-                Translate.BloodGroup
+                Translate.PrenatalLaboratoryBloodGroup
                 bloodGroupToString
                 [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
                 SetBloodGroup
                 ++ viewSelectInput language
-                    Translate.PrenatalLaboratoryRhesusResult
+                    Translate.PrenatalLaboratoryRhesusTestResult
                     form.rhesus
-                    Translate.Rhesus
+                    Translate.PrenatalLaboratoryRhesus
                     rhesusToString
                     [ RhesusPositive, RhesusNegative ]
                     SetRhesus
@@ -328,7 +328,7 @@ prenatalBloodGpRsResultFormAndTasks language currentDate form =
             , 2
             )
     in
-    ( div [ class "ui form laboratory hemoglobin-result" ] <|
+    ( div [ class "ui form laboratory blood-group-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
             ++ testResultSection
     , testResultTasksCompleted
@@ -338,47 +338,165 @@ prenatalBloodGpRsResultFormAndTasks language currentDate form =
 
 prenatalUrineDipstickResultFormAndTasks : Language -> NominalDate -> PrenatalUrineDipstickResultForm -> ( Html Msg, Int, Int )
 prenatalUrineDipstickResultFormAndTasks language currentDate form =
-    -- let
-    --     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-    --         ( [ viewLabel language Translate.PrenatalLaboratoryBloodGroupResult
-    --           , emptyOptionForSelect form.bloodGroup
-    --                 :: List.map
-    --                     (\bloodGroup ->
-    --                         option
-    --                             [ value (bloodGroupToString bloodGroup)
-    --                             , selected (form.bloodGroup == Just bloodGroup)
-    --                             ]
-    --                             [ text <| translate language <| Translate.BloodGroup bloodGroup ]
-    --                     )
-    --                     [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
-    --                 |> select
-    --                     [ onInput SetBloodGroup
-    --                     , class "form-input select"
-    --                     ]
-    --           , viewLabel language Translate.PrenatalLaboratoryRhesusResult
-    --           , emptyOptionForSelect form.rhesus
-    --                 :: List.map
-    --                     (\rhesus ->
-    --                         option
-    --                             [ value (rhesusToString rhesus)
-    --                             , selected (form.rhesus == Just rhesus)
-    --                             ]
-    --                             [ text <| translate language <| Translate.Rhesus rhesus ]
-    --                     )
-    --                     [ RhesusPositive, RhesusNegative ]
-    --                 |> select
-    --                     [ onInput SetRhesus
-    --                     , class "form-input select"
-    --                     ]
-    --           ]
-    --         , taskCompleted form.bloodGroup + taskCompleted form.rhesus
-    --         , 2
-    --         )
-    -- in
-    ( div [ class "ui form laboratory hemoglobin-result" ] <|
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            Maybe.map
+                (\testVariant ->
+                    let
+                        ( commonSection, commonTasksCompleted, commonTasksTotal ) =
+                            ( viewSelectInput language
+                                Translate.PrenatalLaboratoryProteinTestResult
+                                form.protein
+                                Translate.PrenatalLaboratoryProteinValue
+                                proteinValueToString
+                                [ ProteinNegative
+                                , Protein30
+                                , Protein100
+                                , Protein300
+                                , Protein2000
+                                ]
+                                SetProtein
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryPHTestResult
+                                    form.ph
+                                    Translate.PrenatalLaboratoryPHValue
+                                    phValueToString
+                                    [ Ph50
+                                    , Ph60
+                                    , Ph65
+                                    , Ph70
+                                    , Ph75
+                                    , Ph80
+                                    , Ph85
+                                    ]
+                                    SetPH
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryGlucoseTestResult
+                                    form.glucose
+                                    Translate.PrenatalLaboratoryGlucoseValue
+                                    glucoseValueToString
+                                    [ Glucose0
+                                    , GlucosePlus1
+                                    , GlucosePlus2
+                                    , GlucosePlus3
+                                    , GlucosePlus4
+                                    ]
+                                    SetGlucose
+                            , taskCompleted form.protein + taskCompleted form.ph + taskCompleted form.glucose
+                            , 3
+                            )
+                    in
+                    case testVariant of
+                        VariantShortTest ->
+                            ( commonSection, commonTasksCompleted, commonTasksTotal )
+
+                        VariantLongTest ->
+                            ( commonSection
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryLeukocytesTestResult
+                                    form.leukocytes
+                                    Translate.PrenatalLaboratoryLeukocytesValue
+                                    leukocytesValueToString
+                                    [ LeukocytesNegative
+                                    , LeukocytesSmall
+                                    , LeukocytesMedium
+                                    , LeukocytesLarge
+                                    ]
+                                    SetLeukocytes
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryNitriteTestResult
+                                    form.nitrite
+                                    Translate.PrenatalLaboratoryNitriteValue
+                                    nitriteValueToString
+                                    [ NitriteNegative
+                                    , NitritePlus
+                                    , NitritePlusPlus
+                                    ]
+                                    SetNitrite
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryUrobilinogenTestResult
+                                    form.urobilinogen
+                                    Translate.PrenatalLaboratoryUrobilinogenValue
+                                    urobilinogenValueToString
+                                    [ Urobilinogen02
+                                    , Urobilinogen10
+                                    , Urobilinogen20
+                                    , Urobilinogen40
+                                    , Urobilinogen80
+                                    ]
+                                    SetUrobilinogen
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryHaemoglobinTestResult
+                                    form.haemoglobin
+                                    Translate.PrenatalLaboratoryHaemoglobinValue
+                                    haemoglobinValueToString
+                                    [ HaemoglobinNegative
+                                    , HaemoglobinNonHemolyzedTrace
+                                    , HaemoglobinNonHemolyzedModerate
+                                    , HaemoglobinHemolyzedTrace
+                                    , HaemoglobinSmall
+                                    , HaemoglobinModerate
+                                    , HaemoglobinLarge
+                                    ]
+                                    SetHaemoglobin
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratorySpecificGravityTestResult
+                                    form.specificGravity
+                                    Translate.PrenatalLaboratorySpecificGravityValue
+                                    specificGravityValueToString
+                                    [ SpecificGravity1000
+                                    , SpecificGravity1005
+                                    , SpecificGravity1010
+                                    , SpecificGravity1015
+                                    , SpecificGravity1020
+                                    , SpecificGravity1025
+                                    , SpecificGravity1030
+                                    ]
+                                    SetSpecificGravity
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryKetoneTestResult
+                                    form.ketone
+                                    Translate.PrenatalLaboratoryKetoneValue
+                                    ketoneValueToString
+                                    [ KetoneNegative
+                                    , Ketone5
+                                    , Ketone10
+                                    , Ketone15
+                                    , Ketone40
+                                    , Ketone80
+                                    , Ketone100
+                                    ]
+                                    SetKetone
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryBilirubinTestResult
+                                    form.bilirubin
+                                    Translate.PrenatalLaboratoryBilirubinValue
+                                    bilirubinValueToString
+                                    [ BilirubinNegative
+                                    , BilirubinSmall
+                                    , BilirubinMedium
+                                    , BilirubinLarge
+                                    ]
+                                    SetBilirubin
+                            , commonTasksCompleted
+                                + taskCompleted form.leukocytes
+                                + taskCompleted form.nitrite
+                                + taskCompleted form.urobilinogen
+                                + taskCompleted form.haemoglobin
+                                + taskCompleted form.specificGravity
+                                + taskCompleted form.ketone
+                                + taskCompleted form.bilirubin
+                            , commonTasksTotal + 7
+                            )
+                )
+                form.testVariant
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory urine-dipstick-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
-    , 0
-    , 0
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
     )
 
 

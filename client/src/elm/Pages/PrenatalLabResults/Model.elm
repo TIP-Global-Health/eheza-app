@@ -15,6 +15,16 @@ type Msg
     | SetSyphilisTestResult String
     | SetBloodGroup String
     | SetRhesus String
+    | SetProtein String
+    | SetPH String
+    | SetGlucose String
+    | SetLeukocytes String
+    | SetNitrite String
+    | SetUrobilinogen String
+    | SetHaemoglobin String
+    | SetSpecificGravity String
+    | SetKetone String
+    | SetBilirubin String
 
 
 type alias Model =
