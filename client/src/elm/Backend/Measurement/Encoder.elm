@@ -443,9 +443,6 @@ encodePrenatalUrineDipstickTest =
 encodePrenatalUrineDipstickTestValue : PrenatalUrineDipstickTestValue -> List ( String, Value )
 encodePrenatalUrineDipstickTestValue value =
     let
-        _ =
-            Debug.log "value" value
-
         testVariant =
             Maybe.map
                 (\variant -> [ ( "test_variant", encodePrenatalTestVariant variant ) ])
