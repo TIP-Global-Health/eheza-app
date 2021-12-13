@@ -1413,7 +1413,7 @@ toMedicationDistributionValue form =
             , ifNullableTrue ORS form.ors
             , ifNullableTrue Zinc form.zinc
             , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
-            , ifNullableTrue Paracetamol form.zinc
+            , ifNullableTrue Paracetamol form.paracetamol
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
