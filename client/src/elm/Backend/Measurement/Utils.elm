@@ -1170,9 +1170,6 @@ leukocytesValueToString value =
         LeukocytesLarge ->
             "large"
 
-        LeukocytesNotApplicable ->
-            "n-a"
-
 
 leukocytesValueFromString : String -> Maybe LeukocytesValue
 leukocytesValueFromString value =
@@ -1188,9 +1185,6 @@ leukocytesValueFromString value =
 
         "large" ->
             Just LeukocytesLarge
-
-        "n-a" ->
-            Just LeukocytesNotApplicable
 
         _ ->
             Nothing
@@ -1208,9 +1202,6 @@ nitriteValueToString value =
         NitritePlusPlus ->
             "++"
 
-        NitriteNotApplicable ->
-            "n-a"
-
 
 nitriteValueFromString : String -> Maybe NitriteValue
 nitriteValueFromString value =
@@ -1223,9 +1214,6 @@ nitriteValueFromString value =
 
         "++" ->
             Just NitritePlusPlus
-
-        "n-a" ->
-            Just NitriteNotApplicable
 
         _ ->
             Nothing
@@ -1249,9 +1237,6 @@ urobilinogenValueToString value =
         Urobilinogen80 ->
             "8"
 
-        UrobilinogenNotApplicable ->
-            "n-a"
-
 
 urobilinogenValueFromString : String -> Maybe UrobilinogenValue
 urobilinogenValueFromString value =
@@ -1270,9 +1255,6 @@ urobilinogenValueFromString value =
 
         "8" ->
             Just Urobilinogen80
-
-        "n-a" ->
-            Just UrobilinogenNotApplicable
 
         _ ->
             Nothing
@@ -1302,9 +1284,6 @@ haemoglobinValueToString value =
         HaemoglobinLarge ->
             "large"
 
-        HaemoglobinNotApplicable ->
-            "n-a"
-
 
 haemoglobinValueFromString : String -> Maybe HaemoglobinValue
 haemoglobinValueFromString value =
@@ -1329,9 +1308,6 @@ haemoglobinValueFromString value =
 
         "large" ->
             Just HaemoglobinLarge
-
-        "n-a" ->
-            Just HaemoglobinNotApplicable
 
         _ ->
             Nothing
@@ -1361,9 +1337,6 @@ specificGravityValueToString value =
         SpecificGravity1030 ->
             "1.030"
 
-        SpecificGravityNotApplicable ->
-            "n-a"
-
 
 specificGravityValueFromString : String -> Maybe SpecificGravityValue
 specificGravityValueFromString value =
@@ -1388,9 +1361,6 @@ specificGravityValueFromString value =
 
         "1.030" ->
             Just SpecificGravity1030
-
-        "n-a" ->
-            Just SpecificGravityNotApplicable
 
         _ ->
             Nothing
@@ -1420,9 +1390,6 @@ ketoneValueToString value =
         Ketone100 ->
             "100"
 
-        KetoneNotApplicable ->
-            "n-a"
-
 
 ketoneValueFromString : String -> Maybe KetoneValue
 ketoneValueFromString value =
@@ -1448,9 +1415,6 @@ ketoneValueFromString value =
         "100" ->
             Just Ketone100
 
-        "n-a" ->
-            Just KetoneNotApplicable
-
         _ ->
             Nothing
 
@@ -1470,9 +1434,6 @@ bilirubinValueToString value =
         BilirubinLarge ->
             "large"
 
-        BilirubinotApplicable ->
-            "n-a"
-
 
 bilirubinValueFromString : String -> Maybe BilirubinValue
 bilirubinValueFromString value =
@@ -1488,9 +1449,6 @@ bilirubinValueFromString value =
 
         "large" ->
             Just BilirubinLarge
-
-        "n-a" ->
-            Just BilirubinotApplicable
 
         _ ->
             Nothing

@@ -968,14 +968,12 @@ type LeukocytesValue
     | LeukocytesSmall
     | LeukocytesMedium
     | LeukocytesLarge
-    | LeukocytesNotApplicable
 
 
 type NitriteValue
     = NitriteNegative
     | NitritePlus
     | NitritePlusPlus
-    | NitriteNotApplicable
 
 
 type UrobilinogenValue
@@ -984,7 +982,6 @@ type UrobilinogenValue
     | Urobilinogen20
     | Urobilinogen40
     | Urobilinogen80
-    | UrobilinogenNotApplicable
 
 
 type HaemoglobinValue
@@ -995,7 +992,6 @@ type HaemoglobinValue
     | HaemoglobinSmall
     | HaemoglobinModerate
     | HaemoglobinLarge
-    | HaemoglobinNotApplicable
 
 
 type SpecificGravityValue
@@ -1006,7 +1002,6 @@ type SpecificGravityValue
     | SpecificGravity1020
     | SpecificGravity1025
     | SpecificGravity1030
-    | SpecificGravityNotApplicable
 
 
 type KetoneValue
@@ -1017,7 +1012,6 @@ type KetoneValue
     | Ketone40
     | Ketone80
     | Ketone100
-    | KetoneNotApplicable
 
 
 type BilirubinValue
@@ -1025,7 +1019,6 @@ type BilirubinValue
     | BilirubinSmall
     | BilirubinMedium
     | BilirubinLarge
-    | BilirubinotApplicable
 
 
 type alias PrenatalLabsResults =

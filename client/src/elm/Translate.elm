@@ -7070,11 +7070,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                LeukocytesNotApplicable ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
         PrenatalLaboratoryNitriteTestResult ->
             { english = "Nitrite Test Result"
             , kinyarwanda = Nothing
@@ -7094,11 +7089,6 @@ translationSet trans =
 
                 NitritePlusPlus ->
                     { english = "++"
-                    , kinyarwanda = Nothing
-                    }
-
-                NitriteNotApplicable ->
-                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -7131,11 +7121,6 @@ translationSet trans =
 
                 Urobilinogen80 ->
                     { english = "8"
-                    , kinyarwanda = Nothing
-                    }
-
-                UrobilinogenNotApplicable ->
-                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -7181,11 +7166,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                HaemoglobinNotApplicable ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
         PrenatalLaboratorySpecificGravityTestResult ->
             { english = "Specific Gravity Test Result"
             , kinyarwanda = Nothing
@@ -7225,11 +7205,6 @@ translationSet trans =
 
                 SpecificGravity1030 ->
                     { english = "1.030"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravityNotApplicable ->
-                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -7275,11 +7250,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                KetoneNotApplicable ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
         PrenatalLaboratoryBilirubinTestResult ->
             { english = "Bilirubin Test Result"
             , kinyarwanda = Nothing
@@ -7304,11 +7274,6 @@ translationSet trans =
 
                 BilirubinLarge ->
                     { english = "Large"
-                    , kinyarwanda = Nothing
-                    }
-
-                BilirubinotApplicable ->
-                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
