@@ -98,6 +98,7 @@ viewContent language currentDate isChw initiator data =
         , viewRiskFactorsPane language currentDate firstEncounterMeasurements
         , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
         , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
+        , viewChwActivityPane language currentDate isChw firstEncounterMeasurements data
         , viewPatientProgressPane language currentDate isChw data
         , actions
         ]
@@ -222,6 +223,22 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
         , div [ class "pane-content" ] alerts
+        ]
+
+
+viewChwActivityPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewChwActivityPane language currentDate isChw firstEncounterMeasurements data =
+    let
+        header =
+            div [ class "heading next-appointment" ]
+                [ div [ class "date" ] [ text <| translate language Translate.Date ]
+                , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
+                ]
+    in
+    div [ class "chw-activity" ]
+        [ viewItemHeading language Translate.ChwActivity "blue"
+        , div [ class "pane-content" ]
+            [ header ]
         ]
 
 
