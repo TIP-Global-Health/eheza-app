@@ -1,7 +1,7 @@
 module Pages.AcuteIllnessEncounter.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -64,6 +64,8 @@ generateAssembledData currentDate id isChw db =
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
                 |> RemoteData.andMap (Success previousEncountersData)
+                |> RemoteData.andMap (Success [])
+                |> RemoteData.andMap (Success [])
                 |> RemoteData.andMap (Success initialEncounter)
                 |> RemoteData.andMap (Success Nothing)
 
@@ -87,8 +89,50 @@ generateAssembledData currentDate id isChw db =
                     )
                 |> Maybe.withDefault Nothing
     in
-    assembled
-        |> RemoteData.map (\data -> { data | diagnosis = currentDiagnosis })
+    RemoteData.map
+        (\data ->
+            let
+                currentEncounterData =
+                    AcuteIllnessEncounterData id
+                        data.encounter.encounterType
+                        data.encounter.startDate
+                        data.encounter.sequenceNumber
+                        data.encounter.diagnosis
+                        data.measurements
+
+                allEncountersData =
+                    data.previousEncountersData ++ [ currentEncounterData ]
+
+                ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
+                    let
+                        nurseEncounterIndex =
+                            List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
+                                allEncountersData
+                                |> List.filter (Tuple.second >> (==) AcuteIllnessEncounterNurse)
+                                |> List.reverse
+                                |> List.head
+                                |> Maybe.map Tuple.first
+                    in
+                    Maybe.map
+                        (\nurseIndex ->
+                            if nurseIndex == 0 then
+                                ( allEncountersData, [] )
+
+                            else
+                                ( List.take nurseIndex allEncountersData
+                                , List.drop nurseIndex allEncountersData
+                                )
+                        )
+                        nurseEncounterIndex
+                        |> Maybe.withDefault ( allEncountersData, [] )
+            in
+            { data
+                | diagnosis = currentDiagnosis
+                , firstInitialWithSubsequent = firstInitialWithSubsequent
+                , secondInitialWithSubsequent = secondInitialWithSubsequent
+            }
+        )
+        assembled
 
 
 generatePreviousMeasurements :
