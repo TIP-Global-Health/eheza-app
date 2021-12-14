@@ -1479,7 +1479,7 @@ resolveAmoxicillinDosage currentDate person =
         |> Maybe.andThen
             (\months ->
                 if months < 2 then
-                    Nothing
+                    Just ( "0.5", "125", Translate.SeeDosageScheduleByWeight )
 
                 else if months < 5 then
                     Just ( "1", "125", Translate.ByMouthTwiceADayForXDays 5 )

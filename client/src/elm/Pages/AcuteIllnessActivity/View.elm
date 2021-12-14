@@ -2392,8 +2392,17 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 viewAmoxicillinAdministrationInstructions : Language -> String -> String -> TranslationId -> Maybe NominalDate -> List (Html any)
 viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg duration maybeDate =
     let
-        medicationLabelSuffix =
-            " (" ++ pillMassInMg ++ ")"
+        ( medicationLabelSuffix, prescription ) =
+            if numberOfPills == "0.5" then
+                ( " (" ++ (translate language <| Translate.HalfOfDosage pillMassInMg) ++ ")"
+                , div [ class "prescription" ]
+                    [ text <| translate language Translate.SeeDosageScheduleByWeight ]
+                )
+
+            else
+                ( " (" ++ pillMassInMg ++ ")"
+                , viewTabletsPrescription language numberOfPills duration
+                )
 
         alternateMedicineSection =
             if pillMassInMg == "500" then
@@ -2420,7 +2429,7 @@ viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg du
         "icon-pills"
         ":"
         maybeDate
-    , viewTabletsPrescription language numberOfPills duration
+    , prescription
     ]
         ++ alternateMedicineSection
 
@@ -2433,7 +2442,7 @@ viewParacetamolAdministrationInstructions language maybeDate isAdult =
                 ( " (1g)", Translate.ParacetamolPrescriptionForAdult )
 
             else
-                ( " (15mg per kg)", Translate.ParacetamolPrescriptionForChild )
+                ( " (15mg per kg)", Translate.SeeDosageScheduleByWeight )
     in
     [ viewAdministeredMedicationCustomLabel
         language

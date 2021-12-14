@@ -577,6 +577,7 @@ type TranslationId
     | Gravida
     | GroupEncounter
     | Growth
+    | HalfOfDosage String
     | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
@@ -787,7 +788,6 @@ type TranslationId
     | Pallor
     | Para
     | ParacetamolPrescriptionForAdult
-    | ParacetamolPrescriptionForChild
     | ParentsAliveAndHealthyQuestion
     | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
@@ -939,6 +939,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SeeDosageScheduleByWeight
     | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
@@ -4137,6 +4138,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HalfOfDosage dosage ->
+            { english = "half of " ++ dosage ++ " dosage"
+            , kinyarwanda = Nothing
+            }
+
         HandedReferralFormQuestion ->
             { english = "Did you hand the referral form to the patient"
             , kinyarwanda = Just "Wahaye umurwayi urupapuro rumwohereza"
@@ -6268,11 +6274,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ParacetamolPrescriptionForChild ->
-            { english = "@todo"
-            , kinyarwanda = Nothing
-            }
-
         ParentsAliveAndHealthyQuestion ->
             { english = "Are both parents alive and healthy"
             , kinyarwanda = Just "Ese ababyeyi bombi bariho kandi bafite ubuzima bwiza"
@@ -7731,6 +7732,11 @@ translationSet trans =
         Sector ->
             { english = "Sector"
             , kinyarwanda = Just "Umurenge"
+            }
+
+        SeeDosageScheduleByWeight ->
+            { english = "See dosage schedule by Weight"
+            , kinyarwanda = Nothing
             }
 
         SeeMore ->
