@@ -26,10 +26,10 @@ import Utils.WebData exposing (viewWebData)
 
 
 view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate selectedHealthCenter id isChw db model =
+view language currentDate selectedHealthCenter personId isChw db model =
     let
         sessions =
-            Dict.get id db.individualParticipantsByPerson
+            Dict.get personId db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
     in
     div
@@ -37,7 +37,7 @@ view language currentDate selectedHealthCenter id isChw db model =
         [ viewHeader language model
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewContent language currentDate selectedHealthCenter id isChw db model) identity sessions
+            [ viewWebData language (viewContent language currentDate selectedHealthCenter personId isChw db model) identity sessions
             ]
         ]
 
@@ -80,7 +80,7 @@ viewHeader language model =
 
 
 viewContent : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Model -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
-viewContent language currentDate selectedHealthCenter id isChw db model sessions =
+viewContent language currentDate selectedHealthCenter personId isChw db model sessions =
     let
         activeSessions =
             sessions
@@ -94,13 +94,13 @@ viewContent language currentDate selectedHealthCenter id isChw db model sessions
     in
     case model.viewMode of
         ManageIllnesses ->
-            viewManageIllnessesContent language currentDate selectedHealthCenter id isChw db activeSessions
+            viewManageIllnessesContent language currentDate selectedHealthCenter personId isChw db activeSessions
 
         ManageParticipants ->
-            viewManageParticipantsContent language currentDate selectedHealthCenter id isChw db activeSessions
+            viewManageParticipantsContent language currentDate selectedHealthCenter personId isChw db activeSessions
 
         RecordOutcome ->
-            viewRecordOutcomeContent language currentDate selectedHealthCenter id isChw db activeSessions
+            viewRecordOutcomeContent language currentDate selectedHealthCenter isChw db activeSessions
 
 
 viewManageIllnessesContent :
@@ -112,7 +112,7 @@ viewManageIllnessesContent :
     -> ModelIndexedDb
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> Html Msg
-viewManageIllnessesContent language currentDate selectedHealthCenter id isChw db activeSessions =
+viewManageIllnessesContent language currentDate selectedHealthCenter personId isChw db activeSessions =
     let
         lastActiveSession =
             List.reverse activeSessions
@@ -164,16 +164,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter id isChw db
                 |> Maybe.withDefault ( startIllnessAction, False )
 
         startIllnessAction =
-            emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.AcuteIllnessData encounterType)
-                |> MsgBackend
-
-        encounterType =
-            if isChw then
-                AcuteIllnessEncounterCHW
-
-            else
-                AcuteIllnessEncounterNurse
+            startIllnessActionMsg currentDate selectedHealthCenter personId isChw
 
         createIllnessNavigateToEncounterSection =
             [ viewLabel language "select-visit" <| Translate.IndividualEncounterSelectVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
@@ -211,7 +202,7 @@ viewManageParticipantsContent :
     -> ModelIndexedDb
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> Html Msg
-viewManageParticipantsContent language currentDate selectedHealthCenter id isChw db activeSessions =
+viewManageParticipantsContent language currentDate selectedHealthCenter personId isChw db activeSessions =
     let
         activeIllnesses =
             List.map Tuple.first activeSessions
@@ -267,9 +258,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id isChw
                 |> Maybe.withDefault ( startIllnessAction, False )
 
         startIllnessAction =
-            emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
-                |> MsgBackend
+            startIllnessActionMsg currentDate selectedHealthCenter personId isChw
 
         createIllnessNavigateToEncounterButton =
             viewButton language
@@ -298,16 +287,30 @@ viewManageParticipantsContent language currentDate selectedHealthCenter id isChw
             ]
 
 
+startIllnessActionMsg : NominalDate -> HealthCenterId -> PersonId -> Bool -> Msg
+startIllnessActionMsg currentDate selectedHealthCenter personId isChw =
+    let
+        encounterType =
+            if isChw then
+                AcuteIllnessEncounterCHW
+
+            else
+                AcuteIllnessEncounterNurse
+    in
+    emptyIndividualEncounterParticipant currentDate personId Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
+        |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.AcuteIllnessData encounterType)
+        |> MsgBackend
+
+
 viewRecordOutcomeContent :
     Language
     -> NominalDate
     -> HealthCenterId
-    -> PersonId
     -> Bool
     -> ModelIndexedDb
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> Html Msg
-viewRecordOutcomeContent language currentDate selectedHealthCenter id isChw db activeSessions =
+viewRecordOutcomeContent language currentDate selectedHealthCenter isChw db activeSessions =
     let
         activeIllnesses =
             List.map Tuple.first activeSessions
