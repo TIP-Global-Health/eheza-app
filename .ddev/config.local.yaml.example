@@ -11,7 +11,7 @@ hooks:
     - exec: drush updb -y
     # Modules can come and go, production might be behind.
     - exec: wget https://ftp.drupal.org/files/projects/registry_rebuild-7.x-2.5.tar.gz
-    - exec: tar -xvf registry_rebuild-7.x-2.5.tar.gz --directory .drush
+    - exec: tar -xvf registry_rebuild-7.x-2.5.tar.gz --directory ~/.drush
     - exec: rm registry_rebuild-7.x-2.5.tar.gz
     - exec: drush rr
     - exec: drush cc all
