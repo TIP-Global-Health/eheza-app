@@ -7,6 +7,8 @@ hooks:
         > 0 AND mail LIKE '%~%'"
     # This will be applied to production with a future release.
     - exec: drush sqlq "DELETE FROM system WHERE name='hedley_pusher'"
+    - exec: drush updb -y
+    - exec: drush cc all
     - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y
     - exec: drush uli
