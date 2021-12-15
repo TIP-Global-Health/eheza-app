@@ -962,22 +962,26 @@ elmApp.ports.bindDropZone.subscribe(function() {
  */
 function waitForElement(id, fn, model, tryCount) {
 
-  // Repeat the timeout only maximum 5 times, which sohuld be enough for the
-  // element to appear.
+  // Repeat the timeout maximum 5 times, with increasing
+  // intervals (0.5 sec, 1 sec, 2 sec...).
   tryCount = tryCount || 5;
   --tryCount;
+
   if (tryCount == 0) {
     return;
   }
 
   setTimeout(function() {
+    var selector = "#" + id;
+    var element = document.querySelector(selector);
 
-    var result = fn.call(null, id, model, tryCount);
-    if (!result) {
-      // Element still doesn't exist, so wait some more.
+    if (element) {
+      fn.call(null, id, model, tryCount);
+    }
+    else {
       waitForElement(id, fn, model, tryCount);
     }
-  }, 50);
+  }, (5 - tryCount) * 500);
 }
 
 function attachDropzone() {
