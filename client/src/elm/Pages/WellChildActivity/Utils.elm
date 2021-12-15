@@ -1294,58 +1294,77 @@ expectedECDSignsByAge currentDate assembled =
                         Date.diff Months birthDate currentDate
 
                     groupedSigns =
-                        groupedECDSigns ageMonths assembled
+                        ageInMonthsAtLastAssessment assembled
+                            |> groupedECDSigns
                 in
-                if ageWeeks < 5 then
-                    []
-
-                else if ageWeeks < 13 then
-                    List.Extra.splitAt 1 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 6 then
-                    List.Extra.splitAt 2 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 15 then
-                    List.Extra.splitAt 3 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 18 then
-                    List.Extra.splitAt 4 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 24 then
-                    List.Extra.splitAt 5 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 36 then
-                    List.Extra.splitAt 6 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 48 then
-                    List.Extra.splitAt 7 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else
-                    List.concat groupedSigns
+                ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
             )
         |> Maybe.withDefault []
 
 
-groupedECDSigns : Int -> AssembledData -> List (List ECDSign)
-groupedECDSigns ageMonths assembled =
+expectedECDSignsOnMilestone : NominalDate -> NominalDate -> Maybe NominalDate -> List ECDSign
+expectedECDSignsOnMilestone birthDate milestoneDate firstEncounterDateAfterMilestone =
     let
-        ageMonthsAtLastAssessment =
-            ageInMonthsAtLastAssessment assembled
+        ageWeeks =
+            Date.diff Weeks birthDate milestoneDate
 
+        ageMonths =
+            Date.diff Months birthDate milestoneDate
+
+        groupedSigns =
+            Maybe.map (Date.diff Months birthDate) firstEncounterDateAfterMilestone
+                |> groupedECDSigns
+    in
+    ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
+
+
+ecdSignsFromGroupedSignsByAge : Int -> Int -> List (List ECDSign) -> List ECDSign
+ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns =
+    if ageWeeks < 5 then
+        []
+
+    else if ageWeeks < 13 then
+        List.Extra.splitAt 1 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 6 then
+        List.Extra.splitAt 2 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 15 then
+        List.Extra.splitAt 3 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 18 then
+        List.Extra.splitAt 4 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 24 then
+        List.Extra.splitAt 5 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 36 then
+        List.Extra.splitAt 6 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 48 then
+        List.Extra.splitAt 7 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else
+        List.concat groupedSigns
+
+
+groupedECDSigns : Maybe Int -> List (List ECDSign)
+groupedECDSigns ageMonthsAtLastAssessment =
+    let
         ( from5Weeks, from13Weeks ) =
             Maybe.map
                 (\ageMonthsLastAssessment ->
@@ -2252,6 +2271,6 @@ resolvePreviousValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-getPreviousMeasurements : List ( NominalDate, ( is, a ) ) -> List a
+getPreviousMeasurements : List ( NominalDate, ( id, a ) ) -> List a
 getPreviousMeasurements =
     List.map (Tuple.second >> Tuple.second)

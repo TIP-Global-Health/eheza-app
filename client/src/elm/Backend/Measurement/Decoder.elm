@@ -2767,6 +2767,9 @@ decodeMedicationDistributionSign =
                     "vitamin-a" ->
                         succeed VitaminA
 
+                    "paracetamol" ->
+                        succeed Paracetamol
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2819,6 +2822,11 @@ decodeMedicationNonAdministrationSign =
                                     "zinc" ->
                                         administrationNote
                                             |> Maybe.map (MedicationZinc >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "paracetamol" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationParacetamol >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

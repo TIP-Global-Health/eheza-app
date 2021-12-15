@@ -33,9 +33,6 @@ Primary ports:
 7. Choose the synced health center.
 8. Explore the system.
 
-Known issues:
- - Sometimes `gulp` fails to download all the Elm packages. Then locate the running process: `ps aux | grep gulp`, kill it, and launch it again: `ddev gulp`.
-
 ## Develop locally with DDEV
 
 ### Requirements
@@ -46,7 +43,6 @@ Known issues:
 
 #### Installation
 
-        cp default.config.sh config.sh
         cp .ddev/config.local.yaml.example .ddev/config.local.yaml
         ddev restart
 

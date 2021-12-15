@@ -54,10 +54,16 @@ import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import Pages.WellChildActivity.Model exposing (VaccinationStatus(..))
-import Pages.WellChildActivity.Utils exposing (getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChildActivity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildActivity.View exposing (viewVaccinationOverview)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
-import Pages.WellChildEncounter.Utils exposing (generateAssembledData, pediatricCareMilestoneToComparable, resolvePediatricCareMilestoneOnDate)
+import Pages.WellChildEncounter.Utils
+    exposing
+        ( generateAssembledData
+        , pediatricCareMilestoneToComparable
+        , resolveDateForPediatricCareMilestone
+        , resolvePediatricCareMilestoneOnDate
+        )
 import Pages.WellChildEncounter.View exposing (allowEndingEcounter, partitionActivities, viewPersonDetails)
 import Pages.WellChildProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -256,6 +262,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         currentDate
                         child
                         wellChildEncounters
+                        individualWellChildMeasurementsWithDates
                         db
                     , viewGrowthPane language
                         currentDate
@@ -807,8 +814,15 @@ viewVaccinationHistoryPane language currentDate child vaccinationProgress db =
         ]
 
 
-viewECDPane : Language -> NominalDate -> Person -> List ( WellChildEncounterId, WellChildEncounter ) -> ModelIndexedDb -> Html any
-viewECDPane language currentDate child wellChildEncounters db =
+viewECDPane :
+    Language
+    -> NominalDate
+    -> Person
+    -> List ( WellChildEncounterId, WellChildEncounter )
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> ModelIndexedDb
+    -> Html any
+viewECDPane language currentDate child wellChildEncounters individualWellChildMeasurementsWithDates db =
     Maybe.map
         (\birthDate ->
             let
@@ -859,7 +873,7 @@ viewECDPane language currentDate child wellChildEncounters db =
                             let
                                 status =
                                     Dict.get milestone performedMilestonesWithStatus
-                                        |> Maybe.withDefault NoECDStatus
+                                        |> Maybe.withDefault (genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithDates)
                             in
                             ( milestone, status )
                         )
@@ -901,6 +915,69 @@ viewECDPane language currentDate child wellChildEncounters db =
         )
         child.birthDate
         |> Maybe.withDefault emptyNode
+
+
+genrateDefaultECDStatus :
+    NominalDate
+    -> PediatricCareMilestone
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> ECDStatus
+genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithDates =
+    let
+        milestoneDate =
+            resolveDateForPediatricCareMilestone birthDate milestone
+
+        firstEncounterDateAfterMilestone =
+            List.filterMap
+                (\( date, _ ) ->
+                    if not <| Date.compare milestoneDate date == LT then
+                        Just date
+
+                    else
+                        Nothing
+                )
+                individualWellChildMeasurementsWithDates
+                |> List.sortWith Date.compare
+                |> List.head
+
+        -- Take all measurements that were taken before the milestone,
+        -- and, these of first encounter after milestone.
+        measurementsForPeriod =
+            Maybe.map
+                (\firstEncounterAfterMilestoneDate ->
+                    List.filterMap
+                        (\( date, ( _, measurements ) ) ->
+                            if Date.compare date milestoneDate == GT then
+                                Nothing
+
+                            else
+                                Just measurements
+                        )
+                        individualWellChildMeasurementsWithDates
+                )
+                firstEncounterDateAfterMilestone
+                |> Maybe.withDefault
+                    -- There were no encounters after milestone date, so we just
+                    -- take all existing measurements.
+                    (List.map (Tuple.second >> Tuple.second) individualWellChildMeasurementsWithDates)
+
+        expectedSigns =
+            expectedECDSignsOnMilestone birthDate milestoneDate firstEncounterDateAfterMilestone
+
+        _ =
+            Debug.log "milestone" milestone
+
+        _ =
+            Debug.log "expectedSigns" expectedSigns
+
+        completedSigns =
+            generateCompletedECDSigns measurementsForPeriod
+    in
+    if List.all (\sign -> List.member sign completedSigns) expectedSigns then
+        StatusOnTrack
+
+    else
+        StatusOffTrack
 
 
 viewGrowthPane :

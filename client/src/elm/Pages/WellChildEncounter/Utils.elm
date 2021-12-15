@@ -141,6 +141,40 @@ resolvePediatricCareMilestoneOnDate dueDate birthDate =
         Just Milestone4Years
 
 
+resolveDateForPediatricCareMilestone : NominalDate -> PediatricCareMilestone -> NominalDate
+resolveDateForPediatricCareMilestone birthDate milestone =
+    case milestone of
+        Milestone6Weeks ->
+            Date.add Weeks 6 birthDate
+
+        Milestone14Weeks ->
+            Date.add Weeks 14 birthDate
+
+        Milestone6Months ->
+            Date.add Months 6 birthDate
+
+        Milestone9Months ->
+            Date.add Months 9 birthDate
+
+        Milestone12Months ->
+            Date.add Years 1 birthDate
+
+        Milestone15Months ->
+            Date.add Months 15 birthDate
+
+        Milestone18Months ->
+            Date.add Months 18 birthDate
+
+        Milestone2Years ->
+            Date.add Years 2 birthDate
+
+        Milestone3Years ->
+            Date.add Years 3 birthDate
+
+        Milestone4Years ->
+            Date.add Years 4 birthDate
+
+
 pediatricCareMilestoneToComparable : PediatricCareMilestone -> Int
 pediatricCareMilestoneToComparable milestone =
     case milestone of

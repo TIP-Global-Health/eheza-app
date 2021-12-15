@@ -7,6 +7,7 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewHCRecommendation
     , viewHealthEducationLabel
     , viewOralSolutionPrescription
+    , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
     )
 
@@ -21,7 +22,7 @@ import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementV
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman, isPersonAnAdult)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
@@ -1796,7 +1797,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                                     )
                                 |> Maybe.withDefault False
                     in
-                    if diagnosis == Just DiagnosisPneuminialCovid19 then
+                    if List.member diagnosis [ Just DiagnosisPneuminialCovid19, Just DiagnosisLowRiskCovid19 ] then
                         tasks
 
                     else if medicationOutOfStockOrPatientAlergic then
@@ -2348,6 +2349,36 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                 Just DiagnosisPneuminialCovid19 ->
                     amoxicillinAdministration
 
+                Just DiagnosisLowRiskCovid19 ->
+                    let
+                        paracetamolUpdateFunc value form_ =
+                            { form_ | paracetamol = Just value, nonAdministrationSigns = updateNonAdministrationSigns Paracetamol MedicationParacetamol value form_ }
+
+                        derivedQuestion =
+                            case form.paracetamol of
+                                Just False ->
+                                    viewDerivedQuestion Paracetamol MedicationParacetamol
+
+                                _ ->
+                                    []
+                    in
+                    ( isPersonAnAdult currentDate person
+                        |> Maybe.map
+                            (viewParacetamolAdministrationInstructions language Nothing
+                                >> div [ class "instructions simple-covid19" ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Paracetamol)
+                      , viewBoolInput
+                            language
+                            form.paracetamol
+                            (SetMedicationDistributionBoolInput paracetamolUpdateFunc)
+                            "paracetamol-medication"
+                            Nothing
+                      ]
+                        ++ derivedQuestion
+                    )
+
                 _ ->
                     ( emptyNode, [] )
     in
@@ -2361,8 +2392,17 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 viewAmoxicillinAdministrationInstructions : Language -> String -> String -> TranslationId -> Maybe NominalDate -> List (Html any)
 viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg duration maybeDate =
     let
-        medicationLabelSuffix =
-            " (" ++ pillMassInMg ++ ")"
+        ( medicationLabelSuffix, prescription ) =
+            if numberOfPills == "0.5" then
+                ( " (" ++ (translate language <| Translate.HalfOfDosage pillMassInMg) ++ ")"
+                , div [ class "prescription" ]
+                    [ text <| translate language Translate.SeeDosageScheduleByWeight ]
+                )
+
+            else
+                ( " (" ++ pillMassInMg ++ ")"
+                , viewTabletsPrescription language numberOfPills duration
+                )
 
         alternateMedicineSection =
             if pillMassInMg == "500" then
@@ -2389,9 +2429,32 @@ viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg du
         "icon-pills"
         ":"
         maybeDate
-    , viewTabletsPrescription language numberOfPills duration
+    , prescription
     ]
         ++ alternateMedicineSection
+
+
+viewParacetamolAdministrationInstructions : Language -> Maybe NominalDate -> Bool -> List (Html any)
+viewParacetamolAdministrationInstructions language maybeDate isAdult =
+    let
+        ( medicationLabelSuffix, prescription ) =
+            if isAdult then
+                ( " (1g)", Translate.ParacetamolPrescriptionForAdult )
+
+            else
+                ( " (15mg per kg)", Translate.SeeDosageScheduleByWeight )
+    in
+    [ viewAdministeredMedicationCustomLabel
+        language
+        Translate.Administer
+        (Translate.MedicationDistributionSign Paracetamol)
+        medicationLabelSuffix
+        "icon-pills"
+        ":"
+        maybeDate
+    , div [ class "prescription" ]
+        [ text <| translate language prescription ]
+    ]
 
 
 viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any
@@ -3180,7 +3243,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         Maybe.Extra.or data.phoneNumber person.telephoneNumber
                             |> Maybe.withDefault ""
 
-                    saveButtonAttrinutes =
+                    saveButtonAttributes =
                         classList
                             [ ( "ui primary button", True )
                             , ( "disabled", saveDisabled )
@@ -3212,7 +3275,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                             |> Maybe.withDefault []
 
                     saveDisabled =
-                        isNothing data.contactDate || String.isEmpty inputNumber
+                        isNothing data.contactDate
                 in
                 [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
                 , div [ class "ui items" ] <|
@@ -3228,7 +3291,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         [ phoneNumberInput ]
                     ]
                 , div [ class "single-action" ]
-                    [ div saveButtonAttrinutes
+                    [ div saveButtonAttributes
                         [ text <| translate language Translate.Save ]
                     ]
                 ]
