@@ -38,6 +38,7 @@ import Pages.AcuteIllnessActivity.View
         , viewAmoxicillinAdministrationInstructions
         , viewHCRecommendation
         , viewOralSolutionPrescription
+        , viewParacetamolAdministrationInstructions
         , viewTabletsPrescription
         )
 import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
@@ -1067,6 +1068,25 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
 
         DiagnosisPneuminialCovid19 ->
             uncomplicatedPneumoniaActions
+
+        DiagnosisLowRiskCovid19 ->
+            let
+                paracetamolPrescribed =
+                    Maybe.map (EverySet.member Paracetamol) distributionSigns
+                        |> Maybe.withDefault False
+            in
+            if paracetamolPrescribed then
+                isPersonAnAdult date person
+                    |> Maybe.map (viewParacetamolAdministrationInstructions language (Just date))
+                    |> Maybe.withDefault []
+
+            else
+                resolveNonAdministrationReason Paracetamol
+                    |> Maybe.map
+                        (\reason ->
+                            [ viewNonAdministrationReason language (Translate.MedicationDistributionSign Paracetamol) "icon-pills" (Just date) reason ]
+                        )
+                    |> Maybe.withDefault []
 
         _ ->
             []

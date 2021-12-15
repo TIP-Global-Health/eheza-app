@@ -577,6 +577,7 @@ type TranslationId
     | Gravida
     | GroupEncounter
     | Growth
+    | HalfOfDosage String
     | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
@@ -786,6 +787,7 @@ type TranslationId
     | PaleConjuctiva
     | Pallor
     | Para
+    | ParacetamolPrescriptionForAdult
     | ParentsAliveAndHealthyQuestion
     | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
@@ -938,6 +940,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SeeDosageScheduleByWeight
     | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
@@ -1537,7 +1540,7 @@ translationSet trans =
 
         ActiveDiagnosis ->
             { english = "Active Diagnosis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburwayi Bwasuzumwe"
             }
 
         AcuteIllnessOutcome outcome ->
@@ -4136,6 +4139,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HalfOfDosage dosage ->
+            { english = "half of " ++ dosage ++ " dosage"
+            , kinyarwanda = Nothing
+            }
+
         HandedReferralFormQuestion ->
             { english = "Did you hand the referral form to the patient"
             , kinyarwanda = Just "Wahaye umurwayi urupapuro rumwohereza"
@@ -4849,7 +4857,7 @@ translationSet trans =
 
         Location ->
             { english = "Location"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Aho Ruzatangirwa"
             }
 
         LoginPhrase phrase ->
@@ -5174,6 +5182,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Paracetamol ->
+                    { english = "Paracetamol"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -5458,7 +5471,7 @@ translationSet trans =
 
         NextAppointment ->
             { english = "Next Appointment"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki yo kugarukaho"
             }
 
         NextDue ->
@@ -6254,6 +6267,11 @@ translationSet trans =
 
         Para ->
             { english = "Para"
+            , kinyarwanda = Nothing
+            }
+
+        ParacetamolPrescriptionForAdult ->
+            { english = "Every 4-6 hours as needed. Not to exceed 4g in 24h."
             , kinyarwanda = Nothing
             }
 
@@ -7722,9 +7740,14 @@ translationSet trans =
             , kinyarwanda = Just "Umurenge"
             }
 
+        SeeDosageScheduleByWeight ->
+            { english = "See dosage schedule by Weight"
+            , kinyarwanda = Nothing
+            }
+
         SeeMore ->
             { english = "See More"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Reba Ibindi"
             }
 
         SelectAntenatalVisit ->
@@ -7749,7 +7772,7 @@ translationSet trans =
 
         SelectDate ->
             { english = "Select Date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo Itariki"
             }
 
         SelectPostpartumMotherDangerSigns ->
@@ -8433,7 +8456,7 @@ translationSet trans =
 
         Type ->
             { english = "Type"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ubwoko bw'Urukingo"
             }
 
         UbudeheLabel ->
@@ -8542,7 +8565,7 @@ translationSet trans =
 
                 VaccineHPV ->
                     { english = "HPV Vaccine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urukingo rw'Inkondo y'umura"
                     }
 
         ValidationErrors ->
@@ -8752,13 +8775,13 @@ translationSet trans =
                     }
 
                 VaccineDTP ->
-                    { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), liver failure (Hepatitis B), diarrhea (Diptheria)."
-                    , kinyarwanda = Just "Rurinda umwana indwara ya tetanosi, kokolishe, umwijima wo mubwoko bwa B, n'impiswi."
+                    { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), liver failure (Hepatitis B), breathing problem and fever (Diptheria)."
+                    , kinyarwanda = Just "Rurinda umwana indwara ya agakwega, kokolishe, umwijima wo mubwoko bwa B, n'ibibazo, ibibazo byo guhumeka n'umuriro (Akaniga)."
                     }
 
                 VaccineHPV ->
                     { english = "HPV prevents certain types of cancer from developing in your child."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Rurinda umwana kurwara zimwe muri kanseri"
                     }
 
                 VaccineIPV ->
@@ -8800,7 +8823,7 @@ translationSet trans =
 
                 VaccineHPV ->
                     { english = "There are 2 doses of HPV - at 12 years and 12.5 years."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'inkondo y'umura inshuro 2 - ku myaka 12 n'imyaka 12.5."
                     }
 
                 VaccineIPV ->
@@ -8842,7 +8865,7 @@ translationSet trans =
 
                 VaccineHPV ->
                     { english = "Human Papillomavirus (HPV)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
                     }
 
                 VaccineIPV ->
@@ -8879,12 +8902,12 @@ translationSet trans =
 
                 VaccineDTP ->
                     { english = "DTP - HepB - Hib History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru kuri DTP - HepB - Hib"
                     }
 
                 VaccineHPV ->
                     { english = "HPV History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku rukingo rw'inkondo y'umura"
                     }
 
                 VaccineIPV ->
@@ -8926,7 +8949,7 @@ translationSet trans =
 
                 Pages.WellChildActivity.Model.TaskHPV ->
                     { english = "HPV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
                     }
 
                 Pages.WellChildActivity.Model.TaskIPV ->
@@ -9100,7 +9123,7 @@ translationSet trans =
 
                 VaccineHPV ->
                     { english = "HPV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urukingo rw'Unkondo y'Umura"
                     }
 
                 VaccineIPV ->

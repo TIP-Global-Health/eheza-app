@@ -384,4 +384,39 @@ class RoboFile extends Tasks {
     return empty($result) ? NULL : json_decode($result);
   }
 
+  /**
+   * Generates the demographics report.
+   */
+  public function reportDemographics() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php');
+  }
+
+  /**
+   * Generates the acute illness report.
+   */
+  public function reportAcuteIllness() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-report.php');
+  }
+
+  /**
+   * Generates the ANC report.
+   */
+  public function reportAnc() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php');
+  }
+
+  /**
+   * Generates the pregnancy report.
+   */
+  public function reportPregnancy() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php');
+  }
+
+  /**
+   * Generates the nutrition report.
+   */
+  public function reportNutrition() {
+    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php');
+  }
+
 }
