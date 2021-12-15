@@ -577,6 +577,7 @@ type TranslationId
     | Gravida
     | GroupEncounter
     | Growth
+    | HalfOfDosage String
     | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
@@ -786,6 +787,7 @@ type TranslationId
     | PaleConjuctiva
     | Pallor
     | Para
+    | ParacetamolPrescriptionForAdult
     | ParentsAliveAndHealthyQuestion
     | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
@@ -937,6 +939,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SeeDosageScheduleByWeight
     | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
@@ -4135,6 +4138,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HalfOfDosage dosage ->
+            { english = "half of " ++ dosage ++ " dosage"
+            , kinyarwanda = Nothing
+            }
+
         HandedReferralFormQuestion ->
             { english = "Did you hand the referral form to the patient"
             , kinyarwanda = Just "Wahaye umurwayi urupapuro rumwohereza"
@@ -5170,6 +5178,11 @@ translationSet trans =
 
                 VitaminA ->
                     { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
+                Paracetamol ->
+                    { english = "Paracetamol"
                     , kinyarwanda = Nothing
                     }
 
@@ -6253,6 +6266,11 @@ translationSet trans =
 
         Para ->
             { english = "Para"
+            , kinyarwanda = Nothing
+            }
+
+        ParacetamolPrescriptionForAdult ->
+            { english = "Every 4-6 hours as needed. Not to exceed 4g in 24h."
             , kinyarwanda = Nothing
             }
 
@@ -7714,6 +7732,11 @@ translationSet trans =
         Sector ->
             { english = "Sector"
             , kinyarwanda = Just "Umurenge"
+            }
+
+        SeeDosageScheduleByWeight ->
+            { english = "See dosage schedule by Weight"
+            , kinyarwanda = Nothing
             }
 
         SeeMore ->
