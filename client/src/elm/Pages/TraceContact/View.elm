@@ -134,15 +134,22 @@ viewStepInitiateContact : Language -> NominalDate -> ContactTraceItem -> StepIni
 viewStepInitiateContact language currentDate contact data =
     let
         instructions =
-            p [ class "contact-details" ]
-                [ text <| translate language Translate.PleaseCall
-                , text " "
-                , span [ class "blue" ] [ text <| generateFullName contact.firstName contact.secondName ]
-                , text " "
-                , text <| translate language Translate.At
-                , text " "
-                , span [ class "blue" ] [ text contact.phoneNumber ]
-                ]
+            p [ class "contact-details" ] <|
+                if String.isEmpty contact.phoneNumber then
+                    [ text <| translate language Translate.PleaseContact
+                    , text " "
+                    , span [ class "blue" ] [ text <| generateFullName contact.firstName contact.secondName ]
+                    ]
+
+                else
+                    [ text <| translate language Translate.PleaseCall
+                    , text " "
+                    , span [ class "blue" ] [ text <| generateFullName contact.firstName contact.secondName ]
+                    , text " "
+                    , text <| translate language Translate.At
+                    , text " "
+                    , span [ class "blue" ] [ text contact.phoneNumber ]
+                    ]
 
         inputs =
             [ viewQuestionLabel language Translate.ContactInitiatedQuestion
