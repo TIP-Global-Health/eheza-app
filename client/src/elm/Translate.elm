@@ -825,6 +825,7 @@ type TranslationId
     | PlaceholderEnterWeight
     | PlaceholderSearchContactName
     | PleaseCall
+    | PleaseContact
     | PleaseSelectGroup
     | PleaseSync
     | PositiveLabel
@@ -6549,6 +6550,11 @@ translationSet trans =
 
         PleaseCall ->
             { english = "Please call"
+            , kinyarwanda = Nothing
+            }
+
+        PleaseContact ->
+            { english = "Please contact"
             , kinyarwanda = Nothing
             }
 

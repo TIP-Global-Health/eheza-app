@@ -48,6 +48,8 @@ type alias AssembledData =
     , person : Person
     , measurements : AcuteIllnessMeasurements
     , previousEncountersData : List AcuteIllnessEncounterData
+    , firstInitialWithSubsequent : List AcuteIllnessEncounterData
+    , secondInitialWithSubsequent : List AcuteIllnessEncounterData
 
     -- Intial encounter is the one where all measurements are taken and
     -- initial diagnosis is made.

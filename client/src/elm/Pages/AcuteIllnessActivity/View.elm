@@ -3232,7 +3232,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                             ToggleContactsTracingDateSelector
                             SetContactsTracingDate
                             data.isDateSelectorOpen
-                            (Date.add Days -10 currentDate)
+                            (Date.add Days (-1 * covidIsolationPeriod) currentDate)
                             currentDate
                             data.contactDate
 
@@ -3243,7 +3243,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         Maybe.Extra.or data.phoneNumber person.telephoneNumber
                             |> Maybe.withDefault ""
 
-                    saveButtonAttrinutes =
+                    saveButtonAttributes =
                         classList
                             [ ( "ui primary button", True )
                             , ( "disabled", saveDisabled )
@@ -3275,7 +3275,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                             |> Maybe.withDefault []
 
                     saveDisabled =
-                        isNothing data.contactDate || String.isEmpty inputNumber
+                        isNothing data.contactDate
                 in
                 [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
                 , div [ class "ui items" ] <|
@@ -3291,7 +3291,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         [ phoneNumberInput ]
                     ]
                 , div [ class "single-action" ]
-                    [ div saveButtonAttrinutes
+                    [ div saveButtonAttributes
                         [ text <| translate language Translate.Save ]
                     ]
                 ]
