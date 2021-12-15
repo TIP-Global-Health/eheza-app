@@ -39,28 +39,36 @@ expectActivity currentDate isChw assembled activity =
                 False
 
             else
-                -- Show activity, if medication was perscribed at any of previous encounters.
-                assembled.previousEncountersData
-                    |> List.filterMap
-                        (.measurements
-                            >> .medicationDistribution
-                            >> Maybe.andThen
-                                (Tuple.second
-                                    >> .value
-                                    >> .distributionSigns
-                                    >> (\medications ->
-                                            if
-                                                (medications /= EverySet.singleton NoMedicationDistributionSigns)
-                                                    -- Lemon juice does not count as a medication.
-                                                    && (medications /= EverySet.singleton LemonJuiceOrHoney)
-                                            then
-                                                Just True
+                let
+                    initialWithSubsequent =
+                        if List.isEmpty assembled.secondInitialWithSubsequent then
+                            assembled.firstInitialWithSubsequent
 
-                                            else
-                                                Nothing
-                                       )
-                                )
-                        )
+                        else
+                            assembled.secondInitialWithSubsequent
+                in
+                -- Show activity, if medication was perscribed at any of previous encounters.
+                List.filterMap
+                    (.measurements
+                        >> .medicationDistribution
+                        >> Maybe.andThen
+                            (Tuple.second
+                                >> .value
+                                >> .distributionSigns
+                                >> (\medications ->
+                                        if
+                                            (medications /= EverySet.singleton NoMedicationDistributionSigns)
+                                                -- Lemon juice does not count as a medication.
+                                                && (medications /= EverySet.singleton LemonJuiceOrHoney)
+                                        then
+                                            Just True
+
+                                        else
+                                            Nothing
+                                   )
+                            )
+                    )
+                    initialWithSubsequent
                     |> List.isEmpty
                     |> not
 
@@ -677,6 +685,11 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
                 Just DiagnosisPneuminialCovid19 ->
                     ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
                     , 1 + derivedQuestionExists form.amoxicillin
+                    )
+
+                Just DiagnosisLowRiskCovid19 ->
+                    ( taskCompleted form.paracetamol + derivedQuestionCompleted Paracetamol MedicationParacetamol form.paracetamol
+                    , 1 + derivedQuestionExists form.paracetamol
                     )
 
                 _ ->
@@ -1371,6 +1384,7 @@ fromMedicationDistributionValue saved =
     , ors = Maybe.map (.distributionSigns >> EverySet.member ORS) saved
     , zinc = Maybe.map (.distributionSigns >> EverySet.member Zinc) saved
     , lemonJuiceOrHoney = Maybe.map (.distributionSigns >> EverySet.member LemonJuiceOrHoney) saved
+    , paracetamol = Maybe.map (.distributionSigns >> EverySet.member Paracetamol) saved
     , nonAdministrationSigns = Maybe.map .nonAdministrationSigns saved
     }
 
@@ -1386,6 +1400,7 @@ medicationDistributionFormWithDefault form saved =
                 , ors = or form.ors (EverySet.member ORS value.distributionSigns |> Just)
                 , zinc = or form.zinc (EverySet.member Zinc value.distributionSigns |> Just)
                 , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value.distributionSigns |> Just)
+                , paracetamol = or form.paracetamol (EverySet.member Paracetamol value.distributionSigns |> Just)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
@@ -1406,6 +1421,7 @@ toMedicationDistributionValue form =
             , ifNullableTrue ORS form.ors
             , ifNullableTrue Zinc form.zinc
             , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
+            , ifNullableTrue Paracetamol form.paracetamol
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
@@ -1471,7 +1487,7 @@ resolveAmoxicillinDosage currentDate person =
         |> Maybe.andThen
             (\months ->
                 if months < 2 then
-                    Nothing
+                    Just ( "0.5", "125", Translate.SeeDosageScheduleByWeight )
 
                 else if months < 5 then
                     Just ( "1", "125", Translate.ByMouthTwiceADayForXDays 5 )
@@ -1525,6 +1541,9 @@ nonAdministrationReasonToSign sign reason =
 
         Zinc ->
             MedicationZinc reason
+
+        Paracetamol ->
+            MedicationParacetamol reason
 
         _ ->
             NoMedicationNonAdministrationSigns
@@ -1868,18 +1887,26 @@ expectLaboratoryTask currentDate isChw assembled task =
                        )
 
             else
+                let
+                    initialWithSubsequent =
+                        if List.isEmpty assembled.secondInitialWithSubsequent then
+                            assembled.firstInitialWithSubsequent
+
+                        else
+                            assembled.secondInitialWithSubsequent
+                in
                 -- If fever is recorded on current encounter, and patient did not
                 -- test positive to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
                 feverRecorded assembled.measurements
-                    && (assembled.previousEncountersData
-                            |> List.filter
-                                (.measurements
-                                    >> .malariaTesting
-                                    >> getMeasurementValueFunc
-                                    >> Maybe.map (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
-                                    >> Maybe.withDefault False
-                                )
+                    && (List.filter
+                            (.measurements
+                                >> .malariaTesting
+                                >> getMeasurementValueFunc
+                                >> Maybe.map (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
+                                >> Maybe.withDefault False
+                            )
+                            initialWithSubsequent
                             |> List.isEmpty
                        )
 
@@ -1964,6 +1991,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
                 || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
                 || (diagnosis == Just DiagnosisPneuminialCovid19)
+                || (diagnosis == Just DiagnosisLowRiskCovid19)
     in
     case task of
         NextStepsIsolation ->
@@ -2006,8 +2034,8 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsFollowUp ->
-            if diagnosis == Just DiagnosisSevereCovid19 then
-                -- In this case patient is sent to hospital, and
+            if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
+                -- In these cases patient is sent to hospital, and
                 -- there's no need for CHW to follow up.
                 False
 
@@ -2150,6 +2178,9 @@ resolveMedicationsNonAdministrationReasons measurements =
 
                         MedicationZinc reason ->
                             Just ( Zinc, reason )
+
+                        MedicationParacetamol reason ->
+                            Just ( Paracetamol, reason )
 
                         NoMedicationNonAdministrationSigns ->
                             Nothing

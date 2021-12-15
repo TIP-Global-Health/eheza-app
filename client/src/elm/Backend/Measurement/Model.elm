@@ -1327,6 +1327,7 @@ type MedicationDistributionSign
     | Albendazole
     | Mebendezole
     | VitaminA
+    | Paracetamol
     | NoMedicationDistributionSigns
 
 
@@ -1347,6 +1348,7 @@ type MedicationNonAdministrationSign
     | MedicationCoartem AdministrationNote
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote
+    | MedicationParacetamol AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
