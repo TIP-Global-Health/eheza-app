@@ -5,6 +5,8 @@ hooks:
         AND mail NOT LIKE '%~%'"
     - exec: drush sqlq "UPDATE users SET mail = replace(mail, '~', '.test~') WHERE uid
         > 0 AND mail LIKE '%~%'"
+    # This will be applied to production with a future release.
+    - exec: drush sqlq "DELETE FROM system WHERE name='hedley_pusher'"
     - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y
     - exec: drush uli
