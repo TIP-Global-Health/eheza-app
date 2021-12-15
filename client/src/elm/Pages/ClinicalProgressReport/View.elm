@@ -98,7 +98,7 @@ viewContent language currentDate isChw initiator data =
         , viewRiskFactorsPane language currentDate firstEncounterMeasurements
         , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
         , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
-        , viewChwActivityPane language currentDate isChw firstEncounterMeasurements data
+        , viewChwActivityPane language currentDate isChw data
         , viewPatientProgressPane language currentDate isChw data
         , actions
         ]
@@ -226,19 +226,38 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
         ]
 
 
-viewChwActivityPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewChwActivityPane language currentDate isChw firstEncounterMeasurements data =
+viewChwActivityPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewChwActivityPane language currentDate isChw data =
     let
+        allChwMeasurementsWithDates =
+            data.chwPreviousMeasurementsWithDates
+                ++ (if isChw then
+                        [ ( currentDate, data.encounter.encounterType, data.measurements ) ]
+
+                    else
+                        []
+                   )
+
+        rows =
+            let
+                pregnancyDating =
+                    text "@todo"
+            in
+            []
+
         header =
-            div [ class "heading next-appointment" ]
-                [ div [ class "date" ] [ text <| translate language Translate.Date ]
-                , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
+            [ tr []
+                [ th [ class "date" ] [ text <| translate language Translate.Date ]
+                , th [ class "body-temperature" ] [ text <| translate language Translate.Actions ]
                 ]
+            ]
     in
     div [ class "chw-activity" ]
         [ viewItemHeading language Translate.ChwActivity "blue"
-        , div [ class "pane-content" ]
-            [ header ]
+        , table [ class "ui collapsing celled table" ]
+            [ thead [] header
+            , tbody [] rows
+            ]
         ]
 
 
