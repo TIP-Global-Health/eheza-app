@@ -2022,7 +2022,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsFollowUp ->
-            if List.member diagnosis == [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
+            if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
                 -- In these cases patient is sent to hospital, and
                 -- there's no need for CHW to follow up.
                 False
