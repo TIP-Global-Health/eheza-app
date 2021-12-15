@@ -20,7 +20,7 @@ chwFilters =
 
 nurseFilters : List CaseManagementFilter
 nurseFilters =
-    [ FilterContactsTrace ]
+    [ FilterContactsTrace, FilterPrenatalLabs ]
 
 
 generateNutritionFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem

@@ -99,6 +99,35 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_completed_tests'.
+  $field_bases['field_completed_tests'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_completed_tests',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'syphilis' => 'Syphilis',
+        'hepatitis-b' => 'Hepatitis B',
+        'blood-group' => 'Blood Group and Rhesus',
+        'urine-dipstick' => 'Urine Dipstick',
+        'hemoglobin' => 'Hemoglobin',
+        'random-blood-sugar' => 'Random Blood Sugar',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_execution_date'.
   $field_bases['field_execution_date'] = array(
     'active' => 1,
@@ -287,6 +316,35 @@ function hedley_prenatal_field_default_field_bases() {
         '+' => '+',
         '++' => '++',
         'n-a' => 'Not Applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_performed_tests'.
+  $field_bases['field_performed_tests'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_performed_tests',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'syphilis' => 'Syphilis',
+        'hepatitis-b' => 'Hepatitis B',
+        'blood-group' => 'Blood Group and Rhesus',
+        'urine-dipstick' => 'Urine Dipstick',
+        'hemoglobin' => 'Hemoglobin',
+        'random-blood-sugar' => 'Random Blood Sugar',
       ),
       'allowed_values_function' => '',
     ),

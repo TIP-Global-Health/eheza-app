@@ -265,6 +265,9 @@ decodeRevision =
                     "prenatal_follow_up" ->
                         decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
 
+                    "prenatal_labs_results" ->
+                        decodeWithUuid PrenatalLabsResultsRevision decodePrenatalLabsResults
+
                     "prenatal_malaria_test" ->
                         decodeWithUuid PrenatalMalariaTestRevision decodePrenatalMalariaTest
 

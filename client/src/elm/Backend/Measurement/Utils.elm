@@ -960,3 +960,11 @@ prenatalTestResultFromString value =
 
         _ ->
             Nothing
+
+
+{-| If lab results are not provided within 14 days, we consider the expired,
+and do not provide option of filling the results.
+-}
+prenatalLabExpirationPeriod : Int
+prenatalLabExpirationPeriod =
+    14

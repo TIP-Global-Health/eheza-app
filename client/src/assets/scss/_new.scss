@@ -3264,7 +3264,7 @@ div.page-case-management {
           margin: 3px 5px;
           padding: 0 10px;
           text-transform: uppercase;
-          width: 130px;
+          width: 135px;
 
           &.overdue {
             background: $color-velvet;
@@ -3293,10 +3293,14 @@ div.page-case-management {
           font-weight: 600;
           margin-left: 20px;
           text-align: left;
-          width: 285px;
+          width: 280px;
 
           p {
             margin-bottom: 0;
+          }
+
+          &.center {
+            text-align: center;
           }
         }
       }

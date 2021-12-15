@@ -84,7 +84,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
-import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..))
+import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -840,6 +840,8 @@ type TranslationId
     | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskResult Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskResultsHelper
+    | PrenatalLabsCaseManagementType
+    | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
     | PrenatalPhotoHelper
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
@@ -2408,6 +2410,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gushakisha abahuye n'uwanduye"
                     }
 
+                FilterPrenatalLabs ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Nothing
+                    }
+
         CaseManagementPaneHeader encounterType ->
             case encounterType of
                 FilterAcuteIllness ->
@@ -2428,6 +2435,11 @@ translationSet trans =
                 FilterContactsTrace ->
                     { english = "Contact Tracing"
                     , kinyarwanda = Just "Gushakisha abahuye n'uwanduye"
+                    }
+
+                FilterPrenatalLabs ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Nothing
                     }
 
         CentimeterShorthand ->
@@ -7025,6 +7037,23 @@ translationSet trans =
             { english = "When ready, update test results via case management"
             , kinyarwanda = Nothing
             }
+
+        PrenatalLabsCaseManagementType ->
+            { english = "ANC Lab Results"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsEntryState state ->
+            case state of
+                PrenatalLabsEntryPending ->
+                    { english = "Pending"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalLabsEntryClosingSoon ->
+                    { english = "Closing Soon"
+                    , kinyarwanda = Nothing
+                    }
 
         PrenatalPhotoHelper ->
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"

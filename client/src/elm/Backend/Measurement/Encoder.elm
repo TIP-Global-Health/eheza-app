@@ -804,6 +804,45 @@ encodePrenatalTestResult =
     prenatalTestResultToString >> string
 
 
+encodePrenatalLabsResults : PrenatalLabsResults -> List ( String, Value )
+encodePrenatalLabsResults =
+    encodePrenatalMeasurement encodePrenatalLabsResultsValue
+
+
+encodePrenatalLabsResultsValue : PrenatalLabsResultsValue -> List ( String, Value )
+encodePrenatalLabsResultsValue value =
+    [ ( "performed_tests", encodeEverySet encodePrenatalLaboratoryTest value.performedTests )
+    , ( "completed_tests", encodeEverySet encodePrenatalLaboratoryTest value.completedTests )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
+    ]
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_labs_results" )
+           ]
+
+
+encodePrenatalLaboratoryTest : PrenatalLaboratoryTest -> Value
+encodePrenatalLaboratoryTest value =
+    string <|
+        case value of
+            TestSyphilis ->
+                "syphilis"
+
+            TestHepatitisB ->
+                "hepatitis-b"
+
+            TestBloodGpRs ->
+                "blood-group"
+
+            TestUrineDipstick ->
+                "urine-dipstick"
+
+            TestHemoglobin ->
+                "hemoglobin"
+
+            TestRandomBloodSugar ->
+                "random-blood-sugar"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")

@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (AcuteIllnessTraceContact, FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..))
+import Backend.Measurement.Model exposing (AcuteIllnessTraceContact, FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..), PrenatalLabsResults)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
@@ -123,8 +123,12 @@ viewContentForNurse language currentDate healthCenterId model db followUps =
         contactsTracingPane =
             viewContactsTracingPane language currentDate followUps.traceContacts db model
 
+        prenatalLabsPane =
+            viewPrenatalLabsPane language currentDate followUps.prenatalLabs db model
+
         panes =
             [ ( FilterContactsTrace, contactsTracingPane )
+            , ( FilterPrenatalLabs, prenatalLabsPane )
             ]
                 |> List.filterMap
                     (\( type_, pane ) ->
@@ -723,7 +727,7 @@ viewContactsTracingPane language currentDate itemsDict db model =
             Dict.filter
                 (\_ item ->
                     let
-                        -- Initially, resolution date  is set to to on which
+                        -- Initially, resolution date is set to date on which
                         -- Covid isolation period is completed, which is 11-th
                         -- day after the contact.
                         -- We know that item is not resolved, if resolution
@@ -780,11 +784,10 @@ generateContactsTracingEntries :
     -> NominalDate
     -> Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     -> ModelIndexedDb
-    -> List ContactsTracingEntry
+    -> List ContactsTracingEntryData
 generateContactsTracingEntries language currentDate itemsDict db =
     Dict.map (generateContactsTracingEntryData language currentDate db) itemsDict
         |> Dict.values
-        |> Maybe.Extra.values
 
 
 generateContactsTracingEntryData :
@@ -793,7 +796,7 @@ generateContactsTracingEntryData :
     -> ModelIndexedDb
     -> AcuteIllnessTraceContactId
     -> AcuteIllnessTraceContact
-    -> Maybe ContactsTracingEntry
+    -> ContactsTracingEntryData
 generateContactsTracingEntryData language currentDate db itemId item =
     let
         name =
@@ -805,15 +808,14 @@ generateContactsTracingEntryData language currentDate db itemId item =
                 |> Maybe.map .name
                 |> Maybe.withDefault ""
     in
-    ContactsTracingEntry itemId name item.value.phoneNumber reporterName item.value.lastFollowUpDate
-        |> Just
+    ContactsTracingEntryData itemId name item.value.phoneNumber reporterName item.value.lastFollowUpDate
 
 
 viewTraceContactEntry :
     Language
     -> NominalDate
     -> ModelIndexedDb
-    -> ContactsTracingEntry
+    -> ContactsTracingEntryData
     -> Html Msg
 viewTraceContactEntry language currentDate db entry =
     let
@@ -830,5 +832,112 @@ viewTraceContactEntry language currentDate db entry =
             [ class "icon-forward"
             , onClick <| SetActivePage <| UserPage (TraceContactPage entry.itemId)
             ]
+            []
+        ]
+
+
+viewPrenatalLabsPane :
+    Language
+    -> NominalDate
+    -> Dict PrenatalLabsResultsId PrenatalLabsResults
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewPrenatalLabsPane language currentDate itemsDict db model =
+    let
+        filteredItemsDict =
+            Dict.filter
+                (\_ item ->
+                    let
+                        itemNotResolved =
+                            -- We know that item is not resolved, if resolution
+                            -- date is a future date.
+                            Date.compare currentDate item.value.resolutionDate == LT
+
+                        labsResultsPending =
+                            EverySet.size item.value.completedTests < EverySet.size item.value.performedTests
+                    in
+                    itemNotResolved && labsResultsPending
+                )
+                itemsDict
+
+        entries =
+            generatePrenatalLabsEntries language currentDate filteredItemsDict db
+
+        content =
+            if List.isEmpty entries then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                List.map (viewPrenatalLabsEntry language) entries
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language FilterPrenatalLabs
+        , div [ class "pane-content" ]
+            content
+        ]
+
+
+generatePrenatalLabsEntries :
+    Language
+    -> NominalDate
+    -> Dict PrenatalLabsResultsId PrenatalLabsResults
+    -> ModelIndexedDb
+    -> List PrenatalLabsEntryData
+generatePrenatalLabsEntries language currentDate itemsDict db =
+    Dict.values itemsDict
+        |> List.map (generatePrenatalLabsEntryData language currentDate db)
+        |> Maybe.Extra.values
+
+
+generatePrenatalLabsEntryData :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> PrenatalLabsResults
+    -> Maybe PrenatalLabsEntryData
+generatePrenatalLabsEntryData language currentDate db item =
+    Maybe.map
+        (\encounterId ->
+            let
+                name =
+                    Dict.get item.participantId db.people
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map .name
+                        |> Maybe.withDefault ""
+
+                state =
+                    if Date.diff Days currentDate item.value.resolutionDate < 8 then
+                        PrenatalLabsEntryClosingSoon
+
+                    else
+                        PrenatalLabsEntryPending
+            in
+            PrenatalLabsEntryData item.participantId name encounterId state
+        )
+        item.encounterId
+
+
+viewPrenatalLabsEntry :
+    Language
+    -> PrenatalLabsEntryData
+    -> Html Msg
+viewPrenatalLabsEntry language data =
+    let
+        entryStateClass =
+            "due "
+                ++ (case data.state of
+                        PrenatalLabsEntryClosingSoon ->
+                            "overdue"
+
+                        PrenatalLabsEntryPending ->
+                            "this-week"
+                   )
+    in
+    div [ class "follow-up-entry" ]
+        [ div [ class "name" ] [ text data.personName ]
+        , div [ class entryStateClass ] [ translateText language <| Translate.PrenatalLabsEntryState data.state ]
+        , div [ class "assesment center" ] [ translateText language Translate.PrenatalLabsCaseManagementType ]
+        , div [ class "icon-forward" ]
             []
         ]

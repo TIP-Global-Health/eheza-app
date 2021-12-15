@@ -67,6 +67,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_labs_results' => array(
+      'name' => t('Prenatal Labs Results'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_malaria_test' => array(
       'name' => t('Prenatal Malaria Test'),
       'base' => 'node_content',

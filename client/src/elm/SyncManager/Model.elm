@@ -120,6 +120,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalHemoglobinTest (BackendEntity PrenatalHemoglobinTest)
     | BackendAuthorityPrenatalHepatitisBTest (BackendEntity PrenatalHepatitisBTest)
     | BackendAuthorityPrenatalHIVTest (BackendEntity PrenatalHIVTest)
+    | BackendAuthorityPrenatalLabsResults (BackendEntity PrenatalLabsResults)
     | BackendAuthorityPrenatalMalariaTest (BackendEntity PrenatalMalariaTest)
     | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
     | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
