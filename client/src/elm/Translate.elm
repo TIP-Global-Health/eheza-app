@@ -879,6 +879,7 @@ type TranslationId
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | RecommendedButNotGivenDueTo
+    | RecommendedSymptomRelief
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -7244,6 +7245,11 @@ translationSet trans =
 
         RecommendedButNotGivenDueTo ->
             { english = "recommended but not given due to"
+            , kinyarwanda = Nothing
+            }
+
+        RecommendedSymptomRelief ->
+            { english = "Recommended Symptom Relief"
             , kinyarwanda = Nothing
             }
 

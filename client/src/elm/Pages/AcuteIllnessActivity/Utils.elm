@@ -687,11 +687,6 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
                     , 1 + derivedQuestionExists form.amoxicillin
                     )
 
-                Just DiagnosisLowRiskCovid19 ->
-                    ( taskCompleted form.paracetamol + derivedQuestionCompleted Paracetamol MedicationParacetamol form.paracetamol
-                    , 1 + derivedQuestionExists form.paracetamol
-                    )
-
                 _ ->
                     ( 0, 1 )
 
@@ -1377,18 +1372,6 @@ toTreatmentReviewValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
 
 
-fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
-fromMedicationDistributionValue saved =
-    { amoxicillin = Maybe.map (.distributionSigns >> EverySet.member Amoxicillin) saved
-    , coartem = Maybe.map (.distributionSigns >> EverySet.member Coartem) saved
-    , ors = Maybe.map (.distributionSigns >> EverySet.member ORS) saved
-    , zinc = Maybe.map (.distributionSigns >> EverySet.member Zinc) saved
-    , lemonJuiceOrHoney = Maybe.map (.distributionSigns >> EverySet.member LemonJuiceOrHoney) saved
-    , paracetamol = Maybe.map (.distributionSigns >> EverySet.member Paracetamol) saved
-    , nonAdministrationSigns = Maybe.map .nonAdministrationSigns saved
-    }
-
-
 medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefault form saved =
     saved
@@ -1400,7 +1383,6 @@ medicationDistributionFormWithDefault form saved =
                 , ors = or form.ors (EverySet.member ORS value.distributionSigns |> Just)
                 , zinc = or form.zinc (EverySet.member Zinc value.distributionSigns |> Just)
                 , lemonJuiceOrHoney = or form.lemonJuiceOrHoney (EverySet.member LemonJuiceOrHoney value.distributionSigns |> Just)
-                , paracetamol = or form.paracetamol (EverySet.member Paracetamol value.distributionSigns |> Just)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
@@ -1421,7 +1403,6 @@ toMedicationDistributionValue form =
             , ifNullableTrue ORS form.ors
             , ifNullableTrue Zinc form.zinc
             , ifNullableTrue LemonJuiceOrHoney form.lemonJuiceOrHoney
-            , ifNullableTrue Paracetamol form.paracetamol
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
@@ -1952,7 +1933,7 @@ resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTa
 resolveNextStepsTasks currentDate isChw assembled =
     if assembled.initialEncounter then
         -- The order is important. Do not change.
-        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
+        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw assembled then
@@ -1991,7 +1972,6 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisSimpleColdAndCough && ageMonths2To60)
                 || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonths2To60)
                 || (diagnosis == Just DiagnosisPneuminialCovid19)
-                || (diagnosis == Just DiagnosisLowRiskCovid19)
     in
     case task of
         NextStepsIsolation ->
@@ -2026,7 +2006,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                    )
 
         NextStepsHealthEducation ->
-            False
+            diagnosis == Just DiagnosisLowRiskCovid19
 
         NextStepsContactTracing ->
             (diagnosis == Just DiagnosisSevereCovid19)

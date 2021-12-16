@@ -1703,10 +1703,18 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                             Nothing
 
                 Just NextStepsHealthEducation ->
+                    let
+                        viewFormFunc =
+                            if assembled.initialEncounter && not isChw then
+                                viewSymptomsReliefForm
+
+                            else
+                                viewHealthEducationForm
+                    in
                     measurements.healthEducation
                         |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate diagnosis
+                        |> viewFormFunc language currentDate diagnosis
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
@@ -2349,36 +2357,6 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                 Just DiagnosisPneuminialCovid19 ->
                     amoxicillinAdministration
 
-                Just DiagnosisLowRiskCovid19 ->
-                    let
-                        paracetamolUpdateFunc value form_ =
-                            { form_ | paracetamol = Just value, nonAdministrationSigns = updateNonAdministrationSigns Paracetamol MedicationParacetamol value form_ }
-
-                        derivedQuestion =
-                            case form.paracetamol of
-                                Just False ->
-                                    viewDerivedQuestion Paracetamol MedicationParacetamol
-
-                                _ ->
-                                    []
-                    in
-                    ( isPersonAnAdult currentDate person
-                        |> Maybe.map
-                            (viewParacetamolAdministrationInstructions language Nothing
-                                >> div [ class "instructions simple-covid19" ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Paracetamol)
-                      , viewBoolInput
-                            language
-                            form.paracetamol
-                            (SetMedicationDistributionBoolInput paracetamolUpdateFunc)
-                            "paracetamol-medication"
-                            Nothing
-                      ]
-                        ++ derivedQuestion
-                    )
-
                 _ ->
                     ( emptyNode, [] )
     in
@@ -2938,6 +2916,62 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                         ++ healthEducationSection
             )
         |> Maybe.withDefault emptyNode
+
+
+viewSymptomsReliefForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
+viewSymptomsReliefForm language currentDate maybeDiagnosis form =
+    -- let
+    --     healthEducationSection =
+    --         let
+    --             providedHealthEducation =
+    --                 form.educationForDiagnosis
+    --                     |> Maybe.withDefault True
+    --
+    --             reasonForNotProvidingHealthEducationOptions =
+    --                 [ PatientNeedsEmergencyReferral
+    --                 , ReceivedEmergencyCase
+    --                 , LackOfAppropriateEducationUserGuide
+    --                 , PatientRefused
+    --                 ]
+    --
+    --             reasonForNotProvidingHealthEducation =
+    --                 if not providedHealthEducation then
+    --                     [ viewQuestionLabel language Translate.WhyNot
+    --                     , viewCheckBoxSelectInput language
+    --                         reasonForNotProvidingHealthEducationOptions
+    --                         []
+    --                         form.reasonForNotProvidingHealthEducation
+    --                         SetReasonForNotProvidingHealthEducation
+    --                         Translate.ReasonForNotProvidingHealthEducation
+    --                     ]
+    --
+    --                 else
+    --                     []
+    --         in
+    --         maybeDiagnosis
+    --             |> Maybe.map
+    --                 (\diagnosis ->
+    --                     [ div [ class "label" ]
+    --                         [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+    --                         , text " "
+    --                         , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+    --                         , text "?"
+    --                         , viewBoolInput
+    --                             language
+    --                             form.educationForDiagnosis
+    --                             SetProvidedEducationForDiagnosis
+    --                             "education-for-diagnosis"
+    --                             Nothing
+    --                         ]
+    --                     ]
+    --                         ++ reasonForNotProvidingHealthEducation
+    --                 )
+    --             |> Maybe.withDefault [ emptyNode ]
+    -- in
+    div [ class "ui form symptoms-relief" ] <|
+        [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
+        , viewLabel language Translate.RecommendedSymptomRelief
+        ]
 
 
 viewHealthEducationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any

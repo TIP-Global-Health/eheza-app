@@ -362,7 +362,7 @@ emptyNextStepsData =
     , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , call114Form = emptyCall114Form
     , sendToHCForm = emptySendToHCForm
-    , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
     , followUpForm = FollowUpForm Nothing
     , contactsTracingForm = emptyContactsTracingForm
@@ -420,7 +420,6 @@ type alias MedicationDistributionForm =
     , ors : Maybe Bool
     , zinc : Maybe Bool
     , lemonJuiceOrHoney : Maybe Bool
-    , paracetamol : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     }
 
