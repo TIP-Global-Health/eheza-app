@@ -1696,7 +1696,7 @@ resolveVitaminADosageAndIcon currentDate person =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
-                if ageMonths < 18 then
+                if ageMonths <= 12 then
                     ( "100,000 IU", "icon-capsule blue" )
 
                 else
