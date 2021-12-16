@@ -71,6 +71,7 @@ import Pages.AcuteIllnessActivity.Types
         , OngoingTreatmentTask(..)
         , PhysicalExamTask(..)
         , PriorTreatmentTask(..)
+        , SymptomReliefType(..)
         , SymptomsTask(..)
         )
 import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
@@ -902,6 +903,7 @@ type TranslationId
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
     | ProvidedPreventionEducationQuestionShort
+    | ProvidedSymtomReliefGuidanceQuestion
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -913,6 +915,7 @@ type TranslationId
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | RecommendedButNotGivenDueTo
+    | RecommendedSymptomRelief
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -1029,6 +1032,7 @@ type TranslationId
     | SuspectedCovid19CaseContactHC
     | SuspectedCovid19CasePerformRapidTest
     | SuspectedCovid19CaseReferToHCForTesting
+    | SymptomRelief SymptomReliefType
     | Symptoms
     | SymptomsAtFirstEncounter
     | SymptomsGeneralSign SymptomsGeneralSign
@@ -1393,8 +1397,8 @@ translationSet trans =
                     }
 
                 DiagnosisLowRiskCovid19 ->
-                    { english = "Low risk COVID-19"
-                    , kinyarwanda = Just "Uburwayi bwa Covid-19 budakabije"
+                    { english = "Simple COVID-19"
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 bworoheje"
                     }
 
                 DiagnosisMalariaComplicated ->
@@ -1470,8 +1474,8 @@ translationSet trans =
                     }
 
                 DiagnosisLowRiskCovid19 ->
-                    { english = "Low risk COVID-19"
-                    , kinyarwanda = Just "Uburwayi bwa Covid-19 budakabije"
+                    { english = "Simple COVID-19"
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 bworoheje"
                     }
 
                 DiagnosisMalariaComplicated ->
@@ -7758,6 +7762,11 @@ translationSet trans =
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho"
             }
 
+        ProvidedSymtomReliefGuidanceQuestion ->
+            { english = "Have you provided the guidance for symptom relief"
+            , kinyarwanda = Nothing
+            }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
@@ -7945,6 +7954,11 @@ translationSet trans =
 
         RecommendedButNotGivenDueTo ->
             { english = "recommended but not given due to"
+            , kinyarwanda = Nothing
+            }
+
+        RecommendedSymptomRelief ->
+            { english = "Recommended Symptom Relief"
             , kinyarwanda = Nothing
             }
 
@@ -8732,6 +8746,28 @@ translationSet trans =
             { english = "Refer to Health Center for testing"
             , kinyarwanda = Nothing
             }
+
+        SymptomRelief type_ ->
+            case type_ of
+                SymptomReliefParacetamol ->
+                    { english = "Paracetamol for Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomReliefVitaminC ->
+                    { english = "Effervescent Vitamin C tablets"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomReliefPaidoterineSyrup ->
+                    { english = "Paidoterin syrup as a decongestant"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomReliefCoughMixture ->
+                    { english = "Cough mixtures such as Ascoril, Bronchalene, etc."
+                    , kinyarwanda = Nothing
+                    }
 
         Symptoms ->
             { english = "Symptoms"

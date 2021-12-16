@@ -964,12 +964,6 @@ genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithD
         expectedSigns =
             expectedECDSignsOnMilestone birthDate milestoneDate firstEncounterDateAfterMilestone
 
-        _ =
-            Debug.log "milestone" milestone
-
-        _ =
-            Debug.log "expectedSigns" expectedSigns
-
         completedSigns =
             generateCompletedECDSigns measurementsForPeriod
     in

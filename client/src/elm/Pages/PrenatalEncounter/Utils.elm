@@ -390,25 +390,23 @@ generateRecurringHighSeverityAlertData language currentDate isChw data alert =
         BloodPressure ->
             let
                 resolveAlert ( date, measurements ) =
-                    measurements.vitals
+                    getMeasurementValueFunc measurements.vitals
                         |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    sys =
-                                        Tuple.second measurement |> .value |> .sys
+                            (\value ->
+                                case ( value.sys, value.dia ) of
+                                    ( Just sys, Just dia ) ->
+                                        if sys > 180 || dia > 100 then
+                                            Just
+                                                ( trans Translate.High ++ " " ++ transAlert alert
+                                                , String.fromFloat sys ++ "/" ++ String.fromFloat dia ++ trans Translate.MMHGUnit
+                                                , formatDDMMYYYY date
+                                                )
 
-                                    dia =
-                                        Tuple.second measurement |> .value |> .dia
-                                in
-                                if sys > 180 || dia > 100 then
-                                    Just
-                                        ( trans Translate.High ++ " " ++ transAlert alert
-                                        , String.fromFloat sys ++ "/" ++ String.fromFloat dia ++ trans Translate.MMHGUnit
-                                        , formatDDMMYYYY date
-                                        )
+                                        else
+                                            Nothing
 
-                                else
-                                    Nothing
+                                    _ ->
+                                        Nothing
                             )
             in
             getAllNurseMeasurements currentDate isChw data
@@ -746,21 +744,19 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                     getAllNurseMeasurements currentDate isChw data
                         |> List.filterMap
                             (\( _, measurements ) ->
-                                measurements.vitals
+                                getMeasurementValueFunc measurements.vitals
                                     |> Maybe.andThen
-                                        (\measurement ->
-                                            let
-                                                sys =
-                                                    Tuple.second measurement |> .value |> .sys
+                                        (\value ->
+                                            case ( value.sys, value.dia ) of
+                                                ( Just sys, Just dia ) ->
+                                                    if sys < 110 || dia < 70 then
+                                                        Just True
 
-                                                dia =
-                                                    Tuple.second measurement |> .value |> .dia
-                                            in
-                                            if sys < 110 || dia < 70 then
-                                                Just True
+                                                    else
+                                                        Nothing
 
-                                            else
-                                                Nothing
+                                                _ ->
+                                                    Nothing
                                         )
                             )
                         |> List.length
@@ -781,21 +777,19 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                         getAllNurseMeasurements currentDate isChw data
                             |> List.filterMap
                                 (\( _, measurements ) ->
-                                    measurements.vitals
+                                    getMeasurementValueFunc measurements.vitals
                                         |> Maybe.andThen
-                                            (\measurement ->
-                                                let
-                                                    sys =
-                                                        Tuple.second measurement |> .value |> .sys
+                                            (\value ->
+                                                case ( value.sys, value.dia ) of
+                                                    ( Just sys, Just dia ) ->
+                                                        if sys > 140 || dia > 90 then
+                                                            Just True
 
-                                                    dia =
-                                                        Tuple.second measurement |> .value |> .dia
-                                                in
-                                                if sys > 140 || dia > 90 then
-                                                    Just True
+                                                        else
+                                                            Nothing
 
-                                                else
-                                                    Nothing
+                                                    _ ->
+                                                        Nothing
                                             )
                                 )
                             |> List.length
@@ -809,39 +803,37 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
         DiagnosisPreeclampsiaHighRisk ->
             let
                 resolveAlert measurements =
-                    measurements.vitals
+                    getMeasurementValueFunc measurements.vitals
                         |> Maybe.andThen
-                            (\vitals ->
-                                let
-                                    sys =
-                                        Tuple.second vitals |> .value |> .sys
+                            (\value ->
+                                case ( value.sys, value.dia ) of
+                                    ( Just sys, Just dia ) ->
+                                        if sys > 140 || dia > 90 then
+                                            measurements.corePhysicalExam
+                                                |> Maybe.andThen
+                                                    (\corePhysicalExam ->
+                                                        let
+                                                            hands =
+                                                                Tuple.second corePhysicalExam |> .value |> .hands
 
-                                    dia =
-                                        Tuple.second vitals |> .value |> .dia
-                                in
-                                if sys > 140 || dia > 90 then
-                                    measurements.corePhysicalExam
-                                        |> Maybe.andThen
-                                            (\corePhysicalExam ->
-                                                let
-                                                    hands =
-                                                        Tuple.second corePhysicalExam |> .value |> .hands
+                                                            legs =
+                                                                Tuple.second corePhysicalExam |> .value |> .legs
+                                                        in
+                                                        if
+                                                            EverySet.member Backend.Measurement.Model.EdemaHands hands
+                                                                || EverySet.member Backend.Measurement.Model.EdemaLegs legs
+                                                        then
+                                                            Just (transAlert diagnosis)
 
-                                                    legs =
-                                                        Tuple.second corePhysicalExam |> .value |> .legs
-                                                in
-                                                if
-                                                    EverySet.member Backend.Measurement.Model.EdemaHands hands
-                                                        || EverySet.member Backend.Measurement.Model.EdemaLegs legs
-                                                then
-                                                    Just (transAlert diagnosis)
+                                                        else
+                                                            Nothing
+                                                    )
 
-                                                else
-                                                    Nothing
-                                            )
+                                        else
+                                            Nothing
 
-                                else
-                                    Nothing
+                                    _ ->
+                                        Nothing
                             )
             in
             -- If vitals and corePhysicalExam measurements were taken

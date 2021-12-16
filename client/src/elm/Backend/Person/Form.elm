@@ -420,7 +420,7 @@ validateContact =
                 |> andMap (field sector validateSectorForContact)
                 |> andMap (field cell validateCellForContact)
                 |> andMap (field village validateVillageForContact)
-                |> andMap (field phoneNumber validateRequiredPhoneNumber)
+                |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
                 |> andMap (succeed Nothing)
@@ -706,18 +706,6 @@ validateHealthCenterId : Maybe Person -> Validation ValidationError (Maybe Healt
 validateHealthCenterId related =
     fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEntityUuid)
         |> withDefault (Maybe.andThen .healthCenterId related)
-
-
-validateRequiredPhoneNumber : Validation ValidationError (Maybe String)
-validateRequiredPhoneNumber =
-    string
-        |> mapError (\_ -> customError RequiredField)
-        |> andThen
-            (String.trim
-                >> format allDigitsPattern
-                >> mapError (\_ -> customError DigitsOnly)
-            )
-        |> required
 
 
 

@@ -1,6 +1,13 @@
 module Pages.AcuteIllnessActivity.Types exposing (..)
 
 
+type SymptomReliefType
+    = SymptomReliefParacetamol
+    | SymptomReliefVitaminC
+    | SymptomReliefPaidoterineSyrup
+    | SymptomReliefCoughMixture
+
+
 type SymptomsTask
     = SymptomsGeneral
     | SymptomsRespiratory

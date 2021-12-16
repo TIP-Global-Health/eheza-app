@@ -816,10 +816,10 @@ viewVitalsForm language currentDate isChw assembled form =
         formConfig =
             { setIntInputMsg = SetVitalsIntInput
             , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .sys
-            , diaBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .dia
+            , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+            , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
             , heartRatePreviousValue =
-                resolvePreviousValue assembled .vitals .heartRate
+                resolvePreviousMaybeValue assembled .vitals .heartRate
                     |> Maybe.map toFloat
             , respiratoryRatePreviousValue =
                 resolvePreviousValue assembled .vitals .respiratoryRate
@@ -1644,7 +1644,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task )
+                        ( task, nextStepsTasksCompletedFromTotal isChw assembled.initialEncounter diagnosis measurements data task )
                     )
                 |> Dict.fromList
 
@@ -1699,10 +1699,18 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                             Nothing
 
                 Just NextStepsHealthEducation ->
+                    let
+                        viewFormFunc =
+                            if assembled.initialEncounter && not isChw then
+                                viewSymptomsReliefForm
+
+                            else
+                                viewHealthEducationForm
+                    in
                     measurements.healthEducation
                         |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate diagnosis
+                        |> viewFormFunc language currentDate diagnosis
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
@@ -2345,36 +2353,6 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                 Just DiagnosisPneuminialCovid19 ->
                     amoxicillinAdministration
 
-                Just DiagnosisLowRiskCovid19 ->
-                    let
-                        paracetamolUpdateFunc value form_ =
-                            { form_ | paracetamol = Just value, nonAdministrationSigns = updateNonAdministrationSigns Paracetamol MedicationParacetamol value form_ }
-
-                        derivedQuestion =
-                            case form.paracetamol of
-                                Just False ->
-                                    viewDerivedQuestion Paracetamol MedicationParacetamol
-
-                                _ ->
-                                    []
-                    in
-                    ( isPersonAnAdult currentDate person
-                        |> Maybe.map
-                            (viewParacetamolAdministrationInstructions language Nothing
-                                >> div [ class "instructions simple-covid19" ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Paracetamol)
-                      , viewBoolInput
-                            language
-                            form.paracetamol
-                            (SetMedicationDistributionBoolInput paracetamolUpdateFunc)
-                            "paracetamol-medication"
-                            Nothing
-                      ]
-                        ++ derivedQuestion
-                    )
-
                 _ ->
                     ( emptyNode, [] )
     in
@@ -2934,6 +2912,34 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                         ++ healthEducationSection
             )
         |> Maybe.withDefault emptyNode
+
+
+viewSymptomsReliefForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
+viewSymptomsReliefForm language currentDate maybeDiagnosis form =
+    let
+        viewSymptomRelief symptomsRelief =
+            li [] [ text <| translate language <| Translate.SymptomRelief symptomsRelief ]
+
+        symptomsReliefList =
+            [ SymptomReliefParacetamol
+            , SymptomReliefVitaminC
+            , SymptomReliefPaidoterineSyrup
+            , SymptomReliefCoughMixture
+            ]
+    in
+    div [ class "ui form symptoms-relief" ] <|
+        [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
+        , viewLabel language Translate.RecommendedSymptomRelief
+        , ul [] <|
+            List.map viewSymptomRelief symptomsReliefList
+        , viewQuestionLabel language Translate.ProvidedSymtomReliefGuidanceQuestion
+        , viewBoolInput
+            language
+            form.educationForDiagnosis
+            SetProvidedEducationForDiagnosis
+            "education-for-diagnosis"
+            Nothing
+        ]
 
 
 viewHealthEducationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any

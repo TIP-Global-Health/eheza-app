@@ -19,6 +19,7 @@ expected (and not completed).
 -}
 
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacValueFunc, weightValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -282,27 +283,27 @@ generateHighSeverityAlertData language currentDate isChw data alert =
                 resolveAlert lastEncounterMeasurementsWithDate
 
         HeartRate ->
-            data.measurements.vitals
+            getMeasurementValueFunc data.measurements.vitals
                 |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value |> .heartRate
-                        in
-                        if value >= 120 then
-                            Just
-                                ( trans Translate.High ++ " " ++ transAlert alert
-                                , trans <| Translate.BpmUnit value
-                                )
+                    (\value ->
+                        Maybe.andThen
+                            (\heartRate ->
+                                if heartRate >= 120 then
+                                    Just
+                                        ( trans Translate.High ++ " " ++ transAlert alert
+                                        , trans <| Translate.BpmUnit heartRate
+                                        )
 
-                        else if value < 40 then
-                            Just
-                                ( trans Translate.Low ++ " " ++ transAlert alert
-                                , trans <| Translate.BpmUnit value
-                                )
+                                else if heartRate < 40 then
+                                    Just
+                                        ( trans Translate.Low ++ " " ++ transAlert alert
+                                        , trans <| Translate.BpmUnit heartRate
+                                        )
 
-                        else
-                            Nothing
+                                else
+                                    Nothing
+                            )
+                            value.heartRate
                     )
 
         RespiratoryRate ->
