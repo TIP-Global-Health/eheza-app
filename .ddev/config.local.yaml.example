@@ -7,6 +7,15 @@ hooks:
         > 0 AND mail LIKE '%~%'"
     # This will be applied to production with a future release.
     - exec: drush sqlq "DELETE FROM system WHERE name='hedley_pusher'"
+    - exec: drush updb -y
+    - exec: drush updb -y
+    # Modules can come and go, production might be behind.
+    - exec: wget https://ftp.drupal.org/files/projects/registry_rebuild-7.x-2.5.tar.gz
+    - exec: tar -xvf registry_rebuild-7.x-2.5.tar.gz --directory ~/.drush
+    - exec: rm registry_rebuild-7.x-2.5.tar.gz
+    - exec: drush cc all
+    - exec: drush rr
+    - exec: drush cc all
     - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y
     - exec: drush uli
