@@ -19,11 +19,11 @@ To install the certificate in the Android emulator, use the following steps:
 To run the HTTPS server, just go `gulp emulator`. It will use the certificates
 which you just generated.
 
-Then, there's one more step. The certificates are set up for `ihangane.dev`, so
-you need to edit your Android /system/etc/hosts file to point `ihangane.dev` at
+Then, there's one more step. The certificates are set up for `eheza-app.dev`, so
+you need to edit your Android /system/etc/hosts file to point `eheza-app.dev` at
 your local machine. (Or, if you control your DNS server, you could do it that
 way instead). Now, the Android emulator sets things up so that your local
-machine is 10.0.2.2. So, that's what you need to point `ihangane.dev` at.
+machine is 10.0.2.2. So, that's what you need to point `eheza-app.dev` at.
 
 To do that, you need to do roughly the following steps. (This is in addition
 to "normal" emulator setup).
@@ -47,11 +47,11 @@ to "normal" emulator setup).
       ./adb remount
       ./adb pull /system/etc/hosts
 
-- Edit the hosts file you fetched to add `ihangane.dev`
+- Edit the hosts file you fetched to add `eheza-app.dev`
 
   So, something like adding a new line like this:
 
-      10.0.2.2        ihangane.dev
+      10.0.2.2        eheza-app.dev
 
 - Push the file back to the emulator.
 
@@ -63,7 +63,7 @@ And, that should do it. Just remember that from now on you have to start the
 emulator with the `-writable-system` option -- it just stalls otherwise.
 
 Oh, also remember to make an entry in `LocalConfig.elm` to cover
-`ihangane.dev`. The `backendUrl` entry there is going to also have to be HTTPS.
+`eheza-app.dev`. The `backendUrl` entry there is going to also have to be HTTPS.
 So, you'll need to use the same cert & key files to configure whatever HTTP
 server you're using for the backend as well. (Alternatively, perhaps we could
 set up a proxy via BrowserSync).

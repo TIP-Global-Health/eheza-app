@@ -291,57 +291,6 @@ function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $fa
 }
 
 /**
- * Function creates Taxonomy vocabulary that describes GeoLocations.
- *
- * Currently, it's only use is to generate GeoLocation data structure that
- * will be set on client.
- *
- * Structure:
- *  - Level 0: province
- *  - Level 1: district
- *  - Level 2: sector
- *  - Level 3: cell
- *  - Level 4: village
- */
-function hedley_migrate_generate_geo_terms_vocabulary() {
-  if (taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
-    // Vocabulary already exists.
-    return;
-  }
-
-  // Create new vocabulary.
-  $vocabulary = (object) array(
-    'name' => 'Ihangane geolocation vocabulary',
-    'description' => 'This vocabulary lists all geolocations',
-    'machine_name' => 'ihangane_geolocation',
-  );
-  taxonomy_vocabulary_save($vocabulary);
-
-  // Load input file.
-  $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
-  $source_file = $migrate_dir . '/csv/geo_locations.csv';
-
-  $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
-
-  foreach ($column_mapping as $column) {
-    $data[] = [];
-  }
-
-  // Used to check if term exists (was previously created), so we can
-  // skip it.
-  $locator = [];
-
-  $handler = fopen($source_file, 'r');
-  while ($row = fgetcsv($handler)) {
-    foreach ($row as $index => $column) {
-      _hedley_migrate_process_column($data, $locator, $index, $row, $vocabulary->vid, $column_mapping);
-    }
-  }
-
-  fclose($handler);
-}
-
-/**
  * Processes a column form input file row.
  *
  * Row contains 5 columns:
@@ -390,29 +339,6 @@ function _hedley_migrate_process_column(array &$data, array &$locator, $index, a
 
   // Update data and locator arrays with new term.
   $data[$index][$row[$index]] = $locator[$locator_index] = $term->tid;
-}
-
-/**
- * Generates static geolocation structure to be used by client.
- */
-function hedley_migrate_generate_geolocation_structure_for_client() {
-  if (!$vocabulary = taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
-    // Vocabulary does not exist.
-    return;
-  }
-
-  $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
-  foreach ($column_mapping as $index => $column) {
-    $data[$index] = [];
-
-    $data[$index]['tids'] = $index == 0 ?
-      // We specify vocabulary ID only for top level.
-      _hedley_migrate_get_children_by_parents([0], $vocabulary->vid) :
-      // We know for sure that all other levels belong to same vocabulary.
-      _hedley_migrate_get_children_by_parents($data[$index - 1]['tids']);
-
-    $data[$index][$column] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
-  }
 }
 
 /**

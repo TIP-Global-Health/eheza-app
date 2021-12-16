@@ -115,7 +115,7 @@ function hedley_admin_vbo_export_csv($variables) {
  * Implements hook_block_info().
  */
 function hedley_admin_block_info() {
-  $blocks['ihangane_sidebar_menu'] = [
+  $blocks['eheza_app_sidebar_menu'] = [
     'info' => t('E-Heza Admin Menu'),
     'cache' => DRUPAL_CACHE_GLOBAL,
   ];
@@ -127,13 +127,13 @@ function hedley_admin_block_info() {
  * Implements hook_block_view().
  */
 function hedley_admin_block_view($delta) {
-  if ($delta != 'ihangane_sidebar_menu') {
+  if ($delta != 'eheza_app_sidebar_menu') {
     return;
   }
 
   $query = db_select('menu_links', 'm');
   $query->fields('m', ['link_path', 'link_title', 'options']);
-  $query->condition('menu_name', 'menu-ihangane-admin-menu');
+  $query->condition('menu_name', 'menu-eheza-app-admin-menu');
   $query->orderBy('weight');
 
   $results = $query->execute()->fetchAll();

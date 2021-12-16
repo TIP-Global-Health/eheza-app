@@ -328,14 +328,14 @@ gulp.task("serve:emulator", ["build", "ssl-cert"], function() {
   });
 });
 
-// Makes an SSL certificate for ihangane.dev for the Android emulator. Just
+// Makes an SSL certificate for eheza-app.dev for the Android emulator. Just
 // run this once, and then do what is necessary to trust it.
 gulp.task("ssl-cert", function(cb) {
   fs.access("ssl/ssl.crt", fs.constants.F_OK, (err) => {
     if (err) {
       // Doesn't exist, so create cert.
       const cmdGen =
-        "openssl req -batch -config ssl/ihangane.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
+        "openssl req -batch -config ssl/eheza-app.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
       exec(cmdGen, {}, function(err, stdout, stderr) {
         console.log(stdout);
         console.log(stderr);
@@ -416,7 +416,7 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
 
   return workboxBuild.generateSW({
     swDest: 'serve/service-worker.js',
-    cacheId: 'ihangane',
+    cacheId: 'eheza-app',
     globDirectory: 'serve',
     globPatterns: precacheLocalDev,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
@@ -441,7 +441,7 @@ gulp.task('pwa:prod', function() {
 
   return workboxBuild.generateSW({
     swDest: 'dist/service-worker.js',
-    cacheId: 'ihangane',
+    cacheId: 'eheza-app',
     globDirectory: 'dist',
     globPatterns: precacheProd,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
