@@ -349,6 +349,18 @@ resolvePreviousValue assembled measurementFunc valueFunc =
         |> List.head
 
 
+resolvePreviousMaybeValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> Maybe b) -> Maybe b
+resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    assembled.nursePreviousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
+
+
 fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
 fromBreastExamValue saved =
     { breast = Maybe.map (.exam >> EverySet.toList) saved

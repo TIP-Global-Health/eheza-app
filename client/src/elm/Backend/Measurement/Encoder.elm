@@ -1151,26 +1151,24 @@ encodeVitals =
 encodeVitalsValueWithType : String -> VitalsValue -> List ( String, Value )
 encodeVitalsValueWithType type_ value =
     let
-        optionals =
-            encodeOptionalFloatValue "sys" value.sys
-                ++ encodeOptionalFloatValue "dia" value.dia
-                ++ encodeOptionalIntValue "heart_rate" value.heartRate
+        sysEntry =
+            Maybe.map (\sys -> [ ( "sys", float sys ) ])
+                value.sys
+                |> Maybe.withDefault []
 
-        encodeOptionalFloatValue name floatValue =
-            if floatValue == floatMeasurementNotSetValue then
-                []
+        diaEntry =
+            Maybe.map (\dia -> [ ( "dia", float dia ) ])
+                value.dia
+                |> Maybe.withDefault []
 
-            else
-                [ ( name, float floatValue ) ]
-
-        encodeOptionalIntValue name intValue =
-            if intValue == intMeasurementNotSetValue then
-                []
-
-            else
-                [ ( name, int intValue ) ]
+        heartRateEntry =
+            Maybe.map (\heartRate -> [ ( "heartRate", int heartRate ) ])
+                value.heartRate
+                |> Maybe.withDefault []
     in
-    optionals
+    sysEntry
+        ++ diaEntry
+        ++ heartRateEntry
         ++ [ ( "respiratory_rate", int value.respiratoryRate )
            , ( "body_temperature", float value.bodyTemperature )
            , ( "deleted", bool False )

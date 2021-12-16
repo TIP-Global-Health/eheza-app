@@ -1295,7 +1295,7 @@ expectedECDSignsByAge currentDate assembled =
 
                     groupedSigns =
                         ageInMonthsAtLastAssessment assembled
-                            |> groupedECDSigns
+                            |> groupedECDSigns ageMonths
                 in
                 ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
             )
@@ -1313,7 +1313,7 @@ expectedECDSignsOnMilestone birthDate milestoneDate firstEncounterDateAfterMiles
 
         groupedSigns =
             Maybe.map (Date.diff Months birthDate) firstEncounterDateAfterMilestone
-                |> groupedECDSigns
+                |> groupedECDSigns ageMonths
     in
     ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
 
@@ -1362,8 +1362,8 @@ ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns =
         List.concat groupedSigns
 
 
-groupedECDSigns : Maybe Int -> List (List ECDSign)
-groupedECDSigns ageMonthsAtLastAssessment =
+groupedECDSigns : Int -> Maybe Int -> List (List ECDSign)
+groupedECDSigns ageMonths ageMonthsAtLastAssessment =
     let
         ( from5Weeks, from13Weeks ) =
             Maybe.map
@@ -1377,6 +1377,16 @@ groupedECDSigns ageMonthsAtLastAssessment =
                 ageMonthsAtLastAssessment
                 |> Maybe.withDefault ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
 
+        ecdSigns6To12MonthsByAge =
+            if ageMonths > 12 then
+                []
+
+            else if ageMonths >= 9 then
+                ecdSigns6To12MonthsMajors
+
+            else
+                ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
+
         ecdSigns6To12Months =
             Maybe.map
                 (\ageMonthsLastAssessment ->
@@ -1385,6 +1395,9 @@ groupedECDSigns ageMonthsAtLastAssessment =
 
                     else if ageMonthsLastAssessment >= 9 then
                         ecdSigns6To12MonthsMajors
+
+                    else if ageMonthsLastAssessment >= 6 then
+                        ecdSigns6To12MonthsByAge
 
                     else
                         ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors

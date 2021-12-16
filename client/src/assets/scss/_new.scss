@@ -908,7 +908,8 @@ div.page-activity.trace-contact {
     .ui.form.isolation,
     .ui.form.health-education,
     .ui.form.follow-up,
-    .ui.form.contacts-tracing {
+    .ui.form.contacts-tracing,
+    .ui.form.symptoms-relief {
 
       h2 {
         text-transform: uppercase;
@@ -1149,6 +1150,13 @@ div.page-activity.trace-contact {
         .dual-action {
           margin-top: 20px;
         }
+      }
+    }
+
+    .ui.form.symptoms-relief {
+
+      ul {
+        margin-top: 10px;
       }
     }
 
