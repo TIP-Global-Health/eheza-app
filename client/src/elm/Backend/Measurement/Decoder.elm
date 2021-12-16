@@ -1174,9 +1174,9 @@ decodeVitals =
 decodeVitalsValue : Decoder VitalsValue
 decodeVitalsValue =
     succeed VitalsValue
-        |> optional "sys" decodeFloat floatMeasurementNotSetValue
-        |> optional "dia" decodeFloat floatMeasurementNotSetValue
-        |> optional "heart_rate" decodeInt intMeasurementNotSetValue
+        |> optional "sys" (nullable decodeFloat) Nothing
+        |> optional "dia" (nullable decodeFloat) Nothing
+        |> optional "heart_rate" (nullable decodeInt) Nothing
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
 

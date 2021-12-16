@@ -3028,13 +3028,14 @@ vomitingAtSymptoms measurements =
 bloodPressureIndicatesSevereCovid19 : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesSevereCovid19 measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map
+        |> Maybe.andThen
             (\value ->
-                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
-                    False
-
-                else
-                    value.sys < 90 || value.dia < 60
+                Maybe.map2
+                    (\sys dia ->
+                        sys < 90 || dia < 60
+                    )
+                    value.sys
+                    value.dia
             )
         |> Maybe.withDefault False
 
@@ -3042,13 +3043,9 @@ bloodPressureIndicatesSevereCovid19 measurements =
 bloodPressureIndicatesCovid19WithPneumonia : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesCovid19WithPneumonia measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map
+        |> Maybe.andThen
             (\value ->
-                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
-                    False
-
-                else
-                    value.sys <= 100
+                Maybe.map (\sys -> sys <= 100) value.sys
             )
         |> Maybe.withDefault False
 
@@ -3146,6 +3143,18 @@ resolvePreviousValue assembled measurementFunc valueFunc =
             (.measurements
                 >> measurementFunc
                 >> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
+
+
+resolvePreviousMaybeValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> Maybe b) -> Maybe b
+resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    assembled.previousEncountersData
+        |> List.filterMap
+            (.measurements
+                >> measurementFunc
+                >> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head
