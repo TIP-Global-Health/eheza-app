@@ -58,6 +58,8 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.View
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
+import Pages.PrenatalLabResults.Model
+import Pages.PrenatalLabResults.View
 import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipant.View
 import Pages.Relationship.Model
@@ -488,6 +490,16 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.PrenatalActivity.View.view model.language currentDate id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
+                            |> flexPageWrapper model
+
+                    PrenatalLabResultsPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.prenatalLabResultsPages
+                                    |> Maybe.withDefault Pages.PrenatalLabResults.Model.emptyModel
+                        in
+                        Pages.PrenatalLabResults.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalLabResults id)
                             |> flexPageWrapper model
 
                     IndividualEncounterTypesPage ->

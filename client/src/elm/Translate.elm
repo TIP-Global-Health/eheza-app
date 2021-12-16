@@ -838,6 +838,32 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalLaboratoryBloodGroupTestResult
+    | PrenatalLaboratoryBloodGroup BloodGroup
+    | PrenatalLaboratoryRhesusTestResult
+    | PrenatalLaboratoryRhesus Rhesus
+    | PrenatalLaboratoryProteinTestResult
+    | PrenatalLaboratoryProteinValue ProteinValue
+    | PrenatalLaboratoryPHTestResult
+    | PrenatalLaboratoryPHValue PHValue
+    | PrenatalLaboratoryGlucoseTestResult
+    | PrenatalLaboratoryGlucoseValue GlucoseValue
+    | PrenatalLaboratoryLeukocytesTestResult
+    | PrenatalLaboratoryLeukocytesValue LeukocytesValue
+    | PrenatalLaboratoryNitriteTestResult
+    | PrenatalLaboratoryNitriteValue NitriteValue
+    | PrenatalLaboratoryUrobilinogenTestResult
+    | PrenatalLaboratoryUrobilinogenValue UrobilinogenValue
+    | PrenatalLaboratoryHaemoglobinTestResult
+    | PrenatalLaboratoryHaemoglobinValue HaemoglobinValue
+    | PrenatalLaboratorySpecificGravityTestResult
+    | PrenatalLaboratorySpecificGravityValue SpecificGravityValue
+    | PrenatalLaboratoryKetoneTestResult
+    | PrenatalLaboratoryKetoneValue KetoneValue
+    | PrenatalLaboratoryBilirubinTestResult
+    | PrenatalLaboratoryBilirubinValue BilirubinValue
+    | PrenatalLaboratoryHemoglobinTestResult
+    | PrenatalLaboratoryRandomBloodSugarTestResult
     | PrenatalLaboratoryTask Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskLabel Pages.PrenatalActivity.Model.LaboratoryTask
     | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Model.LaboratoryTask
@@ -1057,6 +1083,8 @@ type TranslationId
     | TwoVisits
     | Type
     | UbudeheLabel
+    | UnitGramsPerDeciliter
+    | UnitMilliGramsPerDeciliter
     | Unknown
     | Update
     | UpdateError
@@ -6889,6 +6917,400 @@ translationSet trans =
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
+        PrenatalLaboratoryBloodGroupTestResult ->
+            { english = "Blood Group Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryBloodGroup value ->
+            case value of
+                BloodGroupA ->
+                    { english = "A"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodGroupB ->
+                    { english = "B"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodGroupAB ->
+                    { english = "AB"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodGroupO ->
+                    { english = "O"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryRhesusTestResult ->
+            { english = "Rhesus Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryRhesus value ->
+            case value of
+                RhesusPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                RhesusNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryProteinTestResult ->
+            { english = "Protein Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryProteinValue value ->
+            case value of
+                ProteinNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                Protein30 ->
+                    { english = "30"
+                    , kinyarwanda = Nothing
+                    }
+
+                Protein100 ->
+                    { english = "100"
+                    , kinyarwanda = Nothing
+                    }
+
+                Protein300 ->
+                    { english = "300"
+                    , kinyarwanda = Nothing
+                    }
+
+                Protein2000 ->
+                    { english = "2000"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryPHTestResult ->
+            { english = "PH Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryPHValue value ->
+            case value of
+                Ph50 ->
+                    { english = "5.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph60 ->
+                    { english = "6.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph65 ->
+                    { english = "6.5"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph70 ->
+                    { english = "7.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph75 ->
+                    { english = "7.5"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph80 ->
+                    { english = "8.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph85 ->
+                    { english = "8.5"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryGlucoseTestResult ->
+            { english = "Glucose Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryGlucoseValue value ->
+            case value of
+                Glucose0 ->
+                    { english = "0"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus1 ->
+                    { english = "+1"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus2 ->
+                    { english = "+2"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus3 ->
+                    { english = "+3"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus4 ->
+                    { english = "+4"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryLeukocytesTestResult ->
+            { english = "Leukocytes Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryLeukocytesValue value ->
+            case value of
+                LeukocytesNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                LeukocytesSmall ->
+                    { english = "Samll"
+                    , kinyarwanda = Nothing
+                    }
+
+                LeukocytesMedium ->
+                    { english = "Medium"
+                    , kinyarwanda = Nothing
+                    }
+
+                LeukocytesLarge ->
+                    { english = "Large"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryNitriteTestResult ->
+            { english = "Nitrite Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryNitriteValue value ->
+            case value of
+                NitriteNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                NitritePlus ->
+                    { english = "+"
+                    , kinyarwanda = Nothing
+                    }
+
+                NitritePlusPlus ->
+                    { english = "++"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryUrobilinogenTestResult ->
+            { english = "Urobilinogen Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryUrobilinogenValue value ->
+            case value of
+                Urobilinogen02 ->
+                    { english = "0.2"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen10 ->
+                    { english = "1"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen20 ->
+                    { english = "2"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen40 ->
+                    { english = "4"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen80 ->
+                    { english = "8"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryHaemoglobinTestResult ->
+            { english = "Haemoglobin Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryHaemoglobinValue value ->
+            case value of
+                HaemoglobinNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                HaemoglobinNonHemolyzedTrace ->
+                    { english = "Non Hemolyzed Trace"
+                    , kinyarwanda = Nothing
+                    }
+
+                HaemoglobinNonHemolyzedModerate ->
+                    { english = "Non Hemolyzed Moderate"
+                    , kinyarwanda = Nothing
+                    }
+
+                HaemoglobinHemolyzedTrace ->
+                    { english = "Hemolyzed Trace"
+                    , kinyarwanda = Nothing
+                    }
+
+                HaemoglobinSmall ->
+                    { english = "Small"
+                    , kinyarwanda = Nothing
+                    }
+
+                HaemoglobinModerate ->
+                    { english = "Moderate"
+                    , kinyarwanda = Nothing
+                    }
+
+                HaemoglobinLarge ->
+                    { english = "Large"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratorySpecificGravityTestResult ->
+            { english = "Specific Gravity Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratorySpecificGravityValue value ->
+            case value of
+                SpecificGravity1000 ->
+                    { english = "1.000"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpecificGravity1005 ->
+                    { english = "1.005"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpecificGravity1010 ->
+                    { english = "1.010"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpecificGravity1015 ->
+                    { english = "1.015"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpecificGravity1020 ->
+                    { english = "1.020"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpecificGravity1025 ->
+                    { english = "1.025"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpecificGravity1030 ->
+                    { english = "1.030"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryKetoneTestResult ->
+            { english = "Ketone Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryKetoneValue value ->
+            case value of
+                KetoneNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone5 ->
+                    { english = "5"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone10 ->
+                    { english = "10"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone15 ->
+                    { english = "15"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone40 ->
+                    { english = "40"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone80 ->
+                    { english = "80"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone100 ->
+                    { english = "100"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryBilirubinTestResult ->
+            { english = "Bilirubin Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryBilirubinValue value ->
+            case value of
+                BilirubinNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                BilirubinSmall ->
+                    { english = "Small"
+                    , kinyarwanda = Nothing
+                    }
+
+                BilirubinMedium ->
+                    { english = "Medium"
+                    , kinyarwanda = Nothing
+                    }
+
+                BilirubinLarge ->
+                    { english = "Large"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalLaboratoryHemoglobinTestResult ->
+            { english = "Hemoglobin Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryRandomBloodSugarTestResult ->
+            { english = "Random Blood Sugar Test Result"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryTask task ->
             case task of
                 Pages.PrenatalActivity.Model.TaskHIVTest ->
@@ -8743,6 +9165,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        UnitGramsPerDeciliter ->
+            { english = "g/dL"
+            , kinyarwanda = Nothing
+            }
+
+        UnitMilliGramsPerDeciliter ->
+            { english = "mg/dL"
+            , kinyarwanda = Nothing
+            }
+
         Unknown ->
             { english = "Unknown"
             , kinyarwanda = Just "Ntabizi"
@@ -9741,6 +10173,11 @@ translateActivePage page =
 
                 PrenatalActivityPage _ _ ->
                     { english = "Antenatal Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalLabResultsPage _ ->
+                    { english = "Lab Results"
                     , kinyarwanda = Nothing
                     }
 

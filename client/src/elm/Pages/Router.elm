@@ -220,6 +220,9 @@ pageToFragment current =
                 PrenatalActivityPage id activity ->
                     Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.encodeActivityAsString activity
 
+                PrenatalLabResultsPage id ->
+                    Just <| "prenatal-lab-results/" ++ fromEntityUuid id
+
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
 
@@ -296,6 +299,7 @@ parser =
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
+        , map (\id -> UserPage <| PrenatalLabResultsPage id) (s "prenatal-lab-results" </> parseUuid)
         , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parseClinicalProgressReportInitiator)
         , map (\id -> UserPage <| DemographicsReportPage id) (s "demographics-report" </> parseUuid)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")

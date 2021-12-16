@@ -1858,7 +1858,7 @@ toAppointmentConfirmationValue form =
     Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate
 
 
-prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm
+prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm
 prenatalRDTFormWithDefault form saved =
     saved
         |> unwrap
@@ -1883,13 +1883,13 @@ prenatalRDTFormWithDefault form saved =
             )
 
 
-toPrenatalRDTValueWithDefault : Maybe PrenatalLabsRDTValue -> PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue
+toPrenatalRDTValueWithDefault : Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
 toPrenatalRDTValueWithDefault saved form =
     prenatalRDTFormWithDefault form saved
         |> toPrenatalRDTValue
 
 
-toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalLabsRDTValue
+toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
 toPrenatalRDTValue form =
     Maybe.map
         (\executionNote ->
@@ -2153,3 +2153,31 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest )
     ]
         |> Dict.fromList
+
+
+laboratoryTaskIconClass : LaboratoryTask -> String
+laboratoryTaskIconClass task =
+    case task of
+        TaskHIVTest ->
+            "laboratory-hiv"
+
+        TaskSyphilisTest ->
+            "laboratory-syphilis"
+
+        TaskHepatitisBTest ->
+            "laboratory-hepatitis-b"
+
+        TaskMalariaTest ->
+            "laboratory-malaria-testing"
+
+        TaskBloodGpRsTest ->
+            "laboratory-blood-group"
+
+        TaskUrineDipstickTest ->
+            "laboratory-urine-dipstick"
+
+        TaskHemoglobinTest ->
+            "laboratory-hemoglobin"
+
+        TaskRandomBloodSugarTest ->
+            "laboratory-blood-sugar"

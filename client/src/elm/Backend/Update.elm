@@ -1082,7 +1082,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         in
                         ( newModel, extraMsgs )
 
-                processRevisionAndUpdateLabsResults participantId encounterId test executionNote =
+                processRevisionAndUpdateLabsResults participantId encounterId test executionNote resultsAdded =
                     if downloadingContent then
                         ( model, [] )
 
@@ -1091,8 +1091,15 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                             ( newModel, _ ) =
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
+                            generateMsgsFunc =
+                                if resultsAdded then
+                                    generatePrenatalLabsResultsAddedMsgs
+
+                                else
+                                    generatePrenatalLabsTestAddedMsgs
+
                             extraMsgs =
-                                Maybe.map (generatePrenatalLabsResultsMsgs currentDate newModel test executionNote)
+                                Maybe.map (generateMsgsFunc currentDate newModel test executionNote)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1649,6 +1656,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
                                 Backend.Measurement.Model.TestSyphilis
                                 data.value.executionNote
+                                (isJust data.value.testResult)
                     in
                     ( newModel
                     , Cmd.none
@@ -1663,6 +1671,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
                                 Backend.Measurement.Model.TestHepatitisB
                                 data.value.executionNote
+                                (isJust data.value.testResult)
                     in
                     ( newModel
                     , Cmd.none
@@ -1677,6 +1686,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
                                 Backend.Measurement.Model.TestUrineDipstick
                                 data.value.executionNote
+                                (isJust data.value.protein)
                     in
                     ( newModel
                     , Cmd.none
@@ -1691,6 +1701,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
                                 Backend.Measurement.Model.TestBloodGpRs
                                 data.value.executionNote
+                                (isJust data.value.bloodGroup)
                     in
                     ( newModel
                     , Cmd.none
@@ -1705,6 +1716,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
                                 Backend.Measurement.Model.TestHemoglobin
                                 data.value.executionNote
+                                (isJust data.value.hemoglobinCount)
                     in
                     ( newModel
                     , Cmd.none
@@ -1719,6 +1731,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
                                 Backend.Measurement.Model.TestRandomBloodSugar
                                 data.value.executionNote
+                                (isJust data.value.sugarCount)
                     in
                     ( newModel
                     , Cmd.none
@@ -3848,14 +3861,14 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
             |> Maybe.withDefault []
 
 
-generatePrenatalLabsResultsMsgs :
+generatePrenatalLabsTestAddedMsgs :
     NominalDate
     -> ModelIndexedDb
     -> Backend.Measurement.Model.PrenatalLaboratoryTest
     -> Backend.Measurement.Model.PrenatalTestExecutionNote
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalLabsResultsMsgs currentDate after test executionNote id =
+generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
     Pages.PrenatalEncounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
@@ -3904,6 +3917,53 @@ generatePrenatalLabsResultsMsgs currentDate after test executionNote id =
                          else
                             []
                         )
+            )
+        |> Maybe.withDefault []
+
+
+generatePrenatalLabsResultsAddedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.PrenatalLaboratoryTest
+    -> Backend.Measurement.Model.PrenatalTestExecutionNote
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalLabsResultsAddedMsgs currentDate after test executionNote id =
+    Pages.PrenatalEncounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.andThen
+            (\assembled ->
+                Maybe.map
+                    (\( resultsId, measurement ) ->
+                        let
+                            resultsValue =
+                                measurement.value
+                                    |> (\value ->
+                                            let
+                                                completedTests =
+                                                    EverySet.insert test value.completedTests
+
+                                                resolutionDate =
+                                                    -- When all performed tests are completed, setting today
+                                                    -- as resolution date.
+                                                    if EverySet.size completedTests == EverySet.size value.performedTests then
+                                                        currentDate
+
+                                                    else
+                                                        value.resolutionDate
+                                            in
+                                            { value
+                                                | completedTests = completedTests
+                                                , resolutionDate = resolutionDate
+                                            }
+                                       )
+                        in
+                        Backend.PrenatalEncounter.Model.SaveLabsResults assembled.participant.person (Just resultsId) resultsValue
+                            |> Backend.Model.MsgPrenatalEncounter id
+                            |> App.Model.MsgIndexedDb
+                            |> List.singleton
+                    )
+                    assembled.measurements.labsResults
             )
         |> Maybe.withDefault []
 

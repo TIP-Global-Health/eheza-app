@@ -275,31 +275,13 @@ encodePrenatalBloodGpRsTestValue value =
 
 
 encodeBloodGroup : BloodGroup -> Value
-encodeBloodGroup value =
-    string <|
-        case value of
-            BloodGroupA ->
-                "a"
-
-            BloodGroupB ->
-                "b"
-
-            BloodGroupAB ->
-                "ab"
-
-            BloodGroupO ->
-                "o"
+encodeBloodGroup =
+    bloodGroupToString >> string
 
 
 encodeRhesus : Rhesus -> Value
-encodeRhesus value =
-    string <|
-        case value of
-            RhesusPositive ->
-                "positive"
-
-            RhesusNegative ->
-                "negative"
+encodeRhesus =
+    rhesusToString >> string
 
 
 encodePrenatalHemoglobinTest : PrenatalHemoglobinTest -> List ( String, Value )
@@ -364,11 +346,11 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement (encodePrenatalLabsRDTValueWithType "prenatal_hiv_test")
+    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_hiv_test")
 
 
-encodePrenatalLabsRDTValueWithType : String -> PrenatalLabsRDTValue -> List ( String, Value )
-encodePrenatalLabsRDTValueWithType type_ value =
+encodePrenatalRapidTestValueWithType : String -> PrenatalRapidTestValue -> List ( String, Value )
+encodePrenatalRapidTestValueWithType type_ value =
     let
         executionDate =
             Maybe.map
@@ -392,7 +374,7 @@ encodePrenatalLabsRDTValueWithType type_ value =
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
-    encodePrenatalMeasurement (encodePrenatalLabsRDTValueWithType "prenatal_malaria_test")
+    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_malaria_test")
 
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
@@ -412,7 +394,7 @@ encodePrenatalRandomBloodSugarTestValue value =
         result =
             Maybe.map
                 (\sugarCount ->
-                    [ ( "sugar_count", int sugarCount ) ]
+                    [ ( "sugar_count", float sugarCount ) ]
                 )
                 value.sugarCount
                 |> Maybe.withDefault []
@@ -476,7 +458,7 @@ encodePrenatalUrineDipstickTestValue value =
         encodeField encoder fieldName fieldValue =
             Maybe.map
                 (\value_ ->
-                    [ ( "fieldName", encoder value_ ) ]
+                    [ ( fieldName, encoder value_ ) ]
                 )
                 fieldValue
                 |> Maybe.withDefault []
@@ -541,236 +523,53 @@ encodePrenatalTestVariant value =
 
 
 encodeProteinValue : ProteinValue -> Value
-encodeProteinValue value =
-    string <|
-        case value of
-            ProteinNegative ->
-                "negative"
-
-            Protein30 ->
-                "30"
-
-            Protein100 ->
-                "100"
-
-            Protein300 ->
-                "300"
-
-            Protein2000 ->
-                "2000"
+encodeProteinValue =
+    proteinValueToString >> string
 
 
 encodePHValue : PHValue -> Value
-encodePHValue value =
-    string <|
-        case value of
-            Ph50 ->
-                "5.0"
-
-            Ph60 ->
-                "6.0"
-
-            Ph65 ->
-                "6.5"
-
-            Ph70 ->
-                "7.0"
-
-            Ph75 ->
-                "7.5"
-
-            Ph80 ->
-                "8.0"
-
-            Ph85 ->
-                "8.5"
+encodePHValue =
+    phValueToString >> string
 
 
 encodeGlucoseValue : GlucoseValue -> Value
-encodeGlucoseValue value =
-    string <|
-        case value of
-            Glucose0 ->
-                "0"
-
-            GlucosePlus1 ->
-                "+1"
-
-            GlucosePlus2 ->
-                "+2"
-
-            GlucosePlus3 ->
-                "+3"
-
-            GlucosePlus4 ->
-                "+4"
+encodeGlucoseValue =
+    glucoseValueToString >> string
 
 
 encodeLeukocytesValue : LeukocytesValue -> Value
-encodeLeukocytesValue value =
-    string <|
-        case value of
-            LeukocytesNegative ->
-                "negative"
-
-            LeukocytesSmall ->
-                "small"
-
-            LeukocytesMedium ->
-                "medium"
-
-            LeukocytesLarge ->
-                "large"
-
-            LeukocytesNotApplicable ->
-                "n-a"
+encodeLeukocytesValue =
+    leukocytesValueToString >> string
 
 
 encodeNitriteValue : NitriteValue -> Value
-encodeNitriteValue value =
-    string <|
-        case value of
-            NitriteNegative ->
-                "negative"
-
-            NitritePlus ->
-                "+"
-
-            NitritePlusPlus ->
-                "++"
-
-            NitriteNotApplicable ->
-                "n-a"
+encodeNitriteValue =
+    nitriteValueToString >> string
 
 
 encodeUrobilinogenValue : UrobilinogenValue -> Value
-encodeUrobilinogenValue value =
-    string <|
-        case value of
-            Urobilinogen02 ->
-                "0.2"
-
-            Urobilinogen10 ->
-                "1"
-
-            Urobilinogen20 ->
-                "2"
-
-            Urobilinogen40 ->
-                "4"
-
-            Urobilinogen80 ->
-                "8"
-
-            UrobilinogenNotApplicable ->
-                "n-a"
+encodeUrobilinogenValue =
+    urobilinogenValueToString >> string
 
 
 encodeHaemoglobinValue : HaemoglobinValue -> Value
-encodeHaemoglobinValue value =
-    string <|
-        case value of
-            HaemoglobinNegative ->
-                "negative"
-
-            HaemoglobinNonHemolyzedTrace ->
-                "non-hemolyzed-trace"
-
-            HaemoglobinNonHemolyzedModerate ->
-                "non-hemolyzed-moderate"
-
-            HaemoglobinHemolyzedTrace ->
-                "hemolyzed-trace"
-
-            HaemoglobinSmall ->
-                "small"
-
-            HaemoglobinModerate ->
-                "moderate"
-
-            HaemoglobinLarge ->
-                "large"
-
-            HaemoglobinNotApplicable ->
-                "n-a"
+encodeHaemoglobinValue =
+    haemoglobinValueToString >> string
 
 
 encodeSpecificGravityValue : SpecificGravityValue -> Value
-encodeSpecificGravityValue value =
-    string <|
-        case value of
-            SpecificGravity1000 ->
-                "1.000"
-
-            SpecificGravity1005 ->
-                "1.005"
-
-            SpecificGravity1010 ->
-                "1.010"
-
-            SpecificGravity1015 ->
-                "1.015"
-
-            SpecificGravity1020 ->
-                "1.020"
-
-            SpecificGravity1025 ->
-                "1.025"
-
-            SpecificGravity1030 ->
-                "1.030"
-
-            SpecificGravityNotApplicable ->
-                "n-a"
+encodeSpecificGravityValue =
+    specificGravityValueToString >> string
 
 
 encodeKetoneValue : KetoneValue -> Value
-encodeKetoneValue value =
-    string <|
-        case value of
-            KetoneNegative ->
-                "negative"
-
-            Ketone5 ->
-                "5"
-
-            Ketone10 ->
-                "10"
-
-            Ketone15 ->
-                "15"
-
-            Ketone40 ->
-                "40"
-
-            Ketone80 ->
-                "80"
-
-            Ketone100 ->
-                "100"
-
-            KetoneNotApplicable ->
-                "n-a"
+encodeKetoneValue =
+    ketoneValueToString >> string
 
 
 encodeBilirubinValue : BilirubinValue -> Value
-encodeBilirubinValue value =
-    string <|
-        case value of
-            BilirubinNegative ->
-                "negative"
-
-            BilirubinSmall ->
-                "small"
-
-            BilirubinMedium ->
-                "medium"
-
-            BilirubinLarge ->
-                "large"
-
-            BilirubinotApplicable ->
-                "n-a"
+encodeBilirubinValue =
+    bilirubinValueToString >> string
 
 
 encodePrenatalTestExecutionNote : PrenatalTestExecutionNote -> Value

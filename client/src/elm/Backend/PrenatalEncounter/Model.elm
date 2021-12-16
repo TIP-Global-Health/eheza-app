@@ -170,13 +170,13 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())
-    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalLabsRDTValue
+    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalRapidTestValue
     | HandleSavedHIVTest (WebData ())
     | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) PrenatalSyphilisTestValue
     | HandleSavedSyphilisTest (WebData ())
     | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) PrenatalHepatitisBTestValue
     | HandleSavedHepatitisBTest (WebData ())
-    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalLabsRDTValue
+    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalRapidTestValue
     | HandleSavedMalariaTest (WebData ())
     | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) PrenatalBloodGpRsTestValue
     | HandleSavedBloodGpRsTest (WebData ())
