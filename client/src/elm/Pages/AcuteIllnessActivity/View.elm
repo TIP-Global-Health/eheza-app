@@ -1648,7 +1648,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task )
+                        ( task, nextStepsTasksCompletedFromTotal isChw assembled.initialEncounter diagnosis measurements data task )
                     )
                 |> Dict.fromList
 
@@ -2920,57 +2920,29 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
 
 viewSymptomsReliefForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
 viewSymptomsReliefForm language currentDate maybeDiagnosis form =
-    -- let
-    --     healthEducationSection =
-    --         let
-    --             providedHealthEducation =
-    --                 form.educationForDiagnosis
-    --                     |> Maybe.withDefault True
-    --
-    --             reasonForNotProvidingHealthEducationOptions =
-    --                 [ PatientNeedsEmergencyReferral
-    --                 , ReceivedEmergencyCase
-    --                 , LackOfAppropriateEducationUserGuide
-    --                 , PatientRefused
-    --                 ]
-    --
-    --             reasonForNotProvidingHealthEducation =
-    --                 if not providedHealthEducation then
-    --                     [ viewQuestionLabel language Translate.WhyNot
-    --                     , viewCheckBoxSelectInput language
-    --                         reasonForNotProvidingHealthEducationOptions
-    --                         []
-    --                         form.reasonForNotProvidingHealthEducation
-    --                         SetReasonForNotProvidingHealthEducation
-    --                         Translate.ReasonForNotProvidingHealthEducation
-    --                     ]
-    --
-    --                 else
-    --                     []
-    --         in
-    --         maybeDiagnosis
-    --             |> Maybe.map
-    --                 (\diagnosis ->
-    --                     [ div [ class "label" ]
-    --                         [ text <| translate language Translate.ProvidedPreventionEducationQuestion
-    --                         , text " "
-    --                         , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
-    --                         , text "?"
-    --                         , viewBoolInput
-    --                             language
-    --                             form.educationForDiagnosis
-    --                             SetProvidedEducationForDiagnosis
-    --                             "education-for-diagnosis"
-    --                             Nothing
-    --                         ]
-    --                     ]
-    --                         ++ reasonForNotProvidingHealthEducation
-    --                 )
-    --             |> Maybe.withDefault [ emptyNode ]
-    -- in
+    let
+        viewSymptomRelief symptomsRelief =
+            li [] [ text <| translate language <| Translate.SymptomRelief symptomsRelief ]
+
+        symptomsReliefList =
+            [ SymptomReliefParacetamol
+            , SymptomReliefVitaminC
+            , SymptomReliefPaidoterineSyrup
+            , SymptomReliefCoughMixture
+            ]
+    in
     div [ class "ui form symptoms-relief" ] <|
         [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
         , viewLabel language Translate.RecommendedSymptomRelief
+        , ul [] <|
+            List.map viewSymptomRelief symptomsReliefList
+        , viewQuestionLabel language Translate.ProvidedSymtomReliefGuidanceQuestion
+        , viewBoolInput
+            language
+            form.educationForDiagnosis
+            SetProvidedEducationForDiagnosis
+            "education-for-diagnosis"
+            Nothing
         ]
 
 

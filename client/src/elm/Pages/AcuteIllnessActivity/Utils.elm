@@ -510,12 +510,13 @@ treatmentTasksCompletedFromTotal measurements data task =
 
 nextStepsTasksCompletedFromTotal :
     Bool
+    -> Bool
     -> Maybe AcuteIllnessDiagnosis
     -> AcuteIllnessMeasurements
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
+nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements data task =
     case task of
         NextStepsIsolation ->
             let
@@ -725,20 +726,26 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                    form.educationForDiagnosis
-                        |> Maybe.map
-                            (\providedHealthEducation ->
-                                if not providedHealthEducation then
-                                    if isJust form.reasonForNotProvidingHealthEducation then
-                                        ( 1, 1 )
+                    if initialEncounter && not isChw then
+                        -- Nurse gets Symptoms relief form where we do
+                        -- not ask 'Why not'.
+                        ( 0, 0 )
+
+                    else
+                        form.educationForDiagnosis
+                            |> Maybe.map
+                                (\providedHealthEducation ->
+                                    if not providedHealthEducation then
+                                        if isJust form.reasonForNotProvidingHealthEducation then
+                                            ( 1, 1 )
+
+                                        else
+                                            ( 0, 1 )
 
                                     else
-                                        ( 0, 1 )
-
-                                else
-                                    ( 0, 0 )
-                            )
-                        |> Maybe.withDefault ( 0, 0 )
+                                        ( 0, 0 )
+                                )
+                            |> Maybe.withDefault ( 0, 0 )
             in
             ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
             , reasonForProvidingEducationCompleted + 1

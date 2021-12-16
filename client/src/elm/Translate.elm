@@ -71,6 +71,7 @@ import Pages.AcuteIllnessActivity.Types
         , OngoingTreatmentTask(..)
         , PhysicalExamTask(..)
         , PriorTreatmentTask(..)
+        , SymptomReliefType(..)
         , SymptomsTask(..)
         )
 import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
@@ -868,6 +869,7 @@ type TranslationId
     | ProvidedHealthEducationAction
     | ProvidedPreventionEducationQuestion
     | ProvidedPreventionEducationQuestionShort
+    | ProvidedSymtomReliefGuidanceQuestion
     | Province
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -996,6 +998,7 @@ type TranslationId
     | SuspectedCovid19CaseContactHC
     | SuspectedCovid19CasePerformRapidTest
     | SuspectedCovid19CaseReferToHCForTesting
+    | SymptomRelief SymptomReliefType
     | Symptoms
     | SymptomsAtFirstEncounter
     | SymptomsGeneralSign SymptomsGeneralSign
@@ -7058,6 +7061,11 @@ translationSet trans =
             , kinyarwanda = Just "Mwatanze inyigisho ku buzima n' umurongo ngenderwaho"
             }
 
+        ProvidedSymtomReliefGuidanceQuestion ->
+            { english = "Have you provided the guidance for symptom relief"
+            , kinyarwanda = Nothing
+            }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
@@ -8037,6 +8045,28 @@ translationSet trans =
             { english = "Refer to Health Center for testing"
             , kinyarwanda = Nothing
             }
+
+        SymptomRelief type_ ->
+            case type_ of
+                SymptomReliefParacetamol ->
+                    { english = "Paracetamol for Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomReliefVitaminC ->
+                    { english = "Effervescent Vitamin C tablets"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomReliefPaidoterineSyrup ->
+                    { english = "Paidoterin syrup as a decongestant"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomReliefCoughMixture ->
+                    { english = "Cough mixtures such as Ascoril, Bronchalene, etc."
+                    , kinyarwanda = Nothing
+                    }
 
         Symptoms ->
             { english = "Symptoms"
