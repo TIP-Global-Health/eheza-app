@@ -173,7 +173,7 @@ renderDate language date =
     )
         ++ " "
         ++ month
-        ++ ", "
+        ++ " "
         ++ String.fromInt year
 
 
