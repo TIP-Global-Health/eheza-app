@@ -1355,8 +1355,8 @@ translationSet trans =
                     }
 
                 DiagnosisLowRiskCovid19 ->
-                    { english = "Low risk COVID-19"
-                    , kinyarwanda = Just "Uburwayi bwa Covid-19 budakabije"
+                    { english = "Simple COVID-19"
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 bworoheje"
                     }
 
                 DiagnosisMalariaComplicated ->
