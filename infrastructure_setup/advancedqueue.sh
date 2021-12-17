@@ -17,4 +17,3 @@ then
 fi
 
 /home/ubuntu/.composer/vendor/bin/drush ${ALIAS} advancedqueue --all --timeout=300 --verbose --uri="https://$ENVIRONMENT-$SITE.pantheonsite.io"
-
