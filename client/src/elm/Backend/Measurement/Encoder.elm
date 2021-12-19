@@ -1563,7 +1563,7 @@ encodeVitalsValueWithType type_ value =
                 |> Maybe.withDefault []
 
         heartRateEntry =
-            Maybe.map (\heartRate -> [ ( "heartRate", int heartRate ) ])
+            Maybe.map (\heartRate -> [ ( "heart_rate", int heartRate ) ])
                 value.heartRate
                 |> Maybe.withDefault []
     in

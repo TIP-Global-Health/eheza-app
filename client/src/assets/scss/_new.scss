@@ -2970,6 +2970,10 @@ div.page-report.well-child {
 
     .next-due {
       width: 20%;
+
+      &.red {
+        color: $color-velvet
+      }
     }
   }
 

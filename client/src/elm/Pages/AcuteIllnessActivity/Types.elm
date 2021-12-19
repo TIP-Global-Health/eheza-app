@@ -65,6 +65,7 @@ type NextStepsTask
     | NextStepsHealthEducation
     | NextStepsFollowUp
     | NextStepsContactTracing
+    | NextStepsSymptomsReliefGuidance
 
 
 

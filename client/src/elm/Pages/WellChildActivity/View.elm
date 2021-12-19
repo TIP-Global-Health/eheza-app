@@ -1132,6 +1132,8 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                     Maybe.map formatDDMMYYYY nextDue
                         |> Maybe.withDefault ""
 
+
+
                 ( status, statusClass ) =
                     Maybe.map
                         (\dueDate ->
@@ -1150,7 +1152,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                     |> List.sortWith Date.compare
                     |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
                     |> div [ class "cell date" ]
-                , div [ class "cell next-due" ]
+                , div [ classList [("cell next-due ", True),  ("red", status == StatusBehind)]  ]
                     [ text nextDueText ]
                 , div [ class <| "cell status " ++ statusClass ]
                     [ text <| translate language <| Translate.VaccinationStatus status ]

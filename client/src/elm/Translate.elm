@@ -5605,6 +5605,13 @@ translationSet trans =
                     , kinyarwanda = Just "Gushakisha abahuye n'uwanduye"
                     }
 
+                NextStepsSymptomsReliefGuidance ->
+                    -- We qualify it as Medication distribution, to keep
+                    -- consistant with other types of Covid steps.
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
         No ->
             { english = "No"
             , kinyarwanda = Just "Oya"
@@ -9522,7 +9529,7 @@ translationSet trans =
                     }
 
                 VaccineDTP ->
-                    { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), liver failure (Hepatitis B), breathing problem and fever (Diptheria)."
+                    { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), liver failure (Hepatitis B), breathing problems and fever (Diptheria)."
                     , kinyarwanda = Just "Rurinda umwana indwara ya agakwega, kokolishe, umwijima wo mubwoko bwa B, n'ibibazo, ibibazo byo guhumeka n'umuriro (Akaniga)."
                     }
 
