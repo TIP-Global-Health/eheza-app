@@ -136,6 +136,36 @@ viewCustomLabel language translationId suffix class_ =
 -- Inputs
 
 
+viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> Html msg
+viewSearchForm language inputValue placeholderTransId setInputMsg =
+    div [ class "ui search form" ]
+        [ viewTextInput language inputValue setInputMsg (Just placeholderTransId) (Just "search-input") ]
+
+
+viewTextInput : Language -> String -> (String -> msg) -> Maybe TranslationId -> Maybe String -> Html msg
+viewTextInput language inputValue setInputMsg placeholderTransId inputClass =
+    let
+        attributes =
+            inputClassAttribute
+                ++ placeholderAttribute
+                ++ [ type_ "text"
+                   , onInput setInputMsg
+                   , value inputValue
+                   , autofocus True
+                   ]
+
+        inputClassAttribute =
+            Maybe.map (class >> List.singleton) inputClass
+                |> Maybe.withDefault []
+
+        placeholderAttribute =
+            Maybe.map (translate language >> placeholder >> List.singleton)
+                placeholderTransId
+                |> Maybe.withDefault []
+    in
+    input attributes []
+
+
 viewBoolInput :
     Language
     -> Maybe Bool
@@ -493,6 +523,110 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
+viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
+    let
+        attributes =
+            if allowEndEcounter then
+                [ class "ui fluid primary button"
+                , onClick <| setDialogStateMsgs True
+                ]
+
+            else
+                [ class "ui fluid primary button disabled" ]
+    in
+    div [ class "actions" ]
+        [ button attributes
+            [ text <| translate language Translate.EndEncounter ]
+        ]
+
+
+viewRedAlertForSelect : List a -> List a -> Html any
+viewRedAlertForSelect actual normal =
+    viewAlertForSelect "red" actual normal
+
+
+viewYellowAlertForSelect : List a -> List a -> Html any
+viewYellowAlertForSelect actual normal =
+    viewAlertForSelect "yellow" actual normal
+
+
+viewAlertForSelect : String -> List a -> List a -> Html any
+viewAlertForSelect color actual normal =
+    if
+        List.isEmpty actual
+            || List.all
+                (\item ->
+                    List.member item normal
+                )
+                actual
+    then
+        emptyNode
+
+    else
+        div [ class <| "alert " ++ color ]
+            [ viewAlert color ]
+
+
+viewRedAlertForBool : Maybe Bool -> Bool -> Html any
+viewRedAlertForBool actual normal =
+    viewRedAlertForSelect
+        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
+        [ normal ]
+
+
+{-| The idea here is that we get lists for red alert conditions, and yellow
+alert conditions. If any of red conditions matches, we present red alert.
+If any of yellow conditions matches, we present yellow alert.
+Otherwise, no alret is needed.
+
+Note that conditions are list of lists, so all conditions in inner list
+need to match, for a condition in outer list to match.
+We need this for range conditions. For example, number between 5 and 8.
+
+-}
+viewConditionalAlert : Maybe a -> List (List (a -> Bool)) -> List (List (a -> Bool)) -> Html any
+viewConditionalAlert maybeActual redConditions yellowConditions =
+    maybeActual
+        |> Maybe.map
+            (\actual ->
+                if
+                    List.any
+                        (\conditions ->
+                            List.all
+                                (\condition ->
+                                    condition actual
+                                )
+                                conditions
+                        )
+                        redConditions
+                then
+                    viewAlert "red"
+
+                else if
+                    List.any
+                        (\conditions ->
+                            List.all (\condition -> condition actual) conditions
+                        )
+                        yellowConditions
+                then
+                    viewAlert "yellow"
+
+                else
+                    emptyNode
+            )
+        |> Maybe.withDefault emptyNode
+
+
+viewAlert : String -> Html any
+viewAlert color =
+    let
+        icon =
+            "assets/images/alert-" ++ color ++ ".png"
+    in
+    img [ src icon ] []
+
+
 taskCompleted : Maybe a -> Int
 taskCompleted maybe =
     if isJust maybe then
@@ -516,9 +650,18 @@ taskCompletedWithException maybe exception =
             0
 
 
-taskListCompleted : List (Maybe a) -> Int
-taskListCompleted list =
+taskAllCompleted : List (Maybe a) -> Int
+taskAllCompleted list =
     if List.all isJust list then
+        1
+
+    else
+        0
+
+
+taskAnyCompleted : List (Maybe a) -> Int
+taskAnyCompleted list =
+    if List.any isJust list then
         1
 
     else
@@ -596,3 +739,14 @@ isTaskCompleted dict task =
 tasksBarId : String
 tasksBarId =
     "tasks-bar"
+
+
+viewSaveAction : Language -> msg -> Bool -> Html msg
+viewSaveAction language saveMsg disabled =
+    div [ class "actions" ]
+        [ button
+            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+            , onClick saveMsg
+            ]
+            [ text <| translate language Translate.Save ]
+        ]

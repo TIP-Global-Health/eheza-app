@@ -16,7 +16,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, getMeasurementValueFunc, mapMeasurementData, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -33,8 +33,8 @@ import ZScore.Model
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> PersonId -> ModelIndexedDb -> OfflineSession -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores childId db offlineSession =
+generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> PersonId -> ModelIndexedDb -> OfflineSession -> List NutritionAssessment
+generateNutritionAssessment currentDate zscores childId db offlineSession =
     let
         measurements =
             LocalData.unwrap
@@ -43,18 +43,16 @@ generateNutritionAssesment currentDate zscores childId db offlineSession =
                 offlineSession.measurements
 
         muacValue =
-            Maybe.andThen (.muac >> Maybe.map (Tuple.second >> .value)) measurements
+            Maybe.andThen (.muac >> getMeasurementValueFunc) measurements
 
         nutritionValue =
-            Maybe.andThen (.nutrition >> Maybe.map (Tuple.second >> .value)) measurements
+            Maybe.andThen (.nutrition >> getMeasurementValueFunc) measurements
+                |> Maybe.map .signs
 
         weightValue =
             Maybe.andThen (.weight >> Maybe.map (Tuple.second >> .value >> weightValueFunc)) measurements
-
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores childId muacValue weightValue nutritionValue db
+    Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores childId muacValue nutritionValue weightValue True db
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translatefor that).
@@ -162,13 +160,6 @@ decodeActivityFromString s =
 
         _ ->
             Nothing
-
-
-{-| An activity type to use if we need to start somewhere.
--}
-defaultActivity : Activity
-defaultActivity =
-    ChildActivity Height
 
 
 {-| Returns a string representing an icon for the activity, for use in a
@@ -338,7 +329,7 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
 
         ContributingFactors ->
             mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db
-                && (generateNutritionAssesment currentDate zscores childId db offlineSession
+                && (generateNutritionAssessment currentDate zscores childId db offlineSession
                         |> List.isEmpty
                         |> not
                    )
@@ -952,7 +943,7 @@ motherIsCheckedIn motherId session =
     let
         explicitlyCheckedIn =
             getMotherMeasurementData2 motherId session
-                |> LocalData.map (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
+                |> LocalData.map (.current >> .attendance >> getMeasurementValueFunc >> (==) (Just True))
                 |> LocalData.withDefault False
 
         hasCompletedActivity =

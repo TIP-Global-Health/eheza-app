@@ -55,6 +55,10 @@ type alias HomeVisitMeasurement value =
     Measurement HomeVisitEncounterId value
 
 
+type alias WellChildMeasurement value =
+    Measurement WellChildEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -81,13 +85,10 @@ type alias Muac =
     GroupMeasurement MuacInCm
 
 
-{-| An interpretation of a MUAC, according to the measurement
-tool referenced at <https://github.com/Gizra/ihangane/issues/282>
--}
-type MuacIndication
-    = MuacGreen
-    | MuacRed
-    | MuacYellow
+type ColorAlertIndication
+    = ColorAlertGreen
+    | ColorAlertRed
+    | ColorAlertYellow
 
 
 type HeightInCm
@@ -182,7 +183,20 @@ type ChildNutritionSign
 
 
 type alias ChildNutrition =
-    GroupMeasurement (EverySet ChildNutritionSign)
+    GroupMeasurement NutritionValue
+
+
+type alias NutritionValue =
+    { signs : EverySet ChildNutritionSign
+    , assesment : EverySet NutritionAssessment
+    }
+
+
+emptyNutritionValue : NutritionValue
+emptyNutritionValue =
+    { signs = EverySet.empty
+    , assesment = EverySet.empty
+    }
 
 
 type alias CounselingSession =
@@ -207,11 +221,11 @@ type alias FollowUp =
 
 type alias FollowUpValue =
     { options : EverySet FollowUpOption
-    , assesment : EverySet NutritionAssesment
+    , assesment : EverySet NutritionAssessment
     }
 
 
-type NutritionAssesment
+type NutritionAssessment
     = AssesmentAcuteMalnutritionModerate
     | AssesmentAcuteMalnutritionSevere
     | AssesmentUnderweightModerate
@@ -220,7 +234,7 @@ type NutritionAssesment
     | AssesmentDangerSignsPresent
     | AssesmentMalnutritionSigns (List ChildNutritionSign)
     | AssesmentConsecutiveWeightLoss
-    | NoNutritionAssesment
+    | NoNutritionAssessment
 
 
 type ContributingFactorsSign
@@ -254,7 +268,7 @@ type alias NutritionHeight =
 
 
 type alias NutritionNutrition =
-    NutritionMeasurement (EverySet ChildNutritionSign)
+    NutritionMeasurement NutritionValue
 
 
 type alias NutritionPhoto =
@@ -533,6 +547,7 @@ type PostpartumChildDangerSign
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
     , confident : Bool
+    , confirmation : Bool
     }
 
 
@@ -711,9 +726,9 @@ type alias SocialHistory =
 
 
 type alias VitalsValue =
-    { sys : Float
-    , dia : Float
-    , heartRate : Int
+    { sys : Maybe Float
+    , dia : Maybe Float
+    , heartRate : Maybe Int
     , respiratoryRate : Int
     , bodyTemperature : Float
     }
@@ -884,14 +899,8 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement SymptomsGIValue
 
 
-type alias AcuteIllnessVitalsValue =
-    { respiratoryRate : Int
-    , bodyTemperature : Float
-    }
-
-
 type alias AcuteIllnessVitals =
-    AcuteIllnessMeasurement AcuteIllnessVitalsValue
+    AcuteIllnessMeasurement VitalsValue
 
 
 type AcuteFindingsGeneralSign
@@ -921,16 +930,17 @@ type alias AcuteFindings =
     AcuteIllnessMeasurement AcuteFindingsValue
 
 
-type MalariaRapidTestResult
+type RapidTestResult
     = RapidTestPositive
     | RapidTestPositiveAndPregnant
     | RapidTestNegative
     | RapidTestIndeterminate
     | RapidTestUnableToRun
+    | RapidTestUnableToRunAndPregnant
 
 
 type alias MalariaTesting =
-    AcuteIllnessMeasurement MalariaRapidTestResult
+    AcuteIllnessMeasurement RapidTestResult
 
 
 type TravelHistorySign
@@ -1070,6 +1080,8 @@ type SendToHCSign
     = HandReferrerForm
     | ReferToHealthCenter
     | PrenatalAccompanyToHC
+    | EnrollToNutritionProgram
+    | ReferToNutritionProgram
     | NoSendToHCSigns
 
 
@@ -1083,22 +1095,31 @@ type MedicationDistributionSign
     | ORS
     | Zinc
     | LemonJuiceOrHoney
+    | Albendazole
+    | Mebendezole
+    | VitaminA
+    | Paracetamol
     | NoMedicationDistributionSigns
 
 
-type MedicationNonAdministrationReason
+type AdministrationNote
     = NonAdministrationLackOfStock
     | NonAdministrationKnownAllergy
     | NonAdministrationPatientDeclined
     | NonAdministrationPatientUnableToAfford
+    | NonAdministrationHomeBirth
+    | NonAdministrationTooIll
     | NonAdministrationOther
+    | AdministeredToday
+    | AdministeredPreviously
 
 
 type MedicationNonAdministrationSign
-    = MedicationAmoxicillin MedicationNonAdministrationReason
-    | MedicationCoartem MedicationNonAdministrationReason
-    | MedicationORS MedicationNonAdministrationReason
-    | MedicationZinc MedicationNonAdministrationReason
+    = MedicationAmoxicillin AdministrationNote
+    | MedicationCoartem AdministrationNote
+    | MedicationORS AdministrationNote
+    | MedicationZinc AdministrationNote
+    | MedicationParacetamol AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1171,6 +1192,16 @@ type alias TreatmentOngoing =
     AcuteIllnessMeasurement TreatmentOngoingValue
 
 
+type alias AcuteIllnessCoreExam =
+    AcuteIllnessMeasurement AcuteIllnessCoreExamValue
+
+
+type alias AcuteIllnessCoreExamValue =
+    { heart : EverySet HeartCPESign
+    , lungs : EverySet LungsCPESign
+    }
+
+
 type AcuteIllnessDangerSign
     = DangerSignConditionNotImproving
     | DangerSignUnableDrinkSuck
@@ -1209,6 +1240,296 @@ type HealthEducationSign
 
 type alias AcuteIllnessFollowUp =
     AcuteIllnessMeasurement (EverySet FollowUpOption)
+
+
+type alias CovidTesting =
+    AcuteIllnessMeasurement CovidTestingValue
+
+
+type alias CovidTestingValue =
+    { result : RapidTestResult
+    , administrationNote : Maybe AdministrationNote
+    }
+
+
+type alias AcuteIllnessContactsTracing =
+    AcuteIllnessMeasurement (List ContactTraceItem)
+
+
+type alias AcuteIllnessTraceContact =
+    AcuteIllnessMeasurement ContactTraceItem
+
+
+type alias ContactTraceItem =
+    { personId : PersonId
+    , firstName : String
+    , secondName : String
+    , gender : Gender
+    , phoneNumber : String
+    , contactDate : NominalDate
+    , resolutionDate : NominalDate
+    , lastFollowUpDate : Maybe NominalDate
+    , generalSigns : Maybe (EverySet SymptomsGeneralSign)
+    , respiratorySigns : Maybe (EverySet SymptomsRespiratorySign)
+    , giSigns : Maybe (EverySet SymptomsGISign)
+    , traceOutcome : Maybe TraceOutcome
+    }
+
+
+type Gender
+    = Female
+    | Male
+
+
+type TraceOutcome
+    = OutcomeNoAnswer
+    | OutcomeWrongContactInfo
+    | OutcomeDeclinedFollowUp
+    | OutcomeNoSymptoms
+    | OutcomeReferredToHC
+
+
+
+-- WELL CHILD MEASUREMENTS
+
+
+type alias WellChildSymptomsReview =
+    WellChildMeasurement (EverySet WellChildSymptom)
+
+
+type WellChildSymptom
+    = SymptomBreathingProblems
+    | SymptomConvulsions
+    | SymptomLethargyOrUnresponsiveness
+    | SymptomDiarrhea
+    | SymptomVomiting
+    | SymptomUmbilicalCordRedness
+    | SymptomStiffNeckOrBulgingFontanelle
+    | SymptomSevereEdema
+    | SymptomPalmoplantarPallor
+    | SymptomHistoryOfFever
+    | SymptomBabyTiresQuicklyWhenFeeding
+    | SymptomCoughingOrTearingWhileFeeding
+    | SymptomRigidMusclesOrJawClenchingPreventingFeeding
+    | ExcessiveSweatingWhenFeeding
+    | NoWellChildSymptoms
+
+
+type alias WellChildVitals =
+    WellChildMeasurement VitalsValue
+
+
+type alias WellChildHeight =
+    WellChildMeasurement HeightInCm
+
+
+type alias WellChildMuac =
+    WellChildMeasurement MuacInCm
+
+
+type alias WellChildNutrition =
+    WellChildMeasurement NutritionValue
+
+
+type alias WellChildPhoto =
+    WellChildMeasurement PhotoUrl
+
+
+type alias WellChildWeight =
+    WellChildMeasurement WeightInKg
+
+
+type alias WellChildSendToHC =
+    WellChildMeasurement SendToHCValue
+
+
+type alias WellChildHealthEducation =
+    WellChildMeasurement HealthEducationValue
+
+
+type alias WellChildContributingFactors =
+    WellChildMeasurement (EverySet ContributingFactorsSign)
+
+
+type alias WellChildFollowUp =
+    WellChildMeasurement FollowUpValue
+
+
+type alias WellChildHeadCircumference =
+    WellChildMeasurement HeadCircumferenceValue
+
+
+type alias HeadCircumferenceValue =
+    { headCircumference : HeadCircumferenceInCm
+    , notes : EverySet MeasurementNote
+    }
+
+
+type HeadCircumferenceInCm
+    = HeadCircumferenceInCm Float
+
+
+type MeasurementNote
+    = NoteNotTaken
+    | NoMeasurementNotes
+
+
+type alias WellChildECD =
+    WellChildMeasurement (EverySet ECDSign)
+
+
+type ECDSign
+    = -- From 5 weeks.
+      FollowMothersEyes
+    | MoveArmsAndLegs
+      -- From 13 weeks.
+    | RaiseHandsUp
+    | Smile
+    | RollSideways
+      -- From 6 months (minors).
+    | BringHandsToMouth
+    | HoldHeadWithoutSupport
+    | HoldAndShakeToys
+    | ReactToSuddenSounds
+    | UseConsonantSounds
+      -- From 6 months (majors).
+    | RespondToSoundWithSound
+    | TurnHeadWhenCalled
+    | SitWithoutSupport
+    | SmileBack
+    | RollTummyToBack
+    | ReachForToys
+      -- From 15 months.
+    | UseSimpleGestures
+    | StandOnTheirOwn
+    | CopyDuringPlay
+    | SayMamaDada
+    | CanHoldSmallObjects
+      -- From 18 months.
+    | LooksWhenPointedAt
+    | UseSingleWords
+    | WalkWithoutHelp
+    | PlayPretend
+    | PointToThingsOfInterest
+      -- From 2 years.
+    | UseShortPhrases
+    | InterestedInOtherChildren
+    | FollowSimpleInstructions
+    | KickBall
+    | PointAtNamedObjects
+      -- From 3 years.
+    | DressThemselves
+    | WashHandsGoToToiled
+    | KnowsColorsAndNumbers
+    | UseMediumPhrases
+    | PlayMakeBelieve
+      -- From 4 years.
+    | FollowThreeStepInstructions
+    | StandOnOneFootFiveSeconds
+    | UseLongPhrases
+    | ShareWithOtherChildren
+    | CountToTen
+    | NoECDSigns
+
+
+type VaccineType
+    = VaccineBCG
+    | VaccineOPV
+    | VaccineDTP
+    | VaccinePCV13
+    | VaccineRotarix
+    | VaccineIPV
+    | VaccineMR
+    | VaccineHPV
+
+
+type VaccineDose
+    = VaccineDoseFirst
+    | VaccineDoseSecond
+    | VaccineDoseThird
+    | VaccineDoseFourth
+
+
+type alias WellChildMebendezole =
+    WellChildMeasurement AdministrationNote
+
+
+type alias WellChildVitaminA =
+    WellChildMeasurement AdministrationNote
+
+
+type alias WellChildAlbendazole =
+    WellChildMeasurement AdministrationNote
+
+
+type alias WellChildPregnancySummary =
+    WellChildMeasurement PregnancySummaryValue
+
+
+type alias PregnancySummaryValue =
+    { expectedDateConcluded : NominalDate
+    , deliveryComplications : EverySet DeliveryComplication
+    }
+
+
+type DeliveryComplication
+    = ComplicationGestationalDiabetes
+    | ComplicationEmergencyCSection
+    | ComplicationPreclampsia
+    | ComplicationMaternalHemmorhage
+    | ComplicationHiv
+    | ComplicationMaternalDeath
+    | ComplicationOther
+    | NoDeliveryComplications
+
+
+type alias WellChildNextVisit =
+    WellChildMeasurement NextVisitValue
+
+
+type alias NextVisitValue =
+    { immunisationDate : Maybe NominalDate
+    , pediatricVisitDate : Maybe NominalDate
+    }
+
+
+type alias WellChildBCGImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildDTPImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildHPVImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildIPVImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildMRImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildOPVImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildPCV13Immunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildRotarixImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias VaccinationValue =
+    { administeredDoses : EverySet VaccineDose
+    , administrationDates : EverySet NominalDate
+    , administrationNote : AdministrationNote
+    }
 
 
 
@@ -1384,6 +1705,9 @@ type alias AcuteIllnessMeasurements =
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
     , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
+    , coreExam : Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )
+    , covidTesting : Maybe ( CovidTestingId, CovidTesting )
+    , contactsTracing : Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )
     }
 
 
@@ -1394,6 +1718,8 @@ type alias FollowUpMeasurements =
     , nutritionIndividual : Dict NutritionFollowUpId NutritionFollowUp
     , acuteIllness : Dict AcuteIllnessFollowUpId AcuteIllnessFollowUp
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
+    , wellChild : Dict WellChildFollowUpId WellChildFollowUp
+    , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     }
 
 
@@ -1404,6 +1730,38 @@ type alias HomeVisitMeasurements =
     , hygiene : Maybe ( NutritionHygieneId, NutritionHygiene )
     , foodSecurity : Maybe ( NutritionFoodSecurityId, NutritionFoodSecurity )
     , caring : Maybe ( NutritionCaringId, NutritionCaring )
+    }
+
+
+{-| A set of Well Child measurements that correspond to the same Well Child encounter.
+-}
+type alias WellChildMeasurements =
+    { pregnancySummary : Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary )
+    , symptomsReview : Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )
+    , vitals : Maybe ( WellChildVitalsId, WellChildVitals )
+    , height : Maybe ( WellChildHeightId, WellChildHeight )
+    , muac : Maybe ( WellChildMuacId, WellChildMuac )
+    , nutrition : Maybe ( WellChildNutritionId, WellChildNutrition )
+    , photo : Maybe ( WellChildPhotoId, WellChildPhoto )
+    , weight : Maybe ( WellChildWeightId, WellChildWeight )
+    , contributingFactors : Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )
+    , healthEducation : Maybe ( WellChildHealthEducationId, WellChildHealthEducation )
+    , followUp : Maybe ( WellChildFollowUpId, WellChildFollowUp )
+    , sendToHC : Maybe ( WellChildSendToHCId, WellChildSendToHC )
+    , headCircumference : Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )
+    , ecd : Maybe ( WellChildECDId, WellChildECD )
+    , albendazole : Maybe ( WellChildAlbendazoleId, WellChildAlbendazole )
+    , mebendezole : Maybe ( WellChildMebendezoleId, WellChildMebendezole )
+    , vitaminA : Maybe ( WellChildVitaminAId, WellChildVitaminA )
+    , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
+    , bcgImmunisation : Maybe ( WellChildBCGImmunisationId, WellChildBCGImmunisation )
+    , dtpImmunisation : Maybe ( WellChildDTPImmunisationId, WellChildDTPImmunisation )
+    , hpvImmunisation : Maybe ( WellChildHPVImmunisationId, WellChildHPVImmunisation )
+    , ipvImmunisation : Maybe ( WellChildIPVImmunisationId, WellChildIPVImmunisation )
+    , mrImmunisation : Maybe ( WellChildMRImmunisationId, WellChildMRImmunisation )
+    , opvImmunisation : Maybe ( WellChildOPVImmunisationId, WellChildOPVImmunisation )
+    , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
+    , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
     }
 
 
@@ -1502,8 +1860,17 @@ type alias MeasurementData data =
     }
 
 
-type alias PreviousMeasurementsValue =
-    { height : Maybe ( NominalDate, HeightInCm )
-    , muac : Maybe ( NominalDate, MuacInCm )
-    , weight : Maybe ( NominalDate, WeightInKg )
+type alias PreviousValuesSet =
+    { height : Maybe Float
+    , muac : Maybe Float
+    , weight : Maybe Float
+    , headCircumference : Maybe Float
+    }
+
+
+type alias PreviousMeasurementsSet =
+    { heights : List ( NominalDate, Float )
+    , muacs : List ( NominalDate, Float )
+    , weights : List ( NominalDate, Float )
+    , headCircumferences : List ( NominalDate, Float )
     }

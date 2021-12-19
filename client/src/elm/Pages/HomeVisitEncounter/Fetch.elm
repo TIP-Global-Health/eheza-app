@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Fetch
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
@@ -18,7 +19,7 @@ fetch id db =
                 |> RemoteData.toMaybe
                 |> Maybe.map .participant
 
-        personId =
+        maybePersonId =
             participantId
                 |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
                 |> Maybe.withDefault NotAsked
@@ -38,42 +39,19 @@ fetch id db =
 
         -- We fetch measurements of all encounters.
         fetchMeasurements =
-            encountersIds
-                |> List.map FetchHomeVisitMeasurements
-
-        -- We pull data for all Nutrition encounters, to be able to
-        -- determine latest weight measurement that was taken for child.
-        nutritionParticipantId =
-            personId
-                |> Maybe.andThen
-                    (\personId_ ->
-                        resolveIndividualParticipantForPerson personId_ NutritionEncounter db
-                    )
-
-        nutritionEncountersIds =
-            nutritionParticipantId
-                |> Maybe.map
-                    (\participantId_ ->
-                        Dict.get participantId_ db.nutritionEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map Dict.keys
-                            |> RemoteData.withDefault []
-                    )
-                |> Maybe.withDefault []
-
-        -- We fetch measurements of all Nutrition encounters.
-        fetchNutritionMeasurements =
-            nutritionEncountersIds
-                |> List.map FetchNutritionMeasurements
+            List.map FetchHomeVisitMeasurements encountersIds
     in
     Maybe.Extra.values
-        [ Maybe.map FetchIndividualEncounterParticipant participantId
-        , Maybe.map FetchPerson personId
+        [ Just <| FetchHomeVisitEncounter id
+        , Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchHomeVisitEncountersForParticipant participantId
-        , Maybe.map FetchNutritionEncountersForParticipant nutritionParticipantId
-
-        -- We need this, so we can resolve the participant from the encounter.
-        , Just <| FetchHomeVisitEncounter id
         ]
+        ++ (Maybe.map
+                (\personId ->
+                    FetchPerson personId
+                        :: Backend.NutritionEncounter.Fetch.fetch personId db
+                )
+                maybePersonId
+                |> Maybe.withDefault []
+           )
         ++ fetchMeasurements
-        ++ fetchNutritionMeasurements

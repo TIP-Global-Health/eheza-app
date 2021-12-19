@@ -1,11 +1,23 @@
 module Backend.Person.Utils exposing (..)
 
+import AssocList as Dict
+import Backend.Entities exposing (HealthCenterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
+import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
+import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
+import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+
+
+generateFullName : String -> String -> String
+generateFullName first second =
+    String.join " " [ second, first ]
+        |> String.trim
 
 
 ageInYears : NominalDate -> Person -> Maybe Int
@@ -24,6 +36,12 @@ isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
 isAdult currentDate maybeBirthDate =
     maybeBirthDate
         |> Maybe.map (\birthDate -> diffYears birthDate currentDate |> (<) 12)
+
+
+isNewborn : NominalDate -> Person -> Maybe Bool
+isNewborn currentDate person =
+    ageInMonths currentDate person
+        |> Maybe.map (\ageMonths -> ageMonths < 2)
 
 
 isPersonAnAdult : NominalDate -> Person -> Maybe Bool
@@ -110,27 +128,18 @@ initiatorToUrlFragmemt initiator =
             "directory"
 
         IndividualEncounterOrigin encounterType ->
-            case encounterType of
-                AcuteIllnessEncounter ->
-                    "acute-illness"
-
-                AntenatalEncounter ->
-                    "antenatal"
-
-                HomeVisitEncounter ->
-                    "home-visit"
-
-                InmmunizationEncounter ->
-                    "inmmunization"
-
-                NutritionEncounter ->
-                    "nutrition"
+            individualEncounterTypeToString encounterType
 
         GroupEncounterOrigin sessionId ->
             "session-" ++ fromEntityUuid sessionId
 
         PrenatalNextStepsActivityOrigin encounterId ->
             "prenatal-next-steps-" ++ fromEntityUuid encounterId
+
+        AcuteIllnessContactsTracingActivityOrigin _ ->
+            -- Not in use, as at Acute Ilness patient is created
+            -- from a dedicated form.
+            ""
 
 
 initiatorFromUrlFragmemt : String -> Maybe Initiator
@@ -150,6 +159,12 @@ initiatorFromUrlFragmemt s =
 
         "nutrition" ->
             IndividualEncounterOrigin NutritionEncounter |> Just
+
+        "home-visit" ->
+            IndividualEncounterOrigin WellChildEncounter |> Just
+
+        "well-child" ->
+            IndividualEncounterOrigin WellChildEncounter |> Just
 
         _ ->
             if String.startsWith "session" s then
@@ -171,3 +186,38 @@ initiatorFromUrlFragmemt s =
 graduatingAgeInMonth : Int
 graduatingAgeInMonth =
     26
+
+
+getHealthCenterName : Maybe HealthCenterId -> ModelIndexedDb -> Maybe String
+getHealthCenterName healthCenterId db =
+    Maybe.map2
+        (\healthCenterId_ healthCenters ->
+            Dict.get healthCenterId_ healthCenters
+                |> Maybe.map .name
+        )
+        healthCenterId
+        (RemoteData.toMaybe db.healthCenters)
+        |> Maybe.Extra.join
+
+
+genderToString : Gender -> String
+genderToString gender =
+    case gender of
+        Male ->
+            "male"
+
+        Female ->
+            "female"
+
+
+genderFromString : String -> Maybe Gender
+genderFromString s =
+    case s of
+        "female" ->
+            Just Female
+
+        "male" ->
+            Just Male
+
+        _ ->
+            Nothing

@@ -1,10 +1,11 @@
-module Pages.PrenatalActivity.View exposing (view, viewConditionalAlert)
+module Pages.PrenatalActivity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -13,16 +14,16 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (SendToHCForm)
-import Measurement.Utils exposing (sendToHCFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHCForm)
+import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
@@ -32,18 +33,23 @@ import Pages.PrenatalEncounter.View exposing (generateActivityData, viewMotherAn
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , taskAllCompleted
         , taskCompleted
-        , taskListCompleted
         , tasksBarId
+        , viewAlert
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewConditionalAlert
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewRedAlertForBool
+        , viewRedAlertForSelect
+        , viewYellowAlertForSelect
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -180,8 +186,29 @@ viewPregnancyDatingContent language currentDate assembled data =
     let
         form =
             assembled.measurements.lastMenstrualPeriod
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> lastMenstrualPeriodFormWithDefault data.form
+
+        chwLmpConfirmationSection dateToConfirm =
+            [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
+            , viewLabel language Translate.LmpLabel
+            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY dateToConfirm ]
+            , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
+            , viewBoolInput language form.chwLmpConfirmation (SetConfirmLmpDate dateToConfirm) "confirm-lmp" Nothing
+            ]
+
+        chwLmpConfirmationTasksCompleted =
+            taskCompleted form.chwLmpConfirmation
+
+        newLmpInputSection =
+            [ viewQuestionLabel language Translate.LmpRangeHeader
+            , lmpRangeInput
+            , viewLabel language Translate.LmpDateHeader
+            , div [ class "form-input date" ]
+                [ lmpDateInput ]
+            , viewQuestionLabel language Translate.LmpDateConfidentHeader
+            , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
+            ]
 
         lmpRangeInput =
             option
@@ -201,54 +228,79 @@ viewPregnancyDatingContent language currentDate assembled data =
                    )
                 |> select [ onInput SetLmpRange, class "form-input select" ]
 
-        today =
-            currentDate
-
         lmpDateInput =
             if isJust form.lmpRange then
                 DateSelector.SelectorDropdown.view
                     ToggleDateSelector
                     SetLmpDate
                     form.isDateSelectorOpen
-                    (Date.add Days -280 today)
-                    today
+                    (Date.add Days -280 currentDate)
+                    currentDate
                     form.lmpDate
 
             else
                 emptyNode
 
+        newLmpInputTasksCompleted =
+            taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
+
+        ( inputs, tasksCompleted, totalTasks ) =
+            if assembled.encounter.encounterType == NurseEncounter then
+                let
+                    lmpDateTakenByChw =
+                        List.head assembled.chwPreviousMeasurementsWithDates
+                            |> Maybe.andThen
+                                (\( _, _, measurements ) ->
+                                    getLmpDate measurements
+                                )
+                in
+                Maybe.map
+                    (\lmpDateByChw ->
+                        if form.chwLmpConfirmation == Just False then
+                            ( chwLmpConfirmationSection lmpDateByChw ++ newLmpInputSection
+                            , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted
+                            , 3
+                            )
+
+                        else
+                            ( chwLmpConfirmationSection lmpDateByChw
+                            , chwLmpConfirmationTasksCompleted
+                            , 1
+                            )
+                    )
+                    lmpDateTakenByChw
+                    |> Maybe.withDefault
+                        ( newLmpInputSection
+                        , newLmpInputTasksCompleted
+                        , 2
+                        )
+
+            else
+                ( newLmpInputSection
+                , newLmpInputTasksCompleted
+                , 2
+                )
+
         ( edd, ega ) =
             generateEDDandEGA language currentDate ( "", "" ) form.lmpDate
-
-        totalTasks =
-            2
-
-        tasksCompleted =
-            taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "form pregnancy-dating" ]
-                [ viewQuestionLabel language Translate.LmpRangeHeader
-                , lmpRangeInput
-                , viewLabel language Translate.LmpDateHeader
-                , div [ class "form-input date" ]
-                    [ lmpDateInput ]
-                , viewQuestionLabel language Translate.LmpDateConfidentHeader
-                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
-                , div [ class "separator" ] []
-                , div [ class "results" ]
-                    [ div [ class "edd-result" ]
-                        [ viewLabel language Translate.EddHeader
-                        , div [ class "value" ] [ text edd ]
-                        ]
-                    , div [ class "ega-result" ]
-                        [ viewLabel language Translate.EgaHeader
-                        , div [ class "value" ] [ text ega ]
-                        ]
-                    ]
-                ]
+            [ div [ class "form pregnancy-dating" ] <|
+                inputs
+                    ++ [ div [ class "separator" ] []
+                       , div [ class "results" ]
+                            [ div [ class "edd-result" ]
+                                [ viewLabel language Translate.EddHeader
+                                , div [ class "value" ] [ text edd ]
+                                ]
+                            , div [ class "ega-result" ]
+                                [ viewLabel language Translate.EgaHeader
+                                , div [ class "value" ] [ text ega ]
+                                ]
+                            ]
+                       ]
             ]
         , div [ class "actions" ]
             [ button
@@ -326,7 +378,7 @@ viewHistoryContent language currentDate assembled data_ =
                             let
                                 formStep1_ =
                                     assembled.measurements.obstetricHistory
-                                        |> Maybe.map (Tuple.second >> .value)
+                                        |> getMeasurementValueFunc
                                         |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
                             in
                             viewObstetricFormFirstStep language currentDate assembled formStep1_
@@ -335,7 +387,7 @@ viewHistoryContent language currentDate assembled data_ =
                             let
                                 formStep2_ =
                                     assembled.measurements.obstetricHistoryStep2
-                                        |> Maybe.map (Tuple.second >> .value)
+                                        |> getMeasurementValueFunc
                                         |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
                             in
                             viewObstetricFormSecondStep language currentDate assembled formStep2_
@@ -344,7 +396,7 @@ viewHistoryContent language currentDate assembled data_ =
                     let
                         medicalForm =
                             assembled.measurements.medicalHistory
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> medicalHistoryFormWithDefault data.medicalForm
                     in
                     viewMedicalForm language currentDate assembled medicalForm
@@ -353,7 +405,7 @@ viewHistoryContent language currentDate assembled data_ =
                     let
                         socialForm =
                             assembled.measurements.socialHistory
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> socialHistoryFormWithDefault data.socialForm
 
                         showCounselingQuestion =
@@ -565,7 +617,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.vitals
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> vitalsFormWithDefault data.vitalsForm
                     in
                     viewVitalsForm language currentDate assembled form
@@ -577,7 +629,7 @@ viewExaminationContent language currentDate assembled data =
 
                         form_ =
                             assembled.measurements.nutrition
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                         form =
@@ -597,7 +649,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.corePhysicalExam
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
                     in
                     viewCorePhysicalExamForm language currentDate assembled form
@@ -606,7 +658,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.obstetricalExam
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> obstetricalExamFormWithDefault data.obstetricalExamForm
                     in
                     viewObstetricalExamForm language currentDate assembled form
@@ -615,7 +667,7 @@ viewExaminationContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.breastExam
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> breastExamFormWithDefault data.breastExamForm
                     in
                     viewBreastExamForm language currentDate assembled form
@@ -670,7 +722,7 @@ viewExaminationContent language currentDate assembled data =
                                         assembled.nursePreviousMeasurementsWithDates
                                             |> List.head
                                             |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
-                                            |> Maybe.map (\(HeightInCm height) -> height)
+                                            |> Maybe.map heightValueFunc
 
                                     else
                                         Nothing
@@ -727,7 +779,7 @@ viewFamilyPlanningContent language currentDate assembled data =
     let
         form =
             assembled.measurements.familyPlanning
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> familyPlanningFormWithDefault data.form
 
         totalTasks =
@@ -846,7 +898,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.medication
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> medicationFormWithDefault data.medicationForm
 
                         questions =
@@ -862,7 +914,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                     let
                         form =
                             assembled.measurements.resource
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> resourceFormWithDefault data.resourcesForm
                     in
                     viewResourcesForm language currentDate assembled form
@@ -929,7 +981,7 @@ viewDangerSignsContent language currentDate assembled data =
     let
         form =
             assembled.measurements.dangerSigns
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> dangerSignsFormWithDefault data.form
 
         ( inputs, tasksCompleted, totalTasks ) =
@@ -1004,7 +1056,7 @@ viewPrenatalPhotoContent language currentDate assembled data =
                     )
 
                 Nothing ->
-                    ( Maybe.map (Tuple.second >> .value)
+                    ( getMeasurementValueFunc
                         assembled.measurements.prenatalPhoto
                     , []
                     , True
@@ -1082,7 +1134,7 @@ viewBirthPlanContent language currentDate assembled data =
 
         form =
             assembled.measurements.birthPlan
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> birthPlanFormWithDefault data.form
 
         healthInsuranceFunc value form_ =
@@ -1165,7 +1217,7 @@ viewLaboratoryContent language currentDate assembled data =
     let
         form =
             assembled.measurements.pregnancyTest
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> pregnancyTestingFormWithDefault data.form
 
         totalTasks =
@@ -1337,21 +1389,21 @@ viewNextStepsContent language currentDate assembled data =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
                     measurements.appointmentConfirmation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
                         |> viewAppointmentConfirmationForm language currentDate assembled
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language
+                        |> viewSendToHealthCenterForm language
                             currentDate
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
@@ -1360,7 +1412,7 @@ viewNextStepsContent language currentDate assembled data =
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
@@ -1463,7 +1515,7 @@ viewObstetricFormFirstStep language currentDate assembled form =
             { form_ | liveChildren = value, liveChildrenDirty = True }
     in
     div [ class "form history obstetric first" ]
-        [ viewLabel language Translate.CurrentlyPregnant
+        [ viewQuestionLabel language Translate.CurrentlyPregnant
         , viewBoolInput language
             form.currentlyPregnant
             SetCurrentlyPregnant
@@ -2040,128 +2092,25 @@ viewSocialForm language currentDate showCounselingQuestion showTestingQuestions 
 viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
 viewVitalsForm language currentDate assembled form =
     let
-        sysBloodPressureUpdateFunc value form_ =
-            { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
-
-        diaBloodPressureUpdateFunc value form_ =
-            { form_ | diaBloodPressure = value, diaBloodPressureDirty = True }
-
-        heartRateUpdateFunc value form_ =
-            { form_ | heartRate = value, heartRateDirty = True }
-
-        respiratoryRateUpdateFunc value form_ =
-            { form_ | respiratoryRate = value, respiratoryRateDirty = True }
-
-        bodyTemperatureUpdateFunc value form_ =
-            { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
-
-        sysBloodPressurePreviousValue =
-            resolvePreviousValue assembled .vitals .sys
-
-        diaBloodPressurePreviousValue =
-            resolvePreviousValue assembled .vitals .dia
-
-        heartRatePreviousValue =
-            resolvePreviousValue assembled .vitals .heartRate
-                |> Maybe.map toFloat
-
-        respiratoryRatePreviousValue =
-            resolvePreviousValue assembled .vitals .respiratoryRate
-                |> Maybe.map toFloat
-
-        bodyTemperaturePreviousValue =
-            resolvePreviousValue assembled .vitals .bodyTemperature
+        formConfig =
+            { setIntInputMsg = SetVitalsIntInput
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+            , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
+            , heartRatePreviousValue =
+                resolvePreviousMaybeValue assembled .vitals .heartRate
+                    |> Maybe.map toFloat
+            , respiratoryRatePreviousValue =
+                resolvePreviousValue assembled .vitals .respiratoryRate
+                    |> Maybe.map toFloat
+            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , birthDate = assembled.person.birthDate
+            , formClass = "examination vitals"
+            , mode = VitalsFormFull
+            , invokationModule = InvokationModulePrenatal
+            }
     in
-    div [ class "ui form examination vitals" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.BloodPressure ]
-            , viewWarning language Nothing
-            ]
-        , div [ class "ui grid systolic" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.sysBloodPressure
-                    [ [ (<) 140 ] ]
-                    []
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.sysBloodPressure
-            (SetVitalsFloatMeasurement sysBloodPressureUpdateFunc)
-            "sys-blood-pressure"
-            Translate.MMHGUnit
-        , viewPreviousMeasurement language sysBloodPressurePreviousValue Translate.MMHGUnit
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.diaBloodPressure
-                    [ [ (<) 90 ] ]
-                    []
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.diaBloodPressure
-            (SetVitalsFloatMeasurement diaBloodPressureUpdateFunc)
-            "dia-blood-pressure"
-            Translate.MMHGUnit
-        , viewPreviousMeasurement language diaBloodPressurePreviousValue Translate.MMHGUnit
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeartRate ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.heartRate
-                    [ [ (>) 40 ], [ (<=) 120 ] ]
-                    [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            (Maybe.map toFloat form.heartRate)
-            (SetVitalsIntMeasurement heartRateUpdateFunc)
-            "heart-rate"
-            Translate.BpmUnitLabel
-        , viewPreviousMeasurement language heartRatePreviousValue Translate.BpmUnitLabel
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RespiratoryRate ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.respiratoryRate
-                    [ [ (>) 12 ], [ (<) 30 ] ]
-                    [ [ (<=) 21, (>=) 30 ] ]
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            (Maybe.map toFloat form.respiratoryRate)
-            (SetVitalsIntMeasurement respiratoryRateUpdateFunc)
-            "respiratory-rate"
-            Translate.BpmUnitLabel
-        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BodyTemperature ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.bodyTemperature
-                    [ [ (>) 35 ], [ (<) 37.5 ] ]
-                    []
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.bodyTemperature
-            (SetVitalsFloatMeasurement bodyTemperatureUpdateFunc)
-            "body-temperature"
-            Translate.Celsius
-        , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
-        ]
+    Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
 viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Bool -> Html Msg
@@ -2181,11 +2130,11 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
-                |> Maybe.map (\(HeightInCm cm) -> cm)
+                |> Maybe.map heightValueFunc
 
         weightPreviousValue =
             resolvePreviousValue assembled .nutrition .weight
-                |> Maybe.map (\(WeightInKg kg) -> kg)
+                |> Maybe.map weightValueFunc
 
         bmiPreviousValue =
             calculateBmi heightPreviousValue weightPreviousValue
@@ -2193,7 +2142,7 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
         muacPreviousValue =
             resolvePreviousValue assembled .nutrition .muac
-                |> Maybe.map (\(MuacInCm cm) -> cm)
+                |> Maybe.map muacValueFunc
 
         calculatedBmi =
             calculateBmi form.height form.weight
@@ -2506,7 +2455,7 @@ viewObstetricalExamForm language currentDate assembled form =
 
         fundalHeightPreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fundalHeight
-                |> Maybe.map (\(HeightInCm cm) -> cm)
+                |> Maybe.map heightValueFunc
     in
     div [ class "ui form examination obstetrical-exam" ]
         [ div [ class "ui grid" ]
@@ -2691,16 +2640,13 @@ viewFollowUpForm language assembled currentDate form =
 viewAppointmentConfirmationForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
 viewAppointmentConfirmationForm language currentDate assembled form =
     let
-        today =
-            currentDate
-
         appointmentDateInput =
             DateSelector.SelectorDropdown.view
                 AppointmentToggleDateSelector
                 SetAppointmentConfirmation
                 form.isDateSelectorOpen
-                today
-                (Date.add Months 9 today)
+                currentDate
+                (Date.add Months 9 currentDate)
                 form.appointmentDate
     in
     div [ class "form appointment-confirmation" ]
@@ -2728,40 +2674,6 @@ viewNewbornEnrolmentForm language currentDate assembled =
 
 
 -- HELPER FUNCITONS
-
-
-viewRedAlertForSelect : List a -> List a -> Html any
-viewRedAlertForSelect actual normal =
-    viewAlertForSelect "red" actual normal
-
-
-viewYellowAlertForSelect : List a -> List a -> Html any
-viewYellowAlertForSelect actual normal =
-    viewAlertForSelect "yellow" actual normal
-
-
-viewAlertForSelect : String -> List a -> List a -> Html any
-viewAlertForSelect color actual normal =
-    if
-        List.isEmpty actual
-            || List.all
-                (\item ->
-                    List.member item normal
-                )
-                actual
-    then
-        emptyNode
-
-    else
-        div [ class <| "alert " ++ color ]
-            [ viewAlert color ]
-
-
-viewRedAlertForBool : Maybe Bool -> Bool -> Html any
-viewRedAlertForBool actual normal =
-    viewRedAlertForSelect
-        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
-        [ normal ]
 
 
 viewNumberInput :
@@ -2811,49 +2723,6 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
         ]
 
 
-{-| The idea here is that we get lists for red alert conditions, and yellow
-alert conditions. If any of red conditions matches, we present red alert.
-If any of yellow conditions matches, we present yellow alert.
-Otherwise, no alret is needed.
-
-Note that conditions are list of lists, so all conditions in inner list
-need to match, for a condition in outer list to match.
-We need this for range conditions. For example, number between 5 and 8.
-
--}
-viewConditionalAlert : Maybe a -> List (List (a -> Bool)) -> List (List (a -> Bool)) -> Html any
-viewConditionalAlert maybeActual redConditions yellowConditions =
-    maybeActual
-        |> Maybe.map
-            (\actual ->
-                if
-                    List.any
-                        (\conditions ->
-                            List.all
-                                (\condition ->
-                                    condition actual
-                                )
-                                conditions
-                        )
-                        redConditions
-                then
-                    viewAlert "red"
-
-                else if
-                    List.any
-                        (\conditions ->
-                            List.all (\condition -> condition actual) conditions
-                        )
-                        yellowConditions
-                then
-                    viewAlert "yellow"
-
-                else
-                    emptyNode
-            )
-        |> Maybe.withDefault emptyNode
-
-
 viewWarning : Language -> Maybe String -> Html any
 viewWarning language maybeMessage =
     maybeMessage
@@ -2863,12 +2732,3 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
-
-
-viewAlert : String -> Html any
-viewAlert color =
-    let
-        icon =
-            "assets/images/alert-" ++ color ++ ".png"
-    in
-    img [ src icon ] []

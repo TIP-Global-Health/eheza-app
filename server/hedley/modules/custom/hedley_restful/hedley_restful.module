@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 16);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 17);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -39,14 +39,18 @@ const HEDLEY_RESTFUL_SHARDED = [
   'nutrition_encounter' => 'nutrition-encounters',
   'acute_illness_encounter' => 'acute-illness-encounters',
   'home_visit_encounter' => 'home-visit-encounter',
+  'well_child_encounter' => 'well-child-encounter',
   'relationship' => 'relationships',
   'session' => 'sessions',
   // Measurements.
   'acute_findings' => 'acute-findings',
+  'acute_illness_contacts_tracing' => 'acute-illness-contacts-tracing',
+  'acute_illness_core_exam' => 'acute-illness-core-exam',
   'acute_illness_danger_signs' => 'acute-illness-danger-signs',
   'acute_illness_follow_up' => 'acute-illness-follow-up',
   'acute_illness_muac' => 'acute-illness-muacs',
   'acute_illness_nutrition' => 'acute-illness-nutritions',
+  'acute_illness_trace_contact' => 'acute-illness-trace-contact',
   'acute_illness_vitals' => 'acute-illness-vitals',
   'prenatal_follow_up' => 'prenatal-follow-up',
   'prenatal_send_to_hc' => 'prenatal-send-to-hc',
@@ -59,6 +63,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'contributing_factors' => 'contributing-factors',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
+  'covid_testing' => 'covid-testing',
   'danger_signs' => 'danger-signs',
   'exposure' => 'exposures',
   'family_planning' => 'family-plannings',
@@ -112,6 +117,32 @@ const HEDLEY_RESTFUL_SHARDED = [
   'treatment_ongoing' => 'treatment-ongoing',
   'vitals' => 'vitals',
   'weight' => 'weights',
+  'well_child_albendazole' => 'well-child-albendazole',
+  'well_child_bcg_immunisation' => 'well-child-bcg-immunisation',
+  'well_child_contributing_factors' => 'well-child-contributing-factors',
+  'well_child_dtp_immunisation' => 'well-child-dtp-immunisation',
+  'well_child_ecd' => 'well-child-ecd',
+  'well_child_follow_up' => 'well-child-follow-up',
+  'well_child_head_circumference' => 'well-child-head-circumference',
+  'well_child_health_education' => 'well-child-health-education',
+  'well_child_height' => 'well-child-height',
+  'well_child_hpv_immunisation' => 'well-child-hpv-immunisation',
+  'well_child_ipv_immunisation' => 'well-child-ipv-immunisation',
+  'well_child_mebendezole' => 'well-child-mebendezole',
+  'well_child_mr_immunisation' => 'well-child-mr-immunisation',
+  'well_child_muac' => 'well-child-muac',
+  'well_child_next_visit' => 'well-child-next-visit',
+  'well_child_nutrition' => 'well-child-nutrition',
+  'well_child_opv_immunisation' => 'well-child-opv-immunisation',
+  'well_child_photo' => 'well-child-photo',
+  'well_child_pcv13_immunisation' => 'well-child-pcv13-immunisation',
+  'well_child_pregnancy_summary' => 'well-child-pregnancy-summary',
+  'well_child_rotarix_immunisation' => 'well-child-rotarix-immunisation',
+  'well_child_send_to_hc' => 'well-child-send-to-hc',
+  'well_child_symptoms_review' => 'well-child-symptoms-review',
+  'well_child_vitals' => 'well-child-vitals',
+  'well_child_vitamin_a' => 'well-child-vitamin-a',
+  'well_child_weight' => 'well-child-weight',
 ];
 
 // Make sure that some headers get set.

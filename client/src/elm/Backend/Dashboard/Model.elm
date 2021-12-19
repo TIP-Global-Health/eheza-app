@@ -13,13 +13,13 @@ import Backend.Measurement.Model
         , DangerSign
         , FamilyPlanningSign
         , FollowUpMeasurements
+        , Gender
         , HCContactSign
         , HCRecommendation
         , IsolationSign
         , Recommendation114
         , SendToHCSign
         )
-import Backend.Person.Model exposing (Gender)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 

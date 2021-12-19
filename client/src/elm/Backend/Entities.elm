@@ -781,3 +781,251 @@ type alias PrenatalAppointmentConfirmationId =
 
 type PrenatalAppointmentConfirmationUuidType
     = PrenatalAppointmentConfirmationUuidType
+
+
+type alias WellChildEncounterId =
+    EntityUuid WellChildEncounterUuidType
+
+
+type WellChildEncounterUuidType
+    = WellChildEncounterUuidType
+
+
+type alias WellChildECDId =
+    EntityUuid WellChildECDUuidType
+
+
+type WellChildECDUuidType
+    = WellChildECDUuidType
+
+
+type alias WellChildNutritionId =
+    EntityUuid WellChildNutritionUuidType
+
+
+type WellChildNutritionUuidType
+    = WellChildNutritionUuidType
+
+
+type alias WellChildMuacId =
+    EntityUuid WellChildMuacUuidType
+
+
+type WellChildMuacUuidType
+    = WellChildMuacUuidType
+
+
+type alias WellChildHeightId =
+    EntityUuid WellChildHeightUuidType
+
+
+type WellChildHeightUuidType
+    = WellChildHeightUuidType
+
+
+type alias WellChildPhotoId =
+    EntityUuid WellChildPhotoUuidType
+
+
+type WellChildPhotoUuidType
+    = WellChildPhotoUuidType
+
+
+type alias WellChildWeightId =
+    EntityUuid WellChildWeightUuidType
+
+
+type WellChildWeightUuidType
+    = WellChildWeightUuidType
+
+
+type alias WellChildSendToHCId =
+    EntityUuid WellChildSendToHCIdUuidType
+
+
+type WellChildSendToHCIdUuidType
+    = WellChildSendToHCIdUuidType
+
+
+type alias WellChildHealthEducationId =
+    EntityUuid WellChildHealthEducationUuidType
+
+
+type WellChildHealthEducationUuidType
+    = WellChildHealthEducationUuidType
+
+
+type alias WellChildContributingFactorsId =
+    EntityUuid WellChildContributingFactorsIdUuidType
+
+
+type WellChildContributingFactorsIdUuidType
+    = WellChildContributingFactorsIdUuidType
+
+
+type alias WellChildFollowUpId =
+    EntityUuid WellChildFollowUpIdUuidType
+
+
+type WellChildFollowUpIdUuidType
+    = WellChildFollowUpIdUuidType
+
+
+type alias WellChildHeadCircumferenceId =
+    EntityUuid WellChildHeadCircumferenceUuidType
+
+
+type WellChildHeadCircumferenceUuidType
+    = WellChildHeadCircumferenceUuidType
+
+
+type alias WellChildSymptomsReviewId =
+    EntityUuid WellChildSymptomsReviewUuidType
+
+
+type WellChildSymptomsReviewUuidType
+    = WellChildSymptomsReviewUuidType
+
+
+type alias WellChildVitalsId =
+    EntityUuid WellChildVitalsUuidType
+
+
+type WellChildVitalsUuidType
+    = WellChildVitalsUuidType
+
+
+type alias WellChildMebendezoleId =
+    EntityUuid WellChildMebendezoleUuidType
+
+
+type WellChildMebendezoleUuidType
+    = WellChildMebendezoleUuidType
+
+
+type alias WellChildPregnancySummaryId =
+    EntityUuid WellChildPregnancySummaryUuidType
+
+
+type WellChildPregnancySummaryUuidType
+    = WellChildPregnancySummaryUuidType
+
+
+type alias WellChildVitaminAId =
+    EntityUuid WellChildVitaminAUuidType
+
+
+type WellChildVitaminAUuidType
+    = WellChildVitaminAUuidType
+
+
+type alias WellChildAlbendazoleId =
+    EntityUuid WellChildAlbendazoleUuidType
+
+
+type WellChildAlbendazoleUuidType
+    = WellChildAlbendazoleUuidType
+
+
+type alias WellChildNextVisitId =
+    EntityUuid WellChildNextVisitUuidType
+
+
+type WellChildNextVisitUuidType
+    = WellChildNextVisitUuidType
+
+
+type alias WellChildBCGImmunisationId =
+    EntityUuid WellChildBCGImmunisationUuidType
+
+
+type WellChildBCGImmunisationUuidType
+    = WellChildBCGImmunisationUuidType
+
+
+type alias WellChildDTPImmunisationId =
+    EntityUuid WellChildDTPImmunisationUuidType
+
+
+type WellChildDTPImmunisationUuidType
+    = WellChildDTPImmunisationUuidType
+
+
+type alias WellChildHPVImmunisationId =
+    EntityUuid WellChildHPVImmunisationUuidType
+
+
+type WellChildHPVImmunisationUuidType
+    = WellChildHPVImmunisationUuidType
+
+
+type alias WellChildIPVImmunisationId =
+    EntityUuid WellChildIPVImmunisationUuidType
+
+
+type WellChildIPVImmunisationUuidType
+    = WellChildIPVImmunisationUuidType
+
+
+type alias WellChildMRImmunisationId =
+    EntityUuid WellChildMRImmunisationUuidType
+
+
+type WellChildMRImmunisationUuidType
+    = WellChildMRImmunisationUuidType
+
+
+type alias WellChildOPVImmunisationId =
+    EntityUuid WellChildOPVImmunisationUuidType
+
+
+type WellChildOPVImmunisationUuidType
+    = WellChildOPVImmunisationUuidType
+
+
+type alias WellChildPCV13ImmunisationId =
+    EntityUuid WellChildPCV13ImmunisationUuidType
+
+
+type WellChildPCV13ImmunisationUuidType
+    = WellChildPCV13ImmunisationUuidType
+
+
+type alias WellChildRotarixImmunisationId =
+    EntityUuid WellChildRotarixImmunisationUuidType
+
+
+type WellChildRotarixImmunisationUuidType
+    = WellChildRotarixImmunisationUuidType
+
+
+type alias AcuteIllnessCoreExamId =
+    EntityUuid AcuteIllnessCoreExamUuidType
+
+
+type AcuteIllnessCoreExamUuidType
+    = AcuteIllnessCoreExamUuidType
+
+
+type alias CovidTestingId =
+    EntityUuid CovidTestingUuidType
+
+
+type CovidTestingUuidType
+    = CovidTestingUuidType
+
+
+type alias AcuteIllnessContactsTracingId =
+    EntityUuid AcuteIllnessContactsTracingUuidType
+
+
+type AcuteIllnessContactsTracingUuidType
+    = AcuteIllnessContactsTracingUuidType
+
+
+type alias AcuteIllnessTraceContactId =
+    EntityUuid AcuteIllnessTraceContactUuidType
+
+
+type AcuteIllnessTraceContactUuidType
+    = AcuteIllnessTraceContactUuidType

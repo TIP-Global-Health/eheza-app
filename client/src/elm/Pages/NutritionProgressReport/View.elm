@@ -1,11 +1,11 @@
 module Pages.NutritionProgressReport.View exposing (view)
 
-import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), NutritionHeight, NutritionWeight, WeightInKg(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Model exposing (Person)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -14,96 +14,86 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
+import Pages.NutritionActivity.Utils exposing (mandatoryActivitiesCompleted)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
+import Pages.NutritionEncounter.View exposing (allowEndingEcounter, partitionActivities)
+import Pages.NutritionProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.ProgressReport.View exposing (viewFoundChild)
+import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDaysHtml, renderDate)
+import Utils.NominalDate exposing (renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
+import ZScore.Utils exposing (diffDays)
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate zscores id db =
-    generateAssembledData id db
-        |> viewWebData language (viewContent language currentDate zscores db) identity
-
-
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> Html Msg
-viewContent language currentDate zscores db data =
+view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw db model =
     let
-        childId =
-            data.participant.person
-
-        child =
-            data.person
-
-        childMeasurements =
-            Dict.get childId db.childMeasurements
+        encounter =
+            Dict.get id db.nutritionEncounters
                 |> Maybe.withDefault NotAsked
 
-        expectedSessions =
-            Dict.get childId db.expectedSessions
-                |> Maybe.withDefault NotAsked
+        participant =
+            RemoteData.andThen
+                (\encounter_ ->
+                    Dict.get encounter_.participant db.individualParticipants
+                        |> Maybe.withDefault NotAsked
+                )
+                encounter
 
-        individualChildMeasurements =
-            ( currentDate, ( data.id, data.measurements ) )
-                :: data.previousMeasurementsWithDates
+        childData =
+            participant
+                |> RemoteData.andThen
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map (\child_ -> ( participant_.person, child_ ))
+                    )
 
-        maybeRelationship =
-            Dict.get data.participant.person db.relationshipsByPerson
-                |> Maybe.withDefault NotAsked
+        assembledData =
+            generateAssembledData id db
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (Dict.values >> List.head)
 
-        mother =
-            maybeRelationship
-                |> Maybe.andThen
-                    (\relationship ->
-                        Dict.get relationship.relatedTo db.people
-                            |> Maybe.andThen RemoteData.toMaybe
+        ( endEnconterData, mandatoryNutritionAssessmentMeasurementsTaken ) =
+            Maybe.map2
+                (\assembled ( _, child ) ->
+                    let
+                        ( _, pendingActivities ) =
+                            partitionActivities currentDate zscores isChw db assembled
+                    in
+                    ( Just <|
+                        { showEndEncounterDialog = model.showEndEncounterDialog
+                        , allowEndEcounter = allowEndingEcounter isChw pendingActivities
+                        , closeEncounterMsg = CloseEncounter id
+                        , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
+                        }
+                    , mandatoryActivitiesCompleted currentDate zscores child isChw assembled db
                     )
+                )
+                assembledData
+                (RemoteData.toMaybe childData)
+                |> Maybe.withDefault ( Nothing, False )
 
-        relation =
-            maybeRelationship
-                |> Maybe.map
-                    (\relationship ->
-                        case relationship.relatedBy of
-                            MyParent ->
-                                Translate.ChildOf
-
-                            MyCaregiver ->
-                                Translate.TakenCareOfBy
-
-                            -- Other 2 options will never occur, as we deal with child here.
-                            _ ->
-                                Translate.ChildOf
-                    )
-                |> Maybe.withDefault Translate.ChildOf
-
-        -- We're using nutrition value from the current session here, at
-        -- least for now. So, we're ignoring any later sessions, and we're just
-        -- leaving it blank if it wasn't entered in this session (rather than looking
-        -- back to a previous session when it was entered).
-        --
-        -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
-        currentNutritionSigns =
-            data.measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value)
-                |> Maybe.withDefault EverySet.empty
-
-        defaultLastAssessmentDate =
-            currentDate
-
-        goBackAction =
-            NutritionEncounterPage data.id
-                |> UserPage
-                |> App.Model.SetActivePage
+        initiator =
+            InitiatorNutritionIndividual id
     in
     viewWebData language
-        (viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
+        (viewProgressReport language
+            currentDate
+            zscores
+            isChw
+            initiator
+            mandatoryNutritionAssessmentMeasurementsTaken
+            db
+            model.diagnosisMode
+            SetActivePage
+            SetDiagnosisMode
+            endEnconterData
+        )
         identity
-        (RemoteData.append expectedSessions childMeasurements)
+        childData

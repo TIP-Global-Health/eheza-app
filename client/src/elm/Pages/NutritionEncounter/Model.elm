@@ -5,12 +5,13 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (ChildNutritionSign, NutritionMeasurements, ObstetricHistoryValue)
 import Backend.NutritionEncounter.Model exposing (..)
 import Backend.Person.Model exposing (Person)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { selectedTab : Tab
+    , showEndEncounterDialog : Bool
     }
 
 
@@ -18,6 +19,7 @@ type Msg
     = CloseEncounter NutritionEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
+    | SetEndEncounterDialogState Bool
 
 
 type Tab
@@ -29,6 +31,7 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    , showEndEncounterDialog = False
     }
 
 

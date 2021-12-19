@@ -3,7 +3,8 @@ module Pages.PrenatalActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
-import Measurement.Model exposing (DropZoneFile, SendToHCForm, emptySendToHCForm)
+import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
 
 
@@ -15,6 +16,7 @@ type Msg
     | SetWarningPopupState (Maybe String)
       -- PregnancyDatingMsgs
     | ToggleDateSelector
+    | SetConfirmLmpDate NominalDate Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
@@ -42,8 +44,8 @@ type Msg
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals
-    | SetVitalsIntMeasurement (Maybe Int -> VitalsForm -> VitalsForm) String
-    | SetVitalsFloatMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
@@ -330,13 +332,14 @@ type alias PregnancyDatingForm =
     { lmpRange : Maybe LmpRange
     , lmpDate : Maybe Date
     , lmpDateConfident : Maybe Bool
+    , chwLmpConfirmation : Maybe Bool
     , isDateSelectorOpen : Bool
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing False
+    PregnancyDatingForm Nothing Nothing Nothing Nothing False
 
 
 type alias ObstetricFormFirstStep =
@@ -504,35 +507,6 @@ type ExaminationTask
     | Vitals
 
 
-type alias VitalsForm =
-    { sysBloodPressure : Maybe Float
-    , sysBloodPressureDirty : Bool
-    , diaBloodPressure : Maybe Float
-    , diaBloodPressureDirty : Bool
-    , heartRate : Maybe Int
-    , heartRateDirty : Bool
-    , respiratoryRate : Maybe Int
-    , respiratoryRateDirty : Bool
-    , bodyTemperature : Maybe Float
-    , bodyTemperatureDirty : Bool
-    }
-
-
-emptyVitalsForm : VitalsForm
-emptyVitalsForm =
-    { sysBloodPressure = Nothing
-    , sysBloodPressureDirty = False
-    , diaBloodPressure = Nothing
-    , diaBloodPressureDirty = False
-    , heartRate = Nothing
-    , heartRateDirty = False
-    , respiratoryRate = Nothing
-    , respiratoryRateDirty = False
-    , bodyTemperature = Nothing
-    , bodyTemperatureDirty = False
-    }
-
-
 type alias NutritionAssessmentForm =
     { height : Maybe Float
     , heightDirty : Bool
@@ -555,7 +529,6 @@ emptyNutritionAssessmentForm =
 
 
 type alias CorePhysicalExamForm =
-    -- Needs to be redefined to use EverySet to allow multiple signs.
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
     , neck : Maybe (List NeckCPESign)

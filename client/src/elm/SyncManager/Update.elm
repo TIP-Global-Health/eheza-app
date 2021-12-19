@@ -824,7 +824,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 cmd =
                     HttpBuilder.post (device.backendUrl ++ "/api/report-state")
                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceSatateReport version phase totalToUpload syncedAutorities)
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeDeviceStateReport version phase totalToUpload syncedAutorities)
                         |> HttpBuilder.send (always NoOp)
             in
             SubModelReturn

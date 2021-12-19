@@ -29,6 +29,8 @@ view close button maybeContent =
                     []
                 , buttonContainer
                 , div
-                    [ class "dropdown--content-container" ]
+                    [ class "dropdown--content-container"
+                    , Html.Attributes.id "dropdown--content-container"
+                    ]
                     [ content ]
                 ]

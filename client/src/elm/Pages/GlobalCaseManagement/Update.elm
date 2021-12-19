@@ -2,7 +2,7 @@ module Pages.GlobalCaseManagement.Update exposing (update)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType(..), emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
@@ -24,8 +24,8 @@ update currentDate healthCenterId msg db model =
             , [ App.Model.SetActivePage page ]
             )
 
-        SetEncounterTypeFilter encounterType ->
-            ( { model | encounterTypeFilter = encounterType }
+        SetFilter filter ->
+            ( { model | filter = filter }
             , Cmd.none
             , []
             )
@@ -49,8 +49,12 @@ update currentDate healthCenterId msg db model =
                                     FollowUpAcuteIllness data ->
                                         startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
 
-                                    -- We should never get here, as Prenatal Encounter go it's own action.
+                                    -- We should never get here, as Prenatal Encounter got it's own action.
                                     FollowUpPrenatal data ->
+                                        []
+
+                                    CaseManagementContactsTracing ->
+                                        -- We should never get here, as Contacts Tracing got it's own action.
                                         []
                             )
                         |> Maybe.withDefault []
@@ -100,7 +104,7 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
 
 startFollowUpEncounterAcuteIllness : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpAcuteIllnessData -> List App.Model.Msg
 startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
-    [ emptyAcuteIllnessEncounter data.participantId currentDate data.sequenceNumber (Just selectedHealthCenter)
+    [ emptyAcuteIllnessEncounter data.participantId currentDate data.sequenceNumber AcuteIllnessEncounterCHW (Just selectedHealthCenter)
         |> Backend.Model.PostAcuteIllnessEncounter
         |> App.Model.MsgIndexedDb
     ]

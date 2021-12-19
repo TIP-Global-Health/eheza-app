@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
+import Backend.Person.Utils exposing (ageInYears, getHealthCenterName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.Html exposing (emptyNode)
@@ -237,13 +237,7 @@ viewContactInformationPane : Language -> NominalDate -> ModelIndexedDb -> Fetche
 viewContactInformationPane language currentDate db data =
     let
         healthCenterName =
-            data.person.healthCenterId
-                |> Maybe.andThen
-                    (\id ->
-                        RemoteData.toMaybe db.healthCenters
-                            |> Maybe.andThen (Dict.get id)
-                    )
-                |> Maybe.map .name
+            getHealthCenterName data.person.healthCenterId db
                 |> Maybe.withDefault ""
     in
     div [ class "contact-information" ]

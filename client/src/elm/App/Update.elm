@@ -14,6 +14,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Browser
 import Browser.Navigation as Nav
 import Config
@@ -50,8 +51,11 @@ import Pages.NutritionActivity.Model
 import Pages.NutritionActivity.Update
 import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.Update
+import Pages.NutritionProgressReport.Model
+import Pages.NutritionProgressReport.Update
 import Pages.Page exposing (..)
 import Pages.People.Update
+import Pages.Person.Model
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
@@ -68,6 +72,14 @@ import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import Pages.TraceContact.Model
+import Pages.TraceContact.Update
+import Pages.WellChildActivity.Model
+import Pages.WellChildActivity.Update
+import Pages.WellChildEncounter.Model
+import Pages.WellChildEncounter.Update
+import Pages.WellChildProgressReport.Model
+import Pages.WellChildProgressReport.Update
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
@@ -276,13 +288,15 @@ update msg model =
                             , appMsgs
                             )
 
-                        MsgPageEditPerson subMsg ->
+                        MsgPageEditPerson id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.editPersonPage
+                                    Dict.get id data.editPersonPages
+                                        |> Maybe.withDefault Pages.Person.Model.emptyEditModel
+                                        |> Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb
                             in
-                            ( { data | editPersonPage = subModel }
-                            , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
+                            ( { data | editPersonPages = Dict.insert id subModel data.editPersonPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageEditPerson id) subCmd
                             , appMsgs
                             )
 
@@ -410,6 +424,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageWellChildEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.wellChildEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.WellChildEncounter.Model.emptyModel
+                                        |> Pages.WellChildEncounter.Update.update currentDate model.zscores isChw model.indexedDb subMsg
+                            in
+                            ( { data | wellChildEncounterPages = Dict.insert id subModel data.wellChildEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageWellChildEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -442,7 +469,7 @@ update msg model =
                                     data.acuteIllnessActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
-                                        |> Pages.AcuteIllnessActivity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Pages.AcuteIllnessActivity.Update.update currentDate model.healthCenterId id model.indexedDb subMsg
                             in
                             ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd
@@ -459,6 +486,19 @@ update msg model =
                             in
                             ( { data | homeVisitActivityPages = Dict.insert ( id, activity ) subModel data.homeVisitActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageWellChildActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.wellChildActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.WellChildActivity.Model.emptyModel
+                                        |> Pages.WellChildActivity.Update.update currentDate isChw id model.indexedDb subMsg
+                            in
+                            ( { data | wellChildActivityPages = Dict.insert ( id, activity ) subModel data.wellChildActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageWellChildActivity id activity) subCmd
                             , extraMsgs
                             )
 
@@ -488,6 +528,32 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNutritionProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.nutritionProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NutritionProgressReport.Model.emptyModel
+                                        |> Pages.NutritionProgressReport.Update.update subMsg
+                            in
+                            ( { data | nutritionProgressReportPages = Dict.insert id subModel data.nutritionProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNutritionProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageWellChildProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.wellChildProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.WellChildProgressReport.Model.emptyModel
+                                        |> Pages.WellChildProgressReport.Update.update subMsg
+                            in
+                            ( { data | wellChildProgressReportPages = Dict.insert id subModel data.wellChildProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageWellChildProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPageAcuteIllnessOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -498,6 +564,18 @@ update msg model =
                             in
                             ( { data | acuteIllnessOutcomePages = Dict.insert id subModel data.acuteIllnessOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageTraceContact id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Dict.get id data.traceContactPages
+                                        |> Maybe.withDefault Pages.TraceContact.Model.emptyModel
+                                        |> Pages.TraceContact.Update.update currentDate id subMsg
+                            in
+                            ( { data | traceContactPages = Dict.insert id subModel data.traceContactPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTraceContact id) subCmd
                             , appMsgs
                             )
                 )
@@ -926,6 +1004,9 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (NutritionActivityPage _ Photo) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (WellChildActivityPage _ WellChildPhoto) ->
                             App.Ports.bindDropZone ()
 
                         _ ->

@@ -143,6 +143,24 @@ function hedley_zscore_wfh() {
 }
 
 /**
+ * Head circumference for age.
+ *
+ * @return array
+ *   An array of the entries parsed from JSON.
+ *
+ * @throws \Exception
+ */
+function hedley_zscore_hc() {
+  $cached = &drupal_static(__FUNCTION__);
+
+  if (!isset($cached)) {
+    $cached[HEDLEY_ZSCORE_DAYS] = hedley_zscore_read_file('hcanthro.json');
+  }
+
+  return $cached;
+}
+
+/**
  * Z-Score BMI for age.
  *
  * @param float $days
@@ -238,6 +256,25 @@ function hedley_zscore_weight_for_height($cm, $gender, $kg) {
   $source = hedley_zscore_wfh();
 
   return hedley_zscore_lookup(round($cm * 10), $gender, $kg, TRUE, $source);
+}
+
+/**
+ * Z-Score head circumference for age.
+ *
+ * @param float $days
+ *   How many days old is the child?
+ * @param string $gender
+ *   Is the child 'male' or 'female'?
+ * @param float $cm
+ *   How many centimetres is the child in length?
+ *
+ * @return int
+ *   A Z-Score
+ */
+function hedley_zscore_head_circumference_for_age($days, $gender, $cm) {
+  $source = hedley_zscore_hc();
+
+  return hedley_zscore_lookup(round($days), $gender, $cm, FALSE, $source);
 }
 
 /**

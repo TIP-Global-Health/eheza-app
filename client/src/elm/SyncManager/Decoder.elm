@@ -24,6 +24,7 @@ import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
 import Backend.Session.Decoder
 import Backend.Village.Decoder
+import Backend.WellChildEncounter.Decoder
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -329,6 +330,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteFindings
                             BackendAuthorityAcuteFindings
 
+                    "acute_illness_contacts_tracing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessContactsTracing
+                            BackendAuthorityAcuteIllnessContactsTracing
+
+                    "acute_illness_core_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessCoreExam
+                            BackendAuthorityAcuteIllnessCoreExam
+
                     "acute_illness_danger_signs" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessDangerSigns
@@ -354,6 +365,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteIllnessNutrition
                             BackendAuthorityAcuteIllnessNutrition
 
+                    "acute_illness_trace_contact" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessTraceContact
+                            BackendAuthorityAcuteIllnessTraceContact
+
                     "acute_illness_vitals" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
@@ -369,6 +385,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAttendance
                             BackendAuthorityAttendance
 
+                    "birth_plan" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBirthPlan
+                            BackendAuthorityBirthPlan
+
+                    "breast_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBreastExam
+                            BackendAuthorityBreastExam
+
                     "call_114" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeCall114
@@ -378,16 +404,6 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeFbf
                             BackendAuthorityChildFbf
-
-                    "breast_exam" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodeBreastExam
-                            BackendAuthorityBreastExam
-
-                    "birth_plan" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodeBirthPlan
-                            BackendAuthorityBirthPlan
 
                     "clinic" ->
                         doDecode
@@ -408,6 +424,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeCorePhysicalExam
                             BackendAuthorityCorePhysicalExam
+
+                    "covid_testing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeCovidTesting
+                            BackendAuthorityCovidTesting
 
                     "danger_signs" ->
                         doDecode
@@ -726,6 +747,141 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWeight
                             BackendAuthorityWeight
+
+                    "well_child_albendazole" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildAlbendazole
+                            BackendAuthorityWellChildAlbendazole
+
+                    "well_child_bcg_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildBCGImmunisation
+                            BackendAuthorityWellChildBCGImmunisation
+
+                    "well_child_contributing_factors" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildContributingFactors
+                            BackendAuthorityWellChildContributingFactors
+
+                    "well_child_dtp_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildDTPImmunisation
+                            BackendAuthorityWellChildDTPImmunisation
+
+                    "well_child_ecd" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildECD
+                            BackendAuthorityWellChildECD
+
+                    "well_child_encounter" ->
+                        doDecode
+                            Backend.WellChildEncounter.Decoder.decodeWellChildEncounter
+                            BackendAuthorityWellChildEncounter
+
+                    "well_child_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFollowUp
+                            BackendAuthorityWellChildFollowUp
+
+                    "well_child_head_circumference" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHeadCircumference
+                            BackendAuthorityWellChildHeadCircumference
+
+                    "well_child_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHealthEducation
+                            BackendAuthorityWellChildHealthEducation
+
+                    "well_child_height" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHeight
+                            BackendAuthorityWellChildHeight
+
+                    "well_child_hpv_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHPVImmunisation
+                            BackendAuthorityWellChildHPVImmunisation
+
+                    "well_child_ipv_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildIPVImmunisation
+                            BackendAuthorityWellChildIPVImmunisation
+
+                    "well_child_mebendezole" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildMebendezole
+                            BackendAuthorityWellChildMebendezole
+
+                    "well_child_mr_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildMRImmunisation
+                            BackendAuthorityWellChildMRImmunisation
+
+                    "well_child_muac" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildMuac
+                            BackendAuthorityWellChildMuac
+
+                    "well_child_next_visit" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildNextVisit
+                            BackendAuthorityWellChildNextVisit
+
+                    "well_child_nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildNutrition
+                            BackendAuthorityWellChildNutrition
+
+                    "well_child_opv_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildOPVImmunisation
+                            BackendAuthorityWellChildOPVImmunisation
+
+                    "well_child_pcv13_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildPCV13Immunisation
+                            BackendAuthorityWellChildPCV13Immunisation
+
+                    "well_child_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildPhoto
+                            BackendAuthorityWellChildPhoto
+
+                    "well_child_pregnancy_summary" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildPregnancySummary
+                            BackendAuthorityWellChildPregnancySummary
+
+                    "well_child_rotarix_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildRotarixImmunisation
+                            BackendAuthorityWellChildRotarixImmunisation
+
+                    "well_child_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildSendToHC
+                            BackendAuthorityWellChildSendToHC
+
+                    "well_child_symptoms_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildSymptomsReview
+                            BackendAuthorityWellChildSymptomsReview
+
+                    "well_child_vitals" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildVitals
+                            BackendAuthorityWellChildVitals
+
+                    "well_child_vitamin_a" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildVitaminA
+                            BackendAuthorityWellChildVitaminA
+
+                    "well_child_weight" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildWeight
+                            BackendAuthorityWellChildWeight
 
                     _ ->
                         fail <| type_ ++ " is unknown BackendAuthorityEntity"

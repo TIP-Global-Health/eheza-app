@@ -16,6 +16,7 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
   protected $fields = [
     'field_last_menstrual_period',
     'field_confident',
+    'field_confirmation',
   ];
 
   /**
@@ -33,6 +34,7 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
 
     foreach ($items as &$item) {
       $item->confident = (bool) $item->confident;
+      $item->confirmation = (bool) $item->confirmation;
     }
 
     return $items;

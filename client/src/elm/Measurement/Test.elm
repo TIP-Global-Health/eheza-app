@@ -1,7 +1,7 @@
 module Measurement.Test exposing (all)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import Backend.Measurement.Model exposing (MuacIndication(..))
+import Backend.Measurement.Model exposing (ColorAlertIndication(..))
 import Date
 import Expect
 import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleUser)
@@ -100,12 +100,12 @@ viewMotherFormsTest =
         always Expect.pass
 
 
-viewMuacIndicationTest : Test
-viewMuacIndicationTest =
-    describe "viewMuacIndication"
+viewColorAlertIndicationTest : Test
+viewColorAlertIndicationTest =
+    describe "viewColorAlertIndication"
         [ test "red" <|
             \_ ->
-                viewMuacIndication English MuacRed
+                viewColorAlertIndication English ColorAlertRed
                     |> Query.fromHtml
                     |> Query.has
                         [ classes [ "label-red" ]
@@ -113,7 +113,7 @@ viewMuacIndicationTest =
                         ]
         , test "yellow" <|
             \_ ->
-                viewMuacIndication English MuacYellow
+                viewColorAlertIndication English ColorAlertYellow
                     |> Query.fromHtml
                     |> Query.has
                         [ classes [ "label-yellow" ]
@@ -121,7 +121,7 @@ viewMuacIndicationTest =
                         ]
         , test "green" <|
             \_ ->
-                viewMuacIndication English MuacGreen
+                viewColorAlertIndication English ColorAlertGreen
                     |> Query.fromHtml
                     |> Query.has
                         [ classes [ "label-green" ]
@@ -154,5 +154,5 @@ all =
     describe "Measurement of children: form tests"
         [ viewChildFormsTest
         , viewMotherFormsTest
-        , viewMuacIndicationTest
+        , viewColorAlertIndicationTest
         ]

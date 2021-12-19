@@ -21,11 +21,23 @@ encodeAcuteIllnessEncounter session =
       )
     , ( "sequence_number", int session.sequenceNumber )
     , ( "individual_participant", encodeEntityUuid session.participant )
+    , ( "ai_encounter_type", encodeAcuteIllnessEncounterType session.encounterType )
     , ( "acute_illness_diagnosis", encodeAcuteIllnessDiagnosis session.diagnosis )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_encounter" )
     ]
         ++ encodeIfExists "shard" session.shard encodeEntityUuid
+
+
+encodeAcuteIllnessEncounterType : AcuteIllnessEncounterType -> Value
+encodeAcuteIllnessEncounterType encounterType =
+    string <|
+        case encounterType of
+            AcuteIllnessEncounterNurse ->
+                "nurse-encounter"
+
+            AcuteIllnessEncounterCHW ->
+                "chw-encounter"
 
 
 encodeAcuteIllnessDiagnosis : AcuteIllnessDiagnosis -> Value

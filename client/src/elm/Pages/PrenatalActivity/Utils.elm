@@ -2,13 +2,15 @@ module Pages.PrenatalActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Measurement.Model exposing (VitalsForm)
+import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement, noDangerSigns)
@@ -17,8 +19,8 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , taskAllCompleted
         , taskCompleted
-        , taskListCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
         , viewQuestionLabel
@@ -40,7 +42,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
     let
         form =
             assembled.measurements.healthEducation
-                |> Maybe.map (Tuple.second >> .value)
+                |> getMeasurementValueFunc
                 |> healthEducationFormWithDefault healthEducationForm
 
         healthEducationCompletedAtEncounter encounterType =
@@ -254,7 +256,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.appointmentConfirmation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
             in
             ( taskCompleted form.appointmentDate
@@ -265,7 +267,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option
@@ -276,7 +278,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentActive, reasonForNotSentCompleted ) =
@@ -303,7 +305,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             let
                 form =
                     assembled.measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 tasksCompleted =
@@ -342,6 +344,18 @@ resolvePreviousValue assembled measurementFunc valueFunc =
             (\( _, measurements ) ->
                 measurementFunc measurements
                     |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
+
+
+resolvePreviousMaybeValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> Maybe b) -> Maybe b
+resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    assembled.nursePreviousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head
@@ -421,7 +435,6 @@ toCorePhysicalExamValueWithDefault saved form =
 
 toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
 toCorePhysicalExamValue form =
-    -- Also, termporary things here, until CorePhysicalExamForm is redefined
     Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
         |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
         |> andMap (Maybe.map EverySet.singleton form.heart)
@@ -486,6 +499,7 @@ fromLastMenstrualPeriodValue saved =
     { lmpRange = Nothing
     , lmpDate = Maybe.map .date saved
     , lmpDateConfident = Maybe.map .confident saved
+    , chwLmpConfirmation = Maybe.map .confirmation saved
     , isDateSelectorOpen = False
     }
 
@@ -499,6 +513,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
+                , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
             )
@@ -506,17 +521,19 @@ lastMenstrualPeriodFormWithDefault form saved =
 
 toLastMenstrualPeriodValueWithDefault : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm -> Maybe LastMenstrualPeriodValue
 toLastMenstrualPeriodValueWithDefault saved form =
-    let
-        form_ =
-            lastMenstrualPeriodFormWithDefault form saved
-    in
-    toLastMenstrualPeriodValue form_
+    lastMenstrualPeriodFormWithDefault form saved
+        |> toLastMenstrualPeriodValue
 
 
 toLastMenstrualPeriodValue : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue
 toLastMenstrualPeriodValue form =
+    let
+        chwLmpConfirmation =
+            Maybe.withDefault False form.chwLmpConfirmation
+    in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
         |> andMap form.lmpDateConfident
+        |> andMap (Just chwLmpConfirmation)
 
 
 fromMedicalHistoryValue : Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm
@@ -615,7 +632,7 @@ toMedicationValue form =
 
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
-    { fundalHeight = Maybe.map (.fundalHeight >> (\(HeightInCm cm) -> cm)) saved
+    { fundalHeight = Maybe.map (.fundalHeight >> heightValueFunc) saved
     , fundalHeightDirty = False
     , fetalPresentation = Maybe.map .fetalPresentation saved
     , fetalMovement = Maybe.map .fetalMovement saved
@@ -631,7 +648,7 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm))
+                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (heightValueFunc value.fundalHeight)
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
@@ -809,11 +826,11 @@ toFamilyPlanningValue form =
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 fromPrenatalNutritionValue saved =
-    { height = Maybe.map (.height >> (\(HeightInCm cm) -> cm)) saved
+    { height = Maybe.map (.height >> heightValueFunc) saved
     , heightDirty = False
-    , weight = Maybe.map (.weight >> (\(WeightInKg kg) -> kg)) saved
+    , weight = Maybe.map (.weight >> weightValueFunc) saved
     , weightDirty = False
-    , muac = Maybe.map (.muac >> (\(MuacInCm cm) -> cm)) saved
+    , muac = Maybe.map (.muac >> muacValueFunc) saved
     , muacDirty = False
     }
 
@@ -824,11 +841,11 @@ prenatalNutritionFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (value.height |> (\(HeightInCm cm) -> cm))
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (heightValueFunc value.height)
                 , heightDirty = form.heightDirty
-                , weight = valueConsideringIsDirtyField form.weightDirty form.weight (value.weight |> (\(WeightInKg kg) -> kg))
+                , weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value.weight)
                 , weightDirty = form.weightDirty
-                , muac = valueConsideringIsDirtyField form.muacDirty form.muac (value.muac |> (\(MuacInCm cm) -> cm))
+                , muac = valueConsideringIsDirtyField form.muacDirty form.muac (muacValueFunc value.muac)
                 , muacDirty = form.muacDirty
                 }
             )
@@ -918,56 +935,6 @@ toSocialHistoryValue form =
         |> andMap form.partnerTestingResult
 
 
-fromVitalsValue : Maybe VitalsValue -> VitalsForm
-fromVitalsValue saved =
-    { sysBloodPressure = Maybe.map .sys saved
-    , sysBloodPressureDirty = False
-    , diaBloodPressure = Maybe.map .dia saved
-    , diaBloodPressureDirty = False
-    , heartRate = Maybe.map .heartRate saved
-    , heartRateDirty = False
-    , respiratoryRate = Maybe.map .respiratoryRate saved
-    , respiratoryRateDirty = False
-    , bodyTemperature = Maybe.map .bodyTemperature saved
-    , bodyTemperatureDirty = False
-    }
-
-
-vitalsFormWithDefault : VitalsForm -> Maybe VitalsValue -> VitalsForm
-vitalsFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { sysBloodPressure = valueConsideringIsDirtyField form.sysBloodPressureDirty form.sysBloodPressure value.sys
-                , sysBloodPressureDirty = form.sysBloodPressureDirty
-                , diaBloodPressure = valueConsideringIsDirtyField form.diaBloodPressureDirty form.diaBloodPressure value.dia
-                , diaBloodPressureDirty = form.diaBloodPressureDirty
-                , heartRate = valueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
-                , heartRateDirty = form.heartRateDirty
-                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
-                , respiratoryRateDirty = form.respiratoryRateDirty
-                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
-                , bodyTemperatureDirty = form.bodyTemperatureDirty
-                }
-            )
-
-
-toVitalsValueWithDefault : Maybe VitalsValue -> VitalsForm -> Maybe VitalsValue
-toVitalsValueWithDefault saved form =
-    vitalsFormWithDefault form saved
-        |> toVitalsValue
-
-
-toVitalsValue : VitalsForm -> Maybe VitalsValue
-toVitalsValue form =
-    Maybe.map VitalsValue form.sysBloodPressure
-        |> andMap form.diaBloodPressure
-        |> andMap form.heartRate
-        |> andMap form.respiratoryRate
-        |> andMap form.bodyTemperature
-
-
 fromPregnancyTestingValue : Maybe PregnancyTestResult -> PregnancyTestingForm
 fromPregnancyTestingValue saved =
     { pregnancyTestResult = saved }
@@ -1016,7 +983,7 @@ historyTasksCompletedFromTotal assembled data task =
                     let
                         formStep1_ =
                             assembled.measurements.obstetricHistory
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
 
                         intInputs =
@@ -1040,7 +1007,7 @@ historyTasksCompletedFromTotal assembled data task =
                     let
                         formStep2_ =
                             assembled.measurements.obstetricHistoryStep2
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
 
                         boolInputs =
@@ -1073,7 +1040,7 @@ historyTasksCompletedFromTotal assembled data task =
             let
                 medicalForm =
                     assembled.measurements.medicalHistory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicalHistoryFormWithDefault data.medicalForm
 
                 boolInputs =
@@ -1099,7 +1066,7 @@ historyTasksCompletedFromTotal assembled data task =
             let
                 socialForm =
                     assembled.measurements.socialHistory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> socialHistoryFormWithDefault data.socialForm
 
                 showCounselingQuestion =
@@ -1170,10 +1137,10 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.vitals
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> vitalsFormWithDefault data.vitalsForm
             in
-            ( taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
+            ( taskAllCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
                 + ([ Maybe.map (always ()) form.heartRate
                    , Maybe.map (always ()) form.respiratoryRate
                    , Maybe.map (always ()) form.bodyTemperature
@@ -1191,7 +1158,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
 
                 form_ =
                     assembled.measurements.nutrition
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                 form =
@@ -1222,7 +1189,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             ( (List.map taskCompleted tasks_ |> List.sum)
                 -- This is for BMI task, which is considered as completed
                 -- when both height and weight are set.
-                + taskListCompleted tasksForBmi
+                + taskAllCompleted tasksForBmi
             , List.length tasks_ + 1
             )
 
@@ -1230,7 +1197,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.corePhysicalExam
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
 
                 extremitiesTaskCompleted =
@@ -1258,7 +1225,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.obstetricalExam
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> obstetricalExamFormWithDefault data.obstetricalExamForm
             in
             ( taskCompleted form.fetalPresentation
@@ -1275,7 +1242,7 @@ examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
             let
                 form =
                     assembled.measurements.breastExam
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> breastExamFormWithDefault data.breastExamForm
             in
             ( taskCompleted form.breast + taskCompleted form.selfGuidance
@@ -1290,7 +1257,7 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
             let
                 form =
                     assembled.measurements.medication
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicationFormWithDefault data.medicationForm
 
                 questions =
@@ -1310,7 +1277,7 @@ patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestio
             let
                 form =
                     assembled.measurements.resource
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> resourceFormWithDefault data.resourcesForm
             in
             ( taskCompleted form.receivedMosquitoNet

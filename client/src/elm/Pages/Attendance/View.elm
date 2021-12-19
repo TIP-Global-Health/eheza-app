@@ -154,14 +154,14 @@ viewMother session motherId mother =
 
         checkIn =
             if isCheckedIn then
-                a
+                span
                     [ class "link-checked-in"
                     , onClick <| SetCheckedIn attendanceId motherId False
                     ]
                     [ span [ class "icon-checked-in" ] [] ]
 
             else
-                a
+                span
                     [ class "link-check-in"
                     , onClick <| SetCheckedIn attendanceId motherId True
                     ]
