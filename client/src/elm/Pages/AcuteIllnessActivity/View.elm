@@ -1625,6 +1625,13 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                             , isJust measurements.contactsTracing
                             )
 
+                        NextStepsSymptomsReliefGuidance ->
+                            -- We call it Medication Distribution, but
+                            -- make use of Health Education form.
+                            ( "next-steps-medication-distribution"
+                            , isJust measurements.healthEducation
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -1703,18 +1710,10 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                             Nothing
 
                 Just NextStepsHealthEducation ->
-                    let
-                        viewFormFunc =
-                            if assembled.initialEncounter && not isChw then
-                                viewSymptomsReliefForm
-
-                            else
-                                viewHealthEducationForm
-                    in
                     measurements.healthEducation
                         |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewFormFunc language currentDate diagnosis
+                        |> viewHealthEducationForm language currentDate diagnosis
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
@@ -1727,6 +1726,12 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                         |> getMeasurementValueFunc
                         |> contactsTracingFormWithDefault data.contactsTracingForm
                         |> viewContactsTracingForm language currentDate db contactsTracingFinished
+
+                Just NextStepsSymptomsReliefGuidance ->
+                    measurements.healthEducation
+                        |> getMeasurementValueFunc
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewSymptomsReliefForm language currentDate diagnosis
 
                 Nothing ->
                     emptyNode
@@ -1862,6 +1867,9 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
 
                                     NextStepsContactTracing ->
                                         SaveContactsTracing personId measurements.contactsTracing nextTask
+
+                                    NextStepsSymptomsReliefGuidance ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
 
                             saveLabel =
                                 case task of

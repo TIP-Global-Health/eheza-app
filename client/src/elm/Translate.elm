@@ -5557,6 +5557,13 @@ translationSet trans =
                     , kinyarwanda = Just "Gushakisha abahuye n'uwanduye"
                     }
 
+                NextStepsSymptomsReliefGuidance ->
+                    -- We qualify it as Medication distribution, to keep
+                    -- consistant with other types of Covid steps.
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
         No ->
             { english = "No"
             , kinyarwanda = Just "Oya"

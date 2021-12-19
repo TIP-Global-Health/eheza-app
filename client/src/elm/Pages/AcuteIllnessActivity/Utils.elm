@@ -726,26 +726,20 @@ nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements d
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                    if initialEncounter && not isChw then
-                        -- Nurse gets Symptoms relief form where we do
-                        -- not ask 'Why not'.
-                        ( 0, 0 )
-
-                    else
-                        form.educationForDiagnosis
-                            |> Maybe.map
-                                (\providedHealthEducation ->
-                                    if not providedHealthEducation then
-                                        if isJust form.reasonForNotProvidingHealthEducation then
-                                            ( 1, 1 )
-
-                                        else
-                                            ( 0, 1 )
+                    form.educationForDiagnosis
+                        |> Maybe.map
+                            (\providedHealthEducation ->
+                                if not providedHealthEducation then
+                                    if isJust form.reasonForNotProvidingHealthEducation then
+                                        ( 1, 1 )
 
                                     else
-                                        ( 0, 0 )
-                                )
-                            |> Maybe.withDefault ( 0, 0 )
+                                        ( 0, 1 )
+
+                                else
+                                    ( 0, 0 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
             in
             ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
             , reasonForProvidingEducationCompleted + 1
@@ -768,6 +762,17 @@ nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements d
 
             else
                 ( 0, 1 )
+
+        NextStepsSymptomsReliefGuidance ->
+            let
+                form =
+                    measurements.healthEducation
+                        |> getMeasurementValueFunc
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.educationForDiagnosis
+            , 1
+            )
 
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
@@ -1940,7 +1945,7 @@ resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTa
 resolveNextStepsTasks currentDate isChw assembled =
     if assembled.initialEncounter then
         -- The order is important. Do not change.
-        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
+        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsSymptomsReliefGuidance, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw assembled then
@@ -2013,7 +2018,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                    )
 
         NextStepsHealthEducation ->
-            diagnosis == Just DiagnosisLowRiskCovid19
+            False
 
         NextStepsContactTracing ->
             (diagnosis == Just DiagnosisSevereCovid19)
@@ -2033,6 +2038,9 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
+
+        NextStepsSymptomsReliefGuidance ->
+            diagnosis == Just DiagnosisLowRiskCovid19
 
 
 expectNextStepsTaskSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
@@ -2121,6 +2129,9 @@ nextStepsTaskCompleted currentDate isChw assembled task =
 
         NextStepsContactTracing ->
             (not <| taskExpected NextStepsContactTracing) || isJust measurements.contactsTracing
+
+        NextStepsSymptomsReliefGuidance ->
+            (not <| taskExpected NextStepsSymptomsReliefGuidance) || isJust measurements.healthEducation
 
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,
