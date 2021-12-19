@@ -34,6 +34,12 @@ decodeRevision =
                     "acute_findings" ->
                         decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
 
+                    "acute_illness_contacts_tracing" ->
+                        decodeWithUuid AcuteIllnessContactsTracingRevision decodeAcuteIllnessContactsTracing
+
+                    "acute_illness_core_exam" ->
+                        decodeWithUuid AcuteIllnessCoreExamRevision decodeAcuteIllnessCoreExam
+
                     "acute_illness_danger_signs" ->
                         decodeWithUuid AcuteIllnessDangerSignsRevision decodeAcuteIllnessDangerSigns
 
@@ -48,6 +54,9 @@ decodeRevision =
 
                     "acute_illness_nutrition" ->
                         decodeWithUuid AcuteIllnessNutritionRevision decodeAcuteIllnessNutrition
+
+                    "acute_illness_trace_contact" ->
+                        decodeWithUuid AcuteIllnessTraceContactRevision decodeAcuteIllnessTraceContact
 
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
@@ -90,6 +99,9 @@ decodeRevision =
 
                     "counseling_topic" ->
                         decodeWithUuid CounselingTopicRevision decodeCounselingTopic
+
+                    "covid_testing" ->
+                        decodeWithUuid CovidTestingRevision decodeCovidTesting
 
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns

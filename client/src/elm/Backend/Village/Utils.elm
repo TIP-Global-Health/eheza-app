@@ -1,4 +1,4 @@
-module Backend.Village.Utils exposing (getVillageById, getVillageClinicId, getVillageHealthCenterId, personLivesInVillage)
+module Backend.Village.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -51,3 +51,21 @@ personLivesInVillage person db villageId =
                     && (Just village.village == person.village)
             )
         |> Maybe.withDefault False
+
+
+getVillageIdByGeoFields : ModelIndexedDb -> String -> String -> String -> String -> String -> Maybe VillageId
+getVillageIdByGeoFields db province district sector cell village_ =
+    RemoteData.toMaybe db.villages
+        |> Maybe.andThen
+            (Dict.toList
+                >> List.filter
+                    (\( _, village ) ->
+                        (village.province == province)
+                            && (village.district == district)
+                            && (village.sector == sector)
+                            && (village.cell == cell)
+                            && (village.village == village_)
+                    )
+                >> List.head
+                >> Maybe.map Tuple.first
+            )

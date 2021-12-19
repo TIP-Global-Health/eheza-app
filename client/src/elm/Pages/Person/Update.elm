@@ -5,7 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Person.Form exposing (PersonForm, applyDefaultValues, birthDate, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, validatePerson)
 import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
 import Backend.Village.Utils exposing (getVillageById)
 import Date
@@ -47,7 +47,7 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                         Form.Submit ->
                             let
                                 formWithDefaults =
-                                    applyDefaultValues currentDate maybeVillage isChw related operation model.form
+                                    applyDefaultValuesForPerson currentDate maybeVillage isChw related operation model.form
                             in
                             case operation of
                                 CreatePerson _ ->

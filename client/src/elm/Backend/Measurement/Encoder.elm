@@ -6,8 +6,10 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Person.Encoder exposing (encodeGender)
+import Backend.Person.Utils exposing (genderToString)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate
+import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
@@ -1143,19 +1145,35 @@ encodeSocialHistoryValue value =
 
 encodeVitals : Vitals -> List ( String, Value )
 encodeVitals =
-    encodePrenatalMeasurement encodeVitalsValue
+    encodePrenatalMeasurement (encodeVitalsValueWithType "vitals")
 
 
-encodeVitalsValue : VitalsValue -> List ( String, Value )
-encodeVitalsValue value =
-    [ ( "sys", float value.sys )
-    , ( "dia", float value.dia )
-    , ( "heart_rate", int value.heartRate )
-    , ( "respiratory_rate", int value.respiratoryRate )
-    , ( "body_temperature", float value.bodyTemperature )
-    , ( "deleted", bool False )
-    , ( "type", string "vitals" )
-    ]
+encodeVitalsValueWithType : String -> VitalsValue -> List ( String, Value )
+encodeVitalsValueWithType type_ value =
+    let
+        sysEntry =
+            Maybe.map (\sys -> [ ( "sys", float sys ) ])
+                value.sys
+                |> Maybe.withDefault []
+
+        diaEntry =
+            Maybe.map (\dia -> [ ( "dia", float dia ) ])
+                value.dia
+                |> Maybe.withDefault []
+
+        heartRateEntry =
+            Maybe.map (\heartRate -> [ ( "heart_rate", int heartRate ) ])
+                value.heartRate
+                |> Maybe.withDefault []
+    in
+    sysEntry
+        ++ diaEntry
+        ++ heartRateEntry
+        ++ [ ( "respiratory_rate", int value.respiratoryRate )
+           , ( "body_temperature", float value.bodyTemperature )
+           , ( "deleted", bool False )
+           , ( "type", string type_ )
+           ]
 
 
 encodeSymptomsGeneral : SymptomsGeneral -> List ( String, Value )
@@ -1323,16 +1341,7 @@ encodeSymptomsGIDerivedSigns sign =
 
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
 encodeAcuteIllnessVitals =
-    encodeAcuteIllnessMeasurement (encodeBasicVitalsValueWithType "acute_illness_vitals")
-
-
-encodeBasicVitalsValueWithType : String -> BasicVitalsValue -> List ( String, Value )
-encodeBasicVitalsValueWithType type_ value =
-    [ ( "respiratory_rate", int value.respiratoryRate )
-    , ( "body_temperature", float value.bodyTemperature )
-    , ( "deleted", bool False )
-    , ( "type", string type_ )
-    ]
+    encodeAcuteIllnessMeasurement (encodeVitalsValueWithType "acute_illness_vitals")
 
 
 encodeAcuteFindings : AcuteFindings -> List ( String, Value )
@@ -1397,20 +1406,43 @@ encodeMalariaTesting =
     encodeAcuteIllnessMeasurement encodeMalariaTestingValue
 
 
-encodeMalariaTestingValue : MalariaRapidTestResult -> List ( String, Value )
+encodeMalariaTestingValue : RapidTestResult -> List ( String, Value )
 encodeMalariaTestingValue value =
-    [ ( "malaria_rapid_test", encodeMalariaRapidTestResult value )
+    [ ( "malaria_rapid_test", encodeRapidTestResult value )
     , ( "deleted", bool False )
     , ( "type", string "malaria_testing" )
     ]
 
 
-encodeMalariaRapidTestResult : MalariaRapidTestResult -> Value
-encodeMalariaRapidTestResult =
+encodeCovidTesting : CovidTesting -> List ( String, Value )
+encodeCovidTesting =
+    encodeAcuteIllnessMeasurement encodeCovidTestingValue
+
+
+encodeCovidTestingValue : CovidTestingValue -> List ( String, Value )
+encodeCovidTestingValue value =
+    let
+        optional =
+            Maybe.map
+                (\administrationNote ->
+                    [ ( "administration_note", encodeAdministrationNote administrationNote ) ]
+                )
+                value.administrationNote
+                |> Maybe.withDefault []
+    in
+    optional
+        ++ [ ( "rapid_test_result", encodeRapidTestResult value.result )
+           , ( "deleted", bool False )
+           , ( "type", string "covid_testing" )
+           ]
+
+
+encodeRapidTestResult : RapidTestResult -> Value
+encodeRapidTestResult =
     malariaRapidTestResultAsString >> string
 
 
-malariaRapidTestResultAsString : MalariaRapidTestResult -> String
+malariaRapidTestResultAsString : RapidTestResult -> String
 malariaRapidTestResultAsString sign =
     case sign of
         RapidTestPositive ->
@@ -1427,6 +1459,9 @@ malariaRapidTestResultAsString sign =
 
         RapidTestUnableToRun ->
             "unable-to-run"
+
+        RapidTestUnableToRunAndPregnant ->
+            "unable-to-run-and-pregnant"
 
 
 encodeSendToHC : SendToHC -> List ( String, Value )
@@ -1908,6 +1943,9 @@ encondeMedicationDistributionSign sign =
             VitaminA ->
                 "vitamin-a"
 
+            Paracetamol ->
+                "paracetamol"
+
             NoMedicationDistributionSigns ->
                 "none"
 
@@ -1927,6 +1965,9 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationZinc reason ->
                 "zinc-" ++ administrationNoteToString reason
+
+            MedicationParacetamol reason ->
+                "paracetamol-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"
@@ -2305,6 +2346,20 @@ encodeAdverseEvent event =
                 "none"
 
 
+encodeAcuteIllnessCoreExam : AcuteIllnessCoreExam -> List ( String, Value )
+encodeAcuteIllnessCoreExam =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessCoreExamValue
+
+
+encodeAcuteIllnessCoreExamValue : AcuteIllnessCoreExamValue -> List ( String, Value )
+encodeAcuteIllnessCoreExamValue value =
+    [ ( "heart", encodeEverySet encodeHeartCPESign value.heart )
+    , ( "lungs", encodeEverySet encodeLungsCPESign value.lungs )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_core_exam" )
+    ]
+
+
 encodeAcuteIllnessDangerSigns : AcuteIllnessDangerSigns -> List ( String, Value )
 encodeAcuteIllnessDangerSigns =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessDangerSignsValue
@@ -2369,6 +2424,138 @@ encodeAcuteIllnessNutritionValue nutritions =
 encodeHealthEducation : HealthEducation -> List ( String, Value )
 encodeHealthEducation =
     encodeAcuteIllnessMeasurement (encodeHealthEducationValueWithType "health_education")
+
+
+encodeAcuteIllnessContactsTracing : AcuteIllnessContactsTracing -> List ( String, Value )
+encodeAcuteIllnessContactsTracing =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessContactsTracingValue
+
+
+encodeAcuteIllnessContactsTracingValue : List ContactTraceItem -> List ( String, Value )
+encodeAcuteIllnessContactsTracingValue items =
+    [ ( "contacts_trace_data", list encodeContactTraceItemToString items )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_contacts_tracing" )
+    ]
+
+
+encodeContactTraceItemToString : ContactTraceItem -> Value
+encodeContactTraceItemToString item =
+    [ fromEntityUuid item.personId
+    , item.firstName
+    , item.secondName
+    , genderToString item.gender
+    , item.phoneNumber
+    , formatYYYYMMDD item.contactDate
+    ]
+        |> String.join "[&]"
+        |> string
+
+
+encodeAcuteIllnessTraceContact : AcuteIllnessTraceContact -> List ( String, Value )
+encodeAcuteIllnessTraceContact =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessTraceContactValue
+
+
+encodeAcuteIllnessTraceContactValue : ContactTraceItem -> List ( String, Value )
+encodeAcuteIllnessTraceContactValue item =
+    encodeContactTraceItem item
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "acute_illness_trace_contact" )
+           ]
+
+
+encodeContactTraceItem : ContactTraceItem -> List ( String, Value )
+encodeContactTraceItem item =
+    let
+        lastFollowUp =
+            Maybe.map
+                (\lastFollowUpDate ->
+                    [ ( "last_follow_up_date", Gizra.NominalDate.encodeYYYYMMDD lastFollowUpDate ) ]
+                )
+                item.lastFollowUpDate
+                |> Maybe.withDefault []
+
+        signsGeneral =
+            Maybe.map
+                (\generalSigns ->
+                    [ ( "symptoms_general", encodeEverySet encodeSymptomsGeneralSign generalSigns ) ]
+                )
+                item.generalSigns
+                |> Maybe.withDefault []
+
+        signsRespiratory =
+            Maybe.map
+                (\respiratorySigns ->
+                    [ ( "symptoms_respiratory", encodeEverySet encodeSymptomsRespiratorySign respiratorySigns ) ]
+                )
+                item.respiratorySigns
+                |> Maybe.withDefault []
+
+        signsGI =
+            Maybe.map
+                (\giSigns ->
+                    [ ( "symptoms_gi", encodeEverySet encodeSymptomsGISign giSigns ) ]
+                )
+                item.giSigns
+                |> Maybe.withDefault []
+
+        outcome =
+            Maybe.map
+                (\traceOutcome ->
+                    [ ( "trace_outcome", encodeTraceOutcome traceOutcome ) ]
+                )
+                item.traceOutcome
+                |> Maybe.withDefault []
+    in
+    [ ( "referred_person", encodeEntityUuid item.personId )
+    , ( "first_name", string item.firstName )
+    , ( "second_name", string item.secondName )
+    , ( "gender", encodeGender item.gender )
+    , ( "phone_number", string item.phoneNumber )
+    , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD item.contactDate )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD item.resolutionDate )
+    ]
+        ++ lastFollowUp
+        ++ signsGeneral
+        ++ signsRespiratory
+        ++ signsGI
+        ++ outcome
+
+
+encodeSymptomsGeneralSign : SymptomsGeneralSign -> Value
+encodeSymptomsGeneralSign sign =
+    symptomsGeneralSignToString sign |> string
+
+
+encodeSymptomsRespiratorySign : SymptomsRespiratorySign -> Value
+encodeSymptomsRespiratorySign sign =
+    symptomsRespiratorySignToString sign |> string
+
+
+encodeSymptomsGISign : SymptomsGISign -> Value
+encodeSymptomsGISign sign =
+    symptomsGISignToString sign |> string
+
+
+encodeTraceOutcome : TraceOutcome -> Value
+encodeTraceOutcome outcome =
+    string <|
+        case outcome of
+            OutcomeNoAnswer ->
+                "no-answer"
+
+            OutcomeWrongContactInfo ->
+                "wrong-contact-info"
+
+            OutcomeDeclinedFollowUp ->
+                "declined-follow-up"
+
+            OutcomeNoSymptoms ->
+                "no-symptoms"
+
+            OutcomeReferredToHC ->
+                "referred-to-hc"
 
 
 encodeNutritionHealthEducation : NutritionHealthEducation -> List ( String, Value )
@@ -2494,7 +2681,7 @@ encodeWellChildSymptom symptom =
 
 encodeWellChildVitals : WellChildVitals -> List ( String, Value )
 encodeWellChildVitals =
-    encodeWellChildMeasurement (encodeBasicVitalsValueWithType "well_child_vitals")
+    encodeWellChildMeasurement (encodeVitalsValueWithType "well_child_vitals")
 
 
 encodeWellChildECD : WellChildECD -> List ( String, Value )

@@ -44,6 +44,8 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
+import Backend.TraceContact.Model
+import Backend.TraceContact.Update
 import Backend.Utils exposing (..)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Backend.WellChildActivity.Model
@@ -58,8 +60,8 @@ import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
 import Pages.AcuteIllnessActivity.Model
-import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Utils
+import Pages.AcuteIllnessActivity.Types
+import Pages.AcuteIllnessActivity.Utils
     exposing
         ( activityCompleted
         , mandatoryActivitiesCompletedSubsequentVisit
@@ -69,6 +71,8 @@ import Pages.AcuteIllnessEncounter.Utils
         , resolveNextStepSubsequentEncounter
         , respiratoryRateAbnormalForAge
         )
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.NextSteps.Model
@@ -982,7 +986,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate model newModel)
+                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate isChw model newModel)
                                     encounterId
                                     person
                                     |> Maybe.withDefault []
@@ -1323,6 +1327,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ AcuteIllnessCoreExamRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ AcuteFindingsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -1334,6 +1348,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     )
 
                 [ MalariaTestingRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ CovidTestingRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1390,7 +1414,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1405,7 +1429,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1420,7 +1444,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1435,7 +1459,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1450,7 +1474,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1465,7 +1489,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1480,7 +1504,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1811,6 +1835,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | wellChildEncounterRequests = Dict.insert encounterId subModel model.wellChildEncounterRequests }
             , Cmd.map (MsgWellChildEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgTraceContact traceContactId subMsg ->
+            let
+                traceContact =
+                    Dict.get traceContactId model.traceContacts
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get traceContactId model.traceContactRequests
+                        |> Maybe.withDefault Backend.TraceContact.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.TraceContact.Update.update traceContactId traceContact subMsg requests
+            in
+            ( { model | traceContactRequests = Dict.insert traceContactId subModel model.traceContactRequests }
+            , Cmd.map (MsgTraceContact traceContactId) subCmd
             , []
             )
 
@@ -2178,6 +2221,21 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         ( [ resetFormMsg, navigationMsg nextPage ]
                                         , updateNewbornEnroledMsg ++ createRelationshipMsg
                                         )
+
+                                    AcuteIllnessContactsTracingActivityOrigin encounterId ->
+                                        let
+                                            setContactsTracingFormStateMsg =
+                                                Pages.AcuteIllnessActivity.Model.ContactsTracingFormRecordContactDetails
+                                                    personId
+                                                    Pages.AcuteIllnessActivity.Model.emptyRecordContactDetailsData
+                                                    |> Pages.AcuteIllnessActivity.Model.SetContactsTracingFormState
+                                                    |> App.Model.MsgPageAcuteIllnessActivity encounterId Backend.AcuteIllnessActivity.Model.AcuteIllnessNextSteps
+                                                    |> App.Model.MsgLoggedIn
+                                                    |> List.singleton
+                                        in
+                                        ( setContactsTracingFormStateMsg
+                                        , []
+                                        )
                             )
                         |> Maybe.withDefault ( [], [] )
             in
@@ -2203,7 +2261,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         |> RemoteData.map
                             (\person ->
                                 [ Pages.Person.Model.ResetEditForm
-                                    |> App.Model.MsgPageEditPerson
+                                    |> App.Model.MsgPageEditPerson personId
                                     |> App.Model.MsgLoggedIn
                                 , PersonPage personId ParticipantDirectoryOrigin
                                     |> UserPage
@@ -2468,6 +2526,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchTraceContact id ->
+            ( { model | traceContacts = Dict.insert id Loading model.traceContacts }
+            , sw.get acuteIllnessTraceContactEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTraceContact id)
+            , []
+            )
+
+        HandleFetchedTraceContact id data ->
+            ( { model | traceContacts = Dict.insert id data model.traceContacts }
+            , Cmd.none
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -2480,6 +2551,22 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapAcuteIllnessMeasurements
                 data.encounterId
                 (\measurements -> { measurements | acuteFindings = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        AcuteIllnessContactsTracingRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | contactsTracing = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        AcuteIllnessCoreExamRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -2535,6 +2622,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
                 model
+            , recalc
+            )
+
+        AcuteIllnessTraceContactRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
+                        model
+
+                traceContacts =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.traceContacts
+            in
+            ( { modelWithMappedFollowUp | traceContacts = traceContacts }
             , recalc
             )
 
@@ -2647,6 +2749,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         CounselingTopicRevision uuid data ->
             ( { model | everyCounselingSchedule = NotAsked }
             , True
+            )
+
+        CovidTestingRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | covidTesting = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         DangerSignsRevision uuid data ->
@@ -3915,29 +4025,30 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
         |> Maybe.withDefault []
 
 
-generateSuspectedDiagnosisMsgs : NominalDate -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
-generateSuspectedDiagnosisMsgs currentDate before after id person =
+generateSuspectedDiagnosisMsgs : NominalDate -> Bool -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgs currentDate isChw before after id person =
     Maybe.map2
         (\assembledBefore assembledAfter ->
-            if List.isEmpty assembledAfter.previousEncountersData then
-                generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefore assembledAfter
+            if assembledAfter.initialEncounter then
+                generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter
 
             else
-                generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate assembledAfter
+                generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw assembledAfter
         )
-        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id before)
-        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id after)
+        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id isChw before)
+        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id isChw after)
         |> Maybe.withDefault []
 
 
 generateSuspectedDiagnosisMsgsFirstEncounter :
     NominalDate
+    -> Bool
     -> AcuteIllnessEncounterId
     -> Person
     -> Pages.AcuteIllnessEncounter.Model.AssembledData
     -> Pages.AcuteIllnessEncounter.Model.AssembledData
     -> List App.Model.Msg
-generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefore assembledAfter =
+generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter =
     let
         diagnosisBeforeChange =
             Maybe.map Tuple.second assembledBefore.diagnosis
@@ -3949,30 +4060,8 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefo
             case diagnosisAfterChange of
                 Just newDiagnosis ->
                     updateDiagnosisMsg id newDiagnosis
-                        :: (case resolveNextStepFirstEncounter currentDate assembledAfter of
-                                Just nextStep ->
-                                    [ -- Navigate to Acute Ilness NextSteps activty page.
-                                      App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
-                                    , -- Focus on first task on that page.
-                                      Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask nextStep
-                                        |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
-                                        |> App.Model.MsgLoggedIn
-
-                                    -- Show warning popup with new diagnosis.
-                                    , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just newDiagnosis)
-                                        |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
-                                        |> App.Model.MsgLoggedIn
-                                    ]
-
-                                Nothing ->
-                                    [ -- Navigate to Acute Ilness encounter page.
-                                      App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
-
-                                    -- Show warning popup with new diagnosis.
-                                    , Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just newDiagnosis)
-                                        |> App.Model.MsgPageAcuteIllnessEncounter id
-                                        |> App.Model.MsgLoggedIn
-                                    ]
+                        :: (resolveNextStepFirstEncounter currentDate isChw assembledAfter
+                                |> generateMsgsForNewDiagnosis currentDate isChw id newDiagnosis
                            )
 
                 Nothing ->
@@ -3985,12 +4074,91 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate id person assembledBefo
         []
 
 
-generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Pages.AcuteIllnessEncounter.Model.AssembledData -> List App.Model.Msg
-generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
-    if mandatoryActivitiesCompletedSubsequentVisit currentDate data then
+generateMsgsForNewDiagnosis :
+    NominalDate
+    -> Bool
+    -> AcuteIllnessEncounterId
+    -> AcuteIllnessDiagnosis
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
+    -> List App.Model.Msg
+generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
+    if isChw then
+        generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
+
+    else
+        generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep
+
+
+generateMsgsForNewDiagnosisForNurse :
+    NominalDate
+    -> AcuteIllnessEncounterId
+    -> AcuteIllnessDiagnosis
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
+    -> List App.Model.Msg
+generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
+    case diagnosis of
+        DiagnosisCovid19Suspect ->
+            [ -- Navigate to Acute Ilness Laboratory activty page.
+              App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , -- Focus on Covid testing task.
+              Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Types.LaboratoryCovidTesting
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+
+            -- Show warning popup with new diagnosis.
+            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+            ]
+
+        _ ->
+            generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
+
+
+generateCustomMsgsForNewDiagnosis :
+    NominalDate
+    -> AcuteIllnessEncounterId
+    -> AcuteIllnessDiagnosis
+    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
+    -> List App.Model.Msg
+generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
+    case nextStep of
+        Just step ->
+            [ -- Navigate to Acute Ilness NextSteps activty page.
+              App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
+            , -- Focus on first task on that page.
+              Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask step
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                |> App.Model.MsgLoggedIn
+
+            -- Show warning popup with new diagnosis.
+            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
+                |> App.Model.MsgLoggedIn
+            ]
+
+        Nothing ->
+            [ -- Navigate to Acute Ilness encounter page.
+              App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+
+            -- Focus on 'Todo' tab.
+            , Pages.AcuteIllnessEncounter.Model.SetSelectedTab Pages.AcuteIllnessEncounter.Model.Pending
+                |> App.Model.MsgPageAcuteIllnessEncounter id
+                |> App.Model.MsgLoggedIn
+
+            -- Show warning popup with new diagnosis.
+            , Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just diagnosis)
+                |> App.Model.MsgPageAcuteIllnessEncounter id
+                |> App.Model.MsgLoggedIn
+            ]
+
+
+generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Bool -> Pages.AcuteIllnessEncounter.Model.AssembledData -> List App.Model.Msg
+generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
+    if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         let
             diagnosisByCurrentEncounterMeasurements =
-                resolveAcuteIllnessDiagnosis currentDate data
+                resolveAcuteIllnessDiagnosis currentDate isChw data
                     |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
             setDiagnosisMsg =
@@ -4003,7 +4171,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate data =
                     []
 
             setActiveTaskMsg =
-                resolveNextStepSubsequentEncounter currentDate data
+                resolveNextStepSubsequentEncounter currentDate isChw data
                     |> Maybe.map
                         (Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask
                             >> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
@@ -4037,30 +4205,27 @@ updateDiagnosisMsg id diagnosis =
         |> App.Model.MsgIndexedDb
 
 
-generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateAcuteIllnessAssesmentCompletedMsgs currentDate after id =
-    Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id after
+generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> Bool -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw after id =
+    Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id isChw after
         |> RemoteData.toMaybe
         |> Maybe.map
-            (\data ->
+            (\assembled ->
                 let
                     navigateToProgressReportMsg =
                         App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
-
-                    isFirstEncounter =
-                        List.isEmpty data.previousEncountersData
                 in
-                if not <| activityCompleted currentDate isFirstEncounter data AcuteIllnessNextSteps then
+                if not <| activityCompleted currentDate isChw assembled AcuteIllnessNextSteps then
                     []
 
-                else if isFirstEncounter then
+                else if assembled.initialEncounter then
                     [ navigateToProgressReportMsg ]
 
-                else if noImprovementOnSubsequentVisit currentDate data.person data.measurements then
+                else if noImprovementOnSubsequentVisit currentDate assembled.person assembled.measurements then
                     [ navigateToProgressReportMsg ]
 
                 else
-                    [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage data.encounter.participant)) ]
+                    [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage assembled.encounter.participant)) ]
             )
         |> Maybe.withDefault []
 

@@ -48,11 +48,14 @@ authority.
 -}
 type BackendAuthorityEntity
     = BackendAuthorityAcuteFindings (BackendEntity AcuteFindings)
+    | BackendAuthorityAcuteIllnessContactsTracing (BackendEntity AcuteIllnessContactsTracing)
+    | BackendAuthorityAcuteIllnessCoreExam (BackendEntity AcuteIllnessCoreExam)
     | BackendAuthorityAcuteIllnessDangerSigns (BackendEntity AcuteIllnessDangerSigns)
     | BackendAuthorityAcuteIllnessEncounter (BackendEntity AcuteIllnessEncounter)
     | BackendAuthorityAcuteIllnessFollowUp (BackendEntity AcuteIllnessFollowUp)
     | BackendAuthorityAcuteIllnessMuac (BackendEntity AcuteIllnessMuac)
     | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
+    | BackendAuthorityAcuteIllnessTraceContact (BackendEntity AcuteIllnessTraceContact)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
     | BackendAuthorityAppointmentConfirmation (BackendEntity PrenatalAppointmentConfirmation)
     | BackendAuthorityAttendance (BackendEntity Attendance)
@@ -64,6 +67,7 @@ type BackendAuthorityEntity
     | BackendAuthorityContributingFactors (BackendEntity ContributingFactors)
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
     | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
+    | BackendAuthorityCovidTesting (BackendEntity CovidTesting)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
     | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
     | BackendAuthorityExposure (BackendEntity Exposure)

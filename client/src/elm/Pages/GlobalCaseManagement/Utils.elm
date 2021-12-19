@@ -13,9 +13,14 @@ import Pages.GlobalCaseManagement.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-allEncounterTypes : List IndividualEncounterType
-allEncounterTypes =
-    [ AcuteIllnessEncounter, AntenatalEncounter, NutritionEncounter ]
+chwFilters : List CaseManagementFilter
+chwFilters =
+    [ FilterAcuteIllness, FilterAntenatal, FilterNutrition ]
+
+
+nurseFilters : List CaseManagementFilter
+nurseFilters =
+    [ FilterContactsTrace ]
 
 
 generateNutritionFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem

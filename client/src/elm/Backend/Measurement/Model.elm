@@ -726,9 +726,9 @@ type alias SocialHistory =
 
 
 type alias VitalsValue =
-    { sys : Float
-    , dia : Float
-    , heartRate : Int
+    { sys : Maybe Float
+    , dia : Maybe Float
+    , heartRate : Maybe Int
     , respiratoryRate : Int
     , bodyTemperature : Float
     }
@@ -899,14 +899,8 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement SymptomsGIValue
 
 
-type alias BasicVitalsValue =
-    { respiratoryRate : Int
-    , bodyTemperature : Float
-    }
-
-
 type alias AcuteIllnessVitals =
-    AcuteIllnessMeasurement BasicVitalsValue
+    AcuteIllnessMeasurement VitalsValue
 
 
 type AcuteFindingsGeneralSign
@@ -936,16 +930,17 @@ type alias AcuteFindings =
     AcuteIllnessMeasurement AcuteFindingsValue
 
 
-type MalariaRapidTestResult
+type RapidTestResult
     = RapidTestPositive
     | RapidTestPositiveAndPregnant
     | RapidTestNegative
     | RapidTestIndeterminate
     | RapidTestUnableToRun
+    | RapidTestUnableToRunAndPregnant
 
 
 type alias MalariaTesting =
-    AcuteIllnessMeasurement MalariaRapidTestResult
+    AcuteIllnessMeasurement RapidTestResult
 
 
 type TravelHistorySign
@@ -1103,6 +1098,7 @@ type MedicationDistributionSign
     | Albendazole
     | Mebendezole
     | VitaminA
+    | Paracetamol
     | NoMedicationDistributionSigns
 
 
@@ -1123,6 +1119,7 @@ type MedicationNonAdministrationSign
     | MedicationCoartem AdministrationNote
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote
+    | MedicationParacetamol AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1195,6 +1192,16 @@ type alias TreatmentOngoing =
     AcuteIllnessMeasurement TreatmentOngoingValue
 
 
+type alias AcuteIllnessCoreExam =
+    AcuteIllnessMeasurement AcuteIllnessCoreExamValue
+
+
+type alias AcuteIllnessCoreExamValue =
+    { heart : EverySet HeartCPESign
+    , lungs : EverySet LungsCPESign
+    }
+
+
 type AcuteIllnessDangerSign
     = DangerSignConditionNotImproving
     | DangerSignUnableDrinkSuck
@@ -1235,6 +1242,53 @@ type alias AcuteIllnessFollowUp =
     AcuteIllnessMeasurement (EverySet FollowUpOption)
 
 
+type alias CovidTesting =
+    AcuteIllnessMeasurement CovidTestingValue
+
+
+type alias CovidTestingValue =
+    { result : RapidTestResult
+    , administrationNote : Maybe AdministrationNote
+    }
+
+
+type alias AcuteIllnessContactsTracing =
+    AcuteIllnessMeasurement (List ContactTraceItem)
+
+
+type alias AcuteIllnessTraceContact =
+    AcuteIllnessMeasurement ContactTraceItem
+
+
+type alias ContactTraceItem =
+    { personId : PersonId
+    , firstName : String
+    , secondName : String
+    , gender : Gender
+    , phoneNumber : String
+    , contactDate : NominalDate
+    , resolutionDate : NominalDate
+    , lastFollowUpDate : Maybe NominalDate
+    , generalSigns : Maybe (EverySet SymptomsGeneralSign)
+    , respiratorySigns : Maybe (EverySet SymptomsRespiratorySign)
+    , giSigns : Maybe (EverySet SymptomsGISign)
+    , traceOutcome : Maybe TraceOutcome
+    }
+
+
+type Gender
+    = Female
+    | Male
+
+
+type TraceOutcome
+    = OutcomeNoAnswer
+    | OutcomeWrongContactInfo
+    | OutcomeDeclinedFollowUp
+    | OutcomeNoSymptoms
+    | OutcomeReferredToHC
+
+
 
 -- WELL CHILD MEASUREMENTS
 
@@ -1262,7 +1316,7 @@ type WellChildSymptom
 
 
 type alias WellChildVitals =
-    WellChildMeasurement BasicVitalsValue
+    WellChildMeasurement VitalsValue
 
 
 type alias WellChildHeight =
@@ -1651,6 +1705,9 @@ type alias AcuteIllnessMeasurements =
     , nutrition : Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )
     , healthEducation : Maybe ( HealthEducationId, HealthEducation )
     , followUp : Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )
+    , coreExam : Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )
+    , covidTesting : Maybe ( CovidTestingId, CovidTesting )
+    , contactsTracing : Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )
     }
 
 
@@ -1662,6 +1719,7 @@ type alias FollowUpMeasurements =
     , acuteIllness : Dict AcuteIllnessFollowUpId AcuteIllnessFollowUp
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
+    , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     }
 
 

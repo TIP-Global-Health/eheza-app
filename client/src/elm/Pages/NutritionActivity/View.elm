@@ -50,7 +50,7 @@ import Measurement.View
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
-        , viewSendToHCForm
+        , viewSendToHealthCenterForm
         , zScoreForHeightOrLength
         )
 import Pages.NutritionActivity.Model exposing (..)
@@ -732,7 +732,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                     measurements.sendToHC
                         |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language
+                        |> viewSendToHealthCenterForm language
                             currentDate
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC

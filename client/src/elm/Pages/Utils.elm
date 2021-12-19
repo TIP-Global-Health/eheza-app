@@ -136,6 +136,36 @@ viewCustomLabel language translationId suffix class_ =
 -- Inputs
 
 
+viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> Html msg
+viewSearchForm language inputValue placeholderTransId setInputMsg =
+    div [ class "ui search form" ]
+        [ viewTextInput language inputValue setInputMsg (Just placeholderTransId) (Just "search-input") ]
+
+
+viewTextInput : Language -> String -> (String -> msg) -> Maybe TranslationId -> Maybe String -> Html msg
+viewTextInput language inputValue setInputMsg placeholderTransId inputClass =
+    let
+        attributes =
+            inputClassAttribute
+                ++ placeholderAttribute
+                ++ [ type_ "text"
+                   , onInput setInputMsg
+                   , value inputValue
+                   , autofocus True
+                   ]
+
+        inputClassAttribute =
+            Maybe.map (class >> List.singleton) inputClass
+                |> Maybe.withDefault []
+
+        placeholderAttribute =
+            Maybe.map (translate language >> placeholder >> List.singleton)
+                placeholderTransId
+                |> Maybe.withDefault []
+    in
+    input attributes []
+
+
 viewBoolInput :
     Language
     -> Maybe Bool
@@ -511,6 +541,40 @@ viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
         ]
 
 
+viewRedAlertForSelect : List a -> List a -> Html any
+viewRedAlertForSelect actual normal =
+    viewAlertForSelect "red" actual normal
+
+
+viewYellowAlertForSelect : List a -> List a -> Html any
+viewYellowAlertForSelect actual normal =
+    viewAlertForSelect "yellow" actual normal
+
+
+viewAlertForSelect : String -> List a -> List a -> Html any
+viewAlertForSelect color actual normal =
+    if
+        List.isEmpty actual
+            || List.all
+                (\item ->
+                    List.member item normal
+                )
+                actual
+    then
+        emptyNode
+
+    else
+        div [ class <| "alert " ++ color ]
+            [ viewAlert color ]
+
+
+viewRedAlertForBool : Maybe Bool -> Bool -> Html any
+viewRedAlertForBool actual normal =
+    viewRedAlertForSelect
+        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
+        [ normal ]
+
+
 {-| The idea here is that we get lists for red alert conditions, and yellow
 alert conditions. If any of red conditions matches, we present red alert.
 If any of yellow conditions matches, we present yellow alert.
@@ -675,3 +739,14 @@ isTaskCompleted dict task =
 tasksBarId : String
 tasksBarId =
     "tasks-bar"
+
+
+viewSaveAction : Language -> msg -> Bool -> Html msg
+viewSaveAction language saveMsg disabled =
+    div [ class "actions" ]
+        [ button
+            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+            , onClick saveMsg
+            ]
+            [ text <| translate language Translate.Save ]
+        ]

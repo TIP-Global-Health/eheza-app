@@ -634,6 +634,12 @@ treatmentOngoingEndpoint =
         |> withValueEncoder (object << encodeTreatmentOngoing)
 
 
+acuteIllnessCoreExamEndpoint : ReadWriteEndPoint Error AcuteIllnessCoreExamId AcuteIllnessCoreExam AcuteIllnessCoreExam ()
+acuteIllnessCoreExamEndpoint =
+    swEndpoint "nodes/acute_illness_core_exam" decodeAcuteIllnessCoreExam
+        |> withValueEncoder (object << encodeAcuteIllnessCoreExam)
+
+
 acuteIllnessDangerSignsEndpoint : ReadWriteEndPoint Error AcuteIllnessDangerSignsId AcuteIllnessDangerSigns AcuteIllnessDangerSigns ()
 acuteIllnessDangerSignsEndpoint =
     swEndpoint "nodes/acute_illness_danger_signs" decodeAcuteIllnessDangerSigns
@@ -908,3 +914,21 @@ wellChildRotarixImmunisationEndpoint : ReadWriteEndPoint Error WellChildRotarixI
 wellChildRotarixImmunisationEndpoint =
     swEndpoint "nodes/well_child_rotarix_immunisation" decodeWellChildRotarixImmunisation
         |> withValueEncoder (object << encodeWellChildRotarixImmunisation)
+
+
+covidTestingEndpoint : ReadWriteEndPoint Error CovidTestingId CovidTesting CovidTesting ()
+covidTestingEndpoint =
+    swEndpoint "nodes/covid_testing" decodeCovidTesting
+        |> withValueEncoder (object << encodeCovidTesting)
+
+
+acuteIllnessContactsTracingEndpoint : ReadWriteEndPoint Error AcuteIllnessContactsTracingId AcuteIllnessContactsTracing AcuteIllnessContactsTracing ()
+acuteIllnessContactsTracingEndpoint =
+    swEndpoint "nodes/acute_illness_contacts_tracing" decodeAcuteIllnessContactsTracing
+        |> withValueEncoder (object << encodeAcuteIllnessContactsTracing)
+
+
+acuteIllnessTraceContactEndpoint : ReadWriteEndPoint Error AcuteIllnessTraceContactId AcuteIllnessTraceContact AcuteIllnessTraceContact ()
+acuteIllnessTraceContactEndpoint =
+    swEndpoint "nodes/acute_illness_trace_contact" decodeAcuteIllnessTraceContact
+        |> withValueEncoder (object << encodeAcuteIllnessTraceContact)

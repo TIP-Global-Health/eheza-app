@@ -12,16 +12,23 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { encounterTypeFilter : Maybe IndividualEncounterType
+    { filter : Maybe CaseManagementFilter
     , dialogState : Maybe FollowUpEncounterDataType
     }
 
 
 emptyModel : Model
 emptyModel =
-    { encounterTypeFilter = Nothing
+    { filter = Nothing
     , dialogState = Nothing
     }
+
+
+type CaseManagementFilter
+    = FilterAcuteIllness
+    | FilterAntenatal
+    | FilterNutrition
+    | FilterContactsTrace
 
 
 type FollowUpDueOption
@@ -88,6 +95,7 @@ type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
+    | CaseManagementContactsTracing
 
 
 type alias FollowUpNutritionData =
@@ -114,9 +122,18 @@ type alias FollowUpPrenatalData =
     }
 
 
+type alias ContactsTracingEntry =
+    { itemId : AcuteIllnessTraceContactId
+    , personName : String
+    , phoneNumber : String
+    , reporterName : String
+    , lastFollowUpDate : Maybe NominalDate
+    }
+
+
 type Msg
     = SetActivePage Page
-    | SetEncounterTypeFilter (Maybe IndividualEncounterType)
+    | SetFilter (Maybe CaseManagementFilter)
     | SetDialogState (Maybe FollowUpEncounterDataType)
     | StartFollowUpEncounter FollowUpEncounterDataType
     | StartPrenatalFollowUpEncounter IndividualEncounterParticipantId Bool PrenatalEncounterType

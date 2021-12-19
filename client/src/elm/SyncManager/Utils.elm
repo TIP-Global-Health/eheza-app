@@ -372,6 +372,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             getIdentifier identifier "acute_findings"
 
+        BackendAuthorityAcuteIllnessContactsTracing identifier ->
+            getIdentifier identifier "acute_illness_contacts_tracing"
+
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            getIdentifier identifier "acute_illness_core_exam"
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             getIdentifier identifier "acute_illness_danger_signs"
 
@@ -386,6 +392,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             getIdentifier identifier "acute_illness_nutrition"
+
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            getIdentifier identifier "acute_illness_trace_contact"
 
         BackendAuthorityAcuteIllnessVitals identifier ->
             getIdentifier identifier "acute_illness_vitals"
@@ -419,6 +428,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityCorePhysicalExam identifier ->
             getIdentifier identifier "core_physical_exam"
+
+        BackendAuthorityCovidTesting identifier ->
+            getIdentifier identifier "covid_testing"
 
         BackendAuthorityDangerSigns identifier ->
             getIdentifier identifier "danger_signs"
@@ -888,6 +900,12 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteFindings identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteFindings identifier
 
+        BackendAuthorityAcuteIllnessContactsTracing identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessContactsTracing identifier
+
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessCoreExam identifier
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessDangerSigns identifier
 
@@ -902,6 +920,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessNutrition identifier
+
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessTraceContact identifier
 
         BackendAuthorityAcuteIllnessVitals identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessVitals identifier
@@ -935,6 +956,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityCorePhysicalExam identifier ->
             encode Backend.Measurement.Encoder.encodeCorePhysicalExam identifier
+
+        BackendAuthorityCovidTesting identifier ->
+            encode Backend.Measurement.Encoder.encodeCovidTesting identifier
 
         BackendAuthorityDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeDangerSigns identifier
@@ -1367,6 +1391,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             AcuteFindingsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityAcuteIllnessContactsTracing identifier ->
+            AcuteIllnessContactsTracingRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            AcuteIllnessCoreExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             AcuteIllnessDangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1381,6 +1411,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             AcuteIllnessNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            AcuteIllnessTraceContactRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityAcuteIllnessVitals identifier ->
             AcuteIllnessVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1414,6 +1447,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityCorePhysicalExam identifier ->
             CorePhysicalExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityCovidTesting identifier ->
+            CovidTestingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityDangerSigns identifier ->
             DangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity

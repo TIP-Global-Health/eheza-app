@@ -37,11 +37,14 @@ var dbVerno = 17;
 // entities).
 var tableForType = {
     acute_findings: 'shards',
+    acute_illness_core_exam: 'shards',
+    acute_illness_contacts_tracing: 'shards',
     acute_illness_danger_signs: 'shards',
     acute_illness_encounter: 'shards',
     acute_illness_follow_up: 'shards',
     acute_illness_muac: 'shards',
     acute_illness_nutrition: 'shards',
+    acute_illness_trace_contact: 'shards',
     acute_illness_vitals: 'shards',
     appointment_confirmation: 'shards',
     attendance: 'shards',
@@ -56,6 +59,7 @@ var tableForType = {
     counseling_session: 'shards',
     counseling_topic: 'nodes',
     core_physical_exam: 'shards',
+    covid_testing: 'shards',
     danger_signs: 'shards',
     exposure: 'shards',
     family_planning: 'shards',

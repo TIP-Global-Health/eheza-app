@@ -92,7 +92,20 @@
           background: url(#{$img-path}icon-capsule-blue.svg) center center no-repeat;
           background-size: 36px 50px;
         }
+
+        &.icon-house {
+          background: url(#{$img-path}icon-house.svg) center center no-repeat;
+          background-size: 36px 36px;
+          padding: 0 10px;
+          margin-right: 10px;
+          height: 36px;
+          width: 52px;
+        }
       }
+    }
+
+    .or {
+      text-transform: uppercase;
     }
 
     .prescription {
@@ -708,50 +721,54 @@ div.page-encounter {
 //Common for Activity pages
 div.page-activity {
 
-    .ui.task.segment {
+  .ui.task.segment {
 
-      .column.core-physical-exam {
-        width: 25%;
+    .column.core-physical-exam {
+      width: 25%;
 
-        a {
-          width: 131px;
-        }
+      a {
+        width: 131px;
       }
     }
+  }
 
-    .tasks-count {
-      background: $color-primary;
-      padding: 5px 15px;
-      font-size: 18px;
+  .tasks-count {
+    background: $color-primary;
+    padding: 5px 15px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .tasks-count.full-screen {
+    color: $color-primary;
+  }
+
+  .ui.full.segment {
+
+    .label {
       font-weight: bold;
-    }
+      margin-bottom: 20px;
 
-    .ui.full.segment {
-
-      .label {
-        font-weight: bold;
-        margin-bottom: 20px;
-
-        &.helper {
-          margin-bottom: 40px;
-        }
-      }
-
-      .form .ui.grid {
-
-        .measurement input {
-          width: 85%;
-        }
-
-        .measurement .unit {
-          width: unset;
-        }
-      }
-
-      .form.muac .ui.grid {
-        margin-top: 30px;
+      &.helper {
+        margin-bottom: 40px;
       }
     }
+
+    .form .ui.grid {
+
+      .measurement input {
+        width: 85%;
+      }
+
+      .measurement .unit {
+        width: unset;
+      }
+    }
+
+    .form.muac .ui.grid {
+      margin-top: 30px;
+    }
+  }
 }
 
 // Prenatal Encounter, Nutrition Encounter and
@@ -852,8 +869,25 @@ div.page-encounter.prenatal {
   }
 }
 
+div.page-activity.trace-contact {
+
+  .contact-details {
+    font-weight: bold;
+
+    .blue {
+      color: $color-primary;
+    }
+  }
+
+  .ui.full.segment .symptoms-form .checkbox-select-input .ui.checkbox.activity {
+    margin-bottom: 25px;
+  }
+
+}
+
 // Acute Illness Activity page
-div.page-activity.acute-illness {
+div.page-activity.acute-illness,
+div.page-activity.trace-contact {
 
   .ui.full.segment {
 
@@ -871,7 +905,11 @@ div.page-activity.acute-illness {
 
     .ui.form.medication-distribution,
     .ui.form.send-to-hc,
-    .ui.form.health-education {
+    .ui.form.isolation,
+    .ui.form.health-education,
+    .ui.form.follow-up,
+    .ui.form.contacts-tracing,
+    .ui.form.symptoms-relief {
 
       h2 {
         text-transform: uppercase;
@@ -906,6 +944,219 @@ div.page-activity.acute-illness {
 
       .label {
         line-height: 40px;
+      }
+    }
+
+    .ui.form.laboratory.covid-testing .instructions {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 40px;
+    }
+
+    .ui.form.contacts-tracing {
+
+      .dual-action {
+        display: flex;
+        justify-content: space-around;
+
+        .button {
+          border-radius: 3px;
+          font-size: 17px;
+          padding: 10px 20px;
+          width: 45%;
+          font-weight: 400;
+        }
+      }
+
+      .search-top .search-helper {
+        margin-bottom: 15px;
+      }
+
+      .ui.form.search {
+        min-height: unset;
+      }
+
+      .ui.form.search input,
+      .ui.form.search input:focus {
+        height: 60px;
+        margin-bottom: 30px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .results-summary {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      .register-helper {
+        margin-top: 20px;
+      }
+
+      .items {
+        color: $color-gray;
+
+        .item .content {
+          padding-top: 0 !important;
+
+          .details {
+            float:left;
+            width: 70%;
+
+            .ui.header {
+              color: $color-gray;
+              font-size: 24px;
+              font-weight: bold;
+              margin-top: 3px;
+              margin-bottom: 7px;
+            }
+
+            p {
+              margin-bottom: 0;
+              font-size: 20px;
+
+              label {
+                font-weight: bold;
+              }
+            }
+          }
+
+          .action {
+            float:left;
+            margin-top: -20px;
+            width: 20%;
+
+            .action-icon-wrapper {
+              height: 50px;
+              width: 50px;
+              margin-top: 60px;
+              margin-left: 50px;
+
+              .action-icon {
+                background-size: 62% 62%;
+                cursor: pointer;
+                display: block;
+                height: 40px;
+                width: 40px;
+                margin-left: 2px;
+                margin-top: 2px;
+
+                &.edit {
+                  background: url(#{$img-path}icon-edit.svg) no-repeat center;
+                }
+
+                &.forward {
+                  background: url(#{$img-path}icon-forward.svg) no-repeat center;
+                }
+
+                &.link {
+                  background: url(#{$img-path}icon-link.svg) no-repeat center;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .items.participants-list {
+        max-height: 480px;
+        overflow-y: auto;
+      }
+
+      .single-action {
+        margin-top: 20px;
+        text-align: center;
+
+        .button {
+          border-radius: 3px;
+          font-size: 17px;
+          padding: 10px 20px;
+          width: 60%;
+          font-weight: 400;
+        }
+      }
+
+      .contact-detail {
+        display: flex;
+        justify-content: flex-start;
+
+        .label {
+          float: left;
+          font-weight: 500;
+          width: 35%;
+        }
+
+        .form-input {
+          margin-bottom: 30px;
+
+          &.text {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+            width: 50%;
+
+            input {
+              text-align: center;
+            }
+          }
+
+          &.date {
+            height: 2em;
+            width: 50%;
+
+            .dropdown,
+            .dropdown-open {
+              width: 100%;
+
+              .dropdown--button-container {
+                background: $color-white;
+                border: 2px solid $color-light-gray;
+
+                input {
+                  border: 0;
+                  color: $color-text;
+                  padding: 5px;
+                  text-align: center;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .ui.form.registration {
+
+        fieldset {
+          border:none;
+        }
+
+        input,
+        input:focus,
+        .select-input {
+          background: none;
+          font-size: 2rem;
+          border: 2px solid $color-gray;
+          padding: 0 0.5em;
+          line-height: 0.5;
+          text-align: left;
+          height: 50px;
+          width: 100%;
+          color: $color-text;
+
+          &.error {
+            border-color: $color-red;
+          }
+        }
+
+        .dual-action {
+          margin-top: 20px;
+        }
+      }
+    }
+
+    .ui.form.symptoms-relief {
+
+      ul {
+        margin-top: 10px;
       }
     }
 
@@ -1037,8 +1288,10 @@ div.page-activity.acute-illness {
     }
 
     .separator {
+      color: $color-light-gray;
       margin: 30px 0;
       width: 100%;
+      border: 1px solid;
     }
 
     .days-present {
@@ -1464,10 +1717,6 @@ div.page-activity.home-visit {
 
 div.page-activity.well-child {
 
-  .tasks-count.full-screen {
-    color: $color-primary;
-  }
-
   .ui.full.segment {
 
     .full.content {
@@ -1482,7 +1731,10 @@ div.page-activity.well-child {
         min-height: 140px;
 
         .separator {
+          color: $color-light-gray;
           margin: 30px 0;
+          width: 100%;
+          border: 1px solid;
         }
       }
 
@@ -2359,14 +2611,17 @@ div.page-report.acute-illness {
 
       &.red {
         background: $color-velvet;
+        border: 1px solid $color-velvet;
       }
 
       &.orange {
         background: $color-orange-light;
+        border: 1px solid $color-orange-light;
       }
 
       &.green {
         background: $color-cyan;
+        border: 1px solid $color-cyan;
       }
     }
 
@@ -2563,6 +2818,7 @@ div.page-report.acute-illness {
 
 div.page-report.acute-illness,
 div.page-encounter.well-child,
+div.page-activity.trace-contact,
 div.page-activity.well-child,
 div.page-report.well-child {
 
@@ -2914,7 +3170,7 @@ div.page-report.well-child {
   }
 
   .ui.report.unstackable.items .actions {
-    margin: 20px 0 0 0;    
+    margin: 20px 0 0 0;
   }
 }
 
@@ -2964,7 +3220,8 @@ div.page-case-management {
       padding: 20px;
       text-align: center;
 
-      .follow-up-entry {
+      .follow-up-entry,
+      .trace-contact-entry {
         border-bottom: 1px solid $color-text;
         display: flex;
         margin-top: 15px;
@@ -2981,6 +3238,17 @@ div.page-case-management {
           text-align: left;
           width: 200px;
         }
+
+        .icon-forward {
+          align-self: center;
+          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+          background-size: 45px 50px;
+          height: 50px;
+          width: 45px;
+        }
+      }
+
+      .follow-up-entry {
 
         .due {
           align-self: center;
@@ -3026,15 +3294,40 @@ div.page-case-management {
             margin-bottom: 0;
           }
         }
+      }
 
-        .icon-forward {
+      .trace-contact-entry {
+
+        .last-contact,
+        .reporter,
+        .phone-number {
           align-self: center;
-          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
-          background-size: 45px 50px;
-          height: 50px;
-          width: 45px;
+          font-weight: normal;
+        }
+
+        .name {
+          width: 150px;
+        }
+
+        .last-contact {
+          width: 130px;
+        }
+
+        .reporter {
+          font-size: 20px;
+          width: 145px;
+        }
+
+        .phone-number {
+          width: 200px;
         }
       }
+
+      .trace-contact-entry.heading div {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
     }
   }
 

@@ -330,6 +330,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteFindings
                             BackendAuthorityAcuteFindings
 
+                    "acute_illness_contacts_tracing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessContactsTracing
+                            BackendAuthorityAcuteIllnessContactsTracing
+
+                    "acute_illness_core_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessCoreExam
+                            BackendAuthorityAcuteIllnessCoreExam
+
                     "acute_illness_danger_signs" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessDangerSigns
@@ -355,6 +365,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteIllnessNutrition
                             BackendAuthorityAcuteIllnessNutrition
 
+                    "acute_illness_trace_contact" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessTraceContact
+                            BackendAuthorityAcuteIllnessTraceContact
+
                     "acute_illness_vitals" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
@@ -370,6 +385,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAttendance
                             BackendAuthorityAttendance
 
+                    "birth_plan" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBirthPlan
+                            BackendAuthorityBirthPlan
+
+                    "breast_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBreastExam
+                            BackendAuthorityBreastExam
+
                     "call_114" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeCall114
@@ -379,16 +404,6 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeFbf
                             BackendAuthorityChildFbf
-
-                    "breast_exam" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodeBreastExam
-                            BackendAuthorityBreastExam
-
-                    "birth_plan" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodeBirthPlan
-                            BackendAuthorityBirthPlan
 
                     "clinic" ->
                         doDecode
@@ -409,6 +424,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeCorePhysicalExam
                             BackendAuthorityCorePhysicalExam
+
+                    "covid_testing" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeCovidTesting
+                            BackendAuthorityCovidTesting
 
                     "danger_signs" ->
                         doDecode

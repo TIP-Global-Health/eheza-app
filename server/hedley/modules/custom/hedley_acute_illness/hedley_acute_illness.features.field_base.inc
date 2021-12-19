@@ -283,6 +283,60 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_contact_date'.
+  $field_bases['field_contact_date'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_contact_date',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'cache_count' => 4,
+      'cache_enabled' => 0,
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
+  // Exported field_base: 'field_contacts_trace_data'.
+  $field_bases['field_contacts_trace_data'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_contacts_trace_data',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 512,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
+  );
+
   // Exported field_base: 'field_convulsions_period'.
   $field_bases['field_convulsions_period'] = array(
     'active' => 1,
@@ -588,6 +642,39 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_last_follow_up_date'.
+  $field_bases['field_last_follow_up_date'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_last_follow_up_date',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'cache_count' => 4,
+      'cache_enabled' => 0,
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
   // Exported field_base: 'field_lethargy_period'.
   $field_bases['field_lethargy_period'] = array(
     'active' => 1,
@@ -742,6 +829,11 @@ function hedley_acute_illness_field_default_field_bases() {
         'zinc-patient-declined' => 'Zinc - Patient declined',
         'zinc-patient-unable-to-afford' => 'Zinc - Patient unable to afford',
         'zinc-other' => 'Zinc - Other',
+        'paracetamol-lack-of-stock' => 'Paracetamol - Lack of stock',
+        'paracetamol-known-allergy' => 'Paracetamol - Known allergy',
+        'paracetamol-patient-declined' => 'Paracetamol - Patient declined',
+        'paracetamol-patient-unable-to-afford' => 'Paracetamol - Patient unable to afford',
+        'paracetamol-other' => 'Paracetamol - Other',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -801,7 +893,36 @@ function hedley_acute_illness_field_default_field_bases() {
         'ors' => 'ORS',
         'zinc' => 'Zinc',
         'lemon-juice-or-honey' => 'Lemon Juice or Honey',
+        'paracetamol' => 'Paracetamol',
         'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_rapid_test_result'.
+  $field_bases['field_rapid_test_result'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_rapid_test_result',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive' => 'Positive',
+        'positive-and-pregnant' => 'Positive and pregnant',
+        'negative' => 'Negative',
+        'unable-to-run' => 'Unable to run',
+        'unable-to-run-and-pregnant' => 'Unable to run and pregnant',
       ),
       'allowed_values_function' => '',
     ),
@@ -920,6 +1041,41 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_referred_person'.
+  $field_bases['field_referred_person'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_referred_person',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'person' => 'person',
+        ),
+      ),
+      'target_type' => 'node',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
   );
 
   // Exported field_base: 'field_send_to_hc'.
@@ -1071,6 +1227,75 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_symptoms_general'.
+  $field_bases['field_symptoms_general'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_symptoms_general',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'fever' => 'Fever',
+        'chills' => 'Chills',
+        'night-sweats' => 'Night sweats',
+        'body-aches' => 'Body aches',
+        'headache' => 'Headache',
+        'coke-colored-urine' => 'Coke colored urine',
+        'convulsions' => 'Convulsions',
+        'dry-mouth' => 'Dry mouth',
+        'increased-thirst' => 'Increased thirst',
+        'lethargy' => 'Lethargy',
+        'poor-suck' => 'Poor suck',
+        'severe-weakness' => 'Severe weakness',
+        'spontaneos-bleeding' => 'Spontaneos bleeding',
+        'unable-to-drink' => 'Unable to drink',
+        'unable-to-eat' => 'Unable to eat',
+        'yellow-eyes' => 'Yellow eyes',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_symptoms_gi'.
+  $field_bases['field_symptoms_gi'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_symptoms_gi',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'bloody-diarrhea' => 'Bloody diarrhea',
+        'non-bloody-diarrhea' => 'Non bloody diarrhea',
+        'nausea' => 'Nausea',
+        'vomiting' => 'Vomiting',
+        'abdominal-pain' => 'Abdominal pain',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_symptoms_gi_derived_signs'.
   $field_bases['field_symptoms_gi_derived_signs'] = array(
     'active' => 1,
@@ -1089,6 +1314,65 @@ function hedley_acute_illness_field_default_field_bases() {
       'allowed_values' => array(
         'intractable-vomiting' => 'Intractable Vomiting',
         'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_symptoms_respiratory'.
+  $field_bases['field_symptoms_respiratory'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_symptoms_respiratory',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'cough' => 'Cough',
+        'shortness-of-breath' => 'Shortness of breath',
+        'nasal-congestion' => 'Nasal congestion',
+        'blood-in-sputum' => 'Blood in sputum',
+        'sore-throat' => 'Sore throat',
+        'loss-of-smell' => 'Loss of smell',
+        'stabbing-chest-pain' => 'Stabbing chest pain',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_trace_outcome'.
+  $field_bases['field_trace_outcome'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_trace_outcome',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'no-answer' => 'No answer',
+        'wrong-contact-info' => 'Wrong contact information',
+        'declined-follow-up' => 'Declined Follow Up',
+        'no-symptoms' => 'No Symptoms',
+        'referred-to-hc' => 'Referred to HC',
       ),
       'allowed_values_function' => '',
     ),

@@ -9,7 +9,8 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Measurement.Model exposing (VitalsForm)
+import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement, noDangerSigns)
@@ -348,6 +349,18 @@ resolvePreviousValue assembled measurementFunc valueFunc =
         |> List.head
 
 
+resolvePreviousMaybeValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> Maybe b) -> Maybe b
+resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    assembled.nursePreviousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
+
+
 fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
 fromBreastExamValue saved =
     { breast = Maybe.map (.exam >> EverySet.toList) saved
@@ -422,7 +435,6 @@ toCorePhysicalExamValueWithDefault saved form =
 
 toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
 toCorePhysicalExamValue form =
-    -- Also, termporary things here, until CorePhysicalExamForm is redefined
     Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
         |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
         |> andMap (Maybe.map EverySet.singleton form.heart)
@@ -921,56 +933,6 @@ toSocialHistoryValue form =
     in
     Maybe.map SocialHistoryValue socialHistory
         |> andMap form.partnerTestingResult
-
-
-fromVitalsValue : Maybe VitalsValue -> VitalsForm
-fromVitalsValue saved =
-    { sysBloodPressure = Maybe.map .sys saved
-    , sysBloodPressureDirty = False
-    , diaBloodPressure = Maybe.map .dia saved
-    , diaBloodPressureDirty = False
-    , heartRate = Maybe.map .heartRate saved
-    , heartRateDirty = False
-    , respiratoryRate = Maybe.map .respiratoryRate saved
-    , respiratoryRateDirty = False
-    , bodyTemperature = Maybe.map .bodyTemperature saved
-    , bodyTemperatureDirty = False
-    }
-
-
-vitalsFormWithDefault : VitalsForm -> Maybe VitalsValue -> VitalsForm
-vitalsFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { sysBloodPressure = valueConsideringIsDirtyField form.sysBloodPressureDirty form.sysBloodPressure value.sys
-                , sysBloodPressureDirty = form.sysBloodPressureDirty
-                , diaBloodPressure = valueConsideringIsDirtyField form.diaBloodPressureDirty form.diaBloodPressure value.dia
-                , diaBloodPressureDirty = form.diaBloodPressureDirty
-                , heartRate = valueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
-                , heartRateDirty = form.heartRateDirty
-                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
-                , respiratoryRateDirty = form.respiratoryRateDirty
-                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
-                , bodyTemperatureDirty = form.bodyTemperatureDirty
-                }
-            )
-
-
-toVitalsValueWithDefault : Maybe VitalsValue -> VitalsForm -> Maybe VitalsValue
-toVitalsValueWithDefault saved form =
-    vitalsFormWithDefault form saved
-        |> toVitalsValue
-
-
-toVitalsValue : VitalsForm -> Maybe VitalsValue
-toVitalsValue form =
-    Maybe.map VitalsValue form.sysBloodPressure
-        |> andMap form.diaBloodPressure
-        |> andMap form.heartRate
-        |> andMap form.respiratoryRate
-        |> andMap form.bodyTemperature
 
 
 fromPregnancyTestingValue : Maybe PregnancyTestResult -> PregnancyTestingForm

@@ -366,6 +366,12 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteFindings identifier ->
                 viewMeasurement identifier "Acute Findings"
 
+            BackendAuthorityAcuteIllnessContactsTracing identifier ->
+                viewMeasurement identifier "Acute Illness Contacts Tracing"
+
+            BackendAuthorityAcuteIllnessCoreExam identifier ->
+                viewMeasurement identifier "AcuteI llness Core Exam"
+
             BackendAuthorityAcuteIllnessDangerSigns identifier ->
                 viewMeasurement identifier "AcuteI llness Danger Signs"
 
@@ -380,6 +386,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityAcuteIllnessNutrition identifier ->
                 viewMeasurement identifier "Acute Illness Nutrition"
+
+            BackendAuthorityAcuteIllnessTraceContact identifier ->
+                viewMeasurement identifier "Acute Illness Trace Contact"
 
             BackendAuthorityAcuteIllnessVitals identifier ->
                 viewMeasurement identifier "Acute Illness Vitals"
@@ -413,6 +422,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityCorePhysicalExam identifier ->
                 viewMeasurement identifier "Core Physical Exam"
+
+            BackendAuthorityCovidTesting identifier ->
+                viewMeasurement identifier "Covid Testing"
 
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
@@ -456,11 +468,11 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityLactation identifier ->
                 viewMeasurement identifier "Lactation"
 
-            BackendAuthorityMalariaTesting identifier ->
-                viewMeasurement identifier "Malaria Testing"
-
             BackendAuthorityLastMenstrualPeriod identifier ->
                 viewMeasurement identifier "Menstrual Period"
+
+            BackendAuthorityMalariaTesting identifier ->
+                viewMeasurement identifier "Malaria Testing"
 
             BackendAuthorityMedicalHistory identifier ->
                 viewMeasurement identifier "Medical History"

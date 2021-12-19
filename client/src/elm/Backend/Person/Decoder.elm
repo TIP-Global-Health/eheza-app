@@ -1,6 +1,16 @@
-module Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodePerson, decodeUbudehe)
+module Backend.Person.Decoder exposing
+    ( decodeEducationLevel
+    , decodeGender
+    , decodeHivStatus
+    , decodeMaritalStatus
+    , decodeModeOfDelivery
+    , decodePerson
+    , decodeUbudehe
+    )
 
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Model exposing (..)
+import Backend.Person.Utils exposing (genderFromString)
 import Gizra.Json exposing (decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
@@ -92,14 +102,9 @@ decodeGender =
     string
         |> andThen
             (\gender ->
-                if gender == "female" then
-                    succeed Female
-
-                else if gender == "male" then
-                    succeed Male
-
-                else
-                    fail (gender ++ " is not a recognized 'type' for Gender.")
+                genderFromString gender
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| gender ++ " is not a recognized 'type' for Gender.")
             )
 
 

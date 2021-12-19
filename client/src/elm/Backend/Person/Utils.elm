@@ -4,13 +4,20 @@ import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
+import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+
+
+generateFullName : String -> String -> String
+generateFullName first second =
+    String.join " " [ second, first ]
+        |> String.trim
 
 
 ageInYears : NominalDate -> Person -> Maybe Int
@@ -129,6 +136,11 @@ initiatorToUrlFragmemt initiator =
         PrenatalNextStepsActivityOrigin encounterId ->
             "prenatal-next-steps-" ++ fromEntityUuid encounterId
 
+        AcuteIllnessContactsTracingActivityOrigin _ ->
+            -- Not in use, as at Acute Ilness patient is created
+            -- from a dedicated form.
+            ""
+
 
 initiatorFromUrlFragmemt : String -> Maybe Initiator
 initiatorFromUrlFragmemt s =
@@ -186,3 +198,26 @@ getHealthCenterName healthCenterId db =
         healthCenterId
         (RemoteData.toMaybe db.healthCenters)
         |> Maybe.Extra.join
+
+
+genderToString : Gender -> String
+genderToString gender =
+    case gender of
+        Male ->
+            "male"
+
+        Female ->
+            "female"
+
+
+genderFromString : String -> Maybe Gender
+genderFromString s =
+    case s of
+        "female" ->
+            Just Female
+
+        "male" ->
+            Just Male
+
+        _ ->
+            Nothing

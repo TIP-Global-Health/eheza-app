@@ -540,7 +540,8 @@
       'follow_up',
       'nutrition_follow_up',
       'prenatal_follow_up',
-      'well_child_follow_up'
+      'well_child_follow_up',
+      'acute_illness_trace_contact'
     ];
 
     function viewFollowUpMeasurements (shard) {
@@ -558,7 +559,17 @@
 
         return query.toArray().catch(databaseError).then(function (nodes) {
             if (nodes) {
+                var today = new Date();
+
                 nodes.forEach(function (node) {
+                    if (node.type === 'acute_illness_trace_contact') {
+                      // Do not load resolved items.
+                      var resolutionDate = new Date(node.date_concluded);
+                      if (resolutionDate <= today) {
+                        return;
+                      }
+                    }
+
                     if (data[node.type]) {
                         data[node.type].push(node);
                     } else {

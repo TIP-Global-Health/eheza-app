@@ -22,19 +22,18 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (PhotoForm)
+import Measurement.Model exposing (InvokationModule(..), PhotoForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( renderDatePart
-        , viewBasicVitalsForm
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
         , viewReferToProgramForm
-        , viewSendToHCForm
+        , viewSendToHealthCenterForm
         , zScoreForHeightOrLength
         )
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
@@ -54,6 +53,7 @@ import Pages.Utils
         , viewMeasurementInput
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewSaveAction
         )
 import Pages.WellChildActivity.Model exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
@@ -398,24 +398,13 @@ viewDangerSignsContent language currentDate assembled data =
                         |> viewSymptomsReviewForm language currentDate assembled.person
 
                 Just TaskVitals ->
-                    let
-                        previousRespiratoryRate =
-                            resolvePreviousValue assembled .vitals .respiratoryRate
-                                |> Maybe.map toFloat
-
-                        previousBodyTemperature =
-                            resolvePreviousValue assembled .vitals .bodyTemperature
-                    in
                     measurements.vitals
                         |> getMeasurementValueFunc
-                        |> basicVitalsFormWithDefault data.vitalsForm
-                        |> viewBasicVitalsForm language
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> viewVitalsForm language
                             currentDate
-                            assembled.person
-                            previousRespiratoryRate
-                            previousBodyTemperature
-                            SetVitalsResporatoryRate
-                            SetVitalsBodyTemperature
+                            assembled
+                        |> List.singleton
 
                 Nothing ->
                     []
@@ -459,6 +448,28 @@ viewDangerSignsContent language currentDate assembled data =
             (viewForm ++ [ actions ])
         ]
     ]
+
+
+viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate assembled form =
+    let
+        formConfig =
+            { setIntInputMsg = SetVitalsIntInput
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = Nothing
+            , diaBloodPressurePreviousValue = Nothing
+            , heartRatePreviousValue = Nothing
+            , respiratoryRatePreviousValue =
+                resolvePreviousValue assembled .vitals .respiratoryRate
+                    |> Maybe.map toFloat
+            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , birthDate = assembled.person.birthDate
+            , formClass = "vitals"
+            , mode = VitalsFormBasic
+            , invokationModule = InvokationModuleWellChild
+            }
+    in
+    Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
@@ -2094,9 +2105,9 @@ viewMedicationAdministrationForm language currentDate assembled config form =
                 ""
                 Nothing
             ]
-                ++ derrivedQuestion
+                ++ derivedQuestion
 
-        derrivedQuestion =
+        derivedQuestion =
             if form.medicationAdministered == Just False then
                 [ viewQuestionLabel language Translate.WhyNot
                 , viewCheckBoxSelectInput language
@@ -2120,7 +2131,7 @@ viewMedicationAdministrationForm language currentDate assembled config form =
 
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
-    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId iconClass dosage Nothing
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass dosage Nothing
 
 
 viewNextStepsContent :
@@ -2242,7 +2253,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                     let
                         viewFormFunc =
                             if isChw then
-                                viewSendToHCForm language
+                                viewSendToHealthCenterForm language
                                     currentDate
                                     SetReferToHealthCenter
                                     SetReasonForNotSendingToHC
@@ -2411,18 +2422,3 @@ viewPhotoContent language currentDate assembled form =
             ]
         ]
     ]
-
-
-
--- HELPER FUNCTIONS
-
-
-viewSaveAction : Language -> Msg -> Bool -> Html Msg
-viewSaveAction language saveMsg disabled =
-    div [ class "actions" ]
-        [ button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-            , onClick saveMsg
-            ]
-            [ text <| translate language Translate.Save ]
-        ]

@@ -26,7 +26,7 @@ import Measurement.View
         ( viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
-        , viewSendToHCForm
+        , viewSendToHealthCenterForm
         )
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
@@ -192,7 +192,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                         case activeTask of
                             Just NextStepsSendToHC ->
                                 sendToHCFormWithDefault model.sendToHCForm sendToHCValue
-                                    |> viewSendToHCForm language
+                                    |> viewSendToHealthCenterForm language
                                         currentDate
                                         SetReferToHealthCenter
                                         SetReasonForNotSendingToHC

@@ -5,6 +5,9 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Person.Decoder exposing (decodeGender)
+import Backend.Person.Utils exposing (genderFromString)
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
@@ -152,6 +155,9 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
         |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
+        |> optional "acute_illness_core_exam" (decodeHead decodeAcuteIllnessCoreExam) Nothing
+        |> optional "covid_testing" (decodeHead decodeCovidTesting) Nothing
+        |> optional "acute_illness_contacts_tracing" (decodeHead decodeAcuteIllnessContactsTracing) Nothing
 
 
 decodeFollowUpMeasurements : Decoder FollowUpMeasurements
@@ -162,6 +168,7 @@ decodeFollowUpMeasurements =
         |> optional "acute_illness_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessFollowUp)) Dict.empty
         |> optional "prenatal_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalFollowUp)) Dict.empty
         |> optional "well_child_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeWellChildFollowUp)) Dict.empty
+        |> optional "acute_illness_trace_contact" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessTraceContact)) Dict.empty
 
 
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
@@ -1161,13 +1168,17 @@ decodeSocialHistory =
 
 decodeVitals : Decoder Vitals
 decodeVitals =
+    decodePrenatalMeasurement decodeVitalsValue
+
+
+decodeVitalsValue : Decoder VitalsValue
+decodeVitalsValue =
     succeed VitalsValue
-        |> required "sys" decodeFloat
-        |> required "dia" decodeFloat
-        |> required "heart_rate" decodeInt
+        |> optional "sys" (nullable decodeFloat) Nothing
+        |> optional "dia" (nullable decodeFloat) Nothing
+        |> optional "heart_rate" (nullable decodeInt) Nothing
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
-        |> decodePrenatalMeasurement
 
 
 decodeCSectionReason : Decoder CSectionReason
@@ -1858,19 +1869,12 @@ decodeSymptomsGIDerivedSign =
 
 decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
 decodeAcuteIllnessVitals =
-    decodeAcuteIllnessMeasurement decodeBasicVitalsValue
+    decodeAcuteIllnessMeasurement decodeVitalsValue
 
 
 decodeWellChildVitals : Decoder WellChildVitals
 decodeWellChildVitals =
-    decodeWellChildMeasurement decodeBasicVitalsValue
-
-
-decodeBasicVitalsValue : Decoder BasicVitalsValue
-decodeBasicVitalsValue =
-    succeed BasicVitalsValue
-        |> required "respiratory_rate" decodeInt
-        |> required "body_temperature" decodeFloat
+    decodeWellChildMeasurement decodeVitalsValue
 
 
 decodeAcuteFindings : Decoder AcuteFindings
@@ -1942,23 +1946,35 @@ decodeAcuteFindingsRespiratorySign =
 
 decodeMalariaTesting : Decoder MalariaTesting
 decodeMalariaTesting =
-    decodeMalariaRapidTestResult
+    decodeRapidTestResult
         |> field "malaria_rapid_test"
         |> decodeAcuteIllnessMeasurement
 
 
-decodeMalariaRapidTestResult : Decoder MalariaRapidTestResult
-decodeMalariaRapidTestResult =
+decodeCovidTesting : Decoder CovidTesting
+decodeCovidTesting =
+    decodeAcuteIllnessMeasurement decodeCovidTestingValue
+
+
+decodeCovidTestingValue : Decoder CovidTestingValue
+decodeCovidTestingValue =
+    succeed CovidTestingValue
+        |> required "rapid_test_result" decodeRapidTestResult
+        |> optional "administration_note" (maybe decodeAdministrationNote) Nothing
+
+
+decodeRapidTestResult : Decoder RapidTestResult
+decodeRapidTestResult =
     string
         |> andThen
             (\result ->
                 malariaRapidTestResultFromString result
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (result ++ " is not a recognized MalariaRapidTestResult" |> fail)
+                    |> Maybe.withDefault (result ++ " is not a recognized RapidTestResult" |> fail)
             )
 
 
-malariaRapidTestResultFromString : String -> Maybe MalariaRapidTestResult
+malariaRapidTestResultFromString : String -> Maybe RapidTestResult
 malariaRapidTestResultFromString result =
     case result of
         "positive" ->
@@ -1975,6 +1991,9 @@ malariaRapidTestResultFromString result =
 
         "unable-to-run" ->
             Just RapidTestUnableToRun
+
+        "unable-to-run-and-pregnant" ->
+            Just RapidTestUnableToRunAndPregnant
 
         _ ->
             Nothing
@@ -2166,6 +2185,9 @@ decodeMedicationDistributionSign =
                     "vitamin-a" ->
                         succeed VitaminA
 
+                    "paracetamol" ->
+                        succeed Paracetamol
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2218,6 +2240,11 @@ decodeMedicationNonAdministrationSign =
                                     "zinc" ->
                                         administrationNote
                                             |> Maybe.map (MedicationZinc >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "paracetamol" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationParacetamol >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->
@@ -2672,6 +2699,18 @@ decodeAdverseEvent =
             )
 
 
+decodeAcuteIllnessCoreExam : Decoder AcuteIllnessCoreExam
+decodeAcuteIllnessCoreExam =
+    decodeAcuteIllnessMeasurement decodeAcuteIllnessCoreExamValue
+
+
+decodeAcuteIllnessCoreExamValue : Decoder AcuteIllnessCoreExamValue
+decodeAcuteIllnessCoreExamValue =
+    succeed AcuteIllnessCoreExamValue
+        |> required "heart" (decodeEverySet decodeHeartCPESign)
+        |> required "lungs" (decodeEverySet decodeLungsCPESign)
+
+
 decodeAcuteIllnessDangerSigns : Decoder AcuteIllnessDangerSigns
 decodeAcuteIllnessDangerSigns =
     decodeEverySet decodeAcuteIllnessDangerSign
@@ -2727,6 +2766,149 @@ decodeAcuteIllnessNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
+decodeAcuteIllnessContactsTracing =
+    decodeWithFallback [] (list decodeContactTraceItemFromString)
+        |> field "contacts_trace_data"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeContactTraceItemFromString : Decoder ContactTraceItem
+decodeContactTraceItemFromString =
+    string
+        |> andThen
+            (\data ->
+                let
+                    parts =
+                        String.split "[&]" data
+                in
+                case parts of
+                    [ id, firstName, secondName, contactGender, phoneNumber, contactDate ] ->
+                        let
+                            date =
+                                Date.fromIsoString contactDate
+                                    |> Result.toMaybe
+
+                            gender =
+                                genderFromString contactGender
+                        in
+                        Maybe.map2
+                            (\date_ gender_ ->
+                                succeed <|
+                                    ContactTraceItem
+                                        (toEntityUuid id)
+                                        firstName
+                                        secondName
+                                        gender_
+                                        phoneNumber
+                                        date_
+                                        -- Resolution date is set to the date on which
+                                        -- Covid  isolation is completed.
+                                        (Date.add Days (covidIsolationPeriod + 1) date_)
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                            )
+                            date
+                            gender
+                            |> Maybe.withDefault
+                                (fail <|
+                                    contactDate
+                                        ++ " is not a valid date format at ContactTraceItem"
+                                )
+
+                    _ ->
+                        fail <|
+                            data
+                                ++ " is not a recognized ContactTraceItem"
+            )
+
+
+decodeAcuteIllnessTraceContact : Decoder AcuteIllnessTraceContact
+decodeAcuteIllnessTraceContact =
+    decodeAcuteIllnessMeasurement decodeContactTraceItem
+
+
+decodeContactTraceItem : Decoder ContactTraceItem
+decodeContactTraceItem =
+    succeed ContactTraceItem
+        |> required "referred_person" decodeEntityUuid
+        |> required "first_name" string
+        |> required "second_name" string
+        |> required "gender" decodeGender
+        |> required "phone_number" string
+        |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "last_follow_up_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "symptoms_general" (nullable <| decodeEverySet decodeSymptomsGeneralSign) Nothing
+        |> optional "symptoms_respiratory" (nullable <| decodeEverySet decodeSymptomsRespiratorySign) Nothing
+        |> optional "symptoms_gi" (nullable <| decodeEverySet decodeSymptomsGISign) Nothing
+        |> optional "trace_outcome" (nullable decodeTraceOutcome) Nothing
+
+
+decodeSymptomsGeneralSign : Decoder SymptomsGeneralSign
+decodeSymptomsGeneralSign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGeneralSignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGeneralSign")
+            )
+
+
+decodeSymptomsRespiratorySign : Decoder SymptomsRespiratorySign
+decodeSymptomsRespiratorySign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsRespiratorySignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsRespiratorySign")
+            )
+
+
+decodeSymptomsGISign : Decoder SymptomsGISign
+decodeSymptomsGISign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGISignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGISign")
+            )
+
+
+decodeTraceOutcome : Decoder TraceOutcome
+decodeTraceOutcome =
+    string
+        |> andThen
+            (\outcome ->
+                case outcome of
+                    "no-answer" ->
+                        succeed OutcomeNoAnswer
+
+                    "wrong-contact-info" ->
+                        succeed OutcomeWrongContactInfo
+
+                    "declined-follow-up" ->
+                        succeed OutcomeDeclinedFollowUp
+
+                    "no-symptoms" ->
+                        succeed OutcomeNoSymptoms
+
+                    "referred-to-hc" ->
+                        succeed OutcomeReferredToHC
+
+                    _ ->
+                        fail <|
+                            outcome
+                                ++ " is not a recognized TraceOutcome"
+            )
 
 
 decodeHealthEducation : Decoder HealthEducation

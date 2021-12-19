@@ -1,7 +1,7 @@
 module ZScore.Test exposing (all)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Person.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (Gender(..))
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Http
 import Json.Decode exposing (Decoder, decodeString)

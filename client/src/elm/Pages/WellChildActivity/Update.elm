@@ -2,6 +2,7 @@ module Pages.WellChildActivity.Update exposing (update)
 
 import App.Model
 import App.Ports exposing (bindDropZone)
+import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -87,9 +88,6 @@ update currentDate isChw id db msg model =
             in
             Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
                 |> Maybe.withDefault [ defaultMsg ]
-
-        focusOnCalendar =
-            App.Model.ScrollToElement "dropdown--content-container"
     in
     case msg of
         SetActivePage page ->
@@ -126,7 +124,7 @@ update currentDate isChw id db msg model =
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
-            , [ focusOnCalendar ]
+            , [ focusOnCalendarMsg ]
             )
 
         SetDeliveryComplicationsPresent value ->
@@ -243,15 +241,16 @@ update currentDate isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate isChw id db) extraMsgs
 
-        SetVitalsResporatoryRate value ->
+        SetVitalsIntInput formUpdateFunc value ->
             let
-                updatedForm =
+                form =
                     model.dangerSignsData.vitalsForm
-                        |> (\form ->
-                                { form | respiratoryRate = String.toInt value, respiratoryRateDirty = True }
-                           )
 
                 updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc (String.toInt value) form
+                    in
                     model.dangerSignsData
                         |> (\data -> { data | vitalsForm = updatedForm })
             in
@@ -260,15 +259,16 @@ update currentDate isChw id db msg model =
             , []
             )
 
-        SetVitalsBodyTemperature value ->
+        SetVitalsFloatInput formUpdateFunc value ->
             let
-                updatedForm =
+                form =
                     model.dangerSignsData.vitalsForm
-                        |> (\form ->
-                                { form | bodyTemperature = String.toFloat value, bodyTemperatureDirty = True }
-                           )
 
                 updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc (String.toFloat value) form
+                    in
                     model.dangerSignsData
                         |> (\data -> { data | vitalsForm = updatedForm })
             in
@@ -290,7 +290,7 @@ update currentDate isChw id db msg model =
 
                 appMsgs =
                     model.dangerSignsData.vitalsForm
-                        |> toBasicVitalsValueWithDefault measurement
+                        |> toVitalsValueWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveVitals personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id
@@ -403,7 +403,7 @@ update currentDate isChw id db msg model =
             in
             ( { model | nutritionAssessmentData = updatedData }
             , Cmd.none
-            , [ focusOnCalendar ]
+            , [ focusOnCalendarMsg ]
             )
 
         CloseHeadCircumferencePopup personId saved nextTask_ ->
