@@ -1,6 +1,6 @@
 module Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 
-import Backend.Measurement.Model exposing (NutritionAssesment)
+import Backend.Measurement.Model exposing (NutritionAssessment)
 import Backend.NutritionEncounter.Model exposing (..)
 import Backend.NutritionEncounter.Utils exposing (..)
 import EverySet exposing (EverySet)

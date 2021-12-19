@@ -5,8 +5,9 @@ import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summ
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
-import Backend.Person.Model exposing (Gender(..), Person, Ubudehe(..))
+import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
+import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Utils exposing (ageInYears)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
@@ -27,7 +28,7 @@ import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
 import ZScore.Model
 
 
@@ -100,9 +101,22 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                 |> translate language
                 |> text
 
+        isAboveAgeOf2Years =
+            ageInYears currentDate child
+                |> Maybe.map (\years -> years >= 2)
+                |> Maybe.withDefault False
+
         age =
+            let
+                renderAgeFunc =
+                    if isAboveAgeOf2Years then
+                        renderAgeYearsMonths
+
+                    else
+                        renderAgeMonthsDays
+            in
             child.birthDate
-                |> Maybe.map (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
+                |> Maybe.map (\birthDate -> renderAgeFunc language birthDate currentDate)
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
                 |> Translate.ReportAge
                 |> translate language
@@ -184,7 +198,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
-                                    [ generatePreviousValuesForChild childId db
+                                    [ resolvePreviousValuesSetForChild currentDate childId db
                                         |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
@@ -197,7 +211,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
         popup =
             warningPopup language
                 currentDate
-                SetWarningPopupState
+                (SetWarningPopupState [])
                 model.warningPopupState
                 |> viewModal
                 |> keyed "pupup"
@@ -472,7 +486,7 @@ viewActivityListItem config language clinicType selectedActivity activityItem =
                 , ( "active", selectedActivity == Just activityItem )
                 ]
             ]
-            [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivity activityItem)) ] []
+            [ span [ class ("icon-activity-task icon-" ++ getActivityIcon (config.tagActivity activityItem)) ] []
             , text <| translate language activityTitle
             ]
         ]

@@ -11,7 +11,7 @@ update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
         CloseEncounter id ->
-            ( { model | showEndEncounetrDialog = False }
+            ( { model | showEndEncounterDialog = False }
             , Cmd.none
             , [ Backend.AcuteIllnessEncounter.Model.CloseAcuteIllnessEncounter
                     |> Backend.Model.MsgAcuteIllnessEncounter id
@@ -24,4 +24,4 @@ update msg model =
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 
         SetEndEncounterDialogState isOpen ->
-            ( { model | showEndEncounetrDialog = isOpen }, Cmd.none, [] )
+            ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )

@@ -230,6 +230,21 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchWellChildEncounter id ->
+            Dict.get id model.wellChildEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchWellChildEncountersForParticipant id ->
+            Dict.get id model.wellChildEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchWellChildMeasurements id ->
+            Dict.get id model.wellChildMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -252,6 +267,11 @@ shouldFetch currentTime model msg =
 
         FetchSessionsByClinic clinicId ->
             Dict.get clinicId model.sessionsByClinic
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchTraceContact id ->
+            Dict.get id model.traceContacts
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -301,6 +321,9 @@ forget msg model =
         FetchPerson id ->
             { model | people = Dict.remove id model.people }
 
+        FetchTraceContact id ->
+            { model | traceContacts = Dict.remove id model.traceContacts }
+
         FetchIndividualEncounterParticipantsForPerson id ->
             { model | individualParticipantsByPerson = Dict.remove id model.individualParticipantsByPerson }
 
@@ -345,6 +368,15 @@ forget msg model =
 
         FetchHomeVisitMeasurements id ->
             { model | homeVisitMeasurements = Dict.remove id model.homeVisitMeasurements }
+
+        FetchWellChildEncounter id ->
+            { model | wellChildEncounters = Dict.remove id model.wellChildEncounters }
+
+        FetchWellChildEncountersForParticipant id ->
+            { model | wellChildEncountersByParticipant = Dict.remove id model.wellChildEncountersByParticipant }
+
+        FetchWellChildMeasurements id ->
+            { model | wellChildMeasurements = Dict.remove id model.wellChildMeasurements }
 
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }

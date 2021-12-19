@@ -80,7 +80,7 @@ viewContent language currentDate selectedHealthCenter isChw app =
                                     [ class "ui primary button encounter-type"
                                     , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage encounterType
                                     ]
-                                    [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType ]
+                                    [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType isChw ]
                                     , span [ class "icon-back" ] []
                                     ]
 
@@ -89,11 +89,14 @@ viewContent language currentDate selectedHealthCenter isChw app =
                                     [ encounterButton AcuteIllnessEncounter
                                     , encounterButton AntenatalEncounter
                                     , encounterButton NutritionEncounter
+                                    , encounterButton WellChildEncounter
                                     ]
 
                                 else
-                                    [ encounterButton AntenatalEncounter
+                                    [ encounterButton AcuteIllnessEncounter
+                                    , encounterButton AntenatalEncounter
                                     , encounterButton NutritionEncounter
+                                    , encounterButton WellChildEncounter
                                     ]
                         in
                         p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]

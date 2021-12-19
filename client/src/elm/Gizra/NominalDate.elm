@@ -1,11 +1,11 @@
 module Gizra.NominalDate exposing
     ( NominalDate
     , decodeYYYYMMDD, encodeYYYYMMDD
-    , formatYYYYMMDD, formatMMDDYYYY
+    , formatYYYYMMDD
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, compare, daysInMonth, diffCalendarMonths, diffMonths, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -50,21 +50,6 @@ type alias NominalDateRange =
     }
 
 
-compare : NominalDate -> NominalDate -> Order
-compare =
-    Date.compare
-
-
-{-| Convert a nominal date to formatted string.
-
-    formatMMDDYYYY (date 2017 5 22) --> "05-22-2017"
-
--}
-formatMMDDYYYY : NominalDate -> String
-formatMMDDYYYY =
-    Date.format "MM-dd-yyyy"
-
-
 {-| Convert a nominal date to formatted string.
 
     formatMMDDYYYY (date 2017 5 22) --> "22-05-2017"
@@ -72,12 +57,7 @@ formatMMDDYYYY =
 -}
 formatDDMMYYYY : NominalDate -> String
 formatDDMMYYYY =
-    Date.format "dd-MM-yyyy"
-
-
-formatDDMMYY : NominalDate -> String
-formatDDMMYY =
-    Date.format "dd/MM/yy"
+    Date.format "dd/MM/yyyy"
 
 
 {-| Convert nominal date to a formatted string..
@@ -186,6 +166,11 @@ diffDays low high =
     Date.diff Date.Days low high
 
 
+diffWeeks : NominalDate -> NominalDate -> Int
+diffWeeks low high =
+    Date.diff Date.Weeks low high
+
+
 diffMonths : NominalDate -> NominalDate -> Int
 diffMonths low high =
     Date.diff Date.Months low high
@@ -265,6 +250,20 @@ diffCalendarMonthsAndDays low high =
         { months = uncorrected.months - 1
         , days = uncorrected.days + daysInMonth (Date.year low) (Date.month low)
         }
+
+
+diffCalendarYearsAndMonths : NominalDate -> NominalDate -> { years : Int, months : Int }
+diffCalendarYearsAndMonths low high =
+    let
+        months =
+            diffCalendarMonthsAndDays low high |> .months
+
+        fullYears =
+            months // 12
+    in
+    { years = fullYears
+    , months = months - 12 * fullYears
+    }
 
 
 {-| Indicate of diff of nominal is a Truth value.

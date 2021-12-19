@@ -30,3 +30,6 @@ update msg model =
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
+
+        SetEndEncounterDialogState isOpen ->
+            ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )

@@ -7,7 +7,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import EverySet
 import Expect

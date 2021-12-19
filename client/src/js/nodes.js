@@ -119,6 +119,9 @@
                 else if (type === 'home-visit-measurements') {
                     return viewMeasurements('home_visit_encounter', uuid);
                 }
+                else if (type === 'well-child-measurements') {
+                    return viewMeasurements('well_child_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -493,6 +496,9 @@
                     else if (key === 'home_visit_encounter') {
                         target = node.home_visit_encounter;
                     }
+                    else if (key === 'well_child_encounter') {
+                        target = node.well_child_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -533,7 +539,9 @@
       'acute_illness_follow_up',
       'follow_up',
       'nutrition_follow_up',
-      'prenatal_follow_up'
+      'prenatal_follow_up',
+      'well_child_follow_up',
+      'acute_illness_trace_contact'
     ];
 
     function viewFollowUpMeasurements (shard) {
@@ -551,7 +559,17 @@
 
         return query.toArray().catch(databaseError).then(function (nodes) {
             if (nodes) {
+                var today = new Date();
+
                 nodes.forEach(function (node) {
+                    if (node.type === 'acute_illness_trace_contact') {
+                      // Do not load resolved items.
+                      var resolutionDate = new Date(node.date_concluded);
+                      if (resolutionDate <= today) {
+                        return;
+                      }
+                    }
+
                     if (data[node.type]) {
                         data[node.type].push(node);
                     } else {
@@ -718,7 +736,8 @@
                   'prenatal_encounter',
                   'nutrition_encounter',
                   'acute_illness_encounter',
-                  'home_visit_encounter'
+                  'home_visit_encounter',
+                  'well_child_encounter'
                 ];
 
                 if (encounterTypes.includes(type)) {

@@ -5,18 +5,12 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), PhotoUrl(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils
-    exposing
-        ( contributingFactorsFormWithDefault
-        , toContributingFactorsValueWithDefault
-        , toFollowUpValueWithDefault
-        , toHealthEducationValueWithDefault
-        , toSendToHCValueWithDefault
-        )
+import Measurement.Utils exposing (..)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -61,7 +55,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.heightData.form
@@ -105,7 +99,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.muacData.form
@@ -131,7 +125,7 @@ update currentDate id db msg model =
                     Dict.get id db.nutritionMeasurements
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.toMaybe
-                        |> Maybe.map (.nutrition >> Maybe.map (Tuple.second >> .value) >> nutritionFormWithDefault model.nutritionData.form)
+                        |> Maybe.map (.nutrition >> getMeasurementValueFunc >> nutritionFormWithDefault model.nutritionData.form)
                         |> Maybe.withDefault model.nutritionData.form
 
                 updatedForm =
@@ -150,16 +144,17 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveNutrition personId saved ->
+        SaveNutrition personId saved assesment ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.nutritionData.form
+                        |> (\form -> { form | assesment = Just assesment })
                         |> toNutritionValueWithDefault measurement
                         |> unwrap
                             []
@@ -228,7 +223,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 appMsgs =
                     model.weightData.form
@@ -316,7 +311,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -388,7 +383,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -428,7 +423,7 @@ update currentDate id db msg model =
                         |> RemoteData.toMaybe
                         |> Maybe.map
                             (.contributingFactors
-                                >> Maybe.map (Tuple.second >> .value)
+                                >> getMeasurementValueFunc
                                 >> contributingFactorsFormWithDefault model.nextStepsData.contributingFactorsForm
                             )
                         |> Maybe.withDefault model.nextStepsData.contributingFactorsForm
@@ -455,7 +450,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_
@@ -510,7 +505,7 @@ update currentDate id db msg model =
                     Maybe.map Tuple.first saved
 
                 measurement =
-                    Maybe.map (Tuple.second >> .value) saved
+                    getMeasurementValueFunc saved
 
                 ( backToActivitiesMsg, nextTask ) =
                     nextTask_

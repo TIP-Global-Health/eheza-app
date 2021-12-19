@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.PrenatalEncounter.Model
     exposing
         ( PrenatalEncounter
@@ -40,7 +41,7 @@ view language currentDate selectedHealthCenter id isChw db model =
     in
     div
         [ class "wrap wrap-alt-2 page-participant prenatal" ]
-        [ viewHeader language id
+        [ viewHeader language id isChw
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id isChw db model) identity prenatalSessions
@@ -48,13 +49,13 @@ view language currentDate selectedHealthCenter id isChw db model =
         ]
 
 
-viewHeader : Language -> PersonId -> Html Msg
-viewHeader language id =
+viewHeader : Language -> PersonId -> Bool -> Html Msg
+viewHeader language id isChw =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter ]
+            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter isChw ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
@@ -77,7 +78,7 @@ viewPrenatalActions :
     -> Html Msg
 viewPrenatalActions language currentDate selectedHealthCenter id isChw db model prenatalSessions =
     let
-        activePrgnancyData =
+        activePregnancyData =
             prenatalSessions
                 |> Dict.toList
                 |> List.filter
@@ -88,10 +89,10 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                 |> List.head
 
         maybeSessionId =
-            Maybe.map Tuple.first activePrgnancyData
+            Maybe.map Tuple.first activePregnancyData
 
         allEncounters =
-            activePrgnancyData
+            activePregnancyData
                 |> Maybe.map
                     (Tuple.first
                         >> (\sessionId ->
@@ -100,7 +101,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                                     |> RemoteData.map
                                         (Dict.toList
                                             >> -- Sort DESC
-                                               List.sortWith (\( _, e1 ) ( _, e2 ) -> Date.compare e2.startDate e1.startDate)
+                                               List.sortWith sortEncounterTuplesDesc
                                         )
                                     |> RemoteData.withDefault []
                            )
@@ -138,14 +139,14 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                 []
 
         label =
-            p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
+            p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter isChw ]
 
         hasNurseEncounter =
             not <| List.isEmpty nurseEncounters
 
         encounterTypeSpecificButtons =
             if isChw then
-                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData chwEncounters hasNurseEncounter
+                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePregnancyData chwEncounters hasNurseEncounter
 
             else
                 viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
@@ -299,10 +300,10 @@ viewPrenatalActionsForChw :
     -> List ( PrenatalEncounterId, PrenatalEncounter )
     -> Bool
     -> List (Html Msg)
-viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePrgnancyData encounters hasNurseEncounter =
+viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePregnancyData encounters hasNurseEncounter =
     let
         maybeSessionId =
-            Maybe.map Tuple.first activePrgnancyData
+            Maybe.map Tuple.first activePregnancyData
 
         ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             encounters
