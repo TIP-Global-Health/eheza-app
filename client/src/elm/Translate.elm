@@ -636,6 +636,7 @@ type TranslationId
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
+    | LabResults
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
@@ -4776,6 +4777,11 @@ translationSet trans =
                     { english = "Covid Rapid Test"
                     , kinyarwanda = Just "Ikizamini cya Covid-19 cyihuse"
                     }
+
+        LabResults ->
+            { english = "Lab Results"
+            , kinyarwanda = Nothing
+            }
 
         LastChecked ->
             { english = "Last checked"

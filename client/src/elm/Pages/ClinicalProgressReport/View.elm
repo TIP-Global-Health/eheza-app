@@ -96,6 +96,7 @@ viewContent language currentDate isChw initiator data =
         , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
         , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
         , viewPatientProgressPane language currentDate isChw data
+        , viewLabResultsPane language currentDate data
         , actions
         ]
 
@@ -819,3 +820,11 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
 illustrativePurposes : Language -> Html any
 illustrativePurposes language =
     div [ class "illustrative-purposes" ] [ text <| translate language Translate.ForIllustrativePurposesOnly ]
+
+
+viewLabResultsPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewLabResultsPane language currentDate assembled =
+    div [ class "lab-results" ]
+        [ viewItemHeading language Translate.LabResults "blue"
+        , div [ class "pane-content" ] []
+        ]
