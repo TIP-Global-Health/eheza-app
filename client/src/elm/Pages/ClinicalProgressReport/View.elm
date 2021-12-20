@@ -55,14 +55,18 @@ thumbnailDimensions =
 view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id isChw initiator db model =
     let
-        allowBackAction =
-            initiator == InitiatorEncounterPage
-
         data =
             generateAssembledData id db
 
+        goBackPage =
+            if initiator == InitiatorEncounterPage then
+                Just (PrenatalEncounterPage id)
+
+            else
+                Nothing
+
         header =
-            viewHeader language id Translate.ClinicalProgressReport allowBackAction
+            viewHeader language goBackPage
 
         content =
             viewWebData language (viewContent language currentDate isChw initiator model) identity data
@@ -73,25 +77,26 @@ view language currentDate id isChw initiator db model =
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> TranslationId -> Bool -> Html Msg
-viewHeader language prenatalEncounterId label allowBackAction =
+viewHeader : Language -> Maybe UserPage -> Html Msg
+viewHeader language goBackPage =
     let
         backIcon =
-            if allowBackAction then
-                span
-                    [ class "icon-back"
-                    , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
-                    ]
-                    []
-
-            else
-                emptyNode
+            Maybe.map
+                (\page ->
+                    span
+                        [ class "icon-back"
+                        , onClick <| SetActivePage <| UserPage page
+                        ]
+                        []
+                )
+                goBackPage
+                |> Maybe.withDefault emptyNode
     in
     div
         [ class "ui basic segment head" ]
         [ backIcon
         , h1 [ class "ui header" ]
-            [ text <| translate language label ]
+            [ text <| translate language Translate.ClinicalProgressReport ]
         ]
 
 
