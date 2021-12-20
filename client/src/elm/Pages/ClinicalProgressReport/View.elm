@@ -843,19 +843,22 @@ viewLabResultsPane language currentDate assembled =
             assembled.measurements
                 :: List.map Tuple.second assembled.nursePreviousMeasurementsWithDates
 
-        getStandardTestResults getMeasurementFunc =
+        getTestResults getMeasurementFunc getResultFunc =
             List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
                 measurementsWithLabResults
                 |> List.filterMap
                     (\value ->
                         if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
-                            Maybe.map (\executionDate -> ( executionDate, value.testResult ))
+                            Maybe.map (\executionDate -> ( executionDate, getResultFunc value ))
                                 value.executionDate
 
                         else
                             Nothing
                     )
                 |> List.sortWith sortTuplesByDateDesc
+
+        getStandardTestResults getMeasurementFunc =
+            getTestResults getMeasurementFunc .testResult
 
         hivTestResults =
             getStandardTestResults .hivTest
@@ -876,16 +879,150 @@ viewLabResultsPane language currentDate assembled =
                         (\( date, result ) ->
                             ( formatDDMMYYYY date
                             , Maybe.map (Translate.PrenatalTestResult >> translate language) result
-                                |> Maybe.withDefault "Pending"
                             )
                         )
                         resultWithDate
-                        |> Maybe.withDefault ( "", "" )
+                        |> Maybe.withDefault ( "", Just "" )
+            in
+            viewEntry label dateText resultText
+
+        groupOneContent =
+            [ groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) (List.head hivTestResults)
+            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest) (List.head syphilisTestResults)
+            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest) (List.head hepatitisBTestResults)
+            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest) (List.head malariaTestResults)
+            ]
+
+        urineDipstickTestResults =
+            List.filterMap (.urineDipstickTest >> getMeasurementValueFunc)
+                measurementsWithLabResults
+                |> List.filterMap
+                    (\value ->
+                        if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                            Maybe.map (\executionDate -> ( executionDate, ( value.protein, value.ph, value.glucose ) ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
+
+        groupTwoContent =
+            List.head urineDipstickTestResults
+                |> Maybe.map
+                    (\( date, ( protein, ph, glucose ) ) ->
+                        let
+                            proteinResult =
+                                Maybe.map (Translate.PrenatalLaboratoryProteinValue >> translate language) protein
+
+                            phResult =
+                                Maybe.map (Translate.PrenatalLaboratoryPHValue >> translate language) ph
+
+                            glucoseResult =
+                                Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language) glucose
+
+                            testDate =
+                                formatDDMMYYYY date
+                        in
+                        [ viewEntry Translate.PrenatalLaboratoryProteinLabel testDate proteinResult
+                        , viewEntry Translate.PrenatalLaboratoryPHLabel testDate phResult
+                        , viewEntry Translate.PrenatalLaboratoryGlucoseLabel testDate glucoseResult
+                        ]
+                    )
+                |> Maybe.withDefault
+                    [ viewEntry Translate.PrenatalLaboratoryProteinLabel "" (Just "")
+                    , viewEntry Translate.PrenatalLaboratoryPHLabel "" (Just "")
+                    , viewEntry Translate.PrenatalLaboratoryGlucoseLabel "" (Just "")
+                    ]
+
+        randomBloodSugarResults =
+            getTestResults .randomBloodSugarTest .sugarCount
+
+        hemoglobinResults =
+            getTestResults .hemoglobinTest .hemoglobinCount
+
+        bloodGpRsResults =
+            List.filterMap (.bloodGpRsTest >> getMeasurementValueFunc)
+                measurementsWithLabResults
+                |> List.filterMap
+                    (\value ->
+                        if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                            Maybe.map (\executionDate -> ( executionDate, ( value.bloodGroup, value.rhesus ) ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
+
+        groupThreeContent =
+            let
+                randomBloodSugarEntry =
+                    let
+                        ( dateText, resultText ) =
+                            Maybe.map
+                                (\( date, result ) ->
+                                    ( formatDDMMYYYY date
+                                    , Maybe.map String.fromFloat result
+                                    )
+                                )
+                                (List.head randomBloodSugarResults)
+                                |> Maybe.withDefault ( "", Just "" )
+                    in
+                    viewEntry (Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest) dateText resultText
+
+                hemoglobinEntry =
+                    let
+                        ( dateText, resultText ) =
+                            Maybe.map
+                                (\( date, result ) ->
+                                    ( formatDDMMYYYY date
+                                    , Maybe.map String.fromFloat result
+                                    )
+                                )
+                                (List.head hemoglobinResults)
+                                |> Maybe.withDefault ( "", Just "" )
+                    in
+                    viewEntry (Translate.PrenatalLaboratoryTaskLabel TaskHemoglobinTest) dateText resultText
+
+                gpRsEntries =
+                    List.head bloodGpRsResults
+                        |> Maybe.map
+                            (\( date, ( bloodGroup, rhesus ) ) ->
+                                let
+                                    bloodGroupResult =
+                                        Maybe.map (Translate.PrenatalLaboratoryBloodGroup >> translate language) bloodGroup
+
+                                    rhesusResult =
+                                        Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language) rhesus
+
+                                    testDate =
+                                        formatDDMMYYYY date
+                                in
+                                [ viewEntry Translate.PrenatalLaboratoryBloodGroupLabel testDate bloodGroupResult
+                                , viewEntry Translate.PrenatalLaboratoryRhesusLabel testDate rhesusResult
+                                ]
+                            )
+                        |> Maybe.withDefault
+                            [ viewEntry Translate.PrenatalLaboratoryBloodGroupLabel "" (Just "")
+                            , viewEntry Translate.PrenatalLaboratoryRhesusLabel "" (Just "")
+                            ]
+            in
+            [ randomBloodSugarEntry
+            , hemoglobinEntry
+            ]
+                ++ gpRsEntries
+
+        viewEntry label date maybeResult =
+            let
+                resultCell =
+                    Maybe.map (\result -> text result) maybeResult
+                        |> Maybe.withDefault (span [ class "pending" ] [ translateText language Translate.ResultsPending ])
             in
             div [ class "entry" ]
                 [ div [ class "name" ] [ translateText language label ]
-                , div [ class "date" ] [ text dateText ]
-                , div [ class "result" ] [ text resultText ]
+                , div [ class "date" ] [ text date ]
+                , div [ class "result" ] [ resultCell ]
                 ]
     in
     div [ class "lab-results" ] <|
@@ -893,11 +1030,11 @@ viewLabResultsPane language currentDate assembled =
         , div [ class "pane-content" ] [ heading ]
         , groupHeading Translate.GroupOne
         , div [ class "group-content" ]
-            [ groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) (List.head hivTestResults)
-            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest) (List.head syphilisTestResults)
-            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest) (List.head hepatitisBTestResults)
-            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest) (List.head malariaTestResults)
-            ]
+            groupOneContent
         , groupHeading Translate.GroupTwo
+        , div [ class "group-content" ]
+            groupTwoContent
         , groupHeading Translate.GroupThree
+        , div [ class "group-content" ]
+            groupThreeContent
         ]

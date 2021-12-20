@@ -843,14 +843,19 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
     | PrenatalLaboratoryBloodGroup BloodGroup
+    | PrenatalLaboratoryRhesusLabel
     | PrenatalLaboratoryRhesusTestResult
     | PrenatalLaboratoryRhesus Rhesus
+    | PrenatalLaboratoryProteinLabel
     | PrenatalLaboratoryProteinTestResult
     | PrenatalLaboratoryProteinValue ProteinValue
+    | PrenatalLaboratoryPHLabel
     | PrenatalLaboratoryPHTestResult
     | PrenatalLaboratoryPHValue PHValue
+    | PrenatalLaboratoryGlucoseLabel
     | PrenatalLaboratoryGlucoseTestResult
     | PrenatalLaboratoryGlucoseValue GlucoseValue
     | PrenatalLaboratoryLeukocytesTestResult
@@ -959,6 +964,7 @@ type TranslationId
     | Result
     | ResultOfContacting114 Recommendation114
     | ResultOfContactingRecommendedSite RecommendationSite
+    | ResultsPending
     | Retry
     | ReviewCaseWith144Respondent
     | Reviewed
@@ -6955,6 +6961,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
+        PrenatalLaboratoryBloodGroupLabel ->
+            { english = "Blood Group"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryBloodGroupTestResult ->
             { english = "Blood Group Test Result"
             , kinyarwanda = Nothing
@@ -6982,6 +6993,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratoryRhesusLabel ->
+            { english = "Rhesus"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryRhesusTestResult ->
             { english = "Rhesus Test Result"
             , kinyarwanda = Nothing
@@ -6998,6 +7014,11 @@ translationSet trans =
                     { english = "Negative"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryProteinLabel ->
+            { english = "Protein"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryProteinTestResult ->
             { english = "Protein Test Result"
@@ -7030,6 +7051,11 @@ translationSet trans =
                     { english = "2000"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryPHLabel ->
+            { english = "pH"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryPHTestResult ->
             { english = "PH Test Result"
@@ -7072,6 +7098,11 @@ translationSet trans =
                     { english = "8.5"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryGlucoseLabel ->
+            { english = "Glucose"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryGlucoseTestResult ->
             { english = "Glucose Test Result"
@@ -8305,6 +8336,11 @@ translationSet trans =
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
+
+        ResultsPending ->
+            { english = "Results Pending"
+            , kinyarwanda = Nothing
+            }
 
         Retry ->
             { english = "Retry"

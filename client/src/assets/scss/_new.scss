@@ -2387,7 +2387,7 @@ div.page-clinical-progress-report {
 
       .name,
       .date {
-        width: 240px;
+        width: 220px;
       }
     }
 
@@ -2406,6 +2406,15 @@ div.page-clinical-progress-report {
 
       .name {
         margin-left: 20px;
+      }
+
+      .result .pending {
+        background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
       }
     }
 
