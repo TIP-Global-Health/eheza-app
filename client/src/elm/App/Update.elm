@@ -36,6 +36,8 @@ import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessParticipant.Update
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.Update
+import Pages.ClinicalProgressReport.Model
+import Pages.ClinicalProgressReport.Update
 import Pages.Clinics.Update
 import Pages.Dashboard.Model
 import Pages.Dashboard.Update
@@ -591,6 +593,19 @@ update msg model =
                             in
                             ( { data | prenatalLabResultsPages = Dict.insert id subModel data.prenatalLabResultsPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalLabResults id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageClinicalProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.clinicalProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.ClinicalProgressReport.Model.emptyModel
+                                        |> Pages.ClinicalProgressReport.Update.update subMsg
+                            in
+                            ( { data | clinicalProgressReportPages = Dict.insert id subModel data.clinicalProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageClinicalProgressReport id) subCmd
                             , extraMsgs
                             )
                 )

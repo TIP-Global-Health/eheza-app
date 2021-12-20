@@ -1,6 +1,5 @@
 module Pages.ClinicalProgressReport.View exposing (view)
 
-import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExecutionNote(..))
@@ -31,8 +30,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.ClinicalProgressReport.Model exposing (..)
 import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
-import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
+import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
@@ -52,8 +52,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Html Msg
-view language currentDate id isChw initiator db =
+view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw initiator db model =
     let
         allowBackAction =
             initiator == InitiatorEncounterPage
@@ -70,6 +70,28 @@ view language currentDate id isChw initiator db =
     div [ class "page-clinical-progress-report" ] <|
         [ header
         , content
+        ]
+
+
+viewHeader : Language -> PrenatalEncounterId -> TranslationId -> Bool -> Html Msg
+viewHeader language prenatalEncounterId label allowBackAction =
+    let
+        backIcon =
+            if allowBackAction then
+                span
+                    [ class "icon-back"
+                    , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                    ]
+                    []
+
+            else
+                emptyNode
+    in
+    div
+        [ class "ui basic segment head" ]
+        [ backIcon
+        , h1 [ class "ui header" ]
+            [ text <| translate language label ]
         ]
 
 

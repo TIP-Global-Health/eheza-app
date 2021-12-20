@@ -26,6 +26,7 @@ import Pages.AcuteIllnessParticipant.View
 import Pages.AcuteIllnessProgressReport.Model
 import Pages.AcuteIllnessProgressReport.View
 import Pages.Clinical.View
+import Pages.ClinicalProgressReport.Model
 import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
 import Pages.Dashboard.View
@@ -304,7 +305,13 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     ClinicalProgressReportPage initiator prenatalEncounterId ->
-                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId isChw initiator model.indexedDb
+                        let
+                            page_ =
+                                Dict.get prenatalEncounterId loggedInModel.clinicalProgressReportPages
+                                    |> Maybe.withDefault Pages.ClinicalProgressReport.Model.emptyModel
+                        in
+                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId isChw initiator model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageClinicalProgressReport prenatalEncounterId)
                             |> flexPageWrapper model
 
                     CreatePersonPage relation initiator ->
