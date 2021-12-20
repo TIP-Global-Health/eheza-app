@@ -65,7 +65,7 @@ view language currentDate id isChw initiator db model =
             viewHeader language id Translate.ClinicalProgressReport allowBackAction
 
         content =
-            viewWebData language (viewContent language currentDate isChw initiator) identity data
+            viewWebData language (viewContent language currentDate isChw initiator model) identity data
     in
     div [ class "page-clinical-progress-report" ] <|
         [ header
@@ -95,35 +95,44 @@ viewHeader language prenatalEncounterId label allowBackAction =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> ClinicalProgressReportInitiator -> AssembledData -> Html Msg
-viewContent language currentDate isChw initiator data =
+viewContent : Language -> NominalDate -> Bool -> ClinicalProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isChw initiator model data =
     let
-        firstEncounterMeasurements =
-            getFirstEncounterMeasurements isChw data
+        derivedContent =
+            case model.labResultsHistoryMode of
+                Just mode ->
+                    [ viewLabResultsHistoryPane language currentDate mode ]
 
-        actions =
-            case initiator of
-                InitiatorEncounterPage ->
-                    emptyNode
+                Nothing ->
+                    let
+                        firstEncounterMeasurements =
+                            getFirstEncounterMeasurements isChw data
 
-                InitiatorNewEncounter encounterId ->
-                    div [ class "actions" ]
-                        [ button
-                            [ class "ui fluid primary button"
-                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
-                            ]
-                            [ text <| translate language Translate.Reviewed ]
-                        ]
+                        actions =
+                            case initiator of
+                                InitiatorEncounterPage ->
+                                    emptyNode
+
+                                InitiatorNewEncounter encounterId ->
+                                    div [ class "actions" ]
+                                        [ button
+                                            [ class "ui fluid primary button"
+                                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
+                                            ]
+                                            [ text <| translate language Translate.Reviewed ]
+                                        ]
+                    in
+                    [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
+                    , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
+                    , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
+                    , viewPatientProgressPane language currentDate isChw data
+                    , viewLabResultsPane language currentDate data
+                    , actions
+                    ]
     in
-    div [ class "ui unstackable items" ]
-        [ viewHeaderPane language currentDate data
-        , viewRiskFactorsPane language currentDate firstEncounterMeasurements
-        , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
-        , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
-        , viewPatientProgressPane language currentDate isChw data
-        , viewLabResultsPane language currentDate data
-        , actions
-        ]
+    div [ class "ui unstackable items" ] <|
+        viewHeaderPane language currentDate data
+            :: derivedContent
 
 
 viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
@@ -1060,3 +1069,8 @@ viewLabResultsPane language currentDate assembled =
         , div [ class "group-content" ]
             groupThreeContent
         ]
+
+
+viewLabResultsHistoryPane : Language -> NominalDate -> LabResultsHistoryMode -> Html Msg
+viewLabResultsHistoryPane language currentDate mode =
+    text "viewLabResultsHistoryPane"
