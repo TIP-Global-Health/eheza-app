@@ -3,8 +3,10 @@ module Pages.ClinicalProgressReport.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (PrenatalMeasurements)
+import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExecutionNote(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
@@ -23,7 +25,7 @@ import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
 import Date exposing (Interval(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -32,12 +34,13 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalActivity.Model exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (thumbnailImage)
 import Utils.WebData exposing (viewWebData)
 
@@ -824,7 +827,77 @@ illustrativePurposes language =
 
 viewLabResultsPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewLabResultsPane language currentDate assembled =
-    div [ class "lab-results" ]
+    let
+        heading =
+            div [ class "heading" ]
+                [ div [ class "name" ] [ translateText language Translate.TestName ]
+                , div [ class "date" ] [ translateText language Translate.TestDate ]
+                , div [ class "result" ] [ translateText language Translate.Result ]
+                ]
+
+        groupHeading label =
+            div [ class "group-heading" ]
+                [ text <| translate language label ]
+
+        measurementsWithLabResults =
+            assembled.measurements
+                :: List.map Tuple.second assembled.nursePreviousMeasurementsWithDates
+
+        getStandardTestResults getMeasurementFunc =
+            List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
+                measurementsWithLabResults
+                |> List.filterMap
+                    (\value ->
+                        if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                            Maybe.map (\executionDate -> ( executionDate, value.testResult ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
+
+        hivTestResults =
+            getStandardTestResults .hivTest
+
+        syphilisTestResults =
+            getStandardTestResults .syphilisTest
+
+        hepatitisBTestResults =
+            getStandardTestResults .hepatitisBTest
+
+        malariaTestResults =
+            getStandardTestResults .malariaTest
+
+        groupOneEntry label resultWithDate =
+            let
+                ( dateText, resultText ) =
+                    Maybe.map
+                        (\( date, result ) ->
+                            ( formatDDMMYYYY date
+                            , Maybe.map (Translate.PrenatalTestResult >> translate language) result
+                                |> Maybe.withDefault "Pending"
+                            )
+                        )
+                        resultWithDate
+                        |> Maybe.withDefault ( "", "" )
+            in
+            div [ class "entry" ]
+                [ div [ class "name" ] [ translateText language label ]
+                , div [ class "date" ] [ text dateText ]
+                , div [ class "result" ] [ text resultText ]
+                ]
+    in
+    div [ class "lab-results" ] <|
         [ viewItemHeading language Translate.LabResults "blue"
-        , div [ class "pane-content" ] []
+        , div [ class "pane-content" ] [ heading ]
+        , groupHeading Translate.GroupOne
+        , div [ class "group-content" ]
+            [ groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) (List.head hivTestResults)
+            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest) (List.head syphilisTestResults)
+            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest) (List.head hepatitisBTestResults)
+            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest) (List.head malariaTestResults)
+            ]
+        , groupHeading Translate.GroupTwo
+        , groupHeading Translate.GroupThree
         ]

@@ -576,6 +576,9 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | GroupOne
+    | GroupTwo
+    | GroupThree
     | Growth
     | HalfOfDosage String
     | HandedReferralFormQuestion
@@ -953,6 +956,7 @@ type TranslationId
     | RespiratoryDistress
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
+    | Result
     | ResultOfContacting114 Recommendation114
     | ResultOfContactingRecommendedSite RecommendationSite
     | Retry
@@ -1067,6 +1071,8 @@ type TranslationId
     | TelephoneNumber
     | Term
     | TermPregnancy
+    | TestDate
+    | TestName
     | TestPerformedQuestion
     | TestPerformedTodayQuestion
     | TestResultQuestion
@@ -4179,6 +4185,21 @@ translationSet trans =
 
         GroupEncounter ->
             { english = "Group Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        GroupOne ->
+            { english = "Group One"
+            , kinyarwanda = Nothing
+            }
+
+        GroupTwo ->
+            { english = "Group Two"
+            , kinyarwanda = Nothing
+            }
+
+        GroupThree ->
+            { english = "Group Three"
             , kinyarwanda = Nothing
             }
 
@@ -7725,6 +7746,16 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
+        TestDate ->
+            { english = "Date of Test"
+            , kinyarwanda = Nothing
+            }
+
+        TestName ->
+            { english = "Test name"
+            , kinyarwanda = Nothing
+            }
+
         TestPerformedQuestion ->
             { english = "Were you able to perform the test"
             , kinyarwanda = Just "Waba wakoze ikizamini"
@@ -8195,6 +8226,11 @@ translationSet trans =
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
+
+        Result ->
+            { english = "Result"
+            , kinyarwanda = Nothing
+            }
 
         ResultOfContacting114 recommendation ->
             case recommendation of

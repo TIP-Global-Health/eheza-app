@@ -2378,6 +2378,51 @@ div.page-clinical-progress-report {
     }
 
   }
+
+  .lab-results {
+
+    .heading,
+    .entry {
+      display: flex;
+
+      .name,
+      .date {
+        width: 240px;
+      }
+    }
+
+    .heading {
+      font-weight: 600;
+    }
+
+    .entry {
+      border-bottom: 1px solid $color-text;
+      font-weight: 500;
+      line-height: 60px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .name {
+        margin-left: 20px;
+      }
+    }
+
+    .group-heading {
+      background: $color-primary;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 0 10px;
+    }
+
+    .group-content {
+      background: $color-white;
+      color: $color-text;
+      font-size: 18px;
+      padding: 0 20px;
+    }
+  }
 }
 
 div.page-demographics-report {
