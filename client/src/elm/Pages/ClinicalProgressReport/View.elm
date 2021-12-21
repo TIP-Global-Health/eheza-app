@@ -3,7 +3,7 @@ module Pages.ClinicalProgressReport.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExecutionNote(..))
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
@@ -22,7 +22,7 @@ import Backend.PrenatalActivity.Utils
         , getEncounterTrimesterData
         )
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
-import Date exposing (Interval(..))
+import Date exposing (Interval(..), Unit(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
@@ -916,10 +916,10 @@ viewLabResultsPane language currentDate assembled =
             getStandardTestResults .malariaTest
 
         groupOneContent =
-            [ viewLabResultsEntry language (LabResultsHistoryHIV hivTestResults)
-            , viewLabResultsEntry language (LabResultsHistorySyphilis syphilisTestResults)
-            , viewLabResultsEntry language (LabResultsHistoryHepatitisB hepatitisBTestResults)
-            , viewLabResultsEntry language (LabResultsHistoryMalaria malariaTestResults)
+            [ viewLabResultsEntry language currentDate (LabResultsHistoryHIV hivTestResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistorySyphilis syphilisTestResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryHepatitisB hepatitisBTestResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryMalaria malariaTestResults)
             ]
 
         urineDipstickTestResults =
@@ -946,9 +946,9 @@ viewLabResultsPane language currentDate assembled =
             List.map (\( date, ( _, _, glucose ) ) -> ( date, glucose )) urineDipstickTestResults
 
         groupTwoContent =
-            [ viewLabResultsEntry language (LabResultsHistoryProtein proteinResults)
-            , viewLabResultsEntry language (LabResultsHistoryPH phResults)
-            , viewLabResultsEntry language (LabResultsHistoryGlucose glucoseResults)
+            [ viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
             ]
 
         randomBloodSugarResults =
@@ -978,10 +978,10 @@ viewLabResultsPane language currentDate assembled =
             List.map (\( date, ( _, rhesus ) ) -> ( date, rhesus )) bloodGpRsResults
 
         groupThreeContent =
-            [ viewLabResultsEntry language (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
-            , viewLabResultsEntry language (LabResultsHistoryHemoglobin hemoglobinResults)
-            , viewLabResultsEntry language (LabResultsHistoryBloodGroup bloodGroupResults)
-            , viewLabResultsEntry language (LabResultsHistoryRhesus rhesusResults)
+            [ viewLabResultsEntry language currentDate (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryHemoglobin hemoglobinResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryBloodGroup bloodGroupResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryRhesus rhesusResults)
             ]
     in
     div [ class "lab-results" ] <|
@@ -999,8 +999,8 @@ viewLabResultsPane language currentDate assembled =
         ]
 
 
-viewLabResultsEntry : Language -> LabResultsHistoryMode -> Html Msg
-viewLabResultsEntry language results =
+viewLabResultsEntry : Language -> NominalDate -> LabResultsHistoryMode -> Html Msg
+viewLabResultsEntry language currentDate results =
     let
         config =
             case results of
@@ -1091,7 +1091,7 @@ viewLabResultsEntry language results =
 
             else
                 Maybe.map text config.recentResult
-                    |> Maybe.withDefault (span [ class "pending" ] [ translateText language Translate.ResultsPending ])
+                    |> Maybe.withDefault (viewUncompetedResult language currentDate config.recentResultDate)
 
         historyResultsIcon =
             if config.totalResults > 1 then
@@ -1110,6 +1110,24 @@ viewLabResultsEntry language results =
         , div [ class "result" ] [ resultCell ]
         , historyResultsIcon
         ]
+
+
+viewUncompetedResult : Language -> NominalDate -> Maybe NominalDate -> Html any
+viewUncompetedResult language currentDate resultDate =
+    let
+        transId =
+            Maybe.map
+                (\date ->
+                    if Date.diff Days date currentDate > prenatalLabExpirationPeriod then
+                        Translate.ResultsMissing
+
+                    else
+                        Translate.ResultsPending
+                )
+                resultDate
+                |> Maybe.withDefault Translate.ResultsPending
+    in
+    span [ class "uncompleted" ] [ translateText language transId ]
 
 
 viewLabResultsHistoryPane : Language -> NominalDate -> LabResultsHistoryMode -> Html Msg
@@ -1160,7 +1178,7 @@ viewLabResultsHistoryPane language currentDate mode =
             let
                 resultCell =
                     Maybe.map (resultToStringFunc >> text) maybeResult
-                        |> Maybe.withDefault (span [ class "pending" ] [ translateText language Translate.ResultsPending ])
+                        |> Maybe.withDefault (viewUncompetedResult language currentDate (Just date))
             in
             div [ class "entry" ]
                 [ div [ class "date" ] [ text <| formatDDMMYYYY date ]

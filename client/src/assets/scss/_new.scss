@@ -2387,11 +2387,37 @@ div.page-report.clinical {
 
   }
 
-  .lab-results {
+  .lab-results,
+  .lab-results-history {
 
     .heading,
     .entry {
       display: flex;
+    }
+
+    .heading {
+      font-weight: 600;
+    }
+
+    .entry {
+      font-weight: 500;
+      line-height: 60px;
+
+      .result .uncompleted {
+        background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  .lab-results {
+
+    .heading,
+    .entry {
 
       .name,
       .date,
@@ -2400,14 +2426,8 @@ div.page-report.clinical {
       }
     }
 
-    .heading {
-      font-weight: 600;
-    }
-
     .entry {
       border-bottom: 1px solid $color-text;
-      font-weight: 500;
-      line-height: 60px;
 
       &:last-child {
         border-bottom: none;
@@ -2415,15 +2435,6 @@ div.page-report.clinical {
 
       .name {
         margin-left: 20px;
-      }
-
-      .result .pending {
-        background: $color-velvet;
-        border-radius: 6px;
-        color: $color-white;
-        font-size: 15px;
-        padding: 3px 8px;
-        text-transform: uppercase;
       }
     }
 
@@ -2446,7 +2457,6 @@ div.page-report.clinical {
 
     .heading,
     .entry {
-      display: flex;
 
       .date,
       .result {
@@ -2455,23 +2465,11 @@ div.page-report.clinical {
     }
 
     .heading {
-      font-weight: 600;
       margin-bottom: 10px;
     }
 
     .entry {
       border-top: 1px solid $color-text;
-      font-weight: 500;
-      line-height: 60px;
-
-      .result .pending {
-        background: $color-velvet;
-        border-radius: 6px;
-        color: $color-white;
-        font-size: 15px;
-        padding: 3px 8px;
-        text-transform: uppercase;
-      }
     }
   }
 

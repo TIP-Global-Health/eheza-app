@@ -967,6 +967,7 @@ type TranslationId
     | Result
     | ResultOfContacting114 Recommendation114
     | ResultOfContactingRecommendedSite RecommendationSite
+    | ResultsMissing
     | ResultsPending
     | Retry
     | ReviewCaseWith144Respondent
@@ -8401,6 +8402,11 @@ translationSet trans =
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
+
+        ResultsMissing ->
+            { english = "Results Missing"
+            , kinyarwanda = Nothing
+            }
 
         ResultsPending ->
             { english = "Results Pending"
