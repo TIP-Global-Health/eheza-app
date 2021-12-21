@@ -24,7 +24,7 @@ import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman, isPersonAnAdult)
 import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Form
 import Form.Input
@@ -3241,14 +3241,16 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
         |> Maybe.map
             (\person ->
                 let
-                    contactDateInput =
-                        DateSelector.SelectorDropdown.view
-                            ToggleContactsTracingDateSelector
-                            SetContactsTracingDate
-                            data.isDateSelectorOpen
-                            (Date.add Days (-1 * covidIsolationPeriod) currentDate)
-                            currentDate
-                            data.contactDate
+                    dateForView =
+                        Maybe.map formatDDMMYYYY data.contactDate
+                            |> Maybe.withDefault ""
+
+                    dateSelectorConfig =
+                        { select = SetContactsTracingDate
+                        , close = SetContactsTracingDateSelectorState Nothing
+                        , dateFrom = Date.add Days (-1 * covidIsolationPeriod) currentDate
+                        , dateTo = currentDate
+                        }
 
                     phoneNumberInput =
                         viewTextInput language inputNumber SetContactsTracingPhoneNumber Nothing Nothing
@@ -3296,8 +3298,11 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                     [ viewContactTracingParticipant language currentDate personId person True (ContactsTracingFormSearchParticipants emptySearchParticipantsData) ]
                 , div [ class "contact-detail" ]
                     [ viewLabel language Translate.DateOfContact
-                    , div [ class "form-input date" ]
-                        [ contactDateInput ]
+                    , div
+                        [ class "form-input date"
+                        , onClick <| SetContactsTracingDateSelectorState (Just dateSelectorConfig)
+                        ]
+                        [ text dateForView ]
                     ]
                 , div [ class "contact-detail" ]
                     [ viewLabel language Translate.TelephoneNumber
@@ -3308,6 +3313,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                     [ div saveButtonAttributes
                         [ text <| translate language Translate.Save ]
                     ]
+                , viewModal <| viewCalendarPopup language data.dateSelectorPopupState data.contactDate
                 ]
             )
         |> Maybe.withDefault []
