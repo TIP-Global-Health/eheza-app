@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Initiator, ParticipantDirectoryOperation)
 import Date exposing (Date)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import Form
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
@@ -26,14 +27,6 @@ emptyEditModel : Model
 emptyEditModel =
     { form = Backend.Person.Form.emptyEditForm
     , dateSelectorPopupState = Nothing
-    }
-
-
-type alias DateSelectorConfig msg =
-    { select : Date -> msg
-    , close : msg
-    , dateFrom : Date
-    , dateTo : Date
     }
 
 

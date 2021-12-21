@@ -36,8 +36,7 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Date, Unit(..))
-import DateSelector.SelectorDropdown
-import DateSelector.SelectorPopup
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
@@ -1305,22 +1304,6 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             ]
         , viewModal <| viewCalendarPopup language model.dateSelectorPopupState selectedBirthDate
         ]
-
-
-viewCalendarPopup : Language -> Maybe (DateSelectorConfig msg) -> Maybe Date -> Maybe (Html msg)
-viewCalendarPopup language popupState selected =
-    Maybe.map
-        (\config ->
-            div [ class "ui active modal calendar-popup" ]
-                [ DateSelector.SelectorPopup.view language
-                    config.select
-                    config.close
-                    config.dateFrom
-                    config.dateTo
-                    selected
-                ]
-        )
-        popupState
 
 
 viewTextInput : Language -> TranslationId -> String -> Bool -> Form e a -> Html Form.Msg
