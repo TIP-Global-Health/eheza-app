@@ -72,7 +72,7 @@ view language currentDate prenatalEncounterId db =
         content =
             viewWebData language (viewContent language currentDate db) identity data
     in
-    div [ class "page-demographics-report" ] <|
+    div [ class "page-report demographics" ] <|
         [ header
         , content
         ]

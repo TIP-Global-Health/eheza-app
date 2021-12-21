@@ -2028,8 +2028,8 @@ div.page-outcome.pregnancy {
   }
 }
 
-div.page-clinical-progress-report,
-div.page-demographics-report {
+div.page-report.clinical,
+div.page-report.demographics {
   background: $color-light-gray;
   padding: 0 20px 35px 20px;
   height: 100%;
@@ -2078,10 +2078,18 @@ div.page-demographics-report {
       font-size: 18px;
       padding: 20px 0 20px 40px;
     }
+
+    .icon-forward {
+      align-self: center;
+      background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+      background-size: 45px 50px;
+      height: 50px;
+      width: 45px;
+    }
   }
 }
 
-div.page-clinical-progress-report {
+div.page-report.clinical {
 
   .header-pane {
     background: $color-white;
@@ -2386,8 +2394,9 @@ div.page-clinical-progress-report {
       display: flex;
 
       .name,
-      .date {
-        width: 220px;
+      .date,
+      .result {
+        width: 215px;
       }
     }
 

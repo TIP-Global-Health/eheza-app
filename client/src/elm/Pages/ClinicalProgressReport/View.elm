@@ -58,45 +58,50 @@ view language currentDate id isChw initiator db model =
         data =
             generateAssembledData id db
 
-        goBackPage =
-            if initiator == InitiatorEncounterPage then
-                Just (PrenatalEncounterPage id)
-
-            else
-                Nothing
-
         header =
-            viewHeader language goBackPage
+            viewHeader language id initiator model
 
         content =
             viewWebData language (viewContent language currentDate isChw initiator model) identity data
     in
-    div [ class "page-clinical-progress-report" ] <|
+    div [ class "page-report clinical" ] <|
         [ header
         , content
         ]
 
 
-viewHeader : Language -> Maybe UserPage -> Html Msg
-viewHeader language goBackPage =
+viewHeader : Language -> PrenatalEncounterId -> ClinicalProgressReportInitiator -> Model -> Html Msg
+viewHeader language id initiator model =
     let
+        label =
+            Maybe.map Translate.LabResultsHistoryModeLabel
+                model.labResultsHistoryMode
+                |> Maybe.withDefault Translate.ClinicalProgressReport
+
         backIcon =
-            Maybe.map
-                (\page ->
-                    span
-                        [ class "icon-back"
-                        , onClick <| SetActivePage <| UserPage page
-                        ]
-                        []
-                )
-                goBackPage
-                |> Maybe.withDefault emptyNode
+            if initiator == InitiatorEncounterPage then
+                let
+                    action =
+                        if isJust model.labResultsHistoryMode then
+                            SetLabResultsHistoryMode Nothing
+
+                        else
+                            SetActivePage <| UserPage <| PrenatalEncounterPage id
+                in
+                span
+                    [ class "icon-back"
+                    , onClick action
+                    ]
+                    []
+
+            else
+                emptyNode
     in
     div
         [ class "ui basic segment head" ]
         [ backIcon
         , h1 [ class "ui header" ]
-            [ text <| translate language Translate.ClinicalProgressReport ]
+            [ text <| translate language label ]
         ]
 
 
@@ -908,25 +913,11 @@ viewLabResultsPane language currentDate assembled =
         malariaTestResults =
             getStandardTestResults .malariaTest
 
-        groupOneEntry label resultWithDate =
-            let
-                ( dateText, resultText ) =
-                    Maybe.map
-                        (\( date, result ) ->
-                            ( formatDDMMYYYY date
-                            , Maybe.map (Translate.PrenatalTestResult >> translate language) result
-                            )
-                        )
-                        resultWithDate
-                        |> Maybe.withDefault ( "", Just "" )
-            in
-            viewEntry label dateText resultText
-
         groupOneContent =
-            [ groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) (List.head hivTestResults)
-            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest) (List.head syphilisTestResults)
-            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest) (List.head hepatitisBTestResults)
-            , groupOneEntry (Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest) (List.head malariaTestResults)
+            [ viewLabResultsEntry language (LabResultsHistoryHIV hivTestResults)
+            , viewLabResultsEntry language (LabResultsHistorySyphilis syphilisTestResults)
+            , viewLabResultsEntry language (LabResultsHistoryHepatitisB hepatitisBTestResults)
+            , viewLabResultsEntry language (LabResultsHistoryMalaria malariaTestResults)
             ]
 
         urineDipstickTestResults =
@@ -943,33 +934,20 @@ viewLabResultsPane language currentDate assembled =
                     )
                 |> List.sortWith sortTuplesByDateDesc
 
+        proteinResults =
+            List.map (\( date, ( protein, _, _ ) ) -> ( date, protein )) urineDipstickTestResults
+
+        phResults =
+            List.map (\( date, ( _, ph, _ ) ) -> ( date, ph )) urineDipstickTestResults
+
+        glucoseResults =
+            List.map (\( date, ( _, _, glucose ) ) -> ( date, glucose )) urineDipstickTestResults
+
         groupTwoContent =
-            List.head urineDipstickTestResults
-                |> Maybe.map
-                    (\( date, ( protein, ph, glucose ) ) ->
-                        let
-                            proteinResult =
-                                Maybe.map (Translate.PrenatalLaboratoryProteinValue >> translate language) protein
-
-                            phResult =
-                                Maybe.map (Translate.PrenatalLaboratoryPHValue >> translate language) ph
-
-                            glucoseResult =
-                                Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language) glucose
-
-                            testDate =
-                                formatDDMMYYYY date
-                        in
-                        [ viewEntry Translate.PrenatalLaboratoryProteinLabel testDate proteinResult
-                        , viewEntry Translate.PrenatalLaboratoryPHLabel testDate phResult
-                        , viewEntry Translate.PrenatalLaboratoryGlucoseLabel testDate glucoseResult
-                        ]
-                    )
-                |> Maybe.withDefault
-                    [ viewEntry Translate.PrenatalLaboratoryProteinLabel "" (Just "")
-                    , viewEntry Translate.PrenatalLaboratoryPHLabel "" (Just "")
-                    , viewEntry Translate.PrenatalLaboratoryGlucoseLabel "" (Just "")
-                    ]
+            [ viewLabResultsEntry language (LabResultsHistoryProtein proteinResults)
+            , viewLabResultsEntry language (LabResultsHistoryPH phResults)
+            , viewLabResultsEntry language (LabResultsHistoryGlucose glucoseResults)
+            ]
 
         randomBloodSugarResults =
             getTestResults .randomBloodSugarTest .sugarCount
@@ -991,75 +969,18 @@ viewLabResultsPane language currentDate assembled =
                     )
                 |> List.sortWith sortTuplesByDateDesc
 
+        bloodGroupResults =
+            List.map (\( date, ( bloodGroup, _ ) ) -> ( date, bloodGroup )) bloodGpRsResults
+
+        rhesusResults =
+            List.map (\( date, ( _, rhesus ) ) -> ( date, rhesus )) bloodGpRsResults
+
         groupThreeContent =
-            let
-                randomBloodSugarEntry =
-                    let
-                        ( dateText, resultText ) =
-                            Maybe.map
-                                (\( date, result ) ->
-                                    ( formatDDMMYYYY date
-                                    , Maybe.map String.fromFloat result
-                                    )
-                                )
-                                (List.head randomBloodSugarResults)
-                                |> Maybe.withDefault ( "", Just "" )
-                    in
-                    viewEntry (Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest) dateText resultText
-
-                hemoglobinEntry =
-                    let
-                        ( dateText, resultText ) =
-                            Maybe.map
-                                (\( date, result ) ->
-                                    ( formatDDMMYYYY date
-                                    , Maybe.map String.fromFloat result
-                                    )
-                                )
-                                (List.head hemoglobinResults)
-                                |> Maybe.withDefault ( "", Just "" )
-                    in
-                    viewEntry (Translate.PrenatalLaboratoryTaskLabel TaskHemoglobinTest) dateText resultText
-
-                gpRsEntries =
-                    List.head bloodGpRsResults
-                        |> Maybe.map
-                            (\( date, ( bloodGroup, rhesus ) ) ->
-                                let
-                                    bloodGroupResult =
-                                        Maybe.map (Translate.PrenatalLaboratoryBloodGroup >> translate language) bloodGroup
-
-                                    rhesusResult =
-                                        Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language) rhesus
-
-                                    testDate =
-                                        formatDDMMYYYY date
-                                in
-                                [ viewEntry Translate.PrenatalLaboratoryBloodGroupLabel testDate bloodGroupResult
-                                , viewEntry Translate.PrenatalLaboratoryRhesusLabel testDate rhesusResult
-                                ]
-                            )
-                        |> Maybe.withDefault
-                            [ viewEntry Translate.PrenatalLaboratoryBloodGroupLabel "" (Just "")
-                            , viewEntry Translate.PrenatalLaboratoryRhesusLabel "" (Just "")
-                            ]
-            in
-            [ randomBloodSugarEntry
-            , hemoglobinEntry
+            [ viewLabResultsEntry language (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
+            , viewLabResultsEntry language (LabResultsHistoryHemoglobin hemoglobinResults)
+            , viewLabResultsEntry language (LabResultsHistoryBloodGroup bloodGroupResults)
+            , viewLabResultsEntry language (LabResultsHistoryRhesus rhesusResults)
             ]
-                ++ gpRsEntries
-
-        viewEntry label date maybeResult =
-            let
-                resultCell =
-                    Maybe.map (\result -> text result) maybeResult
-                        |> Maybe.withDefault (span [ class "pending" ] [ translateText language Translate.ResultsPending ])
-            in
-            div [ class "entry" ]
-                [ div [ class "name" ] [ translateText language label ]
-                , div [ class "date" ] [ text date ]
-                , div [ class "result" ] [ resultCell ]
-                ]
     in
     div [ class "lab-results" ] <|
         [ viewItemHeading language Translate.LabResults "blue"
@@ -1073,6 +994,119 @@ viewLabResultsPane language currentDate assembled =
         , groupHeading Translate.GroupThree
         , div [ class "group-content" ]
             groupThreeContent
+        ]
+
+
+viewLabResultsEntry : Language -> LabResultsHistoryMode -> Html Msg
+viewLabResultsEntry language results =
+    let
+        config =
+            case results of
+                LabResultsHistoryHIV data ->
+                    { label = Translate.PrenatalLaboratoryTaskLabel TaskHIVTest
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistorySyphilis data ->
+                    { label = Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryHepatitisB data ->
+                    { label = Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryMalaria data ->
+                    { label = Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryProtein data ->
+                    { label = Translate.PrenatalLaboratoryProteinLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryProteinValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryPH data ->
+                    { label = Translate.PrenatalLaboratoryPHLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryPHValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryGlucose data ->
+                    { label = Translate.PrenatalLaboratoryGlucoseLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryRandomBloodSugar data ->
+                    { label = Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryHemoglobin data ->
+                    { label = Translate.PrenatalLaboratoryTaskLabel TaskHemoglobinTest
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryBloodGroup data ->
+                    { label = Translate.PrenatalLaboratoryBloodGroupLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBloodGroup >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryRhesus data ->
+                    { label = Translate.PrenatalLaboratoryRhesusLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+        dateCell =
+            Maybe.map (formatDDMMYYYY >> text) config.recentResultDate
+                |> Maybe.withDefault (text "")
+
+        resultCell =
+            if config.totalResults == 0 then
+                text ""
+
+            else
+                Maybe.map text config.recentResult
+                    |> Maybe.withDefault (span [ class "pending" ] [ translateText language Translate.ResultsPending ])
+
+        historyResultsIcon =
+            if config.totalResults > 1 then
+                div
+                    [ class "icon-forward"
+                    , onClick <| SetLabResultsHistoryMode <| Just results
+                    ]
+                    []
+
+            else
+                emptyNode
+    in
+    div [ class "entry" ]
+        [ div [ class "name" ] [ translateText language config.label ]
+        , div [ class "date" ] [ dateCell ]
+        , div [ class "result" ] [ resultCell ]
+        , historyResultsIcon
         ]
 
 

@@ -76,6 +76,7 @@ import Pages.AcuteIllnessActivity.Types
         )
 import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
+import Pages.ClinicalProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Dashboard.Model as Dashboard
     exposing
         ( BeneficiariesTableLabels(..)
@@ -640,6 +641,7 @@ type TranslationId
     | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
     | LabResults
+    | LabResultsHistoryModeLabel LabResultsHistoryMode
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
@@ -4809,6 +4811,63 @@ translationSet trans =
             { english = "Lab Results"
             , kinyarwanda = Nothing
             }
+
+        LabResultsHistoryModeLabel mode ->
+            case mode of
+                LabResultsHistoryHIV _ ->
+                    { english = "HIV Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistorySyphilis _ ->
+                    { english = "Syphilis Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHepatitisB _ ->
+                    { english = "Hepatitis B Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryMalaria _ ->
+                    { english = "Malaria Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryProtein _ ->
+                    { english = "Protein Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryPH _ ->
+                    { english = "pH Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryGlucose _ ->
+                    { english = "Glucose Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryRandomBloodSugar _ ->
+                    { english = "Random Blood Sugar Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHemoglobin _ ->
+                    { english = "Hemoglobin Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBloodGroup _ ->
+                    { english = "Blood Group Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryRhesus _ ->
+                    { english = "Rhesus Test History"
+                    , kinyarwanda = Nothing
+                    }
 
         LastChecked ->
             { english = "Last checked"
