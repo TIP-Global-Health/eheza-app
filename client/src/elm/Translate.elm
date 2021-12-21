@@ -1502,7 +1502,7 @@ translationSet trans =
 
         AcuteIllnessHistory ->
             { english = "Acute Illness History"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru ku ndwara ifatiyeho"
             }
 
         AcuteIllnessHighRiskCaseHelper ->
