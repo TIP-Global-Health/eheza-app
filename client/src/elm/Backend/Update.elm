@@ -44,6 +44,8 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
+import Backend.TraceContact.Model
+import Backend.TraceContact.Update
 import Backend.Utils exposing (..)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Backend.WellChildActivity.Model
@@ -1836,6 +1838,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        MsgTraceContact traceContactId subMsg ->
+            let
+                traceContact =
+                    Dict.get traceContactId model.traceContacts
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get traceContactId model.traceContactRequests
+                        |> Maybe.withDefault Backend.TraceContact.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.TraceContact.Update.update traceContactId traceContact subMsg requests
+            in
+            ( { model | traceContactRequests = Dict.insert traceContactId subModel model.traceContactRequests }
+            , Cmd.map (MsgTraceContact traceContactId) subCmd
+            , []
+            )
+
         MsgIndividualSession participantId subMsg ->
             let
                 participant =
@@ -2240,7 +2261,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         |> RemoteData.map
                             (\person ->
                                 [ Pages.Person.Model.ResetEditForm
-                                    |> App.Model.MsgPageEditPerson
+                                    |> App.Model.MsgPageEditPerson personId
                                     |> App.Model.MsgLoggedIn
                                 , PersonPage personId ParticipantDirectoryOrigin
                                     |> UserPage
@@ -2505,6 +2526,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchTraceContact id ->
+            ( { model | traceContacts = Dict.insert id Loading model.traceContacts }
+            , sw.get acuteIllnessTraceContactEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTraceContact id)
+            , []
+            )
+
+        HandleFetchedTraceContact id data ->
+            ( { model | traceContacts = Dict.insert id data model.traceContacts }
+            , Cmd.none
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -2592,10 +2626,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         AcuteIllnessTraceContactRevision uuid data ->
-            ( mapFollowUpMeasurements
-                healthCenterId
-                (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
-                model
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
+                        model
+
+                traceContacts =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.traceContacts
+            in
+            ( { modelWithMappedFollowUp | traceContacts = traceContacts }
             , recalc
             )
 

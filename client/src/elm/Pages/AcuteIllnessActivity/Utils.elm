@@ -39,28 +39,36 @@ expectActivity currentDate isChw assembled activity =
                 False
 
             else
-                -- Show activity, if medication was perscribed at any of previous encounters.
-                assembled.previousEncountersData
-                    |> List.filterMap
-                        (.measurements
-                            >> .medicationDistribution
-                            >> Maybe.andThen
-                                (Tuple.second
-                                    >> .value
-                                    >> .distributionSigns
-                                    >> (\medications ->
-                                            if
-                                                (medications /= EverySet.singleton NoMedicationDistributionSigns)
-                                                    -- Lemon juice does not count as a medication.
-                                                    && (medications /= EverySet.singleton LemonJuiceOrHoney)
-                                            then
-                                                Just True
+                let
+                    initialWithSubsequent =
+                        if List.isEmpty assembled.secondInitialWithSubsequent then
+                            assembled.firstInitialWithSubsequent
 
-                                            else
-                                                Nothing
-                                       )
-                                )
-                        )
+                        else
+                            assembled.secondInitialWithSubsequent
+                in
+                -- Show activity, if medication was perscribed at any of previous encounters.
+                List.filterMap
+                    (.measurements
+                        >> .medicationDistribution
+                        >> Maybe.andThen
+                            (Tuple.second
+                                >> .value
+                                >> .distributionSigns
+                                >> (\medications ->
+                                        if
+                                            (medications /= EverySet.singleton NoMedicationDistributionSigns)
+                                                -- Lemon juice does not count as a medication.
+                                                && (medications /= EverySet.singleton LemonJuiceOrHoney)
+                                        then
+                                            Just True
+
+                                        else
+                                            Nothing
+                                   )
+                            )
+                    )
+                    initialWithSubsequent
                     |> List.isEmpty
                     |> not
 
@@ -502,12 +510,13 @@ treatmentTasksCompletedFromTotal measurements data task =
 
 nextStepsTasksCompletedFromTotal :
     Bool
+    -> Bool
     -> Maybe AcuteIllnessDiagnosis
     -> AcuteIllnessMeasurements
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
+nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements data task =
     case task of
         NextStepsIsolation ->
             let
@@ -753,6 +762,17 @@ nextStepsTasksCompletedFromTotal isChw diagnosis measurements data task =
 
             else
                 ( 0, 1 )
+
+        NextStepsSymptomsReliefGuidance ->
+            let
+                form =
+                    measurements.healthEducation
+                        |> getMeasurementValueFunc
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.educationForDiagnosis
+            , 1
+            )
 
 
 ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
@@ -1364,17 +1384,6 @@ toTreatmentReviewValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
 
 
-fromMedicationDistributionValue : Maybe MedicationDistributionValue -> MedicationDistributionForm
-fromMedicationDistributionValue saved =
-    { amoxicillin = Maybe.map (.distributionSigns >> EverySet.member Amoxicillin) saved
-    , coartem = Maybe.map (.distributionSigns >> EverySet.member Coartem) saved
-    , ors = Maybe.map (.distributionSigns >> EverySet.member ORS) saved
-    , zinc = Maybe.map (.distributionSigns >> EverySet.member Zinc) saved
-    , lemonJuiceOrHoney = Maybe.map (.distributionSigns >> EverySet.member LemonJuiceOrHoney) saved
-    , nonAdministrationSigns = Maybe.map .nonAdministrationSigns saved
-    }
-
-
 medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefault form saved =
     saved
@@ -1471,7 +1480,7 @@ resolveAmoxicillinDosage currentDate person =
         |> Maybe.andThen
             (\months ->
                 if months < 2 then
-                    Nothing
+                    Just ( "0.5", "125", Translate.SeeDosageScheduleByWeight )
 
                 else if months < 5 then
                     Just ( "1", "125", Translate.ByMouthTwiceADayForXDays 5 )
@@ -1525,6 +1534,9 @@ nonAdministrationReasonToSign sign reason =
 
         Zinc ->
             MedicationZinc reason
+
+        Paracetamol ->
+            MedicationParacetamol reason
 
         _ ->
             NoMedicationNonAdministrationSigns
@@ -1868,18 +1880,26 @@ expectLaboratoryTask currentDate isChw assembled task =
                        )
 
             else
+                let
+                    initialWithSubsequent =
+                        if List.isEmpty assembled.secondInitialWithSubsequent then
+                            assembled.firstInitialWithSubsequent
+
+                        else
+                            assembled.secondInitialWithSubsequent
+                in
                 -- If fever is recorded on current encounter, and patient did not
                 -- test positive to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
                 feverRecorded assembled.measurements
-                    && (assembled.previousEncountersData
-                            |> List.filter
-                                (.measurements
-                                    >> .malariaTesting
-                                    >> getMeasurementValueFunc
-                                    >> Maybe.map (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
-                                    >> Maybe.withDefault False
-                                )
+                    && (List.filter
+                            (.measurements
+                                >> .malariaTesting
+                                >> getMeasurementValueFunc
+                                >> Maybe.map (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
+                                >> Maybe.withDefault False
+                            )
+                            initialWithSubsequent
                             |> List.isEmpty
                        )
 
@@ -1925,7 +1945,7 @@ resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTa
 resolveNextStepsTasks currentDate isChw assembled =
     if assembled.initialEncounter then
         -- The order is important. Do not change.
-        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
+        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsSymptomsReliefGuidance, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw assembled then
@@ -2006,8 +2026,8 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsFollowUp ->
-            if diagnosis == Just DiagnosisSevereCovid19 then
-                -- In this case patient is sent to hospital, and
+            if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
+                -- In these cases patient is sent to hospital, and
                 -- there's no need for CHW to follow up.
                 False
 
@@ -2018,6 +2038,9 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
+
+        NextStepsSymptomsReliefGuidance ->
+            diagnosis == Just DiagnosisLowRiskCovid19
 
 
 expectNextStepsTaskSubsequentEncounter : NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> NextStepsTask -> Bool
@@ -2107,6 +2130,9 @@ nextStepsTaskCompleted currentDate isChw assembled task =
         NextStepsContactTracing ->
             (not <| taskExpected NextStepsContactTracing) || isJust measurements.contactsTracing
 
+        NextStepsSymptomsReliefGuidance ->
+            (not <| taskExpected NextStepsSymptomsReliefGuidance) || isJust measurements.healthEducation
+
 
 {-| Send patient to health center if patient is alergic to any of prescribed medications,
 or, if any of prescribed medications is out of stock.
@@ -2150,6 +2176,9 @@ resolveMedicationsNonAdministrationReasons measurements =
 
                         MedicationZinc reason ->
                             Just ( Zinc, reason )
+
+                        MedicationParacetamol reason ->
+                            Just ( Paracetamol, reason )
 
                         NoMedicationNonAdministrationSigns ->
                             Nothing
@@ -2997,13 +3026,14 @@ vomitingAtSymptoms measurements =
 bloodPressureIndicatesSevereCovid19 : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesSevereCovid19 measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map
+        |> Maybe.andThen
             (\value ->
-                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
-                    False
-
-                else
-                    value.sys < 90 || value.dia < 60
+                Maybe.map2
+                    (\sys dia ->
+                        sys < 90 || dia < 60
+                    )
+                    value.sys
+                    value.dia
             )
         |> Maybe.withDefault False
 
@@ -3011,13 +3041,9 @@ bloodPressureIndicatesSevereCovid19 measurements =
 bloodPressureIndicatesCovid19WithPneumonia : AcuteIllnessMeasurements -> Bool
 bloodPressureIndicatesCovid19WithPneumonia measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map
+        |> Maybe.andThen
             (\value ->
-                if value.sys == floatMeasurementNotSetValue || value.dia == floatMeasurementNotSetValue then
-                    False
-
-                else
-                    value.sys <= 100
+                Maybe.map (\sys -> sys <= 100) value.sys
             )
         |> Maybe.withDefault False
 
@@ -3056,43 +3082,43 @@ acuteFindinsgRespiratoryDangerSignPresent measurements =
         |> Maybe.withDefault False
 
 
-fromContactsTracingValue : Maybe (List ContactTraceEntry) -> ContactsTracingForm
+fromContactsTracingValue : Maybe (List ContactTraceItem) -> ContactsTracingForm
 fromContactsTracingValue saved =
     { state = ContactsTracingFormSummary
-    , contacts = generateContactsFromTraceEntries saved
+    , contacts = generateContactsFromTraceItems saved
     , finished = False
     }
 
 
-contactsTracingFormWithDefault : ContactsTracingForm -> Maybe (List ContactTraceEntry) -> ContactsTracingForm
+contactsTracingFormWithDefault : ContactsTracingForm -> Maybe (List ContactTraceItem) -> ContactsTracingForm
 contactsTracingFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 { state = form.state
-                , contacts = or form.contacts (generateContactsFromTraceEntries saved)
+                , contacts = or form.contacts (generateContactsFromTraceItems saved)
                 , finished = form.finished
                 }
             )
 
 
-generateContactsFromTraceEntries : Maybe (List ContactTraceEntry) -> Maybe (Dict PersonId ContactTraceEntry)
-generateContactsFromTraceEntries entries =
+generateContactsFromTraceItems : Maybe (List ContactTraceItem) -> Maybe (Dict PersonId ContactTraceItem)
+generateContactsFromTraceItems items =
     Maybe.map
-        (List.map (\entry -> ( entry.personId, entry ))
+        (List.map (\item -> ( item.personId, item ))
             >> Dict.fromList
         )
-        entries
+        items
 
 
-toContactsTracingValueWithDefault : Maybe (List ContactTraceEntry) -> ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValueWithDefault : Maybe (List ContactTraceItem) -> ContactsTracingForm -> Maybe (List ContactTraceItem)
 toContactsTracingValueWithDefault saved form =
     contactsTracingFormWithDefault form saved
         |> toContactsTracingValue
 
 
-toContactsTracingValue : ContactsTracingForm -> Maybe (List ContactTraceEntry)
+toContactsTracingValue : ContactsTracingForm -> Maybe (List ContactTraceItem)
 toContactsTracingValue form =
     Maybe.map Dict.values form.contacts
 
@@ -3115,6 +3141,18 @@ resolvePreviousValue assembled measurementFunc valueFunc =
             (.measurements
                 >> measurementFunc
                 >> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
+
+
+resolvePreviousMaybeValue : AssembledData -> (AcuteIllnessMeasurements -> Maybe ( id, AcuteIllnessMeasurement a )) -> (a -> Maybe b) -> Maybe b
+resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    assembled.previousEncountersData
+        |> List.filterMap
+            (.measurements
+                >> measurementFunc
+                >> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head

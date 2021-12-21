@@ -6,6 +6,8 @@ image:
 tasks:
   - name: Terminal
     init: |
+      npm install -g elm-format
+      npm install -g elm@latest-0.19.1
       export DDEV_NONINTERACTIVE=true
       cp .ddev/config.local.yaml.example .ddev/config.local.yaml
       ddev start
@@ -14,10 +16,11 @@ tasks:
       rm .ddev/config.local.yaml
       export DDEV_NONINTERACTIVE=true
       .ddev/gitpod-setup-ddev.sh
-      nohup ddev gulp &
+      ddev gulp elm || (sleep 1 && ddev gulp elm)
+      nohup ddev gulp serve:dev &
       export DDEV_NONINTERACTIVE=false
-      gp await-port 3000 && gp preview $(gp url 3000)
       gp await-port 8888 && gp preview $(gp url 8888)
+      gp await-port 3000 && gp preview $(gp url 3000)
 # VScode xdebug extension
 vscode:
   extensions:

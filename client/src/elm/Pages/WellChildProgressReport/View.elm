@@ -18,7 +18,7 @@ import Backend.NutritionEncounter.Utils
         , sortEncounterTuplesDesc
         , sortTuplesByDateDesc
         )
-import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
@@ -34,7 +34,7 @@ import Backend.WellChildEncounter.Model
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDMMYY, formatDDMMyyyy)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -54,10 +54,16 @@ import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import Pages.WellChildActivity.Model exposing (VaccinationStatus(..))
-import Pages.WellChildActivity.Utils exposing (getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChildActivity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildActivity.View exposing (viewVaccinationOverview)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
-import Pages.WellChildEncounter.Utils exposing (generateAssembledData, pediatricCareMilestoneToComparable, resolvePediatricCareMilestoneOnDate)
+import Pages.WellChildEncounter.Utils
+    exposing
+        ( generateAssembledData
+        , pediatricCareMilestoneToComparable
+        , resolveDateForPediatricCareMilestone
+        , resolvePediatricCareMilestoneOnDate
+        )
 import Pages.WellChildEncounter.View exposing (allowEndingEcounter, partitionActivities, viewPersonDetails)
 import Pages.WellChildProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -256,6 +262,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         currentDate
                         child
                         wellChildEncounters
+                        individualWellChildMeasurementsWithDates
                         db
                     , viewGrowthPane language
                         currentDate
@@ -617,10 +624,7 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
 generatePartitionedWarningEntries :
     ModelIndexedDb
     -> Maybe AssembledData
-    ->
-        ( List ( NominalDate, PediatricCareMilestone, EncounterWarning )
-        , List ( NominalDate, PediatricCareMilestone, EncounterWarning )
-        )
+    -> ( List ( NominalDate, PediatricCareMilestone, EncounterWarning ), List ( NominalDate, PediatricCareMilestone, EncounterWarning ) )
 generatePartitionedWarningEntries db maybeAssembled =
     Maybe.map
         (\assembled ->
@@ -740,7 +744,7 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
                 [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                 , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
                     [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
-                , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+                , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
                 , div
                     [ class "icon-forward"
                     , onClick <|
@@ -780,7 +784,7 @@ viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
             List.map (translateNutritionAssement language >> List.singleton >> p []) orderedAssessments
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
-        , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+        , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )
 
@@ -796,7 +800,7 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
         [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning milestoneForDaignosisPane ]
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
             [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
-        , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+        , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )
 
@@ -810,8 +814,15 @@ viewVaccinationHistoryPane language currentDate child vaccinationProgress db =
         ]
 
 
-viewECDPane : Language -> NominalDate -> Person -> List ( WellChildEncounterId, WellChildEncounter ) -> ModelIndexedDb -> Html any
-viewECDPane language currentDate child wellChildEncounters db =
+viewECDPane :
+    Language
+    -> NominalDate
+    -> Person
+    -> List ( WellChildEncounterId, WellChildEncounter )
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> ModelIndexedDb
+    -> Html any
+viewECDPane language currentDate child wellChildEncounters individualWellChildMeasurementsWithDates db =
     Maybe.map
         (\birthDate ->
             let
@@ -862,7 +873,7 @@ viewECDPane language currentDate child wellChildEncounters db =
                             let
                                 status =
                                     Dict.get milestone performedMilestonesWithStatus
-                                        |> Maybe.withDefault NoECDStatus
+                                        |> Maybe.withDefault (genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithDates)
                             in
                             ( milestone, status )
                         )
@@ -904,6 +915,63 @@ viewECDPane language currentDate child wellChildEncounters db =
         )
         child.birthDate
         |> Maybe.withDefault emptyNode
+
+
+genrateDefaultECDStatus :
+    NominalDate
+    -> PediatricCareMilestone
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> ECDStatus
+genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithDates =
+    let
+        milestoneDate =
+            resolveDateForPediatricCareMilestone birthDate milestone
+
+        firstEncounterDateAfterMilestone =
+            List.filterMap
+                (\( date, _ ) ->
+                    if not <| Date.compare milestoneDate date == LT then
+                        Just date
+
+                    else
+                        Nothing
+                )
+                individualWellChildMeasurementsWithDates
+                |> List.sortWith Date.compare
+                |> List.head
+
+        -- Take all measurements that were taken before the milestone,
+        -- and, these of first encounter after milestone.
+        measurementsForPeriod =
+            Maybe.map
+                (\firstEncounterAfterMilestoneDate ->
+                    List.filterMap
+                        (\( date, ( _, measurements ) ) ->
+                            if Date.compare date milestoneDate == GT then
+                                Nothing
+
+                            else
+                                Just measurements
+                        )
+                        individualWellChildMeasurementsWithDates
+                )
+                firstEncounterDateAfterMilestone
+                |> Maybe.withDefault
+                    -- There were no encounters after milestone date, so we just
+                    -- take all existing measurements.
+                    (List.map (Tuple.second >> Tuple.second) individualWellChildMeasurementsWithDates)
+
+        expectedSigns =
+            expectedECDSignsOnMilestone birthDate milestoneDate firstEncounterDateAfterMilestone
+
+        completedSigns =
+            generateCompletedECDSigns measurementsForPeriod
+    in
+    if List.all (\sign -> List.member sign completedSigns) expectedSigns then
+        StatusOnTrack
+
+    else
+        StatusOffTrack
 
 
 viewGrowthPane :
@@ -1291,7 +1359,7 @@ viewNutritionSigns language child measurements =
                                         |> List.singleton
                                         |> div [ class "cell name" ]
                                     , div [ class "cell date" ]
-                                        [ text <| formatDDMMYY dateMeasured ]
+                                        [ text <| formatDDMMYYYY dateMeasured ]
                                     ]
                                     |> Just
                     )
@@ -1317,7 +1385,7 @@ viewPhotos language child measurements =
                 div
                     [ class "report card" ]
                     [ div [ class "content" ]
-                        [ text <| formatDDMMYY photo.dateMeasured ]
+                        [ text <| formatDDMMYYYY photo.dateMeasured ]
                     , viewPhotoUrl photo.value
                     ]
             )
@@ -1358,7 +1426,7 @@ viewNextAppointmentPane language currentDate child individualWellChildMeasuremen
                                 div [ class "entry next-appointment" ]
                                     [ div [ class "cell type" ] [ text <| translate language label ]
                                     , div [ class "cell location" ] [ text healthCenter ]
-                                    , div [ class "cell date" ] [ text <| formatDDMMYY date ]
+                                    , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
                                     ]
                         in
                         Maybe.Extra.values [ immunisationEntry, pediatricVisitDate ]

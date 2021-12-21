@@ -6,7 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
-import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Date exposing (Unit(..))
@@ -706,8 +706,8 @@ immunisationVaccinationTasks =
     , TaskPCV13
     , TaskRotarix
     , TaskIPV
-    , TaskHPV
     , TaskMR
+    , TaskHPV
     ]
 
 
@@ -1183,8 +1183,10 @@ fromVaccinationValue saved =
     Maybe.map
         (\value ->
             { administeredDoses = Just value.administeredDoses
+            , administeredDosesDirty = True
             , administrationDates = Just value.administrationDates
             , administrationNote = Just value.administrationNote
+            , administrationNoteDirty = False
             , viewMode = ViewModeInitial
             , updatePreviousVaccines = Just False
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
@@ -1201,12 +1203,18 @@ vaccinationFormWithDefault form saved =
     unwrap
         form
         (\value ->
+            let
+                administrationNote =
+                    valueConsideringIsDirtyField form.administrationNoteDirty form.administrationNote value.administrationNote
+            in
             { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
+            , administeredDosesDirty = form.administeredDosesDirty
             , administrationDates = or form.administrationDates (Just value.administrationDates)
-            , administrationNote = or form.administrationNote (Just value.administrationNote)
+            , administrationNote = administrationNote
+            , administrationNoteDirty = form.administrationNoteDirty
             , viewMode = form.viewMode
             , updatePreviousVaccines = or form.updatePreviousVaccines (Just False)
-            , willReceiveVaccineToday = or form.willReceiveVaccineToday (value.administrationNote == AdministeredToday |> Just)
+            , willReceiveVaccineToday = or form.willReceiveVaccineToday (administrationNote == Just AdministeredToday |> Just)
             , vaccinationUpdateDate = form.vaccinationUpdateDate
             , dateSelectorOpen = form.dateSelectorOpen
             }
@@ -1286,58 +1294,77 @@ expectedECDSignsByAge currentDate assembled =
                         Date.diff Months birthDate currentDate
 
                     groupedSigns =
-                        groupedECDSigns ageMonths assembled
+                        ageInMonthsAtLastAssessment assembled
+                            |> groupedECDSigns ageMonths
                 in
-                if ageWeeks < 5 then
-                    []
-
-                else if ageWeeks < 13 then
-                    List.Extra.splitAt 1 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 6 then
-                    List.Extra.splitAt 2 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 15 then
-                    List.Extra.splitAt 3 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 18 then
-                    List.Extra.splitAt 4 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 24 then
-                    List.Extra.splitAt 5 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 36 then
-                    List.Extra.splitAt 6 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else if ageMonths < 48 then
-                    List.Extra.splitAt 7 groupedSigns
-                        |> Tuple.first
-                        |> List.concat
-
-                else
-                    List.concat groupedSigns
+                ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
             )
         |> Maybe.withDefault []
 
 
-groupedECDSigns : Int -> AssembledData -> List (List ECDSign)
-groupedECDSigns ageMonths assembled =
+expectedECDSignsOnMilestone : NominalDate -> NominalDate -> Maybe NominalDate -> List ECDSign
+expectedECDSignsOnMilestone birthDate milestoneDate firstEncounterDateAfterMilestone =
     let
-        ageMonthsAtLastAssessment =
-            ageInMonthsAtLastAssessment assembled
+        ageWeeks =
+            Date.diff Weeks birthDate milestoneDate
 
+        ageMonths =
+            Date.diff Months birthDate milestoneDate
+
+        groupedSigns =
+            Maybe.map (Date.diff Months birthDate) firstEncounterDateAfterMilestone
+                |> groupedECDSigns ageMonths
+    in
+    ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
+
+
+ecdSignsFromGroupedSignsByAge : Int -> Int -> List (List ECDSign) -> List ECDSign
+ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns =
+    if ageWeeks < 5 then
+        []
+
+    else if ageWeeks < 13 then
+        List.Extra.splitAt 1 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 6 then
+        List.Extra.splitAt 2 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 15 then
+        List.Extra.splitAt 3 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 18 then
+        List.Extra.splitAt 4 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 24 then
+        List.Extra.splitAt 5 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 36 then
+        List.Extra.splitAt 6 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else if ageMonths < 48 then
+        List.Extra.splitAt 7 groupedSigns
+            |> Tuple.first
+            |> List.concat
+
+    else
+        List.concat groupedSigns
+
+
+groupedECDSigns : Int -> Maybe Int -> List (List ECDSign)
+groupedECDSigns ageMonths ageMonthsAtLastAssessment =
+    let
         ( from5Weeks, from13Weeks ) =
             Maybe.map
                 (\ageMonthsLastAssessment ->
@@ -1350,6 +1377,16 @@ groupedECDSigns ageMonths assembled =
                 ageMonthsAtLastAssessment
                 |> Maybe.withDefault ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
 
+        ecdSigns6To12MonthsByAge =
+            if ageMonths > 12 then
+                []
+
+            else if ageMonths >= 9 then
+                ecdSigns6To12MonthsMajors
+
+            else
+                ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
+
         ecdSigns6To12Months =
             Maybe.map
                 (\ageMonthsLastAssessment ->
@@ -1358,6 +1395,9 @@ groupedECDSigns ageMonths assembled =
 
                     else if ageMonthsLastAssessment >= 9 then
                         ecdSigns6To12MonthsMajors
+
+                    else if ageMonthsLastAssessment >= 6 then
+                        ecdSigns6To12MonthsByAge
 
                     else
                         ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
@@ -1688,7 +1728,7 @@ resolveVitaminADosageAndIcon currentDate person =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
-                if ageMonths < 18 then
+                if ageMonths <= 12 then
                     ( "100,000 IU", "icon-capsule blue" )
 
                 else
@@ -2244,6 +2284,6 @@ resolvePreviousValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-getPreviousMeasurements : List ( NominalDate, ( is, a ) ) -> List a
+getPreviousMeasurements : List ( NominalDate, ( id, a ) ) -> List a
 getPreviousMeasurements =
     List.map (Tuple.second >> Tuple.second)

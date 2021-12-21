@@ -252,6 +252,7 @@ emptyImmunisationData =
 
 type alias VaccinationForm =
     { administeredDoses : Maybe (EverySet VaccineDose)
+    , administeredDosesDirty : Bool
     , administrationDates : Maybe (EverySet NominalDate)
 
     -- This is the note for suggesed dose for encounter.
@@ -259,6 +260,7 @@ type alias VaccinationForm =
     -- due to ability to uodate previous doses.
     -- In this case, we'll set 'AdministeredPreviously' value.
     , administrationNote : Maybe AdministrationNote
+    , administrationNoteDirty : Bool
 
     -- Form inner functionality inputs
     , viewMode : VaccinationFormViewMode
@@ -272,8 +274,10 @@ type alias VaccinationForm =
 emptyVaccinationForm : VaccinationForm
 emptyVaccinationForm =
     { administeredDoses = Nothing
+    , administeredDosesDirty = False
     , administrationDates = Nothing
     , administrationNote = Nothing
+    , administrationNoteDirty = False
     , viewMode = ViewModeInitial
     , updatePreviousVaccines = Nothing
     , willReceiveVaccineToday = Nothing

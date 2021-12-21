@@ -171,7 +171,7 @@ type Msg
     | HandleSavedFollowUp (WebData ())
     | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
     | HandleSavedCoreExam (WebData ())
-    | SaveContactsTracing PersonId (Maybe AcuteIllnessContactsTracingId) (List ContactTraceEntry)
-    | HandleSavedContactsTracing PersonId (List ContactTraceEntry) (WebData ())
-    | SaveTraceContact PersonId (Maybe AcuteIllnessTraceContactId) ContactTraceEntry
+    | SaveContactsTracing PersonId (Maybe AcuteIllnessContactsTracingId) (List ContactTraceItem)
+    | HandleSavedContactsTracing PersonId (List ContactTraceItem) (WebData ())
+    | SaveTraceContact PersonId (Maybe AcuteIllnessTraceContactId) ContactTraceItem
     | HandleSavedTraceContact PersonId (WebData ())

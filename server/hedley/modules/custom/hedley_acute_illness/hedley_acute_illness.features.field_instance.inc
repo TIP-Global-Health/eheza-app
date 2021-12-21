@@ -2368,7 +2368,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -2425,7 +2425,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 14,
+      'weight' => 11,
     ),
   );
 
@@ -2482,7 +2482,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 16,
+      'weight' => 12,
     ),
   );
 
@@ -2539,7 +2539,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -2580,7 +2580,101 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-acute_illness_trace_contact-field_gender'.
+  $field_instances['node-acute_illness_trace_contact-field_gender'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_gender',
+    'label' => 'Gender',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
       'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-acute_illness_trace_contact-field_last_follow_up_date'.
+  $field_instances['node-acute_illness_trace_contact-field_last_follow_up_date'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 19,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_last_follow_up_date',
+    'label' => 'Last Follow Up Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 13,
     ),
   );
 
@@ -2624,7 +2718,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -2668,7 +2762,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -2709,7 +2803,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 13,
+      'weight' => 10,
     ),
   );
 
@@ -2754,7 +2848,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 17,
+      'weight' => 14,
     ),
   );
 
@@ -2795,7 +2889,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 11,
+      'weight' => 8,
     ),
   );
 
@@ -2843,6 +2937,158 @@ function hedley_acute_illness_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-acute_illness_trace_contact-field_symptoms_general'.
+  $field_instances['node-acute_illness_trace_contact-field_symptoms_general'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_symptoms_general',
+    'label' => 'Symptoms General',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 15,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-acute_illness_trace_contact-field_symptoms_gi'.
+  $field_instances['node-acute_illness_trace_contact-field_symptoms_gi'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 17,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_symptoms_gi',
+    'label' => 'Symptoms GI',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 17,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-acute_illness_trace_contact-field_symptoms_respiratory'.
+  $field_instances['node-acute_illness_trace_contact-field_symptoms_respiratory'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 16,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_symptoms_respiratory',
+    'label' => 'Symptoms Respiratory',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 16,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-acute_illness_trace_contact-field_trace_outcome'.
+  $field_instances['node-acute_illness_trace_contact-field_trace_outcome'] = array(
+    'bundle' => 'acute_illness_trace_contact',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 18,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_trace_outcome',
+    'label' => 'Trace Outcome',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 18,
+    ),
+  );
+
   // Exported field_instance: 'node-acute_illness_trace_contact-field_uuid'.
   $field_instances['node-acute_illness_trace_contact-field_uuid'] = array(
     'bundle' => 'acute_illness_trace_contact',
@@ -2879,7 +3125,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -9786,6 +10032,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Fever Period');
   t('First name');
   t('Follow up options');
+  t('Gender');
   t('HC Recommendation');
   t('HC contact');
   t('HC response time');
@@ -9796,6 +10043,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('In days');
   t('Increased Thirst Period');
   t('Isolation');
+  t('Last Follow Up Date');
   t('Lethargy Period');
   t('Loss of Smell Period');
   t('Lungs');
@@ -9830,9 +10078,13 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Sore Throat Period');
   t('Spontaneous Bleeding Period');
   t('Stabbing Chest Pain Period');
+  t('Symptoms GI');
   t('Symptoms GI Derived Signs');
+  t('Symptoms General');
+  t('Symptoms Respiratory');
   t('Sys');
   t('Test Result');
+  t('Trace Outcome');
   t('Travel History');
   t('Treatment History');
   t('Treatment Ongoing');

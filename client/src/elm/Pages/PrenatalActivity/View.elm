@@ -2095,10 +2095,10 @@ viewVitalsForm language currentDate assembled form =
         formConfig =
             { setIntInputMsg = SetVitalsIntInput
             , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .sys
-            , diaBloodPressurePreviousValue = resolvePreviousValue assembled .vitals .dia
+            , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+            , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
             , heartRatePreviousValue =
-                resolvePreviousValue assembled .vitals .heartRate
+                resolvePreviousMaybeValue assembled .vitals .heartRate
                     |> Maybe.map toFloat
             , respiratoryRatePreviousValue =
                 resolvePreviousValue assembled .vitals .respiratoryRate

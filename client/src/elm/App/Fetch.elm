@@ -38,6 +38,7 @@ import Pages.PrenatalEncounter.Fetch
 import Pages.PrenatalParticipant.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Pages.TraceContact.Fetch
 import Pages.WellChildActivity.Fetch
 import Pages.WellChildEncounter.Fetch
 import Pages.WellChildParticipant.Fetch
@@ -268,6 +269,10 @@ fetch model =
 
             UserPage (AcuteIllnessOutcomePage id) ->
                 Pages.AcuteIllnessOutcome.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (TraceContactPage id) ->
+                Pages.TraceContact.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
 

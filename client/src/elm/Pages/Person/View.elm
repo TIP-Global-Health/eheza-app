@@ -5,6 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder
     exposing
@@ -19,7 +20,6 @@ import Backend.Person.Model
     exposing
         ( ExpectedAge(..)
         , ExpectedGender(..)
-        , Gender(..)
         , Initiator(..)
         , ParticipantDirectoryOperation(..)
         , Person

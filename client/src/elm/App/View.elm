@@ -49,6 +49,7 @@ import Pages.NutritionProgressReport.View
 import Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
+import Pages.Person.Model
 import Pages.Person.View
 import Pages.PinCode.View
 import Pages.PregnancyOutcome.Model
@@ -63,6 +64,8 @@ import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View
+import Pages.TraceContact.Model
+import Pages.TraceContact.View
 import Pages.WellChildActivity.Model
 import Pages.WellChildActivity.View
 import Pages.WellChildEncounter.Model
@@ -367,15 +370,20 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     EditPersonPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.editPersonPages
+                                    |> Maybe.withDefault Pages.Person.Model.emptyEditModel
+                        in
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
                             model.villageId
                             isChw
                             (EditPerson id)
                             ParticipantDirectoryOrigin
-                            loggedInModel.editPersonPage
+                            page_
                             model.indexedDb
-                            |> Html.map (MsgLoggedIn << MsgPageEditPerson)
+                            |> Html.map (MsgLoggedIn << MsgPageEditPerson id)
                             |> flexPageWrapper model
 
                     PersonPage id initiator ->
@@ -614,6 +622,20 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.WellChildProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
+                            |> flexPageWrapper model
+
+                    TraceContactPage traceContactId ->
+                        let
+                            page_ =
+                                Dict.get traceContactId loggedInModel.traceContactPages
+                                    |> Maybe.withDefault Pages.TraceContact.Model.emptyModel
+                        in
+                        Pages.TraceContact.View.view model.language
+                            currentDate
+                            traceContactId
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageTraceContact traceContactId)
                             |> flexPageWrapper model
 
             else

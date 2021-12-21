@@ -739,3 +739,14 @@ isTaskCompleted dict task =
 tasksBarId : String
 tasksBarId =
     "tasks-bar"
+
+
+viewSaveAction : Language -> msg -> Bool -> Html msg
+viewSaveAction language saveMsg disabled =
+    div [ class "actions" ]
+        [ button
+            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
+            , onClick saveMsg
+            ]
+            [ text <| translate language Translate.Save ]
+        ]

@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements)
 import Backend.Person.Model exposing (Person)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.Page exposing (Page)
 
 
@@ -48,6 +48,8 @@ type alias AssembledData =
     , person : Person
     , measurements : AcuteIllnessMeasurements
     , previousEncountersData : List AcuteIllnessEncounterData
+    , firstInitialWithSubsequent : List AcuteIllnessEncounterData
+    , secondInitialWithSubsequent : List AcuteIllnessEncounterData
 
     -- Intial encounter is the one where all measurements are taken and
     -- initial diagnosis is made.

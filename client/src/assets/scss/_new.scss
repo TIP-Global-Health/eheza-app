@@ -71,7 +71,7 @@
         &.icon-open-book {
           background: url(#{$img-path}icon-open-book.svg) center center no-repeat;
           background-size: 36px 36px;
-          padding: 0 10px;
+          padding: 0 20px 0 10px;
           margin-right: 10px;
           height: 36px;
           width: 52px;
@@ -869,8 +869,25 @@ div.page-encounter.prenatal {
   }
 }
 
+div.page-activity.trace-contact {
+
+  .contact-details {
+    font-weight: bold;
+
+    .blue {
+      color: $color-primary;
+    }
+  }
+
+  .ui.full.segment .symptoms-form .checkbox-select-input .ui.checkbox.activity {
+    margin-bottom: 25px;
+  }
+
+}
+
 // Acute Illness Activity page
-div.page-activity.acute-illness {
+div.page-activity.acute-illness,
+div.page-activity.trace-contact {
 
   .ui.full.segment {
 
@@ -891,7 +908,8 @@ div.page-activity.acute-illness {
     .ui.form.isolation,
     .ui.form.health-education,
     .ui.form.follow-up,
-    .ui.form.contacts-tracing {
+    .ui.form.contacts-tracing,
+    .ui.form.symptoms-relief {
 
       h2 {
         text-transform: uppercase;
@@ -1132,6 +1150,13 @@ div.page-activity.acute-illness {
         .dual-action {
           margin-top: 20px;
         }
+      }
+    }
+
+    .ui.form.symptoms-relief {
+
+      ul {
+        margin-top: 10px;
       }
     }
 
@@ -2613,7 +2638,7 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row .date {
       color: $color-text;
       font-weight: 600;
-      margin: auto 0 auto auto;
+      margin: auto 0 auto 15px;
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row .timeline {
@@ -2627,7 +2652,7 @@ div.page-report.acute-illness {
         justify-content: center;
 
         img {
-          margin-left: -6px;
+          margin-left: 20px;
           width: 12px;
         }
 
@@ -2649,7 +2674,7 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row ul {
       display: inline-block;
       list-style-type: none;
-      margin: 0;
+      margin: 0 0 0 15px;
       padding: 0;
 
       &:last-child {
@@ -2793,6 +2818,7 @@ div.page-report.acute-illness {
 
 div.page-report.acute-illness,
 div.page-encounter.well-child,
+div.page-activity.trace-contact,
 div.page-activity.well-child,
 div.page-report.well-child {
 
@@ -2927,6 +2953,10 @@ div.page-report.well-child {
 
     .next-due {
       width: 20%;
+
+      &.red {
+        color: $color-velvet
+      }
     }
   }
 

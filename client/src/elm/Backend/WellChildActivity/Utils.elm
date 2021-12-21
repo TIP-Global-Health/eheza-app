@@ -98,7 +98,12 @@ getActivityIcon activity =
 getAllActivities : Bool -> List WellChildActivity
 getAllActivities isChw =
     if isChw then
-        [ WellChildPregnancySummary, WellChildImmunisation, WellChildNutritionAssessment, WellChildNextSteps, WellChildPhoto ]
+        [ WellChildPregnancySummary
+        , WellChildImmunisation
+        , WellChildNutritionAssessment
+        , WellChildPhoto
+        , WellChildNextSteps
+        ]
 
     else
         [ WellChildDangerSigns
@@ -106,6 +111,6 @@ getAllActivities isChw =
         , WellChildImmunisation
         , WellChildECD
         , WellChildMedication
-        , WellChildNextSteps
         , WellChildPhoto
+        , WellChildNextSteps
         ]

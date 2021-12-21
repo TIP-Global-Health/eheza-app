@@ -2,6 +2,7 @@ module Backend.Person.Form exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Encoder
     exposing
@@ -10,10 +11,9 @@ import Backend.Person.Encoder
         , encodeMaritalStatus
         , encodeModeOfDelivery
         , encodeUbudehe
-        , genderToString
         )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (expectedAgeByPerson, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils exposing (expectedAgeByPerson, genderToString, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
@@ -408,7 +408,7 @@ validateContact =
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
-                |> andMap (succeed Male)
+                |> andMap (field gender validateGender)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
@@ -420,7 +420,7 @@ validateContact =
                 |> andMap (field sector validateSectorForContact)
                 |> andMap (field cell validateCellForContact)
                 |> andMap (field village validateVillageForContact)
-                |> andMap (field phoneNumber validateRequiredPhoneNumber)
+                |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
                 |> andMap (succeed Nothing)
@@ -706,18 +706,6 @@ validateHealthCenterId : Maybe Person -> Validation ValidationError (Maybe Healt
 validateHealthCenterId related =
     fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEntityUuid)
         |> withDefault (Maybe.andThen .healthCenterId related)
-
-
-validateRequiredPhoneNumber : Validation ValidationError (Maybe String)
-validateRequiredPhoneNumber =
-    string
-        |> mapError (\_ -> customError RequiredField)
-        |> andThen
-            (String.trim
-                >> format allDigitsPattern
-                >> mapError (\_ -> customError DigitsOnly)
-            )
-        |> required
 
 
 

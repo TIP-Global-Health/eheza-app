@@ -35,6 +35,7 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
+import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Pages.Dashboard.Model
@@ -83,6 +84,7 @@ type alias ModelIndexedDb =
     , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
     , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
+    , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -106,6 +108,7 @@ type alias ModelIndexedDb =
     , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
     , wellChildEncounters : Dict WellChildEncounterId (WebData WellChildEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+    , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
 
     -- Cache things organized in certain ways.
     , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
@@ -175,6 +178,7 @@ emptyModelIndexedDb =
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
+    , traceContacts = Dict.empty
     , personSearches = Dict.empty
     , postPerson = NotAsked
     , postPmtctParticipant = Dict.empty
@@ -191,6 +195,7 @@ emptyModelIndexedDb =
     , acuteIllnessEncounterRequests = Dict.empty
     , homeVisitEncounterRequests = Dict.empty
     , wellChildEncounterRequests = Dict.empty
+    , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
@@ -276,6 +281,7 @@ type MsgIndexedDb
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchVillages
+    | FetchTraceContact AcuteIllnessTraceContactId
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
@@ -315,6 +321,7 @@ type MsgIndexedDb
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedVillages (WebData (Dict VillageId Village))
+    | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person
@@ -352,6 +359,7 @@ type MsgIndexedDb
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
     | MsgWellChildEncounter WellChildEncounterId Backend.WellChildEncounter.Model.Msg
+    | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | ResetFailedToFetchAuthorities
 

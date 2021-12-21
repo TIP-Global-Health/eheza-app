@@ -2,7 +2,6 @@ module Backend.Person.Model exposing
     ( EducationLevel(..)
     , ExpectedAge(..)
     , ExpectedGender(..)
-    , Gender(..)
     , HIVStatus(..)
     , Initiator(..)
     , MaritalStatus(..)
@@ -20,6 +19,7 @@ module Backend.Person.Model exposing
 
 import Backend.Entities exposing (AcuteIllnessEncounterId, HealthCenterId, PersonId, PrenatalEncounterId, SessionId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.Measurement.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -88,11 +88,6 @@ allModesOfDelivery =
     , VaginalDelivery WithVacuumExtraction
     , CesareanDelivery
     ]
-
-
-type Gender
-    = Female
-    | Male
 
 
 type Ubudehe

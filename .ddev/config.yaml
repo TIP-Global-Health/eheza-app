@@ -1,4 +1,4 @@
-name: ihangane
+name: eheza-app
 type: drupal7
 docroot: server/www
 php_version: "7.3"

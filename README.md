@@ -33,9 +33,6 @@ Primary ports:
 7. Choose the synced health center.
 8. Explore the system.
 
-Known issues:
- - Sometimes `gulp` fails to download all the Elm packages. Then locate the running process: `ps aux | grep gulp`, kill it, and launch it again: `ddev gulp`.
-
 ## Develop locally with DDEV
 
 ### Requirements
@@ -46,7 +43,6 @@ Known issues:
 
 #### Installation
 
-        cp default.config.sh config.sh
         cp .ddev/config.local.yaml.example .ddev/config.local.yaml
         ddev restart
 
@@ -86,6 +82,7 @@ can be found under the repository root, so most of the time, you can copy it fro
 
 #### Steps
 
+To propagate a new release, you can do the following:
 ```
 ddev start
 ddev gulp publish
@@ -93,6 +90,38 @@ ddev robo deploy:pantheon
 ```
 
 To generate the release notes, use `ddev robo generate:release-notes prev-tag`.
+
+#### Infrastructure-related steps
+
+When the site is initially installed in an environment, there are recurring
+jobs that need to be configured.
+
+ - Advancedqueue processing
+ - Weekly report processing
+
+There are two main alternatives to achieve this. Either the hosting platform
+provides customizable cron-jobs or we can invoke it from an external place,
+like a Jenkins server.
+Check the scripts in `infrastructure_setup` directory, create either a Jenkins
+job from those or you can invoke them via `cron` or
+[`supervisord`](http://supervisord.org/), edit the Bash variables at the
+top of the scripts and study the file head comment that contains more
+information of the dependencies of the scripts.
+
+Example crontabs:
+```
+*/5 * * * *   /path/to/app/infrastructure_setup/advancedqueue.sh
+1 1 * * *     /path/to/app/infrastructure_setup/reporting.sh
+```
+
+We recommend an external source, like Jenkins to trigger these, it's
+a comfortable, high-level tool with easily configurable logging / history.
+Inside Jenkins, these scripts can be "Freestyle project"s with
+"Build periodically" trigger and a "Shell" build part.
+
+If that's a no-go, for the advancedqueue, `supervisord` is a better choice,
+as that queue needs to be processed all the time. For the reporting, a simple
+cron job might be sufficient.
 
 ### Frontend
 

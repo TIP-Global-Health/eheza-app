@@ -20,6 +20,18 @@ class HedleyRestfulAcuteIllnessTraceContact extends HedleyRestfulAcuteIllnessAct
     'field_phone_number',
     'field_contact_date',
     'field_date_concluded',
+    'field_gender',
+    'field_trace_outcome',
+    'field_last_follow_up_date',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $multiFields = [
+    'field_symptoms_general',
+    'field_symptoms_respiratory',
+    'field_symptoms_gi',
   ];
 
   /**
@@ -35,7 +47,7 @@ class HedleyRestfulAcuteIllnessTraceContact extends HedleyRestfulAcuteIllnessAct
   protected $dateFields = [
     'field_contact_date',
     'field_date_concluded',
-    'field_date_concluded',
+    'field_last_follow_up_date',
   ];
 
 }

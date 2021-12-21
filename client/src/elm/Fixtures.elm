@@ -1,6 +1,7 @@
 module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleChildB, exampleMother, exampleUser)
 
-import Backend.Person.Model exposing (EducationLevel(..), Gender(..), Person, Ubudehe(..))
+import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Person.Model exposing (EducationLevel(..), Person, Ubudehe(..))
 import EverySet
 import Time.Date exposing (date)
 import User.Model exposing (User)

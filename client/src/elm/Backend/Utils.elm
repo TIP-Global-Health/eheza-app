@@ -155,6 +155,13 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
     toCmd (RemoteData.fromResult >> handleSavedMsg) requestData
 
 
+editMeasurementCmd id updatedValue endpoint handleSavedMsg measurement =
+    { measurement | value = updatedValue }
+        |> sw.patchFull endpoint id
+        |> withoutDecoder
+        |> toCmd (RemoteData.fromResult >> handleSavedMsg)
+
+
 resolveIndividualParticipantsForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> List IndividualEncounterParticipantId
 resolveIndividualParticipantsForPerson personId encounterType db =
     Dict.get personId db.individualParticipantsByPerson

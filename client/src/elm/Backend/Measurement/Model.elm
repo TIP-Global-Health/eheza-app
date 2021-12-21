@@ -726,9 +726,9 @@ type alias SocialHistory =
 
 
 type alias VitalsValue =
-    { sys : Float
-    , dia : Float
-    , heartRate : Int
+    { sys : Maybe Float
+    , dia : Maybe Float
+    , heartRate : Maybe Int
     , respiratoryRate : Int
     , bodyTemperature : Float
     }
@@ -1098,6 +1098,7 @@ type MedicationDistributionSign
     | Albendazole
     | Mebendezole
     | VitaminA
+    | Paracetamol
     | NoMedicationDistributionSigns
 
 
@@ -1118,6 +1119,7 @@ type MedicationNonAdministrationSign
     | MedicationCoartem AdministrationNote
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote
+    | MedicationParacetamol AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1251,20 +1253,40 @@ type alias CovidTestingValue =
 
 
 type alias AcuteIllnessContactsTracing =
-    AcuteIllnessMeasurement (List ContactTraceEntry)
+    AcuteIllnessMeasurement (List ContactTraceItem)
 
 
 type alias AcuteIllnessTraceContact =
-    AcuteIllnessMeasurement ContactTraceEntry
+    AcuteIllnessMeasurement ContactTraceItem
 
 
-type alias ContactTraceEntry =
+type alias ContactTraceItem =
     { personId : PersonId
     , firstName : String
     , secondName : String
+    , gender : Gender
     , phoneNumber : String
     , contactDate : NominalDate
+    , resolutionDate : NominalDate
+    , lastFollowUpDate : Maybe NominalDate
+    , generalSigns : Maybe (EverySet SymptomsGeneralSign)
+    , respiratorySigns : Maybe (EverySet SymptomsRespiratorySign)
+    , giSigns : Maybe (EverySet SymptomsGISign)
+    , traceOutcome : Maybe TraceOutcome
     }
+
+
+type Gender
+    = Female
+    | Male
+
+
+type TraceOutcome
+    = OutcomeNoAnswer
+    | OutcomeWrongContactInfo
+    | OutcomeDeclinedFollowUp
+    | OutcomeNoSymptoms
+    | OutcomeReferredToHC
 
 
 
@@ -1852,13 +1874,3 @@ type alias PreviousMeasurementsSet =
     , weights : List ( NominalDate, Float )
     , headCircumferences : List ( NominalDate, Float )
     }
-
-
-intMeasurementNotSetValue : Int
-intMeasurementNotSetValue =
-    -999
-
-
-floatMeasurementNotSetValue : Float
-floatMeasurementNotSetValue =
-    toFloat intMeasurementNotSetValue
