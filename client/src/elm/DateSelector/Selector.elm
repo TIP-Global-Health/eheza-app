@@ -105,7 +105,6 @@ viewYearSelectList minimum maximum maybeSelected =
                     dateWithYear (Maybe.withDefault (Date.fromCalendarDate (year minimum) Jan 1) maybeSelected) selectedYear
                 )
                 (Json.Decode.at [ "target", "value" ] Json.Decode.string)
-        , class "form-input select"
         ]
         options
 

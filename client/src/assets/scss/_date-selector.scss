@@ -2,7 +2,8 @@
 DateSelector
 */
 
-.date-selector-popup {
+.date-selector-popup,
+.ui.form .date-selector-popup {
   background: $color-primary;
   height: 100%;
   padding: 40px 70px;
