@@ -2441,6 +2441,43 @@ div.page-report.clinical {
       padding: 0 20px;
     }
   }
+
+  .lab-results-history {
+
+    .heading,
+    .entry {
+      display: flex;
+
+      .date,
+      .result {
+        width: 50%;
+      }
+    }
+
+    .heading {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .entry {
+      border-top: 1px solid $color-text;
+      font-weight: 500;
+      line-height: 60px;
+
+      .result .pending {
+        background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  .ui.unstackable.items .lab-results-history .pane-content {
+    padding: 20px;
+  }
 }
 
 div.page-demographics-report {

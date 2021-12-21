@@ -74,9 +74,11 @@ viewHeader : Language -> PrenatalEncounterId -> ClinicalProgressReportInitiator 
 viewHeader language id initiator model =
     let
         label =
-            Maybe.map Translate.LabResultsHistoryModeLabel
-                model.labResultsHistoryMode
-                |> Maybe.withDefault Translate.ClinicalProgressReport
+            if isJust model.labResultsHistoryMode then
+                Translate.LabHistory
+
+            else
+                Translate.ClinicalProgressReport
 
         backIcon =
             if initiator == InitiatorEncounterPage then
@@ -1112,4 +1114,62 @@ viewLabResultsEntry language results =
 
 viewLabResultsHistoryPane : Language -> NominalDate -> LabResultsHistoryMode -> Html Msg
 viewLabResultsHistoryPane language currentDate mode =
-    text "viewLabResultsHistoryPane"
+    let
+        heading =
+            div [ class "heading" ]
+                [ div [ class "date" ] [ translateText language Translate.TestDate ]
+                , div [ class "result" ] [ translateText language Translate.Result ]
+                ]
+
+        entries =
+            case mode of
+                LabResultsHistoryHIV data ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+
+                LabResultsHistorySyphilis data ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+
+                LabResultsHistoryHepatitisB data ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+
+                LabResultsHistoryMalaria data ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+
+                LabResultsHistoryProtein data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryProteinValue >> translate language)) data
+
+                LabResultsHistoryPH data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryPHValue >> translate language)) data
+
+                LabResultsHistoryGlucose data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryGlucoseValue >> translate language)) data
+
+                LabResultsHistoryRandomBloodSugar data ->
+                    List.map (viewEntry String.fromFloat) data
+
+                LabResultsHistoryHemoglobin data ->
+                    List.map (viewEntry String.fromFloat) data
+
+                LabResultsHistoryBloodGroup data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryBloodGroup >> translate language)) data
+
+                LabResultsHistoryRhesus data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryRhesus >> translate language)) data
+
+        viewEntry resultToStringFunc ( date, maybeResult ) =
+            let
+                resultCell =
+                    Maybe.map (resultToStringFunc >> text) maybeResult
+                        |> Maybe.withDefault (span [ class "pending" ] [ translateText language Translate.ResultsPending ])
+            in
+            div [ class "entry" ]
+                [ div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                , div [ class "result" ] [ resultCell ]
+                ]
+    in
+    div [ class "lab-results-history" ]
+        [ viewItemHeading language (Translate.LabResultsHistoryModeLabel mode) "blue"
+        , div [ class "pane-content" ] <|
+            heading
+                :: entries
+        ]
