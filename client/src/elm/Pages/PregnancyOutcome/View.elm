@@ -164,6 +164,7 @@ viewPregnancyOutcome language currentDate initiator data model =
                     , onClick <| SetDateSelectorState (Just dateSelectorConfig)
                     ]
                     [ text pregnancyConcludedDateForView ]
+                , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.pregnancyConcludedDate
                 , viewLabel language Translate.PregnancyOutcomeLabel
                 , pregnancyOutcomeInput
                 , viewLabel language Translate.DeliveryLocation
@@ -183,5 +184,4 @@ viewPregnancyOutcome language currentDate initiator data model =
                 [ text <| translate language Translate.Save ]
             ]
         ]
-    , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.pregnancyConcludedDate
     ]

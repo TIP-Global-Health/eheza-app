@@ -3303,6 +3303,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         , onClick <| SetContactsTracingDateSelectorState (Just dateSelectorConfig)
                         ]
                         [ text dateForView ]
+                    , viewModal <| viewCalendarPopup language data.dateSelectorPopupState data.contactDate
                     ]
                 , div [ class "contact-detail" ]
                     [ viewLabel language Translate.TelephoneNumber
@@ -3313,7 +3314,6 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                     [ div saveButtonAttributes
                         [ text <| translate language Translate.Save ]
                     ]
-                , viewModal <| viewCalendarPopup language data.dateSelectorPopupState data.contactDate
                 ]
             )
         |> Maybe.withDefault []

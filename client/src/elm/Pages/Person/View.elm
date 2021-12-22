@@ -767,6 +767,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                         , onClick <| SetDateSelectorState (Just dateSelectorConfig)
                         ]
                         [ text birthDateForView ]
+                    , viewModal <| viewCalendarPopup language model.dateSelectorPopupState selectedBirthDate
                     ]
                 , div
                     [ class "three wide column" ]
@@ -1302,7 +1303,6 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     ]
                 ]
             ]
-        , viewModal <| viewCalendarPopup language model.dateSelectorPopupState selectedBirthDate
         ]
 
 
