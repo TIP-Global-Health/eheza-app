@@ -98,7 +98,7 @@ update currentDate id db msg model =
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
-        SetDateSelectorState state ->
+        SetLmpDateSelectorState state ->
             let
                 updatedForm =
                     model.pregnancyDatingData.form

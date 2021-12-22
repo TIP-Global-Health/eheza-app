@@ -251,12 +251,12 @@ viewPregnancyDatingContent language currentDate assembled data =
 
                         dateSelectorConfig =
                             { select = SetLmpDate
-                            , close = SetDateSelectorState Nothing
+                            , close = SetLmpDateSelectorState Nothing
                             , dateFrom = dateFrom
                             , dateTo = currentDate
                             }
                     in
-                    [ onClick <| SetDateSelectorState (Just dateSelectorConfig) ]
+                    [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
                 )
                 form.lmpRange
                 |> Maybe.withDefault []

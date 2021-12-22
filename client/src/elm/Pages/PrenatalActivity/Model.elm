@@ -17,7 +17,7 @@ type Msg
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe String)
       -- PregnancyDatingMsgs
-    | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
