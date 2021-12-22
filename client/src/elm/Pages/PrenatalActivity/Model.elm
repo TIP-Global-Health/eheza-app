@@ -3,9 +3,11 @@ module Pages.PrenatalActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
+import Pages.PrenatalActivity.Types exposing (..)
 
 
 type Msg
@@ -15,7 +17,7 @@ type Msg
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe String)
       -- PregnancyDatingMsgs
-    | ToggleDateSelector
+    | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
@@ -148,14 +150,6 @@ emptyModel =
     , showAlertsDialog = False
     , warningPopupState = Nothing
     }
-
-
-type NextStepsTask
-    = NextStepsAppointmentConfirmation
-    | NextStepsFollowUp
-    | NextStepsSendToHC
-    | NextStepsHealthEducation
-    | NextStepsNewbornEnrolment
 
 
 
@@ -322,24 +316,18 @@ type ObstetricHistoryStep
     | ObstetricHistorySecondStep
 
 
-type HistoryTask
-    = Obstetric
-    | Medical
-    | Social
-
-
 type alias PregnancyDatingForm =
     { lmpRange : Maybe LmpRange
     , lmpDate : Maybe Date
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
-    , isDateSelectorOpen : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing False
+    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias ObstetricFormFirstStep =
@@ -464,12 +452,6 @@ emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
 
 
-type LmpRange
-    = OneMonth
-    | ThreeMonth
-    | SixMonth
-
-
 encodeLmpRange : LmpRange -> String
 encodeLmpRange range =
     case range of
@@ -497,14 +479,6 @@ decodeLmpRange s =
 
         _ ->
             Nothing
-
-
-type ExaminationTask
-    = BreastExam
-    | CorePhysicalExam
-    | NutritionAssessment
-    | ObstetricalExam
-    | Vitals
 
 
 type alias NutritionAssessmentForm =
@@ -598,11 +572,6 @@ type alias FamilyPlanningForm =
 emptyFamilyPlanningForm : FamilyPlanningForm
 emptyFamilyPlanningForm =
     FamilyPlanningForm Nothing
-
-
-type PatientProvisionsTask
-    = Medication
-    | Resources
 
 
 type alias MedicationForm =

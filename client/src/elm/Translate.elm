@@ -88,7 +88,7 @@ import Pages.Dashboard.Model as Dashboard
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model
+import Pages.PrenatalActivity.Types
     exposing
         ( ExaminationTask(..)
         , HistoryTask(..)
@@ -841,7 +841,7 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
-    | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
+    | PrenatalNextStepsTask Pages.PrenatalActivity.Types.NextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -3738,7 +3738,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
-                Pages.PrenatalActivity.Model.NutritionAssessment ->
+                Pages.PrenatalActivity.Types.NutritionAssessment ->
                     { english = "Nutrition Assessment"
                     , kinyarwanda = Just "Gusuzuma imirire"
                     }
@@ -3753,7 +3753,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibipimo by'inda"
                     }
 
-                Pages.PrenatalActivity.Model.BreastExam ->
+                Pages.PrenatalActivity.Types.BreastExam ->
                     translationSet BreastExam
 
         ExposureTask task ->
@@ -6862,27 +6862,27 @@ translationSet trans =
 
         PrenatalNextStepsTask task ->
             case task of
-                Pages.PrenatalActivity.Model.NextStepsAppointmentConfirmation ->
+                Pages.PrenatalActivity.Types.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
                     , kinyarwanda = Just "Kwemeza itariki yo kugaruka"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsFollowUp ->
+                Pages.PrenatalActivity.Types.NextStepsFollowUp ->
                     { english = "CHW Follow Up"
                     , kinyarwanda = Just "Isura ry'umujyanama w'ubuzima"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsSendToHC ->
+                Pages.PrenatalActivity.Types.NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsHealthEducation ->
+                Pages.PrenatalActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
+                Pages.PrenatalActivity.Types.NextStepsNewbornEnrolment ->
                     { english = "Newborn Enrollment"
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }

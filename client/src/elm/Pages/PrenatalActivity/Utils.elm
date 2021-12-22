@@ -12,6 +12,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
+import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement, noDangerSigns)
 import Pages.Utils
@@ -500,7 +501,7 @@ fromLastMenstrualPeriodValue saved =
     , lmpDate = Maybe.map .date saved
     , lmpDateConfident = Maybe.map .confident saved
     , chwLmpConfirmation = Maybe.map .confirmation saved
-    , isDateSelectorOpen = False
+    , dateSelectorPopupState = Nothing
     }
 
 
@@ -514,7 +515,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
