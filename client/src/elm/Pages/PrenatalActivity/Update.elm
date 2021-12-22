@@ -1819,11 +1819,11 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) setActiveTaskMsg
 
-        AppointmentToggleDateSelector ->
+        SetAppointmentDateSelectorState state ->
             let
                 updatedForm =
                     model.nextStepsData.appointmentConfirmationForm
-                        |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+                        |> (\form -> { form | dateSelectorPopupState = state })
 
                 updatedData =
                     model.nextStepsData

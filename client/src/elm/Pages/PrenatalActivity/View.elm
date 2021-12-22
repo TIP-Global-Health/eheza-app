@@ -11,7 +11,6 @@ import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
@@ -2664,19 +2663,25 @@ viewFollowUpForm language assembled currentDate form =
 viewAppointmentConfirmationForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
 viewAppointmentConfirmationForm language currentDate assembled form =
     let
-        appointmentDateInput =
-            DateSelector.SelectorDropdown.view
-                AppointmentToggleDateSelector
-                SetAppointmentConfirmation
-                form.isDateSelectorOpen
-                currentDate
-                (Date.add Months 9 currentDate)
-                form.appointmentDate
+        appointmentDateForView =
+            Maybe.map formatDDMMYYYY form.appointmentDate
+                |> Maybe.withDefault ""
+
+        dateSelectorConfig =
+            { select = SetAppointmentConfirmation
+            , close = SetAppointmentDateSelectorState Nothing
+            , dateFrom = currentDate
+            , dateTo = Date.add Months 9 currentDate
+            }
     in
     div [ class "form appointment-confirmation" ]
         [ viewLabel language Translate.AppointmentConfirmationInstrunction
-        , div [ class "form-input date" ]
-            [ appointmentDateInput ]
+        , div
+            [ class "form-input date"
+            , onClick <| SetAppointmentDateSelectorState (Just dateSelectorConfig)
+            ]
+            [ text appointmentDateForView ]
+        , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.appointmentDate
         ]
 
 
