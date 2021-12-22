@@ -767,13 +767,13 @@ update currentDate isChw id db msg model =
             , []
             )
 
-        ToggleDateSelectorInput vaccineType ->
+        SetVaccinationUpdateDateSelectorState vaccineType state ->
             let
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
 
                 updatedForm =
-                    { form | dateSelectorOpen = not form.dateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none

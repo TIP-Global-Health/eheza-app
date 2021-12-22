@@ -51,7 +51,7 @@ type Msg
     | SetUpdatePreviousVaccines VaccineType VaccineDose Bool
     | SetWillReceiveVaccineToday VaccineType VaccineDose Bool
     | SetAdministrationNote VaccineType AdministrationNote
-    | ToggleDateSelectorInput VaccineType
+    | SetVaccinationUpdateDateSelectorState VaccineType (Maybe (DateSelectorConfig Msg))
     | SetVaccinationUpdateDate VaccineType NominalDate
     | SaveVaccinationUpdateDate VaccineType VaccineDose
     | DeleteVaccinationUpdateDate VaccineType VaccineDose NominalDate
@@ -250,7 +250,7 @@ type alias VaccinationForm =
     , updatePreviousVaccines : Maybe Bool
     , willReceiveVaccineToday : Maybe Bool
     , vaccinationUpdateDate : Maybe NominalDate
-    , dateSelectorOpen : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
@@ -265,7 +265,7 @@ emptyVaccinationForm =
     , updatePreviousVaccines = Nothing
     , willReceiveVaccineToday = Nothing
     , vaccinationUpdateDate = Nothing
-    , dateSelectorOpen = False
+    , dateSelectorPopupState = Nothing
     }
 
 

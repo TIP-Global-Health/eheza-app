@@ -12,7 +12,6 @@ import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
@@ -1436,7 +1435,11 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
 
                         ViewModeVaccinationUpdate dose ->
                             let
-                                startDate =
+                                vaccinationUpdateDateForView =
+                                    Maybe.map formatDDMMYYYY form.vaccinationUpdateDate
+                                        |> Maybe.withDefault ""
+
+                                dateFrom =
                                     Maybe.andThen
                                         (\( lastDoseAdministered, lastDoseDate ) ->
                                             nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
@@ -1446,17 +1449,21 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                         -- No doses were given yet, so we will set start date to
                                         -- expected due date of first dose.
                                         |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst ))
+
+                                dateSelectorConfig =
+                                    { select = SetVaccinationUpdateDate vaccineType
+                                    , close = SetVaccinationUpdateDateSelectorState vaccineType Nothing
+                                    , dateFrom = dateFrom
+                                    , dateTo = Date.add Days -1 currentDate
+                                    }
                             in
-                            ( [ div [ class "form-input date previous" ]
-                                    [ viewLabel language Translate.SelectDate
-                                    , DateSelector.SelectorDropdown.view
-                                        (ToggleDateSelectorInput vaccineType)
-                                        (SetVaccinationUpdateDate vaccineType)
-                                        form.dateSelectorOpen
-                                        startDate
-                                        (Date.add Days -1 currentDate)
-                                        form.vaccinationUpdateDate
+                            ( [ viewLabel language Translate.SelectDate
+                              , div
+                                    [ class "form-input date"
+                                    , onClick <| SetVaccinationUpdateDateSelectorState vaccineType (Just dateSelectorConfig)
                                     ]
+                                    [ text vaccinationUpdateDateForView ]
+                              , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.vaccinationUpdateDate
                               , div [ class "update actions" ]
                                     [ div
                                         [ class "ui primary button"

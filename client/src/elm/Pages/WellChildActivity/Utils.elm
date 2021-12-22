@@ -1192,7 +1192,7 @@ fromVaccinationValue saved =
             , updatePreviousVaccines = Just False
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
             , vaccinationUpdateDate = Nothing
-            , dateSelectorOpen = False
+            , dateSelectorPopupState = Nothing
             }
         )
         saved
@@ -1217,7 +1217,7 @@ vaccinationFormWithDefault form saved =
             , updatePreviousVaccines = or form.updatePreviousVaccines (Just False)
             , willReceiveVaccineToday = or form.willReceiveVaccineToday (administrationNote == Just AdministeredToday |> Just)
             , vaccinationUpdateDate = form.vaccinationUpdateDate
-            , dateSelectorOpen = form.dateSelectorOpen
+            , dateSelectorPopupState = form.dateSelectorPopupState
             }
         )
         saved
