@@ -4,10 +4,12 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
+import Pages.WellChildActivity.Types exposing (..)
 import Pages.WellChildEncounter.Model exposing (VaccinationProgressDict)
 
 
@@ -17,7 +19,7 @@ type Msg
     | NoOp
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
-    | ToggleExpectedDateConcluded
+    | SetExpectedDateConcludedSelectorState (Maybe (DateSelectorConfig Msg))
     | SetDeliveryComplicationsPresent Bool
     | SetDeliveryComplication DeliveryComplication
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
@@ -76,21 +78,21 @@ type Msg
     | SetVitaminAReasonForNonAdministration AdministrationNote
     | SaveVitaminA PersonId (Maybe ( WellChildVitaminAId, WellChildVitaminA )) (Maybe MedicationTask)
       -- NEXT STEPS
-    | SetActiveNextStepsTask NextStepsTask
+    | SetActiveNextStepsTask Pages.WellChildActivity.Types.NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetEnrollToNutritionProgram Bool
     | SetReferToNutritionProgram Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe Pages.WellChildActivity.Types.NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
-    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe NextStepsTask)
+    | SaveHealthEducation PersonId (Maybe ( WellChildHealthEducationId, WellChildHealthEducation )) (Maybe Pages.WellChildActivity.Types.NextStepsTask)
     | SetContributingFactorsSign ContributingFactorsSign
-    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe NextStepsTask)
+    | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe Pages.WellChildActivity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe NextStepsTask)
-    | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe Pages.WellChildActivity.Types.NextStepsTask)
+    | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe Pages.WellChildActivity.Types.NextStepsTask)
       -- PHOTO
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
@@ -129,15 +131,9 @@ type WarningPopupType
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
 
 
-type VaccinationStatus
-    = StatusBehind
-    | StatusCompleted
-    | StatusUpToDate
-
-
 type alias PregnancySummaryForm =
     { expectedDateConcluded : Maybe Date
-    , isExpectedDateConcludedSelectorOpen : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , deliveryComplicationsPresent : Maybe Bool
     , deliveryComplications : Maybe (List DeliveryComplication)
     }
@@ -146,7 +142,7 @@ type alias PregnancySummaryForm =
 emptyPregnancySummaryForm : PregnancySummaryForm
 emptyPregnancySummaryForm =
     { expectedDateConcluded = Nothing
-    , isExpectedDateConcludedSelectorOpen = False
+    , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = Nothing
     , deliveryComplications = Nothing
     }
@@ -175,11 +171,6 @@ type alias SymptomsReviewForm =
 emptySymptomsReviewForm : SymptomsReviewForm
 emptySymptomsReviewForm =
     SymptomsReviewForm Nothing
-
-
-type DangerSignsTask
-    = TaskSymptomsReview
-    | TaskVitals
 
 
 type alias NutritionAssessmentData =
@@ -213,14 +204,6 @@ type alias HeadCircumferenceForm =
 emptyHeadCircumferenceForm : HeadCircumferenceForm
 emptyHeadCircumferenceForm =
     HeadCircumferenceForm Nothing False Nothing
-
-
-type NutritionAssessmentTask
-    = TaskHeight
-    | TaskHeadCircumference
-    | TaskMuac
-    | TaskNutrition
-    | TaskWeight
 
 
 type alias ImmunisationData =
@@ -284,23 +267,6 @@ emptyVaccinationForm =
     , vaccinationUpdateDate = Nothing
     , dateSelectorOpen = False
     }
-
-
-type VaccinationFormViewMode
-    = ViewModeInitial
-    | ViewModeVaccinationUpdate VaccineDose
-
-
-type ImmunisationTask
-    = TaskBCG
-    | TaskDTP
-    | TaskHPV
-    | TaskIPV
-    | TaskMR
-    | TaskOPV
-    | TaskPCV13
-    | TaskRotarix
-    | TaskOverview
 
 
 type alias WellChildECDForm =
@@ -422,12 +388,6 @@ emptyMedicationAdministrationForm =
     MedicationAdministrationForm Nothing Nothing
 
 
-type MedicationTask
-    = TaskAlbendazole
-    | TaskMebendezole
-    | TaskVitaminA
-
-
 medicationTasks : List MedicationTask
 medicationTasks =
     [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]
@@ -439,7 +399,7 @@ type alias NextStepsData =
     , sendToHCForm : SendToHCForm
     , followUpForm : FollowUpForm
     , nextVisitForm : NextVisitForm
-    , activeTask : Maybe NextStepsTask
+    , activeTask : Maybe Pages.WellChildActivity.Types.NextStepsTask
     }
 
 
@@ -463,11 +423,3 @@ type alias NextVisitForm =
 emptyNextVisitForm : NextVisitForm
 emptyNextVisitForm =
     NextVisitForm Nothing Nothing
-
-
-type NextStepsTask
-    = TaskContributingFactors
-    | TaskHealthEducation
-    | TaskSendToHC
-    | TaskFollowUp
-    | TaskNextVisit

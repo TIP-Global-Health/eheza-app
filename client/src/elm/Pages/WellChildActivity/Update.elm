@@ -32,6 +32,7 @@ import Measurement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMultiSelectInputValue)
 import Pages.WellChildActivity.Model exposing (..)
+import Pages.WellChildActivity.Types exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
@@ -116,11 +117,11 @@ update currentDate isChw id db msg model =
             , []
             )
 
-        ToggleExpectedDateConcluded ->
+        SetExpectedDateConcludedSelectorState state ->
             let
                 updatedForm =
                     model.pregnancySummaryForm
-                        |> (\form -> { form | isExpectedDateConcludedSelectorOpen = not form.isExpectedDateConcludedSelectorOpen })
+                        |> (\form -> { form | dateSelectorPopupState = state })
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
