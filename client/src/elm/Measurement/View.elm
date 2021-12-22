@@ -628,12 +628,13 @@ viewNutritionSigns language currentDate zscores childId measurement offlineSessi
                 |> nutritionAssessmentForBackend
 
         saveMsg =
-            Just <| SendOutMsgChild <| SaveNutrition existingId value
+            if EverySet.isEmpty value.signs then
+                Nothing
+
+            else
+                Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
-    div
-        [ class "ui full segment nutrition"
-        , id "nutritionSignsEntryForm"
-        ]
+    div [ class "ui full segment nutrition" ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
                 [ text <| translate language (Translate.ActivitiesTitle activity)
