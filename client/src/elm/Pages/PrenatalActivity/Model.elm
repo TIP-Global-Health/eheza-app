@@ -351,17 +351,6 @@ type alias LaboratoryData =
     }
 
 
-type LaboratoryTask
-    = TaskBloodGpRsTest
-    | TaskHemoglobinTest
-    | TaskHepatitisBTest
-    | TaskHIVTest
-    | TaskMalariaTest
-    | TaskRandomBloodSugarTest
-    | TaskSyphilisTest
-    | TaskUrineDipstickTest
-
-
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { pregnancyTestForm = PregnancyTestForm Nothing
@@ -673,27 +662,6 @@ type alias FamilyPlanningForm =
 emptyFamilyPlanningForm : FamilyPlanningForm
 emptyFamilyPlanningForm =
     FamilyPlanningForm Nothing
-
-
-type alias MedicationForm =
-    { receivedIronFolicAcid : Maybe Bool
-    , receivedDewormingPill : Maybe Bool
-    }
-
-
-emptyMedicationForm : MedicationForm
-emptyMedicationForm =
-    MedicationForm Nothing Nothing
-
-
-type alias ResourcesForm =
-    { receivedMosquitoNet : Maybe Bool
-    }
-
-
-emptyResourcesForm : ResourcesForm
-emptyResourcesForm =
-    ResourcesForm Nothing
 
 
 type alias DangerSignsForm =

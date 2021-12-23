@@ -63,7 +63,7 @@ expectActivity currentDate assembled activity =
                             )
                         |> List.isEmpty
 
-                Medication ->
+                Backend.PrenatalActivity.Model.Medication ->
                     True
 
                 DangerSigns ->
@@ -189,7 +189,7 @@ activityCompleted currentDate assembled activity =
         Backend.PrenatalActivity.Model.MalariaPrevention ->
             isJust assembled.measurements.malariaPrevention
 
-        Medication ->
+        Backend.PrenatalActivity.Model.Medication ->
             isJust assembled.measurements.medication
 
         DangerSigns ->

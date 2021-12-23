@@ -32,3 +32,14 @@ type NextStepsTask
 type PatientProvisionsTask
     = Medication
     | Resources
+
+
+type LaboratoryTask
+    = TaskBloodGpRsTest
+    | TaskHemoglobinTest
+    | TaskHepatitisBTest
+    | TaskHIVTest
+    | TaskMalariaTest
+    | TaskRandomBloodSugarTest
+    | TaskSyphilisTest
+    | TaskUrineDipstickTest
