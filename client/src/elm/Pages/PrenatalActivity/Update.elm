@@ -43,9 +43,6 @@ import Result exposing (Result)
 update : NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
-        _ =
-            Debug.log "msg" msg
-
         corePhysicalExamForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
@@ -1618,9 +1615,6 @@ update currentDate id db msg model =
 
         SetHIVTestDateSelectorState state ->
             let
-                _ =
-                    Debug.log "SetHIVTestDateSelectorState" state
-
                 form =
                     model.laboratoryData.hivTestForm
 
@@ -1717,9 +1711,6 @@ update currentDate id db msg model =
 
         SetSyphilisTestDateSelectorState state ->
             let
-                _ =
-                    Debug.log "SetSyphilisTestDateSelectorState" state
-
                 form =
                     model.laboratoryData.syphilisTestForm
 

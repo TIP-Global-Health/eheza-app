@@ -2800,9 +2800,6 @@ viewNewbornEnrolmentForm language currentDate assembled =
 viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalRDTForm language currentDate task form =
     let
-        _ =
-            Debug.log "form" form.executionDate
-
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate task form
 
