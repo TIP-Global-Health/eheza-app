@@ -43,6 +43,9 @@ import Result exposing (Result)
 update : NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
+        _ =
+            Debug.log "msg" msg
+
         corePhysicalExamForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
@@ -1613,13 +1616,16 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleHIVTestDateSelector ->
+        SetHIVTestDateSelectorState state ->
             let
+                _ =
+                    Debug.log "SetHIVTestDateSelectorState" state
+
                 form =
                     model.laboratoryData.hivTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData
@@ -1709,13 +1715,16 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleSyphilisTestDateSelector ->
+        SetSyphilisTestDateSelectorState state ->
             let
+                _ =
+                    Debug.log "SetSyphilisTestDateSelectorState" state
+
                 form =
                     model.laboratoryData.syphilisTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData
@@ -1805,13 +1814,13 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleHepatitisBTestDateSelector ->
+        SetHepatitisBTestDateSelectorState state ->
             let
                 form =
                     model.laboratoryData.hepatitisBTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData
@@ -1918,13 +1927,13 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleMalariaTestDateSelector ->
+        SetMalariaTestDateSelectorState state ->
             let
                 form =
                     model.laboratoryData.malariaTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData
@@ -2014,13 +2023,13 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleBloodGpRsTestDateSelector ->
+        SetBloodGpRsTestDateSelectorState state ->
             let
                 form =
                     model.laboratoryData.bloodGpRsTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData
@@ -2127,13 +2136,13 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleUrineDipstickTestDateSelector ->
+        SetUrineDipstickTestDateSelectorState state ->
             let
                 form =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData
@@ -2223,13 +2232,13 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleHemoglobinTestDateSelector ->
+        SetHemoglobinTestDateSelectorState state ->
             let
                 form =
                     model.laboratoryData.hemoglobinTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData
@@ -2319,13 +2328,13 @@ update currentDate id db msg model =
             , []
             )
 
-        ToggleRandomBloodSugarTestDateSelector ->
+        SetRandomBloodSugarTestDateSelectorState state ->
             let
                 form =
                     model.laboratoryData.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | isDateSelectorOpen = not form.isDateSelectorOpen }
+                    { form | dateSelectorPopupState = state }
 
                 updatedData =
                     model.laboratoryData

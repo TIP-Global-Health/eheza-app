@@ -11,7 +11,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Unit(..))
-import DateSelector.SelectorPopup exposing (viewCalendarPopup)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig, viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -2800,6 +2800,9 @@ viewNewbornEnrolmentForm language currentDate assembled =
 viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalRDTForm language currentDate task form =
     let
+        _ =
+            Debug.log "form" form.executionDate
+
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate task form
 
@@ -2984,6 +2987,7 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                     , executionNote = Nothing
                     , executionNoteDirty = True
                     , executionDate = Nothing
+                    , executionDateDirty = True
                 }
 
         msgs =
@@ -3081,7 +3085,7 @@ contentAndTasksForPerformedLaboratoryTest :
             , testPerformedToday : Maybe Bool
             , executionNote : Maybe PrenatalTestExecutionNote
             , executionDate : Maybe NominalDate
-            , isDateSelectorOpen : Bool
+            , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
         }
     -> ( List (Html Msg), Int, Int )
 contentAndTasksForPerformedLaboratoryTest language currentDate task form =
@@ -3106,6 +3110,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         , executionNote = executionNote
                         , executionNoteDirty = True
                         , executionDate = executionDate
+                        , executionDateDirty = True
                     }
 
             msgs =
@@ -3113,49 +3118,49 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                     TaskHIVTest ->
                         { setBoolInputMsg = SetHIVTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetHIVTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleHIVTestDateSelector
+                        , setDateSelectorStateMsg = SetHIVTestDateSelectorState
                         }
 
                     TaskSyphilisTest ->
                         { setBoolInputMsg = SetSyphilisTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetSyphilisTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleSyphilisTestDateSelector
+                        , setDateSelectorStateMsg = SetSyphilisTestDateSelectorState
                         }
 
                     TaskHepatitisBTest ->
                         { setBoolInputMsg = SetHepatitisBTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetHepatitisBTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleHepatitisBTestDateSelector
+                        , setDateSelectorStateMsg = SetHepatitisBTestDateSelectorState
                         }
 
                     TaskMalariaTest ->
                         { setBoolInputMsg = SetMalariaTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetMalariaTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleMalariaTestDateSelector
+                        , setDateSelectorStateMsg = SetMalariaTestDateSelectorState
                         }
 
                     TaskBloodGpRsTest ->
                         { setBoolInputMsg = SetBloodGpRsTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetBloodGpRsTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleBloodGpRsTestDateSelector
+                        , setDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
                         }
 
                     TaskUrineDipstickTest ->
                         { setBoolInputMsg = SetUrineDipstickTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetUrineDipstickTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleUrineDipstickTestDateSelector
+                        , setDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
                         }
 
                     TaskHemoglobinTest ->
                         { setBoolInputMsg = SetHemoglobinTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetHemoglobinTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleHemoglobinTestDateSelector
+                        , setDateSelectorStateMsg = SetHemoglobinTestDateSelectorState
                         }
 
                     TaskRandomBloodSugarTest ->
                         { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
-                        , toggleDateSelectorMsg = ToggleRandomBloodSugarTestDateSelector
+                        , setDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
                         }
 
             ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -3164,25 +3169,35 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         let
                             ( executionDateContent, executionDateTasksCompleted, executionDateTasksTotal ) =
                                 if testPerformedToday then
-                                    ( p [ class "test-date" ] [ text <| formatDDMMYYYY currentDate ], 0, 0 )
+                                    ( [ p [ class "test-date" ] [ text <| formatDDMMYYYY currentDate ] ], 0, 0 )
 
                                 else
-                                    ( div [ class "form-input date" ]
-                                        [ DateSelector.SelectorDropdown.view
-                                            msgs.toggleDateSelectorMsg
-                                            msgs.setExecutionDateMsg
-                                            form.isDateSelectorOpen
-                                            (Date.add Days -30 currentDate)
-                                            (Date.add Days -1 currentDate)
-                                            form.executionDate
-                                        ]
+                                    let
+                                        executionDateForView =
+                                            Maybe.map formatDDMMYYYY form.executionDate
+                                                |> Maybe.withDefault ""
+
+                                        dateSelectorConfig =
+                                            { select = msgs.setExecutionDateMsg
+                                            , close = msgs.setDateSelectorStateMsg Nothing
+                                            , dateFrom = Date.add Days -30 currentDate
+                                            , dateTo = Date.add Days -1 currentDate
+                                            }
+                                    in
+                                    ( [ div
+                                            [ class "form-input date"
+                                            , onClick <| msgs.setDateSelectorStateMsg (Just dateSelectorConfig)
+                                            ]
+                                            [ text executionDateForView
+                                            ]
+                                      , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
+                                      ]
                                     , taskCompleted form.executionDate
                                     , 1
                                     )
                         in
-                        ( [ viewLabel language <| Translate.PrenatalLaboratoryTaskDate task
-                          , executionDateContent
-                          ]
+                        ( (viewLabel language <| Translate.PrenatalLaboratoryTaskDate task)
+                            :: executionDateContent
                         , executionDateTasksCompleted
                         , executionDateTasksTotal
                         )
