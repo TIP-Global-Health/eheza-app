@@ -18,6 +18,7 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCompleted, taskCompleted, valueConsideringIsDirtyField)
 import Pages.WellChildActivity.Model exposing (..)
+import Pages.WellChildActivity.Types exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language)
@@ -152,7 +153,7 @@ fromPregnancySummaryValue saved =
             Maybe.map complicationsPresent deliveryComplications
     in
     { expectedDateConcluded = Maybe.map .expectedDateConcluded saved
-    , isExpectedDateConcludedSelectorOpen = False
+    , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = deliveryComplicationsPresent
     , deliveryComplications = deliveryComplications
     }
@@ -173,7 +174,7 @@ pregnancySummaryFormWithDefault form saved =
                             EverySet.toList value.deliveryComplications
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
-                , isExpectedDateConcludedSelectorOpen = form.isExpectedDateConcludedSelectorOpen
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 , deliveryComplicationsPresent = or form.deliveryComplicationsPresent (complicationsPresent deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
                 }
@@ -579,7 +580,7 @@ dangerSignsTasksCompletedFromTotal measurements data task =
             )
 
 
-immunisationTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.ImmunisationTask -> Bool
+immunisationTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Types.ImmunisationTask -> Bool
 immunisationTaskCompleted currentDate isChw data db task =
     let
         measurements =
@@ -617,7 +618,7 @@ immunisationTaskCompleted currentDate isChw data db task =
             not <| taskExpected TaskOverview
 
 
-expectImmunisationTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.ImmunisationTask -> Bool
+expectImmunisationTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Types.ImmunisationTask -> Bool
 expectImmunisationTask currentDate isChw assembled db task =
     if isChw then
         case task of
@@ -1191,7 +1192,7 @@ fromVaccinationValue saved =
             , updatePreviousVaccines = Just False
             , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
             , vaccinationUpdateDate = Nothing
-            , dateSelectorOpen = False
+            , dateSelectorPopupState = Nothing
             }
         )
         saved
@@ -1216,7 +1217,7 @@ vaccinationFormWithDefault form saved =
             , updatePreviousVaccines = or form.updatePreviousVaccines (Just False)
             , willReceiveVaccineToday = or form.willReceiveVaccineToday (administrationNote == Just AdministeredToday |> Just)
             , vaccinationUpdateDate = form.vaccinationUpdateDate
-            , dateSelectorOpen = form.dateSelectorOpen
+            , dateSelectorPopupState = form.dateSelectorPopupState
             }
         )
         saved
@@ -1736,7 +1737,7 @@ resolveVitaminADosageAndIcon currentDate person =
             )
 
 
-nextStepsTaskCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.NextStepsTask -> Bool
+nextStepsTaskCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Types.NextStepsTask -> Bool
 nextStepsTaskCompleted currentDate zscores isChw data db task =
     let
         measurements =
@@ -1763,7 +1764,7 @@ nextStepsTaskCompleted currentDate zscores isChw data db task =
                 || isJust measurements.nextVisit
 
 
-expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Model.NextStepsTask -> Bool
+expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChildActivity.Types.NextStepsTask -> Bool
 expectNextStepsTask currentDate zscores isChw assembled db task =
     case task of
         TaskContributingFactors ->
@@ -1819,7 +1820,7 @@ newbornVaccinatedAtBirth measurements =
         ]
 
 
-nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChildActivity.Model.NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChildActivity.Types.NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal isChw measurements data task =
     case task of
         TaskContributingFactors ->
@@ -1917,7 +1918,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
             )
 
 
-nextStepsTasks : List Pages.WellChildActivity.Model.NextStepsTask
+nextStepsTasks : List Pages.WellChildActivity.Types.NextStepsTask
 nextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp, TaskNextVisit ]
 
