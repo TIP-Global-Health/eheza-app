@@ -1953,7 +1953,7 @@ update currentDate selectedHealthCenter id db msg model =
                 _ ->
                     noChange
 
-        ToggleContactsTracingDateSelector ->
+        SetContactsTracingDateSelectorState state ->
             let
                 form =
                     model.nextStepsData.contactsTracingForm
@@ -1962,7 +1962,7 @@ update currentDate selectedHealthCenter id db msg model =
                 ContactsTracingFormRecordContactDetails personId recordData ->
                     let
                         updatedRecordData =
-                            { recordData | isDateSelectorOpen = not recordData.isDateSelectorOpen }
+                            { recordData | dateSelectorPopupState = state }
 
                         updatedForm =
                             { form | state = ContactsTracingFormRecordContactDetails personId updatedRecordData }

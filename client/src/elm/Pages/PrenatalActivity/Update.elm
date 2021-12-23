@@ -32,6 +32,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
+import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
 import Pages.Utils exposing (setMultiSelectInputValue, tasksBarId)
@@ -101,11 +102,11 @@ update currentDate id db msg model =
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
-        ToggleDateSelector ->
+        SetLmpDateSelectorState state ->
             let
                 updatedForm =
                     model.pregnancyDatingData.form
-                        |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+                        |> (\form -> { form | dateSelectorPopupState = state })
 
                 updatedData =
                     model.pregnancyDatingData
@@ -170,26 +171,9 @@ update currentDate id db msg model =
                 range =
                     decodeLmpRange value
 
-                today =
-                    currentDate
-
-                ( lmpDate, isDateSelectorOpen ) =
-                    case range of
-                        Just OneMonth ->
-                            ( Date.add Months -1 today |> Just, True )
-
-                        Just ThreeMonth ->
-                            ( Date.add Months -3 today |> Just, True )
-
-                        Just SixMonth ->
-                            ( Date.add Months -6 today |> Just, True )
-
-                        Nothing ->
-                            ( Nothing, False )
-
                 updatedForm =
                     model.pregnancyDatingData.form
-                        |> (\form -> { form | lmpRange = range, lmpDate = lmpDate, isDateSelectorOpen = isDateSelectorOpen })
+                        |> (\form -> { form | lmpRange = range })
 
                 updatedData =
                     model.pregnancyDatingData
@@ -2634,11 +2618,11 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) setActiveTaskMsg
 
-        AppointmentToggleDateSelector ->
+        SetAppointmentDateSelectorState state ->
             let
                 updatedForm =
                     model.nextStepsData.appointmentConfirmationForm
-                        |> (\form -> { form | isDateSelectorOpen = not form.isDateSelectorOpen })
+                        |> (\form -> { form | dateSelectorPopupState = state })
 
                 updatedData =
                     model.nextStepsData
