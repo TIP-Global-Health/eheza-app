@@ -2110,7 +2110,7 @@ expectLaboratoryTask currentDate assembled task =
                             let
                                 lastTestWeek =
                                     Dict.get test testsDates
-                                        |> Maybe.map (List.map (\testsDate -> diffWeeks testsDate currentDate))
+                                        |> Maybe.map (List.map (\testsDate -> diffWeeks lmpDate testsDate))
                                         |> Maybe.withDefault []
                                         |> List.sort
                                         |> List.reverse
@@ -2152,11 +2152,19 @@ expectLaboratoryTask currentDate assembled task =
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
 generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     let
-        generateTestDates getFunc =
+        generateTestDates getMeasurementFunc =
             List.filterMap
                 (Tuple.second
-                    >> getFunc
-                    >> Maybe.map (Tuple.second >> .dateMeasured)
+                    >> getMeasurementFunc
+                    >> getMeasurementValueFunc
+                    >> Maybe.andThen
+                        (\value ->
+                            if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                                value.executionDate
+
+                            else
+                                Nothing
+                        )
                 )
                 assembled.nursePreviousMeasurementsWithDates
     in
