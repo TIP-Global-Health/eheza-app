@@ -20,7 +20,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Model exposing (LaboratoryTask(..))
+import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalActivity.Utils exposing (laboratoryTaskIconClass)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)

@@ -12,7 +12,7 @@ import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -56,6 +56,7 @@ import Pages.Utils
         , viewSaveAction
         )
 import Pages.WellChildActivity.Model exposing (..)
+import Pages.WellChildActivity.Types exposing (..)
 import Pages.WellChildActivity.Utils exposing (..)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChildEncounter.Utils exposing (generateAssembledData)
@@ -224,14 +225,16 @@ viewPregnancySummaryForm language currentDate assembled form_ =
             , 2 + deliveryComplicationsActive
             )
 
-        expectedDateConcludedInput =
-            DateSelector.SelectorDropdown.view
-                ToggleExpectedDateConcluded
-                SetExpectedDateConcluded
-                form.isExpectedDateConcludedSelectorOpen
-                (Date.add Months -3 currentDate)
-                (Date.add Months 4 currentDate)
-                form.expectedDateConcluded
+        expectedDateConcludedForView =
+            Maybe.map formatDDMMYYYY form.expectedDateConcluded
+                |> Maybe.withDefault ""
+
+        dateSelectorConfig =
+            { select = SetExpectedDateConcluded
+            , close = SetExpectedDateConcludedSelectorState Nothing
+            , dateFrom = Date.add Months -3 currentDate
+            , dateTo = Date.add Months 4 currentDate
+            }
 
         viewDatesDiff =
             Maybe.map2
@@ -309,8 +312,12 @@ viewPregnancySummaryForm language currentDate assembled form_ =
         [ div [ class "full content" ]
             [ div [ class "ui form pregnancy-summary" ] <|
                 [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
-                , div [ class "form-input date" ]
-                    [ expectedDateConcludedInput ]
+                , div
+                    [ class "form-input date"
+                    , onClick <| SetExpectedDateConcludedSelectorState (Just dateSelectorConfig)
+                    ]
+                    [ text expectedDateConcludedForView ]
+                , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.expectedDateConcluded
                 ]
                     ++ viewDatesDiff
                     ++ [ viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
@@ -1018,7 +1025,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Pages.WellChildActivity.Model.ImmunisationTask -> ( Int, Int )
+immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Pages.WellChildActivity.Types.ImmunisationTask -> ( Int, Int )
 immunisationTasksCompletedFromTotal language currentDate isChw assembled data task =
     Maybe.map
         (\vaccineType ->
@@ -1132,8 +1139,6 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                     Maybe.map formatDDMMYYYY nextDue
                         |> Maybe.withDefault ""
 
-
-
                 ( status, statusClass ) =
                     Maybe.map
                         (\dueDate ->
@@ -1152,7 +1157,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                     |> List.sortWith Date.compare
                     |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
                     |> div [ class "cell date" ]
-                , div [ classList [("cell next-due ", True),  ("red", status == StatusBehind)]  ]
+                , div [ classList [ ( "cell next-due ", True ), ( "red", status == StatusBehind ) ] ]
                     [ text nextDueText ]
                 , div [ class <| "cell status " ++ statusClass ]
                     [ text <| translate language <| Translate.VaccinationStatus status ]
@@ -1430,7 +1435,11 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
 
                         ViewModeVaccinationUpdate dose ->
                             let
-                                startDate =
+                                vaccinationUpdateDateForView =
+                                    Maybe.map formatDDMMYYYY form.vaccinationUpdateDate
+                                        |> Maybe.withDefault ""
+
+                                dateFrom =
                                     Maybe.andThen
                                         (\( lastDoseAdministered, lastDoseDate ) ->
                                             nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
@@ -1440,17 +1449,21 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                         -- No doses were given yet, so we will set start date to
                                         -- expected due date of first dose.
                                         |> Maybe.withDefault (initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst ))
+
+                                dateSelectorConfig =
+                                    { select = SetVaccinationUpdateDate vaccineType
+                                    , close = SetVaccinationUpdateDateSelectorState vaccineType Nothing
+                                    , dateFrom = dateFrom
+                                    , dateTo = Date.add Days -1 currentDate
+                                    }
                             in
-                            ( [ div [ class "form-input date previous" ]
-                                    [ viewLabel language Translate.SelectDate
-                                    , DateSelector.SelectorDropdown.view
-                                        (ToggleDateSelectorInput vaccineType)
-                                        (SetVaccinationUpdateDate vaccineType)
-                                        form.dateSelectorOpen
-                                        startDate
-                                        (Date.add Days -1 currentDate)
-                                        form.vaccinationUpdateDate
+                            ( [ viewLabel language Translate.SelectDate
+                              , div
+                                    [ class "form-input date"
+                                    , onClick <| SetVaccinationUpdateDateSelectorState vaccineType (Just dateSelectorConfig)
                                     ]
+                                    [ text vaccinationUpdateDateForView ]
+                              , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.vaccinationUpdateDate
                               , div [ class "update actions" ]
                                     [ div
                                         [ class "ui primary button"

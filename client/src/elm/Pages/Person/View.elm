@@ -35,13 +35,13 @@ import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
-import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
+import Date exposing (Date, Unit(..))
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -57,7 +57,7 @@ import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo)
-import Utils.Html exposing (thumbnailImage, viewLoading)
+import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
@@ -742,6 +742,17 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 |> .value
                 |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
 
+        birthDateForView =
+            Maybe.map formatDDMMYYYY selectedBirthDate
+                |> Maybe.withDefault ""
+
+        dateSelectorConfig =
+            { select = DateSelected operation initiator
+            , close = SetDateSelectorState Nothing
+            , dateFrom = originBasedSettings.birthDateSelectorFrom
+            , dateTo = originBasedSettings.birthDateSelectorTo
+            }
+
         birthDateInput =
             div [ class "ui grid" ]
                 [ div
@@ -751,13 +762,12 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     [ class "seven wide column required" ]
                     [ text <| translate language Translate.DateOfBirth ++ ":"
                     , br [] []
-                    , DateSelector.SelectorDropdown.view
-                        ToggleDateSelector
-                        (DateSelected operation initiator)
-                        model.isDateSelectorOpen
-                        originBasedSettings.birthDateSelectorFrom
-                        originBasedSettings.birthDateSelectorTo
-                        selectedBirthDate
+                    , div
+                        [ class "date-input field"
+                        , onClick <| SetDateSelectorState (Just dateSelectorConfig)
+                        ]
+                        [ text birthDateForView ]
+                    , viewModal <| viewCalendarPopup language model.dateSelectorPopupState selectedBirthDate
                     ]
                 , div
                     [ class "three wide column" ]

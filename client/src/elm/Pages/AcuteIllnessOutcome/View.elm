@@ -7,7 +7,6 @@ import Backend.IndividualEncounterParticipant.Encoder exposing (acuteIllnessOutc
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), allAcuteIllnessOutcome)
 import Backend.Model exposing (ModelIndexedDb)
 import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)

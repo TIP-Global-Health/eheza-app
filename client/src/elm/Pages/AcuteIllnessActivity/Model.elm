@@ -7,6 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
 import Date exposing (Date)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Form
@@ -99,7 +100,7 @@ type Msg
     | SetContactsTracingInput String
     | SetContactsTracingSearch String
     | SetContactsTracingDate Date
-    | ToggleContactsTracingDateSelector
+    | SetContactsTracingDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetContactsTracingPhoneNumber String
     | SetContactsTracingFinished
     | SaveTracedContact ContactTraceItem
@@ -463,7 +464,7 @@ emptySearchParticipantsData =
 
 type alias RecordContactDetailsData =
     { contactDate : Maybe Date
-    , isDateSelectorOpen : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , phoneNumber : Maybe String
     }
 
@@ -471,7 +472,7 @@ type alias RecordContactDetailsData =
 emptyRecordContactDetailsData : RecordContactDetailsData
 emptyRecordContactDetailsData =
     { contactDate = Nothing
-    , isDateSelectorOpen = False
+    , dateSelectorPopupState = Nothing
     , phoneNumber = Nothing
     }
 

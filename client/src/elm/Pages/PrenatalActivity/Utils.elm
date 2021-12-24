@@ -14,12 +14,14 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.PrenatalActivity.Model exposing (..)
+import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
@@ -62,7 +64,7 @@ expectActivity currentDate assembled activity =
                             )
                         |> List.isEmpty
 
-                Medication ->
+                Backend.PrenatalActivity.Model.Medication ->
                     True
 
                 DangerSigns ->
@@ -188,7 +190,7 @@ activityCompleted currentDate assembled activity =
         Backend.PrenatalActivity.Model.MalariaPrevention ->
             isJust assembled.measurements.malariaPrevention
 
-        Medication ->
+        Backend.PrenatalActivity.Model.Medication ->
             isJust assembled.measurements.medication
 
         DangerSigns ->
@@ -935,7 +937,7 @@ fromLastMenstrualPeriodValue saved =
     , lmpDate = Maybe.map .date saved
     , lmpDateConfident = Maybe.map .confident saved
     , chwLmpConfirmation = Maybe.map .confirmation saved
-    , isDateSelectorOpen = False
+    , dateSelectorPopupState = Nothing
     }
 
 
@@ -949,7 +951,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
@@ -1840,7 +1842,7 @@ toFollowUpValue form =
 fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
 fromAppointmentConfirmationValue saved =
     { appointmentDate = Maybe.map .date saved
-    , isDateSelectorOpen = False
+    , dateSelectorPopupState = Nothing
     }
 
 
@@ -1851,7 +1853,7 @@ appointmentConfirmationFormWithDefault form saved =
             form
             (\value ->
                 { appointmentDate = or form.appointmentDate (Just value.date)
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
@@ -1888,9 +1890,10 @@ prenatalRDTFormWithDefault form saved =
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
-                , executionDate = or form.executionDate value.executionDate
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
                 , testResult = or form.testResult value.testResult
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
@@ -1932,8 +1935,9 @@ prenatalUrineDipstickFormWithDefault form saved =
                 , testVariant = or form.testVariant value.testVariant
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
-                , executionDate = or form.executionDate value.executionDate
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
@@ -1987,8 +1991,9 @@ prenatalNonRDTFormWithDefault form saved =
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
-                , executionDate = or form.executionDate value.executionDate
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 

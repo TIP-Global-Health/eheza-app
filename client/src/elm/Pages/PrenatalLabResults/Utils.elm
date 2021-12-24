@@ -8,7 +8,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Pages.PrenatalActivity.Model exposing (LaboratoryTask(..))
+import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalLabResults.Model exposing (..)
 import Pages.Utils

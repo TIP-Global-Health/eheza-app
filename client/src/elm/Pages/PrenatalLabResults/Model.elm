@@ -5,7 +5,7 @@ import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
-import Pages.PrenatalActivity.Model exposing (LaboratoryTask)
+import Pages.PrenatalActivity.Types exposing (LaboratoryTask)
 
 
 type Msg
