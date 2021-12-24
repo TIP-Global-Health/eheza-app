@@ -21,6 +21,7 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
@@ -1889,9 +1890,10 @@ prenatalRDTFormWithDefault form saved =
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
-                , executionDate = or form.executionDate value.executionDate
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
                 , testResult = or form.testResult value.testResult
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
@@ -1933,8 +1935,9 @@ prenatalUrineDipstickFormWithDefault form saved =
                 , testVariant = or form.testVariant value.testVariant
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
-                , executionDate = or form.executionDate value.executionDate
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
@@ -1988,8 +1991,9 @@ prenatalNonRDTFormWithDefault form saved =
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
-                , executionDate = or form.executionDate value.executionDate
-                , isDateSelectorOpen = form.isDateSelectorOpen
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
 
