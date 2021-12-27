@@ -76,6 +76,7 @@ import Pages.AcuteIllnessActivity.Types
         )
 import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
+import Pages.ClinicalProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Dashboard.Model as Dashboard
     exposing
         ( BeneficiariesTableLabels(..)
@@ -576,6 +577,9 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | GroupOne
+    | GroupTwo
+    | GroupThree
     | Growth
     | HalfOfDosage String
     | HandedReferralFormQuestion
@@ -636,6 +640,9 @@ type TranslationId
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
     | LaboratoryTask LaboratoryTask
+    | LabHistory
+    | LabResults
+    | LabResultsHistoryModeLabel LabResultsHistoryMode
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
@@ -839,14 +846,19 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
     | PrenatalLaboratoryBloodGroup BloodGroup
+    | PrenatalLaboratoryRhesusLabel
     | PrenatalLaboratoryRhesusTestResult
     | PrenatalLaboratoryRhesus Rhesus
+    | PrenatalLaboratoryProteinLabel
     | PrenatalLaboratoryProteinTestResult
     | PrenatalLaboratoryProteinValue ProteinValue
+    | PrenatalLaboratoryPHLabel
     | PrenatalLaboratoryPHTestResult
     | PrenatalLaboratoryPHValue PHValue
+    | PrenatalLaboratoryGlucoseLabel
     | PrenatalLaboratoryGlucoseTestResult
     | PrenatalLaboratoryGlucoseValue GlucoseValue
     | PrenatalLaboratoryLeukocytesTestResult
@@ -952,8 +964,11 @@ type TranslationId
     | RespiratoryDistress
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
+    | Result
     | ResultOfContacting114 Recommendation114
     | ResultOfContactingRecommendedSite RecommendationSite
+    | ResultsMissing
+    | ResultsPending
     | Retry
     | ReviewCaseWith144Respondent
     | Reviewed
@@ -1066,6 +1081,8 @@ type TranslationId
     | TelephoneNumber
     | Term
     | TermPregnancy
+    | TestDate
+    | TestName
     | TestPerformedQuestion
     | TestPerformedTodayQuestion
     | TestResultQuestion
@@ -4181,6 +4198,21 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        GroupOne ->
+            { english = "Group One"
+            , kinyarwanda = Nothing
+            }
+
+        GroupTwo ->
+            { english = "Group Two"
+            , kinyarwanda = Nothing
+            }
+
+        GroupThree ->
+            { english = "Group Three"
+            , kinyarwanda = Nothing
+            }
+
         Growth ->
             { english = "Growth"
             , kinyarwanda = Just "Imikurire"
@@ -4775,6 +4807,73 @@ translationSet trans =
                 LaboratoryCovidTesting ->
                     { english = "Covid Rapid Test"
                     , kinyarwanda = Just "Ikizamini cya Covid-19 cyihuse"
+                    }
+
+        LabHistory ->
+            { english = "Lab History"
+            , kinyarwanda = Nothing
+            }
+
+        LabResults ->
+            { english = "Lab Results"
+            , kinyarwanda = Nothing
+            }
+
+        LabResultsHistoryModeLabel mode ->
+            case mode of
+                LabResultsHistoryHIV _ ->
+                    { english = "HIV Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistorySyphilis _ ->
+                    { english = "Syphilis Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHepatitisB _ ->
+                    { english = "Hepatitis B Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryMalaria _ ->
+                    { english = "Malaria Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryProtein _ ->
+                    { english = "Protein Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryPH _ ->
+                    { english = "pH Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryGlucose _ ->
+                    { english = "Glucose Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryRandomBloodSugar _ ->
+                    { english = "Random Blood Sugar Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHemoglobin _ ->
+                    { english = "Hemoglobin Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBloodGroup _ ->
+                    { english = "Blood Group Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryRhesus _ ->
+                    { english = "Rhesus Test History"
+                    , kinyarwanda = Nothing
                     }
 
         LastChecked ->
@@ -6928,6 +7027,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
+        PrenatalLaboratoryBloodGroupLabel ->
+            { english = "Blood Group"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryBloodGroupTestResult ->
             { english = "Blood Group Test Result"
             , kinyarwanda = Nothing
@@ -6955,6 +7059,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratoryRhesusLabel ->
+            { english = "Rhesus"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryRhesusTestResult ->
             { english = "Rhesus Test Result"
             , kinyarwanda = Nothing
@@ -6971,6 +7080,11 @@ translationSet trans =
                     { english = "Negative"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryProteinLabel ->
+            { english = "Protein"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryProteinTestResult ->
             { english = "Protein Test Result"
@@ -7003,6 +7117,11 @@ translationSet trans =
                     { english = "2000"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryPHLabel ->
+            { english = "pH"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryPHTestResult ->
             { english = "PH Test Result"
@@ -7045,6 +7164,11 @@ translationSet trans =
                     { english = "8.5"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryGlucoseLabel ->
+            { english = "Glucose"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryGlucoseTestResult ->
             { english = "Glucose Test Result"
@@ -7719,6 +7843,16 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'abavutse ari bazima badashyitse"
             }
 
+        TestDate ->
+            { english = "Date of Test"
+            , kinyarwanda = Nothing
+            }
+
+        TestName ->
+            { english = "Test name"
+            , kinyarwanda = Nothing
+            }
+
         TestPerformedQuestion ->
             { english = "Were you able to perform the test"
             , kinyarwanda = Just "Waba wakoze ikizamini"
@@ -8190,6 +8324,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
 
+        Result ->
+            { english = "Result"
+            , kinyarwanda = Nothing
+            }
+
         ResultOfContacting114 recommendation ->
             case recommendation of
                 SendToHealthCenter ->
@@ -8263,6 +8402,16 @@ translationSet trans =
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
+
+        ResultsMissing ->
+            { english = "Results Missing"
+            , kinyarwanda = Nothing
+            }
+
+        ResultsPending ->
+            { english = "Results Pending"
+            , kinyarwanda = Nothing
+            }
 
         Retry ->
             { english = "Retry"

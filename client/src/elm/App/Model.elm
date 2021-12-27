@@ -22,6 +22,7 @@ import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessOutcome.Model
 import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessProgressReport.Model
+import Pages.ClinicalProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
@@ -265,6 +266,7 @@ type alias LoggedInModel =
     , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChildActivity.Model.Model
     , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChildProgressReport.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
+    , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.ClinicalProgressReport.Model.Model
     }
 
 
@@ -299,6 +301,7 @@ emptyLoggedInModel villageId nurse =
     , wellChildActivityPages = Dict.empty
     , wellChildProgressReportPages = Dict.empty
     , traceContactPages = Dict.empty
+    , clinicalProgressReportPages = Dict.empty
     }
 
 
@@ -365,6 +368,7 @@ type MsgLoggedIn
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
     | MsgPagePrenatalLabResults PrenatalEncounterId Pages.PrenatalLabResults.Model.Msg
+    | MsgPageClinicalProgressReport PrenatalEncounterId Pages.ClinicalProgressReport.Model.Msg
 
 
 type alias Flags =

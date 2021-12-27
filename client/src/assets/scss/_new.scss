@@ -1980,8 +1980,8 @@ div.page-outcome.pregnancy {
   }
 }
 
-div.page-clinical-progress-report,
-div.page-demographics-report {
+div.page-report.clinical,
+div.page-report.demographics {
   background: $color-light-gray;
   padding: 0 20px 35px 20px;
   height: 100%;
@@ -2030,10 +2030,18 @@ div.page-demographics-report {
       font-size: 18px;
       padding: 20px 0 20px 40px;
     }
+
+    .icon-forward {
+      align-self: center;
+      background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+      background-size: 45px 50px;
+      height: 50px;
+      width: 45px;
+    }
   }
 }
 
-div.page-clinical-progress-report {
+div.page-report.clinical {
 
   .header-pane {
     background: $color-white;
@@ -2133,6 +2141,7 @@ div.page-clinical-progress-report {
   }
 
   .patient-progress {
+    margin-bottom: 20px;
 
     .caption {
       font-size: 16px;
@@ -2328,6 +2337,96 @@ div.page-clinical-progress-report {
       }
     }
 
+  }
+
+  .lab-results,
+  .lab-results-history {
+
+    .heading,
+    .entry {
+      display: flex;
+    }
+
+    .heading {
+      font-weight: 600;
+    }
+
+    .entry {
+      font-weight: 500;
+      line-height: 60px;
+
+      .result .uncompleted {
+        background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  .lab-results {
+
+    .heading,
+    .entry {
+
+      .name,
+      .date,
+      .result {
+        width: 215px;
+      }
+    }
+
+    .entry {
+      border-bottom: 1px solid $color-text;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .name {
+        margin-left: 20px;
+      }
+    }
+
+    .group-heading {
+      background: $color-primary;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 0 10px;
+    }
+
+    .group-content {
+      background: $color-white;
+      color: $color-text;
+      font-size: 18px;
+      padding: 0 20px;
+    }
+  }
+
+  .lab-results-history {
+
+    .heading,
+    .entry {
+
+      .date,
+      .result {
+        width: 50%;
+      }
+    }
+
+    .heading {
+      margin-bottom: 10px;
+    }
+
+    .entry {
+      border-top: 1px solid $color-text;
+    }
+  }
+
+  .ui.unstackable.items .lab-results-history .pane-content {
+    padding: 20px;
   }
 }
 
