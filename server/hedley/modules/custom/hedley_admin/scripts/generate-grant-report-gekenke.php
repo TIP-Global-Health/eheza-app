@@ -40,7 +40,6 @@ $result = $query->execute();
 $nemba_hcs_ids = array_keys($result['node']);
 
 $gakenke_hcs_ids = array_merge($ruli_hcs_ids, $nemba_hcs_ids);
-
 $base_query = base_query_for_bundle('person');
 
 $six_years_ago = date('Ymd', strtotime('-6 years'));
@@ -295,55 +294,52 @@ function categorize_data(array $dataset, string $grouped_by_month_key, string $g
  *   Wasting data.
  */
 function print_prevalence_report(array $skeleton, array $stunting, array $underweight, array $wasting) {
-  $header = [
-    'Prevalence by Month',
-  ];
-
   // Assemble the table for prevalence.
   for ($j = 0; $j <= 3; $j++) {
-    $data = $skeleton;
+    $data[$j] = $skeleton;
+    $header = ['Prevalence by Month'];
 
     for ($i = 0; $i <= 11; $i++) {
-      $current_month = strtotime('- ' . ($j * 12 + $i) . 'months');
+      $current_month = strtotime('- ' . ($j * 12 + $i) . 'months') - 7*24*3600;
       $month_key = date('Y F', $current_month);
       $header[] = $month_key;
 
       if (isset($stunting[$month_key]['moderate'])) {
-        $data[0][] = format_prevalence($stunting[$month_key]['moderate'], $stunting[$month_key]['any']);
+        $data[$j][0][] = format_prevalence($stunting[$month_key]['moderate'], $stunting[$month_key]['any']);
       } else {
-        $data[0][] = '-';
+        $data[$j][0][] = '-';
       }
       if (isset($stunting[$month_key]['severe'])) {
-        $data[1][] = format_prevalence($stunting[$month_key]['severe'], $stunting[$month_key]['any']);
+        $data[$j][1][] = format_prevalence($stunting[$month_key]['severe'], $stunting[$month_key]['any']);
       } else {
-        $data[1][] = '-';
+        $data[$j][1][] = '-';
       }
 
       if (isset($underweight[$month_key]['moderate'])) {
-        $data[2][] = format_prevalence($underweight[$month_key]['moderate'], $underweight[$month_key]['any']);
+        $data[$j][2][] = format_prevalence($underweight[$month_key]['moderate'], $underweight[$month_key]['any']);
       } else {
-        $data[2][] = '-';
+        $data[$j][2][] = '-';
       }
       if (isset($underweight[$month_key]['severe'])) {
-        $data[3][] = format_prevalence($underweight[$month_key]['severe'], $underweight[$month_key]['any']);
+        $data[$j][3][] = format_prevalence($underweight[$month_key]['severe'], $underweight[$month_key]['any']);
       } else {
-        $data[3][] = '-';
+        $data[$j][3][] = '-';
       }
 
       if (isset($wasting[$month_key]['moderate'])) {
-        $data[4][] = format_prevalence($wasting[$month_key]['moderate'], $wasting[$month_key]['any']);
+        $data[$j][4][] = format_prevalence($wasting[$month_key]['moderate'], $wasting[$month_key]['any']);
       } else {
-        $data[4][] = '-';
+        $data[$j][4][] = '-';
       }
       if (isset($wasting[$month_key]['severe'])) {
-        $data[5][] = format_prevalence($wasting[$month_key]['severe'], $wasting[$month_key]['any']);
+        $data[$j][5][] = format_prevalence($wasting[$month_key]['severe'], $wasting[$month_key]['any']);
       } else {
-        $data[5][] = '-';
+        $data[$j][5][] = '-';
       }
     }
 
     $text_table = new HedleyAdminTextTable($header);
-    $text_table->addData($data);
+    $text_table->addData($data[$j]);
     drush_print($text_table->render());
   }
 }
