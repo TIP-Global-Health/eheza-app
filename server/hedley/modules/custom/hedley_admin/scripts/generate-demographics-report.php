@@ -107,7 +107,7 @@ function encounter_unique_count($type, $filter = NULL) {
   return db_query("SELECT COUNT(DISTINCT field_person_target_id) FROM field_data_field_{$type}_encounter e LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id;")->fetchField();
 }
 
-$bootstrap_data_structures = file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL');
+$bootstrap_data_structures = rtrim(file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL'));
 $commands = explode(';', $bootstrap_data_structures);
 $k = 0;
 foreach ($commands as $command) {

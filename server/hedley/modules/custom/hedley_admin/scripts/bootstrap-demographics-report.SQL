@@ -160,3 +160,23 @@ GROUP BY
 HAVING
       COUNT(DISTINCT field_session_target_id) + COUNT(DISTINCT field_nutrition_encounter_target_id) +
       COUNT(DISTINCT field_prenatal_encounter_target_id) + COUNT(DISTINCT field_acute_illness_encounter_target_id) > 1;
+
+# Deleted patients.
+DROP TABLE IF EXISTS person_deleted;
+CREATE TABLE person_deleted
+(
+    `entity_id` int(10) UNSIGNED NOT NULL COMMENT 'The entity id this data is attached to'
+);
+ALTER TABLE person_deleted
+    ADD PRIMARY KEY entity_id (entity_id);
+
+INSERT
+INTO
+    person_deleted
+
+SELECT
+  fd.entity_id
+FROM
+  field_data_field_deleted fd
+WHERE
+  fd.bundle='person' AND field_deleted_value=1;
