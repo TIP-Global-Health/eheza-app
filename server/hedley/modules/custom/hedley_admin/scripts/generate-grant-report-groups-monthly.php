@@ -42,27 +42,6 @@ $six_years_ago = date('Ymd', strtotime('-6 years'));
 $base_query_for_hc->fieldCondition('field_birth_date', 'value', $six_years_ago, '>');
 //$base_query_for_hc->range(0,3);
 
-$skeleton = [
-  [
-    'Stunting Moderate',
-  ],
-  [
-    'Stunting Severe',
-  ],
-  [
-    'Underweight Moderate',
-  ],
-  [
-    'Underweight Severe',
-  ],
-  [
-    'Wasting Moderate',
-  ],
-  [
-    'Wasting Severe',
-  ],
-];
-
 foreach ($catchment_area_hcs_ids as $area => $catchment_area_hc_ids) {
   drush_print("Processing $area catchment area...");
   $stunting['fbf'] = $underweight['fbf'] = $wasting['fbf'] = [];
@@ -178,6 +157,27 @@ foreach ($catchment_area_hcs_ids as $area => $catchment_area_hc_ids) {
 
   drush_print("# Nutrition report for $area - " . date('D/m/Y'));
   drush_print('');
+
+  $skeleton = [
+    [
+      'Stunting Moderate',
+    ],
+    [
+      'Stunting Severe',
+    ],
+    [
+      'Underweight Moderate',
+    ],
+    [
+      'Underweight Severe',
+    ],
+    [
+      'Wasting Moderate',
+    ],
+    [
+      'Wasting Severe',
+    ],
+  ];
 
   drush_print('## Prevalence by month (period prevalence) for FBF groups');
   print_prevalence_report($skeleton, $stunting['fbf'], $underweight['fbf'], $wasting['fbf']);
