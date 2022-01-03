@@ -2,12 +2,12 @@
 
 /**
  * @file
- * Generates 'Nutrition' report for past.
+ * Generates prevalence monthly report.
  *
- * Counts occurrences of malnutrition indicators (moderate and severe).
+ * For FBF and PMTCT groups at Gekenke district, between 2018 and 2021.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php.
+ * profiles/hedley/modules/custom/hedley_admin/scripts/generate-grant-report-groups-monthly.php.
  */
 
 require_once __DIR__ . '/report_common.inc';

@@ -2,12 +2,12 @@
 
 /**
  * @file
- * Generates 'Nutrition' report for past.
+ * Generates Malnutrition percentage out of Total encounters annual report.
  *
- * Counts occurrences of malnutrition indicators (moderate and severe).
+ * For all nutrition encounters at Gekenke district, between 2018 and 2021.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php.
+ * profiles/hedley/modules/custom/hedley_admin/scripts/generate-grant-report-gekenke-annual.php.
  */
 
 require_once __DIR__ . '/report_common.inc';
