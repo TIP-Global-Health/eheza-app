@@ -122,7 +122,7 @@ foreach ($catchment_area_hcs_ids as $area => $catchment_area_hc_ids) {
             $measurement_timestamp = $wrapper->field_date_measured->value();
             $grouped_by_year_key = date('Y', $measurement_timestamp);
 
-            if (in_array($measurement->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
+            if ($measurement->type == HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE) {
               $score = $wrapper->field_zscore_age->value();
               if (empty($score)) {
                 continue;
@@ -133,7 +133,7 @@ foreach ($catchment_area_hcs_ids as $area => $catchment_area_hc_ids) {
               continue;
             }
 
-            // We know it's one of HEDLEY_ACTIVITY_WEIGHT_BUNDLES.
+            // We know it's HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE.
             $score = $wrapper->field_zscore_age->value();
             if (!empty($score)) {
               [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($score);
@@ -211,7 +211,7 @@ function base_query_for_bundle($bundle): EntityFieldQuery {
  * @param int $examined
  *   Examined patients - denominator.
  */
-function format_percentage(int $cases, int $examined) {
+function format_percentage(int $cases, int $examined): string {
   return round((($cases / $examined) * 100), 3) . ' %';
 }
 

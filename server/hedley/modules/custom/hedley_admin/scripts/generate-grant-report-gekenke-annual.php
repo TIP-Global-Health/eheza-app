@@ -191,7 +191,7 @@ function base_query_for_bundle($bundle): EntityFieldQuery {
  * @param int $examined
  *   Examined patients - denominator.
  */
-function format_percentage(int $cases, int $examined) {
+function format_percentage(int $cases, int $examined): string {
   return round((($cases / $examined) * 100), 3) . ' %';
 }
 

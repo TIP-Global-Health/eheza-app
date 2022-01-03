@@ -104,21 +104,19 @@ while ($processed < $total) {
       $wrapper = entity_metadata_wrapper('node', $measurement);
       $measurement_timestamp = $wrapper->field_date_measured->value();
       $grouped_by_month_key = date('Y F', $measurement_timestamp);
-      $grouped_by_year_key = date('Y', $measurement_timestamp);
-      $grouped_by_quarter_key = format_quarter($measurement_timestamp);
 
       if (in_array($measurement->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
         [$stunting_moderate, $stunting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
-        $stunting = categorize_data($stunting, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $stunting_moderate, $stunting_severe, $child->nid);
+        $stunting = categorize_data($stunting, $grouped_by_month_key, $stunting_moderate, $stunting_severe, $child->nid);
         continue;
       }
 
       // We know it's one of HEDLEY_ACTIVITY_WEIGHT_BUNDLES.
       [$underweight_moderate, $underweight_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_age');
-      $underweight = categorize_data($underweight, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $underweight_moderate, $underweight_severe, $child->nid);
+      $underweight = categorize_data($underweight, $grouped_by_month_key, $underweight_moderate, $underweight_severe, $child->nid);
 
       [$wasting_moderate, $wasting_severe] = classify_by_malnutrition_type($wrapper, 'field_zscore_length');
-      $wasting = categorize_data($wasting, $grouped_by_month_key, $grouped_by_quarter_key, $grouped_by_year_key, $wasting_moderate, $wasting_severe, $child->nid);
+      $wasting = categorize_data($wasting, $grouped_by_month_key, $wasting_moderate, $wasting_severe, $child->nid);
     }
   }
 
@@ -208,23 +206,8 @@ function base_query_for_bundle($bundle): EntityFieldQuery {
  * @param array $examined
  *   Examined patients.
  */
-function format_prevalence(array $cases, array $examined) {
+function format_prevalence(array $cases, array $examined): string {
   return round(((count($cases) / count(array_unique($examined))) * 100), 3) . ' %';
-}
-
-/**
- * Formats a Year quarter string.
- *
- * @param int $timestamp
- *   UNIX timestamp.
- *
- * @return string
- *   For example: 2021 Q1.
- */
-function format_quarter(int $timestamp): string {
-  $month = date("n", $timestamp);
-  $quarter = ceil($month / 3);
-  return date('Y', $timestamp) . ' Q' . $quarter;
 }
 
 /**
@@ -234,10 +217,6 @@ function format_quarter(int $timestamp): string {
  *   Dataset for the given malnutrition type.
  * @param string $grouped_by_month_key
  *   Month key.
- * @param string $grouped_by_quarter_key
- *   Quarter key.
- * @param string $grouped_by_year_key
- *   Year key.
  * @param int $moderate
  *   Indicated moderate.
  * @param int $severe
@@ -248,7 +227,7 @@ function format_quarter(int $timestamp): string {
  * @return array
  *   Updated dataset.
  */
-function categorize_data(array $dataset, string $grouped_by_month_key, string $grouped_by_quarter_key, string $grouped_by_year_key, int $moderate, int $severe, int $id): array {
+function categorize_data(array $dataset, string $grouped_by_month_key, int $moderate, int $severe, int $id): array {
   $category_ids = [
     'moderate' => [],
     'severe' => [],
@@ -257,26 +236,14 @@ function categorize_data(array $dataset, string $grouped_by_month_key, string $g
   if (!isset($dataset[$grouped_by_month_key])) {
     $dataset[$grouped_by_month_key] = $category_ids;
   }
-  if (!isset($dataset[$grouped_by_quarter_key])) {
-    $dataset[$grouped_by_quarter_key] = $category_ids;
-  }
-  if (!isset($dataset[$grouped_by_year_key])) {
-    $dataset[$grouped_by_year_key] = $category_ids;
-  }
   if ($moderate) {
     $dataset[$grouped_by_month_key]['moderate'][] = $id;
-    $dataset[$grouped_by_quarter_key]['moderate'][] = $id;
-    $dataset[$grouped_by_year_key]['moderate'][] = $id;
   }
   elseif ($severe) {
     $dataset[$grouped_by_month_key]['severe'][] = $id;
-    $dataset[$grouped_by_quarter_key]['severe'][] = $id;
-    $dataset[$grouped_by_year_key]['severe'][] = $id;
   }
 
   $dataset[$grouped_by_month_key]['any'][] = $id;
-  $dataset[$grouped_by_quarter_key]['any'][] = $id;
-  $dataset[$grouped_by_year_key]['any'][] = $id;
 
   return $dataset;
 }
@@ -299,8 +266,8 @@ function print_prevalence_report(array $skeleton, array $stunting, array $underw
     $data[$j] = $skeleton;
     $header = ['Prevalence by Month'];
 
-    for ($i = 0; $i <= 11; $i++) {
-      $current_month = strtotime('- ' . ($j * 12 + $i) . 'months') - 7*24*3600;
+    for ($i = 1; $i <= 12; $i++) {
+      $current_month = strtotime('- ' . ($j * 12 + $i) . 'months');
       $month_key = date('Y F', $current_month);
       $header[] = $month_key;
 
