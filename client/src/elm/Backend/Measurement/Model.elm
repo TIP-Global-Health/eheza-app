@@ -222,6 +222,7 @@ type alias FollowUp =
 type alias FollowUpValue =
     { options : EverySet FollowUpOption
     , assesment : EverySet NutritionAssessment
+    , resolutionDate : Maybe NominalDate
     }
 
 

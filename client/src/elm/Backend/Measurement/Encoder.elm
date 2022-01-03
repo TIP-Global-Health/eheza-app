@@ -2010,6 +2010,11 @@ encodeFollowUpValueWithType type_ value =
 
                 _ ->
                     EverySet.singleton NormalChildNutrition
+
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
     in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
@@ -2017,6 +2022,7 @@ encodeFollowUpValueWithType type_ value =
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
+        ++ resolutionDate
 
 
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )

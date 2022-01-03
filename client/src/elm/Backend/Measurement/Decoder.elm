@@ -1766,6 +1766,7 @@ decodeFollowUpValue =
     succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> custom decodeNutritionAssessment
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
