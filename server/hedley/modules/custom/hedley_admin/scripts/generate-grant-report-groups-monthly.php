@@ -40,7 +40,6 @@ $catchment_area_hcs_ids = ['Ruli' => $ruli_hcs_ids, 'Nemba' => $nemba_hcs_ids];
 $base_query_for_hc = base_query_for_bundle('person');
 $six_years_ago = date('Ymd', strtotime('-6 years'));
 $base_query_for_hc->fieldCondition('field_birth_date', 'value', $six_years_ago, '>');
-//$base_query_for_hc->range(0,3);
 
 foreach ($catchment_area_hcs_ids as $area => $catchment_area_hc_ids) {
   drush_print("Processing $area catchment area...");
