@@ -16,7 +16,7 @@ class HedleyRestfulPrenatalFollowUp extends HedleyRestfulPrenatalActivityBase {
    */
   protected $fields = [
     'field_prenatal_assesment',
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
   /**
@@ -30,7 +30,7 @@ class HedleyRestfulPrenatalFollowUp extends HedleyRestfulPrenatalActivityBase {
    * {@inheritdoc}
    */
   protected $dateFields = [
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
 }

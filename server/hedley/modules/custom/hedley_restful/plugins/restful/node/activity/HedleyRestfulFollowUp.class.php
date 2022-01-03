@@ -14,7 +14,7 @@ class HedleyRestfulFollowUp extends HedleyRestfulGroupActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
   /**
@@ -30,7 +30,7 @@ class HedleyRestfulFollowUp extends HedleyRestfulGroupActivityBase {
    * {@inheritdoc}
    */
   protected $dateFields = [
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
 }

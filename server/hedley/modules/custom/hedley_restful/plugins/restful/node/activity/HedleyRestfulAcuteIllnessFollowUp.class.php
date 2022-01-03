@@ -14,7 +14,7 @@ class HedleyRestfulAcuteIllnessFollowUp extends HedleyRestfulAcuteIllnessActivit
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
   /**
@@ -28,7 +28,7 @@ class HedleyRestfulAcuteIllnessFollowUp extends HedleyRestfulAcuteIllnessActivit
    * {@inheritdoc}
    */
   protected $dateFields = [
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
 }

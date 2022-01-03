@@ -14,7 +14,7 @@ class HedleyRestfulWellChildFollowUp extends HedleyRestfulWellChildActivityBase 
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
   /**
@@ -30,7 +30,7 @@ class HedleyRestfulWellChildFollowUp extends HedleyRestfulWellChildActivityBase 
    * {@inheritdoc}
    */
   protected $dateFields = [
-    'field_contact_date',
+    'field_date_concluded',
   ];
 
 }
