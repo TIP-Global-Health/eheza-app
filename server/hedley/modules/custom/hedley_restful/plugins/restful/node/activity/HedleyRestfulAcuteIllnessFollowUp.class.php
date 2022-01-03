@@ -13,8 +13,22 @@ class HedleyRestfulAcuteIllnessFollowUp extends HedleyRestfulAcuteIllnessActivit
   /**
    * {@inheritdoc}
    */
+  protected $fields = [
+    'field_contact_date',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $multiFields = [
     'field_follow_up_options',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $dateFields = [
+    'field_contact_date',
   ];
 
 }
