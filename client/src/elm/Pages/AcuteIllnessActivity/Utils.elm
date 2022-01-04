@@ -1688,28 +1688,31 @@ expectPhysicalExamTask currentDate person isChw isFirstEncounter task =
             isFirstEncounter
 
 
-fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
-fromFollowUpValue saved =
-    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
-
-
-followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault : FollowUpForm -> Maybe AcuteIllnessFollowUpValue -> FollowUpForm
 followUpFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+            (\value ->
+                { option = or form.option (EverySet.toList value.options |> List.head)
+                , resolutionDate = or form.resolutionDate value.resolutionDate
+                }
+            )
 
 
-toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault : Maybe AcuteIllnessFollowUpValue -> FollowUpForm -> Maybe AcuteIllnessFollowUpValue
 toFollowUpValueWithDefault saved form =
     followUpFormWithDefault form saved
         |> toFollowUpValue
 
 
-toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue : FollowUpForm -> Maybe AcuteIllnessFollowUpValue
 toFollowUpValue form =
-    Maybe.map (List.singleton >> EverySet.fromList) form.option
+    Maybe.map
+        (\options ->
+            AcuteIllnessFollowUpValue options form.resolutionDate
+        )
+        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
 
 
 fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm

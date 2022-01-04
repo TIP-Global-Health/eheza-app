@@ -1470,7 +1470,13 @@ type HealthEducationSign
 
 
 type alias AcuteIllnessFollowUp =
-    AcuteIllnessMeasurement (EverySet FollowUpOption)
+    AcuteIllnessMeasurement AcuteIllnessFollowUpValue
+
+
+type alias AcuteIllnessFollowUpValue =
+    { options : EverySet FollowUpOption
+    , resolutionDate : Maybe NominalDate
+    }
 
 
 type alias CovidTesting =

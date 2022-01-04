@@ -99,7 +99,7 @@ generateAcuteIllnessFollowUps db followUps =
                                     item.participantId
 
                                 newItem =
-                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value
+                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value.options
                             in
                             Dict.get ( participantId, personId ) accum
                                 |> Maybe.map

@@ -2037,12 +2037,19 @@ encodeAcuteIllnessFollowUp =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
 
 
-encodeAcuteIllnessFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodeAcuteIllnessFollowUpValue : AcuteIllnessFollowUpValue -> List ( String, Value )
 encodeAcuteIllnessFollowUpValue value =
-    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    let
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
+    in
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_follow_up" )
     ]
+        ++ resolutionDate
 
 
 encodeNutritionAssessment : NutritionAssessment -> Value

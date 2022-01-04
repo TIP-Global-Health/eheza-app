@@ -11,6 +11,7 @@ import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Form
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.Page exposing (Page)
@@ -365,7 +366,7 @@ emptyNextStepsData =
     , sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = FollowUpForm Nothing
+    , followUpForm = FollowUpForm Nothing Nothing
     , contactsTracingForm = emptyContactsTracingForm
     , activeTask = Nothing
     }
@@ -412,6 +413,7 @@ emptyCall114Form =
 
 type alias FollowUpForm =
     { option : Maybe FollowUpOption
+    , resolutionDate : Maybe NominalDate
     }
 
 

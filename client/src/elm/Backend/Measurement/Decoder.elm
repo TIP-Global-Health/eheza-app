@@ -1775,10 +1775,11 @@ decodeAcuteIllnessFollowUp =
     decodeAcuteIllnessMeasurement decodeAcuteIllnessFollowUpValue
 
 
-decodeAcuteIllnessFollowUpValue : Decoder (EverySet FollowUpOption)
+decodeAcuteIllnessFollowUpValue : Decoder AcuteIllnessFollowUpValue
 decodeAcuteIllnessFollowUpValue =
-    decodeEverySet decodeFollowUpOption
-        |> field "follow_up_options"
+    succeed AcuteIllnessFollowUpValue
+        |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
 decodeNutritionFeeding : Decoder NutritionFeeding
