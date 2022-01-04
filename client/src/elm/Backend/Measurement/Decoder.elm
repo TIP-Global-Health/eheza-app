@@ -318,6 +318,7 @@ decodePrenatalFollowUpValue =
     succeed PrenatalFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> required "prenatal_assesment" decodePrenatalAssesment
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
 decodePrenatalAssesment : Decoder PrenatalAssesment

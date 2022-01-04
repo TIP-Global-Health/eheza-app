@@ -570,7 +570,6 @@
                 var sixMonthsFromToday = new Date(today.setMonth(today.getMonth() + 6));
 
                 nodes.forEach(function (node) {
-                    console.log(node.date_concluded);
                     if (node.date_concluded !== null && typeof node.date_concluded != 'undefined') {
                         var targetDate = sixMonthsFromToday;
 

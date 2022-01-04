@@ -771,12 +771,13 @@ type alias FollowUpForm =
 
     -- We do not display this. Using it when saving.
     , assesment : Maybe PrenatalAssesment
+    , resolutionDate : Maybe NominalDate
     }
 
 
 emptyFollowUpForm : FollowUpForm
 emptyFollowUpForm =
-    FollowUpForm Nothing Nothing
+    FollowUpForm Nothing Nothing Nothing
 
 
 type alias HealthEducationForm =

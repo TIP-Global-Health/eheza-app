@@ -792,6 +792,7 @@ type alias PrenatalFollowUp =
 type alias PrenatalFollowUpValue =
     { options : EverySet FollowUpOption
     , assesment : PrenatalAssesment
+    , resolutionDate : Maybe NominalDate
     }
 
 
