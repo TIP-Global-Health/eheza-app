@@ -42,9 +42,11 @@ generateNutritionFollowUps currentDate db followUps =
 
         nutritionGroup =
             Dict.values followUps.nutritionGroup
+                |> List.filter filterResolvedFollowUps
 
         wellChild =
             Dict.values followUps.wellChild
+                |> List.filter filterResolvedFollowUps
 
         generateFollowUpItems followUpsList accumDict =
             followUpsList
