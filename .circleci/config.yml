@@ -8,13 +8,6 @@ workflows:
       - test:
           requires:
             - lint
-      - deploy:
-          requires:
-            - lint
-            - test
-          filters:
-            branches:
-              only: main
 
 jobs:
   lint:
