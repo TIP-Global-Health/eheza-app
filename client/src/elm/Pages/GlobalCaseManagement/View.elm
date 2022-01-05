@@ -75,7 +75,7 @@ viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model 
         (\villageId ->
             let
                 nutritionFollowUps =
-                    generateNutritionFollowUps currentDate db followUps
+                    generateNutritionFollowUps db followUps
                         |> filterVillageResidents villageId identity db
 
                 nutritionFollowUpsPane =
@@ -302,7 +302,7 @@ viewNutritionPane language currentDate itemsDict db model =
             Date.add Days 1 currentDate
 
         entries =
-            generateNutritionFollowUpEntries language limitDate itemsDict db
+            generateNutritionFollowUpEntries language currentDate limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -317,15 +317,15 @@ viewNutritionPane language currentDate itemsDict db model =
         ]
 
 
-generateNutritionFollowUpEntries : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> List NutritionFollowUpEntry
-generateNutritionFollowUpEntries language limitDate itemsDict db =
-    Dict.map (generateNutritionFollowUpEntryData language limitDate db) itemsDict
+generateNutritionFollowUpEntries : Language -> NominalDate -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> List NutritionFollowUpEntry
+generateNutritionFollowUpEntries language currentDate limitDate itemsDict db =
+    Dict.map (generateNutritionFollowUpEntryData language currentDate limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
-generateNutritionFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Maybe NutritionFollowUpEntry
-generateNutritionFollowUpEntryData language limitDate db personId item =
+generateNutritionFollowUpEntryData : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Maybe NutritionFollowUpEntry
+generateNutritionFollowUpEntryData language currentDate limitDate db personId item =
     let
         lastHomeVisitEncounter =
             resolveIndividualParticipantForPerson personId HomeVisitEncounter db

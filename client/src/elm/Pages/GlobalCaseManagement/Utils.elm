@@ -23,22 +23,11 @@ nurseFilters =
     [ FilterContactsTrace, FilterPrenatalLabs ]
 
 
-generateNutritionFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
-generateNutritionFollowUps currentDate db followUps =
+generateNutritionFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
+generateNutritionFollowUps db followUps =
     let
-        filterResolvedFollowUps followUp =
-            Maybe.map
-                (\resolutionDate ->
-                    -- Resolution date was today, or before that.
-                    not <| Date.compare currentDate resolutionDate == LT
-                )
-                followUp.value.resolutionDate
-                |> -- Do not filter follow up is resolution date is not set.
-                   Maybe.withDefault True
-
         nutritionIndividual =
             Dict.values followUps.nutritionIndividual
-                |> List.filter filterResolvedFollowUps
 
         nutritionGroup =
             Dict.values followUps.nutritionGroup

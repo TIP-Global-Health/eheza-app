@@ -24,7 +24,7 @@ fetch currentDate healthCenterId db =
         --
         nutritionFollowUps =
             followUps
-                |> Maybe.map (generateNutritionFollowUps currentDate db)
+                |> Maybe.map (generateNutritionFollowUps db)
                 |> Maybe.withDefault Dict.empty
 
         peopleForNutrition =

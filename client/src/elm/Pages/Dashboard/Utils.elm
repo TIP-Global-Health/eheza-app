@@ -879,11 +879,11 @@ getFollowUpsTotals language currentDate limitDate db villageId followUps =
             filterFollowUpMeasurementsByLimitDate limitDate followUps
 
         nutritionFollowUps =
-            generateNutritionFollowUps currentDate db followUpsToLimitDate
+            generateNutritionFollowUps db followUpsToLimitDate
                 |> filterVillageResidents villageId identity db
 
         nutritionEntries =
-            generateNutritionFollowUpEntries language limitDate nutritionFollowUps db
+            generateNutritionFollowUpEntries language currentDate limitDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps db followUpsToLimitDate
