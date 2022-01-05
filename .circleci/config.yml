@@ -11,7 +11,7 @@ workflows:
           requires:
             - lint_phpcs
             - lint_elm
-            - lint_shelcheck
+            - lint_shellcheck
 
 jobs:
   lint_phpcs:
