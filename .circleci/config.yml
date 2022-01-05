@@ -1,0 +1,36 @@
+version: 2
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - lint
+      - test:
+          requires:
+            - lint
+      - deploy:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: main
+
+jobs:
+  lint:
+    docker:
+      - image: cimg/php:7.4.26
+    steps:
+      - checkout
+      - run: cd ~/project && composer install && vendor/bin/phpstan analyse -c phpstan.neon
+      - run: ci-scripts/install_coder.sh
+      - run: export REVIEW_STANDARD="Drupal" && ci-scripts/test_coder.sh
+      - run: export REVIEW_STANDARD="DrupalPractice" && ci-scripts/test_coder.sh
+  test:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: ci-scripts/install_ddev.sh
+      - run: ci-scripts/install_drupal.sh
+      - run: ci-scripts/test_phpunit.sh
