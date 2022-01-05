@@ -26,27 +26,17 @@ nurseFilters =
 generateNutritionFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
 generateNutritionFollowUps currentDate db followUps =
     let
-        filterResolvedFollowUps followUp =
-            Maybe.map
-                (\resolutionDate ->
-                    -- Resolution date was today, or before that.
-                    not <| Date.compare currentDate resolutionDate == LT
-                )
-                followUp.value.resolutionDate
-                |> -- Do not filter follow up is resolution date is not set.
-                   Maybe.withDefault True
-
         nutritionIndividual =
             Dict.values followUps.nutritionIndividual
-                |> List.filter filterResolvedFollowUps
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
 
         nutritionGroup =
             Dict.values followUps.nutritionGroup
-                |> List.filter filterResolvedFollowUps
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
 
         wellChild =
             Dict.values followUps.wellChild
-                |> List.filter filterResolvedFollowUps
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
 
         generateFollowUpItems followUpsList accumDict =
             followUpsList
@@ -81,8 +71,8 @@ generateNutritionFollowUps currentDate db followUps =
         |> generateFollowUpItems wellChild
 
 
-generateAcuteIllnessFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
-generateAcuteIllnessFollowUps db followUps =
+generateAcuteIllnessFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+generateAcuteIllnessFollowUps currentDate db followUps =
     let
         encountersData =
             generateAcuteIllnessEncounters followUps
@@ -96,6 +86,7 @@ generateAcuteIllnessFollowUps db followUps =
                 |> Dict.fromList
     in
     Dict.values followUps.acuteIllness
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
         |> List.foldl
             (\item accum ->
                 let
@@ -131,8 +122,8 @@ generateAcuteIllnessFollowUps db followUps =
             Dict.empty
 
 
-generatePrenatalFollowUps : ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
-generatePrenatalFollowUps db followUps =
+generatePrenatalFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
+generatePrenatalFollowUps currentDate db followUps =
     let
         encountersData =
             generatePrenatalEncounters followUps
@@ -146,6 +137,7 @@ generatePrenatalFollowUps db followUps =
                 |> Dict.fromList
     in
     Dict.values followUps.prenatal
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
         |> List.foldl
             (\item accum ->
                 let
@@ -179,6 +171,18 @@ generatePrenatalFollowUps db followUps =
                     |> Maybe.withDefault accum
             )
             Dict.empty
+
+
+filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool
+filterResolvedFollowUps currentDate resolutionDate =
+    Maybe.map
+        (\date ->
+            -- Resolution date was today, or before that.
+            not <| Date.compare currentDate date == LT
+        )
+        resolutionDate
+        |> -- Do not filter follow up is resolution date is not set.
+           Maybe.withDefault True
 
 
 filterVillageResidents : VillageId -> (k -> PersonId) -> ModelIndexedDb -> Dict k { v | personName : String } -> Dict k { v | personName : String }

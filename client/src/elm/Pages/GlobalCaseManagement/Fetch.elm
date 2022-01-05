@@ -67,7 +67,7 @@ fetch currentDate healthCenterId db =
 
         acuteIllnessFollowUps =
             followUps
-                |> Maybe.map (generateAcuteIllnessFollowUps db)
+                |> Maybe.map (generateAcuteIllnessFollowUps currentDate db)
                 |> Maybe.withDefault Dict.empty
 
         peopleForAccuteIllness =
@@ -99,7 +99,7 @@ fetch currentDate healthCenterId db =
 
         prenatalFollowUps =
             followUps
-                |> Maybe.map (generatePrenatalFollowUps db)
+                |> Maybe.map (generatePrenatalFollowUps currentDate db)
                 |> Maybe.withDefault Dict.empty
 
         peopleForPrenatal =

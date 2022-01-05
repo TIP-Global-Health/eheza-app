@@ -886,14 +886,14 @@ getFollowUpsTotals language currentDate limitDate db villageId followUps =
             generateNutritionFollowUpEntries language limitDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps db followUpsToLimitDate
+            generateAcuteIllnessFollowUps currentDate db followUpsToLimitDate
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =
             generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
-            generatePrenatalFollowUps db followUpsToLimitDate
+            generatePrenatalFollowUps currentDate db followUpsToLimitDate
                 |> filterVillageResidents villageId Tuple.second db
 
         prenatalEntries =
@@ -910,7 +910,7 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db v
     let
         acuteIllnessFollowUps =
             filterFollowUpMeasurementsByLimitDate limitDate followUps
-                |> generateAcuteIllnessFollowUps db
+                |> generateAcuteIllnessFollowUps currentDate db
                 |> filterVillageResidents villageId Tuple.second db
 
         acuteIllnessEntries =

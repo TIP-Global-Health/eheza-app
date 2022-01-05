@@ -82,14 +82,14 @@ viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model 
                     viewNutritionPane language currentDate nutritionFollowUps db model
 
                 acuteIllnessFollowUps =
-                    generateAcuteIllnessFollowUps db followUps
+                    generateAcuteIllnessFollowUps currentDate db followUps
                         |> filterVillageResidents villageId Tuple.second db
 
                 acuteIllnessFollowUpsPane =
                     viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
 
                 prenatalFollowUps =
-                    generatePrenatalFollowUps db followUps
+                    generatePrenatalFollowUps currentDate db followUps
                         |> filterVillageResidents villageId Tuple.second db
 
                 prenatalFollowUpsPane =
