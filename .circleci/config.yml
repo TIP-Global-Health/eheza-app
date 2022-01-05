@@ -4,26 +4,42 @@ workflows:
   version: 2
   build:
     jobs:
-      - lint
+      - lint_phpcs
+      - lint_elm
+      - lint_shellcheck
       - test:
           requires:
-            - lint
+            - lint_phpcs
+            - lint_elm
+            - lint_shelcheck
 
 jobs:
-  lint:
+  lint_phpcs:
     docker:
       - image: cimg/php:7.4.26
     steps:
       - checkout
-      - run: cd ~/project && composer install && vendor/bin/phpstan analyse -c phpstan.neon
       - run: ci-scripts/install_coder.sh
       - run: export REVIEW_STANDARD="Drupal" && ci-scripts/test_coder.sh
       - run: export REVIEW_STANDARD="DrupalPractice" && ci-scripts/test_coder.sh
+  lint_elm:
+    docker:
+      - image: cimg/php:7.4.26
+    steps:
+      - checkout
+      - run: ci-scripts/install_elm_format.sh
+      - run: ci-scripts/test_elm_format.sh
+  lint_shellcheck:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: ci-scripts/install_shell.sh
+      - run: ci-scripts/test_shell.sh
   test:
     machine:
       image: ubuntu-2004:202111-01
     steps:
       - checkout
-      - run: ci-scripts/install_ddev.sh
-      - run: ci-scripts/install_drupal.sh
-      - run: ci-scripts/test_phpunit.sh
+      - run: ci-scripts/install_server.sh
+      - run: ci-scripts/test_server.sh
