@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * @file
+ * Validates villages migration. Needs adjustments for different migrations.
+ *
+ * Drush scr
+ * profiles/hedley/modules/custom/hedley_migrate/scripts/validate-villages-migration.php.
+ */
+
+if (!drupal_is_cli()) {
+  // Prevent execution from browser.
+  return;
+}
+
+$query = base_query_for_bundle('clinic');
+$query->propertyCondition('nid', 1300000, '>');
+$result = $query->execute();
+
+$clinics = array_keys($result['node']);
+foreach ($clinics as $clinic) {
+  $participants = hedley_stats_get_pmtct_participants_by_clinic($clinic, 5000);
+  $total = count($participants);
+
+  $wrapper = entity_metadata_wrapper('node', $clinic);
+  $clinic_name = $wrapper->label();
+  $wrapper = entity_metadata_wrapper('node', $wrapper->field_health_center->getIdentifier());
+  $hc_name = $wrapper->label();
+
+  drush_print("$clinic_name at $hc_name got $total participants");
+}
+
+function base_query_for_bundle($bundle): EntityFieldQuery {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', $bundle)
+    ->propertyCondition('status', NODE_PUBLISHED);
+
+  return $query;
+}
