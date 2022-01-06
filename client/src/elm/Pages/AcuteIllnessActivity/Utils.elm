@@ -2589,9 +2589,10 @@ covid19DiagnosisPath currentDate person isChw measurements =
                             Just DiagnosisSevereCovid19
 
                         RapidTestUnableToRun ->
-                            -- We treat Unable to run as if test was positive.
+                            -- Per requirements, if we have a suspected Covid case, but
+                            -- can not perform Covid RDT, we treat the case as a  positive for Covid.
                             -- However, when test can not be performed and fever is recorded,
-                            -- we run Malaria RDT to rule out Malaria.
+                            -- we run Malaria RDT first, to rule out Malaria.
                             if feverRecorded measurements then
                                 malariaRapidTestResult measurements
                                     |> Maybe.map
@@ -2608,10 +2609,11 @@ covid19DiagnosisPath currentDate person isChw measurements =
                                 positiveCovidDecisionMatrix
 
                         RapidTestUnableToRunAndPregnant ->
-                            -- We treat Unable to run as if test was positive,
-                            -- and confirmed Covid with pregnancy always concidered as severe case.
+                            -- Per requirements, if we have a suspected Covid case, but
+                            -- can not perform Covid RDT, we treat the case as a  positive for Covid.
+                            -- Confirmed Covid with pregnancy always concidered as severe case.
                             -- However, when test can not be performed and fever is recorded,
-                            -- we run Malaria RDT to rule out Malaria.
+                            -- we run Malaria RDT first, to rule out Malaria.
                             if feverRecorded measurements then
                                 malariaRapidTestResult measurements
                                     |> Maybe.map
