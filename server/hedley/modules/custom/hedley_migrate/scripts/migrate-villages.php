@@ -13,10 +13,16 @@ if (!drupal_is_cli()) {
   return;
 }
 
+$file = drush_get_option('file', FALSE);
+if (empty($file)) {
+  drush_print('Please specify --file param with CSV file, where list of villages for import is specified');
+  exit;
+}
+
 drush_print('Starting migrating villages!');
 
 $migrate_dir = drupal_get_path('module', 'hedley_migrate');
-$source_file = $migrate_dir . '/csv/villages-import-jan-22.csv';
+$source_file = $migrate_dir . '/csv/import/' . $file;
 $handler = fopen($source_file, 'r');
 
 $health_centers = [];
