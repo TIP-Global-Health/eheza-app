@@ -24,7 +24,7 @@ jobs:
       - run: export REVIEW_STANDARD="DrupalPractice" && ci-scripts/test_coder.sh
   lint_elm:
     docker:
-      - image: cimg/php:7.4.26
+      - image: cimg/node:8.17.0
     steps:
       - checkout
       - run: ci-scripts/install_elm_format.sh
