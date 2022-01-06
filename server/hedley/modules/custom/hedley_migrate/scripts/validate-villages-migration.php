@@ -13,8 +13,11 @@ if (!drupal_is_cli()) {
   return;
 }
 
+$from_nid = drush_get_option('from_nid', 1300000);
+
 $query = base_query_for_bundle('clinic');
-$query->propertyCondition('nid', 1300000, '>');
+$query->propertyCondition('nid', $from_nid, '>');
+$query->range(0, 1000);
 $result = $query->execute();
 
 $clinics = array_keys($result['node']);
