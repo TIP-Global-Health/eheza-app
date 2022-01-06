@@ -17,7 +17,6 @@ code_review () {
   fi
 }
 
-cd project || exit 1
 SCRIPTS=$(find ci-scripts server/scripts -name '*.sh')
 for FILE in $SCRIPTS;  do
   code_review "$FILE"
