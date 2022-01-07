@@ -25,7 +25,7 @@ services:
         image: server
         volumes:
           - /tmp/test_results:/tmp/test_results
-          - ${CIRCLE_WORKING_DIRECTORY}/travis-cache:/tmp/travis-cache
+          - /tmp/cache:/tmp/travis-cache
         environment:
             - BUILD_WEBDRIVERIO
             # This above means that we pass it from the shell env.
