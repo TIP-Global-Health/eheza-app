@@ -31,7 +31,7 @@ IGNORED_PATTERNS="*.features.inc,*.features.*.inc,*.field_group.inc,*.strongarm.
 echo
 echo "${LBLUE}> Sniffing Modules following '${REVIEW_STANDARD}' standard. ${RESTORE}"
 
-for dir in project/server/hedley/modules/custom/*/ ; do
+for dir in /home/circleci/project/server/hedley/modules/custom/*/ ; do
   code_review "$dir" "$IGNORED_PATTERNS"
 done
 
