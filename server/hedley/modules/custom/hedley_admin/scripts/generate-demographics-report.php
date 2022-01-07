@@ -76,14 +76,14 @@ SELECT
  *
  * @param string $type
  *   Encounter type.
- * @param $filter
+ * @param mixed $filter
  *   Filter type 'hc' or NULL.
  *
  * @return int
  *   Amount of encounters.
  */
 function encounter_all_count($type, $filter = NULL) {
-  if ($filter === 'hc' && $type == 'prenatal')  {
+  if ($filter === 'hc' && $type == 'prenatal') {
     // Health center ANC.
     return db_query("SELECT COUNT(DISTINCT field_prenatal_encounter_target_id) FROM field_data_field_prenatal_encounter e left join field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id where field_prenatal_encounter_type_value='nurse'")->fetchField();
   }
@@ -95,9 +95,9 @@ function encounter_all_count($type, $filter = NULL) {
 /**
  * Counts encounter types among unique patients.
  *
- * @param $type
+ * @param string $type
  *   Encounter type.
- * @param $filter
+ * @param mixed $filter
  *   Filter type 'hc' or NULL.*
  *
  * @return int
