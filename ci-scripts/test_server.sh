@@ -8,5 +8,6 @@ set -euo pipefail
 # ---------------------------------------------------------------------------- #
 
 # Simple Docker run to execute Behat.
-docker run -e "BUILD_WEBDRIVERIO=0" -p 8080:80 server
+mkdir -p /tmp/cache
+docker run -v /tmp/cache:/tmp/travis-cache -e "BUILD_WEBDRIVERIO=0" -p 8080:80 server
 exit $?

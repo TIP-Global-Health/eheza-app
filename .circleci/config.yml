@@ -41,5 +41,12 @@ jobs:
       image: ubuntu-2004:202111-01
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - drupal
       - run: ci-scripts/install_server.sh
       - run: ci-scripts/test_server.sh
+      - save_cache:
+          key: drupal
+          paths:
+            - /tmp/cache
