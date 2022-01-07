@@ -98,7 +98,7 @@ function encounter_all_count($type, $filter = NULL) {
  * @param string $type
  *   Encounter type.
  * @param mixed $filter
- *   Filter type 'hc' or NULL.*
+ *   Filter type 'hc' or NULL.
  *
  * @return int
  *   Amount of encounters.
