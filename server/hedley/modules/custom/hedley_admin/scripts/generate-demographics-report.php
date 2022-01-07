@@ -17,7 +17,7 @@ $types = hedley_general_get_measurement_types();
 array_walk($types, function (&$val) {
   $val = "'$val'";
 });
-$measurement_types_sql_list = join(', ', $types);
+$measurement_types_sql_list = implode(', ', $types);
 
 /**
  * Fetches registered / classified count from the temporary helper table.
@@ -247,6 +247,7 @@ GROUP BY
  * Gathers group encounter patients by type.
  *
  * @return array
+ *   Amount of patients by type.
  */
 function group_encounter_unique($measurement_types_list) {
   return db_query("
@@ -334,9 +335,9 @@ $encounters = [
   ],
   [
     'TOTAL',
-    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition')  + encounter_all_count('prenatal') + encounter_all_count('acute_illness'),
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition') + encounter_all_count('prenatal') + encounter_all_count('acute_illness'),
     $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition') + encounter_unique_count('prenatal') + encounter_unique_count('acute_illness'),
-  ]
+  ],
 ];
 
 $text_table = new HedleyAdminTextTable(['Encounter type', 'All', 'Unique']);
