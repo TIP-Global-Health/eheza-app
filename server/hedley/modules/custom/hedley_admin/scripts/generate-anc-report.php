@@ -13,7 +13,7 @@ require_once __DIR__ . '/report_common.inc';
 
 $queries = [
   // As the group of all pregnancies.
-  "# Patients who have had " =>  "
+  "# Patients who have had " => "
 SELECT
   val,
   COUNT(*) AS counter

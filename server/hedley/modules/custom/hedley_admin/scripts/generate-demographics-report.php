@@ -28,6 +28,7 @@ $measurement_types_sql_list = implode(', ', $types);
  *   Male or female.
  *
  * @return int
+ *   Amount of patients.
  */
 function classified_count($age, $gender) {
   return db_query("SELECT
@@ -52,6 +53,7 @@ WHERE
  *   Male or female.
  *
  * @return int
+ *   Amount of patients.
  */
 function impacted_count($age, $gender) {
   return (int) db_query("
@@ -72,12 +74,13 @@ SELECT
 /**
  * Counts encounter types.
  *
- * @param $type
+ * @param string $type
  *   Encounter type.
  * @param $filter
  *   Filter type 'hc' or NULL.
  *
  * @return int
+ *   Amount of encounters.
  */
 function encounter_all_count($type, $filter = NULL) {
   if ($filter === 'hc' && $type == 'prenatal')  {
@@ -90,7 +93,7 @@ function encounter_all_count($type, $filter = NULL) {
 }
 
 /**
- * Counts encounter types - unique patients.
+ * Counts encounter types among unique patients.
  *
  * @param $type
  *   Encounter type.
@@ -98,6 +101,7 @@ function encounter_all_count($type, $filter = NULL) {
  *   Filter type 'hc' or NULL.*
  *
  * @return int
+ *   Amount of encounters.
  */
 function encounter_unique_count($type, $filter = NULL) {
   if ($filter === 'hc' && $type == 'prenatal') {
@@ -203,7 +207,11 @@ $impacted = [
     impacted_count('mt50y', 'female'),
   ],
 ];
-$text_table = new HedleyAdminTextTable(['Impacted (2+ visits)', 'Male', 'Female']);
+$text_table = new HedleyAdminTextTable([
+  'Impacted (2+ visits)',
+  'Male',
+  'Female',
+]);
 $text_table->addData($impacted);
 
 drush_print($text_table->render());
@@ -214,6 +222,7 @@ drush_print("## ENCOUNTERS");
  * Gathers group encounter visits by type.
  *
  * @return array
+ *   Associative array, keyed by type.
  */
 function group_encounter_all($measurement_types_list) {
   return db_query("
