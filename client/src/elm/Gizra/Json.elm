@@ -3,7 +3,7 @@ module Gizra.Json exposing
     , decodeInt, decodeIntToString, decodeFloat
     , decodeEmptyArrayAs
     , decodeJsonInString
-    , decodeStringWithDefault, dict
+    , decodeIntAsFloat, decodeStringWithDefault, dict
     )
 
 {-| Utilities for dealing with JSON.
@@ -82,6 +82,24 @@ decodeInt =
                     case String.toInt s of
                         Just value ->
                             succeed value
+
+                        Nothing ->
+                            fail "Not an integer"
+                )
+        ]
+
+
+decodeIntAsFloat : Decoder Float
+decodeIntAsFloat =
+    oneOf
+        [ int
+            |> andThen (toFloat >> succeed)
+        , string
+            |> andThen
+                (\s ->
+                    case String.toInt s of
+                        Just value ->
+                            succeed (toFloat value)
 
                         Nothing ->
                             fail "Not an integer"
