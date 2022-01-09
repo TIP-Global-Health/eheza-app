@@ -7124,7 +7124,7 @@ translationSet trans =
             }
 
         PrenatalLaboratoryPHTestResult ->
-            { english = "PH Test Result"
+            { english = "pH Test Result"
             , kinyarwanda = Nothing
             }
 
@@ -7215,17 +7215,17 @@ translationSet trans =
                     }
 
                 LeukocytesSmall ->
-                    { english = "Samll"
+                    { english = "Small (+)"
                     , kinyarwanda = Nothing
                     }
 
                 LeukocytesMedium ->
-                    { english = "Medium"
+                    { english = "Medium (++)"
                     , kinyarwanda = Nothing
                     }
 
                 LeukocytesLarge ->
-                    { english = "Large"
+                    { english = "Large (+++)"
                     , kinyarwanda = Nothing
                     }
 
@@ -7296,12 +7296,12 @@ translationSet trans =
                     }
 
                 HaemoglobinNonHemolyzedTrace ->
-                    { english = "Non Hemolyzed Trace"
+                    { english = "Non-Hemolyzed Trace"
                     , kinyarwanda = Nothing
                     }
 
                 HaemoglobinNonHemolyzedModerate ->
-                    { english = "Non Hemolyzed Moderate"
+                    { english = "Non-Hemolyzed Moderate"
                     , kinyarwanda = Nothing
                     }
 
@@ -7422,17 +7422,17 @@ translationSet trans =
                     }
 
                 BilirubinSmall ->
-                    { english = "Small"
+                    { english = "Small (+)"
                     , kinyarwanda = Nothing
                     }
 
                 BilirubinMedium ->
-                    { english = "Medium"
+                    { english = "Medium (++)"
                     , kinyarwanda = Nothing
                     }
 
                 BilirubinLarge ->
-                    { english = "Large"
+                    { english = "Large (+++)"
                     , kinyarwanda = Nothing
                     }
 
