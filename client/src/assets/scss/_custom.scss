@@ -874,6 +874,17 @@ h3.ui.header {
           margin-top: -20px;
           width: 20%;
 
+          .patient-record {
+            background: url(#{$img-path}icon-forms-blue.svg) center center no-repeat;
+            background-size: 80px 80px;
+            display: block;
+            float: left;
+            height: 80px;
+            margin-left: -45px;
+            margin-top: 43px;
+            width: 80px;
+          }
+
           .action-icon-wrapper {
             height: 50px;
             border: 2px solid gray;

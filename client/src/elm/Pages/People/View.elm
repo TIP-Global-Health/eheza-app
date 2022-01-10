@@ -299,7 +299,8 @@ viewParticipant language currentDate initiator relation db id person =
 
         action =
             div [ class "action" ]
-                [ div [ class "action-icon-wrapper" ]
+                [ span [ class "patient-record" ] []
+                , div [ class "action-icon-wrapper" ]
                     [ span
                         [ class "action-icon forward"
                         , onClick <| SetActivePage <| UserPage <| nextPage
