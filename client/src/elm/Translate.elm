@@ -861,18 +861,25 @@ type TranslationId
     | PrenatalLaboratoryGlucoseLabel
     | PrenatalLaboratoryGlucoseTestResult
     | PrenatalLaboratoryGlucoseValue GlucoseValue
+    | PrenatalLaboratoryLeukocytesLabel
     | PrenatalLaboratoryLeukocytesTestResult
     | PrenatalLaboratoryLeukocytesValue LeukocytesValue
+    | PrenatalLaboratoryNitriteLabel
     | PrenatalLaboratoryNitriteTestResult
     | PrenatalLaboratoryNitriteValue NitriteValue
+    | PrenatalLaboratoryUrobilinogenLabel
     | PrenatalLaboratoryUrobilinogenTestResult
     | PrenatalLaboratoryUrobilinogenValue UrobilinogenValue
+    | PrenatalLaboratoryHaemoglobinLabel
     | PrenatalLaboratoryHaemoglobinTestResult
     | PrenatalLaboratoryHaemoglobinValue HaemoglobinValue
+    | PrenatalLaboratorySpecificGravityLabel
     | PrenatalLaboratorySpecificGravityTestResult
     | PrenatalLaboratorySpecificGravityValue SpecificGravityValue
+    | PrenatalLaboratoryKetoneLabel
     | PrenatalLaboratoryKetoneTestResult
     | PrenatalLaboratoryKetoneValue KetoneValue
+    | PrenatalLaboratoryBilirubinLabel
     | PrenatalLaboratoryBilirubinTestResult
     | PrenatalLaboratoryBilirubinValue BilirubinValue
     | PrenatalLaboratoryHemoglobinTestResult
@@ -4856,6 +4863,41 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LabResultsHistoryLeukocytes _ ->
+                    { english = "Leukocytes Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryNitrite _ ->
+                    { english = "Nitrite Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryUrobilinogen _ ->
+                    { english = "Urobilinogen Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHaemoglobin _ ->
+                    { english = "Haemoglobin Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistorySpecificGravity _ ->
+                    { english = "SpecificGravity Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryKetone _ ->
+                    { english = "Ketone Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBilirubin _ ->
+                    { english = "Bilirubin Test History"
+                    , kinyarwanda = Nothing
+                    }
+
                 LabResultsHistoryRandomBloodSugar _ ->
                     { english = "Random Blood Sugar Test History"
                     , kinyarwanda = Nothing
@@ -7202,6 +7244,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratoryLeukocytesLabel ->
+            { english = "Leukocytes"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryLeukocytesTestResult ->
             { english = "Leukocytes Test Result"
             , kinyarwanda = Nothing
@@ -7229,6 +7276,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratoryNitriteLabel ->
+            { english = "Nitrite"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryNitriteTestResult ->
             { english = "Nitrite Test Result"
             , kinyarwanda = Nothing
@@ -7250,6 +7302,11 @@ translationSet trans =
                     { english = "++"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryUrobilinogenLabel ->
+            { english = "Urobilinogen"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryUrobilinogenTestResult ->
             { english = "Urobilinogen Test Result"
@@ -7282,6 +7339,11 @@ translationSet trans =
                     { english = "8"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryHaemoglobinLabel ->
+            { english = "Haemoglobin"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryHaemoglobinTestResult ->
             { english = "Haemoglobin Test Result"
@@ -7325,6 +7387,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratorySpecificGravityLabel ->
+            { english = "Specific Gravity"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratorySpecificGravityTestResult ->
             { english = "Specific Gravity Test Result"
             , kinyarwanda = Nothing
@@ -7367,6 +7434,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalLaboratoryKetoneLabel ->
+            { english = "Ketone Test"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryKetoneTestResult ->
             { english = "Ketone Test Result"
             , kinyarwanda = Nothing
@@ -7408,6 +7480,11 @@ translationSet trans =
                     { english = "100"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLaboratoryBilirubinLabel ->
+            { english = "Bilirubin"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalLaboratoryBilirubinTestResult ->
             { english = "Bilirubin Test Result"
