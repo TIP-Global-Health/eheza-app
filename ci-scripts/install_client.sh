@@ -15,7 +15,7 @@ npm install -g elm-test@0.19.1-revision6
 npm install --global gulp-cli
 npm install -g bower
 
-cd "$TRAVIS_BUILD_DIR"/client
+cd "$CIRCLE_WORKING_DIRECTORY"/client
 bower install
 npm install
 
