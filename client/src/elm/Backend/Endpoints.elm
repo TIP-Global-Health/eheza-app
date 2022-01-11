@@ -48,6 +48,9 @@ import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
+import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
+import Backend.WellChildEncounter.Encoder exposing (encodeWellChildEncounter)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Http exposing (Error)
 import Json.Decode exposing (Decoder, field)
 import Json.Encode exposing (Value, object)
@@ -288,6 +291,11 @@ homeVisitMeasurementsEndpoint =
     swEndpoint "nodes/home-visit-measurements" decodeHomeVisitMeasurements
 
 
+wellChildMeasurementsEndpoint : ReadOnlyEndPoint Error WellChildEncounterId WellChildMeasurements ()
+wellChildMeasurementsEndpoint =
+    swEndpoint "nodes/well-child-measurements" decodeWellChildMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
@@ -373,6 +381,13 @@ homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVi
 homeVisitEncounterEndpoint =
     swEndpoint "nodes/home_visit_encounter" decodeHomeVisitEncounter
         |> withValueEncoder (object << encodeHomeVisitEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (Maybe IndividualEncounterParticipantId)
+wellChildEncounterEndpoint =
+    swEndpoint "nodes/well_child_encounter" decodeWellChildEncounter
+        |> withValueEncoder (object << encodeWellChildEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
@@ -619,6 +634,12 @@ treatmentOngoingEndpoint =
         |> withValueEncoder (object << encodeTreatmentOngoing)
 
 
+acuteIllnessCoreExamEndpoint : ReadWriteEndPoint Error AcuteIllnessCoreExamId AcuteIllnessCoreExam AcuteIllnessCoreExam ()
+acuteIllnessCoreExamEndpoint =
+    swEndpoint "nodes/acute_illness_core_exam" decodeAcuteIllnessCoreExam
+        |> withValueEncoder (object << encodeAcuteIllnessCoreExam)
+
+
 acuteIllnessDangerSignsEndpoint : ReadWriteEndPoint Error AcuteIllnessDangerSignsId AcuteIllnessDangerSigns AcuteIllnessDangerSigns ()
 acuteIllnessDangerSignsEndpoint =
     swEndpoint "nodes/acute_illness_danger_signs" decodeAcuteIllnessDangerSigns
@@ -737,3 +758,177 @@ appointmentConfirmationEndpoint : ReadWriteEndPoint Error PrenatalAppointmentCon
 appointmentConfirmationEndpoint =
     swEndpoint "nodes/appointment_confirmation" decodeAppointmentConfirmation
         |> withValueEncoder (object << encodeAppointmentConfirmation)
+
+
+wellChildECDEndpoint : ReadWriteEndPoint Error WellChildECDId WellChildECD WellChildECD ()
+wellChildECDEndpoint =
+    swEndpoint "nodes/well_child_ecd" decodeWellChildECD
+        |> withValueEncoder (object << encodeWellChildECD)
+
+
+wellChildHeightEndpoint : ReadWriteEndPoint Error WellChildHeightId WellChildHeight WellChildHeight ()
+wellChildHeightEndpoint =
+    swEndpoint "nodes/well_child_height" decodeWellChildHeight
+        |> withValueEncoder (object << encodeWellChildHeight)
+
+
+wellChildMuacEndpoint : ReadWriteEndPoint Error WellChildMuacId WellChildMuac WellChildMuac ()
+wellChildMuacEndpoint =
+    swEndpoint "nodes/well_child_muac" decodeWellChildMuac
+        |> withValueEncoder (object << encodeWellChildMuac)
+
+
+wellChildNutritionEndpoint : ReadWriteEndPoint Error WellChildNutritionId WellChildNutrition WellChildNutrition ()
+wellChildNutritionEndpoint =
+    swEndpoint "nodes/well_child_nutrition" decodeWellChildNutrition
+        |> withValueEncoder (object << encodeWellChildNutrition)
+
+
+wellChildPhotoEndpoint : ReadWriteEndPoint Error WellChildPhotoId WellChildPhoto WellChildPhoto ()
+wellChildPhotoEndpoint =
+    swEndpoint "nodes/well_child_photo" decodeWellChildPhoto
+        |> withValueEncoder (object << encodeWellChildPhoto)
+
+
+wellChildWeightEndpoint : ReadWriteEndPoint Error WellChildWeightId WellChildWeight WellChildWeight ()
+wellChildWeightEndpoint =
+    swEndpoint "nodes/well_child_weight" decodeWellChildWeight
+        |> withValueEncoder (object << encodeWellChildWeight)
+
+
+wellChildContributingFactorsEndpoint : ReadWriteEndPoint Error WellChildContributingFactorsId WellChildContributingFactors WellChildContributingFactors ()
+wellChildContributingFactorsEndpoint =
+    swEndpoint "nodes/well_child_contributing_factors" decodeWellChildContributingFactors
+        |> withValueEncoder (object << encodeWellChildContributingFactors)
+
+
+wellChildFollowUpEndpoint : ReadWriteEndPoint Error WellChildFollowUpId WellChildFollowUp WellChildFollowUp ()
+wellChildFollowUpEndpoint =
+    swEndpoint "nodes/well_child_follow_up" decodeWellChildFollowUp
+        |> withValueEncoder (object << encodeWellChildFollowUp)
+
+
+wellChildSendToHCEndpoint : ReadWriteEndPoint Error WellChildSendToHCId WellChildSendToHC WellChildSendToHC ()
+wellChildSendToHCEndpoint =
+    swEndpoint "nodes/well_child_send_to_hc" decodeWellChildSendToHC
+        |> withValueEncoder (object << encodeWellChildSendToHC)
+
+
+wellChildHealthEducationEndpoint : ReadWriteEndPoint Error WellChildHealthEducationId WellChildHealthEducation WellChildHealthEducation ()
+wellChildHealthEducationEndpoint =
+    swEndpoint "nodes/well_child_health_education" decodeWellChildHealthEducation
+        |> withValueEncoder (object << encodeWellChildHealthEducation)
+
+
+wellChildHeadCircumferenceEndpoint : ReadWriteEndPoint Error WellChildHeadCircumferenceId WellChildHeadCircumference WellChildHeadCircumference ()
+wellChildHeadCircumferenceEndpoint =
+    swEndpoint "nodes/well_child_head_circumference" decodeWellChildHeadCircumference
+        |> withValueEncoder (object << encodeWellChildHeadCircumference)
+
+
+wellChildSymptomsReviewEndpoint : ReadWriteEndPoint Error WellChildSymptomsReviewId WellChildSymptomsReview WellChildSymptomsReview ()
+wellChildSymptomsReviewEndpoint =
+    swEndpoint "nodes/well_child_symptoms_review" decodeWellChildSymptomsReview
+        |> withValueEncoder (object << encodeWellChildSymptomsReview)
+
+
+wellChildVitalsEndpoint : ReadWriteEndPoint Error WellChildVitalsId WellChildVitals WellChildVitals ()
+wellChildVitalsEndpoint =
+    swEndpoint "nodes/well_child_vitals" decodeWellChildVitals
+        |> withValueEncoder (object << encodeWellChildVitals)
+
+
+wellChildAlbendazoleEndpoint : ReadWriteEndPoint Error WellChildAlbendazoleId WellChildAlbendazole WellChildAlbendazole ()
+wellChildAlbendazoleEndpoint =
+    swEndpoint "nodes/well_child_albendazole" decodeWellChildAlbendazole
+        |> withValueEncoder (object << encodeWellChildAlbendazole)
+
+
+wellChildMebendezoleEndpoint : ReadWriteEndPoint Error WellChildMebendezoleId WellChildMebendezole WellChildMebendezole ()
+wellChildMebendezoleEndpoint =
+    swEndpoint "nodes/well_child_mebendezole" decodeWellChildMebendezole
+        |> withValueEncoder (object << encodeWellChildMebendezole)
+
+
+wellChildVitaminAEndpoint : ReadWriteEndPoint Error WellChildVitaminAId WellChildVitaminA WellChildVitaminA ()
+wellChildVitaminAEndpoint =
+    swEndpoint "nodes/well_child_vitamin_a" decodeWellChildVitaminA
+        |> withValueEncoder (object << encodeWellChildVitaminA)
+
+
+wellChildPregnancySummaryEndpoint : ReadWriteEndPoint Error WellChildPregnancySummaryId WellChildPregnancySummary WellChildPregnancySummary ()
+wellChildPregnancySummaryEndpoint =
+    swEndpoint "nodes/well_child_pregnancy_summary" decodeWellChildPregnancySummary
+        |> withValueEncoder (object << encodeWellChildPregnancySummary)
+
+
+wellChildNextVisitEndpoint : ReadWriteEndPoint Error WellChildNextVisitId WellChildNextVisit WellChildNextVisit ()
+wellChildNextVisitEndpoint =
+    swEndpoint "nodes/well_child_next_visit" decodeWellChildNextVisit
+        |> withValueEncoder (object << encodeWellChildNextVisit)
+
+
+wellChildBCGImmunisationEndpoint : ReadWriteEndPoint Error WellChildBCGImmunisationId WellChildBCGImmunisation WellChildBCGImmunisation ()
+wellChildBCGImmunisationEndpoint =
+    swEndpoint "nodes/well_child_bcg_immunisation" decodeWellChildBCGImmunisation
+        |> withValueEncoder (object << encodeWellChildBCGImmunisation)
+
+
+wellChildDTPImmunisationEndpoint : ReadWriteEndPoint Error WellChildDTPImmunisationId WellChildDTPImmunisation WellChildDTPImmunisation ()
+wellChildDTPImmunisationEndpoint =
+    swEndpoint "nodes/well_child_dtp_immunisation" decodeWellChildDTPImmunisation
+        |> withValueEncoder (object << encodeWellChildDTPImmunisation)
+
+
+wellChildHPVImmunisationEndpoint : ReadWriteEndPoint Error WellChildHPVImmunisationId WellChildHPVImmunisation WellChildHPVImmunisation ()
+wellChildHPVImmunisationEndpoint =
+    swEndpoint "nodes/well_child_hpv_immunisation" decodeWellChildHPVImmunisation
+        |> withValueEncoder (object << encodeWellChildHPVImmunisation)
+
+
+wellChildIPVImmunisationEndpoint : ReadWriteEndPoint Error WellChildIPVImmunisationId WellChildIPVImmunisation WellChildIPVImmunisation ()
+wellChildIPVImmunisationEndpoint =
+    swEndpoint "nodes/well_child_ipv_immunisation" decodeWellChildIPVImmunisation
+        |> withValueEncoder (object << encodeWellChildIPVImmunisation)
+
+
+wellChildMRImmunisationEndpoint : ReadWriteEndPoint Error WellChildMRImmunisationId WellChildMRImmunisation WellChildMRImmunisation ()
+wellChildMRImmunisationEndpoint =
+    swEndpoint "nodes/well_child_mr_immunisation" decodeWellChildMRImmunisation
+        |> withValueEncoder (object << encodeWellChildMRImmunisation)
+
+
+wellChildOPVImmunisationEndpoint : ReadWriteEndPoint Error WellChildOPVImmunisationId WellChildOPVImmunisation WellChildOPVImmunisation ()
+wellChildOPVImmunisationEndpoint =
+    swEndpoint "nodes/well_child_opv_immunisation" decodeWellChildOPVImmunisation
+        |> withValueEncoder (object << encodeWellChildOPVImmunisation)
+
+
+wellChildPCV13ImmunisationEndpoint : ReadWriteEndPoint Error WellChildPCV13ImmunisationId WellChildPCV13Immunisation WellChildPCV13Immunisation ()
+wellChildPCV13ImmunisationEndpoint =
+    swEndpoint "nodes/well_child_pcv13_immunisation" decodeWellChildPCV13Immunisation
+        |> withValueEncoder (object << encodeWellChildPCV13Immunisation)
+
+
+wellChildRotarixImmunisationEndpoint : ReadWriteEndPoint Error WellChildRotarixImmunisationId WellChildRotarixImmunisation WellChildRotarixImmunisation ()
+wellChildRotarixImmunisationEndpoint =
+    swEndpoint "nodes/well_child_rotarix_immunisation" decodeWellChildRotarixImmunisation
+        |> withValueEncoder (object << encodeWellChildRotarixImmunisation)
+
+
+covidTestingEndpoint : ReadWriteEndPoint Error CovidTestingId CovidTesting CovidTesting ()
+covidTestingEndpoint =
+    swEndpoint "nodes/covid_testing" decodeCovidTesting
+        |> withValueEncoder (object << encodeCovidTesting)
+
+
+acuteIllnessContactsTracingEndpoint : ReadWriteEndPoint Error AcuteIllnessContactsTracingId AcuteIllnessContactsTracing AcuteIllnessContactsTracing ()
+acuteIllnessContactsTracingEndpoint =
+    swEndpoint "nodes/acute_illness_contacts_tracing" decodeAcuteIllnessContactsTracing
+        |> withValueEncoder (object << encodeAcuteIllnessContactsTracing)
+
+
+acuteIllnessTraceContactEndpoint : ReadWriteEndPoint Error AcuteIllnessTraceContactId AcuteIllnessTraceContact AcuteIllnessTraceContact ()
+acuteIllnessTraceContactEndpoint =
+    swEndpoint "nodes/acute_illness_trace_contact" decodeAcuteIllnessTraceContact
+        |> withValueEncoder (object << encodeAcuteIllnessTraceContact)

@@ -1,9 +1,13 @@
 module Pages.AcuteIllnessActivity.View exposing
     ( view
+    , viewAdministeredMedicationCustomLabel
     , viewAdministeredMedicationLabel
+    , viewAdministeredMedicationQuestion
+    , viewAmoxicillinAdministrationInstructions
     , viewHCRecommendation
     , viewHealthEducationLabel
     , viewOralSolutionPrescription
+    , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
     )
 
@@ -14,33 +18,48 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (muacIndication)
+import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementValueFunc, muacIndication, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman, isPersonAnAdult)
+import Date exposing (Unit(..))
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Form
+import Form.Input
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (HealthEducationForm, SendToHCForm)
-import Measurement.Utils exposing (getInputConstraintsMuac, healthEducationFormWithDefault, sendToHCFormWithDefault)
-import Measurement.View exposing (renderDatePart, viewMuacIndication, viewSendToHCForm)
+import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), MuacForm, SendToHCForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Utils
+    exposing
+        ( getInputConstraintsMuac
+        , healthEducationFormWithDefault
+        , muacFormWithDefault
+        , nutritionFormWithDefault
+        , sendToHCFormWithDefault
+        , vitalsFormWithDefault
+        )
+import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHealthCenterForm, viewSendToHospitalForm, viewVitalsForm)
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
+import Pages.NutritionActivity.View exposing (viewMuacForm)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.View exposing (viewConditionalAlert)
+import Pages.Person.View
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , taskAllCompleted
         , taskCompleted
-        , taskListCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -50,48 +69,49 @@ import Pages.Utils
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
-        , viewNumberInput
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
+        , viewRedAlertForSelect
+        , viewTextInput
         )
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Set
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
+import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
+import Utils.GeoLocation exposing (GeoInfo, geoInfo)
+import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
-import Utils.WebData exposing (viewWebData)
+import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw activity db model =
     let
-        data =
-            generateAssembledData currentDate id db
+        assembled =
+            generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity model data =
-    let
-        isFirstEncounter =
-            List.isEmpty data.previousEncountersData
-    in
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw activity db model assembled =
     div [ class "page-activity acute-illness" ]
-        [ viewHeader language id activity <| Maybe.map Tuple.second data.diagnosis
-        , viewContent language currentDate id activity model data
+        [ viewHeader language id activity <| Maybe.map Tuple.second assembled.diagnosis
+        , viewContent language currentDate id isChw activity db model assembled
         , viewModal <|
             warningPopup language
                 currentDate
-                isFirstEncounter
+                isChw
                 model.warningPopupState
                 SetWarningPopupState
-                data
+                assembled
         , viewModal <|
             pertinentSymptomsPopup language
                 model.showPertinentSymptomsPopup
                 (SetPertinentSymptomsPopupState False)
-                data.measurements
+                assembled.measurements
         ]
 
 
@@ -127,10 +147,10 @@ viewHeader language id activity diagnosis =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id activity model data =
-    (viewPersonDetailsWithAlert language currentDate data model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity data model
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw activity db model assembled =
+    (viewPersonDetailsWithAlert language currentDate isChw assembled model.showAlertsDialog SetAlertsDialogState
+        :: viewActivity language currentDate id isChw activity db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -156,7 +176,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             vitalsValue =
                 measurements.vitals
-                    |> Maybe.map (Tuple.second >> .value)
+                    |> getMeasurementValueFunc
 
             viewBodyTemperature =
                 vitalsValue
@@ -223,7 +243,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                     |> Maybe.map
                         (Tuple.second
                             >> .value
-                            >> (Translate.MalariaRapidTestResult
+                            >> (Translate.RapidTestResult
                                     >> translate language
                                     >> viewLabelValuePopupItem Translate.MalariaRapidDiagnosticTest
                                )
@@ -271,7 +291,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             symptomsGIValue =
                 measurements.symptomsGI
-                    |> Maybe.map (Tuple.second >> .value)
+                    |> getMeasurementValueFunc
 
             symptomsGI =
                 symptomsGIValue
@@ -311,7 +331,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             acuteFindingsValue =
                 measurements.acuteFindings
-                    |> Maybe.map (Tuple.second >> .value)
+                    |> getMeasurementValueFunc
 
             acuteFindingsGeneral =
                 acuteFindingsValue
@@ -378,39 +398,36 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id activity data model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id isChw activity db assembled model =
     let
         personId =
-            data.participant.person
+            assembled.participant.person
 
         measurements =
-            data.measurements
+            assembled.measurements
 
         diagnosis =
-            Maybe.map Tuple.second data.diagnosis
-
-        isFirstEncounter =
-            List.isEmpty data.previousEncountersData
+            Maybe.map Tuple.second assembled.diagnosis
     in
     case activity of
         AcuteIllnessSymptoms ->
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id data isFirstEncounter model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate id isChw assembled model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
 
         AcuteIllnessLaboratory ->
-            viewAcuteIllnessLaboratory language currentDate id ( personId, data.person, measurements ) model.laboratoryData
+            viewAcuteIllnessLaboratory language currentDate id isChw assembled model.laboratoryData
 
         AcuteIllnessExposure ->
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id data isFirstEncounter model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate id isChw assembled db model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -422,11 +439,11 @@ viewActivity language currentDate id activity data model =
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
 viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessSymptoms
-
         tasks =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
 
         viewTask task =
             let
@@ -442,7 +459,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                             ( "symptoms-gi", isJust measurements.symptomsGI )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -469,69 +486,67 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                SymptomsGeneral ->
+            case activeTask of
+                Just SymptomsGeneral ->
                     measurements.symptomsGeneral
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
                         |> viewSymptomsGeneralForm language currentDate measurements
 
-                SymptomsRespiratory ->
+                Just SymptomsRespiratory ->
                     measurements.symptomsRespiratory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
                         |> viewSymptomsRespiratoryForm language currentDate measurements
 
-                SymptomsGI ->
+                Just SymptomsGI ->
                     measurements.symptomsGI
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> symptomsGIFormWithDefault data.symptomsGIForm
                         |> viewSymptomsGIForm language currentDate measurements
 
-        getNextTask currentTask =
-            case currentTask of
-                SymptomsGeneral ->
-                    [ SymptomsRespiratory, SymptomsGI ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                Nothing ->
+                    emptyNode
 
-                SymptomsRespiratory ->
-                    [ SymptomsGI, SymptomsGeneral ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                SymptomsGI ->
-                    [ SymptomsGeneral, SymptomsRespiratory ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                SymptomsGeneral ->
+                                    SaveSymptomsGeneral personId measurements.symptomsGeneral nextTask
 
-                saveMsg =
-                    case data.activeTask of
-                        SymptomsGeneral ->
-                            SaveSymptomsGeneral personId measurements.symptomsGeneral nextTask
+                                SymptomsRespiratory ->
+                                    SaveSymptomsRespiratory personId measurements.symptomsRespiratory nextTask
 
-                        SymptomsRespiratory ->
-                            SaveSymptomsRespiratory personId measurements.symptomsRespiratory nextTask
-
-                        SymptomsGI ->
-                            SaveSymptomsGI personId measurements.symptomsGI nextTask
-            in
-            div [ class "actions symptoms" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                SymptomsGI ->
+                                    SaveSymptomsGI personId measurements.symptomsGI nextTask
+                    in
+                    div [ class "actions symptoms" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
@@ -615,15 +630,12 @@ viewAcuteIllnessPhysicalExam :
     Language
     -> NominalDate
     -> AcuteIllnessEncounterId
-    -> AssembledData
     -> Bool
+    -> AssembledData
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter data =
+viewAcuteIllnessPhysicalExam language currentDate id isChw assembled data =
     let
-        activity =
-            AcuteIllnessPhysicalExam
-
         personId =
             assembled.participant.person
 
@@ -634,8 +646,11 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
             assembled.measurements
 
         tasks =
-            [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
-                |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
+            [ PhysicalExamVitals, PhysicalExamCoreExam, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
+                |> List.filter (expectPhysicalExamTask currentDate person isChw assembled.initialEncounter)
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
 
         viewTask task =
             let
@@ -644,6 +659,11 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                         PhysicalExamVitals ->
                             ( "physical-exam-vitals"
                             , isJust measurements.vitals
+                            )
+
+                        PhysicalExamCoreExam ->
+                            ( "physical-exam-core-exam"
+                            , isJust measurements.coreExam
                             )
 
                         PhysicalExamMuac ->
@@ -662,7 +682,7 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -684,92 +704,99 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
             tasks
                 |> List.map
                     (\task ->
-                        ( task, physicalExamTasksCompletedFromTotal measurements data task )
+                        ( task, physicalExamTasksCompletedFromTotal currentDate isChw person measurements data task )
                     )
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                PhysicalExamVitals ->
+            case activeTask of
+                Just PhysicalExamVitals ->
                     measurements.vitals
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> vitalsFormWithDefault data.vitalsForm
-                        |> viewVitalsForm language currentDate assembled
+                        |> viewVitalsForm language
+                            currentDate
+                            isChw
+                            assembled
+                        |> List.singleton
 
-                PhysicalExamMuac ->
+                Just PhysicalExamCoreExam ->
+                    measurements.coreExam
+                        |> getMeasurementValueFunc
+                        |> coreExamFormWithDefault data.coreExamForm
+                        |> viewCoreExamForm language currentDate assembled
+                        |> List.singleton
+
+                Just PhysicalExamMuac ->
+                    let
+                        previousValue =
+                            resolvePreviousValue assembled .muac muacValueFunc
+                    in
                     measurements.muac
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled
+                        |> viewMuacForm language currentDate assembled.person previousValue SetMuac
 
-                PhysicalExamAcuteFindings ->
+                Just PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
-                        |> viewAcuteFindingsForm language currentDate measurements
+                        |> viewAcuteFindingsForm language currentDate
 
-                PhysicalExamNutrition ->
+                Just PhysicalExamNutrition ->
                     measurements.nutrition
-                        |> Maybe.map (Tuple.second >> .value)
-                        |> nutritionFormWithDefault data.nutritionForm
-                        |> viewNutritionForm language currentDate measurements
+                        |> getMeasurementValueFunc
+                        |> Pages.AcuteIllnessActivity.Utils.nutritionFormWithDefault data.nutritionForm
+                        |> viewNutritionForm language currentDate
 
-        getNextTask currentTask =
-            case currentTask of
-                PhysicalExamVitals ->
-                    [ PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                Nothing ->
+                    []
 
-                PhysicalExamMuac ->
-                    [ PhysicalExamNutrition, PhysicalExamAcuteFindings, PhysicalExamVitals ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                PhysicalExamNutrition ->
-                    [ PhysicalExamAcuteFindings, PhysicalExamVitals, PhysicalExamAcuteFindings ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                PhysicalExamAcuteFindings ->
-                    [ PhysicalExamVitals, PhysicalExamMuac, PhysicalExamNutrition ]
-                        |> List.filter (expectPhysicalExamTask currentDate person isFirstEncounter)
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    PhysicalExamVitals ->
+                                        SaveVitals personId measurements.vitals nextTask
 
-                saveMsg =
-                    case data.activeTask of
-                        PhysicalExamVitals ->
-                            SaveVitals personId measurements.vitals nextTask
+                                    PhysicalExamCoreExam ->
+                                        SaveCoreExam personId measurements.coreExam nextTask
 
-                        PhysicalExamMuac ->
-                            SaveMuac personId measurements.muac nextTask
+                                    PhysicalExamMuac ->
+                                        SaveMuac personId measurements.muac nextTask
 
-                        PhysicalExamAcuteFindings ->
-                            SaveAcuteFindings personId measurements.acuteFindings nextTask
+                                    PhysicalExamAcuteFindings ->
+                                        SaveAcuteFindings personId measurements.acuteFindings nextTask
 
-                        PhysicalExamNutrition ->
-                            SaveNutrition personId measurements.nutrition nextTask
-            in
-            div [ class "actions symptoms" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                    PhysicalExamNutrition ->
+                                        SaveNutrition personId measurements.nutrition nextTask
+                        in
+                        div [ class "actions symptoms" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui four column grid" ] <|
@@ -777,140 +804,82 @@ viewAcuteIllnessPhysicalExam language currentDate id assembled isFirstEncounter 
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewForm
-            , actions
-            ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
         ]
     ]
 
 
-viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate assembled form_ =
+viewVitalsForm : Language -> NominalDate -> Bool -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate isChw assembled form =
     let
-        measurements =
-            assembled.measurements
+        formConfig =
+            { setIntInputMsg = SetVitalsIntInput
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+            , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
+            , heartRatePreviousValue =
+                resolvePreviousMaybeValue assembled .vitals .heartRate
+                    |> Maybe.map toFloat
+            , respiratoryRatePreviousValue =
+                resolvePreviousValue assembled .vitals .respiratoryRate
+                    |> Maybe.map toFloat
+            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , birthDate = assembled.person.birthDate
+            , formClass = "vitals"
+            , mode =
+                if isChw then
+                    VitalsFormBasic
 
-        form =
-            measurements.vitals
-                |> Maybe.map (Tuple.second >> .value)
-                |> vitalsFormWithDefault form_
-
-        respiratoryRatePreviousValue =
-            resolvePreviousValue assembled .vitals .respiratoryRate
-                |> Maybe.map toFloat
-
-        bodyTemperaturePreviousValue =
-            resolvePreviousValue assembled .vitals .bodyTemperature
-
-        respiratoryRateAlert =
-            ageInMonths currentDate assembled.person
-                |> Maybe.map
-                    (\ageMonths ->
-                        let
-                            ( redCondition, yellowCondition ) =
-                                if ageMonths < 12 then
-                                    ( [ [ (>) 12 ], [ (<=) 50 ] ]
-                                    , []
-                                    )
-
-                                else if ageMonths < 60 then
-                                    ( [ [ (>) 12 ], [ (<=) 40 ] ]
-                                    , []
-                                    )
-
-                                else
-                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
-                                    , [ [ (<=) 21, (>=) 30 ] ]
-                                    )
-                        in
-                        viewConditionalAlert form.respiratoryRate redCondition yellowCondition
-                    )
-                |> Maybe.withDefault emptyNode
+                else
+                    VitalsFormFull
+            , invokationModule = InvokationModuleAcuteIllness
+            }
     in
-    div [ class "ui form physical-exam vitals" ]
+    Measurement.View.viewVitalsForm language currentDate formConfig form
+
+
+viewCoreExamForm : Language -> NominalDate -> AssembledData -> AcuteIllnessCoreExamForm -> Html Msg
+viewCoreExamForm language currentDate assembled form =
+    div [ class "ui form physical-exam core-exam" ]
         [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RespiratoryRate ]
+                [ viewLabel language Translate.Heart ]
             , div [ class "four wide column" ]
-                [ respiratoryRateAlert ]
+                [ viewRedAlertForSelect
+                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    [ NormalRateAndRhythm ]
+                ]
             ]
-        , viewMeasurementInput
-            language
-            (Maybe.map toFloat form.respiratoryRate)
-            SetVitalsResporatoryRate
-            "respiratory-rate"
-            Translate.BpmUnitLabel
-        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnitLabel
+        , viewCheckBoxSelectInput language
+            [ IrregularRhythm, SinusTachycardia, NormalRateAndRhythm ]
+            []
+            form.heart
+            SetCoreExamHeart
+            Translate.HeartCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BodyTemperature ]
+                [ viewLabel language Translate.Lungs ]
             , div [ class "four wide column" ]
-                [ viewConditionalAlert form.bodyTemperature
-                    [ [ (>) 35 ], [ (<=) 37.5 ] ]
-                    []
+                [ viewRedAlertForSelect
+                    (form.lungs |> Maybe.withDefault [])
+                    [ NormalLungs ]
                 ]
             ]
-        , viewMeasurementInput
-            language
-            form.bodyTemperature
-            SetVitalsBodyTemperature
-            "body-temperature"
-            Translate.Celsius
-        , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
+        , viewCheckBoxMultipleSelectInput language
+            [ Wheezes, Crackles, NormalLungs ]
+            []
+            (form.lungs |> Maybe.withDefault [])
+            Nothing
+            SetCoreExamLungs
+            Translate.LungsCPESign
         ]
 
 
-viewMuacForm : Language -> NominalDate -> AssembledData -> MuacForm -> Html Msg
-viewMuacForm language currentDate assembled form_ =
-    let
-        measurements =
-            assembled.measurements
-
-        form =
-            measurements.muac
-                |> Maybe.map (Tuple.second >> .value)
-                |> muacFormWithDefault form_
-
-        constraints =
-            getInputConstraintsMuac
-
-        previousValue =
-            resolvePreviousValue assembled .muac (\(MuacInCm cm) -> cm)
-    in
-    div [ class "ui form physical-exam muac" ]
-        [ viewLabel language Translate.MUAC
-        , p [ class "activity-helper" ] [ text <| translate language Translate.MuacHelper ]
-        , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewMeasurementInput
-                    language
-                    form.muac
-                    SetMuac
-                    "muac"
-                    Translate.CentimeterShorthand
-                ]
-            , div
-                [ class "five wide column" ]
-                [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewMuacIndication language) form.muac
-                ]
-            ]
-        , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
-        ]
-
-
-viewAcuteFindingsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> AcuteFindingsForm -> Html Msg
-viewAcuteFindingsForm language currentDate measurements form_ =
-    let
-        form =
-            measurements.acuteFindings
-                |> Maybe.map (Tuple.second >> .value)
-                |> acuteFindingsFormWithDefault form_
-    in
-    div [ class "ui form physical-exam acute-findings" ]
+viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> List (Html Msg)
+viewAcuteFindingsForm language currentDate form =
+    [ div [ class "ui form physical-exam acute-findings" ]
         [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
         , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
         , viewCheckBoxMultipleSelectInput language
@@ -930,17 +899,12 @@ viewAcuteFindingsForm language currentDate measurements form_ =
             SetAcuteFindingsRespiratorySign
             Translate.AcuteFindingsRespiratorySign
         ]
+    ]
 
 
-viewNutritionForm : Language -> NominalDate -> AcuteIllnessMeasurements -> NutritionForm -> Html Msg
-viewNutritionForm language currentDate measurements form_ =
-    let
-        form =
-            measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value)
-                |> nutritionFormWithDefault form_
-    in
-    div [ class "ui form physical-exam nutrition" ]
+viewNutritionForm : Language -> NominalDate -> AcuteIllnessNutritionForm -> List (Html Msg)
+viewNutritionForm language currentDate form =
+    [ div [ class "ui form physical-exam nutrition" ]
         [ p [] [ text <| translate language Translate.NutritionHelper ]
         , viewLabel language Translate.SelectAllSigns
         , viewCheckBoxMultipleSelectInput language
@@ -951,16 +915,24 @@ viewNutritionForm language currentDate measurements form_ =
             SetNutritionSign
             Translate.ChildNutritionSignLabel
         ]
+    ]
 
 
-viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
-viewAcuteIllnessLaboratory language currentDate id ( personId, person, measurements ) data =
+viewAcuteIllnessLaboratory :
+    Language
+    -> NominalDate
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AssembledData
+    -> LaboratoryData
+    -> List (Html Msg)
+viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
     let
-        activity =
-            AcuteIllnessLaboratory
-
         tasks =
-            [ LaboratoryMalariaTesting ]
+            List.filter (expectLaboratoryTask currentDate isChw assembled) laboratoryTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
 
         viewTask task =
             let
@@ -968,11 +940,16 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                     case task of
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
-                            , isJust measurements.malariaTesting
+                            , isJust assembled.measurements.malariaTesting
+                            )
+
+                        LaboratoryCovidTesting ->
+                            ( "laboratory-covid-testing"
+                            , isJust assembled.measurements.covidTesting
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -994,36 +971,62 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             tasks
                 |> List.map
                     (\task ->
-                        ( task, laboratoryTasksCompletedFromTotal currentDate person measurements data task )
+                        ( task, laboratoryTasksCompletedFromTotal currentDate assembled.person assembled.measurements data task )
                     )
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                LaboratoryMalariaTesting ->
-                    measurements.malariaTesting
-                        |> Maybe.map (Tuple.second >> .value)
+            case activeTask of
+                Just LaboratoryMalariaTesting ->
+                    assembled.measurements.malariaTesting
+                        |> getMeasurementValueFunc
                         |> malariaTestingFormWithDefault data.malariaTestingForm
-                        |> viewMalariaTestingForm language currentDate person
+                        |> viewMalariaTestingForm language currentDate assembled.person
+
+                Just LaboratoryCovidTesting ->
+                    assembled.measurements.covidTesting
+                        |> getMeasurementValueFunc
+                        |> covidTestingFormWithDefault data.covidTestingForm
+                        |> viewCovidTestingForm language currentDate assembled.person
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                saveMsg =
-                    case data.activeTask of
-                        LaboratoryMalariaTesting ->
-                            SaveMalariaTesting personId measurements.malariaTesting
-            in
-            div [ class "actions malaria-testing" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                LaboratoryMalariaTesting ->
+                                    SaveMalariaTesting assembled.participant.person assembled.measurements.malariaTesting nextTask
+
+                                LaboratoryCovidTesting ->
+                                    SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask
+                    in
+                    div [ class "actions malaria-testing" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
@@ -1062,7 +1065,7 @@ viewMalariaTestingForm language currentDate person form =
                                     [ value (malariaRapidTestResultAsString result)
                                     , selected (form.rapidTestResult == Just result)
                                     ]
-                                    [ text <| translate language <| Translate.MalariaRapidTestResult result ]
+                                    [ text <| translate language <| Translate.RapidTestResult result ]
                             )
                    )
                 |> select [ onInput SetRapidTestResult, class "form-input rapid-test-result" ]
@@ -1072,14 +1075,7 @@ viewMalariaTestingForm language currentDate person form =
 
         isPregnantInput =
             if testResultPositive && isPersonAFertileWoman currentDate person then
-                [ viewQuestionLabel language Translate.CurrentlyPregnant
-                , viewBoolInput
-                    language
-                    form.isPregnant
-                    SetIsPregnant
-                    "is-pregnant"
-                    Nothing
-                ]
+                viewIsPregnantInput language SetIsPregnant form.isPregnant
 
             else
                 []
@@ -1091,12 +1087,96 @@ viewMalariaTestingForm language currentDate person form =
             ++ isPregnantInput
 
 
+viewCovidTestingForm : Language -> NominalDate -> Person -> CovidTestingForm -> Html Msg
+viewCovidTestingForm language currentDate person form =
+    let
+        isPregnantInputForView =
+            if isPersonAFertileWoman currentDate person then
+                viewIsPregnantInput language (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value })) form.isPregnant
+
+            else
+                []
+
+        derivedInputs =
+            Maybe.map
+                (\testPerformed ->
+                    if testPerformed then
+                        let
+                            isPregnantInput =
+                                if form.testPositive == Just True then
+                                    isPregnantInputForView
+
+                                else
+                                    []
+                        in
+                        [ viewQuestionLabel language Translate.TestResultQuestion
+                        , viewBoolInput
+                            language
+                            form.testPositive
+                            (SetCovidTestingBoolInput (\value form_ -> { form_ | testPositive = Just value, isPregnant = Nothing }))
+                            "test-result"
+                            (Just ( Translate.RapidTestResult RapidTestPositive, Translate.RapidTestResult RapidTestNegative ))
+                        ]
+                            ++ isPregnantInput
+
+                    else
+                        [ div [ class "why-not" ]
+                            [ viewQuestionLabel language Translate.WhyNot
+                            , viewCheckBoxSelectInput language
+                                [ AdministeredPreviously
+                                , NonAdministrationLackOfStock
+                                , NonAdministrationPatientDeclined
+                                , NonAdministrationPatientUnableToAfford
+                                , NonAdministrationOther
+                                ]
+                                []
+                                form.administrationNote
+                                SetCovidTestingAdministrationNote
+                                Translate.AdministrationNote
+                            ]
+                        ]
+                            ++ isPregnantInputForView
+                )
+                form.testPerformed
+                |> Maybe.withDefault []
+    in
+    div [ class "ui form laboratory covid-testing" ] <|
+        [ viewCustomLabel language Translate.CovidTestingInstructions "." "instructions"
+        , viewQuestionLabel language Translate.TestPerformedQuestion
+        , viewBoolInput
+            language
+            form.testPerformed
+            (SetCovidTestingBoolInput
+                (\value form_ ->
+                    { form_
+                        | testPerformed = Just value
+                        , testPositive = Nothing
+                        , isPregnant = Nothing
+                        , administrationNote = Nothing
+                    }
+                )
+            )
+            "test-performed"
+            Nothing
+        ]
+            ++ derivedInputs
+
+
+viewIsPregnantInput : Language -> (Bool -> Msg) -> Maybe Bool -> List (Html Msg)
+viewIsPregnantInput language setMsg currentValue =
+    [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
+    , viewBoolInput
+        language
+        currentValue
+        setMsg
+        "is-pregnant"
+        Nothing
+    ]
+
+
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
 viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessExposure
-
         tasks =
             [ ExposureTravel, ExposureExposure ]
 
@@ -1149,13 +1229,13 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
             case data.activeTask of
                 ExposureTravel ->
                     measurements.travelHistory
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> travelHistoryFormWithDefault data.travelHistoryForm
                         |> viewTravelHistoryForm language currentDate measurements
 
                 ExposureExposure ->
                     measurements.exposure
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> exposureFormWithDefault data.exposureForm
                         |> viewExposureForm language currentDate measurements
 
@@ -1264,9 +1344,6 @@ viewHCRecommendation language recommendation =
 viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
 viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessPriorTreatment
-
         tasks =
             [ TreatmentReview ]
 
@@ -1314,7 +1391,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
             case data.activeTask of
                 TreatmentReview ->
                     measurements.treatmentReview
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewTreatmentReviewForm language currentDate measurements
 
@@ -1483,8 +1560,8 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Bool -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
     let
         personId =
             assembled.participant.person
@@ -1498,11 +1575,8 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
         diagnosis =
             Maybe.map Tuple.second assembled.diagnosis
 
-        activity =
-            AcuteIllnessNextSteps
-
         tasks =
-            resolveNextStepsTasks currentDate isFirstEncounter assembled
+            resolveNextStepsTasks currentDate isChw assembled
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1546,6 +1620,18 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                             , isJust measurements.followUp
                             )
 
+                        NextStepsContactTracing ->
+                            ( "next-steps-contacts-tracing"
+                            , isJust measurements.contactsTracing
+                            )
+
+                        NextStepsSymptomsReliefGuidance ->
+                            -- We call it Medication Distribution, but
+                            -- make use of Health Education form.
+                            ( "next-steps-medication-distribution"
+                            , isJust measurements.healthEducation
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -1561,7 +1647,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.NextStepsTask task)
+                    , text <| translate language (Translate.NextStepsTask isChw task)
                     ]
                 ]
 
@@ -1569,7 +1655,7 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal diagnosis measurements data task )
+                        ( task, nextStepsTasksCompletedFromTotal isChw assembled.initialEncounter diagnosis measurements data task )
                     )
                 |> Dict.fromList
 
@@ -1582,33 +1668,41 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
             case activeTask of
                 Just NextStepsIsolation ->
                     measurements.isolation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> isolationFormWithDefault data.isolationForm
-                        |> viewIsolationForm language currentDate measurements
+                        |> viewIsolationForm language currentDate isChw measurements
 
                 Just NextStepsContactHC ->
                     measurements.hcContact
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate isFirstEncounter measurements
+                        |> viewHCContactForm language currentDate assembled.initialEncounter measurements
 
                 Just NextStepsCall114 ->
                     measurements.call114
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> call114FormWithDefault data.call114Form
                         |> viewCall114Form language currentDate measurements
 
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language currentDate person diagnosis
 
                 Just NextStepsSendToHC ->
+                    let
+                        sendToFacilityFunc =
+                            if isChw then
+                                viewSendToHealthCenterForm
+
+                            else
+                                viewSendToHospitalForm
+                    in
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language
+                        |> sendToFacilityFunc language
                             currentDate
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
@@ -1617,15 +1711,27 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate diagnosis
 
                 Just NextStepsFollowUp ->
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate
+                        |> viewFollowUpForm language currentDate isChw
+
+                Just NextStepsContactTracing ->
+                    measurements.contactsTracing
+                        |> getMeasurementValueFunc
+                        |> contactsTracingFormWithDefault data.contactsTracingForm
+                        |> viewContactsTracingForm language currentDate db contactsTracingFinished
+
+                Just NextStepsSymptomsReliefGuidance ->
+                    measurements.healthEducation
+                        |> getMeasurementValueFunc
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewSymptomsReliefForm language currentDate diagnosis
 
                 Nothing ->
                     emptyNode
@@ -1635,11 +1741,11 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                 -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
                 -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
                 Just NextStepsCall114 ->
-                    if isFirstEncounter then
+                    if assembled.initialEncounter then
                         let
                             call114Form =
                                 measurements.call114
-                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> getMeasurementValueFunc
                                     |> call114FormWithDefault data.call114Form
                         in
                         if call114Form.called114 == Just False then
@@ -1657,14 +1763,14 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                 -- At subsequent visit, SendToHC task should appear in case health center adviced to send patient over.
                 -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
                 Just NextStepsContactHC ->
-                    if isFirstEncounter then
+                    if assembled.initialEncounter then
                         tasks
 
                     else
                         let
                             hcContactForm =
                                 measurements.hcContact
-                                    |> Maybe.map (Tuple.second >> .value)
+                                    |> getMeasurementValueFunc
                                     |> hcContactFormWithDefault data.hcContactForm
                         in
                         if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
@@ -1678,11 +1784,13 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                 -- If medication is prescribed, but it's out of stock, or partient
                 -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
+                -- An exclusion here is when patient is diagnosed with Covid and Pneumonia,
+                -- where the patient is monitored at home.
                 Just NextStepsMedicationDistribution ->
                     let
                         medicationDistributionForm =
                             measurements.medicationDistribution
-                                |> Maybe.map (Tuple.second >> .value)
+                                |> getMeasurementValueFunc
                                 |> medicationDistributionFormWithDefault data.medicationDistributionForm
 
                         medicationOutOfStockOrPatientAlergic =
@@ -1702,7 +1810,10 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     )
                                 |> Maybe.withDefault False
                     in
-                    if medicationOutOfStockOrPatientAlergic then
+                    if List.member diagnosis [ Just DiagnosisPneuminialCovid19, Just DiagnosisLowRiskCovid19 ] then
+                        tasks
+
+                    else if medicationOutOfStockOrPatientAlergic then
                         [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
 
                     else
@@ -1720,10 +1831,16 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                     )
                 |> List.head
 
+        contactsTracingFinished =
+            isJust assembled.measurements.contactsTracing || data.contactsTracingForm.finished
+
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
+            Maybe.map
+                (\task ->
+                    if task == NextStepsContactTracing && not contactsTracingFinished then
+                        emptyNode
+
+                    else
                         let
                             saveMsg =
                                 case task of
@@ -1748,6 +1865,12 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
                                     NextStepsFollowUp ->
                                         SaveFollowUp personId measurements.followUp nextTask
 
+                                    NextStepsContactTracing ->
+                                        SaveContactsTracing personId measurements.contactsTracing nextTask
+
+                                    NextStepsSymptomsReliefGuidance ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
                             saveLabel =
                                 case task of
                                     NextStepsHealthEducation ->
@@ -1759,22 +1882,43 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
 
                                     _ ->
                                         Translate.Save
+
+                            disabled =
+                                case task of
+                                    NextStepsContactTracing ->
+                                        -- After traceing is finished and saved, we
+                                        -- do not allow additional editing.
+                                        isJust assembled.measurements.contactsTracing
+
+                                    _ ->
+                                        tasksCompleted /= totalTasks
                         in
                         div [ class "actions next-steps" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                                 , onClick saveMsg
                                 ]
                                 [ text <| translate language saveLabel ]
                             ]
-                    )
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
+
+        fullScreen =
+            Maybe.map ((==) NextStepsContactTracing) activeTask
+                |> Maybe.withDefault False
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div
+        [ classList
+            [ ( "tasks-count", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -1784,11 +1928,18 @@ viewAcuteIllnessNextSteps language currentDate id assembled isFirstEncounter dat
     ]
 
 
-viewIsolationForm : Language -> NominalDate -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
-viewIsolationForm language currentDate measurements form =
+viewIsolationForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
+viewIsolationForm language currentDate isChw measurements form =
     let
+        headerHelper =
+            if isChw then
+                emptyNode
+
+            else
+                viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
+
         patientIsolatedInput =
-            [ viewQuestionLabel language Translate.PatientIsolatedQuestion
+            [ viewQuestionLabel language (Translate.PatientIsolatedQuestion isChw)
             , viewBoolInput
                 language
                 form.patientIsolated
@@ -1800,15 +1951,7 @@ viewIsolationForm language currentDate measurements form =
         derivedInputs =
             case form.patientIsolated of
                 Just True ->
-                    [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
-                    , viewBoolInput
-                        language
-                        form.signOnDoor
-                        SetSignOnDoor
-                        "sign-on-door"
-                        Nothing
-                    ]
-                        ++ healthEducationInput
+                    signOnDoorInput ++ healthEducationInput
 
                 Just False ->
                     [ viewQuestionLabel language Translate.WhyNot
@@ -1826,6 +1969,20 @@ viewIsolationForm language currentDate measurements form =
                 Nothing ->
                     []
 
+        signOnDoorInput =
+            if isChw then
+                [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
+                , viewBoolInput
+                    language
+                    form.signOnDoor
+                    SetSignOnDoor
+                    "sign-on-door"
+                    Nothing
+                ]
+
+            else
+                []
+
         healthEducationInput =
             [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion
             , viewBoolInput
@@ -1836,13 +1993,13 @@ viewIsolationForm language currentDate measurements form =
                 Nothing
             ]
     in
-    patientIsolatedInput
+    (headerHelper :: patientIsolatedInput)
         ++ derivedInputs
         |> div [ class "ui form next-steps isolation" ]
 
 
 viewHCContactForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate isFirstEncounter measurements form =
+viewHCContactForm language currentDate initialEncounter measurements form =
     let
         contactedHCInput =
             [ viewQuestionLabel language Translate.ContactedHCQuestion
@@ -1859,7 +2016,7 @@ viewHCContactForm language currentDate isFirstEncounter measurements form =
                 Just True ->
                     let
                         hcRespnonseOptions =
-                            if isFirstEncounter then
+                            if initialEncounter then
                                 [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
 
                             else
@@ -1938,7 +2095,7 @@ viewCall114Form language currentDate measurements form =
                 Nothing
             ]
 
-        derrivedInputs =
+        derivedInputs =
             form.called114
                 |> Maybe.map
                     (\called114 ->
@@ -1954,7 +2111,7 @@ viewCall114Form language currentDate measurements form =
                                         Translate.Recommendation114
                                     ]
 
-                                derrivedSiteInputs =
+                                derivedSiteInputs =
                                     if isJust form.recommendation114 && form.recommendation114 /= Just OtherRecommendation114 then
                                         let
                                             contactedSiteInput =
@@ -1998,7 +2155,7 @@ viewCall114Form language currentDate measurements form =
                                     else
                                         []
                             in
-                            recommendation114Input ++ derrivedSiteInputs
+                            recommendation114Input ++ derivedSiteInputs
 
                         else
                             [ viewQuestionLabel language Translate.WhyNot
@@ -2014,24 +2171,13 @@ viewCall114Form language currentDate measurements form =
     in
     header
         ++ called114Input
-        ++ derrivedInputs
+        ++ derivedInputs
         |> div [ class "ui form next-steps call-114" ]
 
 
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let
-        viewAdministeredMedicationQuestion medicineTranslationId =
-            div [ class "label" ]
-                [ text <|
-                    translate language Translate.AdministeredMedicationQuestion
-                        ++ " "
-                        ++ translate language medicineTranslationId
-                        ++ " "
-                        ++ translate language Translate.ToThePatient
-                        ++ "?"
-                ]
-
         ( instructions, questions ) =
             let
                 viewDerivedQuestion medication reasonToSignFunc =
@@ -2040,15 +2186,15 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
 
                         currentValue =
-                            getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form
+                            getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
                     in
                     [ viewQuestionLabel language Translate.WhyNot
                     , viewCheckBoxSelectInput language
                         [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
                         [ NonAdministrationPatientDeclined, NonAdministrationOther ]
                         currentValue
-                        (SetMedicationDistributionMedicationNonAdministrationReason currentValue medication)
-                        Translate.MedicationNonAdministrationReason
+                        (SetMedicationDistributionAdministrationNote currentValue medication)
+                        Translate.AdministrationNote
                     ]
 
                 -- When answer for medication administartion is Yes, we clean the reason for not adminsetering the medication.
@@ -2057,7 +2203,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         form_.nonAdministrationSigns
                             |> Maybe.andThen
                                 (\nonAdministrationSigns ->
-                                    getCurrentReasonForMedicaitonNonAdministration reasonToSignFunc form_
+                                    getCurrentReasonForMedicationNonAdministration reasonToSignFunc form_
                                         |> Maybe.map
                                             (\reason ->
                                                 Just <| EverySet.remove (nonAdministrationReasonToSign medication reason) nonAdministrationSigns
@@ -2067,6 +2213,44 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 
                     else
                         form_.nonAdministrationSigns
+
+                amoxicillinAdministration =
+                    resolveAmoxicillinDosage currentDate person
+                        |> Maybe.map
+                            (\( numberOfPills, pillMass, duration ) ->
+                                let
+                                    amoxicillinUpdateFunc value form_ =
+                                        { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
+
+                                    derivedQuestion =
+                                        case form.amoxicillin of
+                                            Just False ->
+                                                viewDerivedQuestion Amoxicillin MedicationAmoxicillin
+
+                                            _ ->
+                                                []
+
+                                    administeredMedicationQuestion =
+                                        if pillMass == "500" then
+                                            viewQuestionLabel language Translate.AdministeredOneOfAboveMedicinesQuestion
+
+                                        else
+                                            viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
+                                in
+                                ( div [ class "instructions respiratory-infection-uncomplicated" ] <|
+                                    viewAmoxicillinAdministrationInstructions language numberOfPills pillMass duration Nothing
+                                , [ administeredMedicationQuestion
+                                  , viewBoolInput
+                                        language
+                                        form.amoxicillin
+                                        (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
+                                        "amoxicillin-medication"
+                                        Nothing
+                                  ]
+                                    ++ derivedQuestion
+                                )
+                            )
+                        |> Maybe.withDefault ( emptyNode, [] )
             in
             case diagnosis of
                 Just DiagnosisMalariaUncomplicated ->
@@ -2091,7 +2275,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                                     ]
                             )
                         |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Coartem)
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Coartem)
                       , viewBoolInput
                             language
                             form.coartem
@@ -2138,7 +2322,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         (resolveORSDosage currentDate person)
                         (resolveZincDosage currentDate person)
                         |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign ORS)
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign ORS)
                       , viewBoolInput
                             language
                             form.ors
@@ -2147,7 +2331,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             Nothing
                       ]
                         ++ orsDerivedQuestion
-                        ++ [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
+                        ++ [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Zinc)
                            , viewBoolInput
                                 language
                                 form.zinc
@@ -2165,7 +2349,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     in
                     ( div [ class "instructions simple-cough-and-cold" ]
                         [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" Nothing ]
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign LemonJuiceOrHoney)
                       , viewBoolInput
                             language
                             form.lemonJuiceOrHoney
@@ -2176,37 +2360,10 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     )
 
                 Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    let
-                        amoxicillinUpdateFunc value form_ =
-                            { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
+                    amoxicillinAdministration
 
-                        derivedQuestion =
-                            case form.amoxicillin of
-                                Just False ->
-                                    viewDerivedQuestion Amoxicillin MedicationAmoxicillin
-
-                                _ ->
-                                    []
-                    in
-                    ( resolveAmoxicillinDosage currentDate person
-                        |> Maybe.map
-                            (\dosage ->
-                                div [ class "instructions respiratory-infection-uncomplicated" ]
-                                    [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Amoxicillin) "icon-pills" Nothing
-                                    , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 5)
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Amoxicillin)
-                      , viewBoolInput
-                            language
-                            form.amoxicillin
-                            (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
-                            "amoxicillin-medication"
-                            Nothing
-                      ]
-                        ++ derivedQuestion
-                    )
+                Just DiagnosisPneuminialCovid19 ->
+                    amoxicillinAdministration
 
                 _ ->
                     ( emptyNode, [] )
@@ -2218,22 +2375,105 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
             ++ questions
 
 
+viewAmoxicillinAdministrationInstructions : Language -> String -> String -> TranslationId -> Maybe NominalDate -> List (Html any)
+viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg duration maybeDate =
+    let
+        ( medicationLabelSuffix, prescription ) =
+            if numberOfPills == "0.5" then
+                ( " (" ++ (translate language <| Translate.HalfOfDosage pillMassInMg) ++ ")"
+                , div [ class "prescription" ]
+                    [ text <| translate language Translate.SeeDosageScheduleByWeight ]
+                )
+
+            else
+                ( " (" ++ pillMassInMg ++ ")"
+                , viewTabletsPrescription language numberOfPills duration
+                )
+
+        alternateMedicineSection =
+            if pillMassInMg == "500" then
+                [ p [ class "or" ] [ text <| translate language Translate.Or ]
+                , viewAdministeredMedicationCustomLabel
+                    language
+                    Translate.Administer
+                    Translate.MedicationDoxycycline
+                    ""
+                    "icon-pills"
+                    ":"
+                    maybeDate
+                , viewTabletsPrescription language "1" (Translate.ByMouthTwiceADayForXDays 5)
+                ]
+
+            else
+                []
+    in
+    [ viewAdministeredMedicationCustomLabel
+        language
+        Translate.Administer
+        (Translate.MedicationDistributionSign Amoxicillin)
+        medicationLabelSuffix
+        "icon-pills"
+        ":"
+        maybeDate
+    , prescription
+    ]
+        ++ alternateMedicineSection
+
+
+viewParacetamolAdministrationInstructions : Language -> Maybe NominalDate -> Bool -> List (Html any)
+viewParacetamolAdministrationInstructions language maybeDate isAdult =
+    let
+        ( medicationLabelSuffix, prescription ) =
+            if isAdult then
+                ( " (1g)", Translate.ParacetamolPrescriptionForAdult )
+
+            else
+                ( " (15mg per kg)", Translate.SeeDosageScheduleByWeight )
+    in
+    [ viewAdministeredMedicationCustomLabel
+        language
+        Translate.Administer
+        (Translate.MedicationDistributionSign Paracetamol)
+        medicationLabelSuffix
+        "icon-pills"
+        ":"
+        maybeDate
+    , div [ class "prescription" ]
+        [ text <| translate language prescription ]
+    ]
+
+
+viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any
+viewAdministeredMedicationQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.AdministeredMedicationQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
+                ++ " "
+                ++ translate language Translate.ToThePatient
+                ++ "?"
+        ]
+
+
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass ":" maybeDate
+
+
+viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId medicineSuffix iconClass suffix maybeDate =
     let
         message =
             div [] <|
                 [ text <| translate language administerTranslationId
                 , text ": "
-                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
+                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ++ medicineSuffix ]
                 ]
                     ++ renderDatePart language maybeDate
-                    ++ [ text ":" ]
+                    ++ [ text <| " " ++ suffix ]
     in
-    div [ class "header icon-label" ] <|
-        [ i [ class iconClass ] []
-        , message
-        ]
+    viewInstructionsLabel iconClass message
 
 
 viewTabletsPrescription : Language -> String -> TranslationId -> Html any
@@ -2259,9 +2499,6 @@ viewOralSolutionPrescription language dosage =
 viewAcuteIllnessOngoingTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> OngoingTreatmentData -> List (Html Msg)
 viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessOngoingTreatment
-
         tasks =
             [ OngoingTreatmentReview ]
 
@@ -2309,7 +2546,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
             case data.activeTask of
                 OngoingTreatmentReview ->
                     measurements.treatmentOngoing
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses measurements
 
@@ -2514,9 +2751,6 @@ viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measuremen
 viewAcuteIllnessDangerSigns : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
 viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) data =
     let
-        activity =
-            AcuteIllnessDangerSigns
-
         tasks =
             [ ReviewDangerSigns ]
 
@@ -2564,7 +2798,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
             case data.activeTask of
                 ReviewDangerSigns ->
                     measurements.dangerSigns
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
                         |> viewReviewDangerSignsForm language currentDate measurements
 
@@ -2692,6 +2926,34 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
         |> Maybe.withDefault emptyNode
 
 
+viewSymptomsReliefForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
+viewSymptomsReliefForm language currentDate maybeDiagnosis form =
+    let
+        viewSymptomRelief symptomsRelief =
+            li [] [ text <| translate language <| Translate.SymptomRelief symptomsRelief ]
+
+        symptomsReliefList =
+            [ SymptomReliefParacetamol
+            , SymptomReliefVitaminC
+            , SymptomReliefPaidoterineSyrup
+            , SymptomReliefCoughMixture
+            ]
+    in
+    div [ class "ui form symptoms-relief" ] <|
+        [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
+        , viewLabel language Translate.RecommendedSymptomRelief
+        , ul [] <|
+            List.map viewSymptomRelief symptomsReliefList
+        , viewQuestionLabel language Translate.ProvidedSymtomReliefGuidanceQuestion
+        , viewBoolInput
+            language
+            form.educationForDiagnosis
+            SetProvidedEducationForDiagnosis
+            "education-for-diagnosis"
+            Nothing
+        ]
+
+
 viewHealthEducationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewHealthEducationLabel language actionTranslationId diagnosisTranslationId iconClass maybeDate =
     let
@@ -2704,20 +2966,712 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
                     ++ renderDatePart language maybeDate
                     ++ [ text "." ]
     in
+    viewInstructionsLabel iconClass message
+
+
+viewInstructionsLabel : String -> Html any -> Html any
+viewInstructionsLabel iconClass message =
     div [ class "header icon-label" ] <|
         [ i [ class iconClass ] []
         , message
         ]
 
 
-viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
-viewFollowUpForm language currentDate form =
-    div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpLabel
-        , viewCheckBoxSelectInput language
-            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
-            []
-            form.option
-            SetFollowUpOption
-            Translate.FollowUpOption
+viewFollowUpForm : Language -> NominalDate -> Bool -> FollowUpForm -> Html Msg
+viewFollowUpForm language currentDate isChw form =
+    let
+        ( headerHelper, label ) =
+            if isChw then
+                ( [], Translate.FollowUpByChwLabel )
+
+            else
+                ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                  , div [ class "instructions" ]
+                        [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
+                        ]
+                  ]
+                , Translate.FollowUpLabel
+                )
+    in
+    div [ class "ui form follow-up" ] <|
+        headerHelper
+            ++ [ viewLabel language label
+               , viewCheckBoxSelectInput language
+                    [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+                    []
+                    form.option
+                    SetFollowUpOption
+                    Translate.FollowUpOption
+               ]
+
+
+viewFollowUpLabel : Language -> TranslationId -> String -> Html any
+viewFollowUpLabel language actionTranslationId iconClass =
+    let
+        message =
+            div [] [ text <| translate language actionTranslationId ++ "." ]
+    in
+    viewInstructionsLabel iconClass message
+
+
+viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactsTracingForm -> Html Msg
+viewContactsTracingForm language currentDate db contactsTracingFinished form =
+    let
+        content =
+            case form.state of
+                ContactsTracingFormSummary ->
+                    viewContactsTracingFormSummary language currentDate db contactsTracingFinished form.contacts
+
+                ContactsTracingFormSearchParticipants data ->
+                    let
+                        recordedContacts =
+                            Maybe.map Dict.keys form.contacts
+                                |> Maybe.withDefault []
+                    in
+                    viewContactsTracingFormSearchParticipants language currentDate db recordedContacts data
+
+                ContactsTracingFormRecordContactDetails personId data ->
+                    viewContactsTracingFormRecordContactDetails language currentDate personId db data
+
+                ContactsTracingFormRegisterContact data ->
+                    viewCreateContactForm language currentDate db data
+    in
+    div [ class "ui form contacts-tracing" ]
+        content
+
+
+viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceItem) -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate db contactsTracingFinished contacts =
+    let
+        contactsForView =
+            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db contactsTracingFinished))
+                contacts
+                |> Maybe.withDefault []
+    in
+    [ viewCustomLabel language Translate.ContactsTracingHelper "." "instructions"
+    , div [ class "ui items" ] contactsForView
+    , div [ class "dual-action" ]
+        [ div
+            [ classList
+                [ ( "ui primary button", True )
+                , ( "disabled", contactsTracingFinished )
+                ]
+            , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
+            ]
+            [ text <| translate language Translate.AddContact
+            ]
+        , div
+            [ classList
+                [ ( "ui primary button", True )
+                , ( "disabled", contactsTracingFinished )
+                ]
+            , onClick SetContactsTracingFinished
+            ]
+            [ text <| translate language Translate.Finish
+            ]
         ]
+    ]
+
+
+viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceItem -> Html Msg
+viewTracedContact language currentDate db finished contact =
+    let
+        person =
+            Dict.get contact.personId db.people
+                |> Maybe.andThen RemoteData.toMaybe
+
+        name =
+            generateFullName contact.firstName contact.secondName
+
+        birthDate =
+            Maybe.andThen .birthDate person
+
+        village =
+            Maybe.andThen .village person
+
+        avatarUrl =
+            Maybe.andThen .avatarUrl person
+
+        defaultIcon =
+            Maybe.map (defaultIconForPerson currentDate) person
+                |> Maybe.withDefault "mother"
+
+        action =
+            showIf (not finished) <|
+                div [ class "action" ]
+                    [ div
+                        [ class "action-icon-wrapper"
+                        , onClick <| DeleteTracedContact contact.personId
+                        ]
+                        [ span [ class "icon-checked-in" ] [] ]
+                    ]
+
+        content =
+            div [ class "content" ]
+                [ div
+                    [ class "details" ]
+                    [ h2 [ class "ui header" ]
+                        [ text name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ Maybe.map (renderDate language) birthDate
+                                |> Maybe.withDefault "--/--/--"
+                                |> text
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ village |> Maybe.withDefault "" |> text ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DateOfContact ++ ": " ]
+                        , span [] [ formatDDMMYYYY contact.contactDate |> text ]
+                        ]
+                    ]
+                , action
+                ]
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage defaultIcon avatarUrl name 120 120 ]
+        , content
+        ]
+
+
+viewContactsTracingFormSearchParticipants : Language -> NominalDate -> ModelIndexedDb -> List PersonId -> SearchParticipantsData -> List (Html Msg)
+viewContactsTracingFormSearchParticipants language currentDate db existingContacts data =
+    let
+        searchForm =
+            Pages.Utils.viewSearchForm language data.input Translate.PlaceholderSearchContactName SetContactsTracingInput
+
+        searchValue =
+            Maybe.withDefault "" data.search
+
+        results =
+            if String.isEmpty searchValue then
+                Nothing
+
+            else
+                Dict.get searchValue db.personSearches
+                    |> Maybe.withDefault NotAsked
+                    |> RemoteData.map
+                        (Dict.filter
+                            (\personId _ ->
+                                -- Do not display person we already have as a contact.
+                                not <| List.member personId existingContacts
+                            )
+                        )
+                    |> Just
+
+        summary =
+            Maybe.map (viewWebData language viewSummary identity) results
+                |> Maybe.withDefault emptyNode
+
+        viewSummary participants =
+            Dict.size participants
+                |> Translate.ReportResultsOfContactsSearch
+                |> translate language
+                |> text
+
+        searchResultsParticipants =
+            Maybe.withDefault (Success Dict.empty) results
+                |> RemoteData.withDefault Dict.empty
+                |> Dict.map viewSearchedParticipant
+                |> Dict.values
+
+        viewSearchedParticipant personId person =
+            viewContactTracingParticipant language
+                currentDate
+                personId
+                person
+                False
+                (ContactsTracingFormRecordContactDetails personId emptyRecordContactDetailsData)
+
+        addNewContactSection =
+            if String.isEmpty searchValue then
+                []
+
+            else
+                [ div [ class "register-helper" ]
+                    [ text <| translate language Translate.RegisterContactHelper ]
+                , div
+                    [ class "single-action" ]
+                    [ div
+                        [ class "ui primary button"
+                        , onClick <| SetContactsTracingFormState <| ContactsTracingFormRegisterContact emptyRegisterContactData
+                        ]
+                        [ text <| translate language Translate.RegisterNewContact ]
+                    ]
+                ]
+    in
+    [ div
+        [ class "search-top" ]
+        [ viewCustomLabel language Translate.SearchEhezaForExistingParticipants "." "search-helper instructions"
+        , searchForm
+        ]
+    , div
+        [ class "search-middle" ]
+        [ div [ class "results-summary" ]
+            [ summary ]
+        , div
+            [ class "ui unstackable items participants-list" ]
+            searchResultsParticipants
+        ]
+    ]
+        ++ addNewContactSection
+        ++ [ div
+                [ class "single-action" ]
+                [ div
+                    [ class "ui primary button"
+                    , onClick <| SetContactsTracingFormState ContactsTracingFormSummary
+                    ]
+                    [ text <| translate language Translate.Cancel
+                    ]
+                ]
+           ]
+
+
+viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> ModelIndexedDb -> RecordContactDetailsData -> List (Html Msg)
+viewContactsTracingFormRecordContactDetails language currentDate personId db data =
+    Dict.get personId db.people
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (\person ->
+                let
+                    dateForView =
+                        Maybe.map formatDDMMYYYY data.contactDate
+                            |> Maybe.withDefault ""
+
+                    dateSelectorConfig =
+                        { select = SetContactsTracingDate
+                        , close = SetContactsTracingDateSelectorState Nothing
+                        , dateFrom = Date.add Days (-1 * covidIsolationPeriod) currentDate
+                        , dateTo = currentDate
+                        }
+
+                    phoneNumberInput =
+                        viewTextInput language inputNumber SetContactsTracingPhoneNumber Nothing Nothing
+
+                    inputNumber =
+                        Maybe.Extra.or data.phoneNumber person.telephoneNumber
+                            |> Maybe.withDefault ""
+
+                    saveButtonAttributes =
+                        classList
+                            [ ( "ui primary button", True )
+                            , ( "disabled", saveDisabled )
+                            ]
+                            :: saveAction
+
+                    saveAction =
+                        Maybe.map
+                            (\contactDate ->
+                                ContactTraceItem personId
+                                    person.firstName
+                                    person.secondName
+                                    person.gender
+                                    inputNumber
+                                    contactDate
+                                    -- Resolution date is set to the date on which
+                                    -- Covid  isolation is completed.
+                                    (Date.add Days (covidIsolationPeriod + 1) contactDate)
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    Nothing
+                                    |> SaveTracedContact
+                                    |> onClick
+                                    |> List.singleton
+                            )
+                            data.contactDate
+                            |> Maybe.withDefault []
+
+                    saveDisabled =
+                        isNothing data.contactDate
+                in
+                [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
+                , div [ class "ui items" ] <|
+                    [ viewContactTracingParticipant language currentDate personId person True (ContactsTracingFormSearchParticipants emptySearchParticipantsData) ]
+                , div [ class "contact-detail" ]
+                    [ viewLabel language Translate.DateOfContact
+                    , div
+                        [ class "form-input date"
+                        , onClick <| SetContactsTracingDateSelectorState (Just dateSelectorConfig)
+                        ]
+                        [ text dateForView ]
+                    , viewModal <| viewCalendarPopup language data.dateSelectorPopupState data.contactDate
+                    ]
+                , div [ class "contact-detail" ]
+                    [ viewLabel language Translate.TelephoneNumber
+                    , div [ class "form-input text" ]
+                        [ phoneNumberInput ]
+                    ]
+                , div [ class "single-action" ]
+                    [ div saveButtonAttributes
+                        [ text <| translate language Translate.Save ]
+                    ]
+                ]
+            )
+        |> Maybe.withDefault []
+
+
+viewContactTracingParticipant : Language -> NominalDate -> PersonId -> Person -> Bool -> ContactsTracingFormState -> Html Msg
+viewContactTracingParticipant language currentDate personId person checked newFormState =
+    let
+        viewAction =
+            let
+                checkInClass =
+                    if checked then
+                        "icon-checked-in"
+
+                    else
+                        "icon-check-in"
+            in
+            div [ class "action" ]
+                [ div
+                    [ class "action-icon-wrapper"
+                    , onClick <| SetContactsTracingFormState newFormState
+                    ]
+                    [ span [ class checkInClass ] []
+                    ]
+                ]
+
+        content =
+            div [ class "content" ]
+                [ div
+                    [ class "details" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text <| person.name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ person.birthDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        ]
+                    ]
+                , viewAction
+                ]
+
+        defaultIcon =
+            defaultIconForPerson currentDate person
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
+        , content
+        ]
+
+
+viewCreateContactForm : Language -> NominalDate -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
+viewCreateContactForm language currentDate db data =
+    let
+        request =
+            db.postPerson
+
+        emptyOption =
+            ( "", "" )
+
+        errors =
+            Form.getErrors data
+
+        requestStatus =
+            case request of
+                Success _ ->
+                    -- We only want to report failures. In case
+                    -- of success, APP navigates to different page.
+                    emptyNode
+
+                Failure err ->
+                    div
+                        [ class "ui warning message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.BackendError ]
+                        , viewError language err
+                        ]
+
+                Loading ->
+                    viewLoading
+
+                NotAsked ->
+                    emptyNode
+
+        demographicFields =
+            List.map (Html.map RegisterContactMsgForm) <|
+                [ Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
+                , Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
+                , genderInput
+                ]
+
+        genderField =
+            Form.getFieldAsString Backend.Person.Form.gender data
+
+        genderInput =
+            let
+                label =
+                    div [ class "six wide column required" ]
+                        [ text <| translate language Translate.GenderLabel ++ ":" ]
+
+                maleOption =
+                    [ Form.Input.radioInput "male"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Male) ]
+                    ]
+
+                femaleOption =
+                    [ Form.Input.radioInput "female"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Female) ]
+                    ]
+            in
+            div [ class "ui grid" ] <|
+                label
+                    :: maleOption
+                    ++ femaleOption
+
+        geoLocationDictToOptions dict =
+            Dict.toList dict
+                |> List.map
+                    (\( id, geoLocation ) ->
+                        ( String.fromInt <| fromEntityId id, geoLocation.name )
+                    )
+
+        filterGeoLocationDictByParent parentId dict =
+            dict
+                |> Dict.filter
+                    (\_ geoLocation ->
+                        (Just <| toEntityId parentId) == geoLocation.parent
+                    )
+
+        geoLocationInputClass isDisabled =
+            "select-input"
+                ++ (if isDisabled then
+                        " disabled"
+
+                    else
+                        ""
+                   )
+
+        province =
+            Form.getFieldAsString Backend.Person.Form.province data
+
+        district =
+            Form.getFieldAsString Backend.Person.Form.district data
+
+        sector =
+            Form.getFieldAsString Backend.Person.Form.sector data
+
+        cell =
+            Form.getFieldAsString Backend.Person.Form.cell data
+
+        village =
+            Form.getFieldAsString Backend.Person.Form.village data
+
+        viewProvince =
+            let
+                options =
+                    emptyOption
+                        :: geoLocationDictToOptions geoInfo.provinces
+
+                disabled =
+                    isFormFieldSet district
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Province
+                options
+                Backend.Person.Form.province
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewDistrict =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt province of
+                                Nothing ->
+                                    []
+
+                                Just provinceId ->
+                                    geoInfo.districts
+                                        |> filterGeoLocationDictByParent provinceId
+                                        |> geoLocationDictToOptions
+                           )
+
+                disabled =
+                    isFormFieldSet sector
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.District
+                options
+                Backend.Person.Form.district
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewSector =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt district of
+                                Nothing ->
+                                    []
+
+                                Just districtId ->
+                                    geoInfo.sectors
+                                        |> filterGeoLocationDictByParent districtId
+                                        |> geoLocationDictToOptions
+                           )
+
+                disabled =
+                    isFormFieldSet cell
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Sector
+                options
+                Backend.Person.Form.sector
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewCell =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt sector of
+                                Nothing ->
+                                    []
+
+                                Just sectorId ->
+                                    geoInfo.cells
+                                        |> filterGeoLocationDictByParent sectorId
+                                        |> geoLocationDictToOptions
+                           )
+
+                disabled =
+                    isFormFieldSet village
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Cell
+                options
+                Backend.Person.Form.cell
+                "ten"
+                (geoLocationInputClass disabled)
+                True
+                data
+
+        viewVillage =
+            let
+                options =
+                    emptyOption
+                        :: (case getValueAsInt cell of
+                                Nothing ->
+                                    []
+
+                                Just cellId ->
+                                    geoInfo.villages
+                                        |> filterGeoLocationDictByParent cellId
+                                        |> geoLocationDictToOptions
+                           )
+            in
+            Pages.Person.View.viewSelectInput language
+                Translate.Village
+                options
+                Backend.Person.Form.village
+                "ten"
+                "select-input"
+                True
+                data
+
+        addressFields =
+            [ viewProvince
+            , viewDistrict
+            , viewSector
+            , viewCell
+            , viewVillage
+            ]
+
+        addressSection =
+            [ addressFields
+                |> fieldset [ class "registration-form address-info" ]
+                |> Html.map RegisterContactMsgForm
+            ]
+
+        contactInformationSection =
+            [ [ Pages.Person.View.viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False data ]
+                |> fieldset [ class "registration-form address-info" ]
+                |> Html.map RegisterContactMsgForm
+            ]
+
+        submitButton =
+            button
+                [ classList
+                    [ ( "ui button primary fluid", True )
+                    , ( "loading", RemoteData.isLoading request )
+                    , ( "disabled", RemoteData.isLoading request )
+                    ]
+                , type_ "submit"
+                , onClick Form.Submit
+                ]
+                [ text <| translate language Translate.Save ]
+
+        cancelButton =
+            button
+                [ class "ui button primary"
+                , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
+                ]
+                [ text <| translate language Translate.Cancel ]
+
+        formContent =
+            [ fieldset [ class "registration-form" ]
+                demographicFields
+            ]
+                ++ contactInformationSection
+                ++ addressSection
+                ++ [ div [ class "dual-action" ]
+                        [ submitButton
+                            |> Html.map RegisterContactMsgForm
+                        , cancelButton
+                        ]
+
+                   -- Note that these are hidden by deafult by semantic-ui ... the
+                   -- class of the "form" controls whether they are shown.
+                   , requestStatus
+                   , div
+                        [ class "ui error message" ]
+                        [ div [ class "header" ] [ text <| translate language Translate.ValidationErrors ]
+                        , List.map (viewFormError language) errors
+                            |> ul []
+                        ]
+                   ]
+    in
+    [ div
+        [ classList
+            [ ( "ui form registration", True )
+            , ( "error", Form.isSubmitted data && not (List.isEmpty errors) )
+            , ( "success", RemoteData.isSuccess request )
+            , ( "warning", RemoteData.isFailure request )
+            ]
+        ]
+        formContent
+    ]

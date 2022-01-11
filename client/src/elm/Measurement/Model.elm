@@ -10,6 +10,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Translate.Model exposing (Language)
 
 
@@ -38,7 +39,7 @@ issues) since the data itself would encapsulate an editor state.
 type alias ModelChild =
     { height : String
     , muac : String
-    , nutritionSigns : EverySet ChildNutritionSign
+    , nutrition : NutritionValue
     , photo : Maybe PhotoUrl
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
@@ -62,7 +63,7 @@ emptyModelChild : ModelChild
 emptyModelChild =
     { height = ""
     , muac = ""
-    , nutritionSigns = EverySet.empty
+    , nutrition = emptyNutritionValue
     , photo = Nothing
     , weight = ""
     , counseling = Nothing
@@ -108,7 +109,7 @@ type alias FollowUpForm =
     { option : Maybe FollowUpOption
 
     -- We do not display this. Using it when saving.
-    , assesment : Maybe (EverySet NutritionAssesment)
+    , assesment : Maybe (EverySet NutritionAssessment)
     }
 
 
@@ -132,13 +133,21 @@ type alias SendToHCForm =
     { handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
     , accompanyToHealthCenter : Maybe Bool
+    , enrollToNutritionProgram : Maybe Bool
+    , referToNutritionProgram : Maybe Bool
     , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
     }
 
 
 emptySendToHCForm : SendToHCForm
 emptySendToHCForm =
-    SendToHCForm Nothing Nothing Nothing Nothing
+    { handReferralForm = Nothing
+    , referToHealthCenter = Nothing
+    , accompanyToHealthCenter = Nothing
+    , enrollToNutritionProgram = Nothing
+    , referToNutritionProgram = Nothing
+    , reasonForNotSendingToHC = Nothing
+    }
 
 
 {-| The UI for participant consent forms for a particular mother.
@@ -255,7 +264,7 @@ type OutMsgChild
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
-    | SaveChildNutritionSigns (Maybe ChildNutritionId) (EverySet ChildNutritionSign)
+    | SaveNutrition (Maybe ChildNutritionId) NutritionValue
     | SavePhoto (Maybe PhotoId) PhotoUrl
     | SaveChildFbf (Maybe ChildFbfId) FbfValue
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign)
@@ -277,3 +286,119 @@ type NextStepsTask
     | NextStepsHealthEducation
     | NextStepContributingFactors
     | NextStepFollowUp
+
+
+type alias HeightForm =
+    { height : Maybe Float
+    , heightDirty : Bool
+    }
+
+
+emptyHeightForm : HeightForm
+emptyHeightForm =
+    HeightForm Nothing False
+
+
+type alias MuacForm =
+    { muac : Maybe Float
+    , muacDirty : Bool
+    }
+
+
+emptyMuacForm : MuacForm
+emptyMuacForm =
+    MuacForm Nothing False
+
+
+type alias NutritionForm =
+    { signs : Maybe (List ChildNutritionSign)
+
+    -- We do not display this. Using it when saving.
+    , assesment : Maybe (EverySet NutritionAssessment)
+    }
+
+
+emptyNutritionForm : NutritionForm
+emptyNutritionForm =
+    NutritionForm Nothing Nothing
+
+
+type alias PhotoForm =
+    { url : Maybe PhotoUrl
+    }
+
+
+emptyPhotoForm : PhotoForm
+emptyPhotoForm =
+    PhotoForm Nothing
+
+
+type alias WeightForm =
+    { weight : Maybe Float
+    , weightDirty : Bool
+    }
+
+
+emptyWeightForm : WeightForm
+emptyWeightForm =
+    WeightForm Nothing False
+
+
+type alias VitalsForm =
+    { sysBloodPressure : Maybe Float
+    , sysBloodPressureDirty : Bool
+    , diaBloodPressure : Maybe Float
+    , diaBloodPressureDirty : Bool
+    , heartRate : Maybe Int
+    , heartRateDirty : Bool
+    , respiratoryRate : Maybe Int
+    , respiratoryRateDirty : Bool
+    , bodyTemperature : Maybe Float
+    , bodyTemperatureDirty : Bool
+    }
+
+
+emptyVitalsForm : VitalsForm
+emptyVitalsForm =
+    { sysBloodPressure = Nothing
+    , sysBloodPressureDirty = False
+    , diaBloodPressure = Nothing
+    , diaBloodPressureDirty = False
+    , heartRate = Nothing
+    , heartRateDirty = False
+    , respiratoryRate = Nothing
+    , respiratoryRateDirty = False
+    , bodyTemperature = Nothing
+    , bodyTemperatureDirty = False
+    }
+
+
+type alias VitalsFormConfig msg =
+    { setIntInputMsg : (Maybe Int -> VitalsForm -> VitalsForm) -> String -> msg
+    , setFloatInputMsg : (Maybe Float -> VitalsForm -> VitalsForm) -> String -> msg
+    , sysBloodPressurePreviousValue : Maybe Float
+    , diaBloodPressurePreviousValue : Maybe Float
+    , heartRatePreviousValue : Maybe Float
+    , respiratoryRatePreviousValue : Maybe Float
+    , bodyTemperaturePreviousValue : Maybe Float
+    , birthDate : Maybe NominalDate
+    , formClass : String
+    , mode : VitalsFormMode
+    , invokationModule : InvokationModule
+    }
+
+
+type VitalsFormMode
+    = VitalsFormBasic
+    | VitalsFormFull
+
+
+type InvokationModule
+    = InvokationModulePrenatal
+    | InvokationModuleAcuteIllness
+    | InvokationModuleWellChild
+
+
+type ReferralFacility
+    = FacilityHealthCenter
+    | FacilityHospital

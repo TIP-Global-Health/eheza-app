@@ -20,6 +20,7 @@ import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
 import Backend.Session.Encoder
 import Backend.Village.Encoder
+import Backend.WellChildEncounter.Encoder
 import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
@@ -371,6 +372,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             getIdentifier identifier "acute_findings"
 
+        BackendAuthorityAcuteIllnessContactsTracing identifier ->
+            getIdentifier identifier "acute_illness_contacts_tracing"
+
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            getIdentifier identifier "acute_illness_core_exam"
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             getIdentifier identifier "acute_illness_danger_signs"
 
@@ -385,6 +392,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             getIdentifier identifier "acute_illness_nutrition"
+
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            getIdentifier identifier "acute_illness_trace_contact"
 
         BackendAuthorityAcuteIllnessVitals identifier ->
             getIdentifier identifier "acute_illness_vitals"
@@ -418,6 +428,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityCorePhysicalExam identifier ->
             getIdentifier identifier "core_physical_exam"
+
+        BackendAuthorityCovidTesting identifier ->
+            getIdentifier identifier "covid_testing"
 
         BackendAuthorityDangerSigns identifier ->
             getIdentifier identifier "danger_signs"
@@ -605,11 +618,92 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             getIdentifier identifier "treatment_history"
 
+        BackendAuthorityVitals identifier ->
+            getIdentifier identifier "vitals"
+
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
 
-        BackendAuthorityVitals identifier ->
-            getIdentifier identifier "vitals"
+        BackendAuthorityWellChildAlbendazole identifier ->
+            getIdentifier identifier "well_child_albendazole"
+
+        BackendAuthorityWellChildBCGImmunisation identifier ->
+            getIdentifier identifier "well_child_bcg_immunisation"
+
+        BackendAuthorityWellChildContributingFactors identifier ->
+            getIdentifier identifier "well_child_contributing_factors"
+
+        BackendAuthorityWellChildDTPImmunisation identifier ->
+            getIdentifier identifier "well_child_dtp_immunisation"
+
+        BackendAuthorityWellChildECD identifier ->
+            getIdentifier identifier "well_child_ecd"
+
+        BackendAuthorityWellChildEncounter identifier ->
+            getIdentifier identifier "well_child_encounter"
+
+        BackendAuthorityWellChildFollowUp identifier ->
+            getIdentifier identifier "well_child_follow_up"
+
+        BackendAuthorityWellChildHeadCircumference identifier ->
+            getIdentifier identifier "well_child_head_circumference"
+
+        BackendAuthorityWellChildHealthEducation identifier ->
+            getIdentifier identifier "well_child_health_education"
+
+        BackendAuthorityWellChildHeight identifier ->
+            getIdentifier identifier "well_child_height"
+
+        BackendAuthorityWellChildHPVImmunisation identifier ->
+            getIdentifier identifier "well_child_hpv_immunisation"
+
+        BackendAuthorityWellChildIPVImmunisation identifier ->
+            getIdentifier identifier "well_child_ipv_immunisation"
+
+        BackendAuthorityWellChildMebendezole identifier ->
+            getIdentifier identifier "well_child_mebendezole"
+
+        BackendAuthorityWellChildMRImmunisation identifier ->
+            getIdentifier identifier "well_child_mr_immunisation"
+
+        BackendAuthorityWellChildMuac identifier ->
+            getIdentifier identifier "well_child_muac"
+
+        BackendAuthorityWellChildNextVisit identifier ->
+            getIdentifier identifier "well_child_next_visit"
+
+        BackendAuthorityWellChildNutrition identifier ->
+            getIdentifier identifier "well_child_nutrition"
+
+        BackendAuthorityWellChildOPVImmunisation identifier ->
+            getIdentifier identifier "well_child_opv_immunisation"
+
+        BackendAuthorityWellChildPCV13Immunisation identifier ->
+            getIdentifier identifier "well_child_pcv13_immunisation"
+
+        BackendAuthorityWellChildPhoto identifier ->
+            getIdentifier identifier "well_child_photo"
+
+        BackendAuthorityWellChildPregnancySummary identifier ->
+            getIdentifier identifier "well_child_pregnancy_summary"
+
+        BackendAuthorityWellChildRotarixImmunisation identifier ->
+            getIdentifier identifier "well_child_rotarix_immunisation"
+
+        BackendAuthorityWellChildSendToHC identifier ->
+            getIdentifier identifier "well_child_send_to_hc"
+
+        BackendAuthorityWellChildSymptomsReview identifier ->
+            getIdentifier identifier "well_child_symptoms_review"
+
+        BackendAuthorityWellChildVitals identifier ->
+            getIdentifier identifier "well_child_vitals"
+
+        BackendAuthorityWellChildVitaminA identifier ->
+            getIdentifier identifier "well_child_vitamin_a"
+
+        BackendAuthorityWellChildWeight identifier ->
+            getIdentifier identifier "well_child_weight"
 
 
 {-| Return a photo from a "Authority" entity.
@@ -806,6 +900,12 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteFindings identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteFindings identifier
 
+        BackendAuthorityAcuteIllnessContactsTracing identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessContactsTracing identifier
+
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessCoreExam identifier
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessDangerSigns identifier
 
@@ -820,6 +920,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessNutrition identifier
+
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            encode Backend.Measurement.Encoder.encodeAcuteIllnessTraceContact identifier
 
         BackendAuthorityAcuteIllnessVitals identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessVitals identifier
@@ -853,6 +956,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityCorePhysicalExam identifier ->
             encode Backend.Measurement.Encoder.encodeCorePhysicalExam identifier
+
+        BackendAuthorityCovidTesting identifier ->
+            encode Backend.Measurement.Encoder.encodeCovidTesting identifier
 
         BackendAuthorityDangerSigns identifier ->
             encode Backend.Measurement.Encoder.encodeDangerSigns identifier
@@ -1046,6 +1152,87 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWeight identifier ->
             encode Backend.Measurement.Encoder.encodeWeight identifier
 
+        BackendAuthorityWellChildAlbendazole identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildAlbendazole identifier
+
+        BackendAuthorityWellChildBCGImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildBCGImmunisation identifier
+
+        BackendAuthorityWellChildContributingFactors identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildContributingFactors identifier
+
+        BackendAuthorityWellChildDTPImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildDTPImmunisation identifier
+
+        BackendAuthorityWellChildECD identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildECD identifier
+
+        BackendAuthorityWellChildEncounter identifier ->
+            encode Backend.WellChildEncounter.Encoder.encodeWellChildEncounter identifier
+
+        BackendAuthorityWellChildFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildFollowUp identifier
+
+        BackendAuthorityWellChildHeadCircumference identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHeadCircumference identifier
+
+        BackendAuthorityWellChildHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHealthEducation identifier
+
+        BackendAuthorityWellChildHeight identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHeight identifier
+
+        BackendAuthorityWellChildHPVImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHPVImmunisation identifier
+
+        BackendAuthorityWellChildIPVImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildIPVImmunisation identifier
+
+        BackendAuthorityWellChildMebendezole identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildMebendezole identifier
+
+        BackendAuthorityWellChildMRImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildMRImmunisation identifier
+
+        BackendAuthorityWellChildMuac identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildMuac identifier
+
+        BackendAuthorityWellChildNextVisit identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildNextVisit identifier
+
+        BackendAuthorityWellChildNutrition identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildNutrition identifier
+
+        BackendAuthorityWellChildOPVImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildOPVImmunisation identifier
+
+        BackendAuthorityWellChildPCV13Immunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildPCV13Immunisation identifier
+
+        BackendAuthorityWellChildPhoto identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildPhoto identifier
+
+        BackendAuthorityWellChildPregnancySummary identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildPregnancySummary identifier
+
+        BackendAuthorityWellChildRotarixImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildRotarixImmunisation identifier
+
+        BackendAuthorityWellChildSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildSendToHC identifier
+
+        BackendAuthorityWellChildSymptomsReview identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildSymptomsReview identifier
+
+        BackendAuthorityWellChildVitals identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildVitals identifier
+
+        BackendAuthorityWellChildVitaminA identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildVitaminA identifier
+
+        BackendAuthorityWellChildWeight identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildWeight identifier
+
 
 getDataToSendGeneral : BackendGeneralEntity -> List String -> List String
 getDataToSendGeneral entity accum =
@@ -1204,6 +1391,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteFindings identifier ->
             AcuteFindingsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityAcuteIllnessContactsTracing identifier ->
+            AcuteIllnessContactsTracingRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessCoreExam identifier ->
+            AcuteIllnessCoreExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityAcuteIllnessDangerSigns identifier ->
             AcuteIllnessDangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1218,6 +1411,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             AcuteIllnessNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAcuteIllnessTraceContact identifier ->
+            AcuteIllnessTraceContactRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityAcuteIllnessVitals identifier ->
             AcuteIllnessVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1251,6 +1447,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityCorePhysicalExam identifier ->
             CorePhysicalExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityCovidTesting identifier ->
+            CovidTestingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityDangerSigns identifier ->
             DangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1438,11 +1637,92 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityVitals identifier ->
+            VitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWeight identifier ->
             WeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityVitals identifier ->
-            VitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityWellChildAlbendazole identifier ->
+            WellChildAlbendazoleRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildBCGImmunisation identifier ->
+            WellChildBCGImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildContributingFactors identifier ->
+            WellChildContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildDTPImmunisation identifier ->
+            WellChildDTPImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildECD identifier ->
+            WellChildECDRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildEncounter identifier ->
+            WellChildEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildFollowUp identifier ->
+            WellChildFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildHeadCircumference identifier ->
+            WellChildHeadCircumferenceRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildHealthEducation identifier ->
+            WellChildHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildHeight identifier ->
+            WellChildHeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildHPVImmunisation identifier ->
+            WellChildHPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildIPVImmunisation identifier ->
+            WellChildIPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildMebendezole identifier ->
+            WellChildMebendezoleRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildMRImmunisation identifier ->
+            WellChildMRImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildMuac identifier ->
+            WellChildMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildNextVisit identifier ->
+            WellChildNextVisitRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildNutrition identifier ->
+            WellChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildOPVImmunisation identifier ->
+            WellChildOPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildPCV13Immunisation identifier ->
+            WellChildPCV13ImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildPhoto identifier ->
+            WellChildPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildPregnancySummary identifier ->
+            WellChildPregnancySummaryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildRotarixImmunisation identifier ->
+            WellChildRotarixImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildSendToHC identifier ->
+            WellChildSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildSymptomsReview identifier ->
+            WellChildSymptomsReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildVitals identifier ->
+            WellChildVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildVitaminA identifier ->
+            WellChildVitaminARevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildWeight identifier ->
+            WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
 
 fileUploadFailureThreshold : Int

@@ -6,6 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
+import Date
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData exposing (LocalData)
 import RemoteData exposing (RemoteData(..))
@@ -143,12 +144,12 @@ isClosed currentDate session =
             session.endDate
                 |> Maybe.map
                     (\endDate ->
-                        Gizra.NominalDate.compare currentDate endDate == GT
+                        Date.compare currentDate endDate == GT
                     )
                 |> Maybe.withDefault False
 
         beforeBeginning =
-            Gizra.NominalDate.compare currentDate session.startDate == LT
+            Date.compare currentDate session.startDate == LT
     in
     pastEnd || beforeBeginning
 

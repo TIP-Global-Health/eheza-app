@@ -9,7 +9,7 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , MeasurementData
         )
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, getMeasurementValueFunc, mapMeasurementData)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -29,7 +29,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
                 form =
                     mapMeasurementData .sendToHC measurements
                         |> .current
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentActive, reasonForNotSentCompleted ) =
@@ -57,7 +57,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
                 form =
                     mapMeasurementData .healthEducation measurements
                         |> .current
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
@@ -85,7 +85,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
                 form =
                     mapMeasurementData .contributingFactors measurements
                         |> .current
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
             in
             ( taskCompleted form.signs
@@ -97,7 +97,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
                 form =
                     mapMeasurementData .followUp measurements
                         |> .current
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option

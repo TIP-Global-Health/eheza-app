@@ -1,4 +1,4 @@
-module App.Utils exposing (getLoggedInData, sequenceSubModelReturn, updateSubModel)
+module App.Utils exposing (..)
 
 import App.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId)
@@ -100,3 +100,8 @@ sequenceSubModelReturn updater msgs startingPoint =
         )
         startingPoint
         msgs
+
+
+focusOnCalendarMsg : Msg
+focusOnCalendarMsg =
+    App.Model.ScrollToElement "dropdown--content-container"

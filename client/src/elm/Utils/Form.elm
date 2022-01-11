@@ -1,4 +1,4 @@
-module Utils.Form exposing (dateInput, fromDecoder, getValueAsInt, isFormFieldSet, isFormFieldValid, nullable, onError, viewFormError)
+module Utils.Form exposing (..)
 
 import Form exposing (..)
 import Form.Error exposing (..)
@@ -73,6 +73,12 @@ nullable validation field =
 
                 Nothing ->
                     Ok Nothing
+
+
+required : Validation e a -> Validation e (Maybe a)
+required validation field =
+    validation field
+        |> Result.map Just
 
 
 {-| Applies a JSON Decoder to a string field. If the decoder succeeds, returns

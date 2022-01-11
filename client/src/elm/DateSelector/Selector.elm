@@ -1,4 +1,7 @@
-module DateSelector.Selector exposing (view)
+module DateSelector.Selector exposing
+    ( view
+    , viewPopup
+    )
 
 {-| Create a user interface for selecting dates.
 
@@ -7,12 +10,177 @@ module DateSelector.Selector exposing (view)
 -}
 
 import Date exposing (Date, Interval(..), Unit(..), day, month, numberToMonth, year)
-import Html exposing (Html, div, li, ol, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (class, classList, property)
-import Html.Events exposing (on)
+import Gizra.NominalDate exposing (allMonths)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Json.Decode
 import Json.Encode
+import Maybe.Extra exposing (isNothing)
 import Time exposing (Month(..), Weekday(..))
+import Translate exposing (Language, translate)
+
+
+viewPopup : Language -> Date -> Date -> Maybe Date -> Html Date
+viewPopup language minimum maximum maybeSelected =
+    let
+        yearSection =
+            div [ class "year" ]
+                [ p [] [ text <| translate language Translate.Year ]
+                , viewYearSelectList minimum maximum maybeSelected
+                ]
+
+        monthSection =
+            div [ class "month" ] <|
+                p [] [ text <| translate language Translate.Month ]
+                    :: [ Maybe.map (viewMonthSelectList language minimum maximum) maybeSelected
+                            |> Maybe.withDefault viewMonthSelectListDisabled
+                       ]
+
+        daysSection =
+            div [ class "days" ]
+                [ Maybe.map (viewDateTable minimum maximum) maybeSelected
+                    |> Maybe.withDefault (viewDateTableDisabled minimum)
+                ]
+    in
+    div [ class "calendar" ]
+        [ yearSection
+        , monthSection
+        , daysSection
+        ]
+        |> Html.map (Date.clamp minimum maximum)
+
+
+viewYearSelectList : Date -> Date -> Maybe Date -> Html Date
+viewYearSelectList minimum maximum maybeSelected =
+    let
+        isInvertedMinMax =
+            Date.compare minimum maximum == GT
+
+        years =
+            if isInvertedMinMax then
+                [ maybeSelected |> Maybe.withDefault minimum |> year ]
+
+            else
+                List.range (year minimum) (year maximum)
+
+        options_ =
+            List.reverse years
+                |> List.map
+                    (\year ->
+                        option
+                            [ value <| String.fromInt year
+                            , selected <| isSelectedYear year
+                            ]
+                            [ text <| String.fromInt year ]
+                    )
+
+        options =
+            if isNothing maybeSelected then
+                option
+                    [ value ""
+                    , selected True
+                    ]
+                    [ text "" ]
+                    :: options_
+
+            else
+                options_
+
+        isSelectedYear =
+            Maybe.map (\selected -> (==) (year selected)) maybeSelected
+                |> Maybe.withDefault (always False)
+    in
+    select
+        [ on "input" <|
+            Json.Decode.map
+                (\s ->
+                    let
+                        selectedYear =
+                            String.toInt s
+                                |> -- We'll never get here, as we place only
+                                   -- valid numeric values at select options.
+                                   Maybe.withDefault 2000
+                    in
+                    dateWithYear (Maybe.withDefault (Date.fromCalendarDate (year minimum) Jan 1) maybeSelected) selectedYear
+                )
+                (Json.Decode.at [ "target", "value" ] Json.Decode.string)
+        ]
+        options
+
+
+viewMonthSelectList : Language -> Date -> Date -> Date -> Html Date
+viewMonthSelectList language minimum maximum selectedDate =
+    let
+        isInvertedMinMax =
+            Date.compare minimum maximum == GT
+
+        first =
+            if year selectedDate == year minimum then
+                Date.monthNumber minimum
+
+            else
+                1
+
+        last =
+            if year selectedDate == year maximum then
+                Date.monthNumber maximum
+
+            else
+                12
+
+        months =
+            if isInvertedMinMax then
+                []
+
+            else
+                List.filter
+                    (\month ->
+                        let
+                            monthNumber =
+                                Date.monthToNumber month
+                        in
+                        monthNumber >= first && monthNumber <= last
+                    )
+                    allMonths
+
+        options =
+            List.map
+                (\month ->
+                    let
+                        monthNumber =
+                            Date.monthToNumber month
+                    in
+                    option
+                        [ value <| String.fromInt monthNumber
+                        , selected <| Date.monthNumber selectedDate == monthNumber
+                        ]
+                        [ text <| translate language <| Translate.ResolveMonth False month ]
+                )
+                months
+    in
+    select
+        [ on "input" <|
+            Json.Decode.map
+                (\s ->
+                    let
+                        selectedMonths =
+                            String.toInt s
+                                |> -- We'll never get here, as we place only
+                                   -- valid numeric values at select options.
+                                   Maybe.withDefault 1
+                    in
+                    numberToMonth selectedMonths
+                        |> dateWithMonth selectedDate
+                )
+                (Json.Decode.at [ "target", "value" ] Json.Decode.string)
+        ]
+        options
+
+
+viewMonthSelectListDisabled : Html a
+viewMonthSelectListDisabled =
+    select [] [ option [ value "" ] [ text "" ] ]
 
 
 groupsOf : Int -> List a -> List (List a)
@@ -375,6 +543,13 @@ viewDateTable minimum maximum selected =
 
                                                 else
                                                     Normal
+
+                                            cell =
+                                                if state == Selected then
+                                                    p [] [ text (day date |> String.fromInt) ]
+
+                                                else
+                                                    text (day date |> String.fromInt)
                                         in
                                         td
                                             [ class <| classNameFromState state
@@ -385,7 +560,7 @@ viewDateTable minimum maximum selected =
                                                 else
                                                     Json.Encode.null
                                             ]
-                                            [ text (day date |> String.fromInt) ]
+                                            [ cell ]
                                     )
                             )
                     )

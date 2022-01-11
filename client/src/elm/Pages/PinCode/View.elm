@@ -7,6 +7,7 @@ import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Utils exposing (getHealthCenterName)
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
@@ -224,16 +225,11 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     [ text <| translate language Translate.ParticipantDirectory ]
 
             caseManagementButton =
-                if isChw then
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
-                        ]
-                        [ text <| translate language Translate.CaseManagement
-                        ]
-
-                else
-                    emptyNode
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
+                    ]
+                    [ text <| translate language Translate.CaseManagement ]
         in
         [ generalInfo
         , clinicalButton
@@ -270,13 +266,7 @@ viewLocationName nurse ( healthCenterId, villageId ) db =
                     |> Maybe.map .name
 
             else
-                healthCenterId
-                    |> Maybe.andThen
-                        (\id ->
-                            RemoteData.toMaybe db.healthCenters
-                                |> Maybe.andThen (Dict.get id)
-                        )
-                    |> Maybe.map .name
+                getHealthCenterName healthCenterId db
     in
     locationName
         |> Maybe.map

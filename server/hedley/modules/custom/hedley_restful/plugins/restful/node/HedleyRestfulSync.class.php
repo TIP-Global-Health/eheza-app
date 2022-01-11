@@ -378,6 +378,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'date_concluded',
           'expected_date_concluded',
           'appointment_confirmation',
+          'immunisation_date',
+          'pediatric_visit_date',
+          'contact_date',
+          'last_follow_up_date',
+        ];
+
+        $multiDateFields = [
+          'administration_dates',
         ];
 
         $data = [];
@@ -390,9 +398,19 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             $data[$key] = hedley_restful_uuid_to_nid($value);
           }
           elseif (in_array($key, $dateFields) && !empty($value)) {
-            // Restful seems to want date values as timestamps -- should
-            // investigate if there are other possibilities.
+            // Restful wants date values as timestamps.
             $data[$key] = strtotime($value);
+          }
+          elseif (in_array($key, $multiDateFields) && !empty($value)) {
+            foreach ($value as $date) {
+              // Restful wants date values as timestamps.
+              $data[$key][] = strtotime($date);
+            }
+          }
+          elseif ($key == 'nutrition_signs' && empty($data[$key])) {
+            // Temporary workaround to resolve sync issue on production.
+            // To be removed once fix is deployed, and devices update APP.
+            $data[$key] = ['none'];
           }
           else {
             $data[$key] = $value;
@@ -406,13 +424,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'type',
           'status',
           'shard',
-          // When creating a session, we provide clinic_type so it is
+          // When creating a session, we provide clinic_type, so it is
           // recorded on client. We don't actually need to pass this through,
           // so, we filter it out here.
           'clinic_type',
           // We do not support marking content as deleted from client,
           // therefore, we do not want to pass 'deleted' indication.
-          // Also, not most content types do not have 'field_deleted, and
+          // Also, most content types do not have 'field_deleted, and
           // passing 'deleted' indicator will cause error.
           'deleted',
         ];

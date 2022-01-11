@@ -5,6 +5,9 @@ import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Person.Decoder exposing (decodeGender)
+import Backend.Person.Utils exposing (genderFromString)
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
@@ -38,6 +41,11 @@ decodeAcuteIllnessMeasurement =
 decodeHomeVisitMeasurement : Decoder value -> Decoder (Measurement HomeVisitEncounterId value)
 decodeHomeVisitMeasurement =
     decodeMeasurement "home_visit_encounter"
+
+
+decodeWellChildMeasurement : Decoder value -> Decoder (Measurement WellChildEncounterId value)
+decodeWellChildMeasurement =
+    decodeMeasurement "well_child_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -147,6 +155,9 @@ decodeAcuteIllnessMeasurements =
         |> optional "acute_illness_nutrition" (decodeHead decodeAcuteIllnessNutrition) Nothing
         |> optional "health_education" (decodeHead decodeHealthEducation) Nothing
         |> optional "acute_illness_follow_up" (decodeHead decodeAcuteIllnessFollowUp) Nothing
+        |> optional "acute_illness_core_exam" (decodeHead decodeAcuteIllnessCoreExam) Nothing
+        |> optional "covid_testing" (decodeHead decodeCovidTesting) Nothing
+        |> optional "acute_illness_contacts_tracing" (decodeHead decodeAcuteIllnessContactsTracing) Nothing
 
 
 decodeFollowUpMeasurements : Decoder FollowUpMeasurements
@@ -156,6 +167,8 @@ decodeFollowUpMeasurements =
         |> optional "nutrition_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeNutritionFollowUp)) Dict.empty
         |> optional "acute_illness_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessFollowUp)) Dict.empty
         |> optional "prenatal_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalFollowUp)) Dict.empty
+        |> optional "well_child_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeWellChildFollowUp)) Dict.empty
+        |> optional "acute_illness_trace_contact" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessTraceContact)) Dict.empty
 
 
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
@@ -167,23 +180,40 @@ decodeHomeVisitMeasurements =
         |> optional "nutrition_caring" (decodeHead decodeNutritionCaring) Nothing
 
 
+decodeWellChildMeasurements : Decoder WellChildMeasurements
+decodeWellChildMeasurements =
+    succeed WellChildMeasurements
+        |> optional "well_child_pregnancy_summary" (decodeHead decodeWellChildPregnancySummary) Nothing
+        |> optional "well_child_symptoms_review" (decodeHead decodeWellChildSymptomsReview) Nothing
+        |> optional "well_child_vitals" (decodeHead decodeWellChildVitals) Nothing
+        |> optional "well_child_height" (decodeHead decodeWellChildHeight) Nothing
+        |> optional "well_child_muac" (decodeHead decodeWellChildMuac) Nothing
+        |> optional "well_child_nutrition" (decodeHead decodeWellChildNutrition) Nothing
+        |> optional "well_child_photo" (decodeHead decodeWellChildPhoto) Nothing
+        |> optional "well_child_weight" (decodeHead decodeWellChildWeight) Nothing
+        |> optional "well_child_contributing_factors" (decodeHead decodeWellChildContributingFactors) Nothing
+        |> optional "well_child_health_education" (decodeHead decodeWellChildHealthEducation) Nothing
+        |> optional "well_child_follow_up" (decodeHead decodeWellChildFollowUp) Nothing
+        |> optional "well_child_send_to_hc" (decodeHead decodeWellChildSendToHC) Nothing
+        |> optional "well_child_head_circumference" (decodeHead decodeWellChildHeadCircumference) Nothing
+        |> optional "well_child_ecd" (decodeHead decodeWellChildECD) Nothing
+        |> optional "well_child_albendazole" (decodeHead decodeWellChildAlbendazole) Nothing
+        |> optional "well_child_mebendezole" (decodeHead decodeWellChildMebendezole) Nothing
+        |> optional "well_child_vitamin_a" (decodeHead decodeWellChildVitaminA) Nothing
+        |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
+        |> optional "well_child_bcg_immunisation" (decodeHead decodeWellChildBCGImmunisation) Nothing
+        |> optional "well_child_dtp_immunisation" (decodeHead decodeWellChildDTPImmunisation) Nothing
+        |> optional "well_child_hpv_immunisation" (decodeHead decodeWellChildHPVImmunisation) Nothing
+        |> optional "well_child_ipv_immunisation" (decodeHead decodeWellChildIPVImmunisation) Nothing
+        |> optional "well_child_mr_immunisation" (decodeHead decodeWellChildMRImmunisation) Nothing
+        |> optional "well_child_opv_immunisation" (decodeHead decodeWellChildOPVImmunisation) Nothing
+        |> optional "well_child_pcv13_immunisation" (decodeHead decodeWellChildPCV13Immunisation) Nothing
+        |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
+
+
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid
-
-
-decodePhoto : Decoder Photo
-decodePhoto =
-    field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
-        |> decodeGroupMeasurement
-
-
-decodePrenatalPhoto : Decoder PrenatalPhoto
-decodePrenatalPhoto =
-    field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
-        |> decodePrenatalMeasurement
 
 
 decodePregnancyTesting : Decoder PregnancyTest
@@ -316,6 +346,32 @@ decodeHeight =
         |> decodeGroupMeasurement
 
 
+decodeMuac : Decoder Muac
+decodeMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeGroupMeasurement
+
+
+decodeNutrition : Decoder ChildNutrition
+decodeNutrition =
+    decodeGroupMeasurement decodeNutritionValue
+
+
+decodeNutritionValue : Decoder NutritionValue
+decodeNutritionValue =
+    succeed NutritionValue
+        |> required "nutrition_signs" (decodeEverySet decodeChildNutritionSign)
+        |> custom decodeNutritionAssessment
+
+
+decodePhoto : Decoder Photo
+decodePhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodeGroupMeasurement
+
+
 decodeWeight : Decoder Weight
 decodeWeight =
     field "weight" decodeFloat
@@ -323,11 +379,77 @@ decodeWeight =
         |> decodeGroupMeasurement
 
 
-decodeMuac : Decoder Muac
-decodeMuac =
+decodePrenatalPhoto : Decoder PrenatalPhoto
+decodePrenatalPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodePrenatalMeasurement
+
+
+decodeNutritionHeight : Decoder NutritionHeight
+decodeNutritionHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionMuac : Decoder NutritionMuac
+decodeNutritionMuac =
     field "muac" decodeFloat
         |> map MuacInCm
-        |> decodeGroupMeasurement
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionNutrition : Decoder NutritionNutrition
+decodeNutritionNutrition =
+    decodeNutritionMeasurement decodeNutritionValue
+
+
+decodeNutritionPhoto : Decoder NutritionPhoto
+decodeNutritionPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionWeight : Decoder NutritionWeight
+decodeNutritionWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeNutritionMeasurement
+
+
+decodeWellChildHeight : Decoder WellChildHeight
+decodeWellChildHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildMuac : Decoder WellChildMuac
+decodeWellChildMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildNutrition : Decoder WellChildNutrition
+decodeWellChildNutrition =
+    decodeWellChildMeasurement decodeNutritionValue
+
+
+decodeWellChildPhoto : Decoder WellChildPhoto
+decodeWellChildPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map PhotoUrl
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildWeight : Decoder WellChildWeight
+decodeWellChildWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeWellChildMeasurement
 
 
 decodeFamilyPlanning : Decoder FamilyPlanning
@@ -365,13 +487,6 @@ decodeParticipantConsentValue =
     succeed ParticipantConsentValue
         |> required "language" decodeLanguage
         |> required "participant_form" decodeEntityUuid
-
-
-decodeNutrition : Decoder ChildNutrition
-decodeNutrition =
-    decodeEverySet decodeChildNutritionSign
-        |> field "nutrition_signs"
-        |> decodeGroupMeasurement
 
 
 decodeCounselingSession : Decoder CounselingSession
@@ -1053,13 +1168,17 @@ decodeSocialHistory =
 
 decodeVitals : Decoder Vitals
 decodeVitals =
+    decodePrenatalMeasurement decodeVitalsValue
+
+
+decodeVitalsValue : Decoder VitalsValue
+decodeVitalsValue =
     succeed VitalsValue
-        |> required "sys" decodeFloat
-        |> required "dia" decodeFloat
-        |> required "heart_rate" decodeInt
+        |> optional "sys" (nullable decodeFloat) Nothing
+        |> optional "dia" (nullable decodeFloat) Nothing
+        |> optional "heart_rate" (nullable decodeInt) Nothing
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
-        |> decodePrenatalMeasurement
 
 
 decodeCSectionReason : Decoder CSectionReason
@@ -1249,41 +1368,6 @@ decodeBirthPlanSign =
             )
 
 
-decodeNutritionMuac : Decoder NutritionMuac
-decodeNutritionMuac =
-    field "muac" decodeFloat
-        |> map MuacInCm
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionHeight : Decoder NutritionHeight
-decodeNutritionHeight =
-    field "height" decodeFloat
-        |> map HeightInCm
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionNutrition : Decoder NutritionNutrition
-decodeNutritionNutrition =
-    decodeEverySet decodeChildNutritionSign
-        |> field "nutrition_signs"
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionPhoto : Decoder NutritionPhoto
-decodeNutritionPhoto =
-    field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
-        |> decodeNutritionMeasurement
-
-
-decodeNutritionWeight : Decoder NutritionWeight
-decodeNutritionWeight =
-    field "weight" decodeFloat
-        |> map WeightInKg
-        |> decodeNutritionMeasurement
-
-
 decodeContributingFactors : Decoder ContributingFactors
 decodeContributingFactors =
     decodeGroupMeasurement decodeContributingFactorsValue
@@ -1292,6 +1376,11 @@ decodeContributingFactors =
 decodeNutritionContributingFactors : Decoder NutritionContributingFactors
 decodeNutritionContributingFactors =
     decodeNutritionMeasurement decodeContributingFactorsValue
+
+
+decodeWellChildContributingFactors : Decoder WellChildContributingFactors
+decodeWellChildContributingFactors =
+    decodeWellChildMeasurement decodeContributingFactorsValue
 
 
 decodeContributingFactorsValue : Decoder (EverySet ContributingFactorsSign)
@@ -1310,11 +1399,16 @@ decodeNutritionFollowUp =
     decodeNutritionMeasurement decodeFollowUpValue
 
 
+decodeWellChildFollowUp : Decoder WellChildFollowUp
+decodeWellChildFollowUp =
+    decodeWellChildMeasurement decodeFollowUpValue
+
+
 decodeFollowUpValue : Decoder FollowUpValue
 decodeFollowUpValue =
     succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
-        |> custom decodeNutritionAssesment
+        |> custom decodeNutritionAssessment
 
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
@@ -1775,10 +1869,12 @@ decodeSymptomsGIDerivedSign =
 
 decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
 decodeAcuteIllnessVitals =
-    succeed AcuteIllnessVitalsValue
-        |> required "respiratory_rate" decodeInt
-        |> required "body_temperature" decodeFloat
-        |> decodeAcuteIllnessMeasurement
+    decodeAcuteIllnessMeasurement decodeVitalsValue
+
+
+decodeWellChildVitals : Decoder WellChildVitals
+decodeWellChildVitals =
+    decodeWellChildMeasurement decodeVitalsValue
 
 
 decodeAcuteFindings : Decoder AcuteFindings
@@ -1850,23 +1946,35 @@ decodeAcuteFindingsRespiratorySign =
 
 decodeMalariaTesting : Decoder MalariaTesting
 decodeMalariaTesting =
-    decodeMalariaRapidTestResult
+    decodeRapidTestResult
         |> field "malaria_rapid_test"
         |> decodeAcuteIllnessMeasurement
 
 
-decodeMalariaRapidTestResult : Decoder MalariaRapidTestResult
-decodeMalariaRapidTestResult =
+decodeCovidTesting : Decoder CovidTesting
+decodeCovidTesting =
+    decodeAcuteIllnessMeasurement decodeCovidTestingValue
+
+
+decodeCovidTestingValue : Decoder CovidTestingValue
+decodeCovidTestingValue =
+    succeed CovidTestingValue
+        |> required "rapid_test_result" decodeRapidTestResult
+        |> optional "administration_note" (maybe decodeAdministrationNote) Nothing
+
+
+decodeRapidTestResult : Decoder RapidTestResult
+decodeRapidTestResult =
     string
         |> andThen
             (\result ->
                 malariaRapidTestResultFromString result
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (result ++ " is not a recognized MalariaRapidTestResult" |> fail)
+                    |> Maybe.withDefault (result ++ " is not a recognized RapidTestResult" |> fail)
             )
 
 
-malariaRapidTestResultFromString : String -> Maybe MalariaRapidTestResult
+malariaRapidTestResultFromString : String -> Maybe RapidTestResult
 malariaRapidTestResultFromString result =
     case result of
         "positive" ->
@@ -1884,6 +1992,9 @@ malariaRapidTestResultFromString result =
         "unable-to-run" ->
             Just RapidTestUnableToRun
 
+        "unable-to-run-and-pregnant" ->
+            Just RapidTestUnableToRunAndPregnant
+
         _ ->
             Nothing
 
@@ -1896,6 +2007,11 @@ decodeSendToHC =
 decodeNutritionSendToHC : Decoder NutritionSendToHC
 decodeNutritionSendToHC =
     decodeNutritionMeasurement decodeSendToHCValue
+
+
+decodeWellChildSendToHC : Decoder WellChildSendToHC
+decodeWellChildSendToHC =
+    decodeWellChildMeasurement decodeSendToHCValue
 
 
 decodeGroupSendToHC : Decoder GroupSendToHC
@@ -1924,6 +2040,12 @@ decodeSendToHCSign =
 
                     "accompany-to-hc" ->
                         succeed PrenatalAccompanyToHC
+
+                    "enroll-to-nutrition-program" ->
+                        succeed EnrollToNutritionProgram
+
+                    "refer-to-nutrition-program" ->
+                        succeed ReferToNutritionProgram
 
                     "none" ->
                         succeed NoSendToHCSigns
@@ -2054,6 +2176,18 @@ decodeMedicationDistributionSign =
                     "lemon-juice-or-honey" ->
                         succeed LemonJuiceOrHoney
 
+                    "albendazole" ->
+                        succeed Albendazole
+
+                    "mebendezole" ->
+                        succeed Mebendezole
+
+                    "vitamin-a" ->
+                        succeed VitaminA
+
+                    "paracetamol" ->
+                        succeed Paracetamol
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2082,30 +2216,35 @@ decodeMedicationNonAdministrationSign =
                         |> Maybe.map
                             (\prefix ->
                                 let
-                                    medicationNonAdministrationReason =
+                                    administrationNote =
                                         List.tail parts
                                             |> Maybe.map (List.intersperse "-" >> String.concat)
-                                            |> Maybe.andThen medicationNonAdministrationReasonFromString
+                                            |> Maybe.andThen administrationNoteFromString
                                 in
                                 case prefix of
                                     "amoxicillin" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationAmoxicillin >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "coartem" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationCoartem >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "ors" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationORS >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "zinc" ->
-                                        medicationNonAdministrationReason
+                                        administrationNote
                                             |> Maybe.map (MedicationZinc >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "paracetamol" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationParacetamol >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->
@@ -2560,6 +2699,18 @@ decodeAdverseEvent =
             )
 
 
+decodeAcuteIllnessCoreExam : Decoder AcuteIllnessCoreExam
+decodeAcuteIllnessCoreExam =
+    decodeAcuteIllnessMeasurement decodeAcuteIllnessCoreExamValue
+
+
+decodeAcuteIllnessCoreExamValue : Decoder AcuteIllnessCoreExamValue
+decodeAcuteIllnessCoreExamValue =
+    succeed AcuteIllnessCoreExamValue
+        |> required "heart" (decodeEverySet decodeHeartCPESign)
+        |> required "lungs" (decodeEverySet decodeLungsCPESign)
+
+
 decodeAcuteIllnessDangerSigns : Decoder AcuteIllnessDangerSigns
 decodeAcuteIllnessDangerSigns =
     decodeEverySet decodeAcuteIllnessDangerSign
@@ -2617,6 +2768,149 @@ decodeAcuteIllnessNutrition =
         |> decodeAcuteIllnessMeasurement
 
 
+decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
+decodeAcuteIllnessContactsTracing =
+    decodeWithFallback [] (list decodeContactTraceItemFromString)
+        |> field "contacts_trace_data"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeContactTraceItemFromString : Decoder ContactTraceItem
+decodeContactTraceItemFromString =
+    string
+        |> andThen
+            (\data ->
+                let
+                    parts =
+                        String.split "[&]" data
+                in
+                case parts of
+                    [ id, firstName, secondName, contactGender, phoneNumber, contactDate ] ->
+                        let
+                            date =
+                                Date.fromIsoString contactDate
+                                    |> Result.toMaybe
+
+                            gender =
+                                genderFromString contactGender
+                        in
+                        Maybe.map2
+                            (\date_ gender_ ->
+                                succeed <|
+                                    ContactTraceItem
+                                        (toEntityUuid id)
+                                        firstName
+                                        secondName
+                                        gender_
+                                        phoneNumber
+                                        date_
+                                        -- Resolution date is set to the date on which
+                                        -- Covid  isolation is completed.
+                                        (Date.add Days (covidIsolationPeriod + 1) date_)
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                            )
+                            date
+                            gender
+                            |> Maybe.withDefault
+                                (fail <|
+                                    contactDate
+                                        ++ " is not a valid date format at ContactTraceItem"
+                                )
+
+                    _ ->
+                        fail <|
+                            data
+                                ++ " is not a recognized ContactTraceItem"
+            )
+
+
+decodeAcuteIllnessTraceContact : Decoder AcuteIllnessTraceContact
+decodeAcuteIllnessTraceContact =
+    decodeAcuteIllnessMeasurement decodeContactTraceItem
+
+
+decodeContactTraceItem : Decoder ContactTraceItem
+decodeContactTraceItem =
+    succeed ContactTraceItem
+        |> required "referred_person" decodeEntityUuid
+        |> required "first_name" string
+        |> required "second_name" string
+        |> required "gender" decodeGender
+        |> required "phone_number" string
+        |> required "contact_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "last_follow_up_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "symptoms_general" (nullable <| decodeEverySet decodeSymptomsGeneralSign) Nothing
+        |> optional "symptoms_respiratory" (nullable <| decodeEverySet decodeSymptomsRespiratorySign) Nothing
+        |> optional "symptoms_gi" (nullable <| decodeEverySet decodeSymptomsGISign) Nothing
+        |> optional "trace_outcome" (nullable decodeTraceOutcome) Nothing
+
+
+decodeSymptomsGeneralSign : Decoder SymptomsGeneralSign
+decodeSymptomsGeneralSign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGeneralSignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGeneralSign")
+            )
+
+
+decodeSymptomsRespiratorySign : Decoder SymptomsRespiratorySign
+decodeSymptomsRespiratorySign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsRespiratorySignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsRespiratorySign")
+            )
+
+
+decodeSymptomsGISign : Decoder SymptomsGISign
+decodeSymptomsGISign =
+    string
+        |> andThen
+            (\sign ->
+                symptomsGISignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| sign ++ " is not a recognized SymptomsGISign")
+            )
+
+
+decodeTraceOutcome : Decoder TraceOutcome
+decodeTraceOutcome =
+    string
+        |> andThen
+            (\outcome ->
+                case outcome of
+                    "no-answer" ->
+                        succeed OutcomeNoAnswer
+
+                    "wrong-contact-info" ->
+                        succeed OutcomeWrongContactInfo
+
+                    "declined-follow-up" ->
+                        succeed OutcomeDeclinedFollowUp
+
+                    "no-symptoms" ->
+                        succeed OutcomeNoSymptoms
+
+                    "referred-to-hc" ->
+                        succeed OutcomeReferredToHC
+
+                    _ ->
+                        fail <|
+                            outcome
+                                ++ " is not a recognized TraceOutcome"
+            )
+
+
 decodeHealthEducation : Decoder HealthEducation
 decodeHealthEducation =
     decodeAcuteIllnessMeasurement decodeHealthEducationValue
@@ -2625,6 +2919,11 @@ decodeHealthEducation =
 decodeNutritionHealthEducation : Decoder NutritionHealthEducation
 decodeNutritionHealthEducation =
     decodeNutritionMeasurement decodeHealthEducationValue
+
+
+decodeWellChildHealthEducation : Decoder WellChildHealthEducation
+decodeWellChildHealthEducation =
+    decodeWellChildMeasurement decodeHealthEducationValue
 
 
 decodeGroupHealthEducation : Decoder GroupHealthEducation
@@ -2689,26 +2988,26 @@ decodeReasonForNotProvidingHealthEducation =
             )
 
 
-decodeNutritionAssesment : Decoder (EverySet NutritionAssesment)
-decodeNutritionAssesment =
-    map2 postProcessNutritionAssesment
-        (field "nutrition_assesment" (decodeEverySet decodeNutritionAssesmentFromString))
+decodeNutritionAssessment : Decoder (EverySet NutritionAssessment)
+decodeNutritionAssessment =
+    map2 postProcessNutritionAssessment
+        (field "nutrition_assesment" (decodeEverySet decodeNutritionAssessmentFromString))
         (field "nutrition_signs" (decodeEverySet decodeChildNutritionSign))
 
 
-decodeNutritionAssesmentFromString : Decoder NutritionAssesment
-decodeNutritionAssesmentFromString =
+decodeNutritionAssessmentFromString : Decoder NutritionAssessment
+decodeNutritionAssessmentFromString =
     string
         |> andThen
             (\s ->
-                nutritionAssesmentFromString s
+                nutritionAssessmentFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (s ++ " is not a recognized NutritionAssesment" |> fail)
+                    |> Maybe.withDefault (s ++ " is not a recognized NutritionAssessment" |> fail)
             )
 
 
-postProcessNutritionAssesment : EverySet NutritionAssesment -> EverySet ChildNutritionSign -> EverySet NutritionAssesment
-postProcessNutritionAssesment assesmentFromString nutritionSign =
+postProcessNutritionAssessment : EverySet NutritionAssessment -> EverySet ChildNutritionSign -> EverySet NutritionAssessment
+postProcessNutritionAssessment assesmentFromString nutritionSign =
     assesmentFromString
         |> EverySet.toList
         |> List.head
@@ -2724,3 +3023,406 @@ postProcessNutritionAssesment assesmentFromString nutritionSign =
                         assesmentFromString
             )
         |> Maybe.withDefault assesmentFromString
+
+
+decodeWellChildSymptomsReview : Decoder WellChildSymptomsReview
+decodeWellChildSymptomsReview =
+    decodeEverySet decodeWellChildSymptom
+        |> field "well_child_symptoms"
+        |> decodeWellChildMeasurement
+
+
+decodeWellChildSymptom : Decoder WellChildSymptom
+decodeWellChildSymptom =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "breathing-problems" ->
+                        succeed SymptomBreathingProblems
+
+                    "convulsions" ->
+                        succeed SymptomConvulsions
+
+                    "lethargy-or-unresponsiveness" ->
+                        succeed SymptomLethargyOrUnresponsiveness
+
+                    "diarrhea" ->
+                        succeed SymptomDiarrhea
+
+                    "vomiting" ->
+                        succeed SymptomVomiting
+
+                    "umbilical-cord-redness" ->
+                        succeed SymptomUmbilicalCordRedness
+
+                    "stiff-neck-or-bulging-fontanelle" ->
+                        succeed SymptomStiffNeckOrBulgingFontanelle
+
+                    "severe-edema" ->
+                        succeed SymptomSevereEdema
+
+                    "palmoplantar-pallor" ->
+                        succeed SymptomPalmoplantarPallor
+
+                    "history-of-fever" ->
+                        succeed SymptomHistoryOfFever
+
+                    "baby-tires-quickly-when-feeding" ->
+                        succeed SymptomBabyTiresQuicklyWhenFeeding
+
+                    "coughing-or-tearing-while-feeding" ->
+                        succeed SymptomCoughingOrTearingWhileFeeding
+
+                    "rigid-muscles-or-jaw-clenching" ->
+                        succeed SymptomRigidMusclesOrJawClenchingPreventingFeeding
+
+                    "excessive-sweating-when-feeding" ->
+                        succeed ExcessiveSweatingWhenFeeding
+
+                    "none" ->
+                        succeed NoWellChildSymptoms
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized WellChildSymptom"
+            )
+
+
+decodeWellChildECD : Decoder WellChildECD
+decodeWellChildECD =
+    decodeEverySet decodeECDSign
+        |> field "ecd_signs"
+        |> decodeWellChildMeasurement
+
+
+decodeECDSign : Decoder ECDSign
+decodeECDSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "follow-mothers-eyes" ->
+                        succeed FollowMothersEyes
+
+                    "move-arms-and-legs" ->
+                        succeed MoveArmsAndLegs
+
+                    "raise-hands-up" ->
+                        succeed RaiseHandsUp
+
+                    "smile" ->
+                        succeed Smile
+
+                    "roll-sideways" ->
+                        succeed RollSideways
+
+                    "bring-hands-to-mouth" ->
+                        succeed BringHandsToMouth
+
+                    "hold-head-without-support" ->
+                        succeed HoldHeadWithoutSupport
+
+                    "hold-and-shake-toys" ->
+                        succeed HoldAndShakeToys
+
+                    "react-to-sudden-sounds" ->
+                        succeed ReactToSuddenSounds
+
+                    "use-consonant-sounds" ->
+                        succeed UseConsonantSounds
+
+                    "respond-to-sound-with-sound" ->
+                        succeed RespondToSoundWithSound
+
+                    "turn-head-when-called" ->
+                        succeed TurnHeadWhenCalled
+
+                    "sit-without-support" ->
+                        succeed SitWithoutSupport
+
+                    "smile-back" ->
+                        succeed SmileBack
+
+                    "roll-tummy-to-back" ->
+                        succeed RollTummyToBack
+
+                    "reach-for-toys" ->
+                        succeed ReachForToys
+
+                    "use-simple-gestures" ->
+                        succeed UseSimpleGestures
+
+                    "stand-on-their-own" ->
+                        succeed StandOnTheirOwn
+
+                    "copy-during-play" ->
+                        succeed CopyDuringPlay
+
+                    "say-mama-dada" ->
+                        succeed SayMamaDada
+
+                    "can-hold-small-objects" ->
+                        succeed CanHoldSmallObjects
+
+                    "looks-when-pointed-at" ->
+                        succeed LooksWhenPointedAt
+
+                    "use-single-words" ->
+                        succeed UseSingleWords
+
+                    "walk-without-help" ->
+                        succeed WalkWithoutHelp
+
+                    "play-pretend" ->
+                        succeed PlayPretend
+
+                    "point-to-things-of-interest" ->
+                        succeed PointToThingsOfInterest
+
+                    "use-short-phrases" ->
+                        succeed UseShortPhrases
+
+                    "interested-in-other-children" ->
+                        succeed InterestedInOtherChildren
+
+                    "follow-simple-instructions" ->
+                        succeed FollowSimpleInstructions
+
+                    "kick-ball" ->
+                        succeed KickBall
+
+                    "point-at-named-objects" ->
+                        succeed PointAtNamedObjects
+
+                    "dress-themselves" ->
+                        succeed DressThemselves
+
+                    "wash-hands-go-to-toiled" ->
+                        succeed WashHandsGoToToiled
+
+                    "knows-colors-and-numbers" ->
+                        succeed KnowsColorsAndNumbers
+
+                    "use-medium-phrases" ->
+                        succeed UseMediumPhrases
+
+                    "play-make-believe" ->
+                        succeed PlayMakeBelieve
+
+                    "follow-three-step-instructions" ->
+                        succeed FollowThreeStepInstructions
+
+                    "stand-on-one-foot-five-seconds" ->
+                        succeed StandOnOneFootFiveSeconds
+
+                    "use-long-phrases" ->
+                        succeed UseLongPhrases
+
+                    "share-with-other-children" ->
+                        succeed ShareWithOtherChildren
+
+                    "count-to-ten" ->
+                        succeed CountToTen
+
+                    "none" ->
+                        succeed NoECDSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ECDSign"
+            )
+
+
+decodeWellChildHeadCircumference : Decoder WellChildHeadCircumference
+decodeWellChildHeadCircumference =
+    decodeWellChildMeasurement decodeHeadCircumferenceValue
+
+
+decodeHeadCircumferenceValue : Decoder HeadCircumferenceValue
+decodeHeadCircumferenceValue =
+    succeed HeadCircumferenceValue
+        |> required "head_circumference" (map HeadCircumferenceInCm decodeFloat)
+        |> required "measurement_notes" (decodeEverySet decodeMeasurementNote)
+
+
+decodeMeasurementNote : Decoder MeasurementNote
+decodeMeasurementNote =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "not-taken" ->
+                        succeed NoteNotTaken
+
+                    "none" ->
+                        succeed NoMeasurementNotes
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MeasurementNote"
+            )
+
+
+decodeVaccineType : Decoder VaccineType
+decodeVaccineType =
+    string
+        |> andThen
+            (\type_ ->
+                vaccineTypeFromString type_
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| type_ ++ " is not a recognized VaccineType")
+            )
+
+
+decodeVaccineDose : Decoder VaccineDose
+decodeVaccineDose =
+    string
+        |> andThen
+            (\dose ->
+                vaccineDoseFromString dose
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| dose ++ " is not a recognized VaccineDose")
+            )
+
+
+decodeWellChildAlbendazole : Decoder WellChildAlbendazole
+decodeWellChildAlbendazole =
+    decodeWellChildMeasurement decodeWellChildMedication
+
+
+decodeWellChildMebendezole : Decoder WellChildMebendezole
+decodeWellChildMebendezole =
+    decodeWellChildMeasurement decodeWellChildMedication
+
+
+decodeWellChildVitaminA : Decoder WellChildVitaminA
+decodeWellChildVitaminA =
+    decodeWellChildMeasurement decodeWellChildMedication
+
+
+decodeWellChildMedication : Decoder AdministrationNote
+decodeWellChildMedication =
+    decodeAdministrationNote
+        |> field "administration_note"
+
+
+decodeAdministrationNote : Decoder AdministrationNote
+decodeAdministrationNote =
+    string
+        |> andThen
+            (\note ->
+                administrationNoteFromString note
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| note ++ " is not a recognized AdministrationNote")
+            )
+
+
+decodeWellChildPregnancySummary : Decoder WellChildPregnancySummary
+decodeWellChildPregnancySummary =
+    decodeWellChildMeasurement decodePregnancySummaryValue
+
+
+decodePregnancySummaryValue : Decoder PregnancySummaryValue
+decodePregnancySummaryValue =
+    succeed PregnancySummaryValue
+        |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "delivery_complications" (decodeEverySet decodeDeliveryComplication)
+
+
+decodeDeliveryComplication : Decoder DeliveryComplication
+decodeDeliveryComplication =
+    string
+        |> andThen
+            (\complication ->
+                case complication of
+                    "gestational-diabetes" ->
+                        succeed ComplicationGestationalDiabetes
+
+                    "emergency-c-section" ->
+                        succeed ComplicationEmergencyCSection
+
+                    "preclampsia" ->
+                        succeed ComplicationPreclampsia
+
+                    "maternal-hemmorhage" ->
+                        succeed ComplicationMaternalHemmorhage
+
+                    "hiv" ->
+                        succeed ComplicationHiv
+
+                    "maternal-death" ->
+                        succeed ComplicationMaternalDeath
+
+                    "other" ->
+                        succeed ComplicationOther
+
+                    "none" ->
+                        succeed NoDeliveryComplications
+
+                    _ ->
+                        fail <| complication ++ " is not a recognized DeliveryComplication"
+            )
+
+
+decodeWellChildNextVisit : Decoder WellChildNextVisit
+decodeWellChildNextVisit =
+    decodeWellChildMeasurement decodeNextVisitValue
+
+
+decodeNextVisitValue : Decoder NextVisitValue
+decodeNextVisitValue =
+    succeed NextVisitValue
+        |> required "immunisation_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "pediatric_visit_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+
+
+decodeWellChildBCGImmunisation : Decoder WellChildBCGImmunisation
+decodeWellChildBCGImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildDTPImmunisation : Decoder WellChildDTPImmunisation
+decodeWellChildDTPImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildHPVImmunisation : Decoder WellChildHPVImmunisation
+decodeWellChildHPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildIPVImmunisation : Decoder WellChildIPVImmunisation
+decodeWellChildIPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildMRImmunisation : Decoder WellChildMRImmunisation
+decodeWellChildMRImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildOPVImmunisation : Decoder WellChildOPVImmunisation
+decodeWellChildOPVImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildPCV13Immunisation : Decoder WellChildPCV13Immunisation
+decodeWellChildPCV13Immunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeWellChildRotarixImmunisation : Decoder WellChildRotarixImmunisation
+decodeWellChildRotarixImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
+decodeVaccinationValue : Decoder VaccinationValue
+decodeVaccinationValue =
+    succeed VaccinationValue
+        |> required "administered_doses" (decodeEverySet decodeVaccineDose)
+        |> required "administration_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> required "administration_note" decodeAdministrationNote

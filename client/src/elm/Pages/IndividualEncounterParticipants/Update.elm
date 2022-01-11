@@ -21,12 +21,6 @@ update msg model =
             )
                 |> sequenceExtra update (Maybe.Extra.toList extraMsg)
 
-        NoOp ->
-            ( model
-            , Cmd.none
-            , []
-            )
-
         SetActivePage page ->
             ( model
             , Cmd.none

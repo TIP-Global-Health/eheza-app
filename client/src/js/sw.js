@@ -29,7 +29,7 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
  *
  * @type {number}
  */
-var dbVerno = 16;
+var dbVerno = 17;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
@@ -37,11 +37,14 @@ var dbVerno = 16;
 // entities).
 var tableForType = {
     acute_findings: 'shards',
+    acute_illness_core_exam: 'shards',
+    acute_illness_contacts_tracing: 'shards',
     acute_illness_danger_signs: 'shards',
     acute_illness_encounter: 'shards',
     acute_illness_follow_up: 'shards',
     acute_illness_muac: 'shards',
     acute_illness_nutrition: 'shards',
+    acute_illness_trace_contact: 'shards',
     acute_illness_vitals: 'shards',
     appointment_confirmation: 'shards',
     attendance: 'shards',
@@ -56,6 +59,7 @@ var tableForType = {
     counseling_session: 'shards',
     counseling_topic: 'nodes',
     core_physical_exam: 'shards',
+    covid_testing: 'shards',
     danger_signs: 'shards',
     exposure: 'shards',
     family_planning: 'shards',
@@ -123,7 +127,34 @@ var tableForType = {
     treatment_ongoing: 'shards',
     village: 'nodes',
     vitals: 'shards',
-    weight: 'shards'
+    weight: 'shards',
+    well_child_albendazole: 'shards',
+    well_child_bcg_immunisation: 'shards',
+    well_child_contributing_factors: 'shards',
+    well_child_dtp_immunisation: 'shards',
+    well_child_ecd: 'shards',
+    well_child_encounter: 'shards',
+    well_child_follow_up: 'shards',
+    well_child_head_circumference: 'shards',
+    well_child_health_education: 'shards',
+    well_child_hpv_immunisation: 'shards',
+    well_child_height: 'shards',
+    well_child_ipv_immunisation: 'shards',
+    well_child_mebendezole: 'shards',
+    well_child_mr_immunisation: 'shards',
+    well_child_muac: 'shards',
+    well_child_next_visit: 'shards',
+    well_child_nutrition: 'shards',
+    well_child_opv_immunisation: 'shards',
+    well_child_pcv13_immunisation: 'shards',
+    well_child_photo: 'shards',
+    well_child_pregnancy_summary: 'shards',
+    well_child_rotarix_immunisation: 'shards',
+    well_child_send_to_hc: 'shards',
+    well_child_symptoms_review: 'shards',
+    well_child_vitamin_a: 'shards',
+    well_child_vitals: 'shards',
+    well_child_weight: 'shards'
 };
 
 function sendRevisions (revisions) {

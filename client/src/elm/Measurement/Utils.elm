@@ -5,6 +5,16 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( calculateZScoreWeightForAge
+        , muacModerate
+        , muacSevere
+        , resolveIndividualNutritionValues
+        , resolveIndividualWellChildValues
+        , zScoreWeightForAgeModerate
+        , zScoreWeightForAgeSevere
+        )
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet exposing (EverySet)
@@ -13,7 +23,7 @@ import LocalData
 import Maybe.Extra exposing (andMap, or, unwrap)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, valueConsideringIsDirtyField)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -48,20 +58,20 @@ fromChildMeasurementData data =
                 |> Maybe.map mappingFunc
     in
     { height =
-        fromData .height (.value >> (\(HeightInCm cm) -> String.fromFloat cm))
+        fromData .height (.value >> heightValueFunc >> String.fromFloat)
             |> Maybe.withDefault ""
     , muac =
-        fromData .muac (.value >> (\(MuacInCm cm) -> String.fromFloat cm))
+        fromData .muac (.value >> muacValueFunc >> String.fromFloat)
             |> Maybe.withDefault ""
-    , nutritionSigns =
+    , nutrition =
         fromData .nutrition .value
-            |> Maybe.withDefault EverySet.empty
+            |> Maybe.withDefault emptyNutritionValue
     , counseling =
         fromData .counselingSession .value
     , photo =
         fromData .photo .value
     , weight =
-        fromData .weight (.value >> (\(WeightInKg kg) -> String.fromFloat kg))
+        fromData .weight (.value >> weightValueFunc >> String.fromFloat)
             |> Maybe.withDefault ""
     , fbfForm =
         fromData .fbf (.value >> fbfValueToForm)
@@ -181,29 +191,6 @@ getChildForm childId pages session =
                     )
 
 
-{-| Here we get a Float measurement value with it's date\_measured, from group and individual contexts.
-We return the most recent value, or Nothing, if both provided parameters were Nothing.
--}
-resolvePreviousValueInCommonContext : Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> Maybe Float
-resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualMeasurement =
-    case previousGroupMeasurement of
-        Just ( pgmDate, pgmValue ) ->
-            case previousIndividualMeasurement of
-                Just ( pimDate, pimValue ) ->
-                    case Gizra.NominalDate.compare pgmDate pimDate of
-                        GT ->
-                            Just pgmValue
-
-                        _ ->
-                            Just pimValue
-
-                Nothing ->
-                    Just pgmValue
-
-        Nothing ->
-            Maybe.map Tuple.second previousIndividualMeasurement
-
-
 withinConstraints : FloatInputConstraints -> Float -> Bool
 withinConstraints constraints value =
     value >= constraints.minVal && value <= constraints.maxVal
@@ -246,6 +233,151 @@ fbfFormToValue form =
         -- We should never get here, as we always expect to have
         -- these fields filled.
         |> Maybe.withDefault (FbfValue 0 DistributedFully)
+
+
+resolveIndividualNutritionValue :
+    List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+    -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
+    -> (a -> b)
+    -> Maybe ( NominalDate, b )
+resolveIndividualNutritionValue measurementsWithDates measurementFunc valueFunc =
+    resolveIndividualNutritionValues measurementsWithDates measurementFunc valueFunc
+        |> List.head
+
+
+resolveIndividualWellChildValue :
+    List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a ))
+    -> (a -> b)
+    -> Maybe ( NominalDate, b )
+resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc =
+    resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc
+        |> List.head
+
+
+fromHeightValue : Maybe HeightInCm -> HeightForm
+fromHeightValue saved =
+    { height = Maybe.map heightValueFunc saved
+    , heightDirty = False
+    }
+
+
+heightFormWithDefault : HeightForm -> Maybe HeightInCm -> HeightForm
+heightFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> heightValueFunc)
+                , heightDirty = form.heightDirty
+                }
+            )
+
+
+toHeightValueWithDefault : Maybe HeightInCm -> HeightForm -> Maybe HeightInCm
+toHeightValueWithDefault saved form =
+    heightFormWithDefault form saved
+        |> toHeightValue
+
+
+toHeightValue : HeightForm -> Maybe HeightInCm
+toHeightValue form =
+    Maybe.map HeightInCm form.height
+
+
+fromMuacValue : Maybe MuacInCm -> MuacForm
+fromMuacValue saved =
+    { muac = Maybe.map muacValueFunc saved
+    , muacDirty = False
+    }
+
+
+muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
+muacFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> muacValueFunc)
+                , muacDirty = form.muacDirty
+                }
+            )
+
+
+toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
+toMuacValueWithDefault saved form =
+    muacFormWithDefault form saved
+        |> toMuacValue
+
+
+toMuacValue : MuacForm -> Maybe MuacInCm
+toMuacValue form =
+    Maybe.map MuacInCm form.muac
+
+
+fromNutritionValue : Maybe NutritionValue -> NutritionForm
+fromNutritionValue saved =
+    { signs = Maybe.map (.signs >> EverySet.toList) saved
+    , assesment = Maybe.map .assesment saved
+    }
+
+
+nutritionFormWithDefault : NutritionForm -> Maybe NutritionValue -> NutritionForm
+nutritionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value.signs |> Just)
+                , assesment = or form.assesment (Just value.assesment)
+                }
+            )
+
+
+toNutritionValueWithDefault : Maybe NutritionValue -> NutritionForm -> Maybe NutritionValue
+toNutritionValueWithDefault saved form =
+    nutritionFormWithDefault form saved
+        |> toNutritionValue
+
+
+toNutritionValue : NutritionForm -> Maybe NutritionValue
+toNutritionValue form =
+    let
+        signs =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
+    in
+    Maybe.map NutritionValue signs
+        |> andMap form.assesment
+
+
+fromWeightValue : Maybe WeightInKg -> WeightForm
+fromWeightValue saved =
+    { weight = Maybe.map weightValueFunc saved
+    , weightDirty = False
+    }
+
+
+weightFormWithDefault : WeightForm -> Maybe WeightInKg -> WeightForm
+weightFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value)
+                , weightDirty = form.weightDirty
+                }
+            )
+
+
+toWeightValueWithDefault : Maybe WeightInKg -> WeightForm -> Maybe WeightInKg
+toWeightValueWithDefault saved form =
+    weightFormWithDefault form saved
+        |> toWeightValue
+
+
+toWeightValue : WeightForm -> Maybe WeightInKg
+toWeightValue form =
+    Maybe.map WeightInKg form.weight
 
 
 fromContributingFactorsValue : Maybe (EverySet ContributingFactorsSign) -> ContributingFactorsForm
@@ -357,6 +489,8 @@ fromSendToHCValue saved =
     { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
     , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
     , accompanyToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalAccompanyToHC) saved
+    , enrollToNutritionProgram = Maybe.map (.signs >> EverySet.member EnrollToNutritionProgram) saved
+    , referToNutritionProgram = Maybe.map (.signs >> EverySet.member ReferToNutritionProgram) saved
     , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
     }
 
@@ -370,6 +504,8 @@ sendToHCFormWithDefault form saved =
                 { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
                 , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
                 , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
+                , enrollToNutritionProgram = or form.enrollToNutritionProgram (EverySet.member EnrollToNutritionProgram value.signs |> Just)
+                , referToNutritionProgram = or form.referToNutritionProgram (EverySet.member ReferToNutritionProgram value.signs |> Just)
                 , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
@@ -385,9 +521,11 @@ toSendToHCValue : SendToHCForm -> Maybe SendToHCValue
 toSendToHCValue form =
     let
         signs =
-            [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
-            , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+            [ ifNullableTrue HandReferrerForm form.handReferralForm
+            , ifNullableTrue ReferToHealthCenter form.referToHealthCenter
             , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
+            , ifNullableTrue EnrollToNutritionProgram form.enrollToNutritionProgram
+            , ifNullableTrue ReferToNutritionProgram form.referToNutritionProgram
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
@@ -404,3 +542,39 @@ toSendToHCValue form =
 allNextStepsTasks : List NextStepsTask
 allNextStepsTasks =
     [ NextStepContributingFactors, NextStepsHealthEducation, NextStepsSendToHC, NextStepFollowUp ]
+
+
+vitalsFormWithDefault : VitalsForm -> Maybe VitalsValue -> VitalsForm
+vitalsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { sysBloodPressure = maybeValueConsideringIsDirtyField form.sysBloodPressureDirty form.sysBloodPressure value.sys
+                , sysBloodPressureDirty = form.sysBloodPressureDirty
+                , diaBloodPressure = maybeValueConsideringIsDirtyField form.diaBloodPressureDirty form.diaBloodPressure value.dia
+                , diaBloodPressureDirty = form.diaBloodPressureDirty
+                , heartRate = maybeValueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
+                , heartRateDirty = form.heartRateDirty
+                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRateDirty = form.respiratoryRateDirty
+                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , bodyTemperatureDirty = form.bodyTemperatureDirty
+                }
+            )
+
+
+toVitalsValueWithDefault : Maybe VitalsValue -> VitalsForm -> Maybe VitalsValue
+toVitalsValueWithDefault saved form =
+    vitalsFormWithDefault form saved
+        |> toVitalsValue
+
+
+toVitalsValue : VitalsForm -> Maybe VitalsValue
+toVitalsValue form =
+    Maybe.map2
+        (\respiratoryRate bodyTemperature ->
+            VitalsValue form.sysBloodPressure form.diaBloodPressure form.heartRate respiratoryRate bodyTemperature
+        )
+        form.respiratoryRate
+        form.bodyTemperature

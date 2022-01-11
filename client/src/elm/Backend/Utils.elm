@@ -12,8 +12,10 @@ import Backend.Measurement.Model
         , MotherMeasurementList
         , NutritionMeasurements
         , PrenatalMeasurements
+        , WellChildMeasurements
         )
 import Backend.Model exposing (..)
+import EverySet exposing (EverySet)
 import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, toEntityUuid, withoutDecoder)
@@ -117,6 +119,16 @@ mapHomeVisitMeasurements id func model =
             model
 
 
+mapWellChildMeasurements : Maybe WellChildEncounterId -> (WellChildMeasurements -> WellChildMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapWellChildMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | wellChildMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.wellChildMeasurements }
+
+        Nothing ->
+            model
+
+
 saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedValue endpoint handleSavedMsg =
     let
         measurement =
@@ -143,6 +155,13 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
     toCmd (RemoteData.fromResult >> handleSavedMsg) requestData
 
 
+editMeasurementCmd id updatedValue endpoint handleSavedMsg measurement =
+    { measurement | value = updatedValue }
+        |> sw.patchFull endpoint id
+        |> withoutDecoder
+        |> toCmd (RemoteData.fromResult >> handleSavedMsg)
+
+
 resolveIndividualParticipantsForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> List IndividualEncounterParticipantId
 resolveIndividualParticipantsForPerson personId encounterType db =
     Dict.get personId db.individualParticipantsByPerson
@@ -165,3 +184,19 @@ resolveIndividualParticipantForPerson : PersonId -> IndividualEncounterType -> M
 resolveIndividualParticipantForPerson personId encounterType db =
     resolveIndividualParticipantsForPerson personId encounterType db
         |> List.head
+
+
+everySetsEqual : EverySet a -> EverySet a -> Bool
+everySetsEqual set1 set2 =
+    let
+        size1 =
+            EverySet.size set1
+
+        size2 =
+            EverySet.size set2
+
+        sizeIntersect =
+            EverySet.intersect set1 set2
+                |> EverySet.size
+    in
+    (size1 == size2) && (size1 == sizeIntersect)
