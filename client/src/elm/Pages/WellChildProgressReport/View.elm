@@ -295,7 +295,15 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
 
                       else
                         Nothing
-                    , viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
+                    , case initiator of
+                        InitiatorPatientRecordAdult _ ->
+                            emptyNode
+
+                        InitiatorPatientRecordChild _ ->
+                            emptyNode
+
+                        _ ->
+                            viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
                     )
                 )
                 endEnconterData
@@ -331,6 +339,17 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
 viewHeader : Language -> WellChildProgressReportInitiator -> DiagnosisMode -> (Page -> msg) -> (DiagnosisMode -> msg) -> Html msg
 viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg =
     let
+        label =
+            case initiator of
+                InitiatorPatientRecordAdult _ ->
+                    Translate.PatientRecord
+
+                InitiatorPatientRecordChild _ ->
+                    Translate.PatientRecord
+
+                _ ->
+                    Translate.ProgressReport
+
         goBackAction =
             case diagnosisMode of
                 ModeActiveDiagnosis ->
@@ -359,7 +378,7 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language <| Translate.ProgressReport
+            [ text <| translate language label
             ]
         , span
             [ class "link-back"

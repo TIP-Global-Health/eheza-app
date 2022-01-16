@@ -811,6 +811,7 @@ type TranslationId
     | PatientExhibitAnyRespiratoryFindings
     | PatientGotAnySymptoms
     | PatientProgress
+    | PatientRecord
     | PatientInformation
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
@@ -6558,6 +6559,11 @@ translationSet trans =
         PatientProgress ->
             { english = "Patient Progress"
             , kinyarwanda = Just "Uruhererekane rw'ibyakorewe umubyeyi"
+            }
+
+        PatientRecord ->
+            { english = "Patient Record"
+            , kinyarwanda = Nothing
             }
 
         PatientInformation ->
