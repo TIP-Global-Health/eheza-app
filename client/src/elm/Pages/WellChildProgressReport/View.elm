@@ -18,7 +18,7 @@ import Backend.NutritionEncounter.Utils
         , sortEncounterTuplesDesc
         , sortTuplesByDateDesc
         )
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
@@ -345,6 +345,12 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
 
                                 InitiatorNutritionGroup sessionId personId ->
                                     UserPage (SessionPage sessionId (ChildPage personId))
+
+                                InitiatorPatientRecordAdult personId ->
+                                    UserPage (PatientRecordPage personId)
+
+                                InitiatorPatientRecordChild _ ->
+                                    UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
                     in
                     setActivePageMsg targetPage
 
@@ -589,6 +595,18 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
                         , .dateMeasured >> (/=) currentDate
                         )
 
+                    InitiatorPatientRecordAdult _ ->
+                        ( always True
+                        , always True
+                        , always True
+                        )
+
+                    InitiatorPatientRecordChild _ ->
+                        ( always True
+                        , always True
+                        , always True
+                        )
+
             lastAssessmentDatePerIndividualNutrition =
                 Maybe.andThen
                     (\participantId ->
@@ -738,6 +756,12 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
 
                         InitiatorNutritionGroup sessionId personId ->
                             InitiatorGroupNutritionProgressReport sessionId personId
+
+                        InitiatorPatientRecordAdult personId ->
+                            InitiatorPatientRecord personId
+
+                        InitiatorPatientRecordChild personId ->
+                            InitiatorPatientRecord personId
             in
             ( date
             , div [ class "entry diagnosis" ]

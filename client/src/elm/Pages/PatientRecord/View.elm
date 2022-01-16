@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (generateFullName)
+import Backend.Person.Utils exposing (generateFullName, isPersonAnAdult)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -27,31 +27,27 @@ import Pages.Utils
         , viewSaveAction
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions, viewPersonDetails)
-import RemoteData exposing (RemoteData)
+import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.View exposing (viewProgressReport)
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (thumbnailImage, viewModal)
+import Utils.Html exposing (spinner, thumbnailImage, viewModal)
+import ZScore.Model
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
-    let
-        person =
-            Dict.get id db.people
-                |> Maybe.andThen RemoteData.toMaybe
+view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw db model =
+    Dict.get id db.people
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (\person ->
+                if isPersonAnAdult currentDate person == Just False then
+                    viewContentForChild language currentDate zscores id person isChw db model
 
-        personDetails =
-            Maybe.map (viewPersonDetails language currentDate)
-                person
-                |> Maybe.withDefault []
-
-        content =
-            div [ class "ui unstackable items" ] <|
-                [ div [ class "item" ] personDetails ]
-    in
-    div [ class "page-activity trace-contact" ]
-        [ viewHeader language
-        , content
-        ]
+                else
+                    viewContentForAdult language currentDate person db model
+            )
+        |> Maybe.withDefault spinner
 
 
 viewHeader : Language -> Html Msg
@@ -67,5 +63,50 @@ viewHeader language =
             ]
             [ span [ class "icon-back" ] []
             , span [] []
+            ]
+        ]
+
+
+viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> ModelIndexedDb -> Model -> Html Msg
+viewContentForChild language currentDate zscores childId child isChw db model =
+    let
+        endEncounterData =
+            Just <|
+                { showEndEncounterDialog = False
+                , allowEndEcounter = False
+                , closeEncounterMsg = NoOp
+                , setEndEncounterDialogStateMsg = always NoOp
+                }
+
+        mandatoryNutritionAssessmentMeasurementsTaken =
+            False
+
+        initiator =
+            InitiatorPatientRecordChild childId
+    in
+    viewProgressReport language
+        currentDate
+        zscores
+        isChw
+        initiator
+        mandatoryNutritionAssessmentMeasurementsTaken
+        db
+        model.diagnosisMode
+        SetActivePage
+        SetDiagnosisMode
+        endEncounterData
+        ( childId, child )
+
+
+viewContentForAdult : Language -> NominalDate -> Person -> ModelIndexedDb -> Model -> Html Msg
+viewContentForAdult language currentDate person db model =
+    div [ class "page-activity patient-record" ]
+        [ viewHeader language
+        , div [ class "ui unstackable items" ]
+            [ div [ class "item" ] <|
+                viewPersonDetails
+                    language
+                    currentDate
+                    person
             ]
         ]

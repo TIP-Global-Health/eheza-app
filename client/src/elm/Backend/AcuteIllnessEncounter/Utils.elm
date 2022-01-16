@@ -122,6 +122,9 @@ progressReportInitiatorToUrlFragmemt initiator =
         InitiatorGroupNutritionProgressReport sessionId personId ->
             "progress-report-" ++ fromEntityUuid sessionId ++ "+++" ++ fromEntityUuid personId
 
+        InitiatorPatientRecord personId ->
+            "patient-record-" ++ fromEntityUuid personId
+
 
 progressReportInitiatorFromUrlFragmemt : String -> Maybe AcuteIllnessProgressReportInitiator
 progressReportInitiatorFromUrlFragmemt s =
@@ -163,6 +166,12 @@ progressReportInitiatorFromUrlFragmemt s =
                         (List.head ids)
                         (List.head (List.drop 1 ids))
                         |> Maybe.Extra.join
+
+            else if String.startsWith "patient-record" s then
+                String.dropLeft (String.length "patient-record-") s
+                    |> toEntityUuid
+                    |> InitiatorPatientRecord
+                    |> Just
 
             else
                 Nothing

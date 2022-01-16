@@ -121,6 +121,7 @@ type AcuteIllnessProgressReportInitiator
     | InitiatorIndividualNutritionProgressReport NutritionEncounterId
     | InitiatorWellChildProgressReport WellChildEncounterId
     | InitiatorGroupNutritionProgressReport SessionId PersonId
+    | InitiatorPatientRecord PersonId
 
 
 type Msg

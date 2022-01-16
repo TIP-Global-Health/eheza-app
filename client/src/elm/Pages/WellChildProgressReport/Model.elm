@@ -38,6 +38,8 @@ type WellChildProgressReportInitiator
     = InitiatorWellChild WellChildEncounterId
     | InitiatorNutritionIndividual NutritionEncounterId
     | InitiatorNutritionGroup SessionId PersonId
+    | InitiatorPatientRecordAdult PersonId
+    | InitiatorPatientRecordChild PersonId
 
 
 type alias EndEncounterData msg =

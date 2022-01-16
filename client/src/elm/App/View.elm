@@ -667,7 +667,9 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.PatientRecord.View.view model.language
                             currentDate
+                            model.zscores
                             personId
+                            isChw
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)

@@ -282,7 +282,7 @@ fetch model =
                     |> List.map MsgIndexedDb
 
             UserPage (PatientRecordPage id) ->
-                Pages.PatientRecord.Fetch.fetch id model.indexedDb
+                Pages.PatientRecord.Fetch.fetch currentDate id model.indexedDb
                     |> List.map MsgIndexedDb
 
 

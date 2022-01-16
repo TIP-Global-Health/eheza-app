@@ -15,3 +15,15 @@ update currentDate id msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetDiagnosisMode mode ->
+            ( { model | diagnosisMode = mode }
+            , Cmd.none
+            , []
+            )
+
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
