@@ -8,4 +8,4 @@ import RemoteData exposing (RemoteData)
 
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
-    []
+    [ FetchPerson id ]

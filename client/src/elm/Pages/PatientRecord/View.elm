@@ -3,7 +3,7 @@ module Pages.PatientRecord.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (generateFullName)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -63,7 +63,7 @@ viewHeader language =
             [ text <| translate language Translate.CovidContactTracing ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
+            , onClick <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
             ]
             [ span [ class "icon-back" ] []
             , span [] []
