@@ -273,7 +273,7 @@ pageToFragment current =
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
                 PatientRecordPage id ->
-                    Just <| "trace-contact/" ++ fromEntityUuid id
+                    Just <| "patient-record/" ++ fromEntityUuid id
 
 
 parser : Parser (Page -> c) c
