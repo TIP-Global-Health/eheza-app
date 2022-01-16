@@ -10540,6 +10540,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                PatientRecordPage _ ->
+                    { english = "Patient Record"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

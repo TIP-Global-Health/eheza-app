@@ -174,6 +174,7 @@ type UserPage
     | WellChildActivityPage WellChildEncounterId WellChildActivity -- record well child activity.
     | WellChildProgressReportPage WellChildEncounterId -- well child progress report.
     | TraceContactPage AcuteIllnessTraceContactId
+    | PatientRecordPage PersonId
 
 
 {-| We group together the pages that can only be viewed in the Dashboard
