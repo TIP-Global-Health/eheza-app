@@ -9,12 +9,12 @@ import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, graduati
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Model exposing (..)
 import Pages.Utils
@@ -299,11 +299,12 @@ viewParticipant language currentDate initiator relation db id person =
 
         action =
             div [ class "action" ]
-                [ span
-                    [ class "patient-record"
-                    , onClick <| SetActivePage <| UserPage <| PatientRecordPage id
-                    ]
-                    []
+                [ showIf (isNothing relation) <|
+                    span
+                        [ class "patient-record"
+                        , onClick <| SetActivePage <| UserPage <| PatientRecordPage id
+                        ]
+                        []
                 , div [ class "action-icon-wrapper blue" ]
                     [ span
                         [ class "action-icon forward"
