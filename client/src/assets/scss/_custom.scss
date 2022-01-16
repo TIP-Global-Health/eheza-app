@@ -915,6 +915,14 @@ h3.ui.header {
               }
             }
           }
+
+          .action-icon-wrapper.blue {
+            border: 2px solid $color-primary;
+
+            .action-icon.forward {
+                background: url(#{$img-path}icon-forward-blue2.svg) no-repeat center;
+            }
+          }
         }
       }
     }
