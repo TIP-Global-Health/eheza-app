@@ -49,6 +49,8 @@ import Pages.NutritionProgressReport.Model
 import Pages.NutritionProgressReport.View
 import Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
+import Pages.PatientRecord.Model
+import Pages.PatientRecord.View
 import Pages.People.View
 import Pages.Person.Model
 import Pages.Person.View
@@ -655,6 +657,20 @@ viewUserPage page deviceName model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageTraceContact traceContactId)
+                            |> flexPageWrapper model
+
+                    PatientRecordPage personId ->
+                        let
+                            page_ =
+                                Dict.get personId loggedInModel.patientRecordPages
+                                    |> Maybe.withDefault Pages.PatientRecord.Model.emptyModel
+                        in
+                        Pages.PatientRecord.View.view model.language
+                            currentDate
+                            personId
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
                             |> flexPageWrapper model
 
             else

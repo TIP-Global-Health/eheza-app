@@ -29,6 +29,7 @@ import Pages.NutritionEncounter.Fetch
 import Pages.NutritionParticipant.Fetch
 import Pages.NutritionProgressReport.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.PatientRecord.Fetch
 import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.PinCode.Fetch
@@ -278,6 +279,10 @@ fetch model =
 
             UserPage (TraceContactPage id) ->
                 Pages.TraceContact.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (PatientRecordPage id) ->
+                Pages.PatientRecord.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
 
