@@ -887,7 +887,7 @@ div.page-activity.trace-contact {
 
 // Acute Illness Activity page
 div.page-activity.acute-illness,
-div.page-activity.trace-contact {
+div.page-activity.trace-contact  {
 
   .ui.full.segment {
 
@@ -2888,7 +2888,8 @@ div.page-report.acute-illness,
 div.page-encounter.well-child,
 div.page-activity.trace-contact,
 div.page-activity.well-child,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-activity.patient-record {
 
   .details {
     padding-left: 25px;

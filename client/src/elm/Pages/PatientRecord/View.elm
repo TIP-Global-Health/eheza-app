@@ -3,6 +3,7 @@ module Pages.PatientRecord.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (sortByDate)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
@@ -141,7 +142,7 @@ viewAdultDetails language currentDate personId person db =
             Maybe.map (Translate.LevelOfEducation >> translate language >> viewTransEntry Translate.LevelOfEducationLabel) person.educationLevel
                 |> Maybe.withDefault emptyNode
 
-        childrenIds =
+        childrenData =
             Dict.get personId db.relationshipsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
@@ -149,50 +150,51 @@ viewAdultDetails language currentDate personId person db =
                         >> List.filterMap
                             (\relationship ->
                                 if relationship.relatedBy == MyChild then
-                                    Just relationship.relatedTo
+                                    Dict.get relationship.relatedTo db.people
+                                        |> Maybe.andThen RemoteData.toMaybe
+                                        |> Maybe.map (\child -> ( relationship.relatedTo, child ))
 
                                 else
                                     Nothing
                             )
+                        >> List.sortWith (sortByDate (Tuple.second >> .birthDate >> Maybe.withDefault currentDate))
                     )
                 |> Maybe.withDefault []
 
-        children =
-            List.filterMap
-                (\childId ->
-                    Dict.get childId db.people
-                        |> Maybe.andThen RemoteData.toMaybe
-                )
-                childrenIds
-
         childrenList =
             List.indexedMap
-                (\index child ->
+                (\index ( _, child ) ->
                     viewEntry (translate language Translate.Baby ++ " " ++ String.fromInt (index + 1)) child.name
                 )
-                children
+                childrenData
 
         familyLinks =
             let
-                -- Generate markup for each child
                 childrenMarkup =
-                    List.indexedMap viewChildMarkup childrenIds
+                    List.indexedMap viewChildMarkup childrenData
 
-                viewChildMarkup index childId =
+                viewChildMarkup index ( childId, _ ) =
                     li [ onClick <| SetActivePage <| UserPage <| PatientRecordPage childId ]
-                        [ span [ class "icon-baby" ] []
-                        , span
-                            [ class "count" ]
-                            [ text <| String.fromInt (index + 1) ]
+                        [ span [ class "icon" ]
+                            [ span [ class "icon-baby" ] []
+                            , span
+                                [ class "count" ]
+                                [ text <| String.fromInt (index + 1) ]
+                            ]
                         ]
 
                 motherMarkup =
                     li [ class "active" ]
-                        [ span [ class "icon-mother" ] [] ]
+                        [ span [ class "icon" ]
+                            [ span
+                                [ class "icon-mother" ]
+                                []
+                            ]
+                        ]
             in
-            ul
-                [ class "links-body" ]
-                (motherMarkup :: childrenMarkup)
+            motherMarkup
+                :: childrenMarkup
+                |> ul [ class "links-body" ]
 
         viewTransEntry labelTransId content =
             viewEntry (translate language labelTransId) content

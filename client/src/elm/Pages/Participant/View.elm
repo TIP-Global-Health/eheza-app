@@ -554,7 +554,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                         ]
             in
             li attributes
-                [ a []
+                [ span [ class "icon" ]
                     [ span [ class "icon-baby" ] []
                     , span
                         [ class "count" ]
@@ -586,7 +586,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                         ]
             in
             li attributes
-                [ a []
+                [ span [ class "icon" ]
                     [ span [ class "icon-mother" ] []
                     ]
                 ]
