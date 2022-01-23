@@ -32,7 +32,7 @@ import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
 import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChildProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
 import ZScore.Model
 
@@ -112,6 +112,11 @@ viewContentForAdult language currentDate personId person db model =
                     personId
                     person
                     db
+            , div [ class "pane" ]
+                [ div [ class "pane-heading" ]
+                    [ text <| translate language Translate.ProgressReports ]
+                , viewFilters language patientRecordFilters model
+                ]
             ]
         ]
 
@@ -218,3 +223,20 @@ viewAdultDetails language currentDate personId person db =
             ++ childrenList
             ++ [ familyLinks ]
     ]
+
+
+viewFilters : Language -> List PatientRecordFilter -> Model -> Html Msg
+viewFilters language filters model =
+    let
+        renderButton filter =
+            button
+                [ classList
+                    [ ( "active", model.filter == filter )
+                    , ( "primary ui button", True )
+                    ]
+                , onClick <| SetFilter filter
+                ]
+                [ translateText language <| Translate.PatientRecordFilter filter ]
+    in
+    List.map renderButton filters
+        |> div [ class "ui segment filters" ]

@@ -3243,7 +3243,8 @@ div.page-report.well-child {
   }
 }
 
-div.page-case-management {
+div.page-case-management,
+div.page-activity.patient-record {
 
   .ui.segment.filters {
     background-color: $color-white;

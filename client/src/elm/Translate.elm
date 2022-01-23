@@ -90,6 +90,7 @@ import Pages.Dashboard.Model as Dashboard
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
+import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PrenatalActivity.Types
     exposing
         ( ExaminationTask(..)
@@ -816,6 +817,7 @@ type TranslationId
     | PatientInformation
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
+    | PatientRecordFilter PatientRecordFilter
     | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
@@ -912,6 +914,7 @@ type TranslationId
     | Programs
     | ProgressPhotos
     | ProgressReport
+    | ProgressReports
     | ProgressTimeline
     | ProgressTrends
     | ProvideHealthEducationAndInstructToIsolate
@@ -2453,12 +2456,12 @@ translationSet trans =
 
         CaseManagementFilterLabel filter ->
             case filter of
-                FilterAcuteIllness ->
+                Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
                     { english = "Acute Illness"
                     , kinyarwanda = Just "Uburwayi butunguranye"
                     }
 
-                FilterAntenatal ->
+                Pages.GlobalCaseManagement.Model.FilterAntenatal ->
                     { english = "Antenatal Care"
                     , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
@@ -2480,12 +2483,12 @@ translationSet trans =
 
         CaseManagementPaneHeader encounterType ->
             case encounterType of
-                FilterAcuteIllness ->
+                Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
                     { english = "Acute Illness Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi wavuwe indwara zifatiyeho"
                     }
 
-                FilterAntenatal ->
+                Pages.GlobalCaseManagement.Model.FilterAntenatal ->
                     { english = "Antenatal Care Follow Up"
                     , kinyarwanda = Just "Gukurikirana umugore utwite"
                     }
@@ -6589,6 +6592,23 @@ translationSet trans =
             , kinyarwanda = Just " ntiyigeze asuzumwa ku kigo nderabuzima kuri iyi nda atwite"
             }
 
+        PatientRecordFilter filter ->
+            case filter of
+                Pages.PatientRecord.Model.FilterAcuteIllness ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PatientRecord.Model.FilterAntenatal ->
+                    { english = "Antenatal Care"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterDemographics ->
+                    { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    }
+
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
             , kinyarwanda = Nothing
@@ -7896,6 +7916,11 @@ translationSet trans =
         ProgressReport ->
             { english = "Progress Report"
             , kinyarwanda = Just "Raporo y’ibyakozwe"
+            }
+
+        ProgressReports ->
+            { english = "Progress Reports"
+            , kinyarwanda = Nothing
             }
 
         ProgressTimeline ->

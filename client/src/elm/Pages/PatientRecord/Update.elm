@@ -22,6 +22,12 @@ update currentDate id msg model =
             , []
             )
 
+        SetFilter filter ->
+            ( { model | filter = filter }
+            , Cmd.none
+            , []
+            )
+
         NoOp ->
             ( model
             , Cmd.none
