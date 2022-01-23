@@ -4,10 +4,11 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (generateFullName, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -26,7 +27,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSaveAction
         )
-import Pages.WellChildEncounter.View exposing (thumbnailDimensions, viewPersonDetails)
+import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
 import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChildProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
@@ -45,7 +46,7 @@ view language currentDate zscores id isChw db model =
                     viewContentForChild language currentDate zscores id person isChw db model
 
                 else
-                    viewContentForAdult language currentDate person db model
+                    viewContentForAdult language currentDate id person db model
             )
         |> Maybe.withDefault spinner
 
@@ -98,15 +99,120 @@ viewContentForChild language currentDate zscores childId child isChw db model =
         ( childId, child )
 
 
-viewContentForAdult : Language -> NominalDate -> Person -> ModelIndexedDb -> Model -> Html Msg
-viewContentForAdult language currentDate person db model =
+viewContentForAdult : Language -> NominalDate -> PersonId -> Person -> ModelIndexedDb -> Model -> Html Msg
+viewContentForAdult language currentDate personId person db model =
     div [ class "page-activity patient-record" ]
         [ viewHeader language
         , div [ class "ui unstackable items" ]
             [ div [ class "item" ] <|
-                viewPersonDetails
+                viewAdultDetails
                     language
                     currentDate
+                    personId
                     person
+                    db
             ]
         ]
+
+
+viewAdultDetails : Language -> NominalDate -> PersonId -> Person -> ModelIndexedDb -> List (Html Msg)
+viewAdultDetails language currentDate personId person db =
+    let
+        ( thumbnailClass, ageEntry ) =
+            ( "mother"
+            , ageInYears currentDate person
+                |> Maybe.map (\ageYears -> viewTransEntry Translate.AgeWord (Translate.YearsOld ageYears |> translate language))
+                |> Maybe.withDefault emptyNode
+            )
+
+        dateOfBirthEntry =
+            Maybe.map
+                (\birthDate ->
+                    viewTransEntry Translate.DateOfBirth (formatDDMMYYYY birthDate)
+                )
+                person.birthDate
+                |> Maybe.withDefault emptyNode
+
+        ubudeheEntry =
+            Maybe.map (Translate.UbudeheNumber >> translate language >> viewTransEntry Translate.UbudeheLabel) person.ubudehe
+                |> Maybe.withDefault emptyNode
+
+        educationLevelEntry =
+            Maybe.map (Translate.LevelOfEducation >> translate language >> viewTransEntry Translate.LevelOfEducationLabel) person.educationLevel
+                |> Maybe.withDefault emptyNode
+
+        childrenIds =
+            Dict.get personId db.relationshipsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (Dict.values
+                        >> List.filterMap
+                            (\relationship ->
+                                if relationship.relatedBy == MyChild then
+                                    Just relationship.relatedTo
+
+                                else
+                                    Nothing
+                            )
+                    )
+                |> Maybe.withDefault []
+
+        children =
+            List.filterMap
+                (\childId ->
+                    Dict.get childId db.people
+                        |> Maybe.andThen RemoteData.toMaybe
+                )
+                childrenIds
+
+        childrenList =
+            List.indexedMap
+                (\index child ->
+                    viewEntry (translate language Translate.Baby ++ " " ++ String.fromInt (index + 1)) child.name
+                )
+                children
+
+        familyLinks =
+            let
+                -- Generate markup for each child
+                childrenMarkup =
+                    List.indexedMap viewChildMarkup childrenIds
+
+                viewChildMarkup index childId =
+                    li [ onClick <| SetActivePage <| UserPage <| PatientRecordPage childId ]
+                        [ span [ class "icon-baby" ] []
+                        , span
+                            [ class "count" ]
+                            [ text <| String.fromInt (index + 1) ]
+                        ]
+
+                motherMarkup =
+                    li [ class "active" ]
+                        [ span [ class "icon-mother" ] [] ]
+            in
+            ul
+                [ class "links-body" ]
+                (motherMarkup :: childrenMarkup)
+
+        viewTransEntry labelTransId content =
+            viewEntry (translate language labelTransId) content
+
+        viewEntry label content =
+            p []
+                [ span [ class "label" ] [ text <| label ++ ": " ]
+                , span [] [ text content ]
+                ]
+    in
+    [ div [ class "ui image" ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
+    , div [ class "details" ] <|
+        [ h2 [ class "ui header" ]
+            [ text person.name ]
+        , ageEntry
+        , dateOfBirthEntry
+        , ubudeheEntry
+        , educationLevelEntry
+        ]
+            ++ childrenList
+            ++ [ familyLinks ]
+    ]

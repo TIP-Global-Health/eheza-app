@@ -40,6 +40,7 @@ import Backend.Person.Model
         , HIVStatus(..)
         , MaritalStatus(..)
         , ModeOfDelivery(..)
+        , Ubudehe(..)
         , VaginalDelivery(..)
         )
 import Backend.PrenatalActivity.Model
@@ -1112,6 +1113,7 @@ type TranslationId
     | TwoVisits
     | Type
     | UbudeheLabel
+    | UbudeheNumber Ubudehe
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
     | Unknown
@@ -9436,9 +9438,31 @@ translationSet trans =
             }
 
         UbudeheLabel ->
-            { english = "Ubudehe: "
+            { english = "Ubudehe"
             , kinyarwanda = Nothing
             }
+
+        UbudeheNumber ubudehe ->
+            case ubudehe of
+                Ubudehe1 ->
+                    { english = "1"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ubudehe2 ->
+                    { english = "2"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ubudehe3 ->
+                    { english = "3"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ubudehe4 ->
+                    { english = "4"
+                    , kinyarwanda = Nothing
+                    }
 
         UnitGramsPerDeciliter ->
             { english = "g/dL"

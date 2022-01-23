@@ -15,7 +15,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Participant.View exposing (viewUbudehe)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -159,7 +158,7 @@ viewFamilyInformationPane language currentDate db data =
     let
         ubudehe =
             data.person.ubudehe
-                |> Maybe.map viewUbudehe
+                |> Maybe.map (Translate.UbudeheNumber >> translate language)
                 |> Maybe.withDefault ""
 
         numberOfChildren =
