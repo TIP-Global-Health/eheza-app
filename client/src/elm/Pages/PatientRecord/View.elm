@@ -60,7 +60,7 @@ viewHeader language =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.CovidContactTracing ]
+            [ text <| translate language Translate.PatientRecord ]
         , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
