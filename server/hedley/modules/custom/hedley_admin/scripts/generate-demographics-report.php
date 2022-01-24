@@ -17,7 +17,7 @@ $types = hedley_general_get_measurement_types();
 array_walk($types, function (&$val) {
   $val = "'$val'";
 });
-$measurement_types_sql_list = join(', ', $types);
+$measurement_types_sql_list = implode(', ', $types);
 
 /**
  * Fetches registered / classified count from the temporary helper table.
@@ -28,6 +28,7 @@ $measurement_types_sql_list = join(', ', $types);
  *   Male or female.
  *
  * @return int
+ *   Amount of patients.
  */
 function classified_count($age, $gender) {
   return db_query("SELECT
@@ -52,6 +53,7 @@ WHERE
  *   Male or female.
  *
  * @return int
+ *   Amount of patients.
  */
 function impacted_count($age, $gender) {
   return (int) db_query("
@@ -72,15 +74,16 @@ SELECT
 /**
  * Counts encounter types.
  *
- * @param $type
+ * @param string $type
  *   Encounter type.
- * @param $filter
+ * @param mixed $filter
  *   Filter type 'hc' or NULL.
  *
  * @return int
+ *   Amount of encounters.
  */
 function encounter_all_count($type, $filter = NULL) {
-  if ($filter === 'hc' && $type == 'prenatal')  {
+  if ($filter === 'hc' && $type == 'prenatal') {
     // Health center ANC.
     return db_query("SELECT COUNT(DISTINCT field_prenatal_encounter_target_id) FROM field_data_field_prenatal_encounter e left join field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id where field_prenatal_encounter_type_value='nurse'")->fetchField();
   }
@@ -90,14 +93,15 @@ function encounter_all_count($type, $filter = NULL) {
 }
 
 /**
- * Counts encounter types - unique patients.
+ * Counts encounter types among unique patients.
  *
- * @param $type
+ * @param string $type
  *   Encounter type.
- * @param $filter
- *   Filter type 'hc' or NULL.*
+ * @param mixed $filter
+ *   Filter type 'hc' or NULL.
  *
  * @return int
+ *   Amount of encounters.
  */
 function encounter_unique_count($type, $filter = NULL) {
   if ($filter === 'hc' && $type == 'prenatal') {
@@ -203,7 +207,11 @@ $impacted = [
     impacted_count('mt50y', 'female'),
   ],
 ];
-$text_table = new HedleyAdminTextTable(['Impacted (2+ visits)', 'Male', 'Female']);
+$text_table = new HedleyAdminTextTable([
+  'Impacted (2+ visits)',
+  'Male',
+  'Female',
+]);
 $text_table->addData($impacted);
 
 drush_print($text_table->render());
@@ -214,6 +222,7 @@ drush_print("## ENCOUNTERS");
  * Gathers group encounter visits by type.
  *
  * @return array
+ *   Associative array, keyed by type.
  */
 function group_encounter_all($measurement_types_list) {
   return db_query("
@@ -247,6 +256,7 @@ GROUP BY
  * Gathers group encounter patients by type.
  *
  * @return array
+ *   Amount of patients by type.
  */
 function group_encounter_unique($measurement_types_list) {
   return db_query("
@@ -334,9 +344,9 @@ $encounters = [
   ],
   [
     'TOTAL',
-    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition')  + encounter_all_count('prenatal') + encounter_all_count('acute_illness'),
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition') + encounter_all_count('prenatal') + encounter_all_count('acute_illness'),
     $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition') + encounter_unique_count('prenatal') + encounter_unique_count('acute_illness'),
-  ]
+  ],
 ];
 
 $text_table = new HedleyAdminTextTable(['Encounter type', 'All', 'Unique']);
