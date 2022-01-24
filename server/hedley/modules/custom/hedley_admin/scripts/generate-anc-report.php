@@ -1,14 +1,19 @@
 <?php
 
-require_once __DIR__ . '/report_common.inc';
+/**
+ * @file
+ * ANC recurring data report.
+ *
+ * This report shows the number of visits a woman has had in each pregnancy
+ * in three ways
+ * Pregnancy visit: ANC for humans, `prenatal` in Drupal.
+ */
 
-// This report shows the number of visits a woman has had in each pregnancy
-// in three ways.
-// Pregnancy visit: ANC for humans, `prenatal` in Drupal.
+require_once __DIR__ . '/report_common.inc';
 
 $queries = [
   // As the group of all pregnancies.
-  "# Patients who have had " =>   "
+  "# Patients who have had " => "
 SELECT
   val,
   COUNT(*) AS counter
@@ -27,7 +32,7 @@ FROM
 GROUP BY
   val",
   // As the group of pregnancies which is current - defined as NOT > 30 days
-  // past the EDD and AND NOT "closed" (e.g. if today is November 1, my pregnancy
+  // past the EDD and AND NOT "closed" (if today is November 1, my pregnancy
   // is current if it is Nov 15 of the same year and the pregnancy
   // has not been closed). The closed-ness of the pregnancy was introduced
   // recently, so this filter is not added there.
@@ -52,7 +57,8 @@ FROM
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
-  // As a group of pregnancies that is completed - defined as > 30 past the EDD OR "closed"
+  // As a group of pregnancies that is completed - defined as > 30 past
+  // the EDD OR "closed".
   // @todo introduce "closed" when meaningful
   "Of Completed Pregnancies (30 days beyond EDD)" => "
 SELECT
