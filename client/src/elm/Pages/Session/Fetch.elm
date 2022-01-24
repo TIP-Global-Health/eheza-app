@@ -28,7 +28,7 @@ fetch currentDate zscores sessionId sessionPage db =
                 ( forChildPage, childPageCalculations ) =
                     Pages.Participant.Fetch.fetch sessionId
             in
-            ( forChildPage ++ Backend.NutritionEncounter.Fetch.fetchForChild childId db, childPageCalculations )
+            ( forChildPage ++ Backend.NutritionEncounter.Fetch.fetch childId db, childPageCalculations )
 
         ( forSessionPage, calculations ) =
             case sessionPage of
@@ -72,7 +72,7 @@ fetch currentDate zscores sessionId sessionPage db =
 
                         fetchIndividualDataMsgs =
                             firstPendingParticipant
-                                |> Maybe.map (\childId -> Backend.NutritionEncounter.Fetch.fetchForChild childId db)
+                                |> Maybe.map (\childId -> Backend.NutritionEncounter.Fetch.fetch childId db)
                                 |> Maybe.withDefault []
 
                         ( forActivityPage, activityPageCalculations ) =

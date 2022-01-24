@@ -27,6 +27,22 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'acute_illness_contacts_tracing' => array(
+      'name' => t('Acute Illness Contacts Tracing'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'acute_illness_core_exam' => array(
+      'name' => t('Acute Illness Core Exam'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'acute_illness_danger_signs' => array(
       'name' => t('Acute Illness Danger Signs'),
       'base' => 'node_content',
@@ -59,6 +75,14 @@ function hedley_acute_illness_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'acute_illness_trace_contact' => array(
+      'name' => t('Acute Illness Trace Contact'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'acute_illness_vitals' => array(
       'name' => t('Acute Illness Vitals'),
       'base' => 'node_content',
@@ -69,6 +93,14 @@ function hedley_acute_illness_node_info() {
     ),
     'call_114' => array(
       'name' => t('Call 114'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'covid_testing' => array(
+      'name' => t('COVID Testing'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

@@ -4,8 +4,15 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Form
+import Backend.Person.Model exposing (Person)
+import Date exposing (Date)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig)
+import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
+import Form
 import Measurement.Model exposing (..)
+import Pages.AcuteIllnessActivity.Types exposing (..)
 import Pages.Page exposing (Page)
 
 
@@ -28,8 +35,8 @@ type Msg
     | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)
       -- PHYSICAL EXAM Msgs
     | SetActivePhysicalExamTask PhysicalExamTask
-    | SetVitalsResporatoryRate String
-    | SetVitalsBodyTemperature String
+    | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SetAcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | SetAcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )) (Maybe PhysicalExamTask)
@@ -38,11 +45,17 @@ type Msg
     | SaveMuac PersonId (Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )) (Maybe PhysicalExamTask)
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )) (Maybe PhysicalExamTask)
+    | SetCoreExamHeart HeartCPESign
+    | SetCoreExamLungs LungsCPESign
+    | SaveCoreExam PersonId (Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
     | SetIsPregnant Bool
-    | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
+    | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting )) (Maybe LaboratoryTask)
+    | SetCovidTestingBoolInput (Bool -> CovidTestingForm -> CovidTestingForm) Bool
+    | SetCovidTestingAdministrationNote AdministrationNote
+    | SaveCovidTesting PersonId (Maybe ( CovidTestingId, CovidTesting )) (Maybe LaboratoryTask)
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -54,34 +67,46 @@ type Msg
     | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
     | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
       -- NEXT STEPS
-    | SetActiveNextStepsTask NextStepsTask
+    | SetActiveNextStepsTask Pages.AcuteIllnessActivity.Types.NextStepsTask
     | SetPatientIsolated Bool
     | SetHealthEducation Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetSignOnDoor Bool
     | SetReasonForNotIsolating ReasonForNotIsolating
-    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe NextStepsTask)
+    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetContactedHC Bool
     | SetHCRecommendation HCRecommendation
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
-    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe NextStepsTask)
+    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetCalled114 Bool
     | SetContactedSite Bool
     | SetRecommendation114 Recommendation114
     | SetRecommendationSite RecommendationSite
-    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe NextStepsTask)
+    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
-    | SetMedicationDistributionMedicationNonAdministrationReason (Maybe MedicationNonAdministrationReason) MedicationDistributionSign MedicationNonAdministrationReason
-    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe NextStepsTask)
+    | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
+    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
-    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe NextStepsTask)
+    | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
+    | SetContactsTracingFormState ContactsTracingFormState
+    | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
+    | SetContactsTracingInput String
+    | SetContactsTracingSearch String
+    | SetContactsTracingDate Date
+    | SetContactsTracingDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetContactsTracingPhoneNumber String
+    | SetContactsTracingFinished
+    | SaveTracedContact ContactTraceItem
+    | DeleteTracedContact PersonId
+    | RegisterContactMsgForm Form.Msg
+    | SaveContactsTracing PersonId (Maybe ( AcuteIllnessContactsTracingId, AcuteIllnessContactsTracing )) (Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask)
       -- ONGOIN TREATMENT
     | SetActiveOngoingTreatmentTask OngoingTreatmentTask
     | SetOngoingTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
@@ -135,7 +160,7 @@ type alias SymptomsData =
     { symptomsGeneralForm : SymptomsGeneralForm
     , symptomsRespiratoryForm : SymptomsRespiratoryForm
     , symptomsGIForm : SymptomsGIForm
-    , activeTask : SymptomsTask
+    , activeTask : Maybe SymptomsTask
     }
 
 
@@ -144,14 +169,8 @@ emptySymptomsData =
     { symptomsGeneralForm = SymptomsGeneralForm Dict.empty False
     , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty False
     , symptomsGIForm = SymptomsGIForm Dict.empty False Nothing False
-    , activeTask = SymptomsGeneral
+    , activeTask = Nothing
     }
-
-
-type SymptomsTask
-    = SymptomsGeneral
-    | SymptomsRespiratory
-    | SymptomsGI
 
 
 type alias SymptomsGeneralForm =
@@ -182,39 +201,20 @@ type alias PhysicalExamData =
     { vitalsForm : VitalsForm
     , acuteFindingsForm : AcuteFindingsForm
     , muacForm : MuacForm
-    , nutritionForm : NutritionForm
-    , activeTask : PhysicalExamTask
+    , nutritionForm : AcuteIllnessNutritionForm
+    , coreExamForm : AcuteIllnessCoreExamForm
+    , activeTask : Maybe PhysicalExamTask
     }
 
 
 emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
-    { vitalsForm = VitalsForm Nothing False Nothing False
+    { vitalsForm = emptyVitalsForm
     , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
-    , muacForm = MuacForm Nothing False
-    , nutritionForm = NutritionForm Nothing
-    , activeTask = PhysicalExamVitals
-    }
-
-
-type PhysicalExamTask
-    = PhysicalExamVitals
-    | PhysicalExamMuac
-    | PhysicalExamAcuteFindings
-    | PhysicalExamNutrition
-
-
-type alias VitalsForm =
-    { respiratoryRate : Maybe Int
-    , respiratoryRateDirty : Bool
-    , bodyTemperature : Maybe Float
-    , bodyTemperatureDirty : Bool
-    }
-
-
-type alias MuacForm =
-    { muac : Maybe Float
-    , muacDirty : Bool
+    , muacForm = emptyMuacForm
+    , nutritionForm = AcuteIllnessNutritionForm Nothing
+    , coreExamForm = AcuteIllnessCoreExamForm Nothing Nothing
+    , activeTask = Nothing
     }
 
 
@@ -224,8 +224,14 @@ type alias AcuteFindingsForm =
     }
 
 
-type alias NutritionForm =
+type alias AcuteIllnessNutritionForm =
     { signs : Maybe (List ChildNutritionSign)
+    }
+
+
+type alias AcuteIllnessCoreExamForm =
+    { heart : Maybe HeartCPESign
+    , lungs : Maybe (List LungsCPESign)
     }
 
 
@@ -235,25 +241,36 @@ type alias NutritionForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
-    , activeTask : LaboratoryTask
+    , covidTestingForm : CovidTestingForm
+    , activeTask : Maybe LaboratoryTask
     }
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing Nothing
-    , activeTask = LaboratoryMalariaTesting
+    , covidTestingForm = emptyCovidTestingForm
+    , activeTask = Nothing
     }
-
-
-type LaboratoryTask
-    = LaboratoryMalariaTesting
 
 
 type alias MalariaTestingForm =
-    { rapidTestResult : Maybe MalariaRapidTestResult
+    { rapidTestResult : Maybe RapidTestResult
     , isPregnant : Maybe Bool
     }
+
+
+type alias CovidTestingForm =
+    { testPerformed : Maybe Bool
+    , testPositive : Maybe Bool
+    , isPregnant : Maybe Bool
+    , administrationNote : Maybe AdministrationNote
+    }
+
+
+emptyCovidTestingForm : CovidTestingForm
+emptyCovidTestingForm =
+    CovidTestingForm Nothing Nothing Nothing Nothing
 
 
 
@@ -273,11 +290,6 @@ emptyExposureData =
     , exposureForm = ExposureForm Nothing
     , activeTask = ExposureTravel
     }
-
-
-type ExposureTask
-    = ExposureTravel
-    | ExposureExposure
 
 
 type alias TravelHistoryForm =
@@ -305,10 +317,6 @@ emptyPriorTreatmentData =
     { treatmentReviewForm = emptyTreatmentReviewForm
     , activeTask = TreatmentReview
     }
-
-
-type PriorTreatmentTask
-    = TreatmentReview
 
 
 type alias TreatmentReviewForm =
@@ -344,7 +352,8 @@ type alias NextStepsData =
     , medicationDistributionForm : MedicationDistributionForm
     , healthEducationForm : HealthEducationForm
     , followUpForm : FollowUpForm
-    , activeTask : Maybe NextStepsTask
+    , contactsTracingForm : ContactsTracingForm
+    , activeTask : Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
     }
 
 
@@ -357,18 +366,9 @@ emptyNextStepsData =
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
     , followUpForm = FollowUpForm Nothing
+    , contactsTracingForm = emptyContactsTracingForm
     , activeTask = Nothing
     }
-
-
-type NextStepsTask
-    = NextStepsIsolation
-    | NextStepsContactHC
-    | NextStepsCall114
-    | NextStepsMedicationDistribution
-    | NextStepsSendToHC
-    | NextStepsHealthEducation
-    | NextStepsFollowUp
 
 
 type alias IsolationForm =
@@ -398,11 +398,6 @@ type alias Call114Form =
     }
 
 
-type alias FollowUpForm =
-    { option : Maybe FollowUpOption
-    }
-
-
 emptyCall114Form : Call114Form
 emptyCall114Form =
     { called114 = Nothing
@@ -415,6 +410,11 @@ emptyCall114Form =
     }
 
 
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+    }
+
+
 type alias MedicationDistributionForm =
     { amoxicillin : Maybe Bool
     , coartem : Maybe Bool
@@ -423,6 +423,67 @@ type alias MedicationDistributionForm =
     , lemonJuiceOrHoney : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     }
+
+
+type alias ContactsTracingForm =
+    { state : ContactsTracingFormState
+    , contacts : Maybe (Dict PersonId ContactTraceItem)
+    , finished : Bool
+    }
+
+
+type ContactsTracingFormState
+    = ContactsTracingFormSummary
+    | ContactsTracingFormSearchParticipants SearchParticipantsData
+    | ContactsTracingFormRecordContactDetails PersonId RecordContactDetailsData
+    | ContactsTracingFormRegisterContact RegisterContactData
+
+
+emptyContactsTracingForm : ContactsTracingForm
+emptyContactsTracingForm =
+    { state = ContactsTracingFormSummary
+    , contacts = Nothing
+    , finished = False
+    }
+
+
+type alias SearchParticipantsData =
+    { debouncer : Debouncer Msg Msg
+    , search : Maybe String
+    , input : String
+    }
+
+
+emptySearchParticipantsData : SearchParticipantsData
+emptySearchParticipantsData =
+    { debouncer = debounce 500 |> toDebouncer
+    , search = Nothing
+    , input = ""
+    }
+
+
+type alias RecordContactDetailsData =
+    { contactDate : Maybe Date
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    , phoneNumber : Maybe String
+    }
+
+
+emptyRecordContactDetailsData : RecordContactDetailsData
+emptyRecordContactDetailsData =
+    { contactDate = Nothing
+    , dateSelectorPopupState = Nothing
+    , phoneNumber = Nothing
+    }
+
+
+type alias RegisterContactData =
+    Backend.Person.Form.ContactForm
+
+
+emptyRegisterContactData : RegisterContactData
+emptyRegisterContactData =
+    Backend.Person.Form.emptyContactForm
 
 
 
@@ -440,10 +501,6 @@ emptyOngoingTreatmentData =
     { treatmentReviewForm = emptyOngoingTreatmentReviewForm
     , activeTask = OngoingTreatmentReview
     }
-
-
-type OngoingTreatmentTask
-    = OngoingTreatmentReview
 
 
 type alias OngoingTreatmentReviewForm =
@@ -490,10 +547,6 @@ emptyDangerSignsData =
     { reviewDangerSignsForm = emptyReviewDangerSignsForm
     , activeTask = ReviewDangerSigns
     }
-
-
-type DangerSignsTask
-    = ReviewDangerSigns
 
 
 type alias ReviewDangerSignsForm =

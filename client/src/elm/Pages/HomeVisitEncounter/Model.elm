@@ -5,7 +5,7 @@ import Backend.HomeVisitEncounter.Model exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (HomeVisitMeasurements)
 import Backend.Person.Model exposing (Person)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.Page exposing (Page)
 
 

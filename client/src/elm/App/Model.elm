@@ -8,6 +8,7 @@ import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
+import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
@@ -30,6 +31,7 @@ import Pages.HomeVisitEncounter.Model
 import Pages.IndividualEncounterParticipants.Model
 import Pages.NutritionActivity.Model
 import Pages.NutritionEncounter.Model
+import Pages.NutritionProgressReport.Model
 import Pages.Page exposing (DashboardPage(..), Page(..))
 import Pages.People.Model
 import Pages.Person.Model
@@ -40,6 +42,10 @@ import Pages.PrenatalEncounter.Model
 import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
+import Pages.TraceContact.Model
+import Pages.WellChildActivity.Model
+import Pages.WellChildEncounter.Model
+import Pages.WellChildProgressReport.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
@@ -230,7 +236,7 @@ type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , dashboardPage : Pages.Dashboard.Model.Model
     , globalCaseManagementPage : Pages.GlobalCaseManagement.Model.Model
-    , editPersonPage : Pages.Person.Model.Model
+    , editPersonPages : Dict PersonId Pages.Person.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
     , individualEncounterParticipantsPage : Pages.IndividualEncounterParticipants.Model.Model
@@ -238,8 +244,6 @@ type alias LoggedInModel =
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
-
-    -- A set of pages for every "open" editable session.
     , prenatalParticipantPages : Dict PersonId Pages.PrenatalParticipant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
@@ -247,6 +251,7 @@ type alias LoggedInModel =
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
     , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.NutritionActivity.Model.Model
+    , nutritionProgressReportPages : Dict NutritionEncounterId Pages.NutritionProgressReport.Model.Model
     , acuteIllnessParticipantPages : Dict PersonId Pages.AcuteIllnessParticipant.Model.Model
     , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Model
     , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
@@ -254,6 +259,10 @@ type alias LoggedInModel =
     , acuteIllnessOutcomePages : Dict IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Model
     , homeVisitEncounterPages : Dict HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Model
     , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity ) Pages.HomeVisitActivity.Model.Model
+    , wellChildEncounterPages : Dict WellChildEncounterId Pages.WellChildEncounter.Model.Model
+    , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChildActivity.Model.Model
+    , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChildProgressReport.Model.Model
+    , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     }
 
 
@@ -262,7 +271,7 @@ emptyLoggedInModel villageId nurse =
     { createPersonPage = Pages.Person.Model.emptyCreateModel
     , dashboardPage = Pages.Dashboard.Model.emptyModel villageId
     , globalCaseManagementPage = Pages.GlobalCaseManagement.Model.emptyModel
-    , editPersonPage = Pages.Person.Model.emptyEditModel
+    , editPersonPages = Dict.empty
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
@@ -275,6 +284,7 @@ emptyLoggedInModel villageId nurse =
     , sessionPages = Dict.empty
     , nutritionEncounterPages = Dict.empty
     , nutritionActivityPages = Dict.empty
+    , nutritionProgressReportPages = Dict.empty
     , acuteIllnessParticipantPages = Dict.empty
     , acuteIllnessEncounterPages = Dict.empty
     , acuteIllnessActivityPages = Dict.empty
@@ -282,6 +292,10 @@ emptyLoggedInModel villageId nurse =
     , acuteIllnessOutcomePages = Dict.empty
     , homeVisitEncounterPages = Dict.empty
     , homeVisitActivityPages = Dict.empty
+    , wellChildEncounterPages = Dict.empty
+    , wellChildActivityPages = Dict.empty
+    , wellChildProgressReportPages = Dict.empty
+    , traceContactPages = Dict.empty
     }
 
 
@@ -324,7 +338,7 @@ type MsgLoggedIn
     | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageDashboard DashboardPage Pages.Dashboard.Model.Msg
     | MsgPageGlobalCaseManagement Pages.GlobalCaseManagement.Model.Msg
-    | MsgPageEditPerson Pages.Person.Model.Msg
+    | MsgPageEditPerson PersonId Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg
     | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
@@ -335,13 +349,18 @@ type MsgLoggedIn
     | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
     | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Msg
+    | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChildEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
-    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg
-    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
+    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg
+    | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChildActivity.Model.Msg
+    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllnessProgressReport.Model.Msg
+    | MsgPageNutritionProgressReport NutritionEncounterId Pages.NutritionProgressReport.Model.Msg
+    | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChildProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
+    | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
 
 
 type alias Flags =

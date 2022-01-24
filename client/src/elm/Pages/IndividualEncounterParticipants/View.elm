@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -15,6 +15,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
 import Pages.IndividualEncounterParticipants.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model
@@ -77,27 +78,7 @@ viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) 
 viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
-            Html.form
-                [ -- These attribites are blocking 'Submit' action on HTML form,
-                  -- as it is not needed, and causes application to reload.
-                  action "javascript:void(0);"
-                , onSubmit NoOp
-                ]
-                [ div
-                    [ class "ui search form" ]
-                    [ div []
-                        [ input
-                            [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
-                            , type_ "text"
-                            , class "search-input"
-                            , onInput SetInput
-                            , value model.input
-                            , autofocus True
-                            ]
-                            []
-                        ]
-                    ]
-                ]
+            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
 
         searchValue =
             model.search
@@ -115,6 +96,18 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                     isPersonAnAdult currentDate person
                         |> Maybe.map not
                         |> Maybe.withDefault False
+
+                WellChildEncounter ->
+                    if isChw then
+                        -- CHW can run only Newborn exam, which is
+                        -- performed for children up to 2 months old.
+                        isNewborn currentDate person
+                            |> Maybe.withDefault False
+
+                    else
+                        isPersonAnAdult currentDate person
+                            |> Maybe.map not
+                            |> Maybe.withDefault False
 
                 _ ->
                     False
@@ -155,7 +148,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
 
         viewSummary data =
             Dict.size data
-                |> Translate.ReportResultsOfSearch
+                |> Translate.ReportResultsOfParticipantsSearch
                 |> translate language
                 |> text
 
@@ -190,7 +183,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
             [ class "search-bottom" ]
             [ div
                 [ class "register-helper" ]
-                [ text <| translate language Translate.RegisterHelper ]
+                [ text <| translate language Translate.RegisterParticipantHelper ]
             , div
                 [ class "register-actions" ]
                 [ button
@@ -216,6 +209,9 @@ viewParticipant language currentDate encounterType db id person =
 
                 NutritionEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
+
+                WellChildEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage id ]
 
                 _ ->
                     []

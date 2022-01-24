@@ -6,8 +6,9 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (isAdult)
 import Backend.Session.Model exposing (OfflineSession)
+import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
 import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
@@ -16,16 +17,25 @@ import Restful.Endpoint exposing (EntityUuid)
 {-| Given a MUAC in cm, classify according to the measurement tool shown
 at <https://github.com/Gizra/ihangane/issues/282>
 -}
-muacIndication : MuacInCm -> MuacIndication
+muacIndication : MuacInCm -> ColorAlertIndication
 muacIndication (MuacInCm value) =
     if value <= 11.5 then
-        MuacRed
+        ColorAlertRed
 
     else if value <= 12.5 then
-        MuacYellow
+        ColorAlertYellow
 
     else
-        MuacGreen
+        ColorAlertGreen
+
+
+headCircumferenceIndication : HeadCircumferenceInCm -> ColorAlertIndication
+headCircumferenceIndication (HeadCircumferenceInCm value) =
+    if value <= -3 || value >= 3 then
+        ColorAlertRed
+
+    else
+        ColorAlertGreen
 
 
 {-| Given the data, do we have a current value? May be the value
@@ -242,7 +252,7 @@ getCurrentAndPrevious sessionId =
                         { acc | previous = Just ( id, value ) }
 
                     Just ( _, previousValue ) ->
-                        if Gizra.NominalDate.compare value.dateMeasured previousValue.dateMeasured == GT then
+                        if Date.compare value.dateMeasured previousValue.dateMeasured == GT then
                             { acc | previous = Just ( id, value ) }
 
                         else
@@ -254,8 +264,8 @@ getCurrentAndPrevious sessionId =
         }
 
 
-medicationNonAdministrationReasonFromString : String -> Maybe MedicationNonAdministrationReason
-medicationNonAdministrationReasonFromString reason =
+administrationNoteFromString : String -> Maybe AdministrationNote
+administrationNoteFromString reason =
     case reason of
         "lack-of-stock" ->
             Just NonAdministrationLackOfStock
@@ -269,15 +279,27 @@ medicationNonAdministrationReasonFromString reason =
         "patient-unable-to-afford" ->
             Just NonAdministrationPatientUnableToAfford
 
+        "home-birth" ->
+            Just NonAdministrationHomeBirth
+
+        "childs-condition" ->
+            Just NonAdministrationTooIll
+
         "other" ->
             Just NonAdministrationOther
+
+        "administered-today" ->
+            Just AdministeredToday
+
+        "administered-previously" ->
+            Just AdministeredPreviously
 
         _ ->
             Nothing
 
 
-medicationNonAdministrationReasonToString : MedicationNonAdministrationReason -> String
-medicationNonAdministrationReasonToString reason =
+administrationNoteToString : AdministrationNote -> String
+administrationNoteToString reason =
     case reason of
         NonAdministrationLackOfStock ->
             "lack-of-stock"
@@ -291,8 +313,20 @@ medicationNonAdministrationReasonToString reason =
         NonAdministrationPatientUnableToAfford ->
             "patient-unable-to-afford"
 
+        NonAdministrationHomeBirth ->
+            "home-birth"
+
+        NonAdministrationTooIll ->
+            "childs-condition"
+
         NonAdministrationOther ->
             "other"
+
+        AdministeredToday ->
+            "administered-today"
+
+        AdministeredPreviously ->
+            "administered-previously"
 
 
 mapChildMeasurementsAtOfflineSession : PersonId -> (ChildMeasurements -> ChildMeasurements) -> OfflineSession -> OfflineSession
@@ -322,8 +356,8 @@ mapChildMeasurementsAtOfflineSession childId func offlineSession =
     { offlineSession | measurements = mapped }
 
 
-nutritionAssesmentToString : NutritionAssesment -> String
-nutritionAssesmentToString assesment =
+nutritionAssessmentToString : NutritionAssessment -> String
+nutritionAssessmentToString assesment =
     case assesment of
         AssesmentAcuteMalnutritionModerate ->
             "malnutrition-moderate"
@@ -349,12 +383,12 @@ nutritionAssesmentToString assesment =
         AssesmentConsecutiveWeightLoss ->
             "consecutive-weight-loss"
 
-        NoNutritionAssesment ->
+        NoNutritionAssessment ->
             "none"
 
 
-nutritionAssesmentFromString : String -> Maybe NutritionAssesment
-nutritionAssesmentFromString assesment =
+nutritionAssessmentFromString : String -> Maybe NutritionAssessment
+nutritionAssessmentFromString assesment =
     case assesment of
         "malnutrition-moderate" ->
             Just AssesmentAcuteMalnutritionModerate
@@ -383,10 +417,41 @@ nutritionAssesmentFromString assesment =
             Just AssesmentConsecutiveWeightLoss
 
         "none" ->
-            Just NoNutritionAssesment
+            Just NoNutritionAssessment
 
         _ ->
             Nothing
+
+
+nutritionAssessmentToComparable : NutritionAssessment -> Int
+nutritionAssessmentToComparable assesment =
+    case assesment of
+        AssesmentAcuteMalnutritionModerate ->
+            1
+
+        AssesmentAcuteMalnutritionSevere ->
+            1
+
+        AssesmentUnderweightModerate ->
+            1
+
+        AssesmentUnderweightSevere ->
+            1
+
+        AssesmentMalnutritionSigns _ ->
+            1
+
+        AssesmentConsecutiveWeightLoss ->
+            1
+
+        NoNutritionAssessment ->
+            1
+
+        AssesmentDangerSignsNotPresent ->
+            2
+
+        AssesmentDangerSignsPresent ->
+            2
 
 
 postpartumMotherDangerSignToString : PostpartumMotherDangerSign -> String
@@ -493,3 +558,376 @@ postpartumChildDangerSignFromString sign =
 
         _ ->
             Nothing
+
+
+heightValueFunc : HeightInCm -> Float
+heightValueFunc =
+    \(HeightInCm cm) -> cm
+
+
+muacValueFunc : MuacInCm -> Float
+muacValueFunc =
+    \(MuacInCm cm) -> cm
+
+
+weightValueFunc : WeightInKg -> Float
+weightValueFunc =
+    \(WeightInKg kg) -> kg
+
+
+headCircumferenceValueFunc : HeadCircumferenceInCm -> Float
+headCircumferenceValueFunc =
+    \(HeadCircumferenceInCm cm) -> cm
+
+
+vaccineTypeFromString : String -> Maybe VaccineType
+vaccineTypeFromString type_ =
+    case type_ of
+        "bcg" ->
+            Just VaccineBCG
+
+        "opv" ->
+            Just VaccineOPV
+
+        "dtp" ->
+            Just VaccineDTP
+
+        "pcv13" ->
+            Just VaccinePCV13
+
+        "rotarix" ->
+            Just VaccineRotarix
+
+        "ipv" ->
+            Just VaccineIPV
+
+        "mr" ->
+            Just VaccineMR
+
+        "hpv" ->
+            Just VaccineHPV
+
+        _ ->
+            Nothing
+
+
+vaccineTypeToString : VaccineType -> String
+vaccineTypeToString type_ =
+    case type_ of
+        VaccineBCG ->
+            "bcg"
+
+        VaccineOPV ->
+            "opv"
+
+        VaccineDTP ->
+            "dtp"
+
+        VaccinePCV13 ->
+            "pcv13"
+
+        VaccineRotarix ->
+            "rotarix"
+
+        VaccineIPV ->
+            "ipv"
+
+        VaccineMR ->
+            "mr"
+
+        VaccineHPV ->
+            "hpv"
+
+
+vaccineDoseFromString : String -> Maybe VaccineDose
+vaccineDoseFromString dose =
+    case dose of
+        "dose-1" ->
+            Just VaccineDoseFirst
+
+        "dose-2" ->
+            Just VaccineDoseSecond
+
+        "dose-3" ->
+            Just VaccineDoseThird
+
+        "dose-4" ->
+            Just VaccineDoseFourth
+
+        _ ->
+            Nothing
+
+
+vaccineDoseToString : VaccineDose -> String
+vaccineDoseToString dose =
+    case dose of
+        VaccineDoseFirst ->
+            "dose-1"
+
+        VaccineDoseSecond ->
+            "dose-2"
+
+        VaccineDoseThird ->
+            "dose-3"
+
+        VaccineDoseFourth ->
+            "dose-4"
+
+
+getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v
+getMeasurementValueFunc =
+    Maybe.map (Tuple.second >> .value)
+
+
+getMeasurementDateMeasuredFunc : Maybe ( id, { measurement | dateMeasured : NominalDate } ) -> Maybe NominalDate
+getMeasurementDateMeasuredFunc =
+    Maybe.map (Tuple.second >> .dateMeasured)
+
+
+nutritionSignToString : ChildNutritionSign -> String
+nutritionSignToString sign =
+    case sign of
+        AbdominalDistension ->
+            "abdominal-distension"
+
+        Apathy ->
+            "apathy"
+
+        BrittleHair ->
+            "brittle-hair"
+
+        DrySkin ->
+            "dry-skin"
+
+        Edema ->
+            "edema"
+
+        NormalChildNutrition ->
+            "none"
+
+        PoorAppetite ->
+            "poor-appetite"
+
+
+symptomsGeneralSignToString : SymptomsGeneralSign -> String
+symptomsGeneralSignToString sign =
+    case sign of
+        BodyAches ->
+            "body-aches"
+
+        Chills ->
+            "chills"
+
+        SymptomGeneralFever ->
+            "fever"
+
+        Headache ->
+            "headache"
+
+        NightSweats ->
+            "night-sweats"
+
+        Lethargy ->
+            "lethargy"
+
+        PoorSuck ->
+            "poor-suck"
+
+        UnableToDrink ->
+            "unable-to-drink"
+
+        UnableToEat ->
+            "unable-to-eat"
+
+        IncreasedThirst ->
+            "increased-thirst"
+
+        DryMouth ->
+            "dry-mouth"
+
+        SevereWeakness ->
+            "severe-weakness"
+
+        YellowEyes ->
+            "yellow-eyes"
+
+        CokeColoredUrine ->
+            "coke-colored-urine"
+
+        SymptomsGeneralConvulsions ->
+            "convulsions"
+
+        SpontaneousBleeding ->
+            "spontaneos-bleeding"
+
+        NoSymptomsGeneral ->
+            "none"
+
+
+symptomsGeneralSignFromString : String -> Maybe SymptomsGeneralSign
+symptomsGeneralSignFromString s =
+    case s of
+        "body-aches" ->
+            Just BodyAches
+
+        "chills" ->
+            Just Chills
+
+        "fever" ->
+            Just SymptomGeneralFever
+
+        "headache" ->
+            Just Headache
+
+        "night-sweats" ->
+            Just NightSweats
+
+        "lethargy" ->
+            Just Lethargy
+
+        "poor-suck" ->
+            Just PoorSuck
+
+        "unable-to-drink" ->
+            Just UnableToDrink
+
+        "unable-to-eat" ->
+            Just UnableToEat
+
+        "increased-thirst" ->
+            Just IncreasedThirst
+
+        "dry-mouth" ->
+            Just DryMouth
+
+        "severe-weakness" ->
+            Just SevereWeakness
+
+        "yellow-eyes" ->
+            Just YellowEyes
+
+        "coke-colored-urine" ->
+            Just CokeColoredUrine
+
+        "convulsions" ->
+            Just SymptomsGeneralConvulsions
+
+        "spontaneos-bleeding" ->
+            Just SpontaneousBleeding
+
+        "none" ->
+            Just NoSymptomsGeneral
+
+        _ ->
+            Nothing
+
+
+symptomsRespiratorySignToString : SymptomsRespiratorySign -> String
+symptomsRespiratorySignToString sign =
+    case sign of
+        BloodInSputum ->
+            "blood-in-sputum"
+
+        Cough ->
+            "cough"
+
+        NasalCongestion ->
+            "nasal-congestion"
+
+        ShortnessOfBreath ->
+            "shortness-of-breath"
+
+        SoreThroat ->
+            "sore-throat"
+
+        LossOfSmell ->
+            "loss-of-smell"
+
+        StabbingChestPain ->
+            "stabbing-chest-pain"
+
+        NoSymptomsRespiratory ->
+            "none"
+
+
+symptomsRespiratorySignFromString : String -> Maybe SymptomsRespiratorySign
+symptomsRespiratorySignFromString s =
+    case s of
+        "blood-in-sputum" ->
+            Just BloodInSputum
+
+        "cough" ->
+            Just Cough
+
+        "nasal-congestion" ->
+            Just NasalCongestion
+
+        "shortness-of-breath" ->
+            Just ShortnessOfBreath
+
+        "sore-throat" ->
+            Just SoreThroat
+
+        "loss-of-smell" ->
+            Just LossOfSmell
+
+        "stabbing-chest-pain" ->
+            Just StabbingChestPain
+
+        "none" ->
+            Just NoSymptomsRespiratory
+
+        _ ->
+            Nothing
+
+
+symptomsGISignToString : SymptomsGISign -> String
+symptomsGISignToString sign =
+    case sign of
+        SymptomGIAbdominalPain ->
+            "abdominal-pain"
+
+        BloodyDiarrhea ->
+            "bloody-diarrhea"
+
+        Nausea ->
+            "nausea"
+
+        NonBloodyDiarrhea ->
+            "non-bloody-diarrhea"
+
+        Vomiting ->
+            "vomiting"
+
+        NoSymptomsGI ->
+            "none"
+
+
+symptomsGISignFromString : String -> Maybe SymptomsGISign
+symptomsGISignFromString s =
+    case s of
+        "abdominal-pain" ->
+            Just SymptomGIAbdominalPain
+
+        "bloody-diarrhea" ->
+            Just BloodyDiarrhea
+
+        "nausea" ->
+            Just Nausea
+
+        "non-bloody-diarrhea" ->
+            Just NonBloodyDiarrhea
+
+        "vomiting" ->
+            Just Vomiting
+
+        "none" ->
+            Just NoSymptomsGI
+
+        _ ->
+            Nothing
+
+
+covidIsolationPeriod : Int
+covidIsolationPeriod =
+    10

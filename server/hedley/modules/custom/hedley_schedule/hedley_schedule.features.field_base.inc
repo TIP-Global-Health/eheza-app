@@ -28,6 +28,9 @@ function hedley_schedule_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'covid19' => 'Covid19',
+        'covid19-severe' => 'Severe COVID-19',
+        'covid19-pneumonia' => 'COVID-19 with signs of Pneumonia',
+        'covid19-low-risk' => 'Simple COVID-19',
         'malaria-complicated' => 'Malaria Complicated',
         'malaria-uncomplicated' => 'Malaria Uncomplicated',
         'malaria-uncomplicated-pregnant' => 'Malaria Uncomplicated and Pregnant',
@@ -106,6 +109,31 @@ function hedley_schedule_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_ai_encounter_type'.
+  $field_bases['field_ai_encounter_type'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_ai_encounter_type',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'nurse-encounter' => 'Nurse Encounter',
+        'chw-encounter' => 'CHW Encounter',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_closed'.
   $field_bases['field_closed'] = array(
     'active' => 1,
@@ -164,6 +192,31 @@ function hedley_schedule_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_encounter_notes'.
+  $field_bases['field_encounter_notes'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_encounter_notes',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'triggered-ai-encounter' => 'Triggered Acute Illness Encounter',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_encounter_type'.
   $field_bases['field_encounter_type'] = array(
     'active' => 1,
@@ -185,6 +238,37 @@ function hedley_schedule_field_default_field_bases() {
         'home-visit' => 'Home visit',
         'inmmunization' => 'Inmmunization',
         'nutrition' => 'Nutrition',
+        'well-child' => 'Well Child',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_encounter_warnings'.
+  $field_bases['field_encounter_warnings'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_encounter_warnings',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'warning-ecd-milestone-behind' => 'Warning ECD Milestone Behind',
+        'warning-ecd-milestone-refer-to-specialist' => 'Warning ECD Milestone Refer To Specialist',
+        'no-ecd-milstone-warning' => 'No ECD Milstone Warning',
+        'warning-head-circumference-microcephaly' => 'Warning Head Circumference Microcephaly',
+        'warning-head-circumference-macrocephaly' => 'Warning Head Circumference Macrocephaly',
+        'no-head-circumference-warning' => 'No Head Circumference Warning',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

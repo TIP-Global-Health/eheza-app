@@ -366,6 +366,12 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteFindings identifier ->
                 viewMeasurement identifier "Acute Findings"
 
+            BackendAuthorityAcuteIllnessContactsTracing identifier ->
+                viewMeasurement identifier "Acute Illness Contacts Tracing"
+
+            BackendAuthorityAcuteIllnessCoreExam identifier ->
+                viewMeasurement identifier "AcuteI llness Core Exam"
+
             BackendAuthorityAcuteIllnessDangerSigns identifier ->
                 viewMeasurement identifier "AcuteI llness Danger Signs"
 
@@ -380,6 +386,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityAcuteIllnessNutrition identifier ->
                 viewMeasurement identifier "Acute Illness Nutrition"
+
+            BackendAuthorityAcuteIllnessTraceContact identifier ->
+                viewMeasurement identifier "Acute Illness Trace Contact"
 
             BackendAuthorityAcuteIllnessVitals identifier ->
                 viewMeasurement identifier "Acute Illness Vitals"
@@ -413,6 +422,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityCorePhysicalExam identifier ->
                 viewMeasurement identifier "Core Physical Exam"
+
+            BackendAuthorityCovidTesting identifier ->
+                viewMeasurement identifier "Covid Testing"
 
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
@@ -456,11 +468,11 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityLactation identifier ->
                 viewMeasurement identifier "Lactation"
 
-            BackendAuthorityMalariaTesting identifier ->
-                viewMeasurement identifier "Malaria Testing"
-
             BackendAuthorityLastMenstrualPeriod identifier ->
                 viewMeasurement identifier "Menstrual Period"
+
+            BackendAuthorityMalariaTesting identifier ->
+                viewMeasurement identifier "Malaria Testing"
 
             BackendAuthorityMedicalHistory identifier ->
                 viewMeasurement identifier "Medical History"
@@ -605,6 +617,87 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWeight identifier ->
                 viewMeasurement identifier "Weight"
+
+            BackendAuthorityWellChildAlbendazole identifier ->
+                viewMeasurement identifier "Well Child Albendazole"
+
+            BackendAuthorityWellChildBCGImmunisation identifier ->
+                viewMeasurement identifier "Well Child BCG Immunisation"
+
+            BackendAuthorityWellChildContributingFactors identifier ->
+                viewMeasurement identifier "Well Child Contributing Factors"
+
+            BackendAuthorityWellChildDTPImmunisation identifier ->
+                viewMeasurement identifier "Well Child DTP Immunisation"
+
+            BackendAuthorityWellChildECD identifier ->
+                viewMeasurement identifier "Well Child ECD"
+
+            BackendAuthorityWellChildEncounter identifier ->
+                text ("Well Child Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityWellChildFollowUp identifier ->
+                viewMeasurement identifier "Well Child Follow Up"
+
+            BackendAuthorityWellChildHeadCircumference identifier ->
+                viewMeasurement identifier "Well Child Head Circumference"
+
+            BackendAuthorityWellChildHealthEducation identifier ->
+                viewMeasurement identifier "Well Child Health Education"
+
+            BackendAuthorityWellChildHeight identifier ->
+                viewMeasurement identifier "Well Child Height"
+
+            BackendAuthorityWellChildHPVImmunisation identifier ->
+                viewMeasurement identifier "Well Child HPV Immunisation"
+
+            BackendAuthorityWellChildIPVImmunisation identifier ->
+                viewMeasurement identifier "Well Child IPV Immunisation"
+
+            BackendAuthorityWellChildMebendezole identifier ->
+                viewMeasurement identifier "Well Child Mebendezole"
+
+            BackendAuthorityWellChildMRImmunisation identifier ->
+                viewMeasurement identifier "Well Child MR Immunisation"
+
+            BackendAuthorityWellChildMuac identifier ->
+                viewMeasurement identifier "Well Child Muac"
+
+            BackendAuthorityWellChildNextVisit identifier ->
+                viewMeasurement identifier "Well Child Next Visit"
+
+            BackendAuthorityWellChildNutrition identifier ->
+                viewMeasurement identifier "Well Child Nutrition"
+
+            BackendAuthorityWellChildOPVImmunisation identifier ->
+                viewMeasurement identifier "Well Child OPV Immunisation"
+
+            BackendAuthorityWellChildPCV13Immunisation identifier ->
+                viewMeasurement identifier "Well Child PCV13 Immunisation"
+
+            BackendAuthorityWellChildPhoto identifier ->
+                viewMeasurement identifier "Well Child Photo"
+
+            BackendAuthorityWellChildPregnancySummary identifier ->
+                viewMeasurement identifier "Well Child Pregnancy Summary"
+
+            BackendAuthorityWellChildRotarixImmunisation identifier ->
+                viewMeasurement identifier "Well Child Rotarix Immunisation"
+
+            BackendAuthorityWellChildSendToHC identifier ->
+                viewMeasurement identifier "Well Child Send to HC"
+
+            BackendAuthorityWellChildSymptomsReview identifier ->
+                viewMeasurement identifier "Well Child Symptoms Review"
+
+            BackendAuthorityWellChildVitals identifier ->
+                viewMeasurement identifier "Well Child Vitals"
+
+            BackendAuthorityWellChildVitaminA identifier ->
+                viewMeasurement identifier "Well Child VitaminA"
+
+            BackendAuthorityWellChildWeight identifier ->
+                viewMeasurement identifier "Well Child Weight"
         ]
 
 

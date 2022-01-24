@@ -8,6 +8,10 @@
       color: $color-light-blue;
     }
 
+    span.in-days {
+      color: $color-velvet;
+    }
+
     span.date {
       font-style: italic;
     }
@@ -67,12 +71,41 @@
         &.icon-open-book {
           background: url(#{$img-path}icon-open-book.svg) center center no-repeat;
           background-size: 36px 36px;
+          padding: 0 20px 0 10px;
+          margin-right: 10px;
+          height: 36px;
+          width: 52px;
+        }
+
+        &.icon-capsule {
+          height: 36px;
+          margin-right: 5px;
+          width: 50px;
+        }
+
+        &.icon-capsule.red {
+          background: url(#{$img-path}icon-capsule-red.svg) center center no-repeat;
+          background-size: 36px 50px;
+        }
+
+        &.icon-capsule.blue {
+          background: url(#{$img-path}icon-capsule-blue.svg) center center no-repeat;
+          background-size: 36px 50px;
+        }
+
+        &.icon-house {
+          background: url(#{$img-path}icon-house.svg) center center no-repeat;
+          background-size: 36px 36px;
           padding: 0 10px;
           margin-right: 10px;
           height: 36px;
           width: 52px;
         }
       }
+    }
+
+    .or {
+      text-transform: uppercase;
     }
 
     .prescription {
@@ -83,6 +116,17 @@
       align-items: center;
       display: flex;
     }
+  }
+
+  .why-not {
+    margin-bottom: 30px;
+    margin-left: 20px;
+
+    .ui.checkbox.activity {
+      margin-bottom: 15px;
+      margin-top: 0;
+    }
+
   }
 }
 
@@ -677,50 +721,54 @@ div.page-encounter {
 //Common for Activity pages
 div.page-activity {
 
-    .ui.task.segment {
+  .ui.task.segment {
 
-      .column.core-physical-exam {
-        width: 25%;
+    .column.core-physical-exam {
+      width: 25%;
 
-        a {
-          width: 131px;
-        }
+      a {
+        width: 131px;
       }
     }
+  }
 
-    .tasks-count {
-      background: $color-primary;
-      padding: 5px 15px;
-      font-size: 18px;
+  .tasks-count {
+    background: $color-primary;
+    padding: 5px 15px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .tasks-count.full-screen {
+    color: $color-primary;
+  }
+
+  .ui.full.segment {
+
+    .label {
       font-weight: bold;
-    }
+      margin-bottom: 20px;
 
-    .ui.full.segment {
-
-      .label {
-        font-weight: bold;
-        margin-bottom: 20px;
-
-        &.helper {
-          margin-bottom: 40px;
-        }
-      }
-
-      .form .ui.grid {
-
-        .measurement input {
-          width: 85%;
-        }
-
-        .measurement .unit {
-          width: unset;
-        }
-      }
-
-      .form.muac .ui.grid {
-        margin-top: 30px;
+      &.helper {
+        margin-bottom: 40px;
       }
     }
+
+    .form .ui.grid {
+
+      .measurement input {
+        width: 85%;
+      }
+
+      .measurement .unit {
+        width: unset;
+      }
+    }
+
+    .form.muac .ui.grid {
+      margin-top: 30px;
+    }
+  }
 }
 
 // Prenatal Encounter, Nutrition Encounter and
@@ -821,8 +869,25 @@ div.page-encounter.prenatal {
   }
 }
 
+div.page-activity.trace-contact {
+
+  .contact-details {
+    font-weight: bold;
+
+    .blue {
+      color: $color-primary;
+    }
+  }
+
+  .ui.full.segment .symptoms-form .checkbox-select-input .ui.checkbox.activity {
+    margin-bottom: 25px;
+  }
+
+}
+
 // Acute Illness Activity page
-div.page-activity.acute-illness {
+div.page-activity.acute-illness,
+div.page-activity.trace-contact {
 
   .ui.full.segment {
 
@@ -840,7 +905,11 @@ div.page-activity.acute-illness {
 
     .ui.form.medication-distribution,
     .ui.form.send-to-hc,
-    .ui.form.health-education {
+    .ui.form.isolation,
+    .ui.form.health-education,
+    .ui.form.follow-up,
+    .ui.form.contacts-tracing,
+    .ui.form.symptoms-relief {
 
       h2 {
         text-transform: uppercase;
@@ -875,6 +944,206 @@ div.page-activity.acute-illness {
 
       .label {
         line-height: 40px;
+      }
+    }
+
+    .ui.form.laboratory.covid-testing .instructions {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 40px;
+    }
+
+    .ui.form.contacts-tracing {
+
+      .dual-action {
+        display: flex;
+        justify-content: space-around;
+
+        .button {
+          border-radius: 3px;
+          font-size: 17px;
+          padding: 10px 20px;
+          width: 45%;
+          font-weight: 400;
+        }
+      }
+
+      .search-top .search-helper {
+        margin-bottom: 15px;
+      }
+
+      .ui.form.search {
+        min-height: unset;
+      }
+
+      .ui.form.search input,
+      .ui.form.search input:focus {
+        height: 60px;
+        margin-bottom: 30px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .results-summary {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      .register-helper {
+        margin-top: 20px;
+      }
+
+      .items {
+        color: $color-gray;
+
+        .item .content {
+          padding-top: 0 !important;
+
+          .details {
+            float:left;
+            width: 70%;
+
+            .ui.header {
+              color: $color-gray;
+              font-size: 24px;
+              font-weight: bold;
+              margin-top: 3px;
+              margin-bottom: 7px;
+            }
+
+            p {
+              margin-bottom: 0;
+              font-size: 20px;
+
+              label {
+                font-weight: bold;
+              }
+            }
+          }
+
+          .action {
+            float:left;
+            margin-top: -20px;
+            width: 20%;
+
+            .action-icon-wrapper {
+              height: 50px;
+              width: 50px;
+              margin-top: 60px;
+              margin-left: 50px;
+
+              .action-icon {
+                background-size: 62% 62%;
+                cursor: pointer;
+                display: block;
+                height: 40px;
+                width: 40px;
+                margin-left: 2px;
+                margin-top: 2px;
+
+                &.edit {
+                  background: url(#{$img-path}icon-edit.svg) no-repeat center;
+                }
+
+                &.forward {
+                  background: url(#{$img-path}icon-forward.svg) no-repeat center;
+                }
+
+                &.link {
+                  background: url(#{$img-path}icon-link.svg) no-repeat center;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .items.participants-list {
+        max-height: 480px;
+        overflow-y: auto;
+      }
+
+      .single-action {
+        margin-top: 20px;
+        text-align: center;
+
+        .button {
+          border-radius: 3px;
+          font-size: 17px;
+          padding: 10px 20px;
+          width: 60%;
+          font-weight: 400;
+        }
+      }
+
+      .contact-detail {
+        display: flex;
+        justify-content: flex-start;
+
+        .label {
+          float: left;
+          font-weight: 500;
+          width: 35%;
+        }
+
+        .form-input {
+          margin-bottom: 30px;
+
+          &.text {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+            width: 50%;
+
+            input {
+              text-align: center;
+            }
+          }
+
+          &.date {
+            border: 2px solid $color-light-gray;
+            color: $color-text;
+            height: 2em;
+            padding: 5px;
+            text-align: center;
+            width: 50%;
+          }
+        }
+      }
+
+      .ui.form.registration {
+
+        fieldset {
+          border:none;
+        }
+
+        input,
+        input:focus,
+        .select-input {
+          background: none;
+          font-size: 2rem;
+          border: 2px solid $color-gray;
+          padding: 0 0.5em;
+          line-height: 0.5;
+          text-align: left;
+          height: 50px;
+          width: 100%;
+          color: $color-text;
+
+          &.error {
+            border-color: $color-red;
+          }
+        }
+
+        .dual-action {
+          margin-top: 20px;
+        }
+      }
+    }
+
+    .ui.form.symptoms-relief {
+
+      ul {
+        margin-top: 10px;
       }
     }
 
@@ -1006,8 +1275,10 @@ div.page-activity.acute-illness {
     }
 
     .separator {
+      color: $color-light-gray;
       margin: 30px 0;
       width: 100%;
+      border: 1px solid;
     }
 
     .days-present {
@@ -1049,23 +1320,12 @@ div.page-activity.home-visit {
       }
 
       &.date {
+        border: 2px solid $color-light-gray;
+        color: $color-text;
         height: 2em;
+        padding: 5px;
+        text-align: center;
         width: 50%;
-
-        .dropdown,
-        .dropdown-open {
-          width: 100%;
-        }
-
-        .dropdown--button-container {
-          background: $color-white;
-          border: 2px solid $color-light-gray;
-
-          input {
-            border: 0;
-            padding: 5px;
-          }
-        }
       }
 
       &.hiv-test-result {
@@ -1431,6 +1691,188 @@ div.page-activity.home-visit {
   }
 }
 
+div.page-activity.well-child {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      @include next-steps;
+
+      .helper {
+        font-style: italic;
+      }
+
+      .ui.form {
+        min-height: 140px;
+
+        .separator {
+          color: $color-light-gray;
+          margin: 30px 0;
+          width: 100%;
+          border: 1px solid;
+        }
+      }
+
+      .date {
+        margin-bottom: 20px;
+      }
+
+      .form-input {
+        margin-bottom: 30px;
+
+        &.date {
+          border: 2px solid $color-light-gray;
+          color: $color-text;
+          height: 2em;
+          padding: 5px;
+          text-align: center;
+          width: 50%;
+        }
+
+        &.date.previous {
+          height: 100%;
+          margin-left: 20px;
+          width: 60%;
+        }
+
+        &.measurement {
+          margin-bottom: 10px;
+        }
+      }
+
+      .ui.form.vaccination .header.icon-label {
+        align-items: flex-start;
+        font-weight: 500;
+
+        .description,
+        .dosage {
+          margin-bottom: 30px;
+        }
+      }
+
+      .ui.form.vaccination .history {
+        padding: 20px 0;
+
+        .label {
+          font-weight: 500;
+          margin-left: 10px;
+        }
+      }
+
+      .ui.form.vaccination .history .history-entry {
+        align-items: flex-start;
+        display: flex;
+        font-weight: normal;
+        margin-left: 55px;
+
+        .dose {
+          background: $color-primary;
+          border-radius: 5px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 10px;
+        }
+
+        .date {
+          margin-left: 30px;
+          width: 150px;
+        }
+
+        .update,
+        .delete {
+          border-radius: 3px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 20px;
+          text-transform: uppercase;
+        }
+
+        .update {
+          background: $color-primary;
+        }
+
+        .delete {
+          background: $color-velvet;
+        }
+      }
+
+      .ui.form.vaccination .update.actions {
+        display: flex;
+        justify-content: space-evenly;
+        margin-bottom: 40px;
+
+        .button {
+          font-size: 18px;
+          font-weight: 600;
+          padding: 15px;
+          width: 250px;
+        }
+      }
+
+      .ui.form.vaccination-overview .heading .date {
+        margin-bottom: 0;
+      }
+
+      .why-not {
+        margin-bottom: 30px;
+        margin-left: 20px;
+      }
+
+      .ui.checkbox.activity {
+        margin-top: 30px;
+
+        label {
+          padding-left: 40px;
+        }
+
+        label:before,
+        label:after {
+          left: 0;
+        }
+      }
+
+      .future-vaccinations {
+        border-top: 2px solid $color-gray;
+        padding-top: 30px;
+
+        .next-vaccination {
+          margin-bottom: 10px;
+          margin-top: 15px;
+
+          .name {
+            float: left;
+            font-weight: 500;
+            height: 2em;
+            width: 80%;
+          }
+
+          .due-date {
+            float: left;
+            font-weight: 500;
+            height: 2em;
+            width: 18%;
+          }
+        }
+      }
+
+      .button.review-history {
+        margin-bottom: 30px;
+      }
+    }
+  }
+
+  .ui.full.segment.full-screen {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+
+    .actions {
+      margin: 2.5rem 0 -2.5rem 0;
+    }
+  }
+}
+
 div.page-outcome {
 
   .tasks-count {
@@ -1463,23 +1905,12 @@ div.page-outcome.pregnancy {
       margin-bottom: 30px;
 
       &.date {
+        border: 2px solid $color-light-gray;
+        color: $color-text;
         height: 2em;
+        padding: 5px;
+        text-align: center;
         width: 50%;
-
-        .dropdown,
-        .dropdown-open {
-          width: 100%;
-        }
-
-        .dropdown--button-container {
-          background: $color-white;
-          border: 2px solid $color-light-gray;
-
-          input {
-            border: 0;
-            padding: 5px;
-          }
-        }
       }
 
       &.pregnancy-outcome {
@@ -1530,24 +1961,6 @@ div.page-outcome.pregnancy {
       }
     }
 
-  }
-}
-
-// Acute Illness Outcome page
-div.page-outcome.pregnancy {
-
-  .ui.full.segment {
-
-    .form-input {
-      margin-bottom: 30px;
-
-      &.pregnancy-outcome {
-        background: $color-white;
-        border: 2px solid $color-light-gray;
-        padding: 5px;
-        width: 73%;
-      }
-    }
   }
 }
 
@@ -2046,6 +2459,7 @@ div.page-participant.group {
 div.page-participant.acute-illness,
 div.page-participant.nutrition,
 div.page-participant.home-visit,
+div.page-participant.well-child,
 div.page-participant.prenatal {
     padding-bottom: 35px;
 
@@ -2112,54 +2526,8 @@ div.page-report.acute-illness {
 
   .ui.report.unstackable.items {
 
-    .report-header {
-      background: $color-white;
-      border-top: 9px solid $color-primary;
-      color: $color-text;
-      padding: 20px 20px 0 25px;
-
-      .icon-back {
-        width: 34px;
-        height: 27px;
-        display: block;
-        background: url(#{$img-path}icon-back-dark.svg);
-        position: absolute;
-        background-size: 34px 27px;
-      }
-
-      .ui.report.header {
-        font-size: 30px;
-      }
-
-      .date {
-        font-size: 22px;
-        text-align: center;
-      }
-    }
-
-    .item.person-details {
-      background: $color-white;
-      margin-top: 0;
-      padding: 30px;
-
-      .content {
-
-         h2 {
-           font-size: 27px;
-           font-weight: bold;
-         }
-
-         p {
-           color: $color-text;
-           font-size: 20px;
-           margin-bottom: 0;
-         }
-      }
-    }
-
     div.pane {
       background: $color-white;
-      margin-bottom: 20px;
 
       .pane-heading {
         color: $color-white;
@@ -2183,39 +2551,35 @@ div.page-report.acute-illness {
       }
     }
 
-    div.pane.assessment .pane-content {
+    div.pane.assessment .entry {
+      align-items: center;
+      color: $color-white;
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
 
-      .diagnosis {
-        color: $color-red-alert;
-        margin-bottom: 20px;
-
-        p {
-          margin-bottom: 5px;
-        }
-
-        .diagnosis-date {
-          color: $color-light-blue;
-        }
+      .assessment {
+        max-width: 360px;
       }
 
-      .visit-date {
-        color: $color-light-blue;
-        font-size: 20px;
-        margin-bottom: 5px;
+      &.red {
+        background: $color-velvet;
+        border: 1px solid $color-velvet;
       }
 
-      .treatment-comment {
-        color: $color-text;
-        font-size: 20px;
-        font-weight: normal;
-        line-height: 22px;
-        margin-bottom: 7px;
-        text-transform: none;
-
-        b {
-          margin-left: 5px;
-        }
+      &.orange {
+        background: $color-orange-light;
+        border: 1px solid $color-orange-light;
       }
+
+      &.green {
+        background: $color-cyan;
+        border: 1px solid $color-cyan;
+      }
+    }
+
+    div.pane.symptoms .symptoms-table {
+      padding-top: 20px;
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row {
@@ -2227,7 +2591,7 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row .date {
       color: $color-text;
       font-weight: 600;
-      margin: auto 0 auto auto;
+      margin: auto 0 auto 15px;
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row .timeline {
@@ -2241,7 +2605,7 @@ div.page-report.acute-illness {
         justify-content: center;
 
         img {
-          margin-left: -6px;
+          margin-left: 20px;
           width: 12px;
         }
 
@@ -2255,7 +2619,7 @@ div.page-report.acute-illness {
         }
 
         &.blue {
-          border-left: 1px solid $color-lighter-blue;
+          border-left: 1px solid $color-primary;
         }
       }
     }
@@ -2263,8 +2627,12 @@ div.page-report.acute-illness {
     div.pane.symptoms .symptoms-table .symptoms-table-row ul {
       display: inline-block;
       list-style-type: none;
-      margin: 5px 0;
+      margin: 0 0 0 15px;
       padding: 0;
+
+      &:last-child {
+        margin-bottom: 20px;
+      }
     }
 
     div.pane.symptoms .symptoms-table .symptoms-table-row ul li {
@@ -2291,11 +2659,12 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table {
-      border: 0;
+      border: none;
       color: $color-text;
       margin: 0;
-      padding: 5px 10px;
+      padding: 5px 0;
       text-align: center;
+      width: 100%;
     }
 
     div.pane.physical-exam .ui.table.nutrition-signs {
@@ -2303,43 +2672,84 @@ div.page-report.acute-illness {
     }
 
     div.pane.physical-exam .ui.table thead th {
+      border: none;
+      border-bottom: 1px solid;
+      border-radius: 0;
       background-color: $color-white;
       color: $color-text;
-      width: 135px;
+      font-weight: 600;
+    }
 
-      &.first {
-        text-align: left;
-        width: 190px;
-      }
+    div.pane.physical-exam .ui.table thead .muac {
+      width: 180px;
     }
 
     div.pane.physical-exam .ui.table tbody td {
-      font-weight: 600;
-      width: 135px;
+      border: none;
+      border-bottom: 1px solid;
+      border-radius: 0;
+      font-weight: normal;
 
-      &.first {
-        text-align: left;
-        width: 190px;
-      }
+      .alert {
+        border-radius: 50%;
+        display: inline-block;
+        height: 17px;
+        margin-left: 10px;
+        width: 17px;
 
-      &.red {
-        color: $color-red-alert;
-      }
+        &.red {
+          background: $color-velvet;
+        }
 
-      &.yellow {
-        color: $color-yellow;
-      }
-
-      &.green {
-        color: $color-green;
+        &.orange {
+          background: $color-orange-light;
+        }
       }
     }
 
-    div.pane.actions-taken {
+    div.pane.physical-exam .ui.table tbody tr {
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+
+    div.pane.nutrition-signs .pane-content {
+      font-weight: normal;
+      padding: 0;
+      text-transform: none;
+    }
+
+    div.pane.nutrition-signs .pane-content .heading {
+      font-size: 22px;
+    }
+
+    div.pane.treatment .pane-content {
+      color: $color-text;
+      font-weight: normal;
+      padding: 20px 10px 20px 40px;
+      text-transform: none;
+    }
+
+    div.pane.treatment .pane-content .treatment-comment:before {
+      background: $color-text;
+      border-radius: 4px;
+      content: " ";
+      display: inline-block;
+      height: 8px;
+      margin-bottom: 3px;
+      margin-left: -20px;
+      margin-right: 10px;
+      width: 8px;
+    }
+
+    div.pane.actions-taken,
+    div.pane.next-steps {
       @include next-steps;
     }
 
-    div.pane.actions-taken .instructions {
+    div.pane.actions-taken .instructions,
+    div.pane.next-steps .instructions {
       color: $color-text;
       margin-bottom: 0;
       padding: 20px;
@@ -2356,11 +2766,365 @@ div.page-report.acute-illness {
       }
     }
 
-    div.actions {
-      margin: 0
+  }
+}
+
+div.page-report.acute-illness,
+div.page-encounter.well-child,
+div.page-activity.trace-contact,
+div.page-activity.well-child,
+div.page-report.well-child {
+
+  .details {
+    padding-left: 25px;
+
+    .ui.header {
+      color: $color-white;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    p {
+      color: $color-white;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 0;
+
+      .label {
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+div.page-activity.well-child,
+div.page-report.acute-illness,
+div.page-report.well-child {
+
+  .heading {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px 30px;
+    width: 100%;
+  }
+
+  .heading.vaccination {
+
+    .name {
+      width: 35%;
+    }
+
+    .date {
+      width: 25%;
+    }
+
+    .next-due {
+      width: 20%;
+    }
+
+    .status {
+      width: 20%;
     }
   }
 
+  .entry {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 22px;
+    padding: 15px 30px;
+    width: 100%;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .entry .cell {
+    align-self: center;
+    text-align: left;
+    padding-right: 20px;
+  }
+
+  .entry .cell.status,
+  .milestone .status {
+    border-radius: 10px;
+    color: $color-white;
+    font-size: 17px;
+    margin: 3px 5px;
+    padding: 0 10px;
+    text-transform: uppercase;
+
+    &.completed {
+      background: $color-blue;
+    }
+
+    &.behind,
+    &.off-track,
+    &.ongoing {
+      background: $color-velvet;
+    }
+
+    &.up-to-date,
+    &.on-track,
+    &.resolved {
+      background: $color-cyan;
+    }
+
+    &.ecd-behind {
+      background: $color-orange-light;
+    }
+
+    &.no-status {
+      color: $color-background;
+      background: $color-background;
+    }
+  }
+
+  .entry.no-matches {
+    border-bottom: none;
+    display: block;
+    text-align: center;
+  }
+
+  .entry.vaccination {
+    .name {
+      width: 35%;
+    }
+
+    .date {
+      width: 25%;
+
+      p {
+        margin-bottom: 0;
+      }
+    }
+
+    .next-due {
+      width: 20%;
+
+      &.red {
+        color: $color-velvet
+      }
+    }
+  }
+
+}
+
+div.page-report.acute-illness,
+div.page-report.well-child {
+  background: unset;
+
+  .pane-heading {
+    background: $color-primary;
+    color: $color-white;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px 15px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .patient-info {
+    background: $color-white;
+    display: flex;
+    padding: 30px 40px;
+
+    .details {
+
+      .ui.header {
+        color: $color-primary;
+      }
+
+      p {
+        color: $color-text;
+        font-weight: 300;
+
+        .label {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .pane-content {
+    background: $color-white;
+
+    &.overflow {
+      overflow-y: scroll;
+    }
+
+    .heading.diagnosis {
+
+      .assesment {
+        width: 40%;
+      }
+
+      .status {
+        width: 15%;
+      }
+
+      .date {
+        margin-left: 25px;
+        width: 28%;
+      }
+    }
+
+    .heading.nutrition-signs {
+
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
+    .heading.next-appointment {
+
+      .type {
+        width: 35%;
+      }
+
+      .location {
+        width: 40%;
+      }
+
+      .date {
+        width: 25%;
+      }
+    }
+
+    .entry.diagnosis {
+
+      .assesment {
+        width: 40%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .status {
+        width: 15%;
+        padding-right: 20px;
+      }
+
+      .date {
+        margin-left: 20px;
+        width: 30%;
+      }
+
+      .icon-forward {
+        align-self: center;
+        background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        margin-left: 20px;
+        width: 50px;
+      }
+    }
+
+    .entry.nutrition-signs {
+      .name {
+        width: 65%;
+      }
+
+      .date {
+        width: 35%;
+      }
+    }
+
+    .entry.next-appointment {
+
+      .type {
+        width: 35%;
+      }
+
+      .location {
+        width: 40%;
+      }
+
+      .date {
+        width: 25%;
+      }
+    }
+
+    .ecd-milestones {
+      align-items: stretch;
+      color: $color-dark-gray;
+      display: flex;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+
+      .milestone {
+        min-width: 120px;
+        padding: 30px 0 20px;
+        text-align: center;
+
+        .status {
+          font-size: 13px;
+        }
+
+        .description {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .growth-nutrition-signs {
+      border-bottom: 1px solid $color-text;
+    }
+
+    .growth-charts {
+      margin-bottom: 30px;
+      margin-left: -30px;
+      margin-right: -30px;
+    }
+
+    .growth-photos {
+      padding: 20px 30px;
+
+      .ui.cards .report.card {
+        margin: 0 7px 15px;
+        width: calc(16% - 10px);
+      }
+
+      .ui.cards .report.card .content {
+        background: $color-white;
+        color: $color-dark-gray;
+        text-transform: uppercase;
+        font-size: 17px;
+        font-weight: 500;
+        text-align: center;
+        line-height: 35px;
+        width: 100px;
+      }
+    }
+  }
+
+  .pane-action {
+    border-top: 1px solid $color-text;
+    background: $color-white;
+    padding-bottom: 30px;
+    padding-top: 25px;
+    text-align: center;
+
+    button {
+      font-size: 20px;
+      font-weight: 600;
+      padding: 15px 10px;
+    }
+  }
+
+  .ui.report.unstackable.items .actions {
+    margin: 20px 0 0 0;
+  }
 }
 
 div.page-case-management {
@@ -2409,7 +3173,8 @@ div.page-case-management {
       padding: 20px;
       text-align: center;
 
-      .follow-up-entry {
+      .follow-up-entry,
+      .trace-contact-entry {
         border-bottom: 1px solid $color-text;
         display: flex;
         margin-top: 15px;
@@ -2426,6 +3191,17 @@ div.page-case-management {
           text-align: left;
           width: 200px;
         }
+
+        .icon-forward {
+          align-self: center;
+          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+          background-size: 45px 50px;
+          height: 50px;
+          width: 45px;
+        }
+      }
+
+      .follow-up-entry {
 
         .due {
           align-self: center;
@@ -2471,15 +3247,40 @@ div.page-case-management {
             margin-bottom: 0;
           }
         }
+      }
 
-        .icon-forward {
+      .trace-contact-entry {
+
+        .last-contact,
+        .reporter,
+        .phone-number {
           align-self: center;
-          background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
-          background-size: 45px 50px;
-          height: 50px;
-          width: 45px;
+          font-weight: normal;
+        }
+
+        .name {
+          width: 150px;
+        }
+
+        .last-contact {
+          width: 130px;
+        }
+
+        .reporter {
+          font-size: 20px;
+          width: 145px;
+        }
+
+        .phone-number {
+          width: 200px;
         }
       }
+
+      .trace-contact-entry.heading div {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
     }
   }
 

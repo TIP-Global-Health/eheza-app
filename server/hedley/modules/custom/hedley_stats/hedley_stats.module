@@ -666,7 +666,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
  * @param int $health_center_id
  *   The Health center node ID.
  * @param string $period
- *   The period to calculate. By default it is for one year.
+ *   The period to calculate. By default, it is for one year.
  *
  * @return array
  *   Array with the participants details grouped by clinic type.

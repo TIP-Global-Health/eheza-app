@@ -9,23 +9,15 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , HeightInCm(..)
         , MuacInCm(..)
-        , MuacIndication(..)
-        , NutritionAssesment(..)
+        , NutritionAssessment(..)
         , NutritionMeasurement
         , NutritionMeasurements
         , WeightInKg(..)
         )
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
-    exposing
-        ( calculateZScoreWeightForAge
-        , muacModerate
-        , muacSevere
-        , resolveIndividualValues
-        , zScoreWeightForAgeModerate
-        , zScoreWeightForAgeSevere
-        )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
@@ -36,24 +28,24 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (taskCompleted)
 import RemoteData exposing (RemoteData(..))
-import Utils.NominalDate exposing (diffDays)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (zScoreWeightForAge)
 
 
-generateNutritionAssesment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssesment
-generateNutritionAssesment currentDate zscores db assembled =
+generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment
+generateNutritionAssessment currentDate zscores db assembled =
     let
         measurements =
             assembled.measurements
 
         muacValue =
-            Maybe.map (Tuple.second >> .value) measurements.muac
+            getMeasurementValueFunc measurements.muac
 
         nutritionValue =
-            Maybe.map (Tuple.second >> .value) measurements.nutrition
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .signs
 
         weightValue =
             Maybe.map
@@ -62,26 +54,23 @@ generateNutritionAssesment currentDate zscores db assembled =
                     >> weightValueFunc
                 )
                 measurements.weight
-
-        weightValueFunc =
-            \(WeightInKg kg) -> kg
     in
-    Backend.NutritionEncounter.Utils.generateNutritionAssesment currentDate zscores assembled.participant.person muacValue weightValue nutritionValue db
+    Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue True db
 
 
-expectActivity : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-expectActivity currentDate zscores child isChw data db activity =
+expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+expectActivity currentDate zscores isChw assembled db activity =
     case activity of
         -- Show for children that are at least 6 month old.
         Muac ->
-            ageInMonths currentDate child
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
         NextSteps ->
-            if mandatoryActivitiesCompleted currentDate zscores child isChw data db then
+            if mandatoryActivitiesCompleted currentDate zscores assembled.person isChw assembled db then
                 -- Any assesment require sending to HC.
-                generateNutritionAssesment currentDate zscores db data
+                generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
                     |> not
 
@@ -93,19 +82,19 @@ expectActivity currentDate zscores child isChw data db activity =
             True
 
 
-activityCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-activityCompleted currentDate zscores child isChw data db activity =
+activityCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+activityCompleted currentDate zscores isChw assembled db activity =
     let
         measurements =
-            data.measurements
+            assembled.measurements
     in
     case activity of
         Height ->
-            (not <| expectActivity currentDate zscores child isChw data db Height)
+            (not <| expectActivity currentDate zscores isChw assembled db Height)
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate zscores child isChw data db Muac)
+            (not <| expectActivity currentDate zscores isChw assembled db Muac)
                 || isJust measurements.muac
 
         Nutrition ->
@@ -118,7 +107,7 @@ activityCompleted currentDate zscores child isChw data db activity =
             isJust measurements.weight
 
         NextSteps ->
-            (not <| expectActivity currentDate zscores child isChw data db NextSteps)
+            (not <| expectActivity currentDate zscores isChw assembled db NextSteps)
                 || (isJust measurements.sendToHC
                         && isJust measurements.healthEducation
                         && isJust measurements.contributingFactors
@@ -127,9 +116,9 @@ activityCompleted currentDate zscores child isChw data db activity =
 
 
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryActivitiesCompleted currentDate zscores child isChw data db =
+mandatoryActivitiesCompleted currentDate zscores child isChw assembled db =
     allMandatoryActivities isChw
-        |> List.filter (not << activityCompleted currentDate zscores child isChw data db)
+        |> List.filter (not << activityCompleted currentDate zscores isChw assembled db)
         |> List.isEmpty
 
 
@@ -152,7 +141,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.sendToHC
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentActive, reasonForNotSentCompleted ) =
@@ -179,7 +168,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.healthEducation
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
@@ -206,7 +195,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.contributingFactors
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
             in
             ( taskCompleted form.signs
@@ -217,135 +206,9 @@ nextStepsTasksCompletedFromTotal measurements data task =
             let
                 form =
                     measurements.followUp
-                        |> Maybe.map (Tuple.second >> .value)
+                        |> getMeasurementValueFunc
                         |> followUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option
             , 1
             )
-
-
-resolveIndividualValue :
-    List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-    -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
-    -> (a -> b)
-    -> Maybe ( NominalDate, b )
-resolveIndividualValue measurementsWithDates measurementFunc valueFunc =
-    resolveIndividualValues measurementsWithDates measurementFunc valueFunc
-        |> List.head
-
-
-fromMuacValue : Maybe MuacInCm -> MuacForm
-fromMuacValue saved =
-    { muac = Maybe.map (\(MuacInCm cm) -> cm) saved
-    , muacDirty = False
-    }
-
-
-muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
-muacFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { muac = valueConsideringIsDirtyField form.muacDirty form.muac (value |> (\(MuacInCm cm) -> cm))
-                , muacDirty = form.muacDirty
-                }
-            )
-
-
-toMuacValueWithDefault : Maybe MuacInCm -> MuacForm -> Maybe MuacInCm
-toMuacValueWithDefault saved form =
-    muacFormWithDefault form saved
-        |> toMuacValue
-
-
-toMuacValue : MuacForm -> Maybe MuacInCm
-toMuacValue form =
-    Maybe.map MuacInCm form.muac
-
-
-fromHeightValue : Maybe HeightInCm -> HeightForm
-fromHeightValue saved =
-    { height = Maybe.map (\(HeightInCm cm) -> cm) saved
-    , heightDirty = False
-    }
-
-
-heightFormWithDefault : HeightForm -> Maybe HeightInCm -> HeightForm
-heightFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> (\(HeightInCm cm) -> cm))
-                , heightDirty = form.heightDirty
-                }
-            )
-
-
-toHeightValueWithDefault : Maybe HeightInCm -> HeightForm -> Maybe HeightInCm
-toHeightValueWithDefault saved form =
-    heightFormWithDefault form saved
-        |> toHeightValue
-
-
-toHeightValue : HeightForm -> Maybe HeightInCm
-toHeightValue form =
-    Maybe.map HeightInCm form.height
-
-
-fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> NutritionForm
-fromNutritionValue saved =
-    { signs = Maybe.map EverySet.toList saved }
-
-
-nutritionFormWithDefault : NutritionForm -> Maybe (EverySet ChildNutritionSign) -> NutritionForm
-nutritionFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toNutritionValueWithDefault : Maybe (EverySet ChildNutritionSign) -> NutritionForm -> Maybe (EverySet ChildNutritionSign)
-toNutritionValueWithDefault saved form =
-    nutritionFormWithDefault form saved
-        |> toNutritionValue
-
-
-toNutritionValue : NutritionForm -> Maybe (EverySet ChildNutritionSign)
-toNutritionValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
-
-
-fromWeightValue : Maybe WeightInKg -> WeightForm
-fromWeightValue saved =
-    { weight = Maybe.map (\(WeightInKg cm) -> cm) saved
-    , weightDirty = False
-    }
-
-
-weightFormWithDefault : WeightForm -> Maybe WeightInKg -> WeightForm
-weightFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { weight = valueConsideringIsDirtyField form.weightDirty form.weight (value |> (\(WeightInKg cm) -> cm))
-                , weightDirty = form.weightDirty
-                }
-            )
-
-
-toWeightValueWithDefault : Maybe WeightInKg -> WeightForm -> Maybe WeightInKg
-toWeightValueWithDefault saved form =
-    weightFormWithDefault form saved
-        |> toWeightValue
-
-
-toWeightValue : WeightForm -> Maybe WeightInKg
-toWeightValue form =
-    Maybe.map WeightInKg form.weight

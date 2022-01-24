@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, Model, Msg(..), emptyAcuteIllnessEncounter, emptyModel)
+module Backend.AcuteIllnessEncounter.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -13,17 +13,19 @@ type alias AcuteIllnessEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , sequenceNumber : Int
+    , encounterType : AcuteIllnessEncounterType
     , diagnosis : AcuteIllnessDiagnosis
     , shard : Maybe HealthCenterId
     }
 
 
-emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Int -> Maybe HealthCenterId -> AcuteIllnessEncounter
-emptyAcuteIllnessEncounter participant startDate sequenceNumber shard =
+emptyAcuteIllnessEncounter : IndividualEncounterParticipantId -> NominalDate -> Int -> AcuteIllnessEncounterType -> Maybe HealthCenterId -> AcuteIllnessEncounter
+emptyAcuteIllnessEncounter participant startDate sequenceNumber encounterType shard =
     { participant = participant
     , startDate = startDate
     , sequenceNumber = sequenceNumber
     , endDate = Nothing
+    , encounterType = encounterType
     , diagnosis = NoAcuteIllnessDiagnosis
     , shard = shard
     }
@@ -40,6 +42,7 @@ type alias Model =
     , saveVitals : WebData ()
     , saveAcuteFindings : WebData ()
     , saveMalariaTesting : WebData ()
+    , saveCovidTesting : WebData ()
     , saveSendToHC : WebData ()
     , saveMedicationDistribution : WebData ()
     , saveTravelHistory : WebData ()
@@ -50,10 +53,13 @@ type alias Model =
     , saveTreatmentReview : WebData ()
     , saveMuac : WebData ()
     , saveTreatmentOngoing : WebData ()
-    , saveAcuteIllnessDangerSigns : WebData ()
+    , saveDangerSigns : WebData ()
     , saveNutrition : WebData ()
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
+    , saveCoreExam : WebData ()
+    , saveContactsTracing : WebData ()
+    , saveTraceContact : Dict PersonId (WebData ())
     }
 
 
@@ -66,6 +72,7 @@ emptyModel =
     , saveVitals = NotAsked
     , saveAcuteFindings = NotAsked
     , saveMalariaTesting = NotAsked
+    , saveCovidTesting = NotAsked
     , saveSendToHC = NotAsked
     , saveMedicationDistribution = NotAsked
     , saveTravelHistory = NotAsked
@@ -76,15 +83,26 @@ emptyModel =
     , saveTreatmentReview = NotAsked
     , saveMuac = NotAsked
     , saveTreatmentOngoing = NotAsked
-    , saveAcuteIllnessDangerSigns = NotAsked
+    , saveDangerSigns = NotAsked
     , saveNutrition = NotAsked
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
+    , saveCoreExam = NotAsked
+    , saveContactsTracing = NotAsked
+    , saveTraceContact = Dict.empty
     }
 
 
+type AcuteIllnessEncounterType
+    = AcuteIllnessEncounterNurse
+    | AcuteIllnessEncounterCHW
+
+
 type AcuteIllnessDiagnosis
-    = DiagnosisCovid19
+    = DiagnosisCovid19Suspect
+    | DiagnosisSevereCovid19
+    | DiagnosisPneuminialCovid19
+    | DiagnosisLowRiskCovid19
     | DiagnosisMalariaComplicated
     | DiagnosisMalariaUncomplicated
     | DiagnosisMalariaUncomplicatedAndPregnant
@@ -98,6 +116,13 @@ type AcuteIllnessDiagnosis
     | NoAcuteIllnessDiagnosis
 
 
+type AcuteIllnessProgressReportInitiator
+    = InitiatorEncounterPage
+    | InitiatorIndividualNutritionProgressReport NutritionEncounterId
+    | InitiatorWellChildProgressReport WellChildEncounterId
+    | InitiatorGroupNutritionProgressReport SessionId PersonId
+
+
 type Msg
     = CloseAcuteIllnessEncounter
     | SetAcuteIllnessDiagnosis AcuteIllnessDiagnosis
@@ -108,12 +133,14 @@ type Msg
     | HandleSavedSymptomsRespiratory (WebData ())
     | SaveSymptomsGI PersonId (Maybe SymptomsGIId) SymptomsGIValue
     | HandleSavedSymptomsGI (WebData ())
-    | SaveVitals PersonId (Maybe AcuteIllnessVitalsId) AcuteIllnessVitalsValue
+    | SaveVitals PersonId (Maybe AcuteIllnessVitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
     | SaveAcuteFindings PersonId (Maybe AcuteFindingsId) AcuteFindingsValue
     | HandleSavedAcuteFindings (WebData ())
-    | SaveMalariaTesting PersonId (Maybe MalariaTestingId) MalariaRapidTestResult
+    | SaveMalariaTesting PersonId (Maybe MalariaTestingId) RapidTestResult
     | HandleSavedMalariaTesting (WebData ())
+    | SaveCovidTesting PersonId (Maybe CovidTestingId) CovidTestingValue
+    | HandleSavedCovidTesting (WebData ())
     | SaveSendToHC PersonId (Maybe SendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
@@ -134,11 +161,17 @@ type Msg
     | HandleSavedMuac (WebData ())
     | SaveTreatmentOngoing PersonId (Maybe TreatmentOngoingId) TreatmentOngoingValue
     | HandleSavedTreatmentOngoing (WebData ())
-    | SaveAcuteIllnessDangerSigns PersonId (Maybe AcuteIllnessDangerSignsId) (EverySet AcuteIllnessDangerSign)
-    | HandleSavedAcuteIllnessDangerSigns (WebData ())
+    | SaveDangerSigns PersonId (Maybe AcuteIllnessDangerSignsId) (EverySet AcuteIllnessDangerSign)
+    | HandleSavedDangerSigns (WebData ())
     | SaveNutrition PersonId (Maybe AcuteIllnessNutritionId) (EverySet ChildNutritionSign)
     | HandleSavedNutrition (WebData ())
     | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) (EverySet FollowUpOption)
     | HandleSavedFollowUp (WebData ())
+    | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
+    | HandleSavedCoreExam (WebData ())
+    | SaveContactsTracing PersonId (Maybe AcuteIllnessContactsTracingId) (List ContactTraceItem)
+    | HandleSavedContactsTracing PersonId (List ContactTraceItem) (WebData ())
+    | SaveTraceContact PersonId (Maybe AcuteIllnessTraceContactId) ContactTraceItem
+    | HandleSavedTraceContact PersonId (WebData ())

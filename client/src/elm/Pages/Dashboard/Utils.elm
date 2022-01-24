@@ -449,12 +449,12 @@ countAcuteIllnessCasesByTreatmentApproach encounters =
 {-| There's a difference betweeen non Covid and Covid cases, when making
 a decision if to send patient to health center.
 Covid case has a specific set of parameters, while non Covid has a simple logic -
-only those that Yes answered to quesiton about patien being refered to HC.
+only those that Yes answered to question about patien being referred to HC.
 -}
 wasSentToHCByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
 wasSentToHCByDiagnosis encounter =
     case encounter.diagnosis of
-        DiagnosisCovid19 ->
+        DiagnosisCovid19Suspect ->
             let
                 sentToHCBy114 =
                     EverySet.member Call114 encounter.call114Signs
@@ -469,7 +469,7 @@ wasSentToHCByDiagnosis encounter =
         -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
         -- should be taking care of this.
         _ ->
-            -- All that were refered sent to HC.
+            -- All that were referred sent to HC.
             EverySet.member ReferToHealthCenter encounter.sendToHCSigns
 
 
@@ -481,7 +481,7 @@ if patient was not sent to HC, then it was managed at home.
 wasManagedAtHomeByDiagnosis : AcuteIllnessEncounterDataItem -> Bool
 wasManagedAtHomeByDiagnosis encounter =
     case encounter.diagnosis of
-        DiagnosisCovid19 ->
+        DiagnosisCovid19Suspect ->
             -- HC was contacted, and it suggested home isolation
             -- or CHW monitoring.
             EverySet.member ContactedHealthCenter encounter.hcContactSigns
@@ -492,7 +492,7 @@ wasManagedAtHomeByDiagnosis encounter =
         -- All others, but it must exclude NoAcuteIllnessDiagnosis - invoking function
         -- should be taking care of this.
         _ ->
-            -- All that were not refered to HC are managed at home.
+            -- All that were not referred to HC are managed at home.
             not <| wasSentToHCByDiagnosis encounter
 
 
@@ -527,7 +527,7 @@ countDiagnosedWithCovidCallsTo114 encounters =
         (\encounter ->
             -- Encounter which has produced Covid19 diagnosis,
             -- and there was a call to 114.
-            (encounter.diagnosis == DiagnosisCovid19)
+            (encounter.diagnosis == DiagnosisCovid19Suspect)
                 && EverySet.member Call114 encounter.call114Signs
         )
         encounters
@@ -538,7 +538,7 @@ countDiagnosedWithCovidSentToHC : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidSentToHC encounters =
     -- Encounters which has produced Covid19 diagnosis,
     -- and patient was sent to health center.
-    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+    List.filter (.diagnosis >> (==) DiagnosisCovid19Suspect) encounters
         |> List.filter wasSentToHCByDiagnosis
         |> List.length
 
@@ -547,7 +547,7 @@ countDiagnosedWithCovidManagedAtHome : List AcuteIllnessEncounterDataItem -> Int
 countDiagnosedWithCovidManagedAtHome encounters =
     -- Encounter which has produced Covid19 diagnosis,
     -- and it was decided to manage illness at home.
-    List.filter (.diagnosis >> (==) DiagnosisCovid19) encounters
+    List.filter (.diagnosis >> (==) DiagnosisCovid19Suspect) encounters
         |> List.filter wasManagedAtHomeByDiagnosis
         |> List.length
 
@@ -917,7 +917,7 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db v
             generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         covidEntries =
-            List.filter (.diagnosis >> (==) DiagnosisCovid19) acuteIllnessEntries
+            List.filter (.diagnosis >> (==) DiagnosisCovid19Suspect) acuteIllnessEntries
 
         malariaEntries =
             List.filter
@@ -1304,15 +1304,15 @@ filterStatsByGender currentDate model stats =
     }
 
 
-applyGenderFilter : Model -> List { a | gender : Backend.Person.Model.Gender } -> List { a | gender : Backend.Person.Model.Gender }
+applyGenderFilter : Model -> List { a | gender : Backend.Measurement.Model.Gender } -> List { a | gender : Backend.Measurement.Model.Gender }
 applyGenderFilter model list =
     List.filter
         (\item ->
             case ( item.gender, model.beneficiariesGender ) of
-                ( Backend.Person.Model.Male, Pages.Dashboard.Model.Boys ) ->
+                ( Backend.Measurement.Model.Male, Pages.Dashboard.Model.Boys ) ->
                     True
 
-                ( Backend.Person.Model.Female, Pages.Dashboard.Model.Girls ) ->
+                ( Backend.Measurement.Model.Female, Pages.Dashboard.Model.Girls ) ->
                     True
 
                 _ ->

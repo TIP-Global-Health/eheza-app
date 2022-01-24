@@ -1,8 +1,4 @@
-module ZScore.Model exposing
-    ( Model, Msg(..), MaleAndFemale, ZScoreEntry, emptyModel
-    , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..), ZScore
-    , BmiForAgeTables, ByDaysAndMonths, ChartStartingAges(..), LengthHeightForAgeTables, WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
-    )
+module ZScore.Model exposing (..)
 
 {-| Models our ZScore tables.
 
@@ -20,7 +16,6 @@ module ZScore.Model exposing
 
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.AllDict exposing (AllDict)
-import Utils.NominalDate exposing (Days, Months)
 
 
 {-| This represents the data that we use to calculate ZScores.
@@ -38,6 +33,7 @@ type alias Model =
     , weightForAge : WebData WeightForAgeTables
     , weightForHeight : WebData WeightForHeightTables
     , weightForLength : WebData WeightForLengthTables
+    , headCircumferenceForAge : WebData HeadCircumferenceForAgeTables
     }
 
 
@@ -48,6 +44,7 @@ emptyModel =
     , weightForAge = NotAsked
     , weightForHeight = NotAsked
     , weightForLength = NotAsked
+    , headCircumferenceForAge = NotAsked
     }
 
 
@@ -61,11 +58,13 @@ type Msg
     | FetchWeightForAgeTables
     | FetchWeightForHeightTables
     | FetchWeightForLengthTables
+    | FetchHeadCircumferenceForAgeTables
     | HandleBmiForAgeTables (WebData BmiForAgeTables)
     | HandleLengthHeightForAgeTables (WebData LengthHeightForAgeTables)
     | HandleWeightForAgeTables (WebData WeightForAgeTables)
     | HandleWeightForHeightTables (WebData WeightForHeightTables)
     | HandleWeightForLengthTables (WebData WeightForLengthTables)
+    | HandleHeadCircumferenceForAgeTables (WebData HeadCircumferenceForAgeTables)
 
 
 {-| For now, just make ZScore an alias for a Float ... we could do fancier
@@ -91,6 +90,18 @@ type alias ZScore =
 -}
 
 
+{-| A wrapper for an integer representing days.
+-}
+type Days
+    = Days Int
+
+
+{-| A wrapper for an integer representing months.
+-}
+type Months
+    = Months Int
+
+
 type Length
     = Length Float
 
@@ -113,10 +124,12 @@ type BMI
     = BMI Float
 
 
-type ChartStartingAges
-    = ZeroYears
-    | TwoYears
-    | FiveYears
+type ChartAgeRange
+    = RangeBirthToThirteenWeeks
+    | RangeBirthToTwoYears
+    | RangeBirthToFiveYears
+    | RangeFiveToTenYears
+    | RangeFiveToNineteenYears
 
 
 type alias ByDaysAndMonths value =
@@ -146,6 +159,10 @@ type alias WeightForLengthTables =
 
 type alias WeightForHeightTables =
     MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int)
+
+
+type alias HeadCircumferenceForAgeTables =
+    MaleAndFemale (AllDict Days (ZScoreEntry Centimetres) Int)
 
 
 type alias MaleAndFemale a =

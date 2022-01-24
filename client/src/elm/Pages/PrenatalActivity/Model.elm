@@ -3,9 +3,11 @@ module Pages.PrenatalActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (DropZoneFile, SendToHCForm, emptySendToHCForm)
+import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
+import Pages.PrenatalActivity.Types exposing (..)
 
 
 type Msg
@@ -15,7 +17,7 @@ type Msg
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe String)
       -- PregnancyDatingMsgs
-    | ToggleDateSelector
+    | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
@@ -44,8 +46,8 @@ type Msg
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals
-    | SetVitalsIntMeasurement (Maybe Int -> VitalsForm -> VitalsForm) String
-    | SetVitalsFloatMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
@@ -110,7 +112,7 @@ type Msg
     | SetAccompanyToHC Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
-    | AppointmentToggleDateSelector
+    | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) (Maybe NextStepsTask)
 
@@ -148,14 +150,6 @@ emptyModel =
     , showAlertsDialog = False
     , warningPopupState = Nothing
     }
-
-
-type NextStepsTask
-    = NextStepsAppointmentConfirmation
-    | NextStepsFollowUp
-    | NextStepsSendToHC
-    | NextStepsHealthEducation
-    | NextStepsNewbornEnrolment
 
 
 
@@ -322,24 +316,18 @@ type ObstetricHistoryStep
     | ObstetricHistorySecondStep
 
 
-type HistoryTask
-    = Obstetric
-    | Medical
-    | Social
-
-
 type alias PregnancyDatingForm =
     { lmpRange : Maybe LmpRange
     , lmpDate : Maybe Date
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
-    , isDateSelectorOpen : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing False
+    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias ObstetricFormFirstStep =
@@ -464,12 +452,6 @@ emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
 
 
-type LmpRange
-    = OneMonth
-    | ThreeMonth
-    | SixMonth
-
-
 encodeLmpRange : LmpRange -> String
 encodeLmpRange range =
     case range of
@@ -499,43 +481,6 @@ decodeLmpRange s =
             Nothing
 
 
-type ExaminationTask
-    = BreastExam
-    | CorePhysicalExam
-    | NutritionAssessment
-    | ObstetricalExam
-    | Vitals
-
-
-type alias VitalsForm =
-    { sysBloodPressure : Maybe Float
-    , sysBloodPressureDirty : Bool
-    , diaBloodPressure : Maybe Float
-    , diaBloodPressureDirty : Bool
-    , heartRate : Maybe Int
-    , heartRateDirty : Bool
-    , respiratoryRate : Maybe Int
-    , respiratoryRateDirty : Bool
-    , bodyTemperature : Maybe Float
-    , bodyTemperatureDirty : Bool
-    }
-
-
-emptyVitalsForm : VitalsForm
-emptyVitalsForm =
-    { sysBloodPressure = Nothing
-    , sysBloodPressureDirty = False
-    , diaBloodPressure = Nothing
-    , diaBloodPressureDirty = False
-    , heartRate = Nothing
-    , heartRateDirty = False
-    , respiratoryRate = Nothing
-    , respiratoryRateDirty = False
-    , bodyTemperature = Nothing
-    , bodyTemperatureDirty = False
-    }
-
-
 type alias NutritionAssessmentForm =
     { height : Maybe Float
     , heightDirty : Bool
@@ -558,7 +503,6 @@ emptyNutritionAssessmentForm =
 
 
 type alias CorePhysicalExamForm =
-    -- Needs to be redefined to use EverySet to allow multiple signs.
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
     , neck : Maybe (List NeckCPESign)
@@ -630,11 +574,6 @@ emptyFamilyPlanningForm =
     FamilyPlanningForm Nothing
 
 
-type PatientProvisionsTask
-    = Medication
-    | Resources
-
-
 type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
@@ -696,13 +635,13 @@ type alias PregnancyTestingForm =
 
 type alias AppointmentConfirmationForm =
     { appointmentDate : Maybe Date
-    , isDateSelectorOpen : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyAppointmentConfirmationForm : AppointmentConfirmationForm
 emptyAppointmentConfirmationForm =
-    AppointmentConfirmationForm Nothing False
+    AppointmentConfirmationForm Nothing Nothing
 
 
 type alias FollowUpForm =

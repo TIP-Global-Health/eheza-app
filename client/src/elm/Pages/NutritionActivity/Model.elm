@@ -9,13 +9,13 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
-    | SetWarningPopupState (List NutritionAssesment)
+    | SetWarningPopupState (List NutritionAssessment)
     | SetHeight String
     | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
     | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetNutritionSign ChildNutritionSign
-    | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
+    | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition )) (EverySet NutritionAssessment)
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String
@@ -31,7 +31,7 @@ type Msg
     | SetContributingFactorsSign ContributingFactorsSign
     | SaveContributingFactors PersonId (Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (EverySet NutritionAssesment) (Maybe NextStepsTask)
+    | SaveFollowUp PersonId (Maybe ( NutritionFollowUpId, NutritionFollowUp )) (EverySet NutritionAssessment) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -41,7 +41,7 @@ type alias Model =
     , photoData : PhotoData
     , weightData : WeightData
     , nextStepsData : NextStepsData
-    , warningPopupState : List NutritionAssesment
+    , warningPopupState : List NutritionAssessment
     }
 
 
@@ -64,14 +64,7 @@ type alias MuacData =
 
 emptyMuacData : MuacData
 emptyMuacData =
-    { form = MuacForm Nothing False
-    }
-
-
-type alias MuacForm =
-    { muac : Maybe Float
-    , muacDirty : Bool
-    }
+    MuacData emptyMuacForm
 
 
 type alias HeightData =
@@ -81,14 +74,7 @@ type alias HeightData =
 
 emptyHeightData : HeightData
 emptyHeightData =
-    { form = HeightForm Nothing False
-    }
-
-
-type alias HeightForm =
-    { height : Maybe Float
-    , heightDirty : Bool
-    }
+    HeightData emptyHeightForm
 
 
 type alias NutritionData =
@@ -98,13 +84,7 @@ type alias NutritionData =
 
 emptyNutritionData : NutritionData
 emptyNutritionData =
-    { form = NutritionForm Nothing
-    }
-
-
-type alias NutritionForm =
-    { signs : Maybe (List ChildNutritionSign)
-    }
+    NutritionData emptyNutritionForm
 
 
 type alias PhotoData =
@@ -114,13 +94,7 @@ type alias PhotoData =
 
 emptyPhotoData : PhotoData
 emptyPhotoData =
-    { form = PhotoForm Nothing
-    }
-
-
-type alias PhotoForm =
-    { url : Maybe PhotoUrl
-    }
+    PhotoData emptyPhotoForm
 
 
 type alias WeightData =
@@ -130,14 +104,7 @@ type alias WeightData =
 
 emptyWeightData : WeightData
 emptyWeightData =
-    { form = WeightForm Nothing False
-    }
-
-
-type alias WeightForm =
-    { weight : Maybe Float
-    , weightDirty : Bool
-    }
+    WeightData emptyWeightForm
 
 
 type alias NextStepsData =

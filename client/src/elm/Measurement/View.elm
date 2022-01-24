@@ -2,13 +2,16 @@ module Measurement.View exposing
     ( renderDatePart
     , viewActionTakenLabel
     , viewChild
+    , viewColorAlertIndication
     , viewContributingFactorsForm
     , viewFollowUpForm
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
     , viewMother
-    , viewMuacIndication
-    , viewSendToHCForm
+    , viewReferToProgramForm
+    , viewSendToHealthCenterForm
+    , viewSendToHospitalForm
+    , viewVitalsForm
     , zScoreForHeightOrLength
     )
 
@@ -16,17 +19,28 @@ module Measurement.View exposing
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import Activity.Utils exposing (generateNutritionAssesment)
+import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils
+    exposing
+        ( currentValues
+        , getMeasurementValueFunc
+        , heightValueFunc
+        , mapMeasurementData
+        , muacIndication
+        , muacValueFunc
+        , nutritionSignToString
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssesmentForBackend)
-import Backend.Person.Model exposing (Gender, Person)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -46,6 +60,8 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewConditionalAlert
+        , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -57,9 +73,9 @@ import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (Days(..), diffDays, renderDate)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import Utils.NominalDate exposing (renderDate)
+import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
+import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 {-| We need the current date in order to immediately construct a ZScore for the
@@ -76,9 +92,9 @@ viewChild :
     -> EditableSession
     -> ModelIndexedDb
     -> ModelChild
-    -> PreviousMeasurementsValue
+    -> PreviousValuesSet
     -> Html MsgChild
-viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousIndividualMeasurements =
+viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
     case activity of
         ChildFbf ->
             viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
@@ -87,33 +103,18 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            let
-                previousIndividualHeight =
-                    previousIndividualMeasurements.height
-                        |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
-            in
-            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousIndividualHeight zscores model
+            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
 
         Muac ->
-            let
-                previousIndividualMuac =
-                    previousIndividualMeasurements.muac
-                        |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
-            in
-            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousIndividualMuac zscores model
+            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
+            viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
 
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            let
-                previousIndividualWeight =
-                    previousIndividualMeasurements.weight
-                        |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
-            in
-            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousIndividualWeight zscores model
+            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
         ContributingFactors ->
             viewContributingFactors language currentDate (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
@@ -160,7 +161,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.CentimeterShorthand
     , inputValue = .height
-    , storedValue = .value >> (\(HeightInCm val) -> val)
+    , storedValue = .value >> heightValueFunc
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -179,9 +180,9 @@ muacFormConfig =
     , constraints = getInputConstraintsMuac
     , unit = Translate.CentimeterShorthand
     , inputValue = .muac
-    , storedValue = .value >> (\(MuacInCm val) -> val)
+    , storedValue = .value >> muacValueFunc
     , dateMeasured = .dateMeasured
-    , viewIndication = Just <| \language val -> viewMuacIndication language (muacIndication (MuacInCm val))
+    , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
     , saveMsg = \id value -> SendOutMsgChild <| SaveMuac id (MuacInCm value)
     }
@@ -198,7 +199,7 @@ weightFormConfig =
     , constraints = getInputConstraintsWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
-    , storedValue = .value >> (\(WeightInKg val) -> val)
+    , storedValue = .value >> weightValueFunc
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
@@ -215,23 +216,23 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate isChw child measurements previousIndividualValue zscores model =
+viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm config language currentDate isChw child measurements previousValue zscores model =
     let
         -- What is the string input value from the form?
         inputValue =
@@ -263,18 +264,6 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
         -- measurement we haven't saved yet, this will be Nothing.
         savedMeasurement =
             measurements.current
-
-        previousGroupValue =
-            measurements.previous
-                |> Maybe.map
-                    (\( _, measurement ) ->
-                        ( measurement |> config.dateMeasured
-                        , measurement |> config.storedValue
-                        )
-                    )
-
-        previousValue =
-            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
 
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that
@@ -425,27 +414,27 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
         ]
 
 
-muacColor : MuacIndication -> Attribute any
+muacColor : ColorAlertIndication -> Attribute any
 muacColor muac =
     class <|
         case muac of
-            MuacRed ->
+            ColorAlertRed ->
                 "label-red"
 
-            MuacYellow ->
+            ColorAlertYellow ->
                 "label-yellow"
 
-            MuacGreen ->
+            ColorAlertGreen ->
                 "label-green"
 
 
-viewMuacIndication : Language -> MuacIndication -> Html any
-viewMuacIndication language muac =
+viewColorAlertIndication : Language -> ColorAlertIndication -> Html any
+viewColorAlertIndication language muac =
     p
         [ muacColor muac
         , class "label-form"
         ]
-        [ translate language (Translate.MuacIndication muac)
+        [ translate language (Translate.ColorAlertIndication muac)
             |> String.toUpper
             |> text
         ]
@@ -521,7 +510,7 @@ viewPhoto language measurement photo =
                     Just url
 
                 Nothing ->
-                    Maybe.map (Tuple.second >> .value)
+                    getMeasurementValueFunc
                         measurement.current
     in
     divKeyed
@@ -616,8 +605,17 @@ saveButton language msg measurement maybeDivClass =
     ]
 
 
-viewNutritionSigns : Language -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition )) -> EverySet ChildNutritionSign -> Html MsgChild
-viewNutritionSigns language measurement signs =
+viewNutritionSigns :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> PersonId
+    -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition ))
+    -> OfflineSession
+    -> ModelIndexedDb
+    -> NutritionValue
+    -> Html MsgChild
+viewNutritionSigns language currentDate zscores childId measurement offlineSession db value =
     let
         activity =
             ChildActivity NutritionSigns
@@ -625,17 +623,18 @@ viewNutritionSigns language measurement signs =
         existingId =
             Maybe.map Tuple.first measurement.current
 
+        assesment =
+            generateNutritionAssessment currentDate zscores childId db offlineSession
+                |> nutritionAssessmentForBackend
+
         saveMsg =
-            if EverySet.isEmpty signs then
+            if EverySet.isEmpty value.signs then
                 Nothing
 
             else
-                Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
+                Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
-    div
-        [ class "ui full segment nutrition"
-        , id "nutritionSignsEntryForm"
-        ]
+    div [ class "ui full segment nutrition" ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
                 [ text <| translate language (Translate.ActivitiesTitle activity)
@@ -643,7 +642,7 @@ viewNutritionSigns language measurement signs =
             , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
                 p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
-                    :: viewNutritionSignsSelector language signs
+                    :: viewNutritionSignsSelector language value.signs
             ]
         , div [ class "actions" ] <|
             saveButton
@@ -686,7 +685,7 @@ viewNutritionSignsSelectorItem : Language -> EverySet ChildNutritionSign -> Chil
 viewNutritionSignsSelectorItem language nutritionSigns sign =
     let
         inputId =
-            encodeNutritionSignAsString sign
+            nutritionSignToString sign
 
         isChecked =
             EverySet.member sign nutritionSigns
@@ -849,7 +848,7 @@ viewContributingFactors language currentDate measurement form =
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         formContent =
             contributingFactorsFormWithDefault form saved
@@ -905,11 +904,11 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         assesment =
-            generateNutritionAssesment currentDate zscores childId db offlineSession
-                |> nutritionAssesmentForBackend
+            generateNutritionAssessment currentDate zscores childId db offlineSession
+                |> nutritionAssessmentForBackend
 
         form_ =
             { form | assesment = Just assesment }
@@ -953,7 +952,7 @@ viewHealthEducation language currentDate measurement form_ =
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         form =
             healthEducationFormWithDefault form_ saved
@@ -1084,13 +1083,13 @@ viewSendToHC language currentDate measurement form_ =
             Maybe.map Tuple.first measurement.current
 
         saved =
-            Maybe.map (Tuple.second >> .value) measurement.current
+            getMeasurementValueFunc measurement.current
 
         form =
             sendToHCFormWithDefault form_ saved
 
         formContent =
-            viewSendToHCForm language
+            viewSendToHealthCenterForm language
                 currentDate
                 SetReferToHealthCenter
                 SetReasonForNotSendingToHC
@@ -1139,7 +1138,7 @@ viewSendToHC language currentDate measurement form_ =
         ]
 
 
-viewSendToHCForm :
+viewSendToHealthCenterForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
@@ -1148,8 +1147,43 @@ viewSendToHCForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToHealthCenterForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHealthCenter
+
+
+viewSendToHospitalForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToHospitalForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHospital
+
+
+viewSendToFacilityForm :
+    Language
+    -> NominalDate
+    -> ReferralFacility
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
+        headerHelper =
+            case facility of
+                FacilityHealthCenter ->
+                    emptyNode
+
+                FacilityHospital ->
+                    viewCustomLabel language Translate.AcuteIllnessHighRiskCaseHelper "." "instructions"
+
         sendToHCSection =
             let
                 sentToHealthCenter =
@@ -1158,19 +1192,21 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
 
                 reasonForNotSendingToHCInput =
                     if not sentToHealthCenter then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
-                            []
-                            form.reasonForNotSendingToHC
-                            setReasonForNotSendingToHCMsg
-                            Translate.ReasonForNotSendingToHC
+                        [ div [ class "why-not" ]
+                            [ viewQuestionLabel language Translate.WhyNot
+                            , viewCheckBoxSelectInput language
+                                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                                []
+                                form.reasonForNotSendingToHC
+                                setReasonForNotSendingToHCMsg
+                                Translate.ReasonForNotSendingToHC
+                            ]
                         ]
 
                     else
                         []
             in
-            [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion
+            [ viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
             , viewBoolInput
                 language
                 form.referToHealthCenter
@@ -1206,15 +1242,276 @@ viewSendToHCForm language currentDate setReferToHealthCenterMsg setReasonForNotS
                 |> Maybe.withDefault []
     in
     div [ class "ui form send-to-hc" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        [ headerHelper
+        , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
-            [ viewActionTakenLabel language Translate.CompleteHCReferralForm "icon-forms" Nothing
-            , viewActionTakenLabel language Translate.SendPatientToHC "icon-shuttle" Nothing
+            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+            , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
             ]
         ]
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection
+
+
+viewReferToProgramForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
+    div [ class "ui form send-to-hc" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewActionTakenLabel language Translate.ReferToProgramAction "icon-forms" Nothing
+            , viewActionTakenLabel language Translate.EnrollToProgramAction "icon-shuttle" Nothing
+            ]
+        , viewQuestionLabel language Translate.EnrollToProgramQuestion
+        , viewBoolInput
+            language
+            form.enrollToNutritionProgram
+            setEnrollToNutritionProgramMsg
+            "enroll-to-program"
+            Nothing
+        , viewQuestionLabel language Translate.ReferToProgramQuestion
+        , viewBoolInput
+            language
+            form.referToNutritionProgram
+            setReferToNutritionProgramMsg
+            "refer-to-program"
+            Nothing
+        ]
+
+
+viewVitalsForm : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> Html msg
+viewVitalsForm language currentDate config form =
+    let
+        sysBloodPressureUpdateFunc value form_ =
+            { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
+
+        diaBloodPressureUpdateFunc value form_ =
+            { form_ | diaBloodPressure = value, diaBloodPressureDirty = True }
+
+        heartRateUpdateFunc value form_ =
+            { form_ | heartRate = value, heartRateDirty = True }
+
+        respiratoryRateUpdateFunc value form_ =
+            { form_ | respiratoryRate = value, respiratoryRateDirty = True }
+
+        bodyTemperatureUpdateFunc value form_ =
+            { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
+
+        ageInYears =
+            Maybe.map
+                (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
+                config.birthDate
+
+        bloodPressureSection =
+            Maybe.map
+                (\ageYears ->
+                    if ageYears < 12 then
+                        -- Blood presure is taken for patients that are
+                        -- 12 years old, or older.
+                        []
+
+                    else
+                        let
+                            ( redAlertsSys, redAlertsDia ) =
+                                let
+                                    ( redAlertHighSys, redAlertHighDia ) =
+                                        if ageYears < 14 then
+                                            ( 135, 88 )
+
+                                        else
+                                            ( 140, 90 )
+                                in
+                                ( [ [ (<) redAlertHighSys ]
+                                  , [ (>) 110 ]
+                                  ]
+                                , [ [ (<) redAlertHighDia ]
+                                  , [ (>) 70 ]
+                                  ]
+                                )
+                        in
+                        [ div [ class "ui grid" ]
+                            [ div [ class "eleven wide column" ]
+                                [ viewLabel language Translate.BloodPressure ]
+                            ]
+                        , div [ class "ui grid systolic" ]
+                            [ div [ class "twelve wide column" ]
+                                [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.sysBloodPressure
+                                    redAlertsSys
+                                    []
+                                ]
+                            ]
+                        , viewMeasurementInput
+                            language
+                            form.sysBloodPressure
+                            (config.setFloatInputMsg sysBloodPressureUpdateFunc)
+                            "sys-blood-pressure"
+                            Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language config.sysBloodPressurePreviousValue Translate.MMHGUnit
+                        , div [ class "ui grid" ]
+                            [ div [ class "twelve wide column" ]
+                                [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.diaBloodPressure
+                                    redAlertsDia
+                                    []
+                                ]
+                            ]
+                        , viewMeasurementInput
+                            language
+                            form.diaBloodPressure
+                            (config.setFloatInputMsg diaBloodPressureUpdateFunc)
+                            "dia-blood-pressure"
+                            Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language config.diaBloodPressurePreviousValue Translate.MMHGUnit
+                        , separator
+                        ]
+                )
+                ageInYears
+                |> Maybe.withDefault []
+
+        heartRateSection =
+            let
+                ( redAlerts, yellowAlerts ) =
+                    case config.invokationModule of
+                        InvokationModulePrenatal ->
+                            ( [ [ (>) 40 ], [ (<=) 120 ] ]
+                            , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                            )
+
+                        _ ->
+                            Maybe.map
+                                (\ageYears ->
+                                    let
+                                        ( redAlertMinValue, redAlertMaxValue ) =
+                                            if ageYears < 1 then
+                                                ( 110, 160 )
+
+                                            else if ageYears < 2 then
+                                                ( 100, 150 )
+
+                                            else if ageYears < 5 then
+                                                ( 95, 140 )
+
+                                            else if ageYears < 12 then
+                                                ( 80, 120 )
+
+                                            else
+                                                ( 60, 100 )
+                                    in
+                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                )
+                                ageInYears
+                                |> Maybe.withDefault ( [], [] )
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.HeartRate ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.heartRate
+                        redAlerts
+                        yellowAlerts
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                (Maybe.map toFloat form.heartRate)
+                (config.setIntInputMsg heartRateUpdateFunc)
+                "heart-rate"
+                Translate.BpmUnitLabel
+            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BpmUnitLabel
+            , separator
+            ]
+
+        respiratoryRateSection =
+            let
+                ( redAlerts, yellowAlerts ) =
+                    case config.invokationModule of
+                        InvokationModulePrenatal ->
+                            ( [ [ (>) 12 ], [ (<) 30 ] ]
+                            , [ [ (<=) 21, (>=) 30 ] ]
+                            )
+
+                        _ ->
+                            Maybe.map
+                                (\ageYears ->
+                                    let
+                                        ( redAlertMinValue, redAlertMaxValue ) =
+                                            if ageYears < 1 then
+                                                ( 30, 49 )
+
+                                            else if ageYears < 5 then
+                                                ( 24, 39 )
+
+                                            else
+                                                ( 18, 30 )
+                                    in
+                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                )
+                                ageInYears
+                                |> Maybe.withDefault ( [], [] )
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.RespiratoryRate ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.respiratoryRate
+                        redAlerts
+                        yellowAlerts
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                (Maybe.map toFloat form.respiratoryRate)
+                (config.setIntInputMsg respiratoryRateUpdateFunc)
+                "respiratory-rate"
+                Translate.BpmUnitLabel
+            , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BpmUnitLabel
+            , separator
+            ]
+
+        bodyTemperatureSection =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.BodyTemperature ]
+                , div [ class "four wide column" ]
+                    [ viewConditionalAlert form.bodyTemperature
+                        [ [ (>) 35 ], [ (<=) 37.5 ] ]
+                        []
+                    ]
+                ]
+            , viewMeasurementInput
+                language
+                form.bodyTemperature
+                (config.setFloatInputMsg bodyTemperatureUpdateFunc)
+                "body-temperature"
+                Translate.Celsius
+            , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
+            ]
+
+        separator =
+            div [ class "separator" ] []
+
+        content =
+            case config.mode of
+                VitalsFormBasic ->
+                    respiratoryRateSection ++ bodyTemperatureSection
+
+                VitalsFormFull ->
+                    bloodPressureSection
+                        ++ heartRateSection
+                        ++ respiratoryRateSection
+                        ++ bodyTemperatureSection
+    in
+    div [ class <| "ui form " ++ config.formClass ]
+        content
 
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any

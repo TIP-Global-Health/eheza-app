@@ -32,6 +32,20 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
   protected $dateFields = [];
 
   /**
+   * Fields that are list of dates. This is a sub list of $multiFields.
+   *
+   * @var array
+   */
+  protected $multiDateFields = [];
+
+  /**
+   * Fields that represent Entity References. This is a sub list of $fields.
+   *
+   * @var array
+   */
+  protected $entityFields = [];
+
+  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
@@ -67,6 +81,10 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       if (in_array($field_name, $this->dateFields)) {
         $public_fields[$public_name]['process_callbacks'] = [[$this, 'renderDate2']];
       }
+
+      if (in_array($field_name, $this->entityFields)) {
+        $public_fields[$public_name]['sub_property'] = 'field_uuid';
+      }
     }
 
     return $public_fields;
@@ -96,6 +114,11 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
     foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
       hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
+    }
+
+    foreach ($this->entityFields as $field_name) {
+      $public_name = str_replace('field_', '', $field_name);
+      hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "$field_name.{$field_name}_target_id", "uuid_$public_name");
     }
 
     foreach ($this->multiFields as $field_name) {
@@ -128,10 +151,28 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
         $item->{$public_name} = explode(',', $item->{$public_name});
       }
 
+      foreach ($this->entityFields as $field_name) {
+        $public_name = str_replace('field_', '', $field_name);
+        $uuid_name = "uuid_$public_name";
+        $item->{$public_name} = $item->{$uuid_name};
+        unset($item->{$uuid_name});
+      }
+
       foreach ($this->dateFields as $field_name) {
         $public_name = str_replace('field_', '', $field_name);
         $date = explode(' ', $item->{$public_name});
         $item->{$public_name} = !empty($date[0]) ? $date[0] : NULL;
+      }
+
+      foreach ($this->multiDateFields as $field_name) {
+        $public_name = str_replace('field_', '', $field_name);
+        $dates = [];
+        foreach ($item->{$public_name} as $raw_date) {
+          $date = explode(' ', $raw_date);
+          $dates[] = !empty($date[0]) ? $date[0] : NULL;
+        }
+
+        $item->{$public_name} = $dates;
       }
     }
 

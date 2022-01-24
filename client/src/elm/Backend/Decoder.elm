@@ -18,6 +18,7 @@ import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Village.Decoder exposing (decodeVillage)
+import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid)
 
@@ -33,6 +34,12 @@ decodeRevision =
                     "acute_findings" ->
                         decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
 
+                    "acute_illness_contacts_tracing" ->
+                        decodeWithUuid AcuteIllnessContactsTracingRevision decodeAcuteIllnessContactsTracing
+
+                    "acute_illness_core_exam" ->
+                        decodeWithUuid AcuteIllnessCoreExamRevision decodeAcuteIllnessCoreExam
+
                     "acute_illness_danger_signs" ->
                         decodeWithUuid AcuteIllnessDangerSignsRevision decodeAcuteIllnessDangerSigns
 
@@ -47,6 +54,9 @@ decodeRevision =
 
                     "acute_illness_nutrition" ->
                         decodeWithUuid AcuteIllnessNutritionRevision decodeAcuteIllnessNutrition
+
+                    "acute_illness_trace_contact" ->
+                        decodeWithUuid AcuteIllnessTraceContactRevision decodeAcuteIllnessTraceContact
 
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
@@ -89,6 +99,9 @@ decodeRevision =
 
                     "counseling_topic" ->
                         decodeWithUuid CounselingTopicRevision decodeCounselingTopic
+
+                    "covid_testing" ->
+                        decodeWithUuid CovidTestingRevision decodeCovidTesting
 
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
@@ -293,6 +306,87 @@ decodeRevision =
 
                     "weight" ->
                         decodeWithUuid WeightRevision decodeWeight
+
+                    "well_child_albendazole" ->
+                        decodeWithUuid WellChildAlbendazoleRevision decodeWellChildAlbendazole
+
+                    "well_child_bcg_immunisation" ->
+                        decodeWithUuid WellChildBCGImmunisationRevision decodeWellChildBCGImmunisation
+
+                    "well_child_contributing_factors" ->
+                        decodeWithUuid WellChildContributingFactorsRevision decodeWellChildContributingFactors
+
+                    "well_child_dtp_immunisation" ->
+                        decodeWithUuid WellChildDTPImmunisationRevision decodeWellChildDTPImmunisation
+
+                    "well_child_ecd" ->
+                        decodeWithUuid WellChildECDRevision decodeWellChildECD
+
+                    "well_child_encounter" ->
+                        decodeWithUuid WellChildEncounterRevision decodeWellChildEncounter
+
+                    "well_child_follow_up" ->
+                        decodeWithUuid WellChildFollowUpRevision decodeWellChildFollowUp
+
+                    "well_child_head_circumference" ->
+                        decodeWithUuid WellChildHeadCircumferenceRevision decodeWellChildHeadCircumference
+
+                    "well_child_health_education" ->
+                        decodeWithUuid WellChildHealthEducationRevision decodeWellChildHealthEducation
+
+                    "well_child_height" ->
+                        decodeWithUuid WellChildHeightRevision decodeWellChildHeight
+
+                    "well_child_hpv_immunisation" ->
+                        decodeWithUuid WellChildHPVImmunisationRevision decodeWellChildHPVImmunisation
+
+                    "well_child_ipv_immunisation" ->
+                        decodeWithUuid WellChildIPVImmunisationRevision decodeWellChildIPVImmunisation
+
+                    "well_child_mebendezole" ->
+                        decodeWithUuid WellChildMebendezoleRevision decodeWellChildMebendezole
+
+                    "well_child_mr_immunisation" ->
+                        decodeWithUuid WellChildMRImmunisationRevision decodeWellChildMRImmunisation
+
+                    "well_child_muac" ->
+                        decodeWithUuid WellChildMuacRevision decodeWellChildMuac
+
+                    "well_child_next_visit" ->
+                        decodeWithUuid WellChildNextVisitRevision decodeWellChildNextVisit
+
+                    "well_child_nutrition" ->
+                        decodeWithUuid WellChildNutritionRevision decodeWellChildNutrition
+
+                    "well_child_opv_immunisation" ->
+                        decodeWithUuid WellChildOPVImmunisationRevision decodeWellChildOPVImmunisation
+
+                    "well_child_pcv13_immunisation" ->
+                        decodeWithUuid WellChildPCV13ImmunisationRevision decodeWellChildPCV13Immunisation
+
+                    "well_child_photo" ->
+                        decodeWithUuid WellChildPhotoRevision decodeWellChildPhoto
+
+                    "well_child_pregnancy_summary" ->
+                        decodeWithUuid WellChildPregnancySummaryRevision decodeWellChildPregnancySummary
+
+                    "well_child_rotarix_immunisation" ->
+                        decodeWithUuid WellChildRotarixImmunisationRevision decodeWellChildRotarixImmunisation
+
+                    "well_child_send_to_hc" ->
+                        decodeWithUuid WellChildSendToHCRevision decodeWellChildSendToHC
+
+                    "well_child_symptoms_review" ->
+                        decodeWithUuid WellChildSymptomsReviewRevision decodeWellChildSymptomsReview
+
+                    "well_child_vitals" ->
+                        decodeWithUuid WellChildVitalsRevision decodeWellChildVitals
+
+                    "well_child_vitamin_a" ->
+                        decodeWithUuid WellChildVitaminARevision decodeWellChildVitaminA
+
+                    "well_child_weight" ->
+                        decodeWithUuid WellChildWeightRevision decodeWellChildWeight
 
                     _ ->
                         fail <|

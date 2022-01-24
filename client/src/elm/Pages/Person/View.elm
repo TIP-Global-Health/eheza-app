@@ -1,10 +1,11 @@
-module Pages.Person.View exposing (view, viewCreateEditForm)
+module Pages.Person.View exposing (view, viewCreateEditForm, viewSelectInput, viewTextInput)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder
     exposing
@@ -14,12 +15,11 @@ import Backend.Person.Encoder
         , encodeModeOfDelivery
         , encodeUbudehe
         )
-import Backend.Person.Form exposing (PersonForm, applyDefaultValues, expectedAgeByForm, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
 import Backend.Person.Model
     exposing
         ( ExpectedAge(..)
         , ExpectedGender(..)
-        , Gender(..)
         , Initiator(..)
         , ParticipantDirectoryOperation(..)
         , Person
@@ -35,13 +35,13 @@ import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
-import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
+import Date exposing (Date, Unit(..))
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -57,7 +57,7 @@ import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo)
-import Utils.Html exposing (thumbnailImage, viewLoading)
+import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
@@ -404,6 +404,11 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                     PrenatalNextStepsActivityOrigin _ ->
                         -- We do not allow this actions when registering newborn child.
                         emptyNode
+
+                    AcuteIllnessContactsTracingActivityOrigin _ ->
+                        -- Not in use, as at Acute Ilness patient is created
+                        -- from a dedicated form.
+                        emptyNode
                 )
 
         content =
@@ -482,7 +487,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             currentDate
 
         personForm =
-            applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -574,9 +579,36 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , title = Translate.People
                             }
 
-                        -- This will be redefined after we add support for more
-                        -- individual encounter types.
-                        _ ->
+                        WellChildEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom =
+                                if isChw then
+                                    Date.add Months -2 today
+                                        |> Date.add Days 1
+
+                                else
+                                    Date.add Years -13 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
+                        -- We do not have a direct access to Home Visit
+                        -- encounter, since it resides under Nutrition menu.
+                        -- Providing 'default' values, to satisfy compiler.
+                        HomeVisitEncounter ->
+                            { goBackPage = PinCodePage
+                            , expectedAge = ExpectAdultOrChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -60 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
+                        -- Note yet implemented. Providing 'default'
+                        -- values, to satisfy compiler.
+                        InmmunizationEncounter ->
                             { goBackPage = PinCodePage
                             , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
@@ -647,6 +679,17 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     , title = Translate.EnrolNewborn
                     }
 
+                AcuteIllnessContactsTracingActivityOrigin _ ->
+                    -- Not in use, as at Acute Ilness patient is created
+                    -- from a dedicated form.
+                    { goBackPage = PinCodePage
+                    , expectedAge = ExpectAdultOrChild
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = today
+                    , birthDateSelectorTo = today
+                    , title = Translate.People
+                    }
+
         header =
             div [ class "ui basic segment head" ]
                 [ h1
@@ -699,6 +742,17 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 |> .value
                 |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
 
+        birthDateForView =
+            Maybe.map formatDDMMYYYY selectedBirthDate
+                |> Maybe.withDefault ""
+
+        dateSelectorConfig =
+            { select = DateSelected operation initiator
+            , close = SetDateSelectorState Nothing
+            , dateFrom = originBasedSettings.birthDateSelectorFrom
+            , dateTo = originBasedSettings.birthDateSelectorTo
+            }
+
         birthDateInput =
             div [ class "ui grid" ]
                 [ div
@@ -708,13 +762,12 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     [ class "seven wide column required" ]
                     [ text <| translate language Translate.DateOfBirth ++ ":"
                     , br [] []
-                    , DateSelector.SelectorDropdown.view
-                        ToggleDateSelector
-                        (DateSelected operation initiator)
-                        model.isDateSelectorOpen
-                        originBasedSettings.birthDateSelectorFrom
-                        originBasedSettings.birthDateSelectorTo
-                        selectedBirthDate
+                    , div
+                        [ class "date-input field"
+                        , onClick <| SetDateSelectorState (Just dateSelectorConfig)
+                        ]
+                        [ text birthDateForView ]
+                    , viewModal <| viewCalendarPopup language model.dateSelectorPopupState selectedBirthDate
                     ]
                 , div
                     [ class "three wide column" ]
