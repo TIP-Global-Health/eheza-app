@@ -2,8 +2,9 @@ module Pages.PatientRecord.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortByDate)
+import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
@@ -14,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
+import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
 import Pages.Utils
@@ -29,8 +31,8 @@ import Pages.Utils
         , viewSaveAction
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
-import Pages.WellChildProgressReport.Model exposing (WellChildProgressReportInitiator(..))
-import Pages.WellChildProgressReport.View exposing (viewProgressReport)
+import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
@@ -102,6 +104,31 @@ viewContentForChild language currentDate zscores childId child isChw db model =
 
 viewContentForAdult : Language -> NominalDate -> PersonId -> Person -> ModelIndexedDb -> Model -> Html Msg
 viewContentForAdult language currentDate personId person db model =
+    let
+        individualParticipants =
+            Dict.get personId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        acuteIllnesses =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                )
+                individualParticipants
+
+        pane =
+            case model.filter of
+                FilterAcuteIllness ->
+                    viewAcuteIllnessPane language currentDate personId acuteIllnesses db
+
+                FilterAntenatal ->
+                    emptyNode
+
+                FilterDemographics ->
+                    emptyNode
+    in
     div [ class "page-activity patient-record" ]
         [ viewHeader language
         , div [ class "ui unstackable items" ]
@@ -117,6 +144,7 @@ viewContentForAdult language currentDate personId person db model =
                     [ text <| translate language Translate.ProgressReports ]
                 , viewFilters language patientRecordFilters model
                 ]
+            , pane
             ]
         ]
 
@@ -240,3 +268,44 @@ viewFilters language filters model =
     in
     List.map renderButton filters
         |> div [ class "ui segment filters" ]
+
+
+viewAcuteIllnessPane :
+    Language
+    -> NominalDate
+    -> PersonId
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> ModelIndexedDb
+    -> Html Msg
+viewAcuteIllnessPane language currentDate personId acuteIllnesses db =
+    let
+        ( activeIllnesses, completedIllnesses ) =
+            List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
+
+        entriesHeading =
+            div [ class "heading diagnosis" ]
+                [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
+                , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
+                ]
+
+        entries =
+            List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
+                ++ List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
+
+        initiator =
+            InitiatorPatientRecordAdult personId
+
+        daignosisEntries =
+            List.map (Tuple.first >> viewAcuteIllnessDiagnosisEntry language initiator db SetActivePage) entries
+                |> Maybe.Extra.values
+                |> List.sortWith sortTuplesByDateDesc
+                |> List.map Tuple.second
+    in
+    div [ class "pane acute-illness" ]
+        [ viewPaneHeading language <| Translate.PatientRecordFilter FilterAcuteIllness
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: viewEntries language daignosisEntries
+        ]

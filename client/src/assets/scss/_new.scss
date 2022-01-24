@@ -2916,7 +2916,8 @@ div.page-activity.patient-record {
 
 div.page-activity.well-child,
 div.page-report.acute-illness,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-activity.patient-record {
 
   .heading {
     border-bottom: 1px solid $color-text;
@@ -3032,7 +3033,8 @@ div.page-report.well-child {
 }
 
 div.page-report.acute-illness,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-activity.patient-record {
   background: unset;
 
   .pane-heading {
@@ -3269,6 +3271,9 @@ div.page-activity.patient-record {
       color: $color-white;
     }
   }
+}
+
+div.page-case-management {
 
   .pane {
     background: $color-primary;
