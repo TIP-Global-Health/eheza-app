@@ -8,6 +8,7 @@ import Backend.Person.Utils exposing (isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.AcuteIllnessParticipant.Fetch
+import Pages.PrenatalParticipant.Fetch
 import RemoteData exposing (RemoteData)
 
 
@@ -35,6 +36,7 @@ fetch currentDate personId db =
                                         |> Maybe.withDefault []
                             in
                             fetchChildrenMsgs
+                                ++ Pages.PrenatalParticipant.Fetch.fetch personId db
                     )
                 |> Maybe.withDefault []
     in

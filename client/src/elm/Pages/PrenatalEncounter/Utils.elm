@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples)
+import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
 import Date exposing (Unit(..))
@@ -229,42 +229,46 @@ resolveGlobalObstetricHistory nursePreviousMeasurements measurements =
             |> Maybe.andThen getObstetricHistory
 
 
+getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
+getPrenatalEncountersForParticipant db participantId =
+    Dict.get participantId db.prenatalEncountersByParticipant
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.withDefault []
+        |> List.sortWith sortEncounterTuplesDesc
+
+
 generatePreviousMeasurements :
     PrenatalEncounterId
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
     -> ( List ( NominalDate, PrenatalMeasurements ), List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements ) )
 generatePreviousMeasurements currentEncounterId participantId db =
-    Dict.get participantId db.prenatalEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map
-            (Dict.toList
-                >> List.filter
-                    (\( id, _ ) ->
-                        -- We do not want to get data of current encounter.
-                        id /= currentEncounterId
-                    )
-                >> List.sortWith sortEncounterTuples
-                >> (\previousEncounters ->
-                        let
-                            ( nurseEncounters, chwEncounters ) =
-                                List.partition (Tuple.second >> .encounterType >> (==) NurseEncounter) previousEncounters
-
-                            getEncounterMeasurements ( encounterId, encounter ) =
-                                case Dict.get encounterId db.prenatalMeasurements of
-                                    Just (Success measurements) ->
-                                        Just ( encounter.startDate, encounter.encounterType, measurements )
-
-                                    _ ->
-                                        Nothing
-                        in
-                        ( List.filterMap getEncounterMeasurements nurseEncounters
-                            |> List.map (\( date, _, measurements ) -> ( date, measurements ))
-                        , List.filterMap getEncounterMeasurements chwEncounters
-                        )
-                   )
+    getPrenatalEncountersForParticipant db participantId
+        |> List.filter
+            (\( id, _ ) ->
+                -- We do not want to get data of current encounter.
+                id /= currentEncounterId
             )
-        |> Maybe.withDefault ( [], [] )
+        |> List.sortWith sortEncounterTuples
+        |> (\previousEncounters ->
+                let
+                    ( nurseEncounters, chwEncounters ) =
+                        List.partition (Tuple.second >> .encounterType >> (==) NurseEncounter) previousEncounters
+
+                    getEncounterMeasurements ( encounterId, encounter ) =
+                        case Dict.get encounterId db.prenatalMeasurements of
+                            Just (Success measurements) ->
+                                Just ( encounter.startDate, encounter.encounterType, measurements )
+
+                            _ ->
+                                Nothing
+                in
+                ( List.filterMap getEncounterMeasurements nurseEncounters
+                    |> List.map (\( date, _, measurements ) -> ( date, measurements ))
+                , List.filterMap getEncounterMeasurements chwEncounters
+                )
+           )
 
 
 generateAssembledData : PrenatalEncounterId -> ModelIndexedDb -> WebData AssembledData

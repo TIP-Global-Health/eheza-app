@@ -8,6 +8,7 @@ import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDe
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -18,6 +19,8 @@ import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
+import Pages.PrenatalEncounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -32,7 +35,7 @@ import Pages.Utils
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
 import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), WellChildProgressReportInitiator(..))
-import Pages.WellChildProgressReport.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
+import Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
@@ -118,13 +121,20 @@ viewContentForAdult language currentDate personId person db model =
                 )
                 individualParticipants
 
+        pregnancies =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter
+                )
+                individualParticipants
+
         pane =
             case model.filter of
                 FilterAcuteIllness ->
                     viewAcuteIllnessPane language currentDate personId acuteIllnesses db
 
                 FilterAntenatal ->
-                    emptyNode
+                    viewAntenatalPane language currentDate personId pregnancies db
 
                 FilterDemographics ->
                     emptyNode
@@ -309,3 +319,90 @@ viewAcuteIllnessPane language currentDate personId acuteIllnesses db =
             entriesHeading
                 :: viewEntries language daignosisEntries
         ]
+
+
+viewAntenatalPane :
+    Language
+    -> NominalDate
+    -> PersonId
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> ModelIndexedDb
+    -> Html Msg
+viewAntenatalPane language currentDate personId pregnancies db =
+    let
+        ( activePregnancies, completedPregnancies ) =
+            List.partition (Tuple.second >> isPregnancyActive currentDate) pregnancies
+
+        entriesHeading =
+            div [ class "heading diagnosis" ]
+                [ div [ class "assesment" ] [ text <| translate language Translate.PregnancyStart ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                , div [ class "date" ] [ text <| translate language Translate.PregnancyConcluded ]
+                , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
+                ]
+
+        entries =
+            List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activePregnancies
+                ++ List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedPregnancies
+
+        daignosisEntries =
+            List.map (viewAntenatalEntry language currentDate db) entries
+                |> Maybe.Extra.values
+                |> List.sortWith sortTuplesByDateDesc
+                |> List.map Tuple.second
+    in
+    div [ class "pane antenatal" ]
+        [ viewPaneHeading language <| Translate.PatientRecordFilter FilterAntenatal
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: viewEntries language daignosisEntries
+        ]
+
+
+viewAntenatalEntry :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> ( ( IndividualEncounterParticipantId, DiagnosisEntryStatus ), IndividualEncounterParticipant )
+    -> Maybe ( NominalDate, Html Msg )
+viewAntenatalEntry language currentDate db ( ( participantId, status ), data ) =
+    let
+        encounters =
+            getPrenatalEncountersForParticipant db participantId
+
+        maybeLastEncounterId =
+            List.head encounters
+                |> Maybe.map Tuple.first
+    in
+    Maybe.map
+        (\lastEncounterId ->
+            let
+                startDate =
+                    Maybe.map (Date.add Days -280 >> formatDDMMYYYY) data.eddDate
+                        |> Maybe.withDefault "--/--/----"
+
+                conclusionDate =
+                    Maybe.map formatDDMMYYYY data.dateConcluded
+                        |> Maybe.withDefault "--/--/----"
+            in
+            ( Maybe.withDefault currentDate data.eddDate
+            , div [ class "entry diagnosis" ]
+                [ div [ class "cell assesment" ] [ text startDate ]
+                , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+                    [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+                , div [ class "cell date" ] [ text conclusionDate ]
+                , div
+                    [ class "icon-forward"
+
+                    -- , onClick <|
+                    --     setActivePageMsg <|
+                    --         UserPage <|
+                    --             AntenatalProgressReportPage
+                    --
+                    --                 lastEncounterId
+                    ]
+                    []
+                ]
+            )
+        )
+        maybeLastEncounterId

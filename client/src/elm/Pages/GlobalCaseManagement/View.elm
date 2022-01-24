@@ -21,12 +21,16 @@ import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
+import Pages.AcuteIllnessEncounter.Utils
+    exposing
+        ( compareAcuteIllnessEncounterDataDesc
+        , getAcuteIllnessEncountersForParticipant
+        )
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.PrenatalEncounter.Utils
+import Pages.PrenatalEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -480,15 +484,8 @@ generateAcuteIllnessFollowUpEntryData language currentDate limitDate db ( partic
     else
         let
             allEncountersWithIds =
-                Dict.get participantId db.acuteIllnessEncountersByParticipant
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map
-                        (Dict.toList
-                            >> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
-                        )
-                    |> Maybe.withDefault []
-                    -- Sort DESC, by date and sequence number.
-                    |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
+                getAcuteIllnessEncountersForParticipant db participantId
+                    |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
 
             allEncounters =
                 List.map Tuple.second allEncountersWithIds
@@ -618,13 +615,8 @@ generatePrenatalFollowUpEntryData language currentDate limitDate db ( participan
     else
         let
             allEncountersWithIds =
-                Dict.get participantId db.prenatalEncountersByParticipant
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map
-                        (Dict.toList
-                            >> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
-                        )
-                    |> Maybe.withDefault []
+                getPrenatalEncountersForParticipant db participantId
+                    |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
                     -- Sort DESC
                     |> List.sortWith sortEncounterTuplesDesc
 

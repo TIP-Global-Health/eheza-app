@@ -1,4 +1,4 @@
-module Pages.WellChildProgressReport.View exposing (view, viewAcuteIllnessDiagnosisEntry, viewEntries, viewNutritionSigns, viewPaneHeading, viewPersonInfoPane, viewProgressReport)
+module Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, view, viewAcuteIllnessDiagnosisEntry, viewEntries, viewNutritionSigns, viewPaneHeading, viewPersonInfoPane, viewProgressReport)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)

@@ -843,6 +843,8 @@ type TranslationId
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
+    | PregnancyConcluded
+    | PregnancyStart
     | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
@@ -6871,6 +6873,16 @@ translationSet trans =
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
+            }
+
+        PregnancyConcluded ->
+            { english = "Pregnancy Concluded"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyStart ->
+            { english = "Pregnancy Start"
+            , kinyarwanda = Nothing
             }
 
         PregnancyTestResult result ->
