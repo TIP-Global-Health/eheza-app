@@ -1,0 +1,52 @@
+version: 2
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - lint_phpcs
+      - lint_elm
+      - lint_shellcheck
+      - test:
+          requires:
+            - lint_phpcs
+            - lint_elm
+            - lint_shellcheck
+
+jobs:
+  lint_phpcs:
+    docker:
+      - image: cimg/php:7.4.26
+    steps:
+      - checkout
+      - run: ci-scripts/install_coder.sh
+      - run: export REVIEW_STANDARD="Drupal" && ci-scripts/test_coder.sh
+      - run: export REVIEW_STANDARD="DrupalPractice" && ci-scripts/test_coder.sh
+  lint_elm:
+    docker:
+      - image: cimg/node:8.17.0
+    steps:
+      - checkout
+      - run: ci-scripts/install_elm_format.sh
+      - run: ci-scripts/test_elm_format.sh
+  lint_shellcheck:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: ci-scripts/install_shell.sh
+      - run: ci-scripts/test_shell.sh
+  test:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - drupal
+      - run: ci-scripts/install_server.sh
+      - run: ci-scripts/test_server.sh
+      - save_cache:
+          key: drupal
+          paths:
+            - /tmp/cache
