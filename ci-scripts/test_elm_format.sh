@@ -6,8 +6,6 @@
 #
 # ---------------------------------------------------------------------------- #
 
-source "$TRAVIS_BUILD_DIR"/server/travis.config.sh
-
 HAS_ERRORS=0
 
 SCRIPTS=$(find client/src -name '*.elm')
