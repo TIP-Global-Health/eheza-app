@@ -3118,6 +3118,22 @@ div.page-activity.patient-record {
       }
     }
 
+    .heading.antenatal {
+
+      .date-start {
+        width: 34%;
+      }
+
+      .status {
+        width: 15%;
+      }
+
+      .date-end {
+        margin-left: 25px;
+        width: 34%;
+      }
+    }
+
     .entry.diagnosis {
 
       .assesment {
@@ -3170,6 +3186,36 @@ div.page-activity.patient-record {
 
       .date {
         width: 25%;
+      }
+    }
+
+    .entry.antenatal {
+
+      .date-start {
+        width: 34%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .status {
+        width: 15%;
+        padding-right: 20px;
+      }
+
+      .date-end {
+        margin-left: 25px;
+        width: 34%;
+      }
+
+      .icon-forward {
+        align-self: center;
+        background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        margin-left: 20px;
+        width: 50px;
       }
     }
 

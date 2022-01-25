@@ -334,10 +334,10 @@ viewAntenatalPane language currentDate personId pregnancies db =
             List.partition (Tuple.second >> isPregnancyActive currentDate) pregnancies
 
         entriesHeading =
-            div [ class "heading diagnosis" ]
-                [ div [ class "assesment" ] [ text <| translate language Translate.PregnancyStart ]
+            div [ class "heading antenatal" ]
+                [ div [ class "date-start" ] [ text <| translate language Translate.PregnancyStart ]
                 , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
-                , div [ class "date" ] [ text <| translate language Translate.PregnancyConcluded ]
+                , div [ class "date-end" ] [ text <| translate language Translate.PregnancyConclusion ]
                 , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
                 ]
 
@@ -386,11 +386,11 @@ viewAntenatalEntry language currentDate db ( ( participantId, status ), data ) =
                         |> Maybe.withDefault "--/--/----"
             in
             ( Maybe.withDefault currentDate data.eddDate
-            , div [ class "entry diagnosis" ]
-                [ div [ class "cell assesment" ] [ text startDate ]
+            , div [ class "entry antenatal" ]
+                [ div [ class "cell date-start" ] [ text startDate ]
                 , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
                     [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
-                , div [ class "cell date" ] [ text conclusionDate ]
+                , div [ class "cell date-end" ] [ text conclusionDate ]
                 , div
                     [ class "icon-forward"
 

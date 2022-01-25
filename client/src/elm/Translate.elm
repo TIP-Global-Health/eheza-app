@@ -843,7 +843,7 @@ type TranslationId
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
-    | PregnancyConcluded
+    | PregnancyConclusion
     | PregnancyStart
     | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
@@ -6875,8 +6875,8 @@ translationSet trans =
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
             }
 
-        PregnancyConcluded ->
-            { english = "Pregnancy Concluded"
+        PregnancyConclusion ->
+            { english = "Pregnancy Conclusion"
             , kinyarwanda = Nothing
             }
 
