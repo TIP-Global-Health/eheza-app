@@ -8,7 +8,8 @@ set -e
 # ---------------------------------------------------------------------------- #
 
 # Build our own Docker image based on https://github.com/Gizra/drupal-lamp.
-docker build -t server -f "$TRAVIS_BUILD_DIR"/ci-scripts/docker_files/Dockerfile .
+cd /home/circleci/project
+docker build -t server -f ci-scripts/docker_files/Dockerfile .
 
 # Simple Docker run, no need for Zalenium dependencies.
 if [ -z "${BUILD_WEBDRIVERIO+x}" ]; then
