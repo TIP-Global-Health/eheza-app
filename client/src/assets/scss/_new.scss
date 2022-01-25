@@ -1982,25 +1982,10 @@ div.page-outcome.pregnancy {
 
 div.page-report.clinical,
 div.page-report.demographics {
-  background: $color-light-gray;
   padding: 0 20px 35px 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
-
-  .ui.basic.segment.head {
-    padding: 25px;
-
-    .ui.header {
-      color: $color-text;
-    }
-
-    .icon-back {
-      background: url(#{$img-path}icon-back-dark.svg);
-      background-size: 34px 27px;
-      position: absolute;
-    }
-  }
 
   .ui.unstackable.items {
     overflow-y: auto;
@@ -2045,7 +2030,6 @@ div.page-report.clinical {
 
   .header-pane {
     background: $color-white;
-    margin-bottom: 20px;
     padding: 40px 20px;
 
     .mother-details {
@@ -2057,8 +2041,12 @@ div.page-report.clinical {
         color: $color-text;
 
         .mother-name, .edd {
-          margin-top: 20px;
           margin-bottom: 10px;
+        }
+
+        .mother-name {
+          color: $color-primary;
+          font-weight: 700;
         }
       }
 
@@ -2077,6 +2065,7 @@ div.page-report.clinical {
       grid-template-columns: 25% auto;
       line-height: 40px;
       margin-left: 150px;
+      margin-top: -30px;
 
       .label {
         font-weight: bold;
@@ -2118,7 +2107,6 @@ div.page-report.clinical {
   .medical-diagnosis,
   .obstetric-diagnosis {
     background: $color-white;
-    margin-bottom: 20px;
 
     .pane-content p {
       line-height: 32px;
@@ -2141,7 +2129,6 @@ div.page-report.clinical {
   }
 
   .patient-progress {
-    margin-bottom: 20px;
 
     .caption {
       font-size: 16px;
@@ -3034,6 +3021,7 @@ div.page-activity.patient-record {
 
 div.page-report.acute-illness,
 div.page-report.well-child,
+div.page-report.clinical,
 div.page-activity.patient-record {
   background: unset;
 

@@ -93,10 +93,13 @@ viewHeader language id initiator model =
                                 SetActivePage <| UserPage goBackPage
                     in
                     span
-                        [ class "icon-back"
-                        , onClick action
+                        [ class "link-back" ]
+                        [ span
+                            [ class "icon-back"
+                            , onClick action
+                            ]
+                            []
                         ]
-                        []
             in
             case initiator of
                 InitiatorEncounterPage ->
@@ -110,9 +113,9 @@ viewHeader language id initiator model =
     in
     div
         [ class "ui basic segment head" ]
-        [ backIcon
-        , h1 [ class "ui header" ]
+        [ h1 [ class "ui header" ]
             [ text <| translate language label ]
+        , backIcon
         ]
 
 
@@ -193,7 +196,7 @@ viewHeaderPane language currentDate data =
             [ div [ class "ui image" ]
                 [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
             , div [ class "content middle" ]
-                [ viewLineItem "mother-name" Translate.Name mother.name
+                [ p [ class "mother-name" ] [ text mother.name ]
                 , showMaybe <|
                     Maybe.map
                         (\age ->
