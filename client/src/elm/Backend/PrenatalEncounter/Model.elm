@@ -43,6 +43,7 @@ type RecordPreganancyInitiator
 type ClinicalProgressReportInitiator
     = InitiatorEncounterPage
     | InitiatorNewEncounter PrenatalEncounterId
+    | InitiatorPatientRecord PersonId
 
 
 type PrenatalEncounterPostCreateDestination

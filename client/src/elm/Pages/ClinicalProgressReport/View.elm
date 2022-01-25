@@ -81,23 +81,31 @@ viewHeader language id initiator model =
                 Translate.ClinicalProgressReport
 
         backIcon =
-            if initiator == InitiatorEncounterPage then
-                let
-                    action =
-                        if isJust model.labResultsHistoryMode then
-                            SetLabResultsHistoryMode Nothing
+            let
+                iconForView goBackPage =
+                    let
+                        action =
+                            if isJust model.labResultsHistoryMode then
+                                SetLabResultsHistoryMode Nothing
 
-                        else
-                            SetActivePage <| UserPage <| PrenatalEncounterPage id
-                in
-                span
-                    [ class "icon-back"
-                    , onClick action
-                    ]
-                    []
+                            else
+                                SetActivePage <| UserPage goBackPage
+                    in
+                    span
+                        [ class "icon-back"
+                        , onClick action
+                        ]
+                        []
+            in
+            case initiator of
+                InitiatorEncounterPage ->
+                    iconForView (PrenatalEncounterPage id)
 
-            else
-                emptyNode
+                InitiatorNewEncounter _ ->
+                    emptyNode
+
+                InitiatorPatientRecord patientId ->
+                    iconForView (PatientRecordPage patientId)
     in
     div
         [ class "ui basic segment head" ]
@@ -133,6 +141,9 @@ viewContent language currentDate isChw initiator model data =
                                             ]
                                             [ text <| translate language Translate.Reviewed ]
                                         ]
+
+                                InitiatorPatientRecord _ ->
+                                    emptyNode
                     in
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                     , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements

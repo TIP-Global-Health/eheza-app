@@ -7,6 +7,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
+import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -346,7 +347,7 @@ viewAntenatalPane language currentDate personId pregnancies db =
                 ++ List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedPregnancies
 
         daignosisEntries =
-            List.map (viewAntenatalEntry language currentDate db) entries
+            List.map (viewAntenatalEntry language currentDate personId db) entries
                 |> Maybe.Extra.values
                 |> List.sortWith sortTuplesByDateDesc
                 |> List.map Tuple.second
@@ -362,10 +363,11 @@ viewAntenatalPane language currentDate personId pregnancies db =
 viewAntenatalEntry :
     Language
     -> NominalDate
+    -> PersonId
     -> ModelIndexedDb
     -> ( ( IndividualEncounterParticipantId, PaneEntryStatus ), IndividualEncounterParticipant )
     -> Maybe ( NominalDate, Html Msg )
-viewAntenatalEntry language currentDate db ( ( participantId, status ), data ) =
+viewAntenatalEntry language currentDate personId db ( ( participantId, status ), data ) =
     let
         encounters =
             getPrenatalEncountersForParticipant db participantId
@@ -393,13 +395,12 @@ viewAntenatalEntry language currentDate db ( ( participantId, status ), data ) =
                 , div [ class "cell date-end" ] [ text conclusionDate ]
                 , div
                     [ class "icon-forward"
-
-                    -- , onClick <|
-                    --     setActivePageMsg <|
-                    --         UserPage <|
-                    --             AntenatalProgressReportPage
-                    --
-                    --                 lastEncounterId
+                    , onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                ClinicalProgressReportPage
+                                    (InitiatorPatientRecord personId)
+                                    lastEncounterId
                     ]
                     []
                 ]
