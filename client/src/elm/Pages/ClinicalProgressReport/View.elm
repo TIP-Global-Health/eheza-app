@@ -6,6 +6,7 @@ import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExe
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
@@ -104,8 +105,8 @@ viewHeader language id initiator model =
                 InitiatorNewEncounter _ ->
                     emptyNode
 
-                InitiatorPatientRecord patientId ->
-                    iconForView (PatientRecordPage patientId)
+                Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
+                    iconForView (PatientRecordPage InitiatorParticipantDirectory patientId)
     in
     div
         [ class "ui basic segment head" ]
@@ -142,7 +143,7 @@ viewContent language currentDate isChw initiator model data =
                                             [ text <| translate language Translate.Reviewed ]
                                         ]
 
-                                InitiatorPatientRecord _ ->
+                                Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
                                     emptyNode
                     in
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements

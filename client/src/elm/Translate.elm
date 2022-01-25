@@ -10620,7 +10620,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PatientRecordPage _ ->
+                PatientRecordPage _ _ ->
                     { english = "Patient Record"
                     , kinyarwanda = Nothing
                     }

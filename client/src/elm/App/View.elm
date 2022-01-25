@@ -659,7 +659,7 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageTraceContact traceContactId)
                             |> flexPageWrapper model
 
-                    PatientRecordPage personId ->
+                    PatientRecordPage initiator personId ->
                         let
                             page_ =
                                 Dict.get personId loggedInModel.patientRecordPages
@@ -670,6 +670,7 @@ viewUserPage page deviceName model configured =
                             model.zscores
                             personId
                             isChw
+                            initiator
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)

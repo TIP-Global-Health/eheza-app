@@ -2,6 +2,7 @@ module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
+import Backend.PatientRecord.Utils
 import Maybe.Extra
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
@@ -122,8 +123,8 @@ progressReportInitiatorToUrlFragmemt initiator =
         InitiatorGroupNutritionProgressReport sessionId personId ->
             "progress-report-" ++ fromEntityUuid sessionId ++ "+++" ++ fromEntityUuid personId
 
-        InitiatorPatientRecord personId ->
-            "patient-record-" ++ fromEntityUuid personId
+        InitiatorPatientRecord patientRecordInitiator personId ->
+            "patient-record-" ++ fromEntityUuid personId ++ "+++" ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragmemt patientRecordInitiator
 
 
 progressReportInitiatorFromUrlFragmemt : String -> Maybe AcuteIllnessProgressReportInitiator
@@ -168,10 +169,25 @@ progressReportInitiatorFromUrlFragmemt s =
                         |> Maybe.Extra.join
 
             else if String.startsWith "patient-record" s then
-                String.dropLeft (String.length "patient-record-") s
-                    |> toEntityUuid
-                    |> InitiatorPatientRecord
-                    |> Just
+                let
+                    fragments =
+                        String.dropLeft (String.length "patient-record-") s
+                            |> String.split "+++"
+                in
+                if List.length fragments /= 2 then
+                    Nothing
+
+                else
+                    Maybe.map2
+                        (\personId patientRecordInitiator ->
+                            Just <| InitiatorPatientRecord patientRecordInitiator (toEntityUuid personId)
+                        )
+                        (List.head fragments)
+                        (List.drop 1 fragments
+                            |> List.head
+                            |> Maybe.andThen Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragmemt
+                        )
+                        |> Maybe.Extra.join
 
             else
                 Nothing

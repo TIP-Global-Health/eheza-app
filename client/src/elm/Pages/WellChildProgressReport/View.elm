@@ -18,6 +18,7 @@ import Backend.NutritionEncounter.Utils
         , sortEncounterTuplesDesc
         , sortTuplesByDateDesc
         )
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.Session.Model exposing (Session)
@@ -296,10 +297,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                       else
                         Nothing
                     , case initiator of
-                        InitiatorPatientRecordAdult _ ->
-                            emptyNode
-
-                        InitiatorPatientRecordChild _ ->
+                        Pages.WellChildProgressReport.Model.InitiatorPatientRecord _ _ ->
                             emptyNode
 
                         _ ->
@@ -341,10 +339,7 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
     let
         label =
             case initiator of
-                InitiatorPatientRecordAdult _ ->
-                    Translate.PatientRecord
-
-                InitiatorPatientRecordChild _ ->
+                Pages.WellChildProgressReport.Model.InitiatorPatientRecord _ _ ->
                     Translate.PatientRecord
 
                 _ ->
@@ -365,11 +360,13 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
                                 InitiatorNutritionGroup sessionId personId ->
                                     UserPage (SessionPage sessionId (ChildPage personId))
 
-                                InitiatorPatientRecordAdult personId ->
-                                    UserPage (PatientRecordPage personId)
+                                Pages.WellChildProgressReport.Model.InitiatorPatientRecord patientRecordInitiator _ ->
+                                    case patientRecordInitiator of
+                                        Backend.PatientRecord.Model.InitiatorParticipantDirectory ->
+                                            UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
 
-                                InitiatorPatientRecordChild _ ->
-                                    UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
+                                        Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
+                                            UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
                     in
                     setActivePageMsg targetPage
 
@@ -614,13 +611,7 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
                         , .dateMeasured >> (/=) currentDate
                         )
 
-                    InitiatorPatientRecordAdult _ ->
-                        ( always True
-                        , always True
-                        , always True
-                        )
-
-                    InitiatorPatientRecordChild _ ->
+                    Pages.WellChildProgressReport.Model.InitiatorPatientRecord _ _ ->
                         ( always True
                         , always True
                         , always True
@@ -776,11 +767,8 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
                         InitiatorNutritionGroup sessionId personId ->
                             InitiatorGroupNutritionProgressReport sessionId personId
 
-                        InitiatorPatientRecordAdult personId ->
-                            InitiatorPatientRecord personId
-
-                        InitiatorPatientRecordChild personId ->
-                            InitiatorPatientRecord personId
+                        Pages.WellChildProgressReport.Model.InitiatorPatientRecord patientRecordInitiator personId ->
+                            Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord patientRecordInitiator personId
             in
             ( date
             , div [ class "entry diagnosis" ]

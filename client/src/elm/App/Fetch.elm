@@ -281,7 +281,7 @@ fetch model =
                 Pages.TraceContact.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (PatientRecordPage id) ->
+            UserPage (PatientRecordPage _ id) ->
                 Pages.PatientRecord.Fetch.fetch currentDate id model.indexedDb
                     |> List.map MsgIndexedDb
 

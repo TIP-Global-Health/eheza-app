@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDesc)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..))
@@ -43,17 +44,17 @@ import Utils.Html exposing (spinner, thumbnailImage, viewModal)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw initiator db model =
     Dict.get id db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
             (\person ->
                 if isPersonAnAdult currentDate person == Just False then
-                    viewContentForChild language currentDate zscores id person isChw db model
+                    viewContentForChild language currentDate zscores id person isChw initiator db model
 
                 else
-                    viewContentForAdult language currentDate id person db model
+                    viewContentForAdult language currentDate id person initiator db model
             )
         |> Maybe.withDefault spinner
 
@@ -75,8 +76,8 @@ viewHeader language =
         ]
 
 
-viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> ModelIndexedDb -> Model -> Html Msg
-viewContentForChild language currentDate zscores childId child isChw db model =
+viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewContentForChild language currentDate zscores childId child isChw initiator db model =
     let
         endEncounterData =
             Just <|
@@ -88,15 +89,12 @@ viewContentForChild language currentDate zscores childId child isChw db model =
 
         mandatoryNutritionAssessmentMeasurementsTaken =
             False
-
-        initiator =
-            InitiatorPatientRecordChild childId
     in
     viewProgressReport language
         currentDate
         zscores
         isChw
-        initiator
+        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
         mandatoryNutritionAssessmentMeasurementsTaken
         db
         model.diagnosisMode
@@ -106,8 +104,8 @@ viewContentForChild language currentDate zscores childId child isChw db model =
         ( childId, child )
 
 
-viewContentForAdult : Language -> NominalDate -> PersonId -> Person -> ModelIndexedDb -> Model -> Html Msg
-viewContentForAdult language currentDate personId person db model =
+viewContentForAdult : Language -> NominalDate -> PersonId -> Person -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewContentForAdult language currentDate personId person initiator db model =
     let
         individualParticipants =
             Dict.get personId db.individualParticipantsByPerson
@@ -132,7 +130,7 @@ viewContentForAdult language currentDate personId person db model =
         pane =
             case model.filter of
                 FilterAcuteIllness ->
-                    viewAcuteIllnessPane language currentDate personId acuteIllnesses db
+                    viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db
 
                 FilterAntenatal ->
                     viewAntenatalPane language currentDate personId pregnancies db
@@ -218,7 +216,7 @@ viewAdultDetails language currentDate personId person db =
                     List.indexedMap viewChildMarkup childrenData
 
                 viewChildMarkup index ( childId, _ ) =
-                    li [ onClick <| SetActivePage <| UserPage <| PatientRecordPage childId ]
+                    li [ onClick <| SetActivePage <| UserPage <| PatientRecordPage (Backend.PatientRecord.Model.InitiatorPatientRecord personId) childId ]
                         [ span [ class "icon" ]
                             [ span [ class "icon-baby" ] []
                             , span
@@ -285,10 +283,11 @@ viewAcuteIllnessPane :
     Language
     -> NominalDate
     -> PersonId
+    -> PatientRecordInitiator
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> ModelIndexedDb
     -> Html Msg
-viewAcuteIllnessPane language currentDate personId acuteIllnesses db =
+viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db =
     let
         ( activeIllnesses, completedIllnesses ) =
             List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
@@ -305,11 +304,16 @@ viewAcuteIllnessPane language currentDate personId acuteIllnesses db =
             List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
                 ++ List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
 
-        initiator =
-            InitiatorPatientRecordAdult personId
-
         daignosisEntries =
-            List.map (Tuple.first >> viewAcuteIllnessDiagnosisEntry language initiator db SetActivePage) entries
+            List.map
+                (Tuple.first
+                    >> viewAcuteIllnessDiagnosisEntry
+                        language
+                        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator personId)
+                        db
+                        SetActivePage
+                )
+                entries
                 |> Maybe.Extra.values
                 |> List.sortWith sortTuplesByDateDesc
                 |> List.map Tuple.second
@@ -399,7 +403,7 @@ viewAntenatalEntry language currentDate personId db ( ( participantId, status ),
                         SetActivePage <|
                             UserPage <|
                                 ClinicalProgressReportPage
-                                    (InitiatorPatientRecord personId)
+                                    (Backend.PrenatalEncounter.Model.InitiatorPatientRecord personId)
                                     lastEncounterId
                     ]
                     []
