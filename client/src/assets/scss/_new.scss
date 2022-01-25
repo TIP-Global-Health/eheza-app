@@ -1991,9 +1991,10 @@ div.page-report.demographics {
     overflow-y: auto;
 
     .pane-heading {
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 700;
       padding: 5px 15px;
+      text-align: left;
       text-transform: uppercase;
 
       &.gray {
@@ -2026,11 +2027,13 @@ div.page-report.demographics {
   }
 }
 
-div.page-report.clinical {
+div.page-report.clinical .ui.unstackable.items {
 
   .header-pane {
-    background: $color-white;
-    padding: 40px 20px;
+
+    .pane-heading {
+      text-align: center;
+    }
 
     .mother-details {
       display: grid;
@@ -2246,28 +2249,6 @@ div.page-report.clinical {
 
     }
 
-    .photos-section {
-      display: grid;
-      grid-gap: 28px;
-      grid-template-columns: 150px 150px 150px 150px;
-
-      .progress-photo {
-
-        img {
-          height: 150px;
-        }
-
-        .ega {
-          background-color: $color-gray;
-          color: $color-white;
-          font-size: 16px;
-          font-weight: bold;
-          text-align: center;
-        }
-      }
-
-    }
-
     .trends-section {
 
       .chart-heading {
@@ -2414,6 +2395,28 @@ div.page-report.clinical {
 
   .ui.unstackable.items .lab-results-history .pane-content {
     padding: 20px;
+  }
+
+  .progress-photos .pane-content {
+    display: grid;
+    grid-gap: 28px;
+    grid-template-columns: 150px 150px 150px 150px;
+
+    .progress-photo {
+
+      img {
+        height: 150px;
+      }
+
+      .ega {
+        background-color: $color-gray;
+        color: $color-white;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+      }
+    }
+
   }
 }
 
@@ -2633,7 +2636,7 @@ div.page-report.acute-illness {
 
       .pane-heading {
         color: $color-white;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
         padding: 10px 15px;
         text-transform: uppercase;

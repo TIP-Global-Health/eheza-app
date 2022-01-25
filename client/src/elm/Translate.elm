@@ -349,6 +349,7 @@ type TranslationId
     | AmbulancArrivalPeriodQuestion
     | And
     | AndSentence
+    | AntenatalProgressReport
     | AppName
     | AppointmentConfirmation
     | AppointmentConfirmationInstrunction
@@ -2205,6 +2206,11 @@ translationSet trans =
         AndSentence ->
             { english = "and"
             , kinyarwanda = Just "maze"
+            }
+
+        AntenatalProgressReport ->
+            { english = "Antenatal Progress Report"
+            , kinyarwanda = Nothing
             }
 
         AmbulancArrivalPeriodQuestion ->

@@ -79,7 +79,7 @@ viewHeader language id initiator model =
                 Translate.LabHistory
 
             else
-                Translate.ClinicalProgressReport
+                Translate.AntenatalProgressReport
 
         backIcon =
             let
@@ -154,6 +154,7 @@ viewContent language currentDate isChw initiator model data =
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
                     , viewPatientProgressPane language currentDate isChw data
                     , viewLabResultsPane language currentDate data
+                    , viewProgressPhotosPane language currentDate isChw data
                     , actions
                     ]
     in
@@ -192,46 +193,49 @@ viewHeaderPane language currentDate data =
                 ]
     in
     div [ class "header-pane" ]
-        [ div [ class "mother-details" ]
-            [ div [ class "ui image" ]
-                [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-            , div [ class "content middle" ]
-                [ p [ class "mother-name" ] [ text mother.name ]
-                , showMaybe <|
-                    Maybe.map
-                        (\age ->
-                            viewLineItem "age-wrapper" Translate.AgeWord (translate language <| Translate.YearsOld age)
-                        )
-                        (ageInYears currentDate mother)
+        [ viewItemHeading language Translate.PatientInformation "blue"
+        , div [ class "pane-content" ]
+            [ div [ class "mother-details" ]
+                [ div [ class "ui image" ]
+                    [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
+                , div [ class "content middle" ]
+                    [ p [ class "mother-name" ] [ text mother.name ]
+                    , showMaybe <|
+                        Maybe.map
+                            (\age ->
+                                viewLineItem "age-wrapper" Translate.AgeWord (translate language <| Translate.YearsOld age)
+                            )
+                            (ageInYears currentDate mother)
+                    ]
+                , div [ class "content right" ]
+                    [ viewLineItem "edd" Translate.Edd edd
+                    , viewLineItem "ega" Translate.Ega ega
+                    ]
                 ]
-            , div [ class "content right" ]
-                [ viewLineItem "edd" Translate.Edd edd
-                , viewLineItem "ega" Translate.Ega ega
-                ]
-            ]
-        , div [ class "gravida-para" ]
-            [ div [ class "gravida" ]
-                [ div [ class "label" ] [ text <| translate language Translate.Gravida ]
-                , div [ class "value" ] [ text gravida ]
-                ]
-            , div [ class "para" ]
-                [ div [ class "label" ] [ text <| translate language Translate.Para ]
-                , div [ class "para-breakdown" ]
-                    [ div [ class "term" ]
-                        [ div [] [ text <| String.slice 0 1 para ]
-                        , div [ class "label small" ] [ text <| translate language Translate.Term ]
-                        ]
-                    , div [ class "pre-term" ]
-                        [ div [] [ text <| String.slice 1 2 para ]
-                        , div [ class "label small" ] [ text <| translate language Translate.PreTerm ]
-                        ]
-                    , div [ class "abortions" ]
-                        [ div [] [ text <| String.slice 2 3 para ]
-                        , div [ class "label small" ] [ text <| translate language Translate.Abortions ]
-                        ]
-                    , div [ class "live-children" ]
-                        [ div [] [ text <| String.slice 3 4 para ]
-                        , div [ class "label small" ] [ text <| translate language Translate.LiveChildren ]
+            , div [ class "gravida-para" ]
+                [ div [ class "gravida" ]
+                    [ div [ class "label" ] [ text <| translate language Translate.Gravida ]
+                    , div [ class "value" ] [ text gravida ]
+                    ]
+                , div [ class "para" ]
+                    [ div [ class "label" ] [ text <| translate language Translate.Para ]
+                    , div [ class "para-breakdown" ]
+                        [ div [ class "term" ]
+                            [ div [] [ text <| String.slice 0 1 para ]
+                            , div [ class "label small" ] [ text <| translate language Translate.Term ]
+                            ]
+                        , div [ class "pre-term" ]
+                            [ div [] [ text <| String.slice 1 2 para ]
+                            , div [ class "label small" ] [ text <| translate language Translate.PreTerm ]
+                            ]
+                        , div [ class "abortions" ]
+                            [ div [] [ text <| String.slice 2 3 para ]
+                            , div [ class "label small" ] [ text <| translate language Translate.Abortions ]
+                            ]
+                        , div [ class "live-children" ]
+                            [ div [] [ text <| String.slice 3 4 para ]
+                            , div [ class "label small" ] [ text <| translate language Translate.LiveChildren ]
+                            ]
                         ]
                     ]
                 ]
@@ -632,30 +636,6 @@ viewPatientProgressPane language currentDate isChw data =
                                     ( diffDays lmpDate date, fundalHeight )
                                 )
                     )
-
-        progressPhotos =
-            allMeasurementsWithDates
-                |> List.filterMap
-                    (\( date, measurements ) ->
-                        measurements.prenatalPhoto
-                            |> Maybe.map
-                                (Tuple.second
-                                    >> .value
-                                    >> (\photoUrl ->
-                                            let
-                                                egaLabel =
-                                                    data.globalLmpDate
-                                                        |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
-                                                        |> Maybe.withDefault ""
-                                            in
-                                            div [ class "progress-photo" ]
-                                                [ viewPhotoThumbFromPhotoUrl photoUrl
-                                                , div [ class "ega" ] [ text egaLabel ]
-                                                ]
-                                       )
-                                )
-                    )
-                |> div [ class "photos-section" ]
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -673,8 +653,6 @@ viewPatientProgressPane language currentDate isChw data =
             , allTrimesters
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
-            , div [ class "caption photos" ] [ text <| translate language Translate.ProgressPhotos ++ ":" ]
-            , progressPhotos
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
             , div [ class "trends-section" ]
                 [ viewMarkers
@@ -1319,4 +1297,45 @@ viewLabResultsHistoryPane language currentDate mode =
         , div [ class "pane-content" ] <|
             heading
                 :: entries
+        ]
+
+
+viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewProgressPhotosPane language currentDate isChw data =
+    let
+        allMeasurementsWithDates =
+            data.nursePreviousMeasurementsWithDates
+                ++ (if isChw then
+                        []
+
+                    else
+                        [ ( currentDate, data.measurements ) ]
+                   )
+
+        content =
+            allMeasurementsWithDates
+                |> List.filterMap
+                    (\( date, measurements ) ->
+                        measurements.prenatalPhoto
+                            |> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> (\photoUrl ->
+                                            let
+                                                egaLabel =
+                                                    data.globalLmpDate
+                                                        |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
+                                                        |> Maybe.withDefault ""
+                                            in
+                                            div [ class "progress-photo" ]
+                                                [ viewPhotoThumbFromPhotoUrl photoUrl
+                                                , div [ class "ega" ] [ text egaLabel ]
+                                                ]
+                                       )
+                                )
+                    )
+    in
+    div [ class "progress-photos" ]
+        [ viewItemHeading language Translate.ProgressPhotos "blue"
+        , div [ class "pane-content" ] content
         ]
