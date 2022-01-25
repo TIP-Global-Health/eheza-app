@@ -355,7 +355,8 @@ laboratoryTasksCompletedFromTotal currentDate person measurements data task =
                         |> malariaTestingFormWithDefault data.malariaTestingForm
 
                 testResultPositive =
-                    form.rapidTestResult == Just RapidTestPositive || form.rapidTestResult == Just RapidTestPositiveAndPregnant
+                    Maybe.map rapidTestPositive form.rapidTestResult
+                        |> Maybe.withDefault False
 
                 ( isPregnantActive, isPregnantCompleted ) =
                     if testResultPositive && isPersonAFertileWoman currentDate person then
@@ -1792,8 +1793,7 @@ fromCovidTestingValue saved =
 
                 isPregnant =
                     Just <|
-                        (value.result == RapidTestPositiveAndPregnant)
-                            || (value.result == RapidTestUnableToRunAndPregnant)
+                        rapidTestPositive value.result
             in
             { testPerformed = testPerformed
             , testPositive = testPositive
@@ -1866,17 +1866,27 @@ expectLaboratoryTask : NominalDate -> Bool -> AssembledData -> LaboratoryTask ->
 expectLaboratoryTask currentDate isChw assembled task =
     case task of
         LaboratoryMalariaTesting ->
+            let
+                covidNotDiagnosed =
+                    Maybe.map (Tuple.second >> covid19Diagnosed >> not)
+                        assembled.diagnosis
+                        |> -- No diagnosis, so we need to display the task.
+                           Maybe.withDefault True
+            in
             if assembled.initialEncounter then
-                mandatoryActivitiesCompletedFirstEncounter currentDate assembled.person isChw assembled.measurements
-                    && feverRecorded assembled.measurements
-                    && -- Do not show Malaria RDT if we have a confirmed Covid case.
-                       (Maybe.map
-                            (\( _, diagnosis ) ->
-                                not <| List.member diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ]
-                            )
-                            assembled.diagnosis
-                            |> -- No diagnosis, so we need to display the task.
-                               Maybe.withDefault True
+                -- Fever is mandatory condition to show Malaria RDT task.
+                feverRecorded assembled.measurements
+                    && ((-- Show Malaria RDT if mandatory data collected, unless
+                         -- we have a confirmed Covid case.
+                         mandatoryActivitiesCompletedFirstEncounter currentDate assembled.person isChw assembled.measurements
+                            && covidNotDiagnosed
+                        )
+                            || (-- Show Malaria RDT if Covid test was suggested,
+                                -- but not performed.
+                                covidRapidTestResult assembled.measurements
+                                    |> Maybe.map (\result -> List.member result [ RapidTestUnableToRun, RapidTestUnableToRunAndPregnant ])
+                                    |> Maybe.withDefault False
+                               )
                        )
 
             else
@@ -1896,7 +1906,7 @@ expectLaboratoryTask currentDate isChw assembled task =
                             (.measurements
                                 >> .malariaTesting
                                 >> getMeasurementValueFunc
-                                >> Maybe.map (\testResult -> testResult == RapidTestPositive || testResult == RapidTestPositiveAndPregnant)
+                                >> Maybe.map rapidTestPositive
                                 >> Maybe.withDefault False
                             )
                             initialWithSubsequent
@@ -1905,6 +1915,11 @@ expectLaboratoryTask currentDate isChw assembled task =
 
         LaboratoryCovidTesting ->
             not isChw && covid19SuspectDiagnosed assembled.measurements
+
+
+covid19Diagnosed : AcuteIllnessDiagnosis -> Bool
+covid19Diagnosed diagnosis =
+    List.member diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ]
 
 
 laboratoryTaskCompleted : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
@@ -2410,7 +2425,7 @@ resolveAcuteIllnessDiagnosis : NominalDate -> Bool -> AssembledData -> Maybe Acu
 resolveAcuteIllnessDiagnosis currentDate isChw assembled =
     let
         covid19AcuteIllnessDiagnosis =
-            resolveCovid19AcuteIllnessDiagnosis currentDate assembled.person isChw assembled.measurements
+            covid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
     in
     if assembled.initialEncounter then
         -- First we check for Covid19.
@@ -2418,7 +2433,7 @@ resolveAcuteIllnessDiagnosis currentDate isChw assembled =
             covid19AcuteIllnessDiagnosis
 
         else
-            resolveNonCovid19AcuteIllnessDiagnosis currentDate assembled.person isChw assembled.measurements
+            nonCovid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
 
     else
         malariaRapidTestResult assembled.measurements
@@ -2515,8 +2530,11 @@ covid19SuspectDiagnosed measurements =
         || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
 
 
-resolveCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
+{-| This may result in Covid diagnosis, or Malaria diagnosis,
+if Covid RDT could not be perfrmed.
+-}
+covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+covid19DiagnosisPath currentDate person isChw measurements =
     if not <| covid19SuspectDiagnosed measurements then
         Nothing
 
@@ -2524,21 +2542,8 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
         covidRapidTestResult measurements
             |> Maybe.map
                 (\rdtResult ->
-                    case rdtResult of
-                        RapidTestNegative ->
-                            -- On negative result, we can state that this is not a Covid case.
-                            Nothing
-
-                        RapidTestPositiveAndPregnant ->
-                            -- Covid with pregnancy always concidered as severe case.
-                            Just DiagnosisSevereCovid19
-
-                        RapidTestUnableToRunAndPregnant ->
-                            -- We treat Unable to run as if test was positive,
-                            -- and confirmed Covid with pregnancy always concidered as severe case.
-                            Just DiagnosisSevereCovid19
-
-                        _ ->
+                    let
+                        positiveCovidDecisionMatrix =
                             -- Any other result is treated as if RDT was positive.
                             if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
                                 if
@@ -2565,17 +2570,78 @@ resolveCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
                                 -- We don't have enough data to make a decision on COVID severity
                                 -- diagnosis, so we report of suspected Covid case.
                                 Just DiagnosisCovid19Suspect
+                    in
+                    case rdtResult of
+                        RapidTestNegative ->
+                            -- On negative result, we can state that this is not a Covid case.
+                            Nothing
+
+                        RapidTestIndeterminate ->
+                            -- This is not an option at Covid RDT, so we can
+                            -- rule it out.
+                            Nothing
+
+                        RapidTestPositiveAndPregnant ->
+                            -- Covid with pregnancy always concidered as severe case.
+                            Just DiagnosisSevereCovid19
+
+                        RapidTestUnableToRun ->
+                            -- We treat Unable to run as if test was positive.
+                            -- However, when test can not be performed and fever is recorded,
+                            -- we run Malaria RDT to rule out Malaria.
+                            if feverRecorded measurements then
+                                malariaRapidTestResult measurements
+                                    |> Maybe.map
+                                        (\result ->
+                                            if rapidTestPositive result then
+                                                malariaTypeForPositiveRDT measurements result
+
+                                            else
+                                                positiveCovidDecisionMatrix
+                                        )
+                                    |> Maybe.withDefault (Just DiagnosisCovid19Suspect)
+
+                            else
+                                positiveCovidDecisionMatrix
+
+                        RapidTestUnableToRunAndPregnant ->
+                            -- We treat Unable to run as if test was positive,
+                            -- and confirmed Covid with pregnancy always concidered as severe case.
+                            -- However, when test can not be performed and fever is recorded,
+                            -- we run Malaria RDT to rule out Malaria.
+                            if feverRecorded measurements then
+                                malariaRapidTestResult measurements
+                                    |> Maybe.map
+                                        (\result ->
+                                            if rapidTestPositive result then
+                                                malariaTypeForPositiveRDT measurements result
+
+                                            else
+                                                Just DiagnosisSevereCovid19
+                                        )
+                                    |> Maybe.withDefault (Just DiagnosisCovid19Suspect)
+
+                            else
+                                Just DiagnosisSevereCovid19
+
+                        RapidTestPositive ->
+                            positiveCovidDecisionMatrix
                 )
             -- RDT was not taken yet, so we report of suspected Covid case.
             |> Maybe.withDefault (Just DiagnosisCovid19Suspect)
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
+rapidTestPositive : RapidTestResult -> Bool
+rapidTestPositive result =
+    List.member result [ RapidTestPositiveAndPregnant, RapidTestPositive ]
+
+
+nonCovid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+nonCovid19DiagnosisPath currentDate person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
         if feverRecorded measurements then
-            resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
+            resolveAcuteIllnessDiagnosisByMalariaRDT measurements
 
         else if respiratoryInfectionDangerSignsPresent measurements then
             Just DiagnosisRespiratoryInfectionComplicated
@@ -2604,37 +2670,47 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person isChw measurements =
         Nothing
 
 
-resolveAcuteIllnessDiagnosisByLaboratoryResults : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
+resolveAcuteIllnessDiagnosisByMalariaRDT : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosisByMalariaRDT measurements =
     malariaRapidTestResult measurements
-        |> Maybe.andThen
-            (\testResult ->
-                case testResult of
-                    RapidTestPositive ->
-                        if malariaDangerSignsPresent measurements then
-                            Just DiagnosisMalariaComplicated
+        |> Maybe.map
+            (\result ->
+                case malariaTypeForPositiveRDT measurements result of
+                    Just dignosis ->
+                        dignosis
 
-                        else
-                            Just DiagnosisMalariaUncomplicated
-
-                    RapidTestPositiveAndPregnant ->
-                        if malariaDangerSignsPresent measurements then
-                            Just DiagnosisMalariaComplicated
-
-                        else
-                            Just DiagnosisMalariaUncomplicatedAndPregnant
-
-                    _ ->
+                    Nothing ->
                         if respiratoryInfectionDangerSignsPresent measurements then
-                            Just DiagnosisRespiratoryInfectionComplicated
+                            DiagnosisRespiratoryInfectionComplicated
 
                         else if gastrointestinalInfectionDangerSignsPresent True measurements then
                             -- Fever with Diarrhea is considered to be a complicated case.
-                            Just DiagnosisGastrointestinalInfectionComplicated
+                            DiagnosisGastrointestinalInfectionComplicated
 
                         else
-                            Just DiagnosisFeverOfUnknownOrigin
+                            DiagnosisFeverOfUnknownOrigin
             )
+
+
+malariaTypeForPositiveRDT : AcuteIllnessMeasurements -> RapidTestResult -> Maybe AcuteIllnessDiagnosis
+malariaTypeForPositiveRDT measurements result =
+    case result of
+        RapidTestPositive ->
+            if malariaDangerSignsPresent measurements then
+                Just DiagnosisMalariaComplicated
+
+            else
+                Just DiagnosisMalariaUncomplicated
+
+        RapidTestPositiveAndPregnant ->
+            if malariaDangerSignsPresent measurements then
+                Just DiagnosisMalariaComplicated
+
+            else
+                Just DiagnosisMalariaUncomplicatedAndPregnant
+
+        _ ->
+            Nothing
 
 
 countSymptoms : Maybe ( id, m ) -> (m -> Dict k v) -> List k -> Int
