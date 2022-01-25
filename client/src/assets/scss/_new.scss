@@ -2420,10 +2420,29 @@ div.page-report.clinical .ui.unstackable.items {
   }
 }
 
-div.page-demographics-report {
+div.page-report.demographics .ui.unstackable.items {
 
-  .patient-information, .family-information, .address-information {
-    margin-bottom: 20px;
+  .pane-content {
+
+    .ui.image {
+      margin-bottom: 25px;
+    }
+
+    p {
+      font-size: 22px;
+      line-height: 30px;
+      margin-bottom: 5px;
+
+      .label {
+        font-weight: bold;
+        width: 50%;
+      }
+
+      .value {
+        float: right;
+        width: 50%;
+      }
+    }
   }
 
   .family-information .children-table {
@@ -2445,7 +2464,7 @@ div.page-demographics-report {
 
     .row {
       border-bottom: 1px solid $color-light-gray;
-      height: 24px;
+      height: 40px;
       width: 95%;
 
       &:last-child {
@@ -2458,28 +2477,6 @@ div.page-demographics-report {
         &.first {
           float: left;
         }
-      }
-    }
-  }
-
-  .pane-content {
-
-    .ui.image {
-      margin-bottom: 15px;
-    }
-
-    p {
-      line-height: 26px;
-      margin-bottom: 5px;
-
-      .label {
-        font-weight: bold;
-        width: 40%;
-      }
-
-      .value {
-        float: right;
-        width: 60%;
       }
     }
   }
@@ -3025,6 +3022,7 @@ div.page-activity.patient-record {
 div.page-report.acute-illness,
 div.page-report.well-child,
 div.page-report.clinical,
+div.page-report.demographics,
 div.page-activity.patient-record {
   background: unset;
 

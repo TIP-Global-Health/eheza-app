@@ -81,13 +81,16 @@ viewHeader : Language -> PrenatalEncounterId -> Html Msg
 viewHeader language prenatalEncounterId =
     div
         [ class "ui basic segment head" ]
-        [ span
-            [ class "icon-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
-            ]
-            []
-        , h1 [ class "ui header" ]
+        [ h1 [ class "ui header" ]
             [ text <| translate language Translate.DemographicsReport ]
+        , span
+            [ class "link-back" ]
+            [ span
+                [ class "icon-back"
+                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                ]
+                []
+            ]
         ]
 
 
@@ -136,7 +139,7 @@ viewPatientInformationPane language currentDate data =
                 |> Maybe.withDefault ""
     in
     div [ class "patient-information" ]
-        [ viewItemHeading language Translate.PatientInformation "gray"
+        [ viewItemHeading language Translate.PatientInformation "blue"
         , div [ class "pane-content" ]
             [ div [ class "ui image" ]
                 [ thumbnailImage "mother" data.person.avatarUrl data.person.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -201,7 +204,7 @@ viewFamilyInformationPane language currentDate db data =
                     |> div [ class "children-table" ]
     in
     div [ class "family-information" ]
-        [ viewItemHeading language Translate.FamilyInformation "gray"
+        [ viewItemHeading language Translate.FamilyInformation "blue"
         , div [ class "pane-content" ]
             [ viewLineItem language Translate.FamilyUbudehe ubudehe
             , viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
@@ -213,7 +216,7 @@ viewFamilyInformationPane language currentDate db data =
 viewAddressInformationPane : Language -> NominalDate -> FetchedData -> Html Msg
 viewAddressInformationPane language currentDate data =
     div [ class "address-information" ]
-        [ viewItemHeading language Translate.AddressInformation "gray"
+        [ viewItemHeading language Translate.AddressInformation "blue"
         , div [ class "pane-content" ]
             [ viewLineItem language Translate.Province (data.person.province |> Maybe.withDefault "")
             , viewLineItem language Translate.District (data.person.district |> Maybe.withDefault "")
@@ -232,7 +235,7 @@ viewContactInformationPane language currentDate db data =
                 |> Maybe.withDefault ""
     in
     div [ class "contact-information" ]
-        [ viewItemHeading language Translate.ContactInformation "gray"
+        [ viewItemHeading language Translate.ContactInformation "blue"
         , div [ class "pane-content" ]
             [ viewLineItem language Translate.TelephoneNumber (data.person.telephoneNumber |> Maybe.withDefault "")
             , viewLineItem language Translate.HealthCenter healthCenterName
