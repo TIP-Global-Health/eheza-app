@@ -252,6 +252,6 @@ viewItemHeading language label color =
 viewLineItem : Language -> TranslationId -> String -> Html Msg
 viewLineItem language label value =
     p []
-        [ span [ class "label" ] [ text <| translate language label ++ ":" ]
+        [ span [ class "label" ] [ text <| translate language label ]
         , span [ class "value" ] [ text value ]
         ]
