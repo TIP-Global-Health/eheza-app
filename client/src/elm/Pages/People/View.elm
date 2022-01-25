@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
 import Backend.PrenatalActivity.Model
@@ -302,7 +303,7 @@ viewParticipant language currentDate initiator relation db id person =
                 [ showIf (isNothing relation) <|
                     span
                         [ class "patient-record"
-                        , onClick <| SetActivePage <| UserPage <| PatientRecordPage id
+                        , onClick <| SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory id
                         ]
                         []
                 , div [ class "action-icon-wrapper blue" ]

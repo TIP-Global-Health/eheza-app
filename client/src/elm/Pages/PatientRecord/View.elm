@@ -3,6 +3,7 @@ module Pages.PatientRecord.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (generateFullName, isPersonAnAdult)
 import EverySet exposing (EverySet)
@@ -35,14 +36,14 @@ import Utils.Html exposing (spinner, thumbnailImage, viewModal)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id isChw initiator db model =
     Dict.get id db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
             (\person ->
                 if isPersonAnAdult currentDate person == Just False then
-                    viewContentForChild language currentDate zscores id person isChw db model
+                    viewContentForChild language currentDate zscores id person isChw initiator db model
 
                 else
                     viewContentForAdult language currentDate person db model
@@ -67,8 +68,8 @@ viewHeader language =
         ]
 
 
-viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> ModelIndexedDb -> Model -> Html Msg
-viewContentForChild language currentDate zscores childId child isChw db model =
+viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewContentForChild language currentDate zscores childId child isChw initiator db model =
     let
         endEncounterData =
             Just <|
@@ -80,15 +81,12 @@ viewContentForChild language currentDate zscores childId child isChw db model =
 
         mandatoryNutritionAssessmentMeasurementsTaken =
             False
-
-        initiator =
-            InitiatorPatientRecordChild childId
     in
     viewProgressReport language
         currentDate
         zscores
         isChw
-        initiator
+        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
         mandatoryNutritionAssessmentMeasurementsTaken
         db
         model.diagnosisMode

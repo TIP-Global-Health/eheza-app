@@ -47,6 +47,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
@@ -174,7 +175,7 @@ type UserPage
     | WellChildActivityPage WellChildEncounterId WellChildActivity -- record well child activity.
     | WellChildProgressReportPage WellChildEncounterId -- well child progress report.
     | TraceContactPage AcuteIllnessTraceContactId
-    | PatientRecordPage PersonId
+    | PatientRecordPage PatientRecordInitiator PersonId
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

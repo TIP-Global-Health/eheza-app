@@ -12,6 +12,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
+import Backend.PatientRecord.Utils
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
@@ -272,8 +274,12 @@ pageToFragment current =
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
-                PatientRecordPage id ->
-                    Just <| "patient-record/" ++ fromEntityUuid id
+                PatientRecordPage initiator id ->
+                    Just <|
+                        "patient-record/"
+                            ++ fromEntityUuid id
+                            ++ "/"
+                            ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragmemt initiator
 
 
 parser : Parser (Page -> c) c
@@ -321,7 +327,7 @@ parser =
         , map (\id activity -> UserPage <| WellChildActivityPage id activity) (s "well-child-activity" </> parseUuid </> parseWellChildActivity)
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
-        , map (\id -> UserPage <| PatientRecordPage id) (s "patient-record" </> parseUuid)
+        , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
@@ -415,3 +421,8 @@ parseClinicalProgressReportInitiator =
 parseAcuteIllnessProgressReportInitiator : Parser (AcuteIllnessProgressReportInitiator -> c) c
 parseAcuteIllnessProgressReportInitiator =
     custom "AcuteIllnessProgressReportInitiator" Backend.AcuteIllnessEncounter.Utils.progressReportInitiatorFromUrlFragmemt
+
+
+parsePatientRecordInitiator : Parser (PatientRecordInitiator -> c) c
+parsePatientRecordInitiator =
+    custom "PatientRecordInitiator" Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragmemt
