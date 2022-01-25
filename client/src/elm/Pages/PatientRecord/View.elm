@@ -34,7 +34,7 @@ import Pages.Utils
         , viewSaveAction
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
-import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
 import Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
@@ -363,7 +363,7 @@ viewAntenatalEntry :
     Language
     -> NominalDate
     -> ModelIndexedDb
-    -> ( ( IndividualEncounterParticipantId, DiagnosisEntryStatus ), IndividualEncounterParticipant )
+    -> ( ( IndividualEncounterParticipantId, PaneEntryStatus ), IndividualEncounterParticipant )
     -> Maybe ( NominalDate, Html Msg )
 viewAntenatalEntry language currentDate db ( ( participantId, status ), data ) =
     let
@@ -389,7 +389,7 @@ viewAntenatalEntry language currentDate db ( ( participantId, status ), data ) =
             , div [ class "entry antenatal" ]
                 [ div [ class "cell date-start" ] [ text startDate ]
                 , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-                    [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+                    [ text <| translate language <| Translate.EntryStatusAntenatal status ]
                 , div [ class "cell date-end" ] [ text conclusionDate ]
                 , div
                     [ class "icon-forward"

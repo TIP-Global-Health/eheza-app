@@ -22,7 +22,7 @@ type DiagnosisMode
     | ModeCompletedDiagnosis
 
 
-type DiagnosisEntryStatus
+type PaneEntryStatus
     = StatusOngoing
     | StatusResolved
 

@@ -100,7 +100,7 @@ import Pages.PrenatalActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChildActivity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..))
+import Pages.WellChildProgressReport.Model exposing (ECDStatus(..), PaneEntryStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -499,7 +499,6 @@ type TranslationId
     | Diabetes
     | Diagnosis
     | DiagnosisDate
-    | DiagnosisEntryStatus DiagnosisEntryStatus
     | DifferenceBetweenDueAndDeliveryDates
     | Disabled
     | DistributionNotice DistributionNotice
@@ -532,6 +531,8 @@ type TranslationId
     | EnrollToProgramQuestion
     | EnterAmountDistributed
     | EnterPairingCode
+    | EntryStatusAntenatal PaneEntryStatus
+    | EntryStatusDiagnosis PaneEntryStatus
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
@@ -3281,18 +3282,6 @@ translationSet trans =
             , kinyarwanda = Just "Itariki y'Isuzuma"
             }
 
-        DiagnosisEntryStatus status ->
-            case status of
-                StatusOngoing ->
-                    { english = "Ongoing"
-                    , kinyarwanda = Nothing
-                    }
-
-                StatusResolved ->
-                    { english = "Resolved"
-                    , kinyarwanda = Nothing
-                    }
-
         DifferenceBetweenDueAndDeliveryDates ->
             { english = "Difference between due date and delivery date"
             , kinyarwanda = Just "Ikinyuranyo kiri hagati y'amatariki"
@@ -3780,6 +3769,30 @@ translationSet trans =
             { english = "Enter pairing code"
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
             }
+
+        EntryStatusAntenatal status ->
+            case status of
+                StatusOngoing ->
+                    { english = "Open"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusResolved ->
+                    { english = "Concluded"
+                    , kinyarwanda = Nothing
+                    }
+
+        EntryStatusDiagnosis status ->
+            case status of
+                StatusOngoing ->
+                    { english = "Ongoing"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusResolved ->
+                    { english = "Resolved"
+                    , kinyarwanda = Nothing
+                    }
 
         MemoryQuota quota ->
             { english = "Memory used " ++ String.fromInt (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ String.fromInt (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
