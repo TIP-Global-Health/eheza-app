@@ -10412,7 +10412,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Kuvura Uburwayi"
                     }
 
-                DemographicsReportPage _ ->
+                DemographicsReportPage _ _ ->
                     { english = "Demographics Report"
                     , kinyarwanda = Just "Raporo y'umwirondoro"
                     }

@@ -40,8 +40,8 @@ type RecordPreganancyInitiator
     | InitiatorPostpartumEncounter PrenatalEncounterId
 
 
-type ClinicalProgressReportInitiator
-    = InitiatorEncounterPage
+type PrenatalProgressReportInitiator
+    = InitiatorEncounterPage PrenatalEncounterId
     | InitiatorNewEncounter PrenatalEncounterId
     | InitiatorPatientRecord PersonId
 

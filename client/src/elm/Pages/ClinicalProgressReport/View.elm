@@ -22,7 +22,7 @@ import Backend.PrenatalActivity.Utils
         ( generateRiskFactorAlertData
         , getEncounterTrimesterData
         )
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
 import Date exposing (Interval(..), Unit(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -53,7 +53,7 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ClinicalProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id isChw initiator db model =
     let
         data =
@@ -71,7 +71,7 @@ view language currentDate id isChw initiator db model =
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> ClinicalProgressReportInitiator -> Model -> Html Msg
+viewHeader : Language -> PrenatalEncounterId -> PrenatalProgressReportInitiator -> Model -> Html Msg
 viewHeader language id initiator model =
     let
         label =
@@ -102,8 +102,8 @@ viewHeader language id initiator model =
                         ]
             in
             case initiator of
-                InitiatorEncounterPage ->
-                    iconForView (PrenatalEncounterPage id)
+                InitiatorEncounterPage prenatalEncounterId ->
+                    iconForView (PrenatalEncounterPage prenatalEncounterId)
 
                 InitiatorNewEncounter _ ->
                     emptyNode
@@ -119,7 +119,7 @@ viewHeader language id initiator model =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> ClinicalProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent : Language -> NominalDate -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
 viewContent language currentDate isChw initiator model data =
     let
         derivedContent =
@@ -134,7 +134,7 @@ viewContent language currentDate isChw initiator model data =
 
                         actions =
                             case initiator of
-                                InitiatorEncounterPage ->
+                                InitiatorEncounterPage _ ->
                                     emptyNode
 
                                 InitiatorNewEncounter encounterId ->
