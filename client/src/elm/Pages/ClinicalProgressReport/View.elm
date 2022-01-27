@@ -618,30 +618,6 @@ viewPatientProgressPane language currentDate isChw data =
                                     ( diffDays lmpDate date, fundalHeight )
                                 )
                     )
-
-        progressPhotos =
-            allMeasurementsWithDates
-                |> List.filterMap
-                    (\( date, measurements ) ->
-                        measurements.prenatalPhoto
-                            |> Maybe.map
-                                (Tuple.second
-                                    >> .value
-                                    >> (\photoUrl ->
-                                            let
-                                                egaLabel =
-                                                    data.globalLmpDate
-                                                        |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
-                                                        |> Maybe.withDefault ""
-                                            in
-                                            div [ class "progress-photo" ]
-                                                [ viewPhotoThumbFromPhotoUrl photoUrl
-                                                , div [ class "ega" ] [ text egaLabel ]
-                                                ]
-                                       )
-                                )
-                    )
-                |> div [ class "photos-section" ]
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -660,7 +636,6 @@ viewPatientProgressPane language currentDate isChw data =
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
             , div [ class "caption photos" ] [ text <| translate language Translate.ProgressPhotos ++ ":" ]
-            , progressPhotos
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
             , div [ class "trends-section" ]
                 [ viewMarkers
