@@ -35,6 +35,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewQuestionLabel
         , viewSaveAction
+        , viewStartEncounterButton
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
 import Pages.WellChildProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
@@ -86,8 +87,8 @@ viewHeader language model =
         ]
 
 
-viewStartEncounterPage : Language -> NominalDate -> Bool -> Bool -> PersonId -> Person -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewStartEncounterPage language currentDate isChw isAdult personId person initiator db model =
+viewStartEncounterPage : Language -> NominalDate -> Bool -> Bool -> PersonId -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewStartEncounterPage language currentDate isChw isAdult personId initiator db model =
     let
         encounterButton encounterType participantPage =
             button
@@ -120,34 +121,40 @@ viewStartEncounterPage language currentDate isChw isAdult personId person initia
 
 viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewContentForChild language currentDate zscores childId child isChw initiator db model =
-    let
-        endEncounterData =
-            Just <|
-                { showEndEncounterDialog = False
-                , allowEndEcounter = False
-                , closeEncounterMsg = NoOp
-                , setEndEncounterDialogStateMsg = always NoOp
-                }
-    in
-    viewProgressReport language
-        currentDate
-        zscores
-        isChw
-        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
-        False
-        db
-        model.diagnosisMode
-        SetActivePage
-        SetDiagnosisMode
-        endEncounterData
-        ( childId, child )
+    case model.viewMode of
+        ViewStartEncounter ->
+            viewStartEncounterPage language currentDate isChw False childId initiator db model
+
+        ViewPatientRecord ->
+            let
+                bottomActionData =
+                    Just <|
+                        { showEndEncounterDialog = False
+                        , allowEndEcounter = False
+                        , closeEncounterMsg = NoOp
+                        , setEndEncounterDialogStateMsg = always NoOp
+                        , startEncounterMsg = SetViewMode ViewStartEncounter
+                        }
+            in
+            viewProgressReport language
+                currentDate
+                zscores
+                isChw
+                (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
+                False
+                db
+                model.diagnosisMode
+                SetActivePage
+                SetDiagnosisMode
+                bottomActionData
+                ( childId, child )
 
 
 viewContentForAdult : Language -> NominalDate -> Bool -> PersonId -> Person -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewContentForAdult language currentDate isChw personId person initiator db model =
     case model.viewMode of
         ViewStartEncounter ->
-            viewStartEncounterPage language currentDate isChw True personId person initiator db model
+            viewStartEncounterPage language currentDate isChw True personId initiator db model
 
         ViewPatientRecord ->
             let
@@ -198,13 +205,7 @@ viewContentForAdult language currentDate isChw personId person initiator db mode
                         , viewFilters language model
                         ]
                     , selectedPane
-                    , div [ class "actions" ]
-                        [ button
-                            [ class "ui fluid primary button"
-                            , onClick <| SetViewMode ViewStartEncounter
-                            ]
-                            [ text <| translate language Translate.StartAnEncounter ]
-                        ]
+                    , viewStartEncounterButton language (SetViewMode ViewStartEncounter)
                     ]
                 ]
 

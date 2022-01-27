@@ -1078,7 +1078,7 @@ type TranslationId
     | GroupEncounterUnauthorized2
     | SendPatientToFacility ReferralFacility
     | ShowAll
-    | StartAnEncounter
+    | StartEncounter
     | StartEndDate
     | StrartNewAcuteIllnessHelper
     | StartDate
@@ -9317,7 +9317,7 @@ translationSet trans =
             , kinyarwanda = Just "Erekana amazina yose"
             }
 
-        StartAnEncounter ->
+        StartEncounter ->
             { english = "Start an encounter"
             , kinyarwanda = Nothing
             }
