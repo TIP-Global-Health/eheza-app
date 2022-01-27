@@ -281,6 +281,7 @@ type TranslationId
     | AccompaniedByPartner
     | AccompanyToHCQuestion
     | AccessDenied
+    | Actions
     | ActionsTaken
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
@@ -1250,6 +1251,11 @@ translationSet trans =
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
+            }
+
+        Actions ->
+            { english = "Actions"
+            , kinyarwanda = Nothing
             }
 
         ActionsTaken ->

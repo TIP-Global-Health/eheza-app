@@ -2108,6 +2108,7 @@ div.page-report.clinical .ui.unstackable.items {
 
   .risk-factors,
   .medical-diagnosis,
+  .chw-activity,
   .obstetric-diagnosis {
     background: $color-white;
 
@@ -2308,7 +2309,8 @@ div.page-report.clinical .ui.unstackable.items {
   }
 
   .lab-results,
-  .lab-results-history {
+  .lab-results-history,
+  .chw-activity {
 
     .heading,
     .entry {
@@ -2334,14 +2336,16 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
-  .lab-results {
+  .lab-results,
+  .chw-activity {
 
     .heading,
     .entry {
 
       .name,
       .date,
-      .result {
+      .result,
+      {
         width: 215px;
       }
     }

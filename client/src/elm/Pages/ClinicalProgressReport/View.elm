@@ -2,7 +2,7 @@ module Pages.ClinicalProgressReport.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExecutionNote(..), PrenatalTestVariant(..))
+import Backend.Measurement.Model exposing (PrenatalLaboratoryTest(..), PrenatalMeasurements, PrenatalTestExecutionNote(..), PrenatalTestVariant(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
@@ -25,6 +25,7 @@ import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Interval(..), Unit(..))
+import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
@@ -32,6 +33,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, unwrap)
+import Measurement.View exposing (viewActionTakenLabel)
 import Pages.ClinicalProgressReport.Model exposing (..)
 import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.DemographicsReport.View exposing (viewItemHeading)
@@ -153,6 +155,7 @@ viewContent language currentDate isChw initiator model data =
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                     , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
+                    , viewChwActivityPane language currentDate isChw firstEncounterMeasurements data
                     , viewPatientProgressPane language currentDate isChw data
                     , viewLabResultsPane language currentDate data
                     , viewProgressPhotosPane language currentDate isChw data
@@ -286,6 +289,59 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
         , div [ class "pane-content" ] alerts
+        ]
+
+
+viewChwActivityPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewChwActivityPane language currentDate isChw firstEncounterMeasurements data =
+    let
+        allMeasurementsWithDates =
+            data.nursePreviousMeasurementsWithDates
+                ++ (if isChw then
+                        [ ( currentDate, data.measurements ) ]
+
+                    else
+                        []
+                   )
+
+        pregnancyDating =
+            allMeasurementsWithDates
+                |> List.filter
+                    (\( _, measurements ) ->
+                        measurements.lastMenstrualPeriod
+                            |> Maybe.map (Tuple.second >> .value >> .confirmation >> (==) True)
+                            |> Maybe.withDefault False
+                    )
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        labs =
+            allMeasurementsWithDates
+                |> List.filter
+                    (\( _, measurements ) ->
+                        measurements.labsResults
+                            |> Maybe.map (Tuple.second >> .value >> .performedTests >> EverySet.member TestBloodGpRs)
+                            |> Maybe.withDefault False
+                    )
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        actionPregnancyDating date =
+            if pregnancyDating == Just date then
+                li [ class "general" ] [ text <| translate language Translate.Date ]
+
+            else
+                emptyNode
+
+        heading =
+            div [ class "heading" ]
+                [ div [ class "date" ] [ translateText language Translate.Date ]
+                , div [ class "result" ] [ translateText language Translate.Actions ]
+                ]
+    in
+    div [ class "chw-activity" ] <|
+        [ viewItemHeading language Translate.ChwActivity "blue"
+        , div [ class "pane-content" ] [ heading ]
         ]
 
 
