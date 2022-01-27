@@ -80,7 +80,7 @@ progressReportInitiatorFromUrlFragmemt s =
 -EDD date is estimated delivery date - the day on which we expect pregnancy
 -be concluded.
 -Pregnancy lasts 280 days.
--|}
+-}
 lmpToEDDDate : NominalDate -> NominalDate
 lmpToEDDDate lmpDate =
     Date.add Days 280 lmpDate
