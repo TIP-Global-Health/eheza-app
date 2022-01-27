@@ -376,8 +376,8 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 
-                    DemographicsReportPage prenatalEncounterId ->
-                        Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                    DemographicsReportPage initiator prenatalEncounterId ->
+                        Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId initiator model.indexedDb
                             |> flexPageWrapper model
 
                     EditPersonPage id ->
@@ -659,7 +659,7 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageTraceContact traceContactId)
                             |> flexPageWrapper model
 
-                    PatientRecordPage personId ->
+                    PatientRecordPage initiator personId ->
                         let
                             page_ =
                                 Dict.get personId loggedInModel.patientRecordPages
@@ -667,7 +667,10 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.PatientRecord.View.view model.language
                             currentDate
+                            model.zscores
                             personId
+                            isChw
+                            initiator
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)

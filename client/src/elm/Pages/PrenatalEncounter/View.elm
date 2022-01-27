@@ -16,9 +16,9 @@ import Backend.PrenatalActivity.Utils
         )
 import Backend.PrenatalEncounter.Model
     exposing
-        ( ClinicalProgressReportInitiator(..)
-        , PrenatalEncounter
+        ( PrenatalEncounter
         , PrenatalEncounterType(..)
+        , PrenatalProgressReportInitiator(..)
         , RecordPreganancyInitiator(..)
         )
 import Date exposing (Interval(..))
@@ -457,8 +457,8 @@ viewMainPageContent language currentDate data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage InitiatorEncounterPage data.id)
-                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.id)
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorEncounterPage data.id) data.id)
+                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorEncounterPage data.id) data.participant.person)
                     ]
 
             else

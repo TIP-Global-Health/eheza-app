@@ -145,6 +145,9 @@ viewHeader language id initiator =
 
                 InitiatorGroupNutritionProgressReport sessionId personId ->
                     SessionPage sessionId (ProgressReportPage personId)
+
+                InitiatorPatientRecord patientRecordInitiator personId ->
+                    PatientRecordPage patientRecordInitiator personId
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

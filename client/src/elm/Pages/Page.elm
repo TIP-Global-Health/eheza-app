@@ -47,9 +47,10 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 
 
@@ -126,10 +127,10 @@ the login page instead.
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
-    | ClinicalProgressReportPage ClinicalProgressReportInitiator PrenatalEncounterId
+    | ClinicalProgressReportPage PrenatalProgressReportInitiator PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.
-    | DemographicsReportPage PrenatalEncounterId
+    | DemographicsReportPage PrenatalProgressReportInitiator PersonId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
       -- Shows a particular person.
@@ -174,7 +175,7 @@ type UserPage
     | WellChildActivityPage WellChildEncounterId WellChildActivity -- record well child activity.
     | WellChildProgressReportPage WellChildEncounterId -- well child progress report.
     | TraceContactPage AcuteIllnessTraceContactId
-    | PatientRecordPage PersonId
+    | PatientRecordPage PatientRecordInitiator PersonId
 
 
 {-| We group together the pages that can only be viewed in the Dashboard
