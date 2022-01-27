@@ -139,6 +139,7 @@ viewContent language currentDate isChw initiator model data =
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
                     , viewPatientProgressPane language currentDate isChw data
                     , viewLabResultsPane language currentDate data
+                    , viewProgressPhotoPane language currentDate isChw data
                     , actions
                     ]
     in
@@ -1190,4 +1191,47 @@ viewLabResultsHistoryPane language currentDate mode =
         , div [ class "pane-content" ] <|
             heading
                 :: entries
+        ]
+
+
+viewProgressPhotoPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewProgressPhotoPane language currentDate isChw data =
+    let
+        allMeasurementsWithDates =
+            data.nursePreviousMeasurementsWithDates
+                ++ (if isChw then
+                        []
+
+                    else
+                        [ ( currentDate, data.measurements ) ]
+                   )
+
+        progressPhotos =
+            allMeasurementsWithDates
+                |> List.filterMap
+                    (\( date, measurements ) ->
+                        measurements.prenatalPhoto
+                            |> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> (\photoUrl ->
+                                            let
+                                                egaLabel =
+                                                    data.globalLmpDate
+                                                        |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
+                                                        |> Maybe.withDefault ""
+                                            in
+                                            div [ class "progress-photo" ]
+                                                [ viewPhotoThumbFromPhotoUrl photoUrl
+                                                , div [ class "ega" ] [ text egaLabel ]
+                                                ]
+                                       )
+                                )
+                    )
+                |> div [ class "photos-section" ]
+    in
+    div [ class "progress-photo" ]
+        [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
+        , div [ class "pane-content" ]
+            [ progressPhotos ]
         ]
