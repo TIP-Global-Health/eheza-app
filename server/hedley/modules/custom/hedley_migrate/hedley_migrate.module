@@ -311,7 +311,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
 
   // Create new vocabulary.
   $vocabulary = (object) array(
-    'name' => 'Ihangane geolocation vocabulary',
+    'name' => 'Eheza geolocation vocabulary',
     'description' => 'This vocabulary lists all geolocations',
     'machine_name' => 'eheza_geolocation',
   );
