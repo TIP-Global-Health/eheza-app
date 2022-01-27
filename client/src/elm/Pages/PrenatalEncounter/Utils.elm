@@ -8,6 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -111,14 +112,9 @@ generatePostCreateDestination encounterType hasNurseEncounter =
             DestinationEncounterPage
 
 
-calculateEDD : NominalDate -> NominalDate
-calculateEDD lmpDate =
-    Date.add Days 280 lmpDate
-
-
 calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
 calculateEDDandEGADays currentDate lmpDate =
-    ( calculateEDD lmpDate
+    ( lmpToEDDDate lmpDate
     , diffDays lmpDate currentDate
     )
 
