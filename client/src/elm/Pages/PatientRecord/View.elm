@@ -89,11 +89,10 @@ viewHeader language model =
 viewStartEncounterPage : Language -> NominalDate -> Bool -> Bool -> PersonId -> Person -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewStartEncounterPage language currentDate isChw isAdult personId person initiator db model =
     let
-        encounterButton encounterType =
+        encounterButton encounterType participantPage =
             button
                 [ class "ui primary button"
-
-                -- , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage encounterType
+                , onClick <| SetActivePage <| UserPage <| participantPage personId
                 ]
                 [ span [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType False ]
                 , span [ class "icon-back" ] []
@@ -101,14 +100,14 @@ viewStartEncounterPage language currentDate isChw isAdult personId person initia
 
         buttons =
             if isAdult then
-                [ encounterButton AcuteIllnessEncounter
-                , encounterButton AntenatalEncounter
+                [ encounterButton AcuteIllnessEncounter AcuteIllnessParticipantPage
+                , encounterButton AntenatalEncounter PrenatalParticipantPage
                 ]
 
             else
-                [ encounterButton AcuteIllnessEncounter
-                , encounterButton WellChildEncounter
-                , encounterButton NutritionEncounter
+                [ encounterButton AcuteIllnessEncounter AcuteIllnessParticipantPage
+                , encounterButton WellChildEncounter WellChildParticipantPage
+                , encounterButton NutritionEncounter NutritionParticipantPage
                 ]
     in
     div [ class "page-activity patient-record" ]
