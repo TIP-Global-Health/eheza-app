@@ -8,7 +8,7 @@ import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDe
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -151,7 +151,7 @@ viewContentForAdult language currentDate personId person initiator db model =
             , div [ class "pane" ]
                 [ div [ class "pane-heading" ]
                     [ text <| translate language Translate.ProgressReports ]
-                , viewFilters language patientRecordFilters model
+                , viewFilters language model
                 ]
             , pane
             ]
@@ -262,8 +262,8 @@ viewAdultDetails language currentDate personId person db =
     ]
 
 
-viewFilters : Language -> List PatientRecordFilter -> Model -> Html Msg
-viewFilters language filters model =
+viewFilters : Language -> Model -> Html Msg
+viewFilters language model =
     let
         renderButton filter =
             button
@@ -275,7 +275,7 @@ viewFilters language filters model =
                 ]
                 [ translateText language <| Translate.PatientRecordFilter filter ]
     in
-    List.map renderButton filters
+    List.map renderButton patientRecordFilters
         |> div [ class "ui segment filters" ]
 
 

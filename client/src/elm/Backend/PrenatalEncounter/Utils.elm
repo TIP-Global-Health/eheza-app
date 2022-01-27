@@ -1,6 +1,6 @@
 module Backend.PrenatalEncounter.Utils exposing (..)
 
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..))
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
@@ -37,11 +37,11 @@ recordPreganancyInitiatorFromUrlFragmemt s =
                 Nothing
 
 
-progressReportInitiatorToUrlFragmemt : ClinicalProgressReportInitiator -> String
+progressReportInitiatorToUrlFragmemt : PrenatalProgressReportInitiator -> String
 progressReportInitiatorToUrlFragmemt initiator =
     case initiator of
-        InitiatorEncounterPage ->
-            "encounter-page"
+        InitiatorEncounterPage encounterId ->
+            "encounter-page-" ++ fromEntityUuid encounterId
 
         InitiatorNewEncounter encounterId ->
             "encounter-" ++ fromEntityUuid encounterId
@@ -50,24 +50,25 @@ progressReportInitiatorToUrlFragmemt initiator =
             "patient-record-" ++ fromEntityUuid personId
 
 
-progressReportInitiatorFromUrlFragmemt : String -> Maybe ClinicalProgressReportInitiator
+progressReportInitiatorFromUrlFragmemt : String -> Maybe PrenatalProgressReportInitiator
 progressReportInitiatorFromUrlFragmemt s =
-    case s of
-        "encounter-page" ->
-            Just InitiatorEncounterPage
+    if String.startsWith "encounter-page" s then
+        String.dropLeft (String.length "encounter-page-") s
+            |> toEntityUuid
+            |> InitiatorEncounterPage
+            |> Just
 
-        _ ->
-            if String.startsWith "encounter" s then
-                String.dropLeft (String.length "encounter-") s
-                    |> toEntityUuid
-                    |> InitiatorNewEncounter
-                    |> Just
+    else if String.startsWith "encounter" s then
+        String.dropLeft (String.length "encounter-") s
+            |> toEntityUuid
+            |> InitiatorNewEncounter
+            |> Just
 
-            else if String.startsWith "patient-record" s then
-                String.dropLeft (String.length "patient-record-") s
-                    |> toEntityUuid
-                    |> InitiatorPatientRecord
-                    |> Just
+    else if String.startsWith "patient-record" s then
+        String.dropLeft (String.length "patient-record-") s
+            |> toEntityUuid
+            |> InitiatorPatientRecord
+            |> Just
 
-            else
-                Nothing
+    else
+        Nothing

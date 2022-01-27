@@ -376,8 +376,8 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 
-                    DemographicsReportPage prenatalEncounterId ->
-                        Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                    DemographicsReportPage initiator prenatalEncounterId ->
+                        Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId initiator model.indexedDb
                             |> flexPageWrapper model
 
                     EditPersonPage id ->
