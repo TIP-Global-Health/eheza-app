@@ -406,13 +406,13 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPagePersons)
                             |> flexPageWrapper model
 
-                    PrenatalParticipantPage id ->
+                    PrenatalParticipantPage initiator id ->
                         let
                             page_ =
                                 Dict.get id loggedInModel.prenatalParticipantPages
                                     |> Maybe.withDefault Pages.PrenatalParticipant.Model.emptyModel
                         in
-                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id isChw model.indexedDb page_
+                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipant id)
                             |> flexPageWrapper model
 

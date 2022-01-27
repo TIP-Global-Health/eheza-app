@@ -10443,7 +10443,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
                     }
 
-                PrenatalParticipantPage _ ->
+                PrenatalParticipantPage _ _ ->
                     { english = "Antenatal Participant"
                     , kinyarwanda = Nothing
                     }

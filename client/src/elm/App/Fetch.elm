@@ -146,7 +146,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (PrenatalParticipantPage personId) ->
+            UserPage (PrenatalParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->

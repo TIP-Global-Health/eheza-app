@@ -45,7 +45,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
@@ -149,7 +149,7 @@ type UserPage
       -- Initiator indicates what was the origin of request,
       -- so that it would be clear where to proceed after action is completed / canceled.
     | PersonsPage (Maybe PersonId) Initiator
-    | PrenatalParticipantPage PersonId
+    | PrenatalParticipantPage IndividualParticipantInitiator PersonId
     | IndividualEncounterParticipantsPage IndividualEncounterType
       -- Create or edit a relationship between adult and child.
       -- Initiator will help to determine which actions are allowed.

@@ -2,7 +2,7 @@ module Pages.IndividualEncounterParticipants.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
@@ -205,7 +205,7 @@ viewParticipant language currentDate encounterType db id person =
                     [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
 
                 AntenatalEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
 
                 NutritionEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]

@@ -99,10 +99,13 @@ viewStartEncounterPage language currentDate isChw isAdult personId initiator db 
                 , span [ class "icon-back" ] []
                 ]
 
+        participantPageInitiator =
+            Backend.IndividualEncounterParticipant.Model.InitiatorPatientRecord initiator personId
+
         buttons =
             if isAdult then
                 [ encounterButton AcuteIllnessEncounter AcuteIllnessParticipantPage
-                , encounterButton AntenatalEncounter PrenatalParticipantPage
+                , encounterButton AntenatalEncounter (PrenatalParticipantPage participantPageInitiator)
                 ]
 
             else

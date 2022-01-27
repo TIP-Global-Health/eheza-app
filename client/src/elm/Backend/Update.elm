@@ -16,7 +16,7 @@ import Backend.Fetch
 import Backend.HomeVisitActivity.Model
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, ChildNutritionSign, HistoricalMeasurements, Measurements, WellChildSymptom(..))
 import Backend.Measurement.Utils
@@ -2264,7 +2264,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                         AcuteIllnessParticipantPage personId
 
                                                     AntenatalEncounter ->
-                                                        PrenatalParticipantPage personId
+                                                        PrenatalParticipantPage InitiatorParticipantsPage personId
 
                                                     NutritionEncounter ->
                                                         NutritionParticipantPage personId
