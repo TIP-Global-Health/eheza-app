@@ -129,8 +129,8 @@ fetch model =
                 Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (DemographicsReportPage prenatalEncounterId) ->
-                Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
+            UserPage (DemographicsReportPage _ personId) ->
+                Pages.DemographicsReport.Fetch.fetch personId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (PersonPage id initiator) ->
