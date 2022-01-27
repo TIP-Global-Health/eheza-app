@@ -1,6 +1,8 @@
 module Backend.PrenatalEncounter.Utils exposing (..)
 
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import Date exposing (Unit(..))
+import Gizra.NominalDate exposing (NominalDate)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
@@ -27,7 +29,7 @@ recordPreganancyInitiatorFromUrlFragmemt s =
             Just InitiatorWarningPopup
 
         _ ->
-            if String.startsWith "postpartum-encounter" s then
+            if String.startsWith "postpartum-encounter-" s then
                 String.dropLeft (String.length "postpartum-encounter-") s
                     |> toEntityUuid
                     |> InitiatorPostpartumEncounter
@@ -57,13 +59,13 @@ progressReportInitiatorFromUrlFragmemt s =
             Just InitiatorEncounterPage
 
         _ ->
-            if String.startsWith "encounter" s then
+            if String.startsWith "encounter-" s then
                 String.dropLeft (String.length "encounter-") s
                     |> toEntityUuid
                     |> InitiatorNewEncounter
                     |> Just
 
-            else if String.startsWith "patient-record" s then
+            else if String.startsWith "patient-record-" s then
                 String.dropLeft (String.length "patient-record-") s
                     |> toEntityUuid
                     |> InitiatorPatientRecord
@@ -71,3 +73,18 @@ progressReportInitiatorFromUrlFragmemt s =
 
             else
                 Nothing
+
+
+{-| LMP date is considered to be the day on which pregnancy has started.
+EDD date is estimated delivery date - the day on which we expect pregnancy
+be concluded.
+Pregnancy lasts 280 days.
+-}
+lmpToEDDDate : NominalDate -> NominalDate
+lmpToEDDDate lmpDate =
+    Date.add Days 280 lmpDate
+
+
+eddToLmpDate : NominalDate -> NominalDate
+eddToLmpDate eddDate =
+    Date.add Days -280 eddDate

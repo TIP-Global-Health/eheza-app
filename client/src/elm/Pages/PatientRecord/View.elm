@@ -9,6 +9,7 @@ import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -384,7 +385,7 @@ viewAntenatalEntry language currentDate personId db ( ( participantId, status ),
         (\lastEncounterId ->
             let
                 startDate =
-                    Maybe.map (Date.add Days -280 >> formatDDMMYYYY) data.eddDate
+                    Maybe.map (eddToLmpDate >> formatDDMMYYYY) data.eddDate
                         |> Maybe.withDefault "--/--/----"
 
                 conclusionDate =

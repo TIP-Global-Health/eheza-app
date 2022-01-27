@@ -23,6 +23,7 @@ import Backend.PrenatalActivity.Utils
         , getEncounterTrimesterData
         )
 import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounter)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Interval(..), Unit(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -364,7 +365,7 @@ viewPatientProgressPane language currentDate isChw data =
                     (\lmpDate ->
                         let
                             eddDate =
-                                calculateEDD lmpDate
+                                lmpToEDDDate lmpDate
                         in
                         ( div [ class "due-date-label" ]
                             [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
