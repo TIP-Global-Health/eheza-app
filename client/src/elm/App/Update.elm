@@ -793,7 +793,7 @@ update msg model =
                                 |> Maybe.withDefault []
 
                         -- When navigating to Acute Illness participant page, set initial view mode.
-                        UserPage (AcuteIllnessParticipantPage participantId) ->
+                        UserPage (AcuteIllnessParticipantPage _ participantId) ->
                             Pages.AcuteIllnessParticipant.Model.SetViewMode Pages.AcuteIllnessParticipant.Model.ManageIllnesses
                                 |> MsgPageAcuteIllnessParticipant participantId
                                 |> MsgLoggedIn

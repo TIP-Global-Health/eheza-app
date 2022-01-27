@@ -90,22 +90,22 @@ viewHeader language model =
 viewStartEncounterPage : Language -> NominalDate -> Bool -> Bool -> PersonId -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewStartEncounterPage language currentDate isChw isAdult personId initiator db model =
     let
+        participantPageInitiator =
+            Backend.IndividualEncounterParticipant.Model.InitiatorPatientRecord initiator personId
+
         encounterButton encounterType participantPage =
             button
                 [ class "ui primary button"
-                , onClick <| SetActivePage <| UserPage <| participantPage personId
+                , onClick <| SetActivePage <| UserPage <| participantPage participantPageInitiator personId
                 ]
                 [ span [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType False ]
                 , span [ class "icon-back" ] []
                 ]
 
-        participantPageInitiator =
-            Backend.IndividualEncounterParticipant.Model.InitiatorPatientRecord initiator personId
-
         buttons =
             if isAdult then
                 [ encounterButton AcuteIllnessEncounter AcuteIllnessParticipantPage
-                , encounterButton AntenatalEncounter (PrenatalParticipantPage participantPageInitiator)
+                , encounterButton AntenatalEncounter PrenatalParticipantPage
                 ]
 
             else

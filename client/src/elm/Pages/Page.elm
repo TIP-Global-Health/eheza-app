@@ -159,18 +159,18 @@ type UserPage
     | PrenatalLabResultsPage PrenatalEncounterId -- record prenatal lab results
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
-    | NutritionParticipantPage PersonId
+    | NutritionParticipantPage IndividualParticipantInitiator PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity.
     | NutritionProgressReportPage NutritionEncounterId
-    | AcuteIllnessParticipantPage PersonId
+    | AcuteIllnessParticipantPage IndividualParticipantInitiator PersonId
     | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index.
     | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity.
     | AcuteIllnessProgressReportPage AcuteIllnessProgressReportInitiator AcuteIllnessEncounterId -- acute illness progress report.
     | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
     | HomeVisitEncounterPage HomeVisitEncounterId -- home visit activities index.
     | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record home visit activity.
-    | WellChildParticipantPage PersonId
+    | WellChildParticipantPage IndividualParticipantInitiator PersonId
     | WellChildEncounterPage WellChildEncounterId -- well child activities index.
     | WellChildActivityPage WellChildEncounterId WellChildActivity -- record well child activity.
     | WellChildProgressReportPage WellChildEncounterId -- well child progress report.

@@ -72,7 +72,7 @@ viewHeader language data =
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.PregnancyOutcomeLabel ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
             ]

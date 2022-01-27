@@ -2261,16 +2261,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                             nextPage =
                                                 case encounterType of
                                                     AcuteIllnessEncounter ->
-                                                        AcuteIllnessParticipantPage personId
+                                                        AcuteIllnessParticipantPage InitiatorParticipantsPage personId
 
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage InitiatorParticipantsPage personId
 
                                                     NutritionEncounter ->
-                                                        NutritionParticipantPage personId
+                                                        NutritionParticipantPage InitiatorParticipantsPage personId
 
                                                     WellChildEncounter ->
-                                                        WellChildParticipantPage personId
+                                                        WellChildParticipantPage InitiatorParticipantsPage personId
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.

@@ -80,7 +80,7 @@ viewHeader language isChw data =
         [ h1
             [ class "ui header" ]
             [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter isChw ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
             ]

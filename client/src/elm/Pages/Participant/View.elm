@@ -499,7 +499,7 @@ viewHeader language id =
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.Assessment ]
-        , a
+        , span
             [ class "link-back"
             , SessionPage id ParticipantsPage
                 |> UserPage

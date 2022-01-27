@@ -2,6 +2,7 @@ module Pages.WellChildEncounter.Update exposing (update)
 
 import App.Model
 import App.Ports
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterNote(..))
@@ -44,7 +45,7 @@ update currentDate zscores isChw db msg model =
         TriggerAcuteIllnessEncounter childId encounterId ->
             let
                 extraMsgs =
-                    [ SetActivePage (UserPage (AcuteIllnessParticipantPage childId))
+                    [ SetActivePage (UserPage (AcuteIllnessParticipantPage InitiatorParticipantsPage childId))
                     , SetWarningPopupState Nothing
                     ]
 

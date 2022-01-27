@@ -45,7 +45,7 @@ view language currentDate ( healthCenterId, maybeVillageId ) isChw model db =
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
                     [ translateText language Translate.CaseManagement ]
-                , a
+                , span
                     [ class "link-back"
                     , onClick <| SetActivePage PinCodePage
                     ]

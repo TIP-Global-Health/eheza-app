@@ -10552,7 +10552,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                NutritionParticipantPage _ ->
+                NutritionParticipantPage _ _ ->
                     { english = "Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
@@ -10572,7 +10572,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                AcuteIllnessParticipantPage _ ->
+                AcuteIllnessParticipantPage _ _ ->
                     { english = "Acute Illness Encounter"
                     , kinyarwanda = Just "Isuzuma  ry'uburwayi butunguranye"
                     }
@@ -10607,7 +10607,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                WellChildParticipantPage _ ->
+                WellChildParticipantPage _ _ ->
                     { english = "Standard Pediatric Visit Encounter"
                     , kinyarwanda = Just "Isura risanzwe ry'Umwana"
                     }

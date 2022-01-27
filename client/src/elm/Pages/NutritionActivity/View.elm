@@ -118,7 +118,7 @@ viewHeader language id activity =
         [ h1
             [ class "ui header" ]
             [ text <| translate language <| Translate.NutritionActivityTitle activity ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| NutritionEncounterPage id
             ]

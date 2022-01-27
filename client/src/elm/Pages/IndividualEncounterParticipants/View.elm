@@ -54,7 +54,7 @@ viewHeader title =
         [ h1
             [ class "ui header" ]
             [ text title ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
@@ -202,16 +202,16 @@ viewParticipant language currentDate encounterType db id person =
         action =
             case encounterType of
                 AcuteIllnessEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage id ]
 
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
 
                 NutritionEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage id ]
 
                 WellChildEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
 
                 _ ->
                     []

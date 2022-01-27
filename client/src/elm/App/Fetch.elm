@@ -155,7 +155,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (NutritionParticipantPage personId) ->
+            UserPage (NutritionParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
@@ -164,7 +164,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (AcuteIllnessParticipantPage personId) ->
+            UserPage (AcuteIllnessParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
@@ -173,7 +173,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (WellChildParticipantPage personId) ->
+            UserPage (WellChildParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
