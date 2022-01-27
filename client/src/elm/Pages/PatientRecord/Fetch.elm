@@ -5,8 +5,10 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Fetch
 import Backend.Person.Utils exposing (isPersonAnAdult)
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.AcuteIllnessParticipant.Fetch
+import Pages.PrenatalParticipant.Fetch
 import RemoteData exposing (RemoteData)
 
 
@@ -22,11 +24,24 @@ fetch currentDate personId db =
                             Backend.NutritionEncounter.Fetch.fetch personId db
 
                         else
-                            []
+                            let
+                                fetchChildrenMsgs =
+                                    Dict.get personId db.relationshipsByPerson
+                                        |> Maybe.andThen RemoteData.toMaybe
+                                        |> Maybe.map
+                                            (Dict.values
+                                                >> List.filter (.relatedBy >> (==) MyChild)
+                                                >> List.map (.relatedTo >> FetchPerson)
+                                            )
+                                        |> Maybe.withDefault []
+                            in
+                            fetchChildrenMsgs
+                                ++ Pages.PrenatalParticipant.Fetch.fetch personId db
                     )
                 |> Maybe.withDefault []
     in
-    (FetchPerson personId
-        :: Pages.AcuteIllnessParticipant.Fetch.fetch personId db
-    )
+    [ FetchPerson personId
+    , FetchRelationshipsForPerson personId
+    ]
+        ++ Pages.AcuteIllnessParticipant.Fetch.fetch personId db
         ++ msgsByAge

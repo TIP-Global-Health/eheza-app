@@ -1,4 +1,4 @@
-module Pages.WellChildProgressReport.View exposing (view, viewNutritionSigns, viewPaneHeading, viewPersonInfoPane, viewProgressReport)
+module Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, view, viewAcuteIllnessDiagnosisEntry, viewEntries, viewNutritionSigns, viewPaneHeading, viewPersonInfoPane, viewProgressReport)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -739,7 +739,7 @@ viewAcuteIllnessDiagnosisEntry :
     -> WellChildProgressReportInitiator
     -> ModelIndexedDb
     -> (Page -> msg)
-    -> ( IndividualEncounterParticipantId, DiagnosisEntryStatus )
+    -> ( IndividualEncounterParticipantId, PaneEntryStatus )
     -> Maybe ( NominalDate, Html msg )
 viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( participantId, status ) =
     let
@@ -774,7 +774,7 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
             , div [ class "entry diagnosis" ]
                 [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                 , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-                    [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+                    [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
                 , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
                 , div
                     [ class "icon-forward"
@@ -793,7 +793,7 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
         maybeLastEncounterId
 
 
-diagnosisEntryStatusToString : DiagnosisEntryStatus -> String
+diagnosisEntryStatusToString : PaneEntryStatus -> String
 diagnosisEntryStatusToString status =
     case status of
         StatusOngoing ->
@@ -803,7 +803,7 @@ diagnosisEntryStatusToString status =
             "resolved"
 
 
-viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
+viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, PaneEntryStatus ) ) -> ( NominalDate, Html any )
 viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
     let
         orderedAssessments =
@@ -814,13 +814,13 @@ viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
         [ div [ class "cell assesment" ] <|
             List.map (translateNutritionAssement language >> List.singleton >> p []) orderedAssessments
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+            [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
         , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )
 
 
-viewWarningEntry : Language -> ( NominalDate, ( PediatricCareMilestone, EncounterWarning, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
+viewWarningEntry : Language -> ( NominalDate, ( PediatricCareMilestone, EncounterWarning, PaneEntryStatus ) ) -> ( NominalDate, Html any )
 viewWarningEntry language ( date, ( milestone, warning, status ) ) =
     let
         milestoneForDaignosisPane =
@@ -830,7 +830,7 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
     , div [ class "entry diagnosis" ]
         [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning milestoneForDaignosisPane ]
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+            [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
         , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )

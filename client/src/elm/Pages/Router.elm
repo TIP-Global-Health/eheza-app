@@ -18,7 +18,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
 import Backend.PrenatalActivity.Utils
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..))
 import Backend.PrenatalEncounter.Utils exposing (..)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildActivity.Utils
@@ -111,8 +111,8 @@ pageToFragment current =
                 ClinicalProgressReportPage initiator prenatalEncounterId ->
                     Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId ++ "/" ++ progressReportInitiatorToUrlFragmemt initiator
 
-                DemographicsReportPage prenatalEncounterId ->
-                    Just <| "demographics-report/" ++ fromEntityUuid prenatalEncounterId
+                DemographicsReportPage initiator prenatalEncounterId ->
+                    Just <| "demographics-report/" ++ fromEntityUuid prenatalEncounterId ++ "/" ++ progressReportInitiatorToUrlFragmemt initiator
 
                 MyAccountPage ->
                     Just "my-account"
@@ -309,8 +309,8 @@ parser =
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
         , map (\id -> UserPage <| PrenatalLabResultsPage id) (s "prenatal-lab-results" </> parseUuid)
-        , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parseClinicalProgressReportInitiator)
-        , map (\id -> UserPage <| DemographicsReportPage id) (s "demographics-report" </> parseUuid)
+        , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
+        , map (\id initiator -> UserPage <| DemographicsReportPage initiator id) (s "demographics-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
         , map (\id initiator -> UserPage <| PregnancyOutcomePage initiator id) (s "pregnancy-outcome" </> parseUuid </> parseRecordPreganancyInitiator)
@@ -413,9 +413,9 @@ parseRecordPreganancyInitiator =
     custom "RecordPreganancyInitiator" recordPreganancyInitiatorFromUrlFragmemt
 
 
-parseClinicalProgressReportInitiator : Parser (ClinicalProgressReportInitiator -> c) c
-parseClinicalProgressReportInitiator =
-    custom "ClinicalProgressReportInitiator" progressReportInitiatorFromUrlFragmemt
+parsePrenatalProgressReportInitiator : Parser (PrenatalProgressReportInitiator -> c) c
+parsePrenatalProgressReportInitiator =
+    custom "PrenatalProgressReportInitiator" progressReportInitiatorFromUrlFragmemt
 
 
 parseAcuteIllnessProgressReportInitiator : Parser (AcuteIllnessProgressReportInitiator -> c) c

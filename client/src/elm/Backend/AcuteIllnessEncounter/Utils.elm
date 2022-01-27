@@ -134,19 +134,19 @@ progressReportInitiatorFromUrlFragmemt s =
             Just InitiatorEncounterPage
 
         _ ->
-            if String.startsWith "well-child-progress-report" s then
+            if String.startsWith "well-child-progress-report-" s then
                 String.dropLeft (String.length "well-child-progress-report-") s
                     |> toEntityUuid
                     |> InitiatorWellChildProgressReport
                     |> Just
 
-            else if String.startsWith "nutrition-progress-report" s then
+            else if String.startsWith "nutrition-progress-report-" s then
                 String.dropLeft (String.length "nutrition-progress-report-") s
                     |> toEntityUuid
                     |> InitiatorIndividualNutritionProgressReport
                     |> Just
 
-            else if String.startsWith "progress-report" s then
+            else if String.startsWith "progress-report-" s then
                 let
                     ids =
                         String.dropLeft (String.length "progress-report-") s
@@ -168,7 +168,7 @@ progressReportInitiatorFromUrlFragmemt s =
                         (List.head (List.drop 1 ids))
                         |> Maybe.Extra.join
 
-            else if String.startsWith "patient-record" s then
+            else if String.startsWith "patient-record-" s then
                 let
                     fragments =
                         String.dropLeft (String.length "patient-record-") s

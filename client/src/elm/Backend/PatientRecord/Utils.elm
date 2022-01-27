@@ -23,7 +23,7 @@ progressReportInitiatorFromUrlFragmemt s =
             Just InitiatorParticipantDirectory
 
         _ ->
-            if String.startsWith "patient-record" s then
+            if String.startsWith "patient-record-" s then
                 String.dropLeft (String.length "patient-record-") s
                     |> toEntityUuid
                     |> InitiatorPatientRecord

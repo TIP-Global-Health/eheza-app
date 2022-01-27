@@ -1,4 +1,4 @@
-module Pages.Participant.View exposing (viewChild, viewMother, viewUbudehe)
+module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..))
 import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
@@ -34,7 +34,7 @@ import ZScore.Model
 
 thumbnailDimensions : { width : Int, height : Int }
 thumbnailDimensions =
-    { width = 222
+    { width = 2221
     , height = 222
     }
 
@@ -382,8 +382,8 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                                 Maybe.map
                                     (\ubudehe ->
                                         p [ class "ubudehe-wrapper" ]
-                                            [ label [] [ text <| translate language Translate.UbudeheLabel ]
-                                            , span [] [ text <| viewUbudehe ubudehe ]
+                                            [ label [] [ text <| translate language Translate.UbudeheLabel ++ ": " ]
+                                            , span [] [ text <| translate language <| Translate.UbudeheNumber ubudehe ]
                                             ]
                                     )
                                     mother.ubudehe
@@ -554,7 +554,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                         ]
             in
             li attributes
-                [ a []
+                [ span [ class "icon" ]
                     [ span [ class "icon-baby" ] []
                     , span
                         [ class "count" ]
@@ -586,7 +586,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                         ]
             in
             li attributes
-                [ a []
+                [ span [ class "icon" ]
                     [ span [ class "icon-mother" ] []
                     ]
                 ]
@@ -594,19 +594,3 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
     ul
         [ class "links-body" ]
         (motherMarkup ++ childrenMarkup)
-
-
-viewUbudehe : Ubudehe -> String
-viewUbudehe ubudehe =
-    case ubudehe of
-        Ubudehe1 ->
-            "1"
-
-        Ubudehe2 ->
-            "2"
-
-        Ubudehe3 ->
-            "3"
-
-        Ubudehe4 ->
-            "4"
