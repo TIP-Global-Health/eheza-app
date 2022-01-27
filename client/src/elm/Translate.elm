@@ -1078,6 +1078,7 @@ type TranslationId
     | GroupEncounterUnauthorized2
     | SendPatientToFacility ReferralFacility
     | ShowAll
+    | StartAnEncounter
     | StartEndDate
     | StrartNewAcuteIllnessHelper
     | StartDate
@@ -8803,7 +8804,7 @@ translationSet trans =
             }
 
         SelectEncounterType ->
-            { english = "Select encounter type"
+            { english = "Select an encounter type"
             , kinyarwanda = Just "Hitamo ubwoko bw'icyiciro cyo gukorera"
             }
 
@@ -9314,6 +9315,11 @@ translationSet trans =
         ShowAll ->
             { english = "Show All"
             , kinyarwanda = Just "Erekana amazina yose"
+            }
+
+        StartAnEncounter ->
+            { english = "Start an encounter"
+            , kinyarwanda = Nothing
             }
 
         StartEndDate ->

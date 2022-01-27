@@ -7,6 +7,7 @@ import Pages.WellChildProgressReport.Model exposing (DiagnosisMode(..))
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
+    , viewMode : ViewMode
     , filter : PatientRecordFilter
     }
 
@@ -14,6 +15,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
+    , viewMode = ViewPatientRecord
     , filter = FilterAcuteIllness
     }
 
@@ -21,8 +23,14 @@ emptyModel =
 type Msg
     = SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
+    | SetViewMode ViewMode
     | SetFilter PatientRecordFilter
     | NoOp
+
+
+type ViewMode
+    = ViewPatientRecord
+    | ViewStartEncounter
 
 
 type PatientRecordFilter

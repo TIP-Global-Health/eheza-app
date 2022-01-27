@@ -3280,7 +3280,7 @@ div.page-activity.patient-record {
     }
   }
 
-  .ui.report.unstackable.items .actions {
+  .ui.unstackable.items .actions {
     margin: 20px 0 0 0;
   }
 }
@@ -3463,6 +3463,46 @@ div.page-case-management {
 
     button.stacked:last-child {
       margin-bottom: 0;
+    }
+  }
+}
+
+div.page-activity.patient-record {
+
+  .ui.full.segment {
+    height: 90%;
+
+    p {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .label-visit {
+      margin-bottom: 30px;
+      margin-top: 40px;
+    }
+
+    .ui.primary.button {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      width: 100%;
+
+      .button-label {
+        text-align: left;
+
+        .encounter-label {
+          margin-bottom: 15px;
+        }
+      }
+
+      .icon-back {
+        transform: rotate(180deg);
+      }
     }
   }
 }
