@@ -1231,7 +1231,7 @@ viewProgressPhotoPane language currentDate isChw data =
                 |> div [ class "photos-section" ]
     in
     div [ class "progress-photo" ]
-        [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
+        [ viewItemHeading language Translate.ProgressPhotos "blue"
         , div [ class "pane-content" ]
             [ progressPhotos ]
         ]
