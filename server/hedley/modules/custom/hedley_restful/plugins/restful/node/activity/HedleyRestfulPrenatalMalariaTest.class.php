@@ -9,7 +9,7 @@
  * Class HedleyRestfulPrenatalMalariaTest.
  */
 class HedleyRestfulPrenatalMalariaTest extends HedleyRestfulPrenatalActivityBase {
-  
+
   /**
    * {@inheritdoc}
    */
