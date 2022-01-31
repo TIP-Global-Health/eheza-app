@@ -208,7 +208,7 @@ function hedley_case_management_handle_update_trigger($node) {
   // Outcome was set, meaning that illness / pregnancy was concluded.
   // Therefore, we need to resolve all it's follow-ups.
   $person_id = $wrapper->field_person->getIdentifier();
-  if ($node->type == 'acute-illness') {
+  if ($type == 'acute-illness') {
     $encounters = hedley_person_encounters_for_individual_participant($node->nid);
     hedley_case_management_resolve_acute_illness_follow_ups($person_id, $encounters);
     return;
