@@ -190,7 +190,8 @@ function hedley_case_management_resolve_prenatal_follow_ups($person_id, $to_nid 
 function hedley_case_management_handle_update_trigger($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  if (!in_array($node->type, ['acute-illness', 'antenatal'])) {
+  $type = $wrapper->field_encounter_type->value();
+  if (!in_array($type, ['acute-illness', 'antenatal'])) {
     // We only track resolution of illnesses and pregnancies.
     return;
   }
