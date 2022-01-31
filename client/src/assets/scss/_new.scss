@@ -2041,7 +2041,7 @@ div.page-report.demographics {
   }
 }
 
-div.page-report.clinical {
+div.page-report.clinical .ui.unstackable.items {
 
   .header-pane {
     background: $color-white;
@@ -2337,6 +2337,22 @@ div.page-report.clinical {
       }
     }
 
+  }
+
+  .labs {
+
+    .pane-content {
+      padding: 40px;
+      text-align: center;
+
+      .button {
+        font-size: 26px;
+        font-weight: 700;
+        padding: 15px;
+        text-transform: none;
+        width: 80%;
+      }
+    }
   }
 
   .lab-results,

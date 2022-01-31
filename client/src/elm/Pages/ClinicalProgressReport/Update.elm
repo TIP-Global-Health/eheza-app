@@ -11,5 +11,5 @@ update msg model =
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 
-        SetLabResultsHistoryMode mode ->
-            ( { model | labResultsHistoryMode = mode }, Cmd.none, [] )
+        SetLabResultsMode mode ->
+            ( { model | labResultsMode = mode }, Cmd.none, [] )
