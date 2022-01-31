@@ -29,7 +29,6 @@ function hedley_case_management_node_insert($node) {
     'prenatal_follow_up',
     'prenatal_encounter',
   ];
-
   if (in_array($node->type, $prenatal_triggers)) {
     hedley_case_management_handle_prenatal_insert_trigger($node);
   }
@@ -66,6 +65,7 @@ function hedley_case_management_handle_nutrition_insert_trigger($node) {
   }
 
   if (empty($person_id)) {
+    // Failed to load required data.
     return;
   }
 
@@ -220,6 +220,7 @@ function hedley_case_management_handle_prenatal_insert_trigger($node) {
   }
 
   if (empty($person_id)) {
+    // Failed to load required data.
     return;
   }
 
