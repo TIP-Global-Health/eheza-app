@@ -634,6 +634,9 @@ decodePrenatalTestExecutionNote =
                     "not-indicated" ->
                         succeed TestNoteNotIndicated
 
+                    "known-as-positive" ->
+                        succeed TestNoteKnownAsPositive
+
                     _ ->
                         fail <|
                             note

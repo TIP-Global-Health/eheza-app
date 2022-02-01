@@ -7755,6 +7755,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TestNoteKnownAsPositive ->
+                    { english = "Known as Positive"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalTestResult result ->
             case result of
                 PrenatalTestPositive ->
