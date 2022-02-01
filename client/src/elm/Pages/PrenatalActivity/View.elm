@@ -3040,13 +3040,22 @@ contentAndTasksLaboratoryTestKnownAsPositive :
 contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
     let
         updateFunc =
-            \value form_ ->
+            \knownAsPositive form_ ->
+                let
+                    executionNote =
+                        if knownAsPositive then
+                            Just TestNoteKnownAsPositive
+
+                        else
+                            Nothing
+                in
                 { form_
-                    | knownAsPositive = Just value
+                    | knownAsPositive = Just knownAsPositive
                     , testPerformed = Nothing
+                    , testPerformedDirty = True
                     , testPerformedToday = Nothing
                     , testPerformedTodayDirty = True
-                    , executionNote = Just TestNoteKnownAsPositive
+                    , executionNote = executionNote
                     , executionNoteDirty = True
                     , executionDate = Nothing
                     , executionDateDirty = True
@@ -3107,6 +3116,7 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
             \value form_ ->
                 { form_
                     | testPerformed = Just value
+                    , testPerformedDirty = True
                     , testPerformedToday = Nothing
                     , testPerformedTodayDirty = True
                     , executionNote = Nothing

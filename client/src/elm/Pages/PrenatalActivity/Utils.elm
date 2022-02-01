@@ -1883,14 +1883,15 @@ prenatalRDTFormWithDefault form saved =
                     knownAsPositiveValue =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
-                    testPerformedFromValue =
+                    testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
                 { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
-                , testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -1928,13 +1929,14 @@ prenatalUrineDipstickFormWithDefault form saved =
             form
             (\value ->
                 let
-                    testPerformedFromValue =
+                    testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , testVariant = or form.testVariant value.testVariant
@@ -1988,14 +1990,15 @@ prenatalNonRDTFormWithDefault form saved =
                     knownAsPositiveValue =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
-                    testPerformedFromValue =
+                    testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
                 { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
-                , testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
