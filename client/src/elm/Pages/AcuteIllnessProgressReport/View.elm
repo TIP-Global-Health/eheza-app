@@ -1210,7 +1210,7 @@ viewNextStepsPane language currentDate assembled =
         let
             instructions =
                 getMeasurementValueFunc assembled.measurements.followUp
-                    |> Maybe.andThen (EverySet.toList >> List.head)
+                    |> Maybe.andThen (.options >> EverySet.toList >> List.head)
                     |> Maybe.map
                         (\followUp ->
                             let

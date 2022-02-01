@@ -76,23 +76,21 @@ viewHeader : Language -> PrenatalEncounterId -> PrenatalProgressReportInitiator 
 viewHeader language id initiator model =
     let
         label =
-            if isJust model.labResultsHistoryMode then
-                Translate.LabHistory
+            Maybe.map
+                (\mode ->
+                    case mode of
+                        LabResultsCurrent ->
+                            Translate.LabResults
 
-            else
-                Translate.AntenatalProgressReport
+                        LabResultsHistory _ ->
+                            Translate.LabHistory
+                )
+                model.labResultsMode
+                |> Maybe.withDefault Translate.AntenatalProgressReport
 
         backIcon =
             let
-                iconForView goBackPage =
-                    let
-                        action =
-                            if isJust model.labResultsHistoryMode then
-                                SetLabResultsHistoryMode Nothing
-
-                            else
-                                SetActivePage <| UserPage goBackPage
-                    in
+                iconForView action =
                     span
                         [ class "link-back" ]
                         [ span
@@ -104,13 +102,27 @@ viewHeader language id initiator model =
             in
             case initiator of
                 InitiatorEncounterPage prenatalEncounterId ->
-                    iconForView (PrenatalEncounterPage prenatalEncounterId)
+                    let
+                        action =
+                            Maybe.map
+                                (\mode ->
+                                    case mode of
+                                        LabResultsCurrent ->
+                                            SetLabResultsMode Nothing
+
+                                        LabResultsHistory _ ->
+                                            SetLabResultsMode (Just LabResultsCurrent)
+                                )
+                                model.labResultsMode
+                                |> Maybe.withDefault (SetActivePage <| UserPage <| PrenatalEncounterPage id)
+                    in
+                    iconForView action
 
                 InitiatorNewEncounter _ ->
                     emptyNode
 
                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
-                    iconForView (PatientRecordPage InitiatorParticipantDirectory patientId)
+                    iconForView <| SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId
     in
     div
         [ class "ui basic segment head" ]
@@ -124,9 +136,14 @@ viewContent : Language -> NominalDate -> Bool -> PrenatalProgressReportInitiator
 viewContent language currentDate isChw initiator model data =
     let
         derivedContent =
-            case model.labResultsHistoryMode of
+            case model.labResultsMode of
                 Just mode ->
-                    [ viewLabResultsHistoryPane language currentDate mode ]
+                    case mode of
+                        LabResultsCurrent ->
+                            [ viewLabResultsPane language currentDate data ]
+
+                        LabResultsHistory historyMode ->
+                            [ viewLabResultsHistoryPane language currentDate historyMode ]
 
                 Nothing ->
                     let
@@ -154,7 +171,7 @@ viewContent language currentDate isChw initiator model data =
                     , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
                     , viewPatientProgressPane language currentDate isChw data
-                    , viewLabResultsPane language currentDate data
+                    , viewLabsPane language currentDate data
                     , viewProgressPhotosPane language currentDate isChw data
                     , actions
                     ]
@@ -862,6 +879,20 @@ illustrativePurposes language =
     div [ class "illustrative-purposes" ] [ text <| translate language Translate.ForIllustrativePurposesOnly ]
 
 
+viewLabsPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewLabsPane language currentDate assembled =
+    div [ class "labs" ] <|
+        [ viewItemHeading language Translate.LabResults "blue"
+        , div [ class "pane-content" ]
+            [ div
+                [ class "ui primary button"
+                , onClick <| SetLabResultsMode <| Just LabResultsCurrent
+                ]
+                [ text <| translate language Translate.SeeLabResults ]
+            ]
+        ]
+
+
 viewLabResultsPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewLabResultsPane language currentDate assembled =
     let
@@ -1184,7 +1215,7 @@ viewLabResultsEntry language currentDate results =
             if config.totalResults > 1 then
                 div
                     [ class "icon-forward"
-                    , onClick <| SetLabResultsHistoryMode <| Just results
+                    , onClick <| SetLabResultsMode <| Just (LabResultsHistory results)
                     ]
                     []
 

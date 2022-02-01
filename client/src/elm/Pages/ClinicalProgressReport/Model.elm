@@ -7,14 +7,19 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { labResultsHistoryMode : Maybe LabResultsHistoryMode
+    { labResultsMode : Maybe LabResultsMode
     }
 
 
 emptyModel : Model
 emptyModel =
-    { labResultsHistoryMode = Nothing
+    { labResultsMode = Nothing
     }
+
+
+type LabResultsMode
+    = LabResultsCurrent
+    | LabResultsHistory LabResultsHistoryMode
 
 
 type LabResultsHistoryMode
@@ -40,4 +45,4 @@ type LabResultsHistoryMode
 
 type Msg
     = SetActivePage Page
-    | SetLabResultsHistoryMode (Maybe LabResultsHistoryMode)
+    | SetLabResultsMode (Maybe LabResultsMode)

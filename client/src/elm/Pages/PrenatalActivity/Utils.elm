@@ -2,11 +2,12 @@ module Pages.PrenatalActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
@@ -1807,6 +1808,7 @@ fromFollowUpValue : Maybe PrenatalFollowUpValue -> FollowUpForm
 fromFollowUpValue saved =
     { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
     , assesment = Maybe.map .assesment saved
+    , resolutionDate = Maybe.andThen .resolutionDate saved
     }
 
 
@@ -1818,6 +1820,7 @@ followUpFormWithDefault form saved =
             (\value ->
                 { option = or form.option (EverySet.toList value.options |> List.head)
                 , assesment = or form.assesment (Just value.assesment)
+                , resolutionDate = or form.resolutionDate value.resolutionDate
                 }
             )
 
@@ -1830,13 +1833,12 @@ toFollowUpValueWithDefault saved form =
 
 toFollowUpValue : FollowUpForm -> Maybe PrenatalFollowUpValue
 toFollowUpValue form =
-    let
-        options =
-            form.option
-                |> Maybe.map (List.singleton >> EverySet.fromList)
-    in
-    Maybe.map PrenatalFollowUpValue options
-        |> andMap form.assesment
+    Maybe.map2
+        (\options assesment ->
+            PrenatalFollowUpValue options assesment form.resolutionDate
+        )
+        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
+        form.assesment
 
 
 fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
@@ -2145,37 +2147,58 @@ expectLaboratoryTask currentDate assembled task =
                 True
 
             TaskRandomBloodSugarTest ->
-                -- First ?? @todo
                 isInitialTest TaskRandomBloodSugarTest
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
 generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     let
-        generateTestDates getMeasurementFunc =
+        generateTestDates getMeasurementFunc resultsExistFunc =
             List.filterMap
-                (Tuple.second
-                    >> getMeasurementFunc
-                    >> getMeasurementValueFunc
-                    >> Maybe.andThen
-                        (\value ->
-                            if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
-                                value.executionDate
+                (\( _, measurements ) ->
+                    let
+                        measurement =
+                            getMeasurementFunc measurements
 
-                            else
-                                Nothing
-                        )
+                        dateMeasured =
+                            -- Date on which test was recorded.
+                            -- Note that this is not the date when test was performed,
+                            -- because it's possible to set past date for that.
+                            -- We need the recorded date, because the logic says that
+                            -- test that will not have results set for over 14 days is expired.
+                            -- Can default to current date, because we use it only when there's
+                            -- measurement value, and this means that there must be dateMeasured set.
+                            Maybe.map (Tuple.second >> .dateMeasured) measurement
+                                |> Maybe.withDefault currentDate
+                    in
+                    getMeasurementValueFunc measurement
+                        |> Maybe.andThen
+                            (\value ->
+                                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                                    if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate > prenatalLabExpirationPeriod) then
+                                        -- No results were entered for more than 14 days since the
+                                        -- day on which measurement was taken.
+                                        -- Test is considered expired, and is being ignored
+                                        -- (as if it was never performed).
+                                        Nothing
+
+                                    else
+                                        value.executionDate
+
+                                else
+                                    Nothing
+                            )
                 )
                 assembled.nursePreviousMeasurementsWithDates
     in
-    [ ( TaskHIVTest, generateTestDates .hivTest )
-    , ( TaskSyphilisTest, generateTestDates .syphilisTest )
-    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest )
-    , ( TaskMalariaTest, generateTestDates .malariaTest )
-    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest )
-    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest )
-    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest )
-    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest )
+    [ ( TaskHIVTest, generateTestDates .hivTest (always True) )
+    , ( TaskSyphilisTest, generateTestDates .syphilisTest (.testResult >> isJust) )
+    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest (.testResult >> isJust) )
+    , ( TaskMalariaTest, generateTestDates .malariaTest (always True) )
+    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest (.bloodGroup >> isJust) )
+    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) )
+    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) )
+    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) )
     ]
         |> Dict.fromList
 
