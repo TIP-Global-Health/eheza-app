@@ -164,7 +164,7 @@ function hedley_case_management_handle_acute_illness_insert_trigger($node) {
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_acute_illness_follow_ups($person_id, $encounters, $to_nid = NULL, $limit = 200) {
+function hedley_case_management_resolve_acute_illness_follow_ups($person_id, array $encounters, $to_nid = NULL, $limit = 200) {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
@@ -305,7 +305,7 @@ function hedley_case_management_handle_update_trigger($node) {
  * Resolves follow up by setting 'date concluded' field to current date.
  *
  * @param int $nid
- *  The ID of follow-up node.
+ *   The ID of follow-up node.
  *
  * @throws EntityMetadataWrapperException
  */
@@ -325,5 +325,3 @@ function hedley_case_management_query_exclude_resolved_alter(QueryAlterableInter
   $query->leftJoin('field_data_field_date_concluded', 'dc', 'node.nid = dc.entity_id');
   $query->isNull('dc.field_date_concluded_value');
 }
-
-
