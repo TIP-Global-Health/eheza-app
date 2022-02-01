@@ -2,7 +2,7 @@ module Pages.ClinicalProgressReport.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExecutionNote(..))
+import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExecutionNote(..), PrenatalTestVariant(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
@@ -922,18 +922,34 @@ viewLabResultsPane language currentDate assembled =
             , viewLabResultsEntry language currentDate (LabResultsHistoryMalaria malariaTestResults)
             ]
 
-        urineDipstickTestResults =
+        urineDipstickTestValues =
             List.filterMap (.urineDipstickTest >> getMeasurementValueFunc)
                 measurementsWithLabResults
-                |> List.filterMap
-                    (\value ->
-                        if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
-                            Maybe.map (\executionDate -> ( executionDate, ( value.protein, value.ph, value.glucose ) ))
-                                value.executionDate
 
-                        else
-                            Nothing
-                    )
+        urineDipstickTestResults =
+            List.filterMap
+                (\value ->
+                    if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                        Maybe.map (\executionDate -> ( executionDate, ( value.protein, value.ph, value.glucose ) ))
+                            value.executionDate
+
+                    else
+                        Nothing
+                )
+                urineDipstickTestValues
+                |> List.sortWith sortTuplesByDateDesc
+
+        longUrineDipstickTestResults =
+            List.filterMap
+                (\value ->
+                    if value.testVariant == Just VariantLongTest && List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                        Maybe.map (\executionDate -> ( executionDate, value ))
+                            value.executionDate
+
+                    else
+                        Nothing
+                )
+                urineDipstickTestValues
                 |> List.sortWith sortTuplesByDateDesc
 
         proteinResults =
@@ -945,10 +961,38 @@ viewLabResultsPane language currentDate assembled =
         glucoseResults =
             List.map (\( date, ( _, _, glucose ) ) -> ( date, glucose )) urineDipstickTestResults
 
+        leukocytesResults =
+            List.map (\( date, value ) -> ( date, value.leukocytes )) longUrineDipstickTestResults
+
+        nitriteResults =
+            List.map (\( date, value ) -> ( date, value.nitrite )) longUrineDipstickTestResults
+
+        urobilinogenResults =
+            List.map (\( date, value ) -> ( date, value.urobilinogen )) longUrineDipstickTestResults
+
+        haemoglobinResults =
+            List.map (\( date, value ) -> ( date, value.haemoglobin )) longUrineDipstickTestResults
+
+        specificGravityResults =
+            List.map (\( date, value ) -> ( date, value.specificGravity )) longUrineDipstickTestResults
+
+        ketoneResults =
+            List.map (\( date, value ) -> ( date, value.ketone )) longUrineDipstickTestResults
+
+        bilirubinResults =
+            List.map (\( date, value ) -> ( date, value.bilirubin )) longUrineDipstickTestResults
+
         groupTwoContent =
             [ viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
             , viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
             , viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryLeukocytes leukocytesResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryNitrite nitriteResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryUrobilinogen urobilinogenResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryHaemoglobin haemoglobinResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistorySpecificGravity specificGravityResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryKetone ketoneResults)
+            , viewLabResultsEntry language currentDate (LabResultsHistoryBilirubin bilirubinResults)
             ]
 
         randomBloodSugarResults =
@@ -1049,6 +1093,55 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryGlucose data ->
                     { label = Translate.PrenatalLaboratoryGlucoseLabel
                     , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryLeukocytes data ->
+                    { label = Translate.PrenatalLaboratoryGlucoseLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryNitrite data ->
+                    { label = Translate.PrenatalLaboratoryNitriteLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryNitriteValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryUrobilinogen data ->
+                    { label = Translate.PrenatalLaboratoryUrobilinogenLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryHaemoglobin data ->
+                    { label = Translate.PrenatalLaboratoryHaemoglobinLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistorySpecificGravity data ->
+                    { label = Translate.PrenatalLaboratorySpecificGravityLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryKetone data ->
+                    { label = Translate.PrenatalLaboratoryKetoneLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryKetoneValue >> translate language)
+                    , recentResultDate = List.head data |> Maybe.map Tuple.first
+                    , totalResults = List.length data
+                    }
+
+                LabResultsHistoryBilirubin data ->
+                    { label = Translate.PrenatalLaboratoryBilirubinLabel
+                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBilirubinValue >> translate language)
                     , recentResultDate = List.head data |> Maybe.map Tuple.first
                     , totalResults = List.length data
                     }
@@ -1161,6 +1254,27 @@ viewLabResultsHistoryPane language currentDate mode =
 
                 LabResultsHistoryGlucose data ->
                     List.map (viewEntry (Translate.PrenatalLaboratoryGlucoseValue >> translate language)) data
+
+                LabResultsHistoryLeukocytes data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)) data
+
+                LabResultsHistoryNitrite data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryNitriteValue >> translate language)) data
+
+                LabResultsHistoryUrobilinogen data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)) data
+
+                LabResultsHistoryHaemoglobin data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)) data
+
+                LabResultsHistorySpecificGravity data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)) data
+
+                LabResultsHistoryKetone data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryKetoneValue >> translate language)) data
+
+                LabResultsHistoryBilirubin data ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryBilirubinValue >> translate language)) data
 
                 LabResultsHistoryRandomBloodSugar data ->
                     List.map (viewEntry String.fromFloat) data

@@ -394,7 +394,7 @@ encodePrenatalRandomBloodSugarTestValue value =
         result =
             Maybe.map
                 (\sugarCount ->
-                    [ ( "sugar_count", float sugarCount ) ]
+                    [ ( "sugar_count", int <| truncate sugarCount ) ]
                 )
                 value.sugarCount
                 |> Maybe.withDefault []
