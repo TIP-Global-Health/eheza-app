@@ -6,10 +6,19 @@
  */
 
 /**
+ * Bundles of nodes that are considered nutrition follow-ups.
+ */
+const HEDLEY_CASE_MANAGEMENT_NUTRITION_FOLLOW_UP_TYPES = [
+  'follow_up',
+  'nutrition_follow_up',
+  'well_child_follow_up',
+];
+
+/**
  * Implements hook_node_insert().
  */
 function hedley_case_management_node_insert($node) {
-  $nutrition_triggers = hedley_case_management_nutrition_follow_up_types();
+  $nutrition_triggers = HEDLEY_CASE_MANAGEMENT_NUTRITION_FOLLOW_UP_TYPES;
   $nutrition_triggers[] = 'home_visit_encounter';
   if (in_array($node->type, $nutrition_triggers)) {
     hedley_case_management_handle_nutrition_insert_trigger($node);
@@ -55,7 +64,7 @@ function hedley_case_management_handle_nutrition_insert_trigger($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Resolve for which person created node belongs to.
-  if ($node->type == 'home_visit_encounter') {
+  if ($node->type === 'home_visit_encounter') {
     // At encounter, person is resolved from the participant.
     $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
   }
@@ -84,12 +93,10 @@ function hedley_case_management_handle_nutrition_insert_trigger($node) {
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
 function hedley_case_management_resolve_nutrition_follow_ups($person_id, $to_nid, $limit = 200) {
-  $nutrition_follow_ups = hedley_case_management_nutrition_follow_up_types();
-
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', $nutrition_follow_ups, 'IN')
+    ->entityCondition('bundle', HEDLEY_CASE_MANAGEMENT_NUTRITION_FOLLOW_UP_TYPES, 'IN')
     ->propertyCondition('nid', $to_nid, '<')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_person', 'target_id', $person_id)
@@ -107,19 +114,6 @@ function hedley_case_management_resolve_nutrition_follow_ups($person_id, $to_nid
 }
 
 /**
- * Returns the bundles for nodes that are considered nutrition follow-ups.
- *
- * @return string[]
- */
-function hedley_case_management_nutrition_follow_up_types() {
-  return [
-    'follow_up',
-    'nutrition_follow_up',
-    'well_child_follow_up',
-  ];
-}
-
-/**
  * Processes create events that trigger acute illness follow-ups resolution.
  *
  * @param object $node
@@ -128,7 +122,7 @@ function hedley_case_management_nutrition_follow_up_types() {
 function hedley_case_management_handle_acute_illness_insert_trigger($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
   // Resolve for which person and illness created node belongs to.
-  if ($node->type == 'acute_illness_encounter') {
+  if ($node->type === 'acute_illness_encounter') {
     // Participants (illness) is on encounter node.
     $participant = $wrapper->field_individual_participant->getIdentifier();
     // At encounter, person is resolved from the participant.
@@ -205,9 +199,9 @@ function hedley_case_management_resolve_acute_illness_follow_ups($person_id, $en
  */
 function hedley_case_management_handle_prenatal_insert_trigger($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
-  if ($node->type == 'prenatal_encounter') {
+  if ($node->type === 'prenatal_encounter') {
     $encounter_type = $wrapper->field_prenatal_encounter_type->value();
-    if ($encounter_type == 'nurse') {
+    if ($encounter_type === 'nurse') {
       // Action is triggered only for CHW encounters.
       return;
     }
@@ -293,7 +287,7 @@ function hedley_case_management_handle_update_trigger($node) {
   // Outcome was set, meaning that illness / pregnancy was concluded.
   // Therefore, we need to resolve all it's follow-ups.
   $person_id = $wrapper->field_person->getIdentifier();
-  if ($type == 'acute-illness') {
+  if ($type === 'acute-illness') {
     // Dealing with illness.
     // Load all encounters that were performed to the illness.
     $encounters = hedley_person_encounters_for_individual_participant($node->nid);
