@@ -11,6 +11,8 @@
 
 require_once __DIR__ . '/report_common.inc';
 
+drush_print("# ANC report  - " . date('D/m/Y'));
+
 $queries = [
   // As the group of all pregnancies.
   "# Patients who have had " => "
