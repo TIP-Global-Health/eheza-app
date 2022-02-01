@@ -3076,15 +3076,19 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
                     SetMalariaTestFormBoolInput updateFunc
 
                 TaskBloodGpRsTest ->
+                    -- Known as positive is not applicable for this test.
                     always NoOp
 
                 TaskUrineDipstickTest ->
+                    -- Known as positive is not applicable for this test.
                     always NoOp
 
                 TaskHemoglobinTest ->
+                    -- Known as positive is not applicable for this test.
                     always NoOp
 
                 TaskRandomBloodSugarTest ->
+                    -- Known as positive is not applicable for this test.
                     always NoOp
     in
     ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task

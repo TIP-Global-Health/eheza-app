@@ -4813,21 +4813,29 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Types.TaskBloodGpRsTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
                 Pages.PrenatalActivity.Types.TaskUrineDipstickTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
                 Pages.PrenatalActivity.Types.TaskHemoglobinTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
                 Pages.PrenatalActivity.Types.TaskRandomBloodSugarTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
                     { english = ""
                     , kinyarwanda = Nothing
                     }
