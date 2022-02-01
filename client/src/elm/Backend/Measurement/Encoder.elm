@@ -205,11 +205,18 @@ encodePrenatalFollowUp =
 
 encodePrenatalFollowUpValue : PrenatalFollowUpValue -> List ( String, Value )
 encodePrenatalFollowUpValue value =
+    let
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
+    in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "prenatal_assesment", encodePrenatalAssesment value.assesment )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_follow_up" )
     ]
+        ++ resolutionDate
 
 
 encodePrenatalAssesment : PrenatalAssesment -> Value
@@ -2010,6 +2017,11 @@ encodeFollowUpValueWithType type_ value =
 
                 _ ->
                     EverySet.singleton NormalChildNutrition
+
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
     in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
@@ -2017,6 +2029,7 @@ encodeFollowUpValueWithType type_ value =
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
+        ++ resolutionDate
 
 
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
@@ -2024,12 +2037,19 @@ encodeAcuteIllnessFollowUp =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
 
 
-encodeAcuteIllnessFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodeAcuteIllnessFollowUpValue : AcuteIllnessFollowUpValue -> List ( String, Value )
 encodeAcuteIllnessFollowUpValue value =
-    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    let
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
+    in
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_follow_up" )
     ]
+        ++ resolutionDate
 
 
 encodeNutritionAssessment : NutritionAssessment -> Value

@@ -1808,6 +1808,7 @@ fromFollowUpValue : Maybe PrenatalFollowUpValue -> FollowUpForm
 fromFollowUpValue saved =
     { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
     , assesment = Maybe.map .assesment saved
+    , resolutionDate = Maybe.andThen .resolutionDate saved
     }
 
 
@@ -1819,6 +1820,7 @@ followUpFormWithDefault form saved =
             (\value ->
                 { option = or form.option (EverySet.toList value.options |> List.head)
                 , assesment = or form.assesment (Just value.assesment)
+                , resolutionDate = or form.resolutionDate value.resolutionDate
                 }
             )
 
@@ -1831,13 +1833,12 @@ toFollowUpValueWithDefault saved form =
 
 toFollowUpValue : FollowUpForm -> Maybe PrenatalFollowUpValue
 toFollowUpValue form =
-    let
-        options =
-            form.option
-                |> Maybe.map (List.singleton >> EverySet.fromList)
-    in
-    Maybe.map PrenatalFollowUpValue options
-        |> andMap form.assesment
+    Maybe.map2
+        (\options assesment ->
+            PrenatalFollowUpValue options assesment form.resolutionDate
+        )
+        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
+        form.assesment
 
 
 fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
