@@ -258,6 +258,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                             , close = SetLmpDateSelectorState Nothing
                             , dateFrom = dateFrom
                             , dateTo = currentDate
+                            , dateDefault = Just dateFrom
                             }
                     in
                     [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
@@ -2768,6 +2769,7 @@ viewAppointmentConfirmationForm language currentDate assembled form =
             , close = SetAppointmentDateSelectorState Nothing
             , dateFrom = currentDate
             , dateTo = Date.add Months 9 currentDate
+            , dateDefault = Nothing
             }
     in
     div [ class "form appointment-confirmation" ]
@@ -3317,10 +3319,15 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                                                 |> Maybe.withDefault ""
 
                                         dateSelectorConfig =
+                                            let
+                                                dateTo =
+                                                    Date.add Days -1 currentDate
+                                            in
                                             { select = msgs.setExecutionDateMsg
                                             , close = msgs.setDateSelectorStateMsg Nothing
                                             , dateFrom = Date.add Days -30 currentDate
-                                            , dateTo = Date.add Days -1 currentDate
+                                            , dateTo = dateTo
+                                            , dateDefault = Just dateTo
                                             }
                                     in
                                     ( [ div
