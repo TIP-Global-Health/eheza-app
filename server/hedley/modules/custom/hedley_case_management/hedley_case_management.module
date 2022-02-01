@@ -47,7 +47,7 @@ function hedley_case_management_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_case_management_node_update($node) {
-  if ($node->type != 'individual_participant') {
+  if ($node->type !== 'individual_participant') {
     return;
   }
 
