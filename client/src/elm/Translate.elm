@@ -1079,6 +1079,7 @@ type TranslationId
     | GroupEncounterUnauthorized2
     | SendPatientToFacility ReferralFacility
     | ShowAll
+    | StartEncounter
     | StartEndDate
     | StrartNewAcuteIllnessHelper
     | StartDate
@@ -8809,7 +8810,7 @@ translationSet trans =
             }
 
         SelectEncounterType ->
-            { english = "Select encounter type"
+            { english = "Select an encounter type"
             , kinyarwanda = Just "Hitamo ubwoko bw'icyiciro cyo gukorera"
             }
 
@@ -9320,6 +9321,11 @@ translationSet trans =
         ShowAll ->
             { english = "Show All"
             , kinyarwanda = Just "Erekana amazina yose"
+            }
+
+        StartEncounter ->
+            { english = "Start an encounter"
+            , kinyarwanda = Nothing
             }
 
         StartEndDate ->
@@ -10443,7 +10449,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
                     }
 
-                PrenatalParticipantPage _ ->
+                PrenatalParticipantPage _ _ ->
                     { english = "Antenatal Participant"
                     , kinyarwanda = Nothing
                     }
@@ -10552,7 +10558,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                NutritionParticipantPage _ ->
+                NutritionParticipantPage _ _ ->
                     { english = "Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
@@ -10572,7 +10578,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                AcuteIllnessParticipantPage _ ->
+                AcuteIllnessParticipantPage _ _ ->
                     { english = "Acute Illness Encounter"
                     , kinyarwanda = Just "Isuzuma  ry'uburwayi butunguranye"
                     }
@@ -10607,7 +10613,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                WellChildParticipantPage _ ->
+                WellChildParticipantPage _ _ ->
                     { english = "Standard Pediatric Visit Encounter"
                     , kinyarwanda = Just "Isura risanzwe ry'Umwana"
                     }

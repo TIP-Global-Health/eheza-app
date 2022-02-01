@@ -5,7 +5,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -218,9 +218,9 @@ viewHeader language assembled =
         [ h1
             [ class "ui header" ]
             label
-        , a
+        , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage assembled.participant.person
+            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []

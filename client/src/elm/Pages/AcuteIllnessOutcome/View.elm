@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (acuteIllnessOutcomeToString)
-import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), allAcuteIllnessOutcome)
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualParticipantInitiator(..), allAcuteIllnessOutcome)
 import Backend.Model exposing (ModelIndexedDb)
 import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
@@ -60,9 +60,9 @@ viewHeader language data =
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.AcuteIllnessOutcomeLabel ]
-        , a
+        , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []

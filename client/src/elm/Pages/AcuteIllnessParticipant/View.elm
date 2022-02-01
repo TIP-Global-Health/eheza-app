@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessEncounterType(..), emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples)
@@ -25,8 +25,8 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate selectedHealthCenter personId isChw db model =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> IndividualParticipantInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate selectedHealthCenter personId isChw initiator db model =
     let
         sessions =
             Dict.get personId db.individualParticipantsByPerson
@@ -34,7 +34,7 @@ view language currentDate selectedHealthCenter personId isChw db model =
     in
     div
         [ class "wrap wrap-alt-2 page-participant acute-illness" ]
-        [ viewHeader language model
+        [ viewHeader language initiator model
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewContent language currentDate selectedHealthCenter personId isChw db model) identity sessions
@@ -42,16 +42,23 @@ view language currentDate selectedHealthCenter personId isChw db model =
         ]
 
 
-viewHeader : Language -> Model -> Html Msg
-viewHeader language model =
+viewHeader : Language -> IndividualParticipantInitiator -> Model -> Html Msg
+viewHeader language initiator model =
     let
         ( labelTransId, action ) =
             case model.viewMode of
                 ManageIllnesses ->
+                    let
+                        goBackPage =
+                            case initiator of
+                                InitiatorParticipantsPage ->
+                                    IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+
+                                InitiatorPatientRecord patientRecordInitiator personId ->
+                                    PatientRecordPage patientRecordInitiator personId
+                    in
                     ( Translate.IndividualEncounterLabel Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter True
-                    , SetActivePage <|
-                        UserPage <|
-                            IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    , SetActivePage <| UserPage goBackPage
                     )
 
                 ManageParticipants ->
@@ -69,7 +76,7 @@ viewHeader language model =
         [ h1
             [ class "ui header" ]
             [ text <| translate language labelTransId ]
-        , a
+        , span
             [ class "link-back"
             , onClick action
             ]

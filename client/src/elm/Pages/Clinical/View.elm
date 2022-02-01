@@ -32,7 +32,7 @@ viewHeader language =
     div [ class "ui basic head segment" ]
         [ h1 [ class "ui header" ]
             [ text <| translate language Translate.Clinical ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage PinCodePage
             ]

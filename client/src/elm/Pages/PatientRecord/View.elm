@@ -2,7 +2,7 @@ module Pages.PatientRecord.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
@@ -35,6 +35,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewQuestionLabel
         , viewSaveAction
+        , viewStartEncounterButton
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
 import Pages.WellChildProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
@@ -55,13 +56,22 @@ view language currentDate zscores id isChw initiator db model =
                     viewContentForChild language currentDate zscores id person isChw initiator db model
 
                 else
-                    viewContentForAdult language currentDate id person initiator db model
+                    viewContentForAdult language currentDate isChw id person initiator db model
             )
         |> Maybe.withDefault spinner
 
 
-viewHeader : Language -> Html Msg
-viewHeader language =
+viewHeader : Language -> Model -> Html Msg
+viewHeader language model =
+    let
+        backAction =
+            case model.viewMode of
+                ViewPatientRecord ->
+                    SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
+
+                ViewStartEncounter ->
+                    SetViewMode ViewPatientRecord
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -69,7 +79,7 @@ viewHeader language =
             [ text <| translate language Translate.PatientRecord ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
+            , onClick backAction
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -77,86 +87,130 @@ viewHeader language =
         ]
 
 
-viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForChild language currentDate zscores childId child isChw initiator db model =
+viewStartEncounterPage : Language -> NominalDate -> Bool -> Bool -> PersonId -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewStartEncounterPage language currentDate isChw isAdult personId initiator db model =
     let
-        endEncounterData =
-            Just <|
-                { showEndEncounterDialog = False
-                , allowEndEcounter = False
-                , closeEncounterMsg = NoOp
-                , setEndEncounterDialogStateMsg = always NoOp
-                }
+        participantPageInitiator =
+            Backend.IndividualEncounterParticipant.Model.InitiatorPatientRecord initiator personId
 
-        mandatoryNutritionAssessmentMeasurementsTaken =
-            False
-    in
-    viewProgressReport language
-        currentDate
-        zscores
-        isChw
-        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
-        mandatoryNutritionAssessmentMeasurementsTaken
-        db
-        model.diagnosisMode
-        SetActivePage
-        SetDiagnosisMode
-        endEncounterData
-        ( childId, child )
+        encounterButton encounterType participantPage =
+            button
+                [ class "ui primary button"
+                , onClick <| SetActivePage <| UserPage <| participantPage participantPageInitiator personId
+                ]
+                [ span [ class "button-label" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType False ]
+                , span [ class "icon-back" ] []
+                ]
 
+        buttons =
+            if isAdult then
+                [ encounterButton AcuteIllnessEncounter AcuteIllnessParticipantPage
+                , encounterButton AntenatalEncounter PrenatalParticipantPage
+                ]
 
-viewContentForAdult : Language -> NominalDate -> PersonId -> Person -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForAdult language currentDate personId person initiator db model =
-    let
-        individualParticipants =
-            Dict.get personId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        acuteIllnesses =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                )
-                individualParticipants
-
-        pregnancies =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter
-                )
-                individualParticipants
-
-        pane =
-            case model.filter of
-                FilterAcuteIllness ->
-                    viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db
-
-                FilterAntenatal ->
-                    viewAntenatalPane language currentDate personId pregnancies db
-
-                FilterDemographics ->
-                    emptyNode
+            else
+                [ encounterButton AcuteIllnessEncounter AcuteIllnessParticipantPage
+                , encounterButton WellChildEncounter WellChildParticipantPage
+                , encounterButton NutritionEncounter NutritionParticipantPage
+                ]
     in
     div [ class "page-activity patient-record" ]
-        [ viewHeader language
-        , div [ class "ui unstackable items" ]
-            [ div [ class "item" ] <|
-                viewAdultDetails
-                    language
-                    currentDate
-                    personId
-                    person
-                    db
-            , div [ class "pane" ]
-                [ div [ class "pane-heading" ]
-                    [ text <| translate language Translate.ProgressReports ]
-                , viewFilters language model
-                ]
-            , pane
-            ]
+        [ viewHeader language model
+        , div [ class "ui full segment" ] <|
+            p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
+                :: buttons
         ]
+
+
+viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewContentForChild language currentDate zscores childId child isChw initiator db model =
+    case model.viewMode of
+        ViewStartEncounter ->
+            viewStartEncounterPage language currentDate isChw False childId initiator db model
+
+        ViewPatientRecord ->
+            let
+                bottomActionData =
+                    Just <|
+                        { showEndEncounterDialog = False
+                        , allowEndEcounter = False
+                        , closeEncounterMsg = NoOp
+                        , setEndEncounterDialogStateMsg = always NoOp
+                        , startEncounterMsg = SetViewMode ViewStartEncounter
+                        }
+            in
+            viewProgressReport language
+                currentDate
+                zscores
+                isChw
+                (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
+                False
+                db
+                model.diagnosisMode
+                SetActivePage
+                SetDiagnosisMode
+                bottomActionData
+                ( childId, child )
+
+
+viewContentForAdult : Language -> NominalDate -> Bool -> PersonId -> Person -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewContentForAdult language currentDate isChw personId person initiator db model =
+    case model.viewMode of
+        ViewStartEncounter ->
+            viewStartEncounterPage language currentDate isChw True personId initiator db model
+
+        ViewPatientRecord ->
+            let
+                individualParticipants =
+                    Dict.get personId db.individualParticipantsByPerson
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.toList
+                        |> Maybe.withDefault []
+
+                acuteIllnesses =
+                    List.filter
+                        (\( _, participant ) ->
+                            participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                        )
+                        individualParticipants
+
+                pregnancies =
+                    List.filter
+                        (\( _, participant ) ->
+                            participant.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter
+                        )
+                        individualParticipants
+
+                selectedPane =
+                    case model.filter of
+                        FilterAcuteIllness ->
+                            viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db
+
+                        FilterAntenatal ->
+                            viewAntenatalPane language currentDate personId pregnancies db
+
+                        FilterDemographics ->
+                            emptyNode
+            in
+            div [ class "page-activity patient-record" ]
+                [ viewHeader language model
+                , div [ class "ui unstackable items" ]
+                    [ div [ class "item" ] <|
+                        viewAdultDetails
+                            language
+                            currentDate
+                            personId
+                            person
+                            db
+                    , div [ class "pane progress-reports" ]
+                        [ div [ class "pane-heading" ]
+                            [ text <| translate language Translate.ProgressReports ]
+                        , viewFilters language model
+                        ]
+                    , selectedPane
+                    , viewStartEncounterButton language (SetViewMode ViewStartEncounter)
+                    ]
+                ]
 
 
 viewAdultDetails : Language -> NominalDate -> PersonId -> Person -> ModelIndexedDb -> List (Html Msg)

@@ -2,9 +2,10 @@ module Pages.PrenatalEncounter.View exposing (generateActivityData, view, viewMo
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PrenatalActivity.Model exposing (..)
@@ -79,9 +80,9 @@ viewHeader language isChw data =
         [ h1
             [ class "ui header" ]
             [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter isChw ]
-        , a
+        , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []

@@ -53,7 +53,7 @@ import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.NutritionActivity.View exposing (translateNutritionAssement)
 import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewStartEncounterButton)
 import Pages.WellChildActivity.Types exposing (VaccinationStatus(..))
 import Pages.WellChildActivity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildActivity.View exposing (viewVaccinationOverview)
@@ -107,7 +107,7 @@ view language currentDate zscores id isChw db model =
             generateAssembledData id db
                 |> RemoteData.toMaybe
 
-        ( endEncounterData, mandatoryNutritionAssessmentMeasurementsTaken ) =
+        ( bottomActionData, mandatoryNutritionAssessmentMeasurementsTaken ) =
             Maybe.map
                 (\assembled ->
                     let
@@ -119,6 +119,7 @@ view language currentDate zscores id isChw db model =
                         , allowEndEcounter = allowEndingEcounter pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
+                        , startEncounterMsg = NoOp
                         }
                     , mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db
                     )
@@ -140,7 +141,7 @@ view language currentDate zscores id isChw db model =
             model.diagnosisMode
             SetActivePage
             SetDiagnosisMode
-            endEncounterData
+            bottomActionData
         )
         identity
         childData
@@ -157,10 +158,10 @@ viewProgressReport :
     -> DiagnosisMode
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
-    -> Maybe (EndEncounterData msg)
+    -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg endEnconterData ( childId, child ) =
+viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -283,7 +284,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 ModeCompletedDiagnosis ->
                     []
 
-        ( endEncounterDialog, endEncounterButton ) =
+        ( endEncounterDialog, bottomActionButton ) =
             Maybe.map
                 (\data ->
                     ( if data.showEndEncounterDialog then
@@ -298,13 +299,13 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         Nothing
                     , case initiator of
                         Pages.WellChildProgressReport.Model.InitiatorPatientRecord _ _ ->
-                            emptyNode
+                            viewStartEncounterButton language data.startEncounterMsg
 
                         _ ->
                             viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
                     )
                 )
-                endEnconterData
+                bottomActionData
                 |> Maybe.withDefault ( Nothing, emptyNode )
     in
     div [ class "page-report well-child" ]
@@ -329,7 +330,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 maybeAssembled
             ]
                 ++ derivedContent
-                ++ [ endEncounterButton ]
+                ++ [ bottomActionButton ]
         , viewModal endEncounterDialog
         ]
 

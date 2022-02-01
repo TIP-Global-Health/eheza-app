@@ -497,6 +497,17 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewStartEncounterButton : Language -> msg -> Html msg
+viewStartEncounterButton language action =
+    div [ class "actions" ]
+        [ button
+            [ class "ui fluid primary button"
+            , onClick action
+            ]
+            [ text <| translate language Translate.StartEncounter ]
+        ]
+
+
 viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
 viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
     let

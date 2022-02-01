@@ -4,8 +4,9 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
-import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..), allPregnancyOutcome)
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -71,9 +72,9 @@ viewHeader language data =
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.PregnancyOutcomeLabel ]
-        , a
+        , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -149,7 +150,7 @@ viewPregnancyOutcome language currentDate initiator data model =
                     PinCodePage
 
                 InitiatorWarningPopup ->
-                    UserPage <| PrenatalParticipantPage data.participant.person
+                    UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
 
                 InitiatorPostpartumEncounter encounterId ->
                     UserPage <| PrenatalEncounterPage encounterId

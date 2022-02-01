@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
@@ -22,8 +22,8 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate selectedHealthCenter id isChw db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> IndividualParticipantInitiator -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate selectedHealthCenter id isChw initiator db =
     let
         sessions =
             Dict.get id db.individualParticipantsByPerson
@@ -31,7 +31,7 @@ view language currentDate selectedHealthCenter id isChw db =
     in
     div
         [ class "wrap wrap-alt-2 page-participant nutrition" ]
-        [ viewHeader language id isChw
+        [ viewHeader language isChw initiator
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewActions language currentDate selectedHealthCenter id isChw db) identity sessions
@@ -39,8 +39,17 @@ view language currentDate selectedHealthCenter id isChw db =
         ]
 
 
-viewHeader : Language -> PersonId -> Bool -> Html App.Model.Msg
-viewHeader language id isChw =
+viewHeader : Language -> Bool -> IndividualParticipantInitiator -> Html App.Model.Msg
+viewHeader language isChw initiator =
+    let
+        goBackPage =
+            case initiator of
+                InitiatorParticipantsPage ->
+                    IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+
+                InitiatorPatientRecord patientRecordInitiator personId ->
+                    PatientRecordPage patientRecordInitiator personId
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -51,12 +60,9 @@ viewHeader language id isChw =
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
                         isChw
             ]
-        , a
+        , span
             [ class "link-back"
-            , onClick <|
-                App.Model.SetActivePage <|
-                    UserPage <|
-                        IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+            , onClick <| App.Model.SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []

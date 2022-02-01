@@ -8,7 +8,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportI
 import Backend.AcuteIllnessEncounter.Utils
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitActivity.Utils
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
@@ -154,17 +154,17 @@ pageToFragment current =
                     in
                     url ++ "/" ++ fragment |> Just
 
-                PrenatalParticipantPage id ->
-                    Just <| "prenatal-participant/" ++ fromEntityUuid id
+                PrenatalParticipantPage initiator id ->
+                    Just <| "prenatal-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
 
-                NutritionParticipantPage id ->
-                    Just <| "nutrition-participant/" ++ fromEntityUuid id
+                NutritionParticipantPage initiator id ->
+                    Just <| "nutrition-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
 
-                AcuteIllnessParticipantPage id ->
-                    Just <| "acute-illness-participant/" ++ fromEntityUuid id
+                AcuteIllnessParticipantPage initiator id ->
+                    Just <| "acute-illness-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
 
-                WellChildParticipantPage id ->
-                    Just <| "well-child-participant/" ++ fromEntityUuid id
+                WellChildParticipantPage initiator id ->
+                    Just <| "well-child-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
 
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
@@ -301,10 +301,10 @@ parser =
         , map (\origin -> UserPage <| CreatePersonPage Nothing origin) (s "person" </> parseOrigin </> s "new")
         , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
         , map (\id origin -> UserPage <| PersonPage id origin) (s "person" </> parseUuid </> parseOrigin)
-        , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
-        , map (\id -> UserPage <| NutritionParticipantPage id) (s "nutrition-participant" </> parseUuid)
-        , map (\id -> UserPage <| AcuteIllnessParticipantPage id) (s "acute-illness-participant" </> parseUuid)
-        , map (\id -> UserPage <| WellChildParticipantPage id) (s "well-child-participant" </> parseUuid)
+        , map (\id initiator -> UserPage <| PrenatalParticipantPage initiator id) (s "prenatal-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id initiator -> UserPage <| NutritionParticipantPage initiator id) (s "nutrition-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id initiator -> UserPage <| AcuteIllnessParticipantPage initiator id) (s "acute-illness-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -426,3 +426,8 @@ parseAcuteIllnessProgressReportInitiator =
 parsePatientRecordInitiator : Parser (PatientRecordInitiator -> c) c
 parsePatientRecordInitiator =
     custom "PatientRecordInitiator" Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragmemt
+
+
+parseIndividualParticipantInitiator : Parser (IndividualParticipantInitiator -> c) c
+parseIndividualParticipantInitiator =
+    custom "IndividualParticipantInitiator" Backend.IndividualEncounterParticipant.Utils.initiatorFromUrlFragmemt

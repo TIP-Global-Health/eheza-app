@@ -23,6 +23,12 @@ update currentDate id msg model =
             , []
             )
 
+        SetViewMode mode ->
+            ( { model | viewMode = mode }
+            , Cmd.none
+            , []
+            )
+
         SetFilter filter ->
             if filter == FilterDemographics then
                 update currentDate id (SetActivePage <| UserPage <| DemographicsReportPage (InitiatorPatientRecord id) id) model

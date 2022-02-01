@@ -2,7 +2,7 @@ module Pages.WellChildEncounter.View exposing (allowEndingEcounter, partitionAct
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -69,9 +69,9 @@ viewHeader language isChw assembled =
                         Backend.IndividualEncounterParticipant.Model.WellChildEncounter
                         isChw
             ]
-        , a
+        , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| WellChildParticipantPage assembled.participant.person
+            , onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
