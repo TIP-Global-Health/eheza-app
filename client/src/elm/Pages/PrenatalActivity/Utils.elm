@@ -1880,13 +1880,17 @@ prenatalRDTFormWithDefault form saved =
             form
             (\value ->
                 let
+                    knownAsPositiveValue =
+                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+
                     testPerformedFromValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+                , testPerformed = or form.testPerformed (Just testPerformedFromValue)
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -1981,13 +1985,17 @@ prenatalNonRDTFormWithDefault form saved =
             form
             (\value ->
                 let
+                    knownAsPositiveValue =
+                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+
                     testPerformedFromValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+                , testPerformed = or form.testPerformed (Just testPerformedFromValue)
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
