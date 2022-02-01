@@ -772,8 +772,11 @@ update currentDate isChw id db msg model =
                 form =
                     getFormByVaccineTypeFunc vaccineType model.immunisationData
 
+                defaultSelection =
+                    Maybe.Extra.or form.vaccinationUpdateDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, vaccinationUpdateDate = defaultSelection }
             in
             ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
             , Cmd.none
