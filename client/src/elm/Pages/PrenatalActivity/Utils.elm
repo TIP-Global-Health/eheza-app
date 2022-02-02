@@ -2134,16 +2134,34 @@ expectLaboratoryTask currentDate assembled task =
                     )
                     assembled.globalLmpDate
                     |> Maybe.withDefault (isInitialTest test)
+
+            -- This function checks if patient has reported of having a disease.
+            -- HIV and Hepatitis B are considered chronical diseases.
+            -- If patient declared to have one of them, there's no point
+            -- in testing for it.
+            isKnownAsPositive getMeasurementFunc =
+                List.filter
+                    (Tuple.second
+                        >> getMeasurementFunc
+                        >> getMeasurementValueFunc
+                        >> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                        >> Maybe.withDefault False
+                    )
+                    assembled.nursePreviousMeasurementsWithDates
+                    |> List.isEmpty
+                    |> not
         in
         case task of
             TaskHIVTest ->
-                isRepeatingTestOnWeek 38 TaskHIVTest
+                (not <| isKnownAsPositive .hivTest)
+                    && isRepeatingTestOnWeek 38 TaskHIVTest
 
             TaskSyphilisTest ->
                 isRepeatingTestOnWeek 38 TaskSyphilisTest
 
             TaskHepatitisBTest ->
-                isRepeatingTestOnWeek 34 TaskHepatitisBTest
+                (not <| isKnownAsPositive .hepatitisBTest)
+                    && isRepeatingTestOnWeek 34 TaskHepatitisBTest
 
             TaskMalariaTest ->
                 True
