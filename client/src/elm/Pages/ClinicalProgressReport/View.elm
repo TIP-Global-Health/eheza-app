@@ -74,21 +74,33 @@ viewHeader : Language -> PrenatalEncounterId -> ClinicalProgressReportInitiator 
 viewHeader language id initiator model =
     let
         label =
-            if isJust model.labResultsHistoryMode then
-                Translate.LabHistory
+            Maybe.map
+                (\mode ->
+                    case mode of
+                        LabResultsCurrent ->
+                            Translate.LabResults
 
-            else
-                Translate.ClinicalProgressReport
+                        LabResultsHistory _ ->
+                            Translate.LabHistory
+                )
+                model.labResultsMode
+                |> Maybe.withDefault Translate.ClinicalProgressReport
 
         backIcon =
             if initiator == InitiatorEncounterPage then
                 let
                     action =
-                        if isJust model.labResultsHistoryMode then
-                            SetLabResultsHistoryMode Nothing
+                        Maybe.map
+                            (\mode ->
+                                case mode of
+                                    LabResultsCurrent ->
+                                        SetLabResultsMode Nothing
 
-                        else
-                            SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                    LabResultsHistory _ ->
+                                        SetLabResultsMode (Just LabResultsCurrent)
+                            )
+                            model.labResultsMode
+                            |> Maybe.withDefault (SetActivePage <| UserPage <| PrenatalEncounterPage id)
                 in
                 span
                     [ class "icon-back"
@@ -111,9 +123,14 @@ viewContent : Language -> NominalDate -> Bool -> ClinicalProgressReportInitiator
 viewContent language currentDate isChw initiator model data =
     let
         derivedContent =
-            case model.labResultsHistoryMode of
+            case model.labResultsMode of
                 Just mode ->
-                    [ viewLabResultsHistoryPane language currentDate mode ]
+                    case mode of
+                        LabResultsCurrent ->
+                            [ viewLabResultsPane language currentDate data ]
+
+                        LabResultsHistory historyMode ->
+                            [ viewLabResultsHistoryPane language currentDate historyMode ]
 
                 Nothing ->
                     let
@@ -138,7 +155,7 @@ viewContent language currentDate isChw initiator model data =
                     , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
                     , viewPatientProgressPane language currentDate isChw data
-                    , viewLabResultsPane language currentDate data
+                    , viewLabsPane language currentDate data
                     , actions
                     ]
     in
@@ -868,6 +885,20 @@ illustrativePurposes language =
     div [ class "illustrative-purposes" ] [ text <| translate language Translate.ForIllustrativePurposesOnly ]
 
 
+viewLabsPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewLabsPane language currentDate assembled =
+    div [ class "labs" ] <|
+        [ viewItemHeading language Translate.LabResults "blue"
+        , div [ class "pane-content" ]
+            [ div
+                [ class "ui primary button"
+                , onClick <| SetLabResultsMode <| Just LabResultsCurrent
+                ]
+                [ text <| translate language Translate.SeeLabResults ]
+            ]
+        ]
+
+
 viewLabResultsPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewLabResultsPane language currentDate assembled =
     let
@@ -1190,7 +1221,7 @@ viewLabResultsEntry language currentDate results =
             if config.totalResults > 1 then
                 div
                     [ class "icon-forward"
-                    , onClick <| SetLabResultsHistoryMode <| Just results
+                    , onClick <| SetLabResultsMode <| Just (LabResultsHistory results)
                     ]
                     []
 

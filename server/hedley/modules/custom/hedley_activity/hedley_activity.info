@@ -159,6 +159,7 @@ features[field_instance][] = node-family_planning-field_person
 features[field_instance][] = node-family_planning-field_session
 features[field_instance][] = node-family_planning-field_shards
 features[field_instance][] = node-family_planning-field_uuid
+features[field_instance][] = node-follow_up-field_date_concluded
 features[field_instance][] = node-follow_up-field_date_measured
 features[field_instance][] = node-follow_up-field_follow_up_options
 features[field_instance][] = node-follow_up-field_nurse

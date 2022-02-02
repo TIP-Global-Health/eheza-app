@@ -1001,6 +1001,7 @@ type TranslationId
     | SecondName
     | Sector
     | SeeDosageScheduleByWeight
+    | SeeLabResults
     | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
@@ -8746,6 +8747,11 @@ translationSet trans =
 
         SeeDosageScheduleByWeight ->
             { english = "See dosage schedule by Weight"
+            , kinyarwanda = Nothing
+            }
+
+        SeeLabResults ->
+            { english = "See Lab Results"
             , kinyarwanda = Nothing
             }
 

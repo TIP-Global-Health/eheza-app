@@ -1688,28 +1688,31 @@ expectPhysicalExamTask currentDate person isChw isFirstEncounter task =
             isFirstEncounter
 
 
-fromFollowUpValue : Maybe (EverySet FollowUpOption) -> FollowUpForm
-fromFollowUpValue saved =
-    { option = Maybe.andThen (EverySet.toList >> List.head) saved }
-
-
-followUpFormWithDefault : FollowUpForm -> Maybe (EverySet FollowUpOption) -> FollowUpForm
+followUpFormWithDefault : FollowUpForm -> Maybe AcuteIllnessFollowUpValue -> FollowUpForm
 followUpFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value -> { option = or form.option (EverySet.toList value |> List.head) })
+            (\value ->
+                { option = or form.option (EverySet.toList value.options |> List.head)
+                , resolutionDate = or form.resolutionDate value.resolutionDate
+                }
+            )
 
 
-toFollowUpValueWithDefault : Maybe (EverySet FollowUpOption) -> FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValueWithDefault : Maybe AcuteIllnessFollowUpValue -> FollowUpForm -> Maybe AcuteIllnessFollowUpValue
 toFollowUpValueWithDefault saved form =
     followUpFormWithDefault form saved
         |> toFollowUpValue
 
 
-toFollowUpValue : FollowUpForm -> Maybe (EverySet FollowUpOption)
+toFollowUpValue : FollowUpForm -> Maybe AcuteIllnessFollowUpValue
 toFollowUpValue form =
-    Maybe.map (List.singleton >> EverySet.fromList) form.option
+    Maybe.map
+        (\options ->
+            AcuteIllnessFollowUpValue options form.resolutionDate
+        )
+        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
 
 
 fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm
@@ -2586,9 +2589,10 @@ covid19DiagnosisPath currentDate person isChw measurements =
                             Just DiagnosisSevereCovid19
 
                         RapidTestUnableToRun ->
-                            -- We treat Unable to run as if test was positive.
+                            -- Per requirements, if we have a suspected Covid case, but
+                            -- can not perform Covid RDT, we treat the case as a positive for Covid.
                             -- However, when test can not be performed and fever is recorded,
-                            -- we run Malaria RDT to rule out Malaria.
+                            -- we run Malaria RDT first, to rule out Malaria.
                             if feverRecorded measurements then
                                 malariaRapidTestResult measurements
                                     |> Maybe.map
@@ -2605,10 +2609,11 @@ covid19DiagnosisPath currentDate person isChw measurements =
                                 positiveCovidDecisionMatrix
 
                         RapidTestUnableToRunAndPregnant ->
-                            -- We treat Unable to run as if test was positive,
-                            -- and confirmed Covid with pregnancy always concidered as severe case.
+                            -- Per requirements, if we have a suspected Covid case, but
+                            -- can not perform Covid RDT, we treat the case as a positive for Covid.
+                            -- Confirmed Covid with pregnancy always concidered as severe case.
                             -- However, when test can not be performed and fever is recorded,
-                            -- we run Malaria RDT to rule out Malaria.
+                            -- we run Malaria RDT first, to rule out Malaria.
                             if feverRecorded measurements then
                                 malariaRapidTestResult measurements
                                     |> Maybe.map
