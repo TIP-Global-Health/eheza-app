@@ -567,14 +567,15 @@
         return query.toArray().catch(databaseError).then(function (nodes) {
             if (nodes) {
                 var today = new Date();
-                var sixMonthsFromToday = new Date(today.setMonth(today.getMonth() + 6));
+                var sixMonthsFromToday = new Date();
+                sixMonthsFromToday.setMonth(today.getMonth() + 6);
 
                 nodes.forEach(function (node) {
-                    if (node.date_concluded !== null && typeof node.date_concluded != 'undefined') {
+                    if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
                         var targetDate = sixMonthsFromToday;
 
                         if (resolvedFollowUpMeasurementsTypes.includes(node.type)) {
-                          targetDate = today;
+                          var targetDate = today;
                         }
 
                         // Do not load resolved items.

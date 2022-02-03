@@ -4573,10 +4573,16 @@ makeEditableSession sessionId db =
             hasNoSuccessValues db.childMeasurements
 
         noPeopleLoaded =
-            db.people
-                |> Dict.values
-                |> List.filter (\v -> RemoteData.isSuccess v)
-                |> List.isEmpty
+            -- There are groups that got all participants graduated,
+            -- which causes noone to be loaded.
+            -- In such cases, Attendance page shows constant spinner.
+            -- Therefore, we will not raise red flag when no people
+            -- need loading.
+            (Dict.size db.people > 0)
+                && (Dict.values db.people
+                        |> List.filter (\v -> RemoteData.isSuccess v)
+                        |> List.isEmpty
+                   )
     in
     -- Make sure we don't still have measurements being lazy loaded, and at least
     -- some of the people have loaded. Otherwise, allow rebuilding the `EditableSession`.

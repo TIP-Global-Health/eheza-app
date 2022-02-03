@@ -134,6 +134,7 @@ viewPregnancyOutcome language currentDate initiator data model =
             , close = SetDateSelectorState Nothing
             , dateFrom = Date.add Months -3 currentDate
             , dateTo = currentDate
+            , dateDefault = Nothing
             }
 
         totalTasks =

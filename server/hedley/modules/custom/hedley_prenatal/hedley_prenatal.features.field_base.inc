@@ -523,6 +523,7 @@ function hedley_prenatal_field_default_field_bases() {
         'no-equipment' => 'No Equipment',
         'broken-equipment' => 'Broken Equipment',
         'not-indicated' => 'Not Indicated',
+        'known-as-positive' => 'Known as Positive',
       ),
       'allowed_values_function' => '',
     ),

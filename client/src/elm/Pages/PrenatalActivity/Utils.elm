@@ -1881,13 +1881,18 @@ prenatalRDTFormWithDefault form saved =
             form
             (\value ->
                 let
-                    testPerformedFromValue =
+                    knownAsPositiveValue =
+                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+
+                    testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -1925,13 +1930,14 @@ prenatalUrineDipstickFormWithDefault form saved =
             form
             (\value ->
                 let
-                    testPerformedFromValue =
+                    testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , testVariant = or form.testVariant value.testVariant
@@ -1982,13 +1988,18 @@ prenatalNonRDTFormWithDefault form saved =
             form
             (\value ->
                 let
-                    testPerformedFromValue =
+                    knownAsPositiveValue =
+                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+
+                    testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { testPerformed = or form.testPerformed (Just testPerformedFromValue)
+                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -2123,16 +2134,34 @@ expectLaboratoryTask currentDate assembled task =
                     )
                     assembled.globalLmpDate
                     |> Maybe.withDefault (isInitialTest test)
+
+            -- This function checks if patient has reported of having a disease.
+            -- HIV and Hepatitis B are considered chronical diseases.
+            -- If patient declared to have one of them, there's no point
+            -- in testing for it.
+            isKnownAsPositive getMeasurementFunc =
+                List.filter
+                    (Tuple.second
+                        >> getMeasurementFunc
+                        >> getMeasurementValueFunc
+                        >> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                        >> Maybe.withDefault False
+                    )
+                    assembled.nursePreviousMeasurementsWithDates
+                    |> List.isEmpty
+                    |> not
         in
         case task of
             TaskHIVTest ->
-                isRepeatingTestOnWeek 38 TaskHIVTest
+                (not <| isKnownAsPositive .hivTest)
+                    && isRepeatingTestOnWeek 38 TaskHIVTest
 
             TaskSyphilisTest ->
                 isRepeatingTestOnWeek 38 TaskSyphilisTest
 
             TaskHepatitisBTest ->
-                isRepeatingTestOnWeek 34 TaskHepatitisBTest
+                (not <| isKnownAsPositive .hepatitisBTest)
+                    && isRepeatingTestOnWeek 34 TaskHepatitisBTest
 
             TaskMalariaTest ->
                 True

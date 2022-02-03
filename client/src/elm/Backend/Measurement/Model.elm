@@ -826,6 +826,7 @@ type PrenatalTestExecutionNote
     | TestNoteNoEquipment
     | TestNoteBrokenEquipment
     | TestNoteNotIndicated
+    | TestNoteKnownAsPositive
 
 
 type PrenatalTestResult

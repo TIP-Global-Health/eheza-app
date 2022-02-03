@@ -258,6 +258,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                             , close = SetLmpDateSelectorState Nothing
                             , dateFrom = dateFrom
                             , dateTo = currentDate
+                            , dateDefault = Just dateFrom
                             }
                     in
                     [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
@@ -1279,7 +1280,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                             measurements.hivTest
                                 |> getMeasurementValueFunc
                                 |> prenatalRDTFormWithDefault data.hivTestForm
-                                |> viewPrenatalRDTForm language currentDate TaskHIVTest
+                                |> viewPrenatalRDTFormCheckKnownAsPositive language currentDate TaskHIVTest
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest
@@ -1291,7 +1292,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
                                 |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
-                                |> viewPrenatalNonRDTForm language currentDate TaskHepatitisBTest
+                                |> viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate TaskHepatitisBTest
 
                         TaskMalariaTest ->
                             measurements.malariaTest
@@ -2768,6 +2769,7 @@ viewAppointmentConfirmationForm language currentDate assembled form =
             , close = SetAppointmentDateSelectorState Nothing
             , dateFrom = currentDate
             , dateTo = Date.add Months 9 currentDate
+            , dateDefault = Nothing
             }
     in
     div [ class "form appointment-confirmation" ]
@@ -2797,8 +2799,46 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
+viewPrenatalRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
+viewPrenatalRDTFormCheckKnownAsPositive language currentDate task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.knownAsPositive /= Just False then
+                ( [], 0, 0 )
+
+            else
+                prenatalRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalRDTForm language currentDate task form =
+    let
+        ( inputs, tasksCompleted, tasksTotal ) =
+            prenatalRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ inputs
+    , tasksCompleted
+    , tasksTotal
+    )
+
+
+prenatalRDTFormInputsAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( List (Html Msg), Int, Int )
+prenatalRDTFormInputsAndTasks language currentDate task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate task form
@@ -2866,11 +2906,7 @@ viewPrenatalRDTForm language currentDate task form =
             else
                 ( [], 0, 0 )
     in
-    ( div [ class "ui form laboratory rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ initialSection
-            ++ derivedSection
+    ( initialSection ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
     )
@@ -2926,8 +2962,46 @@ viewPrenatalUrineDipstickForm language currentDate form =
     )
 
 
+viewPrenatalNonRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
+viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.knownAsPositive /= Just False then
+                ( [], 0, 0 )
+
+            else
+                prenatalNonRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory non-rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 viewPrenatalNonRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalNonRDTForm language currentDate task form =
+    let
+        ( inputs, tasksCompleted, tasksTotal ) =
+            prenatalNonRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory non-rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ inputs
+    , tasksCompleted
+    , tasksTotal
+    )
+
+
+prenatalNonRDTFormInputsAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( List (Html Msg), Int, Int )
+prenatalNonRDTFormInputsAndTasks language currentDate task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate task form
@@ -2953,13 +3027,82 @@ viewPrenatalNonRDTForm language currentDate task form =
             else
                 ( [], 0, 0 )
     in
-    ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ initialSection
-            ++ derivedSection
+    ( initialSection ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
+    )
+
+
+contentAndTasksLaboratoryTestKnownAsPositive :
+    Language
+    -> NominalDate
+    -> LaboratoryTask
+    -> { f | knownAsPositive : Maybe Bool }
+    -> ( List (Html Msg), Int, Int )
+contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
+    let
+        updateFunc =
+            \knownAsPositive form_ ->
+                let
+                    executionNote =
+                        if knownAsPositive then
+                            Just TestNoteKnownAsPositive
+
+                        else
+                            Nothing
+                in
+                { form_
+                    | knownAsPositive = Just knownAsPositive
+                    , testPerformed = Nothing
+                    , testPerformedDirty = True
+                    , testPerformedToday = Nothing
+                    , testPerformedTodayDirty = True
+                    , executionNote = executionNote
+                    , executionNoteDirty = True
+                    , executionDate = Nothing
+                    , executionDateDirty = True
+                }
+
+        setMsg =
+            case task of
+                TaskHIVTest ->
+                    SetHIVTestFormBoolInput updateFunc
+
+                TaskSyphilisTest ->
+                    SetSyphilisTestFormBoolInput updateFunc
+
+                TaskHepatitisBTest ->
+                    SetHepatitisBTestFormBoolInput updateFunc
+
+                TaskMalariaTest ->
+                    SetMalariaTestFormBoolInput updateFunc
+
+                TaskBloodGpRsTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskUrineDipstickTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskHemoglobinTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskRandomBloodSugarTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+    in
+    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
+      , viewBoolInput
+            language
+            form.knownAsPositive
+            setMsg
+            "known-as-positive"
+            Nothing
+      ]
+    , taskCompleted form.knownAsPositive
+    , 1
     )
 
 
@@ -2979,6 +3122,7 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
             \value form_ ->
                 { form_
                     | testPerformed = Just value
+                    , testPerformedDirty = True
                     , testPerformedToday = Nothing
                     , testPerformedTodayDirty = True
                     , executionNote = Nothing
@@ -3175,10 +3319,15 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                                                 |> Maybe.withDefault ""
 
                                         dateSelectorConfig =
+                                            let
+                                                dateTo =
+                                                    Date.add Days -1 currentDate
+                                            in
                                             { select = msgs.setExecutionDateMsg
                                             , close = msgs.setDateSelectorStateMsg Nothing
                                             , dateFrom = Date.add Days -30 currentDate
-                                            , dateTo = Date.add Days -1 currentDate
+                                            , dateTo = dateTo
+                                            , dateDefault = Just dateTo
                                             }
                                     in
                                     ( [ div

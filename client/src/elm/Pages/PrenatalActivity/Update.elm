@@ -104,9 +104,14 @@ update currentDate id db msg model =
 
         SetLmpDateSelectorState state ->
             let
-                updatedForm =
+                form =
                     model.pregnancyDatingData.form
-                        |> (\form -> { form | dateSelectorPopupState = state })
+
+                defaultSelection =
+                    Maybe.Extra.or form.lmpDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, lmpDate = defaultSelection }
 
                 updatedData =
                     model.pregnancyDatingData
@@ -1618,8 +1623,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.hivTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData
@@ -1714,8 +1722,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.syphilisTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData
@@ -1810,8 +1821,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.hepatitisBTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData
@@ -1923,8 +1937,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.malariaTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData
@@ -2019,8 +2036,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.bloodGpRsTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData
@@ -2132,8 +2152,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.urineDipstickTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData
@@ -2228,8 +2251,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.hemoglobinTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData
@@ -2324,8 +2350,11 @@ update currentDate id db msg model =
                 form =
                     model.laboratoryData.randomBloodSugarTestForm
 
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData

@@ -640,6 +640,7 @@ type TranslationId
     | IsolatedAtHome
     | KilogramShorthand
     | KilogramsPerMonth
+    | KnownAsPositiveQuestion Pages.PrenatalActivity.Types.LaboratoryTask
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
@@ -4818,6 +4819,56 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        KnownAsPositiveQuestion task ->
+            case task of
+                Pages.PrenatalActivity.Types.TaskHIVTest ->
+                    { english = "Is this patient known to be HIV positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Types.TaskSyphilisTest ->
+                    { english = "Is this patient known to be yphilis - RPR positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Types.TaskHepatitisBTest ->
+                    { english = "Is this patient known to be Hepatitis B positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Types.TaskMalariaTest ->
+                    { english = "Is this patient known to be Malaria positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Types.TaskBloodGpRsTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Types.TaskUrineDipstickTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Types.TaskHemoglobinTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Types.TaskRandomBloodSugarTest ->
+                    -- Known as positive is not applicable for this test, therefore,
+                    -- no translation is needed.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         LabelOnePregnancyEpisodeOpen ->
             { english = "There is one pregnancy episode that is open"
             , kinyarwanda = Nothing
@@ -7813,6 +7864,11 @@ translationSet trans =
 
                 TestNoteNotIndicated ->
                     { english = "Not Indicated"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestNoteKnownAsPositive ->
+                    { english = "Known as Positive"
                     , kinyarwanda = Nothing
                     }
 

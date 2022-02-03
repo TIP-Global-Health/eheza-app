@@ -3268,6 +3268,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         , close = SetContactsTracingDateSelectorState Nothing
                         , dateFrom = Date.add Days (-1 * covidIsolationPeriod) currentDate
                         , dateTo = currentDate
+                        , dateDefault = Nothing
                         }
 
                     phoneNumberInput =
