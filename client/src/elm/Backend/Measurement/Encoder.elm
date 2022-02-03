@@ -604,6 +604,9 @@ encodePrenatalTestExecutionNote value =
             TestNoteNotIndicated ->
                 "not-indicated"
 
+            TestNoteKnownAsPositive ->
+                "known-as-positive"
+
 
 encodePrenatalTestResult : PrenatalTestResult -> Value
 encodePrenatalTestResult =
