@@ -33,6 +33,9 @@ foreach ($clinics as $clinic) {
   drush_print("$clinic_name at $hc_name got $total participants");
 }
 
+/**
+ * Generate base query.
+ */
 function base_query_for_bundle($bundle): EntityFieldQuery {
   $query = new EntityFieldQuery();
   $query
