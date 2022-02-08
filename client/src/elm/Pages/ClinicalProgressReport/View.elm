@@ -22,7 +22,7 @@ import Backend.PrenatalActivity.Utils
         ( generateRiskFactorAlertData
         , getEncounterTrimesterData
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Interval(..), Unit(..))
 import EverySet
@@ -155,7 +155,7 @@ viewContent language currentDate isChw initiator model data =
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                     , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
-                    , viewChwActivityPane language currentDate isChw firstEncounterMeasurements data
+                    , viewChwActivityPane language currentDate isChw data
                     , viewPatientProgressPane language currentDate isChw data
                     , viewLabResultsPane language currentDate data
                     , viewProgressPhotosPane language currentDate isChw data
@@ -292,46 +292,37 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
         ]
 
 
-viewChwActivityPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewChwActivityPane language currentDate isChw firstEncounterMeasurements data =
+viewChwActivityPane : Language -> NominalDate -> Bool -> AssembledData -> Html msg
+viewChwActivityPane language currentDate isChw data =
     let
-        allMeasurementsWithDates =
-            data.nursePreviousMeasurementsWithDates
-                ++ (if isChw then
-                        [ ( currentDate, data.measurements ) ]
+        encounterType =
+            data.encounter.encounterType
 
-                    else
-                        []
-                   )
+        allMeasurementsWithDates =
+            if encounterType /= NurseEncounter then
+                data.chwPreviousMeasurementsWithDates
+
+            else
+                []
 
         pregnancyDating =
             allMeasurementsWithDates
                 |> List.filter
-                    (\( _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         measurements.lastMenstrualPeriod
-                            |> Maybe.map (Tuple.second >> .value >> .confirmation >> (==) True)
+                            |> Maybe.map (Tuple.second >> .value >> .confirmation)
                             |> Maybe.withDefault False
                     )
                 |> List.head
-                |> Maybe.map Tuple.first
-
-        labs =
-            allMeasurementsWithDates
-                |> List.filter
-                    (\( _, measurements ) ->
-                        measurements.labsResults
-                            |> Maybe.map (Tuple.second >> .value >> .performedTests >> EverySet.member TestBloodGpRs)
-                            |> Maybe.withDefault False
-                    )
-                |> List.head
-                |> Maybe.map Tuple.first
 
         actionPregnancyDating date =
             if pregnancyDating == Just date then
-                li [ class "general" ] [ text <| translate language Translate.Date ]
+                [ div [ class "date" ] [ text <| formatDDMMYYYY currentDate ]
+                , div [ class "result" ] [ text "Text------" ]
+                ]
 
             else
-                emptyNode
+                []
 
         heading =
             div [ class "heading" ]
