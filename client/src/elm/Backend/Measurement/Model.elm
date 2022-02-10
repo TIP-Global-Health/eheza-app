@@ -511,6 +511,12 @@ type DangerSign
     | DifficultyBreathing
     | Fever
     | ExtremeWeakness
+    | ImminentDelivery
+    | Labor
+    | LooksVeryIll
+    | SevereVomititng
+    | Unconscious
+    | GushLeakingVaginalFluid
     | NoDangerSign
 
 

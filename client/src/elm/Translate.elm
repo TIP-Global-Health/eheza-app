@@ -3123,8 +3123,8 @@ translationSet trans =
                     }
 
                 AbdominalPain ->
-                    { english = "Abdominal pain"
-                    , kinyarwanda = Just "Kuribwa mu nda"
+                    { english = "Severe Abdominal pain"
+                    , kinyarwanda = Nothing
                     }
 
                 DifficultyBreathing ->
@@ -3140,6 +3140,36 @@ translationSet trans =
                 ExtremeWeakness ->
                     { english = "Extreme weakness"
                     , kinyarwanda = Just "Gucika intege cyane"
+                    }
+
+                ImminentDelivery ->
+                    { english = "Imminent delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                Labor ->
+                    { english = "Labor"
+                    , kinyarwanda = Nothing
+                    }
+
+                LooksVeryIll ->
+                    { english = "Looks very ill"
+                    , kinyarwanda = Nothing
+                    }
+
+                SevereVomititng ->
+                    { english = "Severe vomititng"
+                    , kinyarwanda = Nothing
+                    }
+
+                Unconscious ->
+                    { english = "Unconscious"
+                    , kinyarwanda = Nothing
+                    }
+
+                GushLeakingVaginalFluid ->
+                    { english = "Gush or leaking of vaginal fluid"
+                    , kinyarwanda = Nothing
                     }
 
                 NoDangerSign ->

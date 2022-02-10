@@ -1259,6 +1259,24 @@ decodeDangerSign =
                     "extreme-weakness" ->
                         succeed ExtremeWeakness
 
+                    "imminent-delivery" ->
+                        succeed ImminentDelivery
+
+                    "labor" ->
+                        succeed Labor
+
+                    "looks-very-ill" ->
+                        succeed LooksVeryIll
+
+                    "severe-vomititng" ->
+                        succeed SevereVomititng
+
+                    "unconscious" ->
+                        succeed Unconscious
+
+                    "gush-leaking-vaginal-fluid" ->
+                        succeed GushLeakingVaginalFluid
+
                     "none" ->
                         succeed NoDangerSign
 

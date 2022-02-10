@@ -1064,6 +1064,24 @@ encodeDangerSign sign =
             ExtremeWeakness ->
                 "extreme-weakness"
 
+            ImminentDelivery ->
+                "imminent-delivery"
+
+            Labor ->
+                "labor"
+
+            LooksVeryIll ->
+                "looks-very-ill"
+
+            SevereVomititng ->
+                "severe-vomititng"
+
+            Unconscious ->
+                "unconscious"
+
+            GushLeakingVaginalFluid ->
+                "gush-leaking-vaginal-fluid"
+
             NoDangerSign ->
                 "none"
 
