@@ -940,6 +940,7 @@ type TranslationId
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
+    | ReceivedMebendazole
     | ReceivedMosquitoNet
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
@@ -8174,38 +8175,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
 
-        ReasonForNotTaking reason ->
-            case reason of
-                NotTakingAdverseEvent ->
-                    { english = "Adverse event"
-                    , kinyarwanda = Just "Ibintu bidasanzwe (bitewe n'imiti wafashe)"
-                    }
-
-                NotTakingNoMoney ->
-                    { english = "No money for medication"
-                    , kinyarwanda = Just "Nta mafaranga yo kwishyura imiti afite"
-                    }
-
-                NotTakingMemoryProblems ->
-                    { english = "Memory problems"
-                    , kinyarwanda = Just "Ibibazo byo kwibagirwa"
-                    }
-
-                NotTakingOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    }
-
-                NoReasonForNotTakingSign ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    }
-
-        ReceivedDewormingPill ->
-            { english = "Has the mother received deworming pill"
-            , kinyarwanda = Nothing
-            }
-
         ReasonForNotProvidingHealthEducation reason ->
             case reason of
                 PatientNeedsEmergencyReferral ->
@@ -8238,9 +8207,46 @@ translationSet trans =
                     , kinyarwanda = Just "Nta mpamvu"
                     }
 
+        ReasonForNotTaking reason ->
+            case reason of
+                NotTakingAdverseEvent ->
+                    { english = "Adverse event"
+                    , kinyarwanda = Just "Ibintu bidasanzwe (bitewe n'imiti wafashe)"
+                    }
+
+                NotTakingNoMoney ->
+                    { english = "No money for medication"
+                    , kinyarwanda = Just "Nta mafaranga yo kwishyura imiti afite"
+                    }
+
+                NotTakingMemoryProblems ->
+                    { english = "Memory problems"
+                    , kinyarwanda = Just "Ibibazo byo kwibagirwa"
+                    }
+
+                NotTakingOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    }
+
+                NoReasonForNotTakingSign ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        ReceivedDewormingPill ->
+            { english = "Has the mother received deworming pill"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedIronFolicAcid ->
             { english = "Has the mother received iron and folic acid supplement"
             , kinyarwanda = Just "Umubyeyi yahawe ibinini bya Fer cg Folic Acid byongera amaraso?"
+            }
+
+        ReceivedMebendazole ->
+            { english = "Has the mother received Mebendazole in the last 6 months"
+            , kinyarwanda = Nothing
             }
 
         ReceivedMosquitoNet ->

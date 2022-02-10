@@ -14,10 +14,14 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
 import Pages.PrenatalActivity.Types exposing (NextStepsTask(..))
-import Pages.PrenatalActivity.Utils exposing (isFirstEncounter)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+
+
+isFirstEncounter : AssembledData -> Bool
+isFirstEncounter assembled =
+    List.isEmpty assembled.nursePreviousMeasurementsWithDates
 
 
 getAllActivities : AssembledData -> List PrenatalActivity
@@ -115,8 +119,18 @@ generatePostCreateDestination encounterType hasNurseEncounter =
 calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
 calculateEDDandEGADays currentDate lmpDate =
     ( lmpToEDDDate lmpDate
-    , diffDays lmpDate currentDate
+    , calculateEGADays currentDate lmpDate
     )
+
+
+calculateEGADays : NominalDate -> NominalDate -> Int
+calculateEGADays currentDate lmpDate =
+    diffDays lmpDate currentDate
+
+
+calculateEGAWeeks : NominalDate -> NominalDate -> Int
+calculateEGAWeeks currentDate lmpDate =
+    calculateEGADays currentDate lmpDate // 7
 
 
 generateEGAWeeksDaysLabel : Language -> Int -> String
@@ -634,7 +648,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                             (\lmpDate ->
                                 let
                                     egaInWeeks =
-                                        diffDays lmpDate currentDate // 7 |> toFloat
+                                        calculateEGAWeeks currentDate lmpDate
                                 in
                                 if egaInWeeks < 32 then
                                     Nothing
@@ -672,7 +686,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                             (\lmpDate ->
                                 let
                                     egaInWeeks =
-                                        diffDays lmpDate currentDate // 7 |> toFloat
+                                        calculateEGAWeeks currentDate lmpDate
                                 in
                                 if egaInWeeks < 32 then
                                     Nothing

@@ -17,6 +17,7 @@ import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefaul
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
+import Pages.PrenatalEncounter.Utils exposing (calculateEGAWeeks, isFirstEncounter)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -30,11 +31,6 @@ import Pages.Utils
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
-
-
-isFirstEncounter : AssembledData -> Bool
-isFirstEncounter assembled =
-    List.isEmpty assembled.nursePreviousMeasurementsWithDates
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
@@ -354,7 +350,7 @@ expectPrenatalPhoto currentDate data =
             (\lmpDate ->
                 let
                     currentWeek =
-                        diffDays lmpDate currentDate // 7
+                        calculateEGAWeeks currentDate lmpDate
 
                     conditionsForCurrentWeek =
                         periods
@@ -1034,13 +1030,6 @@ toMedicalHistoryValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicalHistorySigns)
 
 
-fromMedicationValue : Maybe (EverySet MedicationSign) -> MedicationForm
-fromMedicationValue saved =
-    { receivedIronFolicAcid = Maybe.map (EverySet.member IronAndFolicAcidSupplement) saved
-    , receivedDewormingPill = Maybe.map (EverySet.member DewormingPill) saved
-    }
-
-
 medicationFormWithDefault : MedicationForm -> Maybe (EverySet MedicationSign) -> MedicationForm
 medicationFormWithDefault form saved =
     saved
@@ -1049,6 +1038,7 @@ medicationFormWithDefault form saved =
             (\value ->
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (EverySet.member IronAndFolicAcidSupplement value |> Just)
                 , receivedDewormingPill = or form.receivedDewormingPill (EverySet.member DewormingPill value |> Just)
+                , receivedMebendazole = or form.receivedMebendazole (EverySet.member Mebendazole value |> Just)
                 }
             )
 
@@ -1063,6 +1053,7 @@ toMedicationValue : MedicationForm -> Maybe (EverySet MedicationSign)
 toMedicationValue form =
     [ Maybe.map (ifTrue IronAndFolicAcidSupplement) form.receivedIronFolicAcid
     , ifNullableTrue DewormingPill form.receivedDewormingPill
+    , ifNullableTrue Mebendazole form.receivedMebendazole
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)

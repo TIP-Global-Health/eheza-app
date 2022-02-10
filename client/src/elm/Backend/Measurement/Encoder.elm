@@ -1190,6 +1190,9 @@ encodeMedicationSign sign =
             DewormingPill ->
                 "deworming-pill"
 
+            Mebendazole ->
+                "mebendazole"
+
             NoMedication ->
                 "none"
 

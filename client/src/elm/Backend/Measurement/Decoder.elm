@@ -1390,6 +1390,9 @@ decodeMedicationSign =
                     "deworming-pill" ->
                         succeed DewormingPill
 
+                    "mebendazole" ->
+                        succeed Mebendazole
+
                     "none" ->
                         succeed NoMedication
 

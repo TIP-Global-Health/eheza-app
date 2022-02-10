@@ -299,12 +299,13 @@ emptyMedicationData =
 type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
+    , receivedMebendazole : Maybe Bool
     }
 
 
 emptyMedicationForm : MedicationForm
 emptyMedicationForm =
-    MedicationForm Nothing Nothing
+    MedicationForm Nothing Nothing Nothing
 
 
 type alias DangerSignsData =

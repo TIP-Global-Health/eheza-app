@@ -584,6 +584,7 @@ type alias MedicalHistory =
 type MedicationSign
     = IronAndFolicAcidSupplement
     | DewormingPill
+    | Mebendazole
     | NoMedication
 
 
