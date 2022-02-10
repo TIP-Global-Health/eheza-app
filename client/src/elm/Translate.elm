@@ -3157,8 +3157,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                SevereVomititng ->
-                    { english = "Severe vomititng"
+                SevereVomiting ->
+                    { english = "Severe vomiting"
                     , kinyarwanda = Nothing
                     }
 

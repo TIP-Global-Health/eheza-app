@@ -395,7 +395,7 @@ function hedley_activity_field_default_field_bases() {
         'imminent-delivery' => 'Imminent delivery',
         'labor' => 'Labor',
         'looks-very-ill' => 'Looks very ill',
-        'severe-vomititng' => 'Severe vomititng',
+        'severe-vomiting' => 'Severe vomiting',
         'unconscious' => 'Unconscious',
         'gush-leaking-vaginal-fluid' => 'Gush or leaking of vaginal fluid',
         'none' => 'None of these',

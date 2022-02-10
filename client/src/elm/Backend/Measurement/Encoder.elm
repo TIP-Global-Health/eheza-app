@@ -1073,8 +1073,8 @@ encodeDangerSign sign =
             LooksVeryIll ->
                 "looks-very-ill"
 
-            SevereVomititng ->
-                "severe-vomititng"
+            SevereVomiting ->
+                "severe-vomiting"
 
             Unconscious ->
                 "unconscious"

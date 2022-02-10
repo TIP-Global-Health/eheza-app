@@ -514,7 +514,7 @@ type DangerSign
     | ImminentDelivery
     | Labor
     | LooksVeryIll
-    | SevereVomititng
+    | SevereVomiting
     | Unconscious
     | GushLeakingVaginalFluid
     | NoDangerSign

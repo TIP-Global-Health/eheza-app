@@ -1268,8 +1268,8 @@ decodeDangerSign =
                     "looks-very-ill" ->
                         succeed LooksVeryIll
 
-                    "severe-vomititng" ->
-                        succeed SevereVomititng
+                    "severe-vomiting" ->
+                        succeed SevereVomiting
 
                     "unconscious" ->
                         succeed Unconscious
