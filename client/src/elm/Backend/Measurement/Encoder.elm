@@ -652,6 +652,11 @@ encodePrenatalLaboratoryTest value =
                 "random-blood-sugar"
 
 
+encodePrenatalMedicationDistribution : PrenatalMedicationDistribution -> List ( String, Value )
+encodePrenatalMedicationDistribution =
+    encodePrenatalMeasurement encodeMedicationDistributionValue
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
