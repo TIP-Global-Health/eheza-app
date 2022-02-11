@@ -5477,7 +5477,7 @@ translationSet trans =
                     }
 
                 Mebendezole ->
-                    { english = "Mebendezole"
+                    { english = "Mebendazole"
                     , kinyarwanda = Nothing
                     }
 
@@ -10165,7 +10165,7 @@ translationSet trans =
                     }
 
                 Pages.WellChildActivity.Types.TaskMebendezole ->
-                    { english = "Mebendezole"
+                    { english = "Mebendazole"
                     , kinyarwanda = Nothing
                     }
 
