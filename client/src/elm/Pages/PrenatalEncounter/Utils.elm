@@ -38,6 +38,7 @@ getAllActivities data =
                 , DangerSigns
                 , Laboratory
                 , PrenatalPhoto
+                , NextSteps
                 ]
 
             else
@@ -50,6 +51,7 @@ getAllActivities data =
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , Laboratory
                 , PrenatalPhoto
+                , NextSteps
                 ]
 
         ChwFirstEncounter ->

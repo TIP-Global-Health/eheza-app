@@ -75,6 +75,12 @@ expectActivity currentDate assembled activity =
                 PrenatalPhoto ->
                     expectPrenatalPhoto currentDate assembled
 
+                NextSteps ->
+                    resolveNextStepsTasks currentDate assembled
+                        |> List.filter (expectNextStepsTask currentDate assembled)
+                        |> List.isEmpty
+                        |> not
+
                 -- Unique Chw activities.
                 _ ->
                     False
@@ -245,16 +251,16 @@ resolveNextStepsTasks currentDate data =
         -- We should never get here, as Next Steps
         -- displayed only for CHW.
         NurseEncounter ->
-            []
+            [ NextStepsMedicationDistribution ]
 
         _ ->
             -- The order is important. Do not change.
             [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
-                |> List.filter (expectNextStepsTasks currentDate data)
+                |> List.filter (expectNextStepsTask currentDate data)
 
 
-expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
-expectNextStepsTasks currentDate data task =
+expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask currentDate data task =
     let
         dangerSigns =
             dangerSignsPresent data
@@ -279,6 +285,10 @@ expectNextStepsTasks currentDate data task =
 
         NextStepsNewbornEnrolment ->
             data.encounter.encounterType == ChwPostpartumEncounter
+
+        NextStepsMedicationDistribution ->
+            -- @todo
+            True
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
@@ -757,6 +767,10 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             ( taskCompleted assembled.participant.newborn
             , 1
             )
+
+        NextStepsMedicationDistribution ->
+            -- @todo
+            ( 0, 1 )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined

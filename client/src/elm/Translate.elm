@@ -7212,6 +7212,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
+                Pages.PrenatalActivity.Types.NextStepsMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
         PrenatalLaboratoryBloodGroupLabel ->
             { english = "Blood Group"
             , kinyarwanda = Nothing

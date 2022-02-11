@@ -515,7 +515,7 @@ generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, Str
 generateActivityData activity data =
     case activity of
         NextSteps ->
-            if noDangerSigns data && data.encounter.encounterType /= ChwPostpartumEncounter then
+            if noDangerSigns data && (not <| List.member data.encounter.encounterType [ NurseEncounter, ChwPostpartumEncounter ]) then
                 ( Translate.AppointmentConfirmation, "appointment-confirmation" )
 
             else

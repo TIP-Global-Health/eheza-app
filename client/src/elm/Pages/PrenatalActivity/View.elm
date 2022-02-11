@@ -1554,6 +1554,11 @@ viewNextStepsContent language currentDate assembled data =
                             , isJust assembled.participant.newborn
                             )
 
+                        NextStepsMedicationDistribution ->
+                            ( "next-steps-medication-distribution"
+                            , isJust measurements.medicationDistribution
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -1626,6 +1631,10 @@ viewNextStepsContent language currentDate assembled data =
                 Just NextStepsNewbornEnrolment ->
                     viewNewbornEnrolmentForm language currentDate assembled
 
+                Just NextStepsMedicationDistribution ->
+                    -- @todo
+                    text "NextStepsMedicationDistribution"
+
                 Nothing ->
                     emptyNode
 
@@ -1663,6 +1672,10 @@ viewNextStepsContent language currentDate assembled data =
 
                                     NextStepsNewbornEnrolment ->
                                         SaveNewbornEnrollment nextTask
+
+                                    NextStepsMedicationDistribution ->
+                                        -- @todo
+                                        NoOp
                         in
                         div [ class "actions next-steps" ]
                             [ button
