@@ -83,6 +83,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_medication_distribution' => array(
+      'name' => t('Prenatal Medication Distribution'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_random_blood_sugar_test' => array(
       'name' => t('Prenatal Random Blood Sugar Test'),
       'base' => 'node_content',
