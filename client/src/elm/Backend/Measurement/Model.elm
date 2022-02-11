@@ -1051,6 +1051,10 @@ type PrenatalLaboratoryTest
     | TestUrineDipstick
 
 
+type alias PrenatalMedicationDistribution =
+    PrenatalMeasurement MedicationDistributionValue
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1892,6 +1896,7 @@ type alias PrenatalMeasurements =
     , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
+    , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
     }
 
 
@@ -1927,6 +1932,7 @@ emptyPrenatalMeasurements =
     , syphilisTest = Nothing
     , urineDipstickTest = Nothing
     , labsResults = Nothing
+    , medicationDistribution = Nothing
     }
 
 
