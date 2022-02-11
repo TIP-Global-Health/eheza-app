@@ -2263,3 +2263,40 @@ laboratoryTaskIconClass task =
 
         TaskRandomBloodSugarTest ->
             "laboratory-blood-sugar"
+
+
+medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { mebendezole = or form.mebendezole (EverySet.member Mebendezole value.distributionSigns |> Just)
+                , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
+                }
+            )
+
+
+toMedicationDistributionValueWithDefault : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefault saved form =
+    medicationDistributionFormWithDefault form saved
+        |> toMedicationDistributionValue
+
+
+toMedicationDistributionValue : MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValue form =
+    let
+        distributionSigns =
+            [ ifNullableTrue Mebendezole form.mebendezole
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
+
+        nonAdministrationSigns =
+            form.nonAdministrationSigns
+                |> Maybe.withDefault EverySet.empty
+                |> ifEverySetEmpty NoMedicationNonAdministrationSigns
+                |> Just
+    in
+    Maybe.map MedicationDistributionValue distributionSigns
+        |> andMap nonAdministrationSigns

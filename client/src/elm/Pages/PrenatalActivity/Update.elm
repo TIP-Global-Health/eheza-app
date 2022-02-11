@@ -27,10 +27,12 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Unit(..))
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
@@ -2706,3 +2708,53 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+
+        SetMedicationDistributionBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.nextStepsData.medicationDistributionForm
+                    in
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationDistributionAdministrationNote currentValue medication reason ->
+            let
+                form =
+                    model.nextStepsData.medicationDistributionForm
+
+                updatedValue =
+                    nonAdministrationReasonToSign medication reason
+
+                updatedNonAdministrationSigns =
+                    form.nonAdministrationSigns
+                        |> Maybe.map
+                            (\nonAdministrationSigns ->
+                                case currentValue of
+                                    Just value ->
+                                        EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
+                                            |> EverySet.insert updatedValue
+
+                                    Nothing ->
+                                        EverySet.insert updatedValue nonAdministrationSigns
+                            )
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedData =
+                    let
+                        updatedForm =
+                            { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
+                    in
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )

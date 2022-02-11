@@ -1502,7 +1502,7 @@ resolveAmoxicillinDosage currentDate person =
 
 getCurrentReasonForMedicationNonAdministration :
     (AdministrationNote -> MedicationNonAdministrationSign)
-    -> MedicationDistributionForm
+    -> { f | nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign) }
     -> Maybe AdministrationNote
 getCurrentReasonForMedicationNonAdministration reasonToSignFunc form =
     let
@@ -2197,6 +2197,9 @@ resolveMedicationsNonAdministrationReasons measurements =
 
                         MedicationParacetamol reason ->
                             Just ( Paracetamol, reason )
+
+                        MedicationMebendezole reason ->
+                            Just ( Mebendezole, reason )
 
                         NoMedicationNonAdministrationSigns ->
                             Nothing

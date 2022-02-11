@@ -1363,6 +1363,7 @@ type MedicationNonAdministrationSign
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote
     | MedicationParacetamol AdministrationNote
+    | MedicationMebendezole AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 

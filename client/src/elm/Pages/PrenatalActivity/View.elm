@@ -24,6 +24,8 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm)
+import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
@@ -54,6 +56,7 @@ import Pages.Utils
         , viewSaveAction
         , viewYellowAlertForSelect
         )
+import Pages.WellChildActivity.Utils exposing (resolveMebendezoleDosageAndIcon)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -943,7 +946,7 @@ viewMedicationContent language currentDate assembled data =
                     language
                     form.receivedMebendazole
                     (SetMedicationBoolInput receivedMebendazoleUpdateFunc)
-                    "mebendazole"
+                    "mebendezole"
                     Nothing
                 ]
 
@@ -1632,8 +1635,10 @@ viewNextStepsContent language currentDate assembled data =
                     viewNewbornEnrolmentForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
-                    -- @todo
-                    text "NextStepsMedicationDistribution"
+                    measurements.medicationDistribution
+                        |> getMeasurementValueFunc
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language currentDate person
 
                 Nothing ->
                     emptyNode
@@ -2839,6 +2844,92 @@ viewNewbornEnrolmentForm language currentDate assembled =
             ]
             [ text <| translate language Translate.EnrolNewborn ]
         ]
+
+
+viewMedicationDistributionForm : Language -> NominalDate -> Person -> MedicationDistributionForm -> Html Msg
+viewMedicationDistributionForm language currentDate person form =
+    let
+        selectedMedication =
+            Mebendezole
+
+        ( instructions, questions ) =
+            let
+                viewDerivedQuestion medication reasonToSignFunc =
+                    let
+                        nonAdministrationSigns =
+                            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+
+                        currentValue =
+                            getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
+                    in
+                    [ viewQuestionLabel language Translate.WhyNot
+                    , viewCheckBoxSelectInput language
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+                        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                        currentValue
+                        (SetMedicationDistributionAdministrationNote currentValue medication)
+                        Translate.AdministrationNote
+                    ]
+
+                -- When answer for medication administartion is Yes, we clean the reason for not administering the medication.
+                updateNonAdministrationSigns medication reasonToSignFunc value form_ =
+                    if value == True then
+                        form_.nonAdministrationSigns
+                            |> Maybe.andThen
+                                (\nonAdministrationSigns ->
+                                    getCurrentReasonForMedicationNonAdministration reasonToSignFunc form_
+                                        |> Maybe.map
+                                            (\reason ->
+                                                Just <| EverySet.remove (nonAdministrationReasonToSign medication reason) nonAdministrationSigns
+                                            )
+                                        |> Maybe.withDefault (Just nonAdministrationSigns)
+                                )
+
+                    else
+                        form_.nonAdministrationSigns
+            in
+            case selectedMedication of
+                Mebendezole ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | mebendezole = Just value, nonAdministrationSigns = updateNonAdministrationSigns Mebendezole MedicationMebendezole value form_ }
+
+                        derivedQuestion =
+                            case form.mebendezole of
+                                Just False ->
+                                    viewDerivedQuestion Mebendezole MedicationMebendezole
+
+                                _ ->
+                                    []
+                    in
+                    ( resolveMebendezoleDosageAndIcon currentDate person
+                        |> Maybe.map
+                            (\( dosage, icon ) ->
+                                div [ class "instructions" ]
+                                    [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Mebendezole) ("(" ++ dosage ++ ")") icon ":" Nothing
+                                    , div [ class "prescription" ] [ text <| translate language Translate.AdministerPrenatalMebendezoleHelper ++ "." ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Mebendezole)
+                      , viewBoolInput
+                            language
+                            form.mebendezole
+                            (SetMedicationDistributionBoolInput updateFunc)
+                            "mebendezole-medication"
+                            Nothing
+                      ]
+                        ++ derivedQuestion
+                    )
+
+                _ ->
+                    ( emptyNode, [] )
+    in
+    div [ class "ui form medication-distribution" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , instructions
+        ]
+            ++ questions
 
 
 viewPrenatalRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )

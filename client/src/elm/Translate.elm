@@ -319,8 +319,9 @@ type TranslationId
     | AddToGroup
     | Admin
     | Administer
-    | AdministerMebendezoleHelper
     | AdministerAlbendazoleHelper
+    | AdministerMebendezoleHelper
+    | AdministerPrenatalMebendezoleHelper
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
@@ -1708,6 +1709,11 @@ translationSet trans =
         AdministerAlbendazoleHelper ->
             { english = "Give the child one tablet by mouth"
             , kinyarwanda = Just "Ha umwana ikinini kimwe akinywe"
+            }
+
+        AdministerPrenatalMebendezoleHelper ->
+            { english = "1 dose once a day for one day"
+            , kinyarwanda = Just "Abakuriye"
             }
 
         AdministeVitaminAHelper ->

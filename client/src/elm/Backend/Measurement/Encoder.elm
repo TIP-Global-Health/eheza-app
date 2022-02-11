@@ -1196,7 +1196,7 @@ encodeMedicationSign sign =
                 "deworming-pill"
 
             Mebendazole ->
-                "mebendazole"
+                "mebendezole"
 
             NoMedication ->
                 "none"
@@ -2418,6 +2418,9 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationParacetamol reason ->
                 "paracetamol-" ++ administrationNoteToString reason
+
+            MedicationMebendezole reason ->
+                "mebendezole-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

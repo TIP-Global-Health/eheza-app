@@ -1396,7 +1396,7 @@ decodeMedicationSign =
                     "deworming-pill" ->
                         succeed DewormingPill
 
-                    "mebendazole" ->
+                    "mebendezole" ->
                         succeed Mebendazole
 
                     "none" ->
@@ -2639,6 +2639,11 @@ decodeMedicationNonAdministrationSign =
                                     "paracetamol" ->
                                         administrationNote
                                             |> Maybe.map (MedicationParacetamol >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "mebendezole" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationMebendezole >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->
