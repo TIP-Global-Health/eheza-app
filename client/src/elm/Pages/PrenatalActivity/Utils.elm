@@ -14,6 +14,7 @@ import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
@@ -814,8 +815,40 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             )
 
         NextStepsMedicationDistribution ->
-            -- @todo
-            ( 0, 1 )
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                derivedQuestionExists formValue =
+                    if formValue == Just False then
+                        1
+
+                    else
+                        0
+
+                derivedQuestionCompleted medication reasonToSignFunc formValue =
+                    if formValue /= Just False then
+                        0
+
+                    else
+                        let
+                            nonAdministrationSigns =
+                                form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+
+                            valueSet =
+                                getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
+                                    |> isJust
+                        in
+                        if valueSet then
+                            1
+
+                        else
+                            0
+            in
+            ( taskCompleted form.mebendezole + derivedQuestionCompleted Mebendezole MedicationMebendezole form.mebendezole
+            , 1 + derivedQuestionExists form.mebendezole
+            )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
