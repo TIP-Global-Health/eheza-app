@@ -287,8 +287,53 @@ expectNextStepsTask currentDate data task =
             data.encounter.encounterType == ChwPostpartumEncounter
 
         NextStepsMedicationDistribution ->
-            -- @todo
-            True
+            showMebendazoleQuestion currentDate data
+                && (getMeasurementValueFunc data.measurements.medication
+                        |> Maybe.map (EverySet.member Mebendazole >> not)
+                        |> Maybe.withDefault False
+                   )
+
+
+showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
+showMebendazoleQuestion currentDate assembled =
+    assembled.globalLmpDate
+        |> Maybe.map
+            (\lmpDate ->
+                let
+                    egaInWeeks =
+                        calculateEGAWeeks currentDate lmpDate
+
+                    dewormingPillNotGiven =
+                        List.filter
+                            (\( _, measurements ) ->
+                                measurements.medication
+                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+
+                    mebenadazoleNotPrescribed =
+                        List.filter
+                            (\( _, measurements ) ->
+                                measurements.medicationDistribution
+                                    |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+                in
+                -- Starting EGA week 24.
+                (egaInWeeks >= 24)
+                    && -- Previous variation had a question about deworming pill,
+                       -- which is actually Menendazole, or something similar.
+                       -- If somwhere during previous encounters patient stated that
+                       -- deworming pill was given, we do not ask about Mebendazole
+                       dewormingPillNotGiven
+                    && -- Mebendazole was not prescribed during current pregnancy.
+                       mebenadazoleNotPrescribed
+            )
+        |> Maybe.withDefault False
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool

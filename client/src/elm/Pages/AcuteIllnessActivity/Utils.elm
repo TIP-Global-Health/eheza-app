@@ -1539,6 +1539,9 @@ nonAdministrationReasonToSign sign reason =
         Paracetamol ->
             MedicationParacetamol reason
 
+        Mebendezole ->
+            MedicationMebendezole reason
+
         _ ->
             NoMedicationNonAdministrationSigns
 

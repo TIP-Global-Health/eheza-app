@@ -853,42 +853,14 @@ viewMedicationContent language currentDate assembled data =
                 |> getMeasurementValueFunc
                 |> medicationFormWithDefault data.form
 
-        -- We show deworming pill question starting EGA week 20, and as long
-        -- as all preivious answers were 'No'.
-        -- We show Mebendazole question starting EGA week 24, and as long
-        -- as Mebendazole is not prescribed (at Next Steps activity).
-        ( showDewormingPillQuestion, showMebendazoleQuestion ) =
-            assembled.globalLmpDate
-                |> Maybe.map
-                    (\lmpDate ->
-                        let
-                            egaInWeeks =
-                                calculateEGAWeeks currentDate lmpDate
-                        in
-                        ( (egaInWeeks >= 20)
-                            && (assembled.nursePreviousMeasurementsWithDates
-                                    |> List.filter
-                                        (\( _, measurements ) ->
-                                            measurements.medication
-                                                |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
-                                                |> Maybe.withDefault False
-                                        )
-                                    |> List.isEmpty
-                               )
-                        , (egaInWeeks >= 24)
-                            && (-- @todo: Mebendazole was not prescribed during current pregnancy.
-                                True
-                               )
-                        )
-                    )
-                |> Maybe.withDefault ( False, False )
+        displayMebendazoleQuestion =
+            showMebendazoleQuestion currentDate assembled
 
         ( tasksCompleted, totalTasks ) =
             let
                 tasks =
                     [ ( form.receivedIronFolicAcid, True )
-                    , ( form.receivedDewormingPill, showDewormingPillQuestion )
-                    , ( form.receivedMebendazole, showMebendazoleQuestion )
+                    , ( form.receivedMebendazole, displayMebendazoleQuestion )
                     ]
                         |> List.filterMap
                             (\( task, showTask ) ->
@@ -917,26 +889,8 @@ viewMedicationContent language currentDate assembled data =
                 Nothing
             ]
 
-        receivedDewormingPillQuestion =
-            if showDewormingPillQuestion then
-                let
-                    receivedDewormingPillUpdateFunc value form_ =
-                        { form_ | receivedDewormingPill = Just value }
-                in
-                [ viewQuestionLabel language Translate.ReceivedDewormingPill
-                , viewBoolInput
-                    language
-                    form.receivedDewormingPill
-                    (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
-                    "deworming-pill"
-                    Nothing
-                ]
-
-            else
-                []
-
         receivedMebendazoleQuestion =
-            if showMebendazoleQuestion then
+            if displayMebendazoleQuestion then
                 let
                     receivedMebendazoleUpdateFunc value form_ =
                         { form_ | receivedMebendazole = Just value }
@@ -958,7 +912,6 @@ viewMedicationContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form medication" ] <|
                 receivedIronFolicAcidQuestion
-                    ++ receivedDewormingPillQuestion
                     ++ receivedMebendazoleQuestion
             ]
         , div [ class "actions" ]

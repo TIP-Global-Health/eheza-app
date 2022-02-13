@@ -2711,11 +2711,10 @@ update currentDate id db msg model =
 
         SetMedicationDistributionBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.medicationDistributionForm
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.nextStepsData.medicationDistributionForm
-                    in
                     model.nextStepsData
                         |> (\data -> { data | medicationDistributionForm = updatedForm })
             in
@@ -2746,11 +2745,10 @@ update currentDate id db msg model =
                             )
                         |> Maybe.withDefault (EverySet.singleton updatedValue)
 
+                updatedForm =
+                    { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
+
                 updatedData =
-                    let
-                        updatedForm =
-                            { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
-                    in
                     model.nextStepsData
                         |> (\data -> { data | medicationDistributionForm = updatedForm })
             in
