@@ -583,7 +583,7 @@ type alias MedicalHistory =
 
 type MedicationSign
     = IronAndFolicAcidSupplement
-      -- This option is depricated. However, we keep it, to support
+      -- This option is deprecated. However, we keep it, to support
       -- ongoing pregnancies where it was used already.
       -- Considering deployment schedule, it will be
       -- safe to remove starting Jan 2023.

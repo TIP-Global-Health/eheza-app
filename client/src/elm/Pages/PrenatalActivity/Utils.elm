@@ -329,10 +329,10 @@ showMebendazoleQuestion currentDate assembled =
                 (egaInWeeks >= 24)
                     && -- Previous variation had a question about deworming pill,
                        -- which is actually Menendazole, or something similar.
-                       -- If somwhere during previous encounters patient stated that
+                       -- If somewhere during previous encounters patient stated that
                        -- deworming pill was given, we do not ask about Mebendazole
                        dewormingPillNotGiven
-                    && -- Mebendazole was not prescribed during current pregnancy.
+                    && -- Mebendazole was not prescribed during the current pregnancy.
                        mebenadazoleNotPrescribed
             )
         |> Maybe.withDefault False
