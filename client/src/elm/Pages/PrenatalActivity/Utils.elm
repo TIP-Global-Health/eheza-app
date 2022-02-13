@@ -218,29 +218,8 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.birthPlan
 
         NextSteps ->
-            let
-                nextStepsTasks =
-                    resolveNextStepsTasks currentDate assembled
-            in
-            case nextStepsTasks of
-                [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
-                    isJust assembled.measurements.appointmentConfirmation && isJust assembled.measurements.followUp
-
-                [ NextStepsSendToHC, NextStepsFollowUp ] ->
-                    isJust assembled.measurements.sendToHC && isJust assembled.measurements.followUp
-
-                [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                    isJust assembled.measurements.healthEducation
-                        && isJust assembled.participant.newborn
-
-                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                    isJust assembled.measurements.sendToHC
-                        && isJust assembled.measurements.followUp
-                        && isJust assembled.measurements.healthEducation
-                        && isJust assembled.participant.newborn
-
-                _ ->
-                    False
+            resolveNextStepsTasks currentDate assembled
+                |> List.all (nextStepsMeasurementTaken assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -293,6 +272,28 @@ expectNextStepsTask currentDate data task =
                         |> Maybe.map (EverySet.member Mebendazole >> not)
                         |> Maybe.withDefault False
                    )
+
+
+nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
+nextStepsMeasurementTaken assembled task =
+    case task of
+        NextStepsAppointmentConfirmation ->
+            isJust assembled.measurements.appointmentConfirmation
+
+        NextStepsFollowUp ->
+            isJust assembled.measurements.followUp
+
+        NextStepsSendToHC ->
+            isJust assembled.measurements.sendToHC
+
+        NextStepsHealthEducation ->
+            isJust assembled.measurements.healthEducation
+
+        NextStepsNewbornEnrolment ->
+            isJust assembled.participant.newborn
+
+        NextStepsMedicationDistribution ->
+            isJust assembled.measurements.medicationDistribution
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
