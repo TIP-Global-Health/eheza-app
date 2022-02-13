@@ -418,6 +418,7 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'prescribe-mebendezole' => 'Prescribe Mebendazole',
         'imminent-delivery' => 'Imminent delivery',
         'none' => 'None',
       ),

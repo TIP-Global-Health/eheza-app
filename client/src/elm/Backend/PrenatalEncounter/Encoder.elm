@@ -60,6 +60,9 @@ encodePrenatalDiagnosis : PrenatalDiagnosis -> Value
 encodePrenatalDiagnosis diagnosis =
     string <|
         case diagnosis of
+            DiagnosisPrescribeMebendezole ->
+                "prescribe-mebendezole"
+
             DiagnosisImminentDelivery ->
                 "imminent-delivery"
 

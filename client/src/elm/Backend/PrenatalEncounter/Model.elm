@@ -37,7 +37,8 @@ type PrenatalEncounterType
 
 
 type PrenatalDiagnosis
-    = DiagnosisImminentDelivery
+    = DiagnosisPrescribeMebendezole
+    | DiagnosisImminentDelivery
     | NoPrenatalDiagnosis
 
 

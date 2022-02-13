@@ -66,6 +66,9 @@ decodePrenatalDiagnosis =
         |> andThen
             (\diagnosis ->
                 case diagnosis of
+                    "prescribe-mebendezole" ->
+                        succeed DiagnosisPrescribeMebendezole
+
                     "imminent-delivery" ->
                         succeed DiagnosisImminentDelivery
 

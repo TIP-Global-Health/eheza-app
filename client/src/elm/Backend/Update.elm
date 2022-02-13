@@ -1619,7 +1619,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 [ DangerSignsRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            -- This is the only place where we ask to update assemssment, since
+                            -- This is the only place where we ask to update assessment for CHW, since
                             -- only thing that affects it is the Danger signs measurement.
                             processRevisionAndAssessPrenatal data.participantId data.encounterId True
                     in
@@ -1640,6 +1640,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ PregnancyTestRevision uuid data ] ->
                     let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ MedicationRevision uuid data ] ->
+                    let
+                        _ =
+                            Debug.log "" "MedicationRevision"
+
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in

@@ -330,7 +330,7 @@ showMebendazoleQuestion currentDate assembled =
                     && -- Previous variation had a question about deworming pill,
                        -- which is actually Menendazole, or something similar.
                        -- If somewhere during previous encounters patient stated that
-                       -- deworming pill was given, we do not ask about Mebendazole
+                       -- deworming pill was given, we do not ask about Mebendazole.
                        dewormingPillNotGiven
                     && -- Mebendazole was not prescribed during the current pregnancy.
                        mebenadazoleNotPrescribed
@@ -558,10 +558,23 @@ generatePrenatalDiagnosisForNurse currentDate assembled =
             Maybe.map
                 (calculateEGAWeeks currentDate)
                 assembled.globalLmpDate
+
+        _ =
+            Debug.log "" diagnosisByMedication
+
+        diagnosisByMedication =
+            if showMebendazoleQuestion currentDate assembled then
+                EverySet.singleton DiagnosisPrescribeMebendezole
+
+            else
+                EverySet.empty
+
+        diagnosisByDangerSigns =
+            generateDangerSignsListForNurse assembled
+                |> List.filterMap (prenatalDiagnosisByDangerSign egaInWeeks)
+                |> EverySet.fromList
     in
-    generateDangerSignsListForNurse assembled
-        |> List.filterMap (prenatalDiagnosisByDangerSign egaInWeeks)
-        |> EverySet.fromList
+    EverySet.union diagnosisByMedication diagnosisByDangerSigns
 
 
 prenatalDiagnosisByDangerSign : Maybe Int -> DangerSign -> Maybe PrenatalDiagnosis
