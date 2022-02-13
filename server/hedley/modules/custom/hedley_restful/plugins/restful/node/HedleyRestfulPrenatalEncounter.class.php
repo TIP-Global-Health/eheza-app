@@ -35,7 +35,7 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
 
     $field_names = [
       'field_prenatal_encounter_type',
-      'prenatal_diagnosis',
+      'field_prenatal_diagnosis',
     ];
 
     foreach ($field_names as $field_name) {
