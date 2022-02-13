@@ -2823,7 +2823,7 @@ viewMedicationDistributionForm language currentDate person form =
                         Translate.AdministrationNote
                     ]
 
-                -- When answer for medication administartion is Yes, we clean the reason for not administering the medication.
+                -- When the answer for medication administration is Yes, we clean the reason for not administering the medication.
                 updateNonAdministrationSigns medication reasonToSignFunc value form_ =
                     if value == True then
                         form_.nonAdministrationSigns
