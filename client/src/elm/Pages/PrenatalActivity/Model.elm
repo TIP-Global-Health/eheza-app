@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (DateSelectorConfig)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
@@ -157,6 +158,9 @@ type Msg
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) (Maybe NextStepsTask)
+    | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
+    | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
+    | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -299,12 +303,13 @@ emptyMedicationData =
 type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
+    , receivedMebendazole : Maybe Bool
     }
 
 
 emptyMedicationForm : MedicationForm
 emptyMedicationForm =
-    MedicationForm Nothing Nothing
+    MedicationForm Nothing Nothing Nothing
 
 
 type alias DangerSignsData =
@@ -382,6 +387,7 @@ type alias NextStepsData =
     , sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
+    , medicationDistributionForm : MedicationDistributionForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -393,8 +399,20 @@ emptyNextStepsData =
     , sendToHCForm = emptySendToHCForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
+    , medicationDistributionForm = emptyMedicationDistributionForm
     , activeTask = Nothing
     }
+
+
+type alias MedicationDistributionForm =
+    { mebendezole : Maybe Bool
+    , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    }
+
+
+emptyMedicationDistributionForm : MedicationDistributionForm
+emptyMedicationDistributionForm =
+    MedicationDistributionForm Nothing Nothing
 
 
 

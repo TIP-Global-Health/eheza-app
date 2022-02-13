@@ -27,6 +27,7 @@ type NextStepsTask
     | NextStepsSendToHC
     | NextStepsHealthEducation
     | NextStepsNewbornEnrolment
+    | NextStepsMedicationDistribution
 
 
 type PatientProvisionsTask

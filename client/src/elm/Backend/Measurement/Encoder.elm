@@ -1190,6 +1190,9 @@ encodeMedicationSign sign =
             DewormingPill ->
                 "deworming-pill"
 
+            Mebendazole ->
+                "mebendezole"
+
             NoMedication ->
                 "none"
 
@@ -2345,15 +2348,20 @@ encodeNutritionCaringOption option =
 
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
-    encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
+    encodeAcuteIllnessMeasurement (encodeMedicationDistributionValueWithType "medication_distribution")
 
 
-encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
-encodeMedicationDistributionValue value =
+encodePrenatalMedicationDistribution : PrenatalMedicationDistribution -> List ( String, Value )
+encodePrenatalMedicationDistribution =
+    encodePrenatalMeasurement (encodeMedicationDistributionValueWithType "prenatal_medication_distribution")
+
+
+encodeMedicationDistributionValueWithType : String -> MedicationDistributionValue -> List ( String, Value )
+encodeMedicationDistributionValueWithType type_ value =
     [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
-    , ( "type", string "medication_distribution" )
+    , ( "type", string type_ )
     ]
 
 
@@ -2410,6 +2418,9 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationParacetamol reason ->
                 "paracetamol-" ++ administrationNoteToString reason
+
+            MedicationMebendezole reason ->
+                "mebendezole-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

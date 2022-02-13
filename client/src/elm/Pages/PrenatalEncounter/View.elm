@@ -513,13 +513,26 @@ viewMainPageContent language currentDate data model =
 
 generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, String )
 generateActivityData activity data =
+    let
+        default =
+            ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )
+    in
     case activity of
         NextSteps ->
-            if noDangerSigns data && data.encounter.encounterType /= ChwPostpartumEncounter then
-                ( Translate.AppointmentConfirmation, "appointment-confirmation" )
+            case data.encounter.encounterType of
+                NurseEncounter ->
+                    default
 
-            else
-                ( Translate.PrenatalActivitiesTitle NextSteps, getActivityIcon activity )
+                ChwPostpartumEncounter ->
+                    default
+
+                -- Other types of CHW encounters
+                _ ->
+                    if noDangerSigns data then
+                        ( Translate.AppointmentConfirmation, "appointment-confirmation" )
+
+                    else
+                        default
 
         _ ->
-            ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )
+            default

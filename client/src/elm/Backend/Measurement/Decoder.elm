@@ -125,6 +125,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_syphilis_test" (decodeHead decodePrenatalSyphilisTest) Nothing
         |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
         |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
+        |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -698,6 +699,11 @@ decodePrenatalLaboratoryTest =
                             value
                                 ++ " is not a recognized PrenatalLaboratoryTest"
             )
+
+
+decodePrenatalMedicationDistribution : Decoder PrenatalMedicationDistribution
+decodePrenatalMedicationDistribution =
+    decodePrenatalMeasurement decodeMedicationDistributionValue
 
 
 decodeHeight : Decoder Height
@@ -1389,6 +1395,9 @@ decodeMedicationSign =
 
                     "deworming-pill" ->
                         succeed DewormingPill
+
+                    "mebendezole" ->
+                        succeed Mebendazole
 
                     "none" ->
                         succeed NoMedication
@@ -2530,10 +2539,14 @@ decodeFollowUpOption =
 
 decodeMedicationDistribution : Decoder MedicationDistribution
 decodeMedicationDistribution =
+    decodeAcuteIllnessMeasurement decodeMedicationDistributionValue
+
+
+decodeMedicationDistributionValue : Decoder MedicationDistributionValue
+decodeMedicationDistributionValue =
     succeed MedicationDistributionValue
         |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
         |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeMedicationDistributionSign : Decoder MedicationDistributionSign
@@ -2626,6 +2639,11 @@ decodeMedicationNonAdministrationSign =
                                     "paracetamol" ->
                                         administrationNote
                                             |> Maybe.map (MedicationParacetamol >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "mebendezole" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationMebendezole >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

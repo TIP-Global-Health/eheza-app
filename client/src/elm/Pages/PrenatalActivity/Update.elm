@@ -27,10 +27,12 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Unit(..))
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
@@ -54,23 +56,15 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.examinationData.corePhysicalExamForm
 
-        generateLaboratoryMsgs nextTask =
-            Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+        generateLaboratoryMsgs =
+            navigationMsgsByNextStep SetActiveLaboratoryTask
 
-        --navigationMsgsByNextStep : (t -> msg) -> UserPage -> Maybe t -> ( List App.Model.Msg, List msg )
-        navigationMsgsByNextStep setActiveTaskMsg encounterPage nextTask =
-            nextTask
-                |> Maybe.map
-                    (\task ->
-                        ( []
-                        , [ setActiveTaskMsg task ]
-                        )
-                    )
-                |> Maybe.withDefault
-                    ( [ App.Model.SetActivePage <| UserPage encounterPage ]
-                    , []
-                    )
+        generateNextStepsMsgs =
+            navigationMsgsByNextStep SetActiveNextStepsTask
+
+        navigationMsgsByNextStep setActiveTaskMsg nextTask =
+            Maybe.map (\task -> [ setActiveTaskMsg task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
     in
     case msg of
         NoOp ->
@@ -2460,7 +2454,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveHealthEducationSubActivity personId saved nextTask_ ->
+        SaveHealthEducationSubActivity personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2468,27 +2462,25 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, setActiveTaskMsg ) =
-                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
                         |> toHealthEducationValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -2507,7 +2499,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveFollowUp personId assesment saved nextTask_ ->
+        SaveFollowUp personId assesment saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2515,39 +2507,36 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, setActiveTaskMsg ) =
-                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.followUpForm
-                        |> (\form -> { form | assesment = Just assesment })
                         |> toFollowUpValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveFollowUp personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveFollowUp personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
-        SaveNewbornEnrollment nextTask_ ->
+        SaveNewbornEnrollment nextTask ->
             let
-                ( backToActivitiesMsg, setActiveTaskMsg ) =
-                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
             in
             ( model
             , Cmd.none
-            , backToActivitiesMsg
+            , []
             )
-                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetReferToHealthCenter value ->
             let
@@ -2617,7 +2606,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveSendToHC personId saved nextTask_ ->
+        SaveSendToHC personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2625,27 +2614,25 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, setActiveTaskMsg ) =
-                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.sendToHCForm
                         |> toSendToHCValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetAppointmentDateSelectorState state ->
             let
@@ -2677,7 +2664,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveAppointmentConfirmation personId saved nextTask_ ->
+        SaveAppointmentConfirmation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2685,24 +2672,98 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, setActiveTaskMsg ) =
-                    navigationMsgsByNextStep SetActiveNextStepsTask (PrenatalEncounterPage id) nextTask_
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.appointmentConfirmationForm
                         |> toAppointmentConfirmationValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveAppointmentConfirmation personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveAppointmentConfirmation personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) setActiveTaskMsg
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMedicationDistributionBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.medicationDistributionForm
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationDistributionAdministrationNote currentValue medication reason ->
+            let
+                form =
+                    model.nextStepsData.medicationDistributionForm
+
+                updatedValue =
+                    nonAdministrationReasonToSign medication reason
+
+                updatedNonAdministrationSigns =
+                    form.nonAdministrationSigns
+                        |> Maybe.map
+                            (\nonAdministrationSigns ->
+                                case currentValue of
+                                    Just value ->
+                                        EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
+                                            |> EverySet.insert updatedValue
+
+                                    Nothing ->
+                                        EverySet.insert updatedValue nonAdministrationSigns
+                            )
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedForm =
+                    { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMedicationDistribution personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    model.nextStepsData.medicationDistributionForm
+                        |> toMedicationDistributionValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs

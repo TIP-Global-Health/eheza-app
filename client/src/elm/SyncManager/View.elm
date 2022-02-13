@@ -588,6 +588,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalMalariaTest identifier ->
                 viewMeasurement identifier "Prenatal Malaria Test"
 
+            BackendAuthorityPrenatalMedicationDistribution identifier ->
+                viewMeasurement identifier "Prenatal Medication Distribution"
+
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"
 

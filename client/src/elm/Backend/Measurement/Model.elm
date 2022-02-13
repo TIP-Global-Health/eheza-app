@@ -583,7 +583,12 @@ type alias MedicalHistory =
 
 type MedicationSign
     = IronAndFolicAcidSupplement
+      -- This option is deprecated. However, we keep it, to support
+      -- ongoing pregnancies where it was used already.
+      -- Considering deployment schedule, it will be
+      -- safe to remove starting Jan 2023.
     | DewormingPill
+    | Mebendazole
     | NoMedication
 
 
@@ -1050,6 +1055,10 @@ type PrenatalLaboratoryTest
     | TestUrineDipstick
 
 
+type alias PrenatalMedicationDistribution =
+    PrenatalMeasurement MedicationDistributionValue
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1358,6 +1367,7 @@ type MedicationNonAdministrationSign
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote
     | MedicationParacetamol AdministrationNote
+    | MedicationMebendezole AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1891,6 +1901,7 @@ type alias PrenatalMeasurements =
     , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
+    , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
     }
 
 
@@ -1926,6 +1937,7 @@ emptyPrenatalMeasurements =
     , syphilisTest = Nothing
     , urineDipstickTest = Nothing
     , labsResults = Nothing
+    , medicationDistribution = Nothing
     }
 
 

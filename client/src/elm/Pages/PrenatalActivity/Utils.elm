@@ -14,9 +14,11 @@ import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
+import Pages.PrenatalEncounter.Utils exposing (calculateEGAWeeks, isFirstEncounter)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -30,11 +32,6 @@ import Pages.Utils
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
-
-
-isFirstEncounter : AssembledData -> Bool
-isFirstEncounter assembled =
-    List.isEmpty assembled.nursePreviousMeasurementsWithDates
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
@@ -78,6 +75,12 @@ expectActivity currentDate assembled activity =
 
                 PrenatalPhoto ->
                     expectPrenatalPhoto currentDate assembled
+
+                NextSteps ->
+                    resolveNextStepsTasks currentDate assembled
+                        |> List.filter (expectNextStepsTask currentDate assembled)
+                        |> List.isEmpty
+                        |> not
 
                 -- Unique Chw activities.
                 _ ->
@@ -215,29 +218,8 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.birthPlan
 
         NextSteps ->
-            let
-                nextStepsTasks =
-                    resolveNextStepsTasks currentDate assembled
-            in
-            case nextStepsTasks of
-                [ NextStepsAppointmentConfirmation, NextStepsFollowUp ] ->
-                    isJust assembled.measurements.appointmentConfirmation && isJust assembled.measurements.followUp
-
-                [ NextStepsSendToHC, NextStepsFollowUp ] ->
-                    isJust assembled.measurements.sendToHC && isJust assembled.measurements.followUp
-
-                [ NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                    isJust assembled.measurements.healthEducation
-                        && isJust assembled.participant.newborn
-
-                [ NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ] ->
-                    isJust assembled.measurements.sendToHC
-                        && isJust assembled.measurements.followUp
-                        && isJust assembled.measurements.healthEducation
-                        && isJust assembled.participant.newborn
-
-                _ ->
-                    False
+            resolveNextStepsTasks currentDate assembled
+                |> List.all (nextStepsMeasurementTaken assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -249,16 +231,16 @@ resolveNextStepsTasks currentDate data =
         -- We should never get here, as Next Steps
         -- displayed only for CHW.
         NurseEncounter ->
-            []
+            [ NextStepsMedicationDistribution ]
 
         _ ->
             -- The order is important. Do not change.
             [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
-                |> List.filter (expectNextStepsTasks currentDate data)
+                |> List.filter (expectNextStepsTask currentDate data)
 
 
-expectNextStepsTasks : NominalDate -> AssembledData -> NextStepsTask -> Bool
-expectNextStepsTasks currentDate data task =
+expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask currentDate data task =
     let
         dangerSigns =
             dangerSignsPresent data
@@ -283,6 +265,77 @@ expectNextStepsTasks currentDate data task =
 
         NextStepsNewbornEnrolment ->
             data.encounter.encounterType == ChwPostpartumEncounter
+
+        NextStepsMedicationDistribution ->
+            showMebendazoleQuestion currentDate data
+                && (getMeasurementValueFunc data.measurements.medication
+                        |> Maybe.map (EverySet.member Mebendazole >> not)
+                        |> Maybe.withDefault False
+                   )
+
+
+nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
+nextStepsMeasurementTaken assembled task =
+    case task of
+        NextStepsAppointmentConfirmation ->
+            isJust assembled.measurements.appointmentConfirmation
+
+        NextStepsFollowUp ->
+            isJust assembled.measurements.followUp
+
+        NextStepsSendToHC ->
+            isJust assembled.measurements.sendToHC
+
+        NextStepsHealthEducation ->
+            isJust assembled.measurements.healthEducation
+
+        NextStepsNewbornEnrolment ->
+            isJust assembled.participant.newborn
+
+        NextStepsMedicationDistribution ->
+            isJust assembled.measurements.medicationDistribution
+
+
+showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
+showMebendazoleQuestion currentDate assembled =
+    assembled.globalLmpDate
+        |> Maybe.map
+            (\lmpDate ->
+                let
+                    egaInWeeks =
+                        calculateEGAWeeks currentDate lmpDate
+
+                    dewormingPillNotGiven =
+                        List.filter
+                            (\( _, measurements ) ->
+                                measurements.medication
+                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+
+                    mebenadazoleNotPrescribed =
+                        List.filter
+                            (\( _, measurements ) ->
+                                measurements.medicationDistribution
+                                    |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+                in
+                -- Starting EGA week 24.
+                (egaInWeeks >= 24)
+                    && -- Previous variation had a question about deworming pill,
+                       -- which is actually Menendazole, or something similar.
+                       -- If somewhere during previous encounters patient stated that
+                       -- deworming pill was given, we do not ask about Mebendazole
+                       dewormingPillNotGiven
+                    && -- Mebendazole was not prescribed during the current pregnancy.
+                       mebenadazoleNotPrescribed
+            )
+        |> Maybe.withDefault False
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
@@ -354,7 +407,7 @@ expectPrenatalPhoto currentDate data =
             (\lmpDate ->
                 let
                     currentWeek =
-                        diffDays lmpDate currentDate // 7
+                        calculateEGAWeeks currentDate lmpDate
 
                     conditionsForCurrentWeek =
                         periods
@@ -762,6 +815,42 @@ nextStepsTasksCompletedFromTotal language assembled data task =
             , 1
             )
 
+        NextStepsMedicationDistribution ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                derivedQuestionExists formValue =
+                    if formValue == Just False then
+                        1
+
+                    else
+                        0
+
+                derivedQuestionCompleted medication reasonToSignFunc formValue =
+                    if formValue /= Just False then
+                        0
+
+                    else
+                        let
+                            nonAdministrationSigns =
+                                form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+
+                            valueSet =
+                                getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
+                                    |> isJust
+                        in
+                        if valueSet then
+                            1
+
+                        else
+                            0
+            in
+            ( taskCompleted form.mebendezole + derivedQuestionCompleted Mebendezole MedicationMebendezole form.mebendezole
+            , 1 + derivedQuestionExists form.mebendezole
+            )
+
 
 {-| This is a convenience for cases where the form values ought to be redefined
 to allow multiple values. So, it should go away eventually.
@@ -1034,13 +1123,6 @@ toMedicalHistoryValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicalHistorySigns)
 
 
-fromMedicationValue : Maybe (EverySet MedicationSign) -> MedicationForm
-fromMedicationValue saved =
-    { receivedIronFolicAcid = Maybe.map (EverySet.member IronAndFolicAcidSupplement) saved
-    , receivedDewormingPill = Maybe.map (EverySet.member DewormingPill) saved
-    }
-
-
 medicationFormWithDefault : MedicationForm -> Maybe (EverySet MedicationSign) -> MedicationForm
 medicationFormWithDefault form saved =
     saved
@@ -1049,6 +1131,7 @@ medicationFormWithDefault form saved =
             (\value ->
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (EverySet.member IronAndFolicAcidSupplement value |> Just)
                 , receivedDewormingPill = or form.receivedDewormingPill (EverySet.member DewormingPill value |> Just)
+                , receivedMebendazole = or form.receivedMebendazole (EverySet.member Mebendazole value |> Just)
                 }
             )
 
@@ -1063,6 +1146,7 @@ toMedicationValue : MedicationForm -> Maybe (EverySet MedicationSign)
 toMedicationValue form =
     [ Maybe.map (ifTrue IronAndFolicAcidSupplement) form.receivedIronFolicAcid
     , ifNullableTrue DewormingPill form.receivedDewormingPill
+    , ifNullableTrue Mebendazole form.receivedMebendazole
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)
@@ -2258,3 +2342,40 @@ laboratoryTaskIconClass task =
 
         TaskRandomBloodSugarTest ->
             "laboratory-blood-sugar"
+
+
+medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { mebendezole = or form.mebendezole (EverySet.member Mebendezole value.distributionSigns |> Just)
+                , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
+                }
+            )
+
+
+toMedicationDistributionValueWithDefault : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefault saved form =
+    medicationDistributionFormWithDefault form saved
+        |> toMedicationDistributionValue
+
+
+toMedicationDistributionValue : MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValue form =
+    let
+        distributionSigns =
+            [ ifNullableTrue Mebendezole form.mebendezole
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
+
+        nonAdministrationSigns =
+            form.nonAdministrationSigns
+                |> Maybe.withDefault EverySet.empty
+                |> ifEverySetEmpty NoMedicationNonAdministrationSigns
+                |> Just
+    in
+    Maybe.map MedicationDistributionValue distributionSigns
+        |> andMap nonAdministrationSigns

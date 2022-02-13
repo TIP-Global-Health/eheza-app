@@ -1,4 +1,4 @@
-module Pages.WellChildActivity.View exposing (view, viewVaccinationOverview)
+module Pages.WellChildActivity.View exposing (view, viewAdministeredMedicationLabel, viewVaccinationOverview)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
