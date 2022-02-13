@@ -1632,8 +1632,7 @@ viewNextStepsContent language currentDate assembled data =
                                         SaveNewbornEnrollment nextTask
 
                                     NextStepsMedicationDistribution ->
-                                        -- @todo
-                                        NoOp
+                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button

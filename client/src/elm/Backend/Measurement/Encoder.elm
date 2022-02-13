@@ -652,11 +652,6 @@ encodePrenatalLaboratoryTest value =
                 "random-blood-sugar"
 
 
-encodePrenatalMedicationDistribution : PrenatalMedicationDistribution -> List ( String, Value )
-encodePrenatalMedicationDistribution =
-    encodePrenatalMeasurement encodeMedicationDistributionValue
-
-
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
@@ -2353,15 +2348,20 @@ encodeNutritionCaringOption option =
 
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
-    encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
+    encodeAcuteIllnessMeasurement (encodeMedicationDistributionValueWithType "medication_distribution")
 
 
-encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
-encodeMedicationDistributionValue value =
+encodePrenatalMedicationDistribution : PrenatalMedicationDistribution -> List ( String, Value )
+encodePrenatalMedicationDistribution =
+    encodePrenatalMeasurement (encodeMedicationDistributionValueWithType "prenatal_medication_distribution")
+
+
+encodeMedicationDistributionValueWithType : String -> MedicationDistributionValue -> List ( String, Value )
+encodeMedicationDistributionValueWithType type_ value =
     [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
-    , ( "type", string "medication_distribution" )
+    , ( "type", string type_ )
     ]
 
 

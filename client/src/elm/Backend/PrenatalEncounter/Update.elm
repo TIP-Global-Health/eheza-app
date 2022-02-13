@@ -333,3 +333,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveLabsResults = data }
             , Cmd.none
             )
+
+        SaveMedicationDistribution personId valueId value ->
+            ( { model | saveMedicationDistribution = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMedicationDistributionEndpoint HandleSavedMedicationDistribution
+            )
+
+        HandleSavedMedicationDistribution data ->
+            ( { model | saveMedicationDistribution = data }
+            , Cmd.none
+            )
