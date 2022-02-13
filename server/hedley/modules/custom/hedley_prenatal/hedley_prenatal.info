@@ -32,6 +32,7 @@ features[field_base][] = field_nitrite
 features[field_base][] = field_performed_tests
 features[field_base][] = field_ph
 features[field_base][] = field_prenatal_assesment
+features[field_base][] = field_prenatal_diagnosis
 features[field_base][] = field_protein
 features[field_base][] = field_rhesus
 features[field_base][] = field_specific_gravity
