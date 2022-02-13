@@ -410,15 +410,21 @@ function hedley_prenatal_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_prenatal_diagnosis',
     'indexes' => array(
-      'format' => array(
-        0 => 'format',
+      'value' => array(
+        0 => 'value',
       ),
     ),
     'locked' => 0,
-    'module' => 'text',
-    'settings' => array(),
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'imminent-delivery' => 'Imminent delivery',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
     'translatable' => 0,
-    'type' => 'text_long',
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_protein'.

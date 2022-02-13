@@ -789,20 +789,15 @@ function hedley_prenatal_field_default_field_instances() {
   // 'node-prenatal_encounter-field_prenatal_diagnosis'.
   $field_instances['node-prenatal_encounter-field_prenatal_diagnosis'] = array(
     'bundle' => 'prenatal_encounter',
-    'default_value' => array(
-      0 => array(
-        'value' => 'imminent-delivery|Imminent Delivery 
-none|None',
-      ),
-    ),
+    'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'text',
+        'module' => 'list',
         'settings' => array(),
-        'type' => 'text_default',
+        'type' => 'list_default',
         'weight' => 6,
       ),
       'teaser' => array(
@@ -817,16 +812,13 @@ none|None',
     'label' => 'Prenatal Diagnosis',
     'required' => 0,
     'settings' => array(
-      'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'rows' => 5,
-      ),
-      'type' => 'text_textarea',
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
       'weight' => 4,
     ),
   );
