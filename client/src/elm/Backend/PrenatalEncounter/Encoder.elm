@@ -1,6 +1,7 @@
 module Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
 
 import Backend.PrenatalEncounter.Model exposing (..)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -11,19 +12,28 @@ import Utils.Json exposing (encodeIfExists)
 {-| Encodes a `PrenatalEncounter`.
 -}
 encodePrenatalEncounter : PrenatalEncounter -> List ( String, Value )
-encodePrenatalEncounter session =
+encodePrenatalEncounter encounter =
     [ ( "scheduled_date"
       , object
-            [ ( "value", encodeYYYYMMDD session.startDate )
-            , ( "value2", maybe encodeYYYYMMDD session.endDate )
+            [ ( "value", encodeYYYYMMDD encounter.startDate )
+            , ( "value2", maybe encodeYYYYMMDD encounter.endDate )
             ]
       )
-    , ( "individual_participant", encodeEntityUuid session.participant )
-    , ( "prenatal_encounter_type", encodePrenatalEncounterType session.encounterType )
+    , ( "individual_participant", encodeEntityUuid encounter.participant )
+    , ( "prenatal_encounter_type", encodePrenatalEncounterType encounter.encounterType )
+    , ( "prenatal_diagnosis"
+      , list encodePrenatalDiagnosis
+            (if EverySet.isEmpty encounter.diagnosis then
+                List.singleton NoPrenatalDiagnosis
+
+             else
+                EverySet.toList encounter.diagnosis
+            )
+      )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_encounter" )
     ]
-        ++ encodeIfExists "shard" session.shard encodeEntityUuid
+        ++ encodeIfExists "shard" encounter.shard encodeEntityUuid
 
 
 encodePrenatalEncounterType : PrenatalEncounterType -> Value
@@ -44,3 +54,14 @@ encodePrenatalEncounterType encounterType =
 
             ChwPostpartumEncounter ->
                 "chw-postpartum"
+
+
+encodePrenatalDiagnosis : PrenatalDiagnosis -> Value
+encodePrenatalDiagnosis diagnosis =
+    string <|
+        case diagnosis of
+            DiagnosisImminentDelivery ->
+                "imminent-delivery"
+
+            NoPrenatalDiagnosis ->
+                "none"

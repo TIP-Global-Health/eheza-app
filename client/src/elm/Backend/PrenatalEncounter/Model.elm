@@ -12,6 +12,7 @@ type alias PrenatalEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , encounterType : PrenatalEncounterType
+    , diagnosis : EverySet PrenatalDiagnosis
     , shard : Maybe HealthCenterId
     }
 
@@ -22,6 +23,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , startDate = startDate
     , endDate = Nothing
     , encounterType = encounterType
+    , diagnosis = EverySet.empty
     , shard = shard
     }
 
@@ -32,6 +34,11 @@ type PrenatalEncounterType
     | ChwSecondEncounter
     | ChwThirdPlusEncounter
     | ChwPostpartumEncounter
+
+
+type PrenatalDiagnosis
+    = DiagnosisImminentDelivery
+    | NoPrenatalDiagnosis
 
 
 type RecordPreganancyInitiator
