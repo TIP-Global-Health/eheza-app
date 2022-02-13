@@ -1076,7 +1076,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment newModel)
+                                Maybe.map (generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -3802,21 +3802,18 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
 
-generatePrenatalAssesmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
-generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after id =
-    if not isChw then
-        -- Assement is done only for CHW.
-        []
-
-    else
-        Maybe.map
-            (\assembledAfter ->
+generatePrenatalAssesmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
+generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment before after id =
+    Maybe.map2
+        (\assembledBefore assembledAfter ->
+            let
+                mandatoryActivitiesCompleted =
+                    Pages.PrenatalActivity.Utils.mandatoryActivitiesForNextStepsCompleted
+                        currentDate
+                        assembledAfter
+            in
+            if isChw then
                 let
-                    mandatoryActivitiesCompleted =
-                        Pages.PrenatalActivity.Utils.mandatoryActivitiesForNextStepsCompleted
-                            currentDate
-                            assembledAfter
-
                     updateAssesmentMsg =
                         if updateAssesment then
                             assembledAfter.measurements.followUp
@@ -3825,7 +3822,11 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                                         let
                                             updatedValue =
                                                 measurement.value
-                                                    |> (\value -> { value | assesment = Pages.PrenatalActivity.Utils.generatePrenatalAssesment assembledAfter })
+                                                    |> (\value ->
+                                                            { value
+                                                                | assesment = Pages.PrenatalActivity.Utils.generatePrenatalAssesmentForChw assembledAfter
+                                                            }
+                                                       )
                                         in
                                         Backend.PrenatalEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
                                             |> Backend.Model.MsgPrenatalEncounter id
@@ -3846,7 +3847,7 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                 else
                     let
                         dangerSignsList =
-                            Pages.PrenatalActivity.Utils.generateDangerSignsList language
+                            Pages.PrenatalActivity.Utils.generateDangerSignsListForChw language
                                 assembledAfter
                     in
                     if List.isEmpty dangerSignsList then
@@ -3864,9 +3865,34 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                                     |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
                                     |> App.Model.MsgLoggedIn
                                ]
-            )
-            (RemoteData.toMaybe <| Pages.PrenatalEncounter.Utils.generateAssembledData id after)
-            |> Maybe.withDefault []
+
+            else
+            -- Logic for nurse
+            if
+                mandatoryActivitiesCompleted
+            then
+                let
+                    diagnosisBefore =
+                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosisForNurse currentDate assembledBefore
+
+                    diagnosisAfter =
+                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosisForNurse currentDate assembledAfter
+                in
+                if everySetsEqual diagnosisBefore diagnosisAfter then
+                    []
+
+                else
+                    Backend.PrenatalEncounter.Model.SetPrenatalDiagnosis diagnosisAfter
+                        |> Backend.Model.MsgPrenatalEncounter id
+                        |> App.Model.MsgIndexedDb
+                        |> List.singleton
+
+            else
+                []
+        )
+        (RemoteData.toMaybe <| Pages.PrenatalEncounter.Utils.generateAssembledData id before)
+        (RemoteData.toMaybe <| Pages.PrenatalEncounter.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
 
 
 generatePrenatalLabsTestAddedMsgs :

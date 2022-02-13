@@ -18,19 +18,13 @@ update : Maybe NurseId -> Maybe HealthCenterId -> PrenatalEncounterId -> Maybe P
 update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
     case msg of
         ClosePrenatalEncounter ->
-            maybeEncounter
-                |> unwrap ( model, Cmd.none )
-                    (\encounter ->
-                        ( { model | closePrenatalEncounter = Loading }
-                        , { encounter | endDate = Just currentDate }
-                            |> sw.patchFull prenatalEncounterEndpoint encounterId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalEncounter)
-                        )
-                    )
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
-        HandleClosedPrenatalEncounter data ->
-            ( { model | closePrenatalEncounter = data }
+        SetPrenatalDiagnosis diagnosis ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
+
+        HandleUpdatedPrenatalEncounter data ->
+            ( { model | updatePrenatalEncounter = data }
             , Cmd.none
             )
 
@@ -342,4 +336,18 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
         HandleSavedMedicationDistribution data ->
             ( { model | saveMedicationDistribution = data }
             , Cmd.none
+            )
+
+
+updateEncounter : NominalDate -> PrenatalEncounterId -> Maybe PrenatalEncounter -> (PrenatalEncounter -> PrenatalEncounter) -> Model -> ( Model, Cmd Msg )
+updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+    maybeEncounter
+        |> unwrap ( model, Cmd.none )
+            (\encounter ->
+                ( { model | updatePrenatalEncounter = Loading }
+                , updateFunc encounter
+                    |> sw.patchFull prenatalEncounterEndpoint encounterId
+                    |> withoutDecoder
+                    |> toCmd (RemoteData.fromResult >> HandleUpdatedPrenatalEncounter)
+                )
             )

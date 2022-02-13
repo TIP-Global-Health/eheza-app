@@ -6,7 +6,7 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueF
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
@@ -342,8 +342,7 @@ mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate data =
     case data.encounter.encounterType of
         NurseEncounter ->
-            -- There're no mandatory activities for nurse encounters.
-            True
+            activityCompleted currentDate data DangerSigns
 
         ChwFirstEncounter ->
             let
@@ -483,49 +482,109 @@ dangerSignsPresent data =
     isJust data.measurements.dangerSigns && not (noDangerSigns data)
 
 
-generateDangerSignsList : Language -> AssembledData -> List String
-generateDangerSignsList language data =
-    let
-        getDangerSignsListForType getFunc translateFunc noSignsValue =
-            data.measurements.dangerSigns
-                |> Maybe.map
-                    (Tuple.second
-                        >> .value
-                        >> getFunc
-                        >> EverySet.toList
-                        >> List.filter ((/=) noSignsValue)
-                        >> List.map (translateFunc >> translate language)
-                    )
-                |> Maybe.withDefault []
-    in
+generateDangerSignsListForNurse : AssembledData -> List DangerSign
+generateDangerSignsListForNurse data =
     case data.encounter.encounterType of
+        NurseEncounter ->
+            getDangerSignsListForType .signs
+                identity
+                NoDangerSign
+                data.measurements
+
+        _ ->
+            []
+
+
+generateDangerSignsListForChw : Language -> AssembledData -> List String
+generateDangerSignsListForChw language data =
+    case data.encounter.encounterType of
+        NurseEncounter ->
+            []
+
         ChwPostpartumEncounter ->
             let
                 motherSigns =
-                    getDangerSignsListForType .postpartumMother Translate.PostpartumMotherDangerSign NoPostpartumMotherDangerSigns
+                    getDangerSignsListForType .postpartumMother
+                        (Translate.PostpartumMotherDangerSign >> translate language)
+                        NoPostpartumMotherDangerSigns
+                        data.measurements
 
                 childSigns =
-                    getDangerSignsListForType .postpartumChild Translate.PostpartumChildDangerSign NoPostpartumChildDangerSigns
+                    getDangerSignsListForType .postpartumChild
+                        (Translate.PostpartumChildDangerSign >> translate language)
+                        NoPostpartumChildDangerSigns
+                        data.measurements
             in
             motherSigns ++ childSigns
 
         _ ->
-            getDangerSignsListForType .signs Translate.DangerSign NoDangerSign
+            getDangerSignsListForType .signs
+                (Translate.DangerSign >> translate language)
+                NoDangerSign
+                data.measurements
+
+
+getDangerSignsListForType : (DangerSignsValue -> EverySet s) -> (s -> ms) -> s -> PrenatalMeasurements -> List ms
+getDangerSignsListForType getFunc mappingFunc noSignsValue measurements =
+    getMeasurementValueFunc measurements.dangerSigns
+        |> Maybe.map
+            (getFunc
+                >> EverySet.toList
+                >> List.filter ((/=) noSignsValue)
+                >> List.map mappingFunc
+            )
+        |> Maybe.withDefault []
 
 
 getMotherHeightMeasurement : PrenatalMeasurements -> Maybe HeightInCm
 getMotherHeightMeasurement measurements =
-    measurements.nutrition
-        |> Maybe.map (Tuple.second >> .value >> .height)
+    getMeasurementValueFunc measurements.nutrition
+        |> Maybe.map .height
 
 
-generatePrenatalAssesment : AssembledData -> PrenatalAssesment
-generatePrenatalAssesment assembled =
+generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
+generatePrenatalAssesmentForChw assembled =
     if noDangerSigns assembled then
         AssesmentNormalPregnancy
 
     else
         AssesmentHighRiskPregnancy
+
+
+generatePrenatalDiagnosisForNurse : NominalDate -> AssembledData -> EverySet PrenatalDiagnosis
+generatePrenatalDiagnosisForNurse currentDate assembled =
+    let
+        egaInWeeks =
+            Maybe.map
+                (calculateEGAWeeks currentDate)
+                assembled.globalLmpDate
+    in
+    generateDangerSignsListForNurse assembled
+        |> List.filterMap (prenatalDiagnosisByDangerSign egaInWeeks)
+        |> EverySet.fromList
+
+
+prenatalDiagnosisByDangerSign : Maybe Int -> DangerSign -> Maybe PrenatalDiagnosis
+prenatalDiagnosisByDangerSign egaInWeeks sign =
+    case sign of
+        ImminentDelivery ->
+            Just DiagnosisImminentDelivery
+
+        -- VaginalBleeding
+        -- HeadacheBlurredVision
+        -- Convulsions
+        -- AbdominalPain
+        -- DifficultyBreathing
+        -- Fever
+        -- ExtremeWeakness
+        -- Labor
+        -- LooksVeryIll
+        -- SevereVomiting
+        -- Unconscious
+        -- GushLeakingVaginalFluid
+        -- NoDangerSign
+        _ ->
+            Nothing
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )

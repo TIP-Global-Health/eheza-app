@@ -1618,7 +1618,7 @@ viewNextStepsContent language currentDate assembled data =
                                     NextStepsFollowUp ->
                                         let
                                             assesment =
-                                                generatePrenatalAssesment assembled
+                                                generatePrenatalAssesmentForChw assembled
                                         in
                                         SaveFollowUp personId assesment measurements.followUp nextTask
 

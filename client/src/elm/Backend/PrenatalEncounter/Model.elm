@@ -63,7 +63,7 @@ type PrenatalEncounterPostCreateDestination
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { closePrenatalEncounter : WebData ()
+    { updatePrenatalEncounter : WebData ()
     , saveBreastExam : WebData ()
     , saveCorePhysicalExam : WebData ()
     , saveDangerSigns : WebData ()
@@ -100,7 +100,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { closePrenatalEncounter = NotAsked
+    { updatePrenatalEncounter = NotAsked
     , saveBreastExam = NotAsked
     , saveCorePhysicalExam = NotAsked
     , saveDangerSigns = NotAsked
@@ -137,7 +137,8 @@ emptyModel =
 
 type Msg
     = ClosePrenatalEncounter
-    | HandleClosedPrenatalEncounter (WebData ())
+    | SetPrenatalDiagnosis (EverySet PrenatalDiagnosis)
+    | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
     | SaveCorePhysicalExam PersonId (Maybe CorePhysicalExamId) CorePhysicalExamValue
