@@ -785,6 +785,52 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_encounter-field_prenatal_diagnosis'.
+  $field_instances['node-prenatal_encounter-field_prenatal_diagnosis'] = array(
+    'bundle' => 'prenatal_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 'imminent-delivery|Imminent Delivery 
+none|None',
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prenatal_diagnosis',
+    'label' => 'Prenatal Diagnosis',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 4,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_follow_up-field_date_concluded'.
   $field_instances['node-prenatal_follow_up-field_date_concluded'] = array(
     'bundle' => 'prenatal_follow_up',
@@ -5554,6 +5600,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Performed tests');
   t('Person');
   t('Prenatal Assesment');
+  t('Prenatal Diagnosis');
   t('Prenatal Encounter');
   t('Prescribed medication');
   t('Protein');
