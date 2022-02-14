@@ -227,16 +227,17 @@ activityCompleted currentDate assembled activity =
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
-    case assembled.encounter.encounterType of
-        -- We should never get here, as Next Steps
-        -- displayed only for CHW.
-        NurseEncounter ->
-            [ NextStepsMedicationDistribution ]
+    let
+        tasks =
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    [ NextStepsMedicationDistribution ]
 
-        _ ->
-            -- The order is important. Do not change.
-            [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
-                |> List.filter (expectNextStepsTask currentDate assembled)
+                _ ->
+                    -- The order is important. Do not change.
+                    [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
+    in
+    List.filter (expectNextStepsTask currentDate assembled) tasks
 
 
 expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -267,8 +268,10 @@ expectNextStepsTask currentDate assembled task =
             assembled.encounter.encounterType == ChwPostpartumEncounter
 
         NextStepsMedicationDistribution ->
+            -- We were asking about if Mebendazole was given already.
             showMebendazoleQuestion currentDate assembled
-                && (getMeasurementValueFunc assembled.measurements.medication
+                && -- The answer was that it was not given yet.
+                   (getMeasurementValueFunc assembled.measurements.medication
                         |> Maybe.map (EverySet.member Mebendazole >> not)
                         |> Maybe.withDefault False
                    )
