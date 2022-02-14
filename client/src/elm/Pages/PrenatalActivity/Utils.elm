@@ -231,7 +231,7 @@ resolveNextStepsTasks currentDate assembled =
         tasks =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    [ NextStepsMedicationDistribution ]
+                    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -247,9 +247,11 @@ expectNextStepsTask currentDate assembled task =
             dangerSignsPresent assembled
     in
     case task of
+        -- Exclusive CHW task.
         NextStepsAppointmentConfirmation ->
             not dangerSigns && assembled.encounter.encounterType /= ChwPostpartumEncounter
 
+        -- Exclusive CHW task.
         NextStepsFollowUp ->
             case assembled.encounter.encounterType of
                 ChwPostpartumEncounter ->
@@ -258,19 +260,40 @@ expectNextStepsTask currentDate assembled task =
                 _ ->
                     True
 
+        -- Common task for nurse and CHW.
         NextStepsSendToHC ->
-            dangerSigns
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    generateDangerSignsListForNurse assembled
+                        |> List.filter dangerSignRequiresEmergencyReferal
+                        |> List.isEmpty
+                        |> not
 
+                _ ->
+                    dangerSigns
+
+        -- Common task for nurse and CHW.
         NextStepsHealthEducation ->
-            assembled.encounter.encounterType == ChwPostpartumEncounter
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    -- @todo
+                    False
 
+                ChwPostpartumEncounter ->
+                    True
+
+                _ ->
+                    False
+
+        -- Exclusive CHW task.
         NextStepsNewbornEnrolment ->
             assembled.encounter.encounterType == ChwPostpartumEncounter
 
+        -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
-            -- We were asking about if Mebendazole was given already.
+            -- We were asking if Mebendazole was given already.
             showMebendazoleQuestion currentDate assembled
-                && -- The answer was that it was not given yet.
+                && -- The answer was that Mebendazole was not given yet.
                    (getMeasurementValueFunc assembled.measurements.medication
                         |> Maybe.map (EverySet.member Mebendazole >> not)
                         |> Maybe.withDefault False
@@ -483,6 +506,54 @@ noDangerSigns assembled =
 dangerSignsPresent : AssembledData -> Bool
 dangerSignsPresent assembled =
     isJust assembled.measurements.dangerSigns && not (noDangerSigns assembled)
+
+
+dangerSignRequiresEmergencyReferal : DangerSign -> Bool
+dangerSignRequiresEmergencyReferal sign =
+    case sign of
+        VaginalBleeding ->
+            True
+
+        HeadacheBlurredVision ->
+            False
+
+        Convulsions ->
+            False
+
+        AbdominalPain ->
+            True
+
+        DifficultyBreathing ->
+            True
+
+        Fever ->
+            -- @todo: revise when clarifications on  Maternal Complications
+            -- and Infection diagnosis are provided.
+            True
+
+        ExtremeWeakness ->
+            True
+
+        ImminentDelivery ->
+            True
+
+        Labor ->
+            True
+
+        LooksVeryIll ->
+            True
+
+        SevereVomiting ->
+            True
+
+        Unconscious ->
+            True
+
+        GushLeakingVaginalFluid ->
+            True
+
+        NoDangerSign ->
+            False
 
 
 generateDangerSignsListForNurse : AssembledData -> List DangerSign
@@ -809,11 +880,12 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
 
 nextStepsTasksCompletedFromTotal :
     Language
+    -> Bool
     -> AssembledData
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal language assembled data task =
+nextStepsTasksCompletedFromTotal language isChw assembled data task =
     case task of
         NextStepsAppointmentConfirmation ->
             let
@@ -844,7 +916,7 @@ nextStepsTasksCompletedFromTotal language assembled data task =
                         |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
 
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
                     form.referToHealthCenter
                         |> Maybe.map
                             (\sentToHC ->
@@ -859,9 +931,31 @@ nextStepsTasksCompletedFromTotal language assembled data task =
                                     ( 1, 1 )
                             )
                         |> Maybe.withDefault ( 0, 1 )
+
+                -- ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                --     form.referToHealthCenter
+                --         |> Maybe.map
+                --             (\sentToHC ->
+                --                 if not sentToHC then
+                --                     if isJust form.reasonForNotSendingToHC then
+                --                         ( 2, 2 )
+                --
+                --                     else
+                --                         ( 1, 2 )
+                --
+                --                 else
+                --                     ( 1, 1 )
+                --             )
+                --         |> Maybe.withDefault ( 0, 1 )
+                ( accompanyToHealthCenterCompleted, accompanyToHealthCenterActive ) =
+                    if isChw then
+                        ( taskCompleted form.accompanyToHealthCenter, 1 )
+
+                    else
+                        ( 0, 0 )
             in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm + taskCompleted form.accompanyToHealthCenter
-            , reasonForNotSentCompleted + 2
+            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
+            , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
             )
 
         NextStepsHealthEducation ->

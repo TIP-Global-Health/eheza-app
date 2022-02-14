@@ -23,7 +23,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -115,7 +115,7 @@ viewContent : Language -> NominalDate -> Bool -> PrenatalActivity -> ModelIndexe
 viewContent language currentDate isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate activity assembled db model
+            ++ viewActivity language currentDate isChw activity assembled db model
 
 
 warningPopup : Language -> NominalDate -> Maybe String -> Maybe (Html Msg)
@@ -146,8 +146,8 @@ warningPopup language currentDate dangerSigns =
             )
 
 
-viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate activity assembled db model =
+viewActivity : Language -> NominalDate -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate isChw activity assembled db model =
     case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
@@ -177,7 +177,7 @@ viewActivity language currentDate activity assembled db model =
             viewBirthPlanContent language currentDate assembled model.birthPlanData
 
         NextSteps ->
-            viewNextStepsContent language currentDate assembled model.nextStepsData
+            viewNextStepsContent language currentDate isChw assembled model.nextStepsData
 
         Backend.PrenatalActivity.Model.MalariaPrevention ->
             viewMalariaPreventionContent language currentDate assembled model.malariaPreventionData
@@ -1463,8 +1463,8 @@ viewHealthEducationContent language currentDate assembled data =
     ]
 
 
-viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate assembled data =
+viewNextStepsContent : Language -> NominalDate -> Bool -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate isChw assembled data =
     let
         personId =
             assembled.participant.person
@@ -1536,7 +1536,7 @@ viewNextStepsContent language currentDate assembled data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.PrenatalNextStepsTask task)
+                    , text <| translate language (Translate.PrenatalNextStepsTask isChw task)
                     ]
                 ]
 
@@ -1544,7 +1544,7 @@ viewNextStepsContent language currentDate assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal language assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal language isChw assembled data task )
                     )
                 |> Dict.fromList
 
@@ -1568,15 +1568,23 @@ viewNextStepsContent language currentDate assembled data =
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
+                    let
+                        ( viewFormFunc, accompanyConfig ) =
+                            if isChw then
+                                ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
+
+                            else
+                                ( viewSendToHospitalForm, Nothing )
+                    in
                     measurements.sendToHC
                         |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHealthCenterForm language
+                        |> viewFormFunc language
                             currentDate
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC
                             SetHandReferralForm
-                            (Just SetAccompanyToHC)
+                            accompanyConfig
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation

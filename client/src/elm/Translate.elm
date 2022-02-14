@@ -901,7 +901,7 @@ type TranslationId
     | PrenatalLaboratoryTaskResultsHelper
     | PrenatalLabsCaseManagementType
     | PrenatalLabsEntryState PrenatalLabsEntryState
-    | PrenatalNextStepsTask Pages.PrenatalActivity.Types.NextStepsTask
+    | PrenatalNextStepsTask Bool Pages.PrenatalActivity.Types.NextStepsTask
     | PrenatalPhotoHelper
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
@@ -7191,7 +7191,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        PrenatalNextStepsTask task ->
+        PrenatalNextStepsTask isChw task ->
             case task of
                 Pages.PrenatalActivity.Types.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
@@ -7204,9 +7204,15 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Types.NextStepsSendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    }
+                    if isChw then
+                        { english = "Send to Health Center"
+                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                        }
+
+                    else
+                        { english = "Referral"
+                        , kinyarwanda = Nothing
+                        }
 
                 Pages.PrenatalActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
