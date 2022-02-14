@@ -3872,7 +3872,9 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
                                  PrenatalActivityPage id Backend.PrenatalActivity.Model.NextSteps
                                     |> UserPage
                                     |> App.Model.SetActivePage
-                               , String.join ", " dangerSignsList
+                               , ( String.join ", " dangerSignsList
+                                 , translate language Translate.DangerSignsHelperReferToHC
+                                 )
                                     |> Just
                                     |> Pages.PrenatalActivity.Model.SetWarningPopupState
                                     |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps

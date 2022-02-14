@@ -79,7 +79,7 @@ viewHeaderAndContent language currentDate id isChw activity db model assembled =
         [ viewHeader language id activity assembled
         , viewContent language currentDate isChw activity db model assembled
         , viewModal <|
-            warningPopup language currentDate model.warningPopupState
+            warningPopup language currentDate isChw model.warningPopupState
         ]
 
 
@@ -118,11 +118,19 @@ viewContent language currentDate isChw activity db model assembled =
             ++ viewActivity language currentDate isChw activity assembled db model
 
 
-warningPopup : Language -> NominalDate -> Maybe String -> Maybe (Html Msg)
-warningPopup language currentDate dangerSigns =
-    dangerSigns
+warningPopup : Language -> NominalDate -> Bool -> Maybe ( String, String ) -> Maybe (Html Msg)
+warningPopup language currentDate isChw state =
+    state
         |> Maybe.map
-            (\signs ->
+            (\( signs, instructions ) ->
+                let
+                    message =
+                        if isChw then
+                            translate language Translate.DangerSignsLabelForChw ++ ": " ++ signs
+
+                        else
+                            translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
+                in
                 div [ class "ui active modal diagnosis-popup" ]
                     [ div [ class "content" ] <|
                         [ div [ class "popup-heading-wrapper" ]
@@ -130,8 +138,8 @@ warningPopup language currentDate dangerSigns =
                             , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
                             ]
                         , div [ class "popup-title" ]
-                            [ p [] [ text <| translate language Translate.DangerSignsLabel ++ ": " ++ signs ]
-                            , p [] [ text <| translate language Translate.DangerSignsHelper ]
+                            [ p [] [ text message ]
+                            , p [] [ text instructions ]
                             ]
                         ]
                     , div

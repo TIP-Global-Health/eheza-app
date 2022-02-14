@@ -468,8 +468,11 @@ type TranslationId
     | CurrentlyPregnant
     | CurrentlyPregnantQuestion
     | DangerSign DangerSign
-    | DangerSignsLabel
-    | DangerSignsHelper
+    | DangerSignsLabelForChw
+    | DangerSignsLabelForNurse
+    | DangerSignsHelperReferToHC
+    | DangerSignsHelperReferToMaternityWard
+    | DangerSignsHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
     | Date
     | DateConcludedEstimatedQuestion
@@ -3184,14 +3187,29 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
                     }
 
-        DangerSignsLabel ->
+        DangerSignsLabelForChw ->
             { english = "Danger Signs"
             , kinyarwanda = Just "Ibimenyetso Mpuruza"
             }
 
-        DangerSignsHelper ->
+        DangerSignsLabelForNurse ->
+            { english = "Patient shows signs of"
+            , kinyarwanda = Nothing
+            }
+
+        DangerSignsHelperReferToHC ->
             { english = "Refer patient to health center immediately"
             , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
+
+        DangerSignsHelperReferToMaternityWard ->
+            { english = "Refer to Maternity Ward Immediately "
+            , kinyarwanda = Nothing
+            }
+
+        DangerSignsHelperReferToEmergencyObstetricCareServices ->
+            { english = "Stabalize and Refer to Emergency Obstetric Care Services"
+            , kinyarwanda = Nothing
             }
 
         DangerSignsTask task ->
