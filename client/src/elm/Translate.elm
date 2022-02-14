@@ -3204,7 +3204,7 @@ translationSet trans =
             }
 
         DangerSignsHelperReferToMaternityWard ->
-            { english = "Refer to Maternity Ward Immediately "
+            { english = "Refer to Maternity Ward Immediately"
             , kinyarwanda = Nothing
             }
 

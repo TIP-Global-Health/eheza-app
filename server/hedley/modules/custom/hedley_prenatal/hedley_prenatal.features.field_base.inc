@@ -402,13 +402,13 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_prenatal_diagnosis'.
-  $field_bases['field_prenatal_diagnosis'] = array(
+  // Exported field_base: 'field_prenatal_diagnoses'.
+  $field_bases['field_prenatal_diagnoses'] = array(
     'active' => 1,
     'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_prenatal_diagnosis',
+    'field_name' => 'field_prenatal_diagnoses',
     'indexes' => array(
       'value' => array(
         0 => 'value',

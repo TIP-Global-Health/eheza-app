@@ -16,7 +16,7 @@ decodePrenatalEncounter =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> required "prenatal_encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType)
-        |> optional "prenatal_diagnosis"
+        |> optional "prenatal_diagnoses"
             (map
                 (\items ->
                     if List.isEmpty items then
