@@ -54,7 +54,7 @@ import Backend.PrenatalActivity.Model
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
@@ -857,6 +857,7 @@ type TranslationId
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalAssesment PrenatalAssesment
+    | PrenatalDiagnosis PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -7133,6 +7134,23 @@ translationSet trans =
                 AssesmentHighRiskPregnancy ->
                     { english = "High Risk Pregnancy"
                     , kinyarwanda = Just "Inda Ibangamiwe n'ibibazo Bikomeye"
+                    }
+
+        PrenatalDiagnosis diagnosis ->
+            case diagnosis of
+                DiagnosisPrescribeMebendezole ->
+                    { english = "Prescribe Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisImminentDelivery ->
+                    { english = "Imminent Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalDiagnosis ->
+                    { english = "None"
+                    , kinyarwanda = Just "Ntabyo"
                     }
 
         PrenatalEncounterType encounterType ->

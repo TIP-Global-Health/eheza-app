@@ -291,8 +291,10 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
-            -- We were asking if Mebendazole was given already.
-            showMebendazoleQuestion currentDate assembled
+            -- Emergency refferal is not required.
+            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
+                && -- We were asking if Mebendazole was given already.
+                   showMebendazoleQuestion currentDate assembled
                 && -- The answer was that Mebendazole was not given yet.
                    (getMeasurementValueFunc assembled.measurements.medication
                         |> Maybe.map (EverySet.member Mebendazole >> not)
