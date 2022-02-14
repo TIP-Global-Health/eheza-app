@@ -1657,9 +1657,6 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ MedicationRevision uuid data ] ->
                     let
-                        _ =
-                            Debug.log "" "MedicationRevision"
-
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
@@ -3914,7 +3911,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
                             |> Backend.Model.MsgPrenatalEncounter id
                             |> App.Model.MsgIndexedDb
 
-                    -- @todo
+                    -- @todo : Add logic that decides what to display, after we
+                    -- get clarifications for multiple diagnoses.
                     instructions =
                         Translate.DangerSignsHelperReferToMaternityWard
                 in

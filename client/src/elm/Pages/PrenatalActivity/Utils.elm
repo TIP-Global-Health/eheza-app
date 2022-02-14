@@ -899,21 +899,6 @@ nextStepsTasksCompletedFromTotal language isChw assembled data task =
                             )
                         |> Maybe.withDefault ( 0, 1 )
 
-                -- ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                --     form.referToHealthCenter
-                --         |> Maybe.map
-                --             (\sentToHC ->
-                --                 if not sentToHC then
-                --                     if isJust form.reasonForNotSendingToHC then
-                --                         ( 2, 2 )
-                --
-                --                     else
-                --                         ( 1, 2 )
-                --
-                --                 else
-                --                     ( 1, 1 )
-                --             )
-                --         |> Maybe.withDefault ( 0, 1 )
                 ( accompanyToHealthCenterCompleted, accompanyToHealthCenterActive ) =
                     if isChw then
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
