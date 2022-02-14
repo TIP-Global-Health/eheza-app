@@ -264,8 +264,8 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    generateDangerSignsListForNurse assembled
-                        |> List.filter dangerSignRequiresEmergencyReferal
+                    EverySet.toList assembled.encounter.diagnosis
+                        |> List.filter diagnosisRequiresEmergencyReferal
                         |> List.isEmpty
                         |> not
 
@@ -322,6 +322,19 @@ nextStepsMeasurementTaken assembled task =
 
         NextStepsMedicationDistribution ->
             isJust assembled.measurements.medicationDistribution
+
+
+diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
+diagnosisRequiresEmergencyReferal diagnosis =
+    case diagnosis of
+        DiagnosisPrescribeMebendezole ->
+            False
+
+        DiagnosisImminentDelivery ->
+            True
+
+        NoPrenatalDiagnosis ->
+            False
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
@@ -508,54 +521,6 @@ noDangerSigns assembled =
 dangerSignsPresent : AssembledData -> Bool
 dangerSignsPresent assembled =
     isJust assembled.measurements.dangerSigns && not (noDangerSigns assembled)
-
-
-dangerSignRequiresEmergencyReferal : DangerSign -> Bool
-dangerSignRequiresEmergencyReferal sign =
-    case sign of
-        VaginalBleeding ->
-            True
-
-        HeadacheBlurredVision ->
-            False
-
-        Convulsions ->
-            False
-
-        AbdominalPain ->
-            True
-
-        DifficultyBreathing ->
-            True
-
-        Fever ->
-            -- @todo: revise when clarifications on  Maternal Complications
-            -- and Infection diagnosis are provided.
-            True
-
-        ExtremeWeakness ->
-            True
-
-        ImminentDelivery ->
-            True
-
-        Labor ->
-            True
-
-        LooksVeryIll ->
-            True
-
-        SevereVomiting ->
-            True
-
-        Unconscious ->
-            True
-
-        GushLeakingVaginalFluid ->
-            True
-
-        NoDangerSign ->
-            False
 
 
 generateDangerSignsListForNurse : AssembledData -> List DangerSign
