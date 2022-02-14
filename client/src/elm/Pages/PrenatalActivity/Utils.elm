@@ -264,7 +264,7 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    EverySet.toList assembled.encounter.diagnosis
+                    EverySet.toList assembled.encounter.diagnoses
                         |> List.filter diagnosisRequiresEmergencyReferal
                         |> List.isEmpty
                         |> not
@@ -600,19 +600,19 @@ generatePrenatalDiagnosisForNurse currentDate assembled =
                 (calculateEGAWeeks currentDate)
                 assembled.globalLmpDate
 
-        diagnosisByMedication =
+        diagnosesByMedication =
             if showMebendazoleQuestion currentDate assembled then
                 EverySet.singleton DiagnosisPrescribeMebendezole
 
             else
                 EverySet.empty
 
-        diagnosisByDangerSigns =
+        diagnosesByDangerSigns =
             generateDangerSignsListForNurse assembled
                 |> List.filterMap (prenatalDiagnosisByDangerSign egaInWeeks)
                 |> EverySet.fromList
     in
-    EverySet.union diagnosisByMedication diagnosisByDangerSigns
+    EverySet.union diagnosesByMedication diagnosesByDangerSigns
 
 
 prenatalDiagnosisByDangerSign : Maybe Int -> DangerSign -> Maybe PrenatalDiagnosis

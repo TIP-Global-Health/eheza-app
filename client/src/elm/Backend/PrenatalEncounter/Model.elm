@@ -12,7 +12,7 @@ type alias PrenatalEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , encounterType : PrenatalEncounterType
-    , diagnosis : EverySet PrenatalDiagnosis
+    , diagnoses : EverySet PrenatalDiagnosis
     , shard : Maybe HealthCenterId
     }
 
@@ -23,7 +23,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , startDate = startDate
     , endDate = Nothing
     , encounterType = encounterType
-    , diagnosis = EverySet.empty
+    , diagnoses = EverySet.empty
     , shard = shard
     }
 
@@ -138,7 +138,7 @@ emptyModel =
 
 type Msg
     = ClosePrenatalEncounter
-    | SetPrenatalDiagnosis (EverySet PrenatalDiagnosis)
+    | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())

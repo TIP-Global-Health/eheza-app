@@ -21,13 +21,13 @@ encodePrenatalEncounter encounter =
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
     , ( "prenatal_encounter_type", encodePrenatalEncounterType encounter.encounterType )
-    , ( "prenatal_diagnosis"
+    , ( "prenatal_diagnoses"
       , list encodePrenatalDiagnosis
-            (if EverySet.isEmpty encounter.diagnosis then
+            (if EverySet.isEmpty encounter.diagnoses then
                 List.singleton NoPrenatalDiagnosis
 
              else
-                EverySet.toList encounter.diagnosis
+                EverySet.toList encounter.diagnoses
             )
       )
     , ( "deleted", bool False )

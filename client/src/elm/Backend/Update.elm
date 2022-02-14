@@ -3910,7 +3910,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
                             |> List.filter ((/=) DiagnosisPrescribeMebendezole)
 
                     updateDiagnosisMsg =
-                        Backend.PrenatalEncounter.Model.SetPrenatalDiagnosis diagnosisAfter
+                        Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosisAfter
                             |> Backend.Model.MsgPrenatalEncounter id
                             |> App.Model.MsgIndexedDb
 

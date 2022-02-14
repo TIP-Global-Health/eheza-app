@@ -20,8 +20,8 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
       'property' => 'field_prenatal_encounter_type',
     ];
 
-    $public_fields['prenatal_diagnosis'] = [
-      'property' => 'field_prenatal_diagnosis',
+    $public_fields['prenatal_diagnoses'] = [
+      'property' => 'field_prenatal_diagnoses',
     ];
 
     return $public_fields;
@@ -35,14 +35,14 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
 
     $field_names = [
       'field_prenatal_encounter_type',
-      'field_prenatal_diagnosis',
+      'field_prenatal_diagnoses',
     ];
 
     foreach ($field_names as $field_name) {
       hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
-    $query->addExpression("GROUP_CONCAT(DISTINCT field_prenatal_diagnosis.field_prenatal_diagnosis_value)", 'field_prenatal_diagnosis');
+    $query->addExpression("GROUP_CONCAT(DISTINCT field_prenatal_diagnoses.field_prenatal_diagnoses_value)", 'field_prenatal_diagnoses');
   }
 
   /**
@@ -52,7 +52,7 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$item) {
-      $item->prenatal_diagnosis = explode(',', $item->prenatal_diagnosis);
+      $item->prenatal_diagnoses = explode(',', $item->prenatal_diagnoses);
     }
 
     return $items;

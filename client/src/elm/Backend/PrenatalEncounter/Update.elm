@@ -20,8 +20,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
         ClosePrenatalEncounter ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
-        SetPrenatalDiagnosis diagnosis ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
+        SetPrenatalDiagnoses diagnoses ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
 
         HandleUpdatedPrenatalEncounter data ->
             ( { model | updatePrenatalEncounter = data }
