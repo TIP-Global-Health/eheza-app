@@ -226,8 +226,8 @@ activityCompleted currentDate assembled activity =
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
-resolveNextStepsTasks currentDate data =
-    case data.encounter.encounterType of
+resolveNextStepsTasks currentDate assembled =
+    case assembled.encounter.encounterType of
         -- We should never get here, as Next Steps
         -- displayed only for CHW.
         NurseEncounter ->
@@ -236,21 +236,21 @@ resolveNextStepsTasks currentDate data =
         _ ->
             -- The order is important. Do not change.
             [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
-                |> List.filter (expectNextStepsTask currentDate data)
+                |> List.filter (expectNextStepsTask currentDate assembled)
 
 
 expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
-expectNextStepsTask currentDate data task =
+expectNextStepsTask currentDate assembled task =
     let
         dangerSigns =
-            dangerSignsPresent data
+            dangerSignsPresent assembled
     in
     case task of
         NextStepsAppointmentConfirmation ->
-            not dangerSigns && data.encounter.encounterType /= ChwPostpartumEncounter
+            not dangerSigns && assembled.encounter.encounterType /= ChwPostpartumEncounter
 
         NextStepsFollowUp ->
-            case data.encounter.encounterType of
+            case assembled.encounter.encounterType of
                 ChwPostpartumEncounter ->
                     dangerSigns
 
@@ -261,14 +261,14 @@ expectNextStepsTask currentDate data task =
             dangerSigns
 
         NextStepsHealthEducation ->
-            data.encounter.encounterType == ChwPostpartumEncounter
+            assembled.encounter.encounterType == ChwPostpartumEncounter
 
         NextStepsNewbornEnrolment ->
-            data.encounter.encounterType == ChwPostpartumEncounter
+            assembled.encounter.encounterType == ChwPostpartumEncounter
 
         NextStepsMedicationDistribution ->
-            showMebendazoleQuestion currentDate data
-                && (getMeasurementValueFunc data.measurements.medication
+            showMebendazoleQuestion currentDate assembled
+                && (getMeasurementValueFunc assembled.measurements.medication
                         |> Maybe.map (EverySet.member Mebendazole >> not)
                         |> Maybe.withDefault False
                    )
@@ -339,57 +339,57 @@ showMebendazoleQuestion currentDate assembled =
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForNextStepsCompleted currentDate data =
-    case data.encounter.encounterType of
+mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    case assembled.encounter.encounterType of
         NurseEncounter ->
-            activityCompleted currentDate data DangerSigns
+            activityCompleted currentDate assembled DangerSigns
 
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    ((not <| expectActivity currentDate data PregnancyDating) || activityCompleted currentDate data PregnancyDating)
-                        && ((not <| expectActivity currentDate data Laboratory) || activityCompleted currentDate data Laboratory)
-                        && activityCompleted currentDate data DangerSigns
+                    ((not <| expectActivity currentDate assembled PregnancyDating) || activityCompleted currentDate assembled PregnancyDating)
+                        && ((not <| expectActivity currentDate assembled Laboratory) || activityCompleted currentDate assembled Laboratory)
+                        && activityCompleted currentDate assembled DangerSigns
             in
-            if dangerSignsPresent data then
+            if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwSecondEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    activityCompleted currentDate data DangerSigns
+                    activityCompleted currentDate assembled DangerSigns
             in
-            if dangerSignsPresent data then
+            if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate data BirthPlan
-                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate assembled BirthPlan
+                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwThirdPlusEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    activityCompleted currentDate data DangerSigns
+                    activityCompleted currentDate assembled DangerSigns
             in
-            if dangerSignsPresent data then
+            if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate data Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwPostpartumEncounter ->
-            activityCompleted currentDate data PregnancyOutcome
-                && activityCompleted currentDate data DangerSigns
+            activityCompleted currentDate assembled PregnancyOutcome
+                && activityCompleted currentDate assembled DangerSigns
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
-expectPrenatalPhoto currentDate data =
+expectPrenatalPhoto currentDate assembled =
     let
         periods =
             -- Periods, where we want to have 1 photo:
@@ -399,9 +399,9 @@ expectPrenatalPhoto currentDate data =
             [ [ (>) 13 ], [ (>) 28, (<=) 13 ], [ (<=) 28 ] ]
 
         nursePreviousMeasurements =
-            List.map Tuple.second data.nursePreviousMeasurementsWithDates
+            List.map Tuple.second assembled.nursePreviousMeasurementsWithDates
     in
-    data.globalLmpDate
+    assembled.globalLmpDate
         |> Maybe.map
             (\lmpDate ->
                 let
@@ -421,7 +421,7 @@ expectPrenatalPhoto currentDate data =
                         (\conditions ->
                             -- There should be no encounters that are  within dates range,
                             -- that got a photo measurement.
-                            data.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousMeasurementsWithDates
                                 |> List.filterMap
                                     (\( encounterDate, measurements ) ->
                                         let
@@ -449,17 +449,17 @@ expectPrenatalPhoto currentDate data =
 
 
 noDangerSigns : AssembledData -> Bool
-noDangerSigns data =
+noDangerSigns assembled =
     let
         getDangerSignsType getFunc =
-            data.measurements.dangerSigns
+            assembled.measurements.dangerSigns
                 |> Maybe.map (Tuple.second >> .value >> getFunc >> EverySet.toList)
                 |> Maybe.withDefault []
 
         dangerSignsEmpty emptySign signsList =
             List.isEmpty signsList || signsList == [ emptySign ]
     in
-    case data.encounter.encounterType of
+    case assembled.encounter.encounterType of
         ChwPostpartumEncounter ->
             let
                 motherSignsEmpty =
@@ -478,26 +478,26 @@ noDangerSigns data =
 
 
 dangerSignsPresent : AssembledData -> Bool
-dangerSignsPresent data =
-    isJust data.measurements.dangerSigns && not (noDangerSigns data)
+dangerSignsPresent assembled =
+    isJust assembled.measurements.dangerSigns && not (noDangerSigns assembled)
 
 
 generateDangerSignsListForNurse : AssembledData -> List DangerSign
-generateDangerSignsListForNurse data =
-    case data.encounter.encounterType of
+generateDangerSignsListForNurse assembled =
+    case assembled.encounter.encounterType of
         NurseEncounter ->
             getDangerSignsListForType .signs
                 identity
                 NoDangerSign
-                data.measurements
+                assembled.measurements
 
         _ ->
             []
 
 
 generateDangerSignsListForChw : Language -> AssembledData -> List String
-generateDangerSignsListForChw language data =
-    case data.encounter.encounterType of
+generateDangerSignsListForChw language assembled =
+    case assembled.encounter.encounterType of
         NurseEncounter ->
             []
 
@@ -507,13 +507,13 @@ generateDangerSignsListForChw language data =
                     getDangerSignsListForType .postpartumMother
                         (Translate.PostpartumMotherDangerSign >> translate language)
                         NoPostpartumMotherDangerSigns
-                        data.measurements
+                        assembled.measurements
 
                 childSigns =
                     getDangerSignsListForType .postpartumChild
                         (Translate.PostpartumChildDangerSign >> translate language)
                         NoPostpartumChildDangerSigns
-                        data.measurements
+                        assembled.measurements
             in
             motherSigns ++ childSigns
 
@@ -521,7 +521,7 @@ generateDangerSignsListForChw language data =
             getDangerSignsListForType .signs
                 (Translate.DangerSign >> translate language)
                 NoDangerSign
-                data.measurements
+                assembled.measurements
 
 
 getDangerSignsListForType : (DangerSignsValue -> EverySet s) -> (s -> ms) -> s -> PrenatalMeasurements -> List ms
@@ -558,9 +558,6 @@ generatePrenatalDiagnosisForNurse currentDate assembled =
             Maybe.map
                 (calculateEGAWeeks currentDate)
                 assembled.globalLmpDate
-
-        _ =
-            Debug.log "" diagnosisByMedication
 
         diagnosisByMedication =
             if showMebendazoleQuestion currentDate assembled then
