@@ -1076,7 +1076,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment model newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -3815,8 +3815,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
 
-generatePrenatalAssesmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
-generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment before after id =
+generatePrenatalAssessmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
+generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
