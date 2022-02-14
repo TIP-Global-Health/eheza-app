@@ -419,7 +419,16 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
+        'diagnosis-eclampsia' => 'Eclampsia',
+        'diagnosis-miscarriage-molar-pregnancy' => 'Miscarriage | MolarPregnancy',
+        'diagnosis-placenta-previa-placental-abruption-uterine-rupture' => 'PlacentaPrevia | PlacentalAbruption | UterineRupture',
+        'diagnosis-uterine-rupture-obstructed-labor-placental-abruption' => 'UterineRupture | ObstructedLabor | PlacentalAbruption',
+        'diagnosis-ectopic-pregnancy' => 'Ectopic Pregnancy',
+        'diagnosis-prom' => 'PROM',
+        'diagnosis-pprom' => 'PPROM',
+        'diagnosis-hyperemesis-gravidum' => 'Hyperemesis Gravidum',
         'imminent-delivery' => 'Imminent delivery',
+        'labor' => 'Labor + Delivery',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
