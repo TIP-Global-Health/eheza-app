@@ -7143,8 +7143,53 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisEclampsia ->
+                    { english = "Eclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMiscarriageOrMolarPregnancy ->
+                    { english = "Miscarriage | Molar Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture ->
+                    { english = "Placenta Previa | Placental Abruption | Uterine Rupture"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption ->
+                    { english = "Uterine Rupture | Obstructed Labor | Placental Abruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEctopicPregnancy ->
+                    { english = "Ectopic Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPROM ->
+                    { english = "Premature Rupture of Membranes (PROM)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPPROM ->
+                    { english = "Preterm Premature Rupture of Membranes (PPROM)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHyperemesisGravidum ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisImminentDelivery ->
                     { english = "Imminent Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLaborAndDelivery ->
+                    { english = "Labor + Delivery"
                     , kinyarwanda = Nothing
                     }
 

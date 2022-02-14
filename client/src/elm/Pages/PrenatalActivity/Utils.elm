@@ -330,7 +330,34 @@ diagnosisRequiresEmergencyReferal diagnosis =
         DiagnosisPrescribeMebendezole ->
             False
 
+        DiagnosisEclampsia ->
+            True
+
+        DiagnosisMiscarriageOrMolarPregnancy ->
+            True
+
+        DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture ->
+            True
+
+        DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption ->
+            True
+
+        DiagnosisEctopicPregnancy ->
+            True
+
+        DiagnosisPROM ->
+            True
+
+        DiagnosisPPROM ->
+            True
+
+        DiagnosisHyperemesisGravidum ->
+            True
+
         DiagnosisImminentDelivery ->
+            True
+
+        DiagnosisLaborAndDelivery ->
             True
 
         NoPrenatalDiagnosis ->

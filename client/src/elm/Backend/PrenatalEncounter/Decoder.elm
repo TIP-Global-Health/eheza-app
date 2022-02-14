@@ -69,8 +69,35 @@ decodePrenatalDiagnosis =
                     "prescribe-mebendezole" ->
                         succeed DiagnosisPrescribeMebendezole
 
+                    "diagnosis-eclampsia" ->
+                        succeed DiagnosisEclampsia
+
+                    "diagnosis-miscarriage-molar-pregnancy" ->
+                        succeed DiagnosisMiscarriageOrMolarPregnancy
+
+                    "diagnosis-placenta-previa-placental-abruption-uterine-rupture" ->
+                        succeed DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture
+
+                    "diagnosis-uterine-rupture-obstructed-labor-placental-abruption" ->
+                        succeed DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption
+
+                    "diagnosis-ectopic-pregnancy" ->
+                        succeed DiagnosisEctopicPregnancy
+
+                    "diagnosis-prom" ->
+                        succeed DiagnosisPROM
+
+                    "diagnosis-pprom" ->
+                        succeed DiagnosisPPROM
+
+                    "diagnosis-hyperemesis-gravidum" ->
+                        succeed DiagnosisHyperemesisGravidum
+
                     "imminent-delivery" ->
                         succeed DiagnosisImminentDelivery
+
+                    "labor" ->
+                        succeed DiagnosisLaborAndDelivery
 
                     "none" ->
                         succeed NoPrenatalDiagnosis
