@@ -64,7 +64,7 @@ encodePrenatalDiagnosis diagnosis =
                 "prescribe-mebendezole"
 
             DiagnosisEclampsia ->
-                "diagnosis-eclampsia"
+                "eclampsia"
 
             DiagnosisMiscarriage ->
                 "miscarriage"
@@ -91,13 +91,13 @@ encodePrenatalDiagnosis diagnosis =
                 "ectopic-pregnancy"
 
             DiagnosisPROM ->
-                "diagnosis-prom"
+                "prom"
 
             DiagnosisPPROM ->
-                "diagnosis-pprom"
+                "pprom"
 
             DiagnosisHyperemesisGravidum ->
-                "diagnosis-hyperemesis-gravidum"
+                "hyperemesis-gravidum"
 
             DiagnosisMaternalComplications ->
                 "maternal-complications"
