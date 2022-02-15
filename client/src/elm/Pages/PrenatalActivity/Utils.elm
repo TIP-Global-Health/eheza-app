@@ -324,46 +324,6 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.measurements.medicationDistribution
 
 
-diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
-diagnosisRequiresEmergencyReferal diagnosis =
-    case diagnosis of
-        DiagnosisPrescribeMebendezole ->
-            False
-
-        DiagnosisEclampsia ->
-            True
-
-        DiagnosisMiscarriageOrMolarPregnancy ->
-            True
-
-        DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture ->
-            True
-
-        DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption ->
-            True
-
-        DiagnosisEctopicPregnancy ->
-            True
-
-        DiagnosisPROM ->
-            True
-
-        DiagnosisPPROM ->
-            True
-
-        DiagnosisHyperemesisGravidum ->
-            True
-
-        DiagnosisImminentDelivery ->
-            True
-
-        DiagnosisLaborAndDelivery ->
-            True
-
-        NoPrenatalDiagnosis ->
-            False
-
-
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
 showMebendazoleQuestion currentDate assembled =
     assembled.globalLmpDate
@@ -619,8 +579,8 @@ generatePrenatalAssesmentForChw assembled =
         AssesmentHighRiskPregnancy
 
 
-generatePrenatalDiagnosisForNurse : NominalDate -> AssembledData -> EverySet PrenatalDiagnosis
-generatePrenatalDiagnosisForNurse currentDate assembled =
+generatePrenatalDiagnosesForNurse : NominalDate -> AssembledData -> EverySet PrenatalDiagnosis
+generatePrenatalDiagnosesForNurse currentDate assembled =
     let
         egaInWeeks =
             Maybe.map
@@ -634,35 +594,148 @@ generatePrenatalDiagnosisForNurse currentDate assembled =
             else
                 EverySet.empty
 
-        diagnosesByDangerSigns =
+        dangerSignsList =
             generateDangerSignsListForNurse assembled
-                |> List.filterMap (prenatalDiagnosisByDangerSign egaInWeeks)
+
+        diagnosesByDangerSigns =
+            List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnoses
                 |> EverySet.fromList
     in
     EverySet.union diagnosesByMedication diagnosesByDangerSigns
 
 
-prenatalDiagnosisByDangerSign : Maybe Int -> DangerSign -> Maybe PrenatalDiagnosis
-prenatalDiagnosisByDangerSign egaInWeeks sign =
-    case sign of
-        ImminentDelivery ->
-            Just DiagnosisImminentDelivery
+matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
+matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
+    case diagnosis of
+        DiagnosisEclampsia ->
+            List.member Convulsions signs
 
-        -- VaginalBleeding
-        -- HeadacheBlurredVision
-        -- Convulsions
-        -- AbdominalPain
-        -- DifficultyBreathing
-        -- Fever
-        -- ExtremeWeakness
-        -- Labor
-        -- LooksVeryIll
-        -- SevereVomiting
-        -- Unconscious
-        -- GushLeakingVaginalFluid
-        -- NoDangerSign
+        DiagnosisMiscarriage ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks <= 22) && List.member VaginalBleeding signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisMolarPregnancy ->
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+
+        DiagnosisPlacentaPrevia ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks > 22) && List.member VaginalBleeding signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisPlacentalAbruption ->
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisPlacentaPrevia
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisObstructedLabor
+
+        DiagnosisUterineRupture ->
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisPlacentaPrevia
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisObstructedLabor
+
+        DiagnosisObstructedLabor ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 22) && List.member AbdominalPain signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisPostAbortionSepsis ->
+            List.member AbdominalPain signs
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+
+        DiagnosisEctopicPregnancy ->
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+                || (Maybe.map
+                        (\egaWeeks ->
+                            (egaWeeks < 22) && List.member AbdominalPain signs
+                        )
+                        egaInWeeks
+                        |> Maybe.withDefault False
+                   )
+
+        DiagnosisPROM ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks > 37) && List.member GushLeakingVaginalFluid signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisPPROM ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks <= 37) && List.member GushLeakingVaginalFluid signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisHyperemesisGravidum ->
+            List.member SevereVomiting signs
+
+        DiagnosisMaternalComplications ->
+            List.member ExtremeWeakness signs
+                || List.member Unconscious signs
+                || List.member LooksVeryIll signs
+
+        DiagnosisInfection ->
+            List.member Fever signs
+                && (List.member ExtremeWeakness signs || respiratoryRateElevated measurements)
+
+        DiagnosisImminentDelivery ->
+            List.member ImminentDelivery signs
+
+        DiagnosisLaborAndDelivery ->
+            List.member Labor signs
+
+        -- Non Emergency Referral diagnoses.
         _ ->
-            Nothing
+            False
+
+
+respiratoryRateElevated : PrenatalMeasurements -> Bool
+respiratoryRateElevated measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.map (\value -> value.respiratoryRate > 30)
+        |> Maybe.withDefault False
+
+
+diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
+diagnosisRequiresEmergencyReferal diagnosis =
+    List.member diagnosis emergencyReferralDiagnoses
+
+
+emergencyReferralDiagnoses : List PrenatalDiagnosis
+emergencyReferralDiagnoses =
+    [ DiagnosisEclampsia
+    , DiagnosisMiscarriage
+    , DiagnosisMolarPregnancy
+    , DiagnosisPlacentaPrevia
+    , DiagnosisPlacentalAbruption
+    , DiagnosisUterineRupture
+    , DiagnosisObstructedLabor
+    , DiagnosisPostAbortionSepsis
+    , DiagnosisEctopicPregnancy
+    , DiagnosisPROM
+    , DiagnosisPPROM
+    , DiagnosisHyperemesisGravidum
+    , DiagnosisMaternalComplications
+    , DiagnosisInfection
+    , DiagnosisImminentDelivery
+    , DiagnosisLaborAndDelivery
+    ]
+
+
+maternityWardDiagnoses : List PrenatalDiagnosis
+maternityWardDiagnoses =
+    [ DiagnosisImminentDelivery
+    , DiagnosisLaborAndDelivery
+    ]
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )

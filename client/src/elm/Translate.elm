@@ -7148,18 +7148,38 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMiscarriageOrMolarPregnancy ->
-                    { english = "Miscarriage | Molar Pregnancy"
+                DiagnosisMiscarriage ->
+                    { english = "Miscarriage"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture ->
-                    { english = "Placenta Previa | Placental Abruption | Uterine Rupture"
+                DiagnosisMolarPregnancy ->
+                    { english = "Molar Pregnancy"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption ->
-                    { english = "Uterine Rupture | Obstructed Labor | Placental Abruption"
+                DiagnosisPlacentaPrevia ->
+                    { english = "Placenta Previa"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentalAbruption ->
+                    { english = "Placental Abruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUterineRupture ->
+                    { english = "Uterine Rupture"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisObstructedLabor ->
+                    { english = "Obstructed Labor"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostAbortionSepsis ->
+                    { english = "Post Abortion Sepsis"
                     , kinyarwanda = Nothing
                     }
 
@@ -7180,6 +7200,16 @@ translationSet trans =
 
                 DiagnosisHyperemesisGravidum ->
                     { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMaternalComplications ->
+                    { english = "Maternal Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisInfection ->
+                    { english = "Infection"
                     , kinyarwanda = Nothing
                     }
 

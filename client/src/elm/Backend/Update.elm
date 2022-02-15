@@ -1665,6 +1665,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ VitalsRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ PrenatalSyphilisTestRevision uid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -3896,39 +3906,47 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
                 mandatoryActivitiesCompleted
             then
                 let
-                    diagnosisBefore =
-                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosisForNurse currentDate assembledBefore
+                    diagnosesBefore =
+                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledBefore
 
-                    diagnosisAfter =
-                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosisForNurse currentDate assembledAfter
+                    diagnosesAfter =
+                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
 
-                    urgentDiagnosis =
-                        EverySet.toList diagnosisAfter
+                    urgentDiagnoses =
+                        EverySet.toList diagnosesAfter
                             |> List.filter ((/=) DiagnosisPrescribeMebendezole)
 
-                    updateDiagnosisMsg =
-                        Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosisAfter
+                    updateDiagnosesMsg =
+                        Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosesAfter
                             |> Backend.Model.MsgPrenatalEncounter id
                             |> App.Model.MsgIndexedDb
 
-                    -- @todo : Add logic that decides what to display, after we
-                    -- get clarifications for multiple diagnoses.
                     instructions =
-                        Translate.DangerSignsHelperReferToMaternityWard
+                        if
+                            List.any
+                                (\maternityWardDiagnosis ->
+                                    List.member maternityWardDiagnosis urgentDiagnoses
+                                )
+                                Pages.PrenatalActivity.Utils.maternityWardDiagnoses
+                        then
+                            Translate.DangerSignsHelperReferToMaternityWard
+
+                        else
+                            Translate.DangerSignsHelperReferToEmergencyObstetricCareServices
                 in
-                if everySetsEqual diagnosisBefore diagnosisAfter then
+                if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
 
-                else if List.isEmpty urgentDiagnosis then
-                    [ updateDiagnosisMsg ]
+                else if List.isEmpty urgentDiagnoses then
+                    [ updateDiagnosesMsg ]
 
                 else
-                    [ updateDiagnosisMsg
+                    [ updateDiagnosesMsg
 
                     -- Navigate to Next Steps activty page.
                     , navigateToNextStepsMsg
                     , setWarningPopupStateMsg
-                        ( List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnosis
+                        ( List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
                             |> String.join ", "
                         , translate language instructions
                         )

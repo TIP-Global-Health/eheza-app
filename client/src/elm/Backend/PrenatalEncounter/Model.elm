@@ -39,13 +39,19 @@ type PrenatalEncounterType
 type PrenatalDiagnosis
     = DiagnosisPrescribeMebendezole
     | DiagnosisEclampsia
-    | DiagnosisMiscarriageOrMolarPregnancy
-    | DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture
-    | DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption
+    | DiagnosisMiscarriage
+    | DiagnosisMolarPregnancy
+    | DiagnosisPlacentaPrevia
+    | DiagnosisPlacentalAbruption
+    | DiagnosisUterineRupture
+    | DiagnosisObstructedLabor
+    | DiagnosisPostAbortionSepsis
     | DiagnosisEctopicPregnancy
     | DiagnosisPROM
     | DiagnosisPPROM
     | DiagnosisHyperemesisGravidum
+    | DiagnosisMaternalComplications
+    | DiagnosisInfection
     | DiagnosisImminentDelivery
     | DiagnosisLaborAndDelivery
     | NoPrenatalDiagnosis

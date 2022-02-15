@@ -66,17 +66,29 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisEclampsia ->
                 "diagnosis-eclampsia"
 
-            DiagnosisMiscarriageOrMolarPregnancy ->
-                "diagnosis-miscarriage-molar-pregnancy"
+            DiagnosisMiscarriage ->
+                "miscarriage"
 
-            DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture ->
-                "diagnosis-placenta-previa-placental-abruption-uterine-rupture"
+            DiagnosisMolarPregnancy ->
+                "molar-pregnancy"
 
-            DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption ->
-                "diagnosis-uterine-rupture-obstructed-labor-placental-abruption"
+            DiagnosisPlacentaPrevia ->
+                "placenta-previa"
+
+            DiagnosisPlacentalAbruption ->
+                "placental-abruption"
+
+            DiagnosisUterineRupture ->
+                "uterine-rupture"
+
+            DiagnosisObstructedLabor ->
+                "obstructed-labor"
+
+            DiagnosisPostAbortionSepsis ->
+                "post-abortion-sepsis"
 
             DiagnosisEctopicPregnancy ->
-                "diagnosis-ectopic-pregnancy"
+                "ectopic-pregnancy"
 
             DiagnosisPROM ->
                 "diagnosis-prom"
@@ -86,6 +98,12 @@ encodePrenatalDiagnosis diagnosis =
 
             DiagnosisHyperemesisGravidum ->
                 "diagnosis-hyperemesis-gravidum"
+
+            DiagnosisMaternalComplications ->
+                "maternal-complications"
+
+            DiagnosisInfection ->
+                "infection"
 
             DiagnosisImminentDelivery ->
                 "imminent-delivery"

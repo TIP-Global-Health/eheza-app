@@ -69,29 +69,47 @@ decodePrenatalDiagnosis =
                     "prescribe-mebendezole" ->
                         succeed DiagnosisPrescribeMebendezole
 
-                    "diagnosis-eclampsia" ->
+                    "eclampsia" ->
                         succeed DiagnosisEclampsia
 
-                    "diagnosis-miscarriage-molar-pregnancy" ->
-                        succeed DiagnosisMiscarriageOrMolarPregnancy
+                    "miscarriage" ->
+                        succeed DiagnosisMiscarriage
 
-                    "diagnosis-placenta-previa-placental-abruption-uterine-rupture" ->
-                        succeed DiagnosisPlacentaPreviaOrPlacentalAbruptionOrUterineRupture
+                    "molar-pregnancy" ->
+                        succeed DiagnosisMolarPregnancy
 
-                    "diagnosis-uterine-rupture-obstructed-labor-placental-abruption" ->
-                        succeed DiagnosisUterineRuptureOrObstructedLaborOrPlacentalAbruption
+                    "placenta-previa" ->
+                        succeed DiagnosisPlacentaPrevia
 
-                    "diagnosis-ectopic-pregnancy" ->
+                    "placental-abruption" ->
+                        succeed DiagnosisPlacentalAbruption
+
+                    "uterine-rupture" ->
+                        succeed DiagnosisUterineRupture
+
+                    "obstructed-labor" ->
+                        succeed DiagnosisObstructedLabor
+
+                    "post-abortion-sepsis" ->
+                        succeed DiagnosisPostAbortionSepsis
+
+                    "ectopic-pregnancy" ->
                         succeed DiagnosisEctopicPregnancy
 
-                    "diagnosis-prom" ->
+                    "prom" ->
                         succeed DiagnosisPROM
 
-                    "diagnosis-pprom" ->
+                    "pprom" ->
                         succeed DiagnosisPPROM
 
-                    "diagnosis-hyperemesis-gravidum" ->
+                    "hyperemesis-gravidum" ->
                         succeed DiagnosisHyperemesisGravidum
+
+                    "maternal-complications" ->
+                        succeed DiagnosisMaternalComplications
+
+                    "infection" ->
+                        succeed DiagnosisInfection
 
                     "imminent-delivery" ->
                         succeed DiagnosisImminentDelivery
