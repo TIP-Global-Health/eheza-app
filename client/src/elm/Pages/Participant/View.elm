@@ -34,7 +34,7 @@ import ZScore.Model
 
 thumbnailDimensions : { width : Int, height : Int }
 thumbnailDimensions =
-    { width = 2221
+    { width = 222
     , height = 222
     }
 
