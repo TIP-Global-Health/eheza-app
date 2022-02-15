@@ -16,7 +16,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetWarningPopupState (Maybe String)
+    | SetWarningPopupState (Maybe ( String, String ))
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
@@ -177,7 +177,9 @@ type alias Model =
     , healthEducationData : HealthEducationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-    , warningPopupState : Maybe String
+
+    -- Maybe (Danger Signs list, Instructions)
+    , warningPopupState : Maybe ( String, String )
     }
 
 

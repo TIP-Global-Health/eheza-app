@@ -1013,6 +1013,7 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'iron-and-folic-acid-supplement' => 'Iron and folic acid supplement',
         'deworming-pill' => 'Deworming pill',
+        'mebendezole' => 'Mebendazole',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

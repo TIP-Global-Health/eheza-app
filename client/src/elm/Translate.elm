@@ -54,7 +54,7 @@ import Backend.PrenatalActivity.Model
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
@@ -468,8 +468,11 @@ type TranslationId
     | CurrentlyPregnant
     | CurrentlyPregnantQuestion
     | DangerSign DangerSign
-    | DangerSignsLabel
-    | DangerSignsHelper
+    | DangerSignsLabelForChw
+    | DangerSignsLabelForNurse
+    | DangerSignsHelperReferToHC
+    | DangerSignsHelperReferToMaternityWard
+    | DangerSignsHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
     | Date
     | DateConcludedEstimatedQuestion
@@ -854,6 +857,7 @@ type TranslationId
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalAssesment PrenatalAssesment
+    | PrenatalDiagnosis PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -901,7 +905,7 @@ type TranslationId
     | PrenatalLaboratoryTaskResultsHelper
     | PrenatalLabsCaseManagementType
     | PrenatalLabsEntryState PrenatalLabsEntryState
-    | PrenatalNextStepsTask Pages.PrenatalActivity.Types.NextStepsTask
+    | PrenatalNextStepsTask Bool Pages.PrenatalActivity.Types.NextStepsTask
     | PrenatalPhotoHelper
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
@@ -3184,14 +3188,29 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
                     }
 
-        DangerSignsLabel ->
+        DangerSignsLabelForChw ->
             { english = "Danger Signs"
             , kinyarwanda = Just "Ibimenyetso Mpuruza"
             }
 
-        DangerSignsHelper ->
+        DangerSignsLabelForNurse ->
+            { english = "Patient shows signs of"
+            , kinyarwanda = Nothing
+            }
+
+        DangerSignsHelperReferToHC ->
             { english = "Refer patient to health center immediately"
             , kinyarwanda = Just "Ibimenyetso Mpuruza"
+            }
+
+        DangerSignsHelperReferToMaternityWard ->
+            { english = "Refer to Maternity Ward Immediately"
+            , kinyarwanda = Nothing
+            }
+
+        DangerSignsHelperReferToEmergencyObstetricCareServices ->
+            { english = "Stabalize and Refer to Emergency Obstetric Care Services"
+            , kinyarwanda = Nothing
             }
 
         DangerSignsTask task ->
@@ -7117,6 +7136,23 @@ translationSet trans =
                     , kinyarwanda = Just "Inda Ibangamiwe n'ibibazo Bikomeye"
                     }
 
+        PrenatalDiagnosis diagnosis ->
+            case diagnosis of
+                DiagnosisPrescribeMebendezole ->
+                    { english = "Prescribe Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisImminentDelivery ->
+                    { english = "Imminent Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalDiagnosis ->
+                    { english = "None"
+                    , kinyarwanda = Just "Ntabyo"
+                    }
+
         PrenatalEncounterType encounterType ->
             case encounterType of
                 NurseEncounter ->
@@ -7191,7 +7227,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        PrenatalNextStepsTask task ->
+        PrenatalNextStepsTask isChw task ->
             case task of
                 Pages.PrenatalActivity.Types.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
@@ -7204,9 +7240,15 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Types.NextStepsSendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    }
+                    if isChw then
+                        { english = "Send to Health Center"
+                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                        }
+
+                    else
+                        { english = "Referral"
+                        , kinyarwanda = Nothing
+                        }
 
                 Pages.PrenatalActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
