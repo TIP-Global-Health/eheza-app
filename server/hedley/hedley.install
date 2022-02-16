@@ -160,7 +160,7 @@ function hedley_standard_install() {
     ],
     [
       'module' => 'menu',
-      'delta' => 'menu-ihangane-admin-menu',
+      'delta' => 'menu-eheza-app-admin-menu',
       'theme' => $default_theme,
       'status' => 0,
       'weight' => 0,
@@ -170,7 +170,7 @@ function hedley_standard_install() {
     ],
     [
       'module' => 'hedley_admin',
-      'delta' => 'ihangane_sidebar_menu',
+      'delta' => 'eheza_app_sidebar_menu',
       'theme' => $default_theme,
       'status' => 1,
       'weight' => 0,
@@ -331,7 +331,7 @@ function hedley_update_7001() {
 }
 
 /**
- * Installs the new ihangane_admin module.
+ * Installs the new hedley_admin module.
  */
 function hedley_update_7002() {
   $modules = ['hedley_admin'];
@@ -342,7 +342,7 @@ function hedley_update_7002() {
     'status' => 1,
     'region' => 'sidebar_first',
   ]);
-  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('delta', 'menu-eheza-app-admin-menu');
   $query->condition('theme', 'bartik');
   $query->execute();
 }
@@ -461,7 +461,7 @@ function hedley_update_7013() {
     'status' => 0,
     'region' => 'sidebar_first',
   ]);
-  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('delta', 'menu-eheza-app-admin-menu');
   $query->condition('theme', 'bartik');
   $query->execute();
 
@@ -470,7 +470,7 @@ function hedley_update_7013() {
     'status' => 1,
     'region' => 'sidebar_first',
   ]);
-  $query->condition('delta', 'ihangane_sidebar_menu');
+  $query->condition('delta', 'eheza_app_sidebar_menu');
   $query->condition('theme', 'bartik');
   $query->execute();
 }

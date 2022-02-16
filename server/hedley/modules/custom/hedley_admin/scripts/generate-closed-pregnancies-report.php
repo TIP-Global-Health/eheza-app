@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * @file
+ * Closed pregnancies recurring report.
+ */
+
 require_once __DIR__ . '/report_common.inc';
 
+drush_print("# Closed pregnancies report  - " . date('D/m/Y'));
+
 $queries = [
-  "Outcomes of completed pregnancies (30 days beyond EDD)" =>   "
+  "Outcomes of completed pregnancies (30 days beyond EDD)" => "
 SELECT
   field_outcome_value AS type, COUNT(*) AS counter
 FROM

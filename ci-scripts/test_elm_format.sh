@@ -6,7 +6,7 @@
 #
 # ---------------------------------------------------------------------------- #
 
-source "$TRAVIS_BUILD_DIR"/server/travis.config.sh
+source "$CIRCLE_WORKING_DIRECTORY"/server/travis.config.sh
 
 HAS_ERRORS=0
 
