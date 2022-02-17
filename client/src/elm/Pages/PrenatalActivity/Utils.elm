@@ -725,7 +725,9 @@ emergencyReferralDiagnoses =
     , DiagnosisPPROM
     , DiagnosisHyperemesisGravidum
     , DiagnosisMaternalComplications
-    , DiagnosisInfection
+
+    -- Infection diagnosis will be available at latter phase.
+    -- , DiagnosisInfection
     , DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
     ]
