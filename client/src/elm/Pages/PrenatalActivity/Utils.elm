@@ -231,6 +231,7 @@ resolveNextStepsTasks currentDate assembled =
         tasks =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
+                    -- The order is important. Do not change.
                     [ NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
