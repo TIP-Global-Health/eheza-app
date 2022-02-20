@@ -7143,6 +7143,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
                     , kinyarwanda = Nothing

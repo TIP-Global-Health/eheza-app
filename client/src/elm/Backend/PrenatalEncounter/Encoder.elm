@@ -63,6 +63,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisPrescribeMebendezole ->
                 "prescribe-mebendezole"
 
+            DiagnosisHepatitisB ->
+                "hepatitis-b"
+
             DiagnosisEclampsia ->
                 "eclampsia"
 

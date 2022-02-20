@@ -595,6 +595,10 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             else
                 EverySet.empty
 
+        diagnisisByLabResults =
+            -- @todo
+            EverySet.empty
+
         dangerSignsList =
             generateDangerSignsListForNurse assembled
 
@@ -602,7 +606,8 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnoses
                 |> EverySet.fromList
     in
-    EverySet.union diagnosesByMedication diagnosesByDangerSigns
+    EverySet.union diagnosesByMedication diagnisisByLabResults
+        |> EverySet.union diagnosesByDangerSigns
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
