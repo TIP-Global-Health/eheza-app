@@ -11,9 +11,13 @@
 
 require_once __DIR__ . '/report_common.inc';
 
-drush_print("# ANC report  - " . date('D/m/Y'));
+$limit_date = drush_get_option('limit_date', FALSE);
+if (!$limit_date) {
+  drush_print('Please specify --limit_date option');
+  exit;
+}
 
-$date_faker = '2021-05-30';
+drush_print("# ANC report  - " . date('D/m/Y'));
 
 $queries = [
   // As the group of all pregnancies.
@@ -33,7 +37,7 @@ FROM
    WHERE
      ip.bundle = 'prenatal_encounter' AND
      (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
-     FROM_UNIXTIME(node.created) < '$date_faker'
+     FROM_UNIXTIME(node.created) < '$limit_date'
    GROUP BY
      field_individual_participant_target_id) a
 GROUP BY
@@ -62,8 +66,8 @@ FROM
    WHERE
      p.bundle = 'prenatal_encounter' AND
      (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
-     date(edd.field_expected_date_concluded_value) > DATE_ADD('$date_faker', INTERVAL 30 DAY) AND
-     FROM_UNIXTIME(node.created) < '$date_faker'
+     date(edd.field_expected_date_concluded_value) > DATE_ADD('$limit_date', INTERVAL 30 DAY) AND
+     FROM_UNIXTIME(node.created) < '$limit_date'
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
@@ -88,8 +92,8 @@ FROM
    WHERE
      p.bundle = 'prenatal_encounter' AND
      (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
-     date(edd.field_expected_date_concluded_value) < DATE_ADD('$date_faker', INTERVAL 30 DAY) AND
-     FROM_UNIXTIME(node.created) < '$date_faker'
+     date(edd.field_expected_date_concluded_value) < DATE_ADD('$limit_date', INTERVAL 30 DAY) AND
+     FROM_UNIXTIME(node.created) < '$limit_date'
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
