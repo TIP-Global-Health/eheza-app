@@ -17,7 +17,7 @@ if (!$limit_date) {
   exit;
 }
 
-drush_print("# ANC report  - " . date('D/m/Y'));
+drush_print("# ANC report  - " . $limit_date);
 
 $queries = [
   // As the group of all pregnancies.
@@ -33,10 +33,13 @@ FROM
    LEFT JOIN
      field_data_field_prenatal_encounter_type fdfpet ON ip.entity_id = fdfpet.entity_id
    LEFT JOIN
+      field_data_field_expected_date_concluded edd ON ip.field_individual_participant_target_id=edd.entity_id
+   LEFT JOIN
      node ON ip.entity_id = node.nid
    WHERE
      ip.bundle = 'prenatal_encounter' AND
      (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
+     edd.field_expected_date_concluded_value is NOT NULL AND
      FROM_UNIXTIME(node.created) < '$limit_date'
    GROUP BY
      field_individual_participant_target_id) a
