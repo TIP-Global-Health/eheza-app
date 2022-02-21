@@ -411,7 +411,10 @@ class RoboFile extends Tasks {
   /**
    * Generates the pregnancy report.
    */
-  public function reportPregnancy() {
+  public function reportPregnancy($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
     $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php');
   }
 
