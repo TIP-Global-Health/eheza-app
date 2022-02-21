@@ -1,12 +1,4 @@
-module Backend.PrenatalActivity.Utils exposing
-    ( decodeActivityFromString
-    , encodeActivityAsString
-    , generateHighRiskAlertData
-    , generateHighSeverityAlertData
-    , generateRiskFactorAlertData
-    , getActivityIcon
-    , getEncounterTrimesterData
-    )
+module Backend.PrenatalActivity.Utils exposing (..)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -118,6 +110,23 @@ decodeActivityFromString s =
 
         "medication" ->
             Just Medication
+
+        _ ->
+            Nothing
+
+
+encodeRecurrentActivityAsString : PrenatalRecurrentActivity -> String
+encodeRecurrentActivityAsString activity =
+    case activity of
+        LabResults ->
+            "laboratory"
+
+
+decodeRecurrentActivityFromString : String -> Maybe PrenatalRecurrentActivity
+decodeRecurrentActivityFromString s =
+    case s of
+        "laboratory" ->
+            Just LabResults
 
         _ ->
             Nothing

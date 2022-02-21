@@ -73,6 +73,10 @@ import Pages.PrenatalLabResults.Model
 import Pages.PrenatalLabResults.Update
 import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipant.Update
+import Pages.PrenatalRecurrentActivity.Model
+import Pages.PrenatalRecurrentActivity.Update
+import Pages.PrenatalRecurrentEncounter.Model
+import Pages.PrenatalRecurrentEncounter.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
@@ -391,6 +395,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPagePrenatalRecurrentEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalRecurrentEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.PrenatalRecurrentEncounter.Model.emptyModel
+                                        |> Pages.PrenatalRecurrentEncounter.Update.update subMsg
+                            in
+                            ( { data | prenatalRecurrentEncounterPages = Dict.insert id subModel data.prenatalRecurrentEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPageNutritionEncounter id subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -453,6 +470,19 @@ update msg model =
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePrenatalRecurrentActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalRecurrentActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.PrenatalRecurrentActivity.Model.emptyModel
+                                        |> Pages.PrenatalRecurrentActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | prenatalRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.prenatalRecurrentActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity) subCmd
                             , extraMsgs
                             )
 
