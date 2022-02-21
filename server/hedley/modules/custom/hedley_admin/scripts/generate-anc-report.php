@@ -28,7 +28,7 @@ FROM
      field_data_field_prenatal_encounter_type fdfpet ON ip.entity_id = fdfpet.entity_id
    WHERE
      ip.bundle = 'prenatal_encounter' AND
-     fdfpet.field_prenatal_encounter_type_value='nurse'
+     (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL)
    GROUP BY
      field_individual_participant_target_id) a
 GROUP BY
@@ -54,8 +54,8 @@ FROM
        field_data_field_prenatal_encounter_type fdfpet ON p.entity_id = fdfpet.entity_id
    WHERE
      p.bundle = 'prenatal_encounter' AND
-     fdfpet.field_prenatal_encounter_type_value='nurse' AND
-     date(edd.field_expected_date_concluded_value) > DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+     (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
+     date(edd.field_expected_date_concluded_value) > DATE_ADD('2021-05-30', INTERVAL 30 DAY)
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
@@ -77,8 +77,8 @@ FROM
      field_data_field_expected_date_concluded edd ON p.field_individual_participant_target_id=edd.entity_id
    WHERE
      p.bundle = 'prenatal_encounter' AND
-     fdfpet.field_prenatal_encounter_type_value='nurse' AND
-     date(edd.field_expected_date_concluded_value) < DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+     (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
+     date(edd.field_expected_date_concluded_value) < DATE_ADD('2021-05-30', INTERVAL 30 DAY)
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
