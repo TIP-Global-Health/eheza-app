@@ -7,10 +7,10 @@
 
 require_once __DIR__ . '/report_common.inc';
 
-$limit_date = drush_get_option('limit_date', FALSE);
+$limit_date = drush_get_option('limit_date', false);
 if (!$limit_date) {
-  drush_print('Please specify --limit_date option');
-  exit;
+    drush_print('Please specify --limit_date option');
+    exit;
 }
 
 drush_print("# Closed pregnancies report  - " . $limit_date);
@@ -38,14 +38,14 @@ GROUP BY
 ];
 
 foreach ($queries as $label => $query) {
-  $table = new HedleyAdminTextTable([$label, 'Counter']);
-  $results = db_query($query)->fetchAll(PDO::FETCH_ASSOC);
-  $data = [];
-  foreach ($results as $result) {
-    $data[] = [
-      $result['type'],
-      $result['counter'],
-    ];
-  }
-  drush_print($table->render($data));
+    $table = new HedleyAdminTextTable([$label, 'Counter']);
+    $results = db_query($query)->fetchAll(PDO::FETCH_ASSOC);
+    $data = [];
+    foreach ($results as $result) {
+        $data[] = [
+        $result['type'],
+        $result['counter'],
+        ];
+    }
+    drush_print($table->render($data));
 }

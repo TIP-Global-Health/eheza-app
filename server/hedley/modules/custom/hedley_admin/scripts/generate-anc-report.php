@@ -11,10 +11,10 @@
 
 require_once __DIR__ . '/report_common.inc';
 
-$limit_date = drush_get_option('limit_date', FALSE);
+$limit_date = drush_get_option('limit_date', false);
 if (!$limit_date) {
-  drush_print('Please specify --limit_date option');
-  exit;
+    drush_print('Please specify --limit_date option');
+    exit;
 }
 
 drush_print("# ANC report  - " . $limit_date);
@@ -107,26 +107,26 @@ GROUP BY val",
 // 5+ visits => 15.
 $group_limit = 5;
 foreach ($queries as $label => $query) {
-  $table = new HedleyAdminTextTable([$label, 'Counter']);
-  $data = [];
-  $results = db_query($query)->fetchAll(PDO::FETCH_ASSOC);
-  $sum_group_limit_or_above = 0;
-  foreach ($results as $result) {
-    if ($result['val'] < $group_limit) {
-      $data[] = [
-        $result['val'] . ' visits',
-        $result['counter'],
-      ];
+    $table = new HedleyAdminTextTable([$label, 'Counter']);
+    $data = [];
+    $results = db_query($query)->fetchAll(PDO::FETCH_ASSOC);
+    $sum_group_limit_or_above = 0;
+    foreach ($results as $result) {
+        if ($result['val'] < $group_limit) {
+            $data[] = [
+            $result['val'] . ' visits',
+            $result['counter'],
+            ];
+        }
+        else {
+            $sum_group_limit_or_above += $result['counter'];
+        }
     }
-    else {
-      $sum_group_limit_or_above += $result['counter'];
+    if (!empty($sum_group_limit_or_above)) {
+        $data[] = [
+        $group_limit . '+ visits',
+        $sum_group_limit_or_above,
+        ];
     }
-  }
-  if (!empty($sum_group_limit_or_above)) {
-    $data[] = [
-      $group_limit . '+ visits',
-      $sum_group_limit_or_above,
-    ];
-  }
-  drush_print($table->render($data));
+    drush_print($table->render($data));
 }
