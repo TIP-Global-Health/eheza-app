@@ -13,6 +13,8 @@ require_once __DIR__ . '/report_common.inc';
 
 drush_print("# ANC report  - " . date('D/m/Y'));
 
+$date_faker = '2021-05-30';
+
 $queries = [
   // As the group of all pregnancies.
   "# Patients who have had " => "
@@ -26,9 +28,12 @@ FROM
      field_data_field_individual_participant ip
    LEFT JOIN
      field_data_field_prenatal_encounter_type fdfpet ON ip.entity_id = fdfpet.entity_id
+   LEFT JOIN
+     node ON ip.entity_id = node.nid
    WHERE
      ip.bundle = 'prenatal_encounter' AND
-     (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL)
+     (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
+     FROM_UNIXTIME(node.created) < '$date_faker'
    GROUP BY
      field_individual_participant_target_id) a
 GROUP BY
@@ -51,11 +56,14 @@ FROM
   LEFT JOIN
      field_data_field_expected_date_concluded edd ON p.field_individual_participant_target_id=edd.entity_id
   LEFT JOIN
-       field_data_field_prenatal_encounter_type fdfpet ON p.entity_id = fdfpet.entity_id
+     field_data_field_prenatal_encounter_type fdfpet ON p.entity_id = fdfpet.entity_id
+  LEFT JOIN
+     node ON p.entity_id = node.nid
    WHERE
      p.bundle = 'prenatal_encounter' AND
      (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
-     date(edd.field_expected_date_concluded_value) > DATE_ADD('2021-05-30', INTERVAL 30 DAY)
+     date(edd.field_expected_date_concluded_value) > DATE_ADD('$date_faker', INTERVAL 30 DAY) AND
+     FROM_UNIXTIME(node.created) < '$date_faker'
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
@@ -75,10 +83,13 @@ FROM
        field_data_field_prenatal_encounter_type fdfpet ON p.entity_id = fdfpet.entity_id
    LEFT JOIN
      field_data_field_expected_date_concluded edd ON p.field_individual_participant_target_id=edd.entity_id
+   LEFT JOIN
+     node ON p.entity_id = node.nid
    WHERE
      p.bundle = 'prenatal_encounter' AND
      (fdfpet.field_prenatal_encounter_type_value='nurse' OR fdfpet.field_prenatal_encounter_type_value is NULL) AND
-     date(edd.field_expected_date_concluded_value) < DATE_ADD('2021-05-30', INTERVAL 30 DAY)
+     date(edd.field_expected_date_concluded_value) < DATE_ADD('$date_faker', INTERVAL 30 DAY) AND
+     FROM_UNIXTIME(node.created) < '$date_faker'
   group by
     field_individual_participant_target_id) a
 GROUP BY val",
