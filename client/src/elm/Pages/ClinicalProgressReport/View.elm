@@ -299,7 +299,7 @@ viewChwActivityPane language currentDate isChw data =
             data.encounter.encounterType
 
         allMeasurementsWithDates =
-            if encounterType /= NurseEncounter then
+            if encounterType /= NurseEncounter && isChw then
                 data.chwPreviousMeasurementsWithDates
 
             else
@@ -307,22 +307,27 @@ viewChwActivityPane language currentDate isChw data =
 
         pregnancyDating =
             allMeasurementsWithDates
-                |> List.filter
-                    (\( _, _, measurements ) ->
-                        measurements.lastMenstrualPeriod
-                            |> Maybe.map (Tuple.second >> .value >> .confirmation)
-                            |> Maybe.withDefault False
-                    )
-                |> List.head
+                |> List.filterMap
+                    (\( _, encounterType_, measurements ) ->
+                        if encounterType == encounterType_ then
+                            Just measurements
 
-        actionPregnancyDating date =
-            if pregnancyDating == Just date then
-                [ div [ class "date" ] [ text <| formatDDMMYYYY currentDate ]
-                , div [ class "result" ] [ text "Text------" ]
-                ]
+                        else
+                            Nothing
+                    )
+                |> List.any (.lastMenstrualPeriod >> isJust)
+
+        actionPregnancyDating =
+            --@Todo
+            if pregnancyDating then
+                div [ class "entry" ]
+                    [ div [ class "date" ] [ text <| formatDDMMYYYY currentDate ]
+                    , div [ class "result" ] [ text "Text------" ]
+                    ]
+                ------@Todo
 
             else
-                []
+                emptyNode
 
         heading =
             div [ class "heading" ]
@@ -333,6 +338,7 @@ viewChwActivityPane language currentDate isChw data =
     div [ class "chw-activity" ] <|
         [ viewItemHeading language Translate.ChwActivity "blue"
         , div [ class "pane-content" ] [ heading ]
+        , actionPregnancyDating
         ]
 
 
