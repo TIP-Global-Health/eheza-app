@@ -121,12 +121,18 @@ recurrentActivityToString activity =
         LabResults ->
             "laboratory"
 
+        RecurrentNextSteps ->
+            "next-steps"
+
 
 recurrentActivityFromString : String -> Maybe PrenatalRecurrentActivity
 recurrentActivityFromString s =
     case s of
         "laboratory" ->
             Just LabResults
+
+        "next-steps" ->
+            Just RecurrentNextSteps
 
         _ ->
             Nothing

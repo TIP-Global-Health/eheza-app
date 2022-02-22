@@ -98,6 +98,7 @@ import Pages.PrenatalActivity.Types
         , HistoryTask(..)
         , LmpRange(..)
         )
+import Pages.PrenatalRecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChildActivity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -909,6 +910,7 @@ type TranslationId
     | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalNextStepsTask Bool Pages.PrenatalActivity.Types.NextStepsTask
     | PrenatalPhotoHelper
+    | PrenatalRecurrentNextStepsTask Pages.PrenatalRecurrentActivity.Types.NextStepsTask
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
@@ -7133,6 +7135,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                RecurrentNextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->
@@ -7350,6 +7357,18 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Types.NextStepsMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
+        PrenatalRecurrentNextStepsTask task ->
+            case task of
+                Pages.PrenatalRecurrentActivity.Types.NextStepsSendToHC ->
+                    { english = "Referral"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalRecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
                     }

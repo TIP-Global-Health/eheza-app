@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
@@ -11,6 +12,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
+import Pages.PrenatalRecurrentActivity.Types exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -32,6 +34,11 @@ expectActivity currentDate assembled activity =
                 |> List.isEmpty
                 |> not
 
+        RecurrentNextSteps ->
+            resolveNextStepsTasks currentDate assembled
+                |> List.isEmpty
+                |> not
+
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
 activityCompleted currentDate assembled activity =
@@ -40,6 +47,12 @@ activityCompleted currentDate assembled activity =
             (not <| expectActivity currentDate assembled LabResults)
                 || (resolveLaboratoryResultTask currentDate assembled
                         |> List.all (laboratoryResultTaskCompleted currentDate assembled)
+                   )
+
+        RecurrentNextSteps ->
+            (not <| expectActivity currentDate assembled RecurrentNextSteps)
+                || (resolveNextStepsTasks currentDate assembled
+                        |> List.all (nextStepsMeasurementTaken assembled)
                    )
 
 
@@ -310,3 +323,33 @@ toPrenatalUrineDipstickResultsValue form =
             }
         )
         form.executionNote
+
+
+resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate assembled =
+    -- The order is important. Do not change.
+    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+        |> List.filter (expectNextStepsTask currentDate assembled)
+
+
+expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask currentDate assembled task =
+    case task of
+        NextStepsSendToHC ->
+            EverySet.member DiagnosisHepatitisB assembled.encounter.diagnoses
+
+        NextStepsMedicationDistribution ->
+            -- Emergency refferal is not required.
+            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
+                && -- @todo
+                   False
+
+
+nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
+nextStepsMeasurementTaken assembled task =
+    case task of
+        NextStepsSendToHC ->
+            isJust assembled.measurements.sendToHC
+
+        NextStepsMedicationDistribution ->
+            isJust assembled.measurements.medicationDistribution

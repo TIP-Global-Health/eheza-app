@@ -26,6 +26,7 @@ import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
+import Pages.PrenatalRecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import Pages.Utils
     exposing
@@ -92,6 +93,9 @@ viewActivity language currentDate activity assembled db model =
         LabResults ->
             viewLabResultsContent language currentDate assembled model
 
+        RecurrentNextSteps ->
+            viewNextStepsContent language currentDate assembled model.nextStepsData
+
 
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate assembled model =
@@ -128,7 +132,7 @@ viewLabResultsContent language currentDate assembled model =
                                 []
 
                             else
-                                [ onClick <| SetActiveTask task ]
+                                [ onClick <| SetActiveLabResultsTask task ]
                            )
             in
             div [ class "column" ]
@@ -563,6 +567,148 @@ resultFormHeaderSection language currentDate executionDate task =
     in
     viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
         :: executionDateSection
+
+
+viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveNextStepsTasks currentDate assembled
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        NextStepsSendToHC ->
+                            ( "next-steps-send-to-hc"
+                            , isJust measurements.sendToHC
+                            )
+
+                        NextStepsMedicationDistribution ->
+                            ( "next-steps-medication-distribution"
+                            , isJust measurements.medicationDistribution
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveNextStepsTask task ]
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalRecurrentNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, nextStepsTasksCompletedFromTotal language isChw assembled data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just NextStepsSendToHC ->
+                    measurements.sendToHC
+                        |> getMeasurementValueFunc
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHospitalForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNotSendingToHC
+                            SetHandReferralForm
+                            Nothing
+
+                Just NextStepsMedicationDistribution ->
+                    measurements.medicationDistribution
+                        |> getMeasurementValueFunc
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language currentDate person
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            tasks
+                |> List.filter
+                    (\task ->
+                        (Just task /= activeTask)
+                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                    )
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    NextStepsSendToHC ->
+                                        SaveSendToHC personId measurements.sendToHC nextTask
+
+                                    NextStepsMedicationDistribution ->
+                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+                        in
+                        div [ class "actions next-steps" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+
+-- HELPER FUNCTIONS
 
 
 viewSelectInput :
