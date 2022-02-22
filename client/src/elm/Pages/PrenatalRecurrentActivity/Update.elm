@@ -21,7 +21,7 @@ update currentDate id db msg model =
     let
         generateNextTaskMsgs nextTask =
             Maybe.map (\task -> [ SetActiveTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage GlobalCaseManagementPage ]
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
     in
     case msg of
         SetActivePage page ->

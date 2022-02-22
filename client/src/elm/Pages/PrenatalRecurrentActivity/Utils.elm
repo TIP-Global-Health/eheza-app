@@ -28,16 +28,19 @@ expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bo
 expectActivity currentDate assembled activity =
     case activity of
         LabResults ->
-            -- @todo
-            True
+            resolveLaboratoryResultTask currentDate assembled
+                |> List.isEmpty
+                |> not
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
 activityCompleted currentDate assembled activity =
     case activity of
         LabResults ->
-            -- @todo
-            False
+            (not <| expectActivity currentDate assembled LabResults)
+                || (resolveLaboratoryResultTask currentDate assembled
+                        |> List.all (laboratoryResultTaskCompleted currentDate assembled)
+                   )
 
 
 laboratoryResultTasks : List LaboratoryTask
@@ -49,6 +52,11 @@ laboratoryResultTasks =
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
     ]
+
+
+resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTask currentDate assembled =
+    List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
 
 
 laboratoryResultTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool

@@ -106,7 +106,7 @@ viewLabResultsContent language currentDate assembled model =
             assembled.measurements
 
         tasks =
-            List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
+            resolveLaboratoryResultTask currentDate assembled
 
         activeTask =
             Maybe.Extra.or model.activeTask (List.head tasks)
