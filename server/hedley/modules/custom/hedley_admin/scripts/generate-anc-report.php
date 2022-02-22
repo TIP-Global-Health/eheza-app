@@ -114,8 +114,8 @@ foreach ($queries as $label => $query) {
   foreach ($results as $result) {
     if ($result['val'] < $group_limit) {
       $data[] = [
-      $result['val'] . ' visits',
-      $result['counter'],
+        $result['val'] . ' visits',
+        $result['counter'],
       ];
     }
     else {
@@ -124,8 +124,8 @@ foreach ($queries as $label => $query) {
   }
   if (!empty($sum_group_limit_or_above)) {
     $data[] = [
-    $group_limit . '+ visits',
-    $sum_group_limit_or_above,
+      $group_limit . '+ visits',
+      $sum_group_limit_or_above,
     ];
   }
   drush_print($table->render($data));
