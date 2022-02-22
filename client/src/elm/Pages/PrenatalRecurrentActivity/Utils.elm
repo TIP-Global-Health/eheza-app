@@ -10,7 +10,7 @@ import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalLabResults.Model exposing (..)
+import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
