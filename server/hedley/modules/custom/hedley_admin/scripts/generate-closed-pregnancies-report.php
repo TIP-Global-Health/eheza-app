@@ -46,8 +46,8 @@ foreach ($queries as $label => $query) {
   $data = [];
   foreach ($results as $result) {
     $data[] = [
-    $result['type'],
-    $result['counter'],
+      $result['type'],
+      $result['counter'],
     ];
   }
   drush_print($table->render($data));
