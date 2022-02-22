@@ -39,6 +39,11 @@ type Msg
     | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
 
 
 type alias Model =

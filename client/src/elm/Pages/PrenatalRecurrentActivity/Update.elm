@@ -10,7 +10,9 @@ import Backend.PrenatalEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalActivity.Utils exposing (toMedicationDistributionValueWithDefault)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -19,8 +21,12 @@ import RemoteData exposing (RemoteData(..))
 update : NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
-        generateNextTaskMsgs nextTask =
+        generateLabResultsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLabResultsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
+
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
     in
     case msg of
@@ -70,7 +76,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
                     toPrenatalTestResultsValueWithDefault measurement model.labResultsData.syphilisTestForm
@@ -114,7 +120,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
                     toPrenatalTestResultsValueWithDefault measurement model.labResultsData.hepatitisBTestForm
@@ -175,7 +181,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
                     toPrenatalBloodGpRsResultsValueWithDefault measurement model.labResultsData.bloodGpRsTestForm
@@ -372,7 +378,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
                     toPrenatalUrineDipstickResultsValueWithDefault measurement model.labResultsData.urineDipstickTestForm
@@ -416,7 +422,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
                     toPrenatalHemoglobinResultsValueWithDefault measurement model.labResultsData.hemoglobinTestForm
@@ -460,7 +466,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
                     toPrenatalRandomBloodSugarResultsValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
@@ -488,3 +494,112 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    model.nextStepsData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveMedicationDistribution personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    -- @todo
+                    -- model.nextStepsData.medicationDistributionForm
+                    -- |> toMedicationDistributionValueWithDefault measurement
+                    -- |> Maybe.map
+                    --     (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
+                    --         >> Backend.Model.MsgPrenatalEncounter id
+                    --         >> App.Model.MsgIndexedDb
+                    --         >> List.singleton
+                    --     )
+                    -- |> Maybe.withDefault []
+                    []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs

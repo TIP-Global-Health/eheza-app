@@ -1692,17 +1692,23 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ PrenatalHepatitisBTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestHepatitisB
                                 data.value.executionNote
                                 (isJust data.value.testResult)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgs
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ PrenatalUrineDipstickTestRevision uid data ] ->

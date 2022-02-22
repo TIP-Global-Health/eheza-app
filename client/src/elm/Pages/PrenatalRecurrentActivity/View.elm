@@ -19,9 +19,11 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Measurement.View exposing (viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
-import Pages.PrenatalActivity.Utils exposing (laboratoryTaskIconClass)
+import Pages.PrenatalActivity.Utils exposing (laboratoryTaskIconClass, toMedicationDistributionValueWithDefault)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
@@ -113,7 +115,7 @@ viewLabResultsContent language currentDate assembled model =
             resolveLaboratoryResultTask currentDate assembled
 
         activeTask =
-            Maybe.Extra.or model.activeTask (List.head tasks)
+            Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
 
         viewTask task =
             let
@@ -153,13 +155,13 @@ viewLabResultsContent language currentDate assembled model =
                         TaskSyphilisTest ->
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault model.syphilisTestForm
+                                |> prenatalTestResultFormWithDefault model.labResultsData.syphilisTestForm
                                 |> prenatalTestResultFormAndTasks language currentDate TaskSyphilisTest
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault model.hepatitisBTestForm
+                                |> prenatalTestResultFormWithDefault model.labResultsData.hepatitisBTestForm
                                 |> prenatalTestResultFormAndTasks language currentDate TaskHepatitisBTest
 
                         TaskMalariaTest ->
@@ -168,25 +170,25 @@ viewLabResultsContent language currentDate assembled model =
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
                                 |> getMeasurementValueFunc
-                                |> prenatalBloodGpRsResultFormWithDefault model.bloodGpRsTestForm
+                                |> prenatalBloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
                                 |> prenatalBloodGpRsResultFormAndTasks language currentDate
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
-                                |> prenatalUrineDipstickResultFormWithDefault model.urineDipstickTestForm
+                                |> prenatalUrineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
                                 |> prenatalUrineDipstickResultFormAndTasks language currentDate
 
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
                                 |> getMeasurementValueFunc
-                                |> prenatalHemoglobinResultFormWithDefault model.hemoglobinTestForm
+                                |> prenatalHemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
                                 |> prenatalHemoglobinResultFormAndTasks language currentDate
 
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRandomBloodSugarResultFormWithDefault model.randomBloodSugarTestForm
+                                |> prenatalRandomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
                                 |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
                     )
                 )
@@ -630,7 +632,7 @@ viewNextStepsContent language currentDate assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal language isChw assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal assembled data task )
                     )
                 |> Dict.fromList
 
@@ -653,10 +655,8 @@ viewNextStepsContent language currentDate assembled data =
                             Nothing
 
                 Just NextStepsMedicationDistribution ->
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate person
+                    -- @todo
+                    emptyNode
 
                 Nothing ->
                     emptyNode

@@ -9,6 +9,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
@@ -353,3 +354,40 @@ nextStepsMeasurementTaken assembled task =
 
         NextStepsMedicationDistribution ->
             isJust assembled.measurements.medicationDistribution
+
+
+nextStepsTasksCompletedFromTotal : AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal assembled data task =
+    case task of
+        NextStepsSendToHC ->
+            let
+                form =
+                    assembled.measurements.sendToHC
+                        |> getMeasurementValueFunc
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted
+            , 1 + reasonForNotSentActive
+            )
+
+        NextStepsMedicationDistribution ->
+            --@todo
+            ( 0
+            , 1
+            )
