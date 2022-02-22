@@ -9,14 +9,7 @@ import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.PrenatalActivity.Model
-    exposing
-        ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
-        , allRiskFactors
-        , allTrimesters
-        )
+import Backend.PrenatalActivity.Model exposing (PregnancyTrimester(..), PrenatalActivity(..), allMedicalDiagnosis, allObstetricalDiagnosis, allRiskFactors, allTrimesters)
 import Backend.PrenatalActivity.Utils
     exposing
         ( generateRiskFactorAlertData
@@ -295,21 +288,14 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
 viewChwActivityPane : Language -> NominalDate -> Bool -> AssembledData -> Html msg
 viewChwActivityPane language currentDate isChw data =
     let
-        encounterType =
-            data.encounter.encounterType
-
         allMeasurementsWithDates =
-            if encounterType /= NurseEncounter && isChw then
-                data.chwPreviousMeasurementsWithDates
+            data.chwPreviousMeasurementsWithDates
 
-            else
-                []
-
-        pregnancyDating =
+        pregnancyDatingAction =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( _, encounterType_, measurements ) ->
-                        if encounterType == encounterType_ then
+                    (\( date_, encounterType_, measurements ) ->
+                        if encounterType_ /= NurseEncounter then
                             Just measurements
 
                         else
@@ -319,10 +305,10 @@ viewChwActivityPane language currentDate isChw data =
 
         actionPregnancyDating =
             --@Todo
-            if pregnancyDating then
+            if pregnancyDatingAction then
                 div [ class "entry" ]
-                    [ div [ class "date" ] [ text <| formatDDMMYYYY currentDate ]
-                    , div [ class "result" ] [ text "Text------" ]
+                    [ div [ class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
+                    , div [ class "cell result" ] [ text <| translate language <| Translate.PrenatalActivitiesTitle PregnancyDating ]
                     ]
                 ------@Todo
 
