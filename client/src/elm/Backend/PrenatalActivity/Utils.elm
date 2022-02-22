@@ -24,8 +24,8 @@ import Translate exposing (Language, TranslationId, translate)
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
 for that).
 -}
-encodeActivityAsString : PrenatalActivity -> String
-encodeActivityAsString activity =
+activityToString : PrenatalActivity -> String
+activityToString activity =
     case activity of
         DangerSigns ->
             "danger-signs"
@@ -69,8 +69,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe PrenatalActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe PrenatalActivity
+activityFromString s =
     case s of
         "danger-signs" ->
             Just DangerSigns
@@ -115,15 +115,15 @@ decodeActivityFromString s =
             Nothing
 
 
-encodeRecurrentActivityAsString : PrenatalRecurrentActivity -> String
-encodeRecurrentActivityAsString activity =
+recurrentActivityToString : PrenatalRecurrentActivity -> String
+recurrentActivityToString activity =
     case activity of
         LabResults ->
             "laboratory"
 
 
-decodeRecurrentActivityFromString : String -> Maybe PrenatalRecurrentActivity
-decodeRecurrentActivityFromString s =
+recurrentActivityFromString : String -> Maybe PrenatalRecurrentActivity
+recurrentActivityFromString s =
     case s of
         "laboratory" ->
             Just LabResults
@@ -137,7 +137,12 @@ decodeRecurrentActivityFromString s =
 -}
 getActivityIcon : PrenatalActivity -> String
 getActivityIcon activity =
-    encodeActivityAsString activity
+    activityToString activity
+
+
+getRecurrentActivityIcon : PrenatalRecurrentActivity -> String
+getRecurrentActivityIcon activity =
+    recurrentActivityToString activity
 
 
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String

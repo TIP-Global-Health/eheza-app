@@ -932,7 +932,7 @@ viewPrenatalLabsEntry language data =
         , div [ class "assesment center" ] [ translateText language Translate.PrenatalLabsCaseManagementType ]
         , div
             [ class "icon-forward"
-            , onClick <| SetActivePage <| UserPage <| PrenatalLabResultsPage data.encounterId
+            , onClick <| SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage data.encounterId
             ]
             []
         ]

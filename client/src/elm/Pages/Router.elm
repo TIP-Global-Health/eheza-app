@@ -220,7 +220,7 @@ pageToFragment current =
                     Just <| "prenatal-encounter/" ++ fromEntityUuid id
 
                 PrenatalActivityPage id activity ->
-                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.encodeActivityAsString activity
+                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.activityToString activity
 
                 PrenatalLabResultsPage id ->
                     Just <| "prenatal-lab-results/" ++ fromEntityUuid id
@@ -229,7 +229,7 @@ pageToFragment current =
                     Just <| "prenatal-recurrent-encounter/" ++ fromEntityUuid id
 
                 PrenatalRecurrentActivityPage id activity ->
-                    Just <| "prenatal-recurrent-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.encodeRecurrentActivityAsString activity
+                    Just <| "prenatal-recurrent-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.recurrentActivityToString activity
 
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
@@ -383,12 +383,12 @@ parseActivity =
 
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
 parsePrenatalActivity =
-    custom "PrenatalActivity" Backend.PrenatalActivity.Utils.decodeActivityFromString
+    custom "PrenatalActivity" Backend.PrenatalActivity.Utils.activityFromString
 
 
 parsePrenatalRecurrentActivity : Parser (PrenatalRecurrentActivity -> c) c
 parsePrenatalRecurrentActivity =
-    custom "PrenatalRecurrentActivity" Backend.PrenatalActivity.Utils.decodeRecurrentActivityFromString
+    custom "PrenatalRecurrentActivity" Backend.PrenatalActivity.Utils.recurrentActivityFromString
 
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c

@@ -511,7 +511,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.prenatalRecurrentEncounterPages
                                     |> Maybe.withDefault Pages.PrenatalRecurrentEncounter.Model.emptyModel
                         in
-                        Pages.PrenatalRecurrentEncounter.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.PrenatalRecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id)
                             |> flexPageWrapper model
 
@@ -521,7 +521,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get ( id, activity ) loggedInModel.prenatalRecurrentActivityPages
                                     |> Maybe.withDefault Pages.PrenatalRecurrentActivity.Model.emptyModel
                         in
-                        Pages.PrenatalRecurrentActivity.View.view model.language currentDate id isChw activity model.indexedDb page_
+                        Pages.PrenatalRecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity)
                             |> flexPageWrapper model
 
