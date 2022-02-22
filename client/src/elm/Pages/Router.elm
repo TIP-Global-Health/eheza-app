@@ -220,16 +220,13 @@ pageToFragment current =
                     Just <| "prenatal-encounter/" ++ fromEntityUuid id
 
                 PrenatalActivityPage id activity ->
-                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.encodeActivityAsString activity
-
-                PrenatalLabResultsPage id ->
-                    Just <| "prenatal-lab-results/" ++ fromEntityUuid id
+                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.activityToString activity
 
                 PrenatalRecurrentEncounterPage id ->
                     Just <| "prenatal-recurrent-encounter/" ++ fromEntityUuid id
 
                 PrenatalRecurrentActivityPage id activity ->
-                    Just <| "prenatal-recurrent-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.encodeRecurrentActivityAsString activity
+                    Just <| "prenatal-recurrent-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.PrenatalActivity.Utils.recurrentActivityToString activity
 
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
@@ -314,7 +311,6 @@ parser =
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
-        , map (\id -> UserPage <| PrenatalLabResultsPage id) (s "prenatal-lab-results" </> parseUuid)
         , map (\id -> UserPage <| PrenatalRecurrentEncounterPage id) (s "prenatal-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalRecurrentActivityPage id activity) (s "prenatal-recurrent-activity" </> parseUuid </> parsePrenatalRecurrentActivity)
         , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
@@ -383,12 +379,12 @@ parseActivity =
 
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
 parsePrenatalActivity =
-    custom "PrenatalActivity" Backend.PrenatalActivity.Utils.decodeActivityFromString
+    custom "PrenatalActivity" Backend.PrenatalActivity.Utils.activityFromString
 
 
 parsePrenatalRecurrentActivity : Parser (PrenatalRecurrentActivity -> c) c
 parsePrenatalRecurrentActivity =
-    custom "PrenatalRecurrentActivity" Backend.PrenatalActivity.Utils.decodeRecurrentActivityFromString
+    custom "PrenatalRecurrentActivity" Backend.PrenatalActivity.Utils.recurrentActivityFromString
 
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c

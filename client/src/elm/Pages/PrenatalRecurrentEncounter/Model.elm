@@ -1,4 +1,4 @@
-module Pages.PrenatalRecurrentEncounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
+module Pages.PrenatalRecurrentEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -12,7 +12,6 @@ import Pages.Page exposing (Page)
 type alias Model =
     { selectedTab : Tab
     , showAlertsDialog : Bool
-    , showWarningForChw : Bool
     }
 
 
@@ -20,28 +19,12 @@ emptyModel : Model
 emptyModel =
     { selectedTab = Pending
     , showAlertsDialog = False
-    , showWarningForChw = False
-    }
-
-
-type alias AssembledData =
-    { id : PrenatalEncounterId
-    , encounter : PrenatalEncounter
-    , participant : IndividualEncounterParticipant
-    , person : Person
-    , measurements : PrenatalMeasurements
-    , nursePreviousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
-    , chwPreviousMeasurementsWithDates : List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
-    , globalLmpDate : Maybe NominalDate
-    , globalObstetricHistory : Maybe ObstetricHistoryValue
     }
 
 
 type Msg
-    = CloseEncounter PrenatalEncounterId
-    | SetActivePage Page
+    = SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetChwWarningVisible Bool
     | SetSelectedTab Tab
 
 

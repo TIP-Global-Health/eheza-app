@@ -166,8 +166,6 @@ type UserPage
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | PrenatalRecurrentEncounterPage PrenatalEncounterId -- prenatal recurrent activities index
     | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal arecurrent activity
-      -- @todd : remove
-    | PrenatalLabResultsPage PrenatalEncounterId -- record prenatal lab results
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage IndividualParticipantInitiator PersonId
