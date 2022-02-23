@@ -16,33 +16,13 @@ if (!$limit_date) {
 drush_print("# Closed pregnancies report  - " . $limit_date);
 
 $queries = [
-  "Outcomes of completed pregnancies (30 days beyond EDD)" => "
-  SELECT
-    field_outcome_value AS type, COUNT(*) AS counter
-  FROM
-    field_data_field_outcome fo
-  LEFT JOIN
-    node ON fo.entity_id = node.nid
-  WHERE field_outcome_value NOT IN ('referred-to-hc', 'illness-resolved') AND
-  FROM_UNIXTIME(node.changed) < '$limit_date'
-  GROUP BY
-   field_outcome_value
-  ",
-    "Outcome Location" => "
-  SELECT
-    field_outcome_location_value AS type, COUNT(*) AS counter
-  FROM
-    field_data_field_outcome_location fol
-  LEFT JOIN
-    node ON fol.entity_id = node.nid
-  WHERE FROM_UNIXTIME(node.changed) < '$limit_date'
-  GROUP BY
-    field_outcome_location_value;",
+  "Outcomes of completed pregnancies (30 days beyond EDD)" => file_get_contents(__DIR__ . '/closed-pregnancies-outcome-completed-pregnancies.SQL'),
+  "Outcome Location" => file_get_contents(__DIR__ . '/closed-pregnancies-outcome-location.SQL')
 ];
 
 foreach ($queries as $label => $query) {
   $table = new HedleyAdminTextTable([$label, 'Counter']);
-  $results = db_query($query)->fetchAll(PDO::FETCH_ASSOC);
+  $results = db_query($query, [':limit' => $limit_date])->fetchAll(PDO::FETCH_ASSOC);
   $data = [];
   foreach ($results as $result) {
     $data[] = [
