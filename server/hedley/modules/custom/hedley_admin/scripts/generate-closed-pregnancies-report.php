@@ -17,7 +17,7 @@ drush_print("# Closed pregnancies report  - " . $limit_date);
 
 $queries = [
   "Outcomes of completed pregnancies (30 days beyond EDD)" => file_get_contents(__DIR__ . '/closed-pregnancies-outcome-completed-pregnancies.SQL'),
-  "Outcome Location" => file_get_contents(__DIR__ . '/closed-pregnancies-outcome-location.SQL')
+  "Outcome Location" => file_get_contents(__DIR__ . '/closed-pregnancies-outcome-location.SQL'),
 ];
 
 foreach ($queries as $label => $query) {
