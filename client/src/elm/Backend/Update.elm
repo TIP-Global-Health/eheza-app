@@ -3920,7 +3920,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
 
                     urgentDiagnoses =
                         EverySet.toList diagnosesAfter
-                            |> List.filter ((/=) DiagnosisPrescribeMebendezole)
+                            |> List.filter (\diagnosis -> List.member diagnosis Pages.PrenatalActivity.Utils.emergencyReferralDiagnoses)
 
                     updateDiagnosesMsg =
                         Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosesAfter
