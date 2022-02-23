@@ -124,7 +124,7 @@ foreach ($commands as $command) {
 $group_encounter_all = group_encounter_all($measurement_types_sql_list);
 $group_encounter_unique = group_encounter_unique($measurement_types_sql_list);
 
-drush_print("# Demographics report  - " . date('D/m/Y'));
+drush_print("# Demographics report - " . date('D/m/Y'));
 
 drush_print("## REGISTERED PATIENTS");
 

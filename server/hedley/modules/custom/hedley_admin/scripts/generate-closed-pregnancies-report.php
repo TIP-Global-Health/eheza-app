@@ -13,7 +13,7 @@ if (!$limit_date) {
   exit;
 }
 
-drush_print("# Closed pregnancies report  - " . $limit_date);
+drush_print("# Closed pregnancies report - " . $limit_date);
 
 $queries = [
   "Outcomes of completed pregnancies (30 days beyond EDD)" => file_get_contents(__DIR__ . '/closed-pregnancies-outcome-completed-pregnancies.SQL'),

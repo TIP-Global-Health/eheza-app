@@ -17,7 +17,7 @@ if (!$limit_date) {
   exit;
 }
 
-drush_print("# ANC report  - " . $limit_date);
+drush_print("# ANC report - " . $limit_date);
 
 $queries = [
   // As the group of all pregnancies.
