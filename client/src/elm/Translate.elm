@@ -861,6 +861,7 @@ type TranslationId
     | PrenatalRecurrentActivitiesTitle PrenatalRecurrentActivity
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
+    | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -7247,6 +7248,19 @@ translationSet trans =
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
+                    }
+
+        PrenatalDiagnosisLabResultsMessage diagnosis ->
+            case diagnosis of
+                DiagnosisHepatitisB ->
+                    { english = "Patient has tested positive for Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Non Lab Results diagnoses.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalEncounterType encounterType ->

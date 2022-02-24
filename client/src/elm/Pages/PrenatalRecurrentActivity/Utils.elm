@@ -391,3 +391,9 @@ nextStepsTasksCompletedFromTotal assembled data task =
             ( 0
             , 1
             )
+
+
+emergencyReferralDiagnoses : List PrenatalDiagnosis
+emergencyReferralDiagnoses =
+    [ DiagnosisHepatitisB
+    ]

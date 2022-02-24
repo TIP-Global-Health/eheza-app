@@ -67,9 +67,8 @@ viewHeaderAndContent language currentDate id activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
         , viewContent language currentDate activity db model assembled
-
-        -- , viewModal <|
-        --     warningPopup language currentDate False model.warningPopupState
+        , viewModal <|
+            warningPopup language currentDate False SetWarningPopupState model.warningPopupState
         ]
 
 

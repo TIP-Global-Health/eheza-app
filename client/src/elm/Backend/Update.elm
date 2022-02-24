@@ -96,6 +96,7 @@ import Pages.PrenatalActivity.Utils
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Utils
 import Pages.PrenatalRecurrentActivity.Model
+import Pages.PrenatalRecurrentActivity.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.WellChildActivity.Model
@@ -3957,18 +3958,53 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             [ updateDiagnosesMsg ]
 
                         else
-                            [ -- Navigate to Next Steps activty page.
+                            let
+                                signs =
+                                    List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
+                                        |> String.join ", "
+
+                                message =
+                                    if isChw then
+                                        translate language Translate.DangerSignsLabelForChw ++ ": " ++ signs
+
+                                    else
+                                        translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
+                            in
+                            [ -- Navigate to Next Steps activity page.
                               initialEncounterNextStepsMsg
                             , updateDiagnosesMsg
                             , initialEncounterWarningPopupMsg
-                                ( List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
-                                    |> String.join ", "
+                                ( message
                                 , translate language instructions
                                 )
                             ]
 
                     recurrentEncounterMsgs =
-                        []
+                        let
+                            addedDiagnoses =
+                                EverySet.diff diagnosesAfter diagnosesBefore
+                                    |> EverySet.toList
+
+                            nextStepsMsg =
+                                if List.any (\diagnosis -> List.member diagnosis Pages.PrenatalRecurrentActivity.Utils.emergencyReferralDiagnoses) addedDiagnoses then
+                                    [ recurrentEncounterNextStepsMsg ]
+
+                                else
+                                    []
+                        in
+                        case addedDiagnoses of
+                            [] ->
+                                [ updateDiagnosesMsg ]
+
+                            first :: rest ->
+                                nextStepsMsg
+                                    ++ [ updateDiagnosesMsg
+                                       , recurrentEncounterWarningPopupMsg
+                                            ( Translate.PrenatalDiagnosisLabResultsMessage first
+                                                |> translate language
+                                            , ""
+                                            )
+                                       ]
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
