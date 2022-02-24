@@ -39,6 +39,7 @@ type PrenatalEncounterType
 type PrenatalDiagnosis
     = DiagnosisPrescribeMebendezole
     | DiagnosisHepatitisB
+    | DiagnosisMalaria
     | DiagnosisEclampsia
     | DiagnosisMiscarriage
     | DiagnosisMolarPregnancy

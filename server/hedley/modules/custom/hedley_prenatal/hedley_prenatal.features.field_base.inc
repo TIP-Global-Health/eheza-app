@@ -420,6 +420,7 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
         'hepatitis-b' => 'Hepatitis B',
+        'malaria' => 'Malaria',
         'eclampsia' => 'Eclampsia',
         'miscarriage' => 'Miscarriage',
         'molar-pregnancy' => 'Molar Pregnancy',

@@ -72,6 +72,9 @@ decodePrenatalDiagnosis =
                     "hepatitis-b" ->
                         succeed DiagnosisHepatitisB
 
+                    "malaria" ->
+                        succeed DiagnosisMalaria
+
                     "eclampsia" ->
                         succeed DiagnosisEclampsia
 

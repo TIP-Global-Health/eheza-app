@@ -7165,6 +7165,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
                     , kinyarwanda = Nothing
@@ -7254,6 +7259,11 @@ translationSet trans =
             case diagnosis of
                 DiagnosisHepatitisB ->
                     { english = "Patient has tested positive for Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalaria ->
+                    { english = "Patient has tested positive for Malaria"
                     , kinyarwanda = Nothing
                     }
 

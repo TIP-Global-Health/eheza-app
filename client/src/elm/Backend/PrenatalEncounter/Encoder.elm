@@ -66,6 +66,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisHepatitisB ->
                 "hepatitis-b"
 
+            DiagnosisMalaria ->
+                "malaria"
+
             DiagnosisEclampsia ->
                 "eclampsia"
 

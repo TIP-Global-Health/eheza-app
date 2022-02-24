@@ -762,6 +762,7 @@ maternityWardDiagnoses =
 labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
     [ DiagnosisHepatitisB
+    , DiagnosisMalaria
     ]
 
 
