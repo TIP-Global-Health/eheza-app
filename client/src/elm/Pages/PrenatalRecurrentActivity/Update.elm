@@ -39,6 +39,9 @@ update currentDate id db msg model =
         SetAlertsDialogState value ->
             ( { model | showAlertsDialog = value }, Cmd.none, [] )
 
+        SetWarningPopupState state ->
+            ( { model | warningPopupState = state }, Cmd.none, [] )
+
         SetActiveLabResultsTask task ->
             let
                 updatedData =

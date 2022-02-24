@@ -24,6 +24,7 @@ import Measurement.View exposing (viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalActivity.Utils exposing (laboratoryTaskIconClass, toMedicationDistributionValueWithDefault)
+import Pages.PrenatalActivity.View exposing (warningPopup)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
@@ -48,6 +49,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -65,6 +67,9 @@ viewHeaderAndContent language currentDate id activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
         , viewContent language currentDate activity db model assembled
+
+        -- , viewModal <|
+        --     warningPopup language currentDate False model.warningPopupState
         ]
 
 

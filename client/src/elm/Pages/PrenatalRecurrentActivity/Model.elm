@@ -13,6 +13,7 @@ import Pages.PrenatalRecurrentActivity.Types exposing (NextStepsTask(..))
 type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
+    | SetWarningPopupState (Maybe ( String, String ))
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
     | SetSyphilisTestResult String
@@ -50,6 +51,7 @@ type alias Model =
     { labResultsData : LabResultsData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
+    , warningPopupState : Maybe ( String, String )
     }
 
 
@@ -58,6 +60,7 @@ emptyModel =
     { labResultsData = emptyLabResultsData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
+    , warningPopupState = Nothing
     }
 
 

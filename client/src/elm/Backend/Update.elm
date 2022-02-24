@@ -95,6 +95,7 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Utils
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Utils
+import Pages.PrenatalRecurrentActivity.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.WellChildActivity.Model
@@ -1083,7 +1084,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment model newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -3835,8 +3836,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
 
-generatePrenatalAssessmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before after id =
+generatePrenatalAssessmentMsgs : NominalDate -> Language -> Bool -> Page -> Bool -> ModelIndexedDb -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
+generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
@@ -3845,14 +3846,24 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
                         currentDate
                         assembledAfter
 
-                navigateToNextStepsMsg =
+                initialEncounterNextStepsMsg =
                     PrenatalActivityPage id Backend.PrenatalActivity.Model.NextSteps
                         |> UserPage
                         |> App.Model.SetActivePage
 
-                setWarningPopupStateMsg state =
+                recurrentEncounterNextStepsMsg =
+                    PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
+                        |> UserPage
+                        |> App.Model.SetActivePage
+
+                initialEncounterWarningPopupMsg state =
                     Pages.PrenatalActivity.Model.SetWarningPopupState (Just state)
                         |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
+                        |> App.Model.MsgLoggedIn
+
+                recurrentEncounterWarningPopupMsg state =
+                    Pages.PrenatalRecurrentActivity.Model.SetWarningPopupState (Just state)
+                        |> App.Model.MsgPagePrenatalRecurrentActivity id Backend.PrenatalActivity.Model.RecurrentNextSteps
                         |> App.Model.MsgLoggedIn
             in
             if isChw then
@@ -3899,8 +3910,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
                     else
                         updateAssesmentMsg
                             ++ [ -- Navigate to Next Steps activty page.
-                                 navigateToNextStepsMsg
-                               , setWarningPopupStateMsg
+                                 initialEncounterNextStepsMsg
+                               , initialEncounterWarningPopupMsg
                                     ( String.join ", " dangerSignsList
                                     , translate language Translate.DangerSignsHelperReferToHC
                                     )
@@ -3918,45 +3929,66 @@ generatePrenatalAssessmentMsgs currentDate language isChw updateAssesment before
                     diagnosesAfter =
                         Pages.PrenatalActivity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
 
-                    urgentDiagnoses =
-                        EverySet.toList diagnosesAfter
-                            |> List.filter (\diagnosis -> List.member diagnosis Pages.PrenatalActivity.Utils.emergencyReferralDiagnoses)
-
                     updateDiagnosesMsg =
                         Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosesAfter
                             |> Backend.Model.MsgPrenatalEncounter id
                             |> App.Model.MsgIndexedDb
 
-                    instructions =
-                        if
-                            List.any
-                                (\maternityWardDiagnosis ->
-                                    List.member maternityWardDiagnosis urgentDiagnoses
-                                )
-                                Pages.PrenatalActivity.Utils.maternityWardDiagnoses
-                        then
-                            Translate.DangerSignsHelperReferToMaternityWard
+                    initialEncounterMsgs =
+                        let
+                            urgentDiagnoses =
+                                EverySet.toList diagnosesAfter
+                                    |> List.filter (\diagnosis -> List.member diagnosis Pages.PrenatalActivity.Utils.emergencyReferralDiagnoses)
+
+                            instructions =
+                                if
+                                    List.any
+                                        (\maternityWardDiagnosis ->
+                                            List.member maternityWardDiagnosis urgentDiagnoses
+                                        )
+                                        Pages.PrenatalActivity.Utils.maternityWardDiagnoses
+                                then
+                                    Translate.DangerSignsHelperReferToMaternityWard
+
+                                else
+                                    Translate.DangerSignsHelperReferToEmergencyObstetricCareServices
+                        in
+                        if List.isEmpty urgentDiagnoses then
+                            [ updateDiagnosesMsg ]
 
                         else
-                            Translate.DangerSignsHelperReferToEmergencyObstetricCareServices
+                            [ -- Navigate to Next Steps activty page.
+                              initialEncounterNextStepsMsg
+                            , updateDiagnosesMsg
+                            , initialEncounterWarningPopupMsg
+                                ( List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
+                                    |> String.join ", "
+                                , translate language instructions
+                                )
+                            ]
+
+                    recurrentEncounterMsgs =
+                        []
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
 
-                else if List.isEmpty urgentDiagnoses then
-                    [ updateDiagnosesMsg ]
-
                 else
-                    [ updateDiagnosesMsg
+                    case activePage of
+                        UserPage (PrenatalEncounterPage _) ->
+                            initialEncounterMsgs
 
-                    -- Navigate to Next Steps activty page.
-                    , navigateToNextStepsMsg
-                    , setWarningPopupStateMsg
-                        ( List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
-                            |> String.join ", "
-                        , translate language instructions
-                        )
-                    ]
+                        UserPage (PrenatalActivityPage _ _) ->
+                            initialEncounterMsgs
+
+                        UserPage (PrenatalRecurrentEncounterPage _) ->
+                            recurrentEncounterMsgs
+
+                        UserPage (PrenatalRecurrentActivityPage _ _) ->
+                            recurrentEncounterMsgs
+
+                        _ ->
+                            []
 
             else
                 []
