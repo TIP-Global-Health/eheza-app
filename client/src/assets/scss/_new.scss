@@ -2336,6 +2336,19 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
+  .chw-activity {
+    .activity-entry {
+      .cell .activity {
+        border-radius: 10px;
+        color: $color-white;
+        font-size: 17px;
+        margin: 3px 5px;
+        padding: 0 10px;
+        text-transform: uppercase;
+      }
+    }
+  }
+
   .lab-results,
   .chw-activity {
 
@@ -2345,6 +2358,7 @@ div.page-report.clinical .ui.unstackable.items {
       .name,
       .date,
       .result,
+      .activity
       {
         width: 215px;
       }

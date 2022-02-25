@@ -303,14 +303,27 @@ viewChwActivityPane language currentDate isChw data =
                     )
                 |> List.any (.lastMenstrualPeriod >> isJust)
 
-        actionPregnancyDating =
-            --@Todo
+        activities activity =
+            let
+                activityClass =
+                    if activity == DangerSigns then
+                        "activity-red"
+
+                    else if activity == Laboratory && activity == PregnancyDating then
+                        "activity-blue"
+
+                    else if activity == HealthEducation && activity == BirthPlan then
+                        "activity-cyan"
+
+                    else
+                        "no-activity"
+            in
             if pregnancyDatingAction then
-                div [ class "entry" ]
-                    [ div [ class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
-                    , div [ class "cell result" ] [ text <| translate language <| Translate.PrenatalActivitiesTitle PregnancyDating ]
+                div [ class "activity-entry" ]
+                    [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
+                    , div [ class <| "cell activity " ++ activityClass ]
+                        [ text <| translate language <| Translate.PrenatalActivitiesTitle activity ]
                     ]
-                ------@Todo
 
             else
                 emptyNode
@@ -318,13 +331,13 @@ viewChwActivityPane language currentDate isChw data =
         heading =
             div [ class "heading" ]
                 [ div [ class "date" ] [ translateText language Translate.Date ]
-                , div [ class "result" ] [ translateText language Translate.Actions ]
+                , div [ class "activity" ] [ translateText language Translate.Actions ]
                 ]
     in
     div [ class "chw-activity" ] <|
         [ viewItemHeading language Translate.ChwActivity "blue"
         , div [ class "pane-content" ] [ heading ]
-        , actionPregnancyDating
+        , activities PregnancyDating
         ]
 
 
