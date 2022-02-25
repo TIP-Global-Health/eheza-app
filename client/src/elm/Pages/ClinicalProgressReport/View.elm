@@ -319,7 +319,7 @@ viewChwActivityPane language currentDate isChw data =
                         "no-activity"
             in
             if pregnancyDatingAction then
-                div [ class "activity-entry" ]
+                div [ class "entry" ]
                     [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
                     , div [ class <| "cell activity " ++ activityClass ]
                         [ text <| translate language <| Translate.PrenatalActivitiesTitle activity ]
