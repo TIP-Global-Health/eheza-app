@@ -69,6 +69,12 @@ decodePrenatalDiagnosis =
                     "prescribe-mebendezole" ->
                         succeed DiagnosisPrescribeMebendezole
 
+                    "hiv" ->
+                        succeed DiagnosisHIV
+
+                    "partner-hiv" ->
+                        succeed DiagnosisPartnerHIV
+
                     "hepatitis-b" ->
                         succeed DiagnosisHepatitisB
 

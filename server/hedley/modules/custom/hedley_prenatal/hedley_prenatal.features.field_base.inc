@@ -447,6 +447,8 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
+        'hiv' => 'HIV',
+        'partner-hiv' => 'HIV positive partner',
         'hepatitis-b' => 'Hepatitis B',
         'malaria' => 'Malaria',
         'eclampsia' => 'Eclampsia',

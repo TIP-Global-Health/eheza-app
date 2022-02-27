@@ -86,7 +86,7 @@ type MedicalDiagnosis
     | DiagnosisTuberculosis
     | DiagnosisAsthma
     | DiagnosisBowedLegs
-    | DiagnosisHIV
+    | DiagnosisKnownHIV
     | DiagnosisMentalHealthHistory
 
 
@@ -161,7 +161,7 @@ allMedicalDiagnosis =
     , DiagnosisTuberculosis
     , DiagnosisAsthma
     , DiagnosisBowedLegs
-    , DiagnosisHIV
+    , DiagnosisKnownHIV
     , DiagnosisMentalHealthHistory
     ]
 

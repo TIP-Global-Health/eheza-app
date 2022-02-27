@@ -5460,7 +5460,7 @@ translationSet trans =
                     , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
                     }
 
-                DiagnosisHIV ->
+                DiagnosisKnownHIV ->
                     { english = "HIV"
                     , kinyarwanda = Just "Virus itera SIDA"
                     }
@@ -7158,6 +7158,16 @@ translationSet trans =
             case diagnosis of
                 DiagnosisPrescribeMebendezole ->
                     { english = "Prescribe Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPartnerHIV ->
+                    { english = "HIV Positive Partner"
                     , kinyarwanda = Nothing
                     }
 

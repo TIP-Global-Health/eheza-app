@@ -38,6 +38,8 @@ type PrenatalEncounterType
 
 type PrenatalDiagnosis
     = DiagnosisPrescribeMebendezole
+    | DiagnosisHIV
+    | DiagnosisPartnerHIV
     | DiagnosisHepatitisB
     | DiagnosisMalaria
     | DiagnosisEclampsia
