@@ -854,7 +854,7 @@ type alias PrenatalHIVTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
-    , hivSigns : Maybe (List PrenatalHIVSign)
+    , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
 
 

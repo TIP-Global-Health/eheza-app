@@ -788,14 +788,36 @@ type alias PrenatalHIVTestForm =
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , testResult : Maybe PrenatalTestResult
-    , hivSigns : Maybe (EverySet PrenatalHIVSign)
+    , hivProgramHC : Maybe Bool
+    , partnerHIVPositive : Maybe Bool
+    , partnerHIVPositiveDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyPrenatalHIVTestForm : PrenatalHIVTestForm
 emptyPrenatalHIVTestForm =
-    PrenatalHIVTestForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing Nothing Nothing
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
+    , testPerformedDirty = False
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , hivProgramHC = Nothing
+    , partnerHIVPositive = Nothing
+    , partnerHIVPositiveDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , dateSelectorPopupState = Nothing
+    }
 
 
 type alias AppointmentConfirmationForm =

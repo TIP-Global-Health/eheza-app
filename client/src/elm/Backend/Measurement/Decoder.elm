@@ -432,7 +432,7 @@ decodePrenatalHIVTestValue =
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
-        |> optional "hiv_signs" (nullable (list decodePrenatalHIVSign)) Nothing
+        |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
 
 
 decodePrenatalHIVSign : Decoder PrenatalHIVSign

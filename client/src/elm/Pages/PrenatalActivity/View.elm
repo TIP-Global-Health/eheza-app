@@ -2898,12 +2898,124 @@ viewPrenatalHIVTestForm language currentDate form =
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestKnownAsPositive language currentDate TaskHIVTest form
 
+        emptySection =
+            ( [], 0, 0 )
+
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.knownAsPositive /= Just False then
-                ( [], 0, 0 )
+                emptySection
 
             else
-                prenatalRDTFormInputsAndTasks language currentDate TaskHIVTest form
+                let
+                    ( rdtSection, rdtTasksCompleted, rdtTasksTotal ) =
+                        prenatalRDTFormInputsAndTasks language currentDate TaskHIVTest form
+
+                    ( hivSignsSection, hivSignsTasksCompleted, hivSignsTasksTotal ) =
+                        Maybe.map
+                            (\testResult ->
+                                case testResult of
+                                    PrenatalTestPositive ->
+                                        let
+                                            updateFunc =
+                                                \value form_ ->
+                                                    { form_ | hivProgramHC = Just value }
+                                        in
+                                        ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion HIVProgramHC
+                                          , viewBoolInput
+                                                language
+                                                form.hivProgramHC
+                                                (SetHIVTestFormBoolInput updateFunc)
+                                                "hiv-program"
+                                                Nothing
+                                          ]
+                                        , taskCompleted form.hivProgramHC
+                                        , 1
+                                        )
+
+                                    PrenatalTestNegative ->
+                                        let
+                                            partnerHIVPositiveUpdateFunc =
+                                                \value form_ ->
+                                                    { form_
+                                                        | partnerHIVPositive = Just value
+                                                        , partnerHIVPositiveDirty = True
+                                                        , partnerTakingARV = Nothing
+                                                        , partnerTakingARVDirty = True
+                                                        , partnerSurpressedViralLoad = Nothing
+                                                    }
+
+                                            ( partnerHivStatusSection, partnerHivStatusTasksCompleted, partnerHivStatusTasksTotal ) =
+                                                if form.partnerHIVPositive == Just True then
+                                                    let
+                                                        partnerTakingARVUpdateFunc =
+                                                            \value form_ ->
+                                                                { form_
+                                                                    | partnerTakingARV = Just value
+                                                                    , partnerTakingARVDirty = True
+                                                                    , partnerSurpressedViralLoad = Nothing
+                                                                }
+
+                                                        ( partnerARVSection, partnerARVTasksCompleted, partnerARVTasksTotal ) =
+                                                            if form.partnerTakingARV == Just True then
+                                                                let
+                                                                    partnerSurpressedViralLoadUpdateFunc =
+                                                                        \value form_ ->
+                                                                            { form_ | partnerSurpressedViralLoad = Just value }
+                                                                in
+                                                                ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerSurpressedViralLoad
+                                                                  , viewBoolInput
+                                                                        language
+                                                                        form.partnerSurpressedViralLoad
+                                                                        (SetHIVTestFormBoolInput partnerSurpressedViralLoadUpdateFunc)
+                                                                        "partner-surpressed-viral-load"
+                                                                        Nothing
+                                                                  ]
+                                                                , taskCompleted form.partnerSurpressedViralLoad
+                                                                , 1
+                                                                )
+
+                                                            else
+                                                                emptySection
+                                                    in
+                                                    ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
+                                                      , viewBoolInput
+                                                            language
+                                                            form.partnerTakingARV
+                                                            (SetHIVTestFormBoolInput partnerTakingARVUpdateFunc)
+                                                            "partner-taking-arv"
+                                                            Nothing
+                                                      ]
+                                                        ++ partnerARVSection
+                                                    , taskCompleted form.partnerTakingARV + partnerARVTasksCompleted
+                                                    , 1 + partnerARVTasksTotal
+                                                    )
+
+                                                else
+                                                    emptySection
+                                        in
+                                        ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerHIVPositive
+                                          , viewBoolInput
+                                                language
+                                                form.partnerHIVPositive
+                                                (SetHIVTestFormBoolInput partnerHIVPositiveUpdateFunc)
+                                                "partner-hiv-positive"
+                                                Nothing
+                                          ]
+                                            ++ partnerHivStatusSection
+                                        , taskCompleted form.partnerHIVPositive + partnerHivStatusTasksCompleted
+                                        , 1 + partnerHivStatusTasksTotal
+                                        )
+
+                                    PrenatalTestIndeterminate ->
+                                        emptySection
+                            )
+                            form.testResult
+                            |> Maybe.withDefault emptySection
+                in
+                ( rdtSection ++ hivSignsSection
+                , rdtTasksCompleted + hivSignsTasksCompleted
+                , rdtTasksTotal + hivSignsTasksTotal
+                )
     in
     ( div [ class "ui form laboratory hiv" ] <|
         [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) "" "label header"

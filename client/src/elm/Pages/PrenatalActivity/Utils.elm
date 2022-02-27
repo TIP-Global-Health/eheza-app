@@ -2264,6 +2264,24 @@ prenatalHIVTestFormWithDefault form saved =
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
+
+                    hivProgramHCValue =
+                        Maybe.map (EverySet.member HIVProgramHC)
+                            value.hivSigns
+
+                    partnerHIVPositiveValue =
+                        Maybe.map (EverySet.member PartnerHIVPositive)
+                            value.hivSigns
+                            |> Maybe.withDefault False
+
+                    partnerTakingARVValue =
+                        Maybe.map (EverySet.member PartnerTakingARV)
+                            value.hivSigns
+                            |> Maybe.withDefault False
+
+                    partnerSurpressedViralLoadValue =
+                        Maybe.map (EverySet.member PartnerSurpressedViralLoad)
+                            value.hivSigns
                 in
                 { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
                 , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
@@ -2275,7 +2293,12 @@ prenatalHIVTestFormWithDefault form saved =
                 , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
                 , executionDateDirty = form.executionDateDirty
                 , testResult = or form.testResult value.testResult
-                , hivSigns = or form.hivSigns (value.hivSigns |> Maybe.map EverySet.fromList)
+                , hivProgramHC = or form.hivProgramHC hivProgramHCValue
+                , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
+                , partnerHIVPositiveDirty = form.partnerHIVPositiveDirty
+                , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
+                , partnerTakingARVDirty = form.partnerTakingARVDirty
+                , partnerSurpressedViralLoad = or form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
@@ -2291,10 +2314,20 @@ toPrenatalHIVTestValue : PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue
 toPrenatalHIVTestValue form =
     Maybe.map
         (\executionNote ->
+            let
+                hivSigns =
+                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
+                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
+                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                    ]
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
-            , hivSigns = Maybe.map EverySet.toList form.hivSigns
+            , hivSigns = hivSigns
             }
         )
         form.executionNote

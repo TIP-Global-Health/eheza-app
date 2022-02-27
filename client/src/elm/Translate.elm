@@ -864,6 +864,7 @@ type TranslationId
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
     | PrenatalLaboratoryBloodGroup BloodGroup
@@ -7395,6 +7396,33 @@ translationSet trans =
                 Pages.PrenatalRecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
+        PrenatalHIVSignQuestion sign ->
+            case sign of
+                HIVProgramHC ->
+                    { english = "Does the health center have a HIV/PMTCT program"
+                    , kinyarwanda = Nothing
+                    }
+
+                PartnerHIVPositive ->
+                    { english = "Is the patients partner HIV positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                PartnerTakingARV ->
+                    { english = "Is the patients partner taking ARVs"
+                    , kinyarwanda = Nothing
+                    }
+
+                PartnerSurpressedViralLoad ->
+                    { english = "Does the partner have a surpressed viral load"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalHIVSign ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalLaboratoryBloodGroupLabel ->
