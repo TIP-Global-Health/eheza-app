@@ -391,11 +391,11 @@ encodePrenatalHIVSign signs =
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
-    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_malaria_test")
+    encodePrenatalMeasurement encodePrenatalMalariaTestValue
 
 
-encodePrenatalRapidTestValueWithType : String -> PrenatalRapidTestValue -> List ( String, Value )
-encodePrenatalRapidTestValueWithType type_ value =
+encodePrenatalMalariaTestValue : PrenatalMalariaTestValue -> List ( String, Value )
+encodePrenatalMalariaTestValue value =
     let
         executionDate =
             Maybe.map
@@ -413,7 +413,7 @@ encodePrenatalRapidTestValueWithType type_ value =
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
-           , ( "type", string type_ )
+           , ( "type", string "prenatal_malaria_test" )
            ]
 
 

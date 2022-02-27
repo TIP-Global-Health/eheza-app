@@ -418,9 +418,9 @@ decodePrenatalHIVTest =
     decodePrenatalMeasurement decodePrenatalHIVTestValue
 
 
-decodePrenatalRapidTestValue : Decoder PrenatalRapidTestValue
-decodePrenatalRapidTestValue =
-    succeed PrenatalRapidTestValue
+decodePrenatalMalariaTestValue : Decoder PrenatalMalariaTestValue
+decodePrenatalMalariaTestValue =
+    succeed PrenatalMalariaTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
@@ -448,7 +448,7 @@ decodePrenatalHIVSign =
 
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
 decodePrenatalMalariaTest =
-    decodePrenatalMeasurement decodePrenatalRapidTestValue
+    decodePrenatalMeasurement decodePrenatalMalariaTestValue
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest

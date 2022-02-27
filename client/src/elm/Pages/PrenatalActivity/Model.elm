@@ -113,7 +113,7 @@ type Msg
     | SetHepatitisBTestExecutionDate NominalDate
     | SetHepatitisBTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
-    | SetMalariaTestFormBoolInput (Bool -> PrenatalLabsRDTForm -> PrenatalLabsRDTForm) Bool
+    | SetMalariaTestFormBoolInput (Bool -> PrenatalMalariaTestForm -> PrenatalMalariaTestForm) Bool
     | SetMalariaTestExecutionNote PrenatalTestExecutionNote
     | SetMalariaTestExecutionDate NominalDate
     | SetMalariaTestResult String
@@ -348,7 +348,7 @@ type alias LaboratoryData =
     , hemoglobinTestForm : PrenatalLabsNonRDTForm
     , hepatitisBTestForm : PrenatalLabsNonRDTForm
     , hivTestForm : PrenatalHIVTestForm
-    , malariaTestForm : PrenatalLabsRDTForm
+    , malariaTestForm : PrenatalMalariaTestForm
     , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
     , urineDipstickTestForm : PrenatalUrineDipstickForm
@@ -363,7 +363,7 @@ emptyLaboratoryData =
     , hemoglobinTestForm = emptyPrenatalLabsNonRDTForm
     , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
     , hivTestForm = emptyPrenatalHIVTestForm
-    , malariaTestForm = emptyPrenatalLabsRDTForm
+    , malariaTestForm = emptyPrenatalMalariaTestForm
     , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
@@ -720,9 +720,8 @@ type alias PregnancyTestForm =
     }
 
 
-type alias PrenatalLabsRDTForm =
-    { knownAsPositive : Maybe Bool
-    , testPerformed : Maybe Bool
+type alias PrenatalMalariaTestForm =
+    { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
@@ -735,9 +734,9 @@ type alias PrenatalLabsRDTForm =
     }
 
 
-emptyPrenatalLabsRDTForm : PrenatalLabsRDTForm
-emptyPrenatalLabsRDTForm =
-    PrenatalLabsRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+emptyPrenatalMalariaTestForm : PrenatalMalariaTestForm
+emptyPrenatalMalariaTestForm =
+    PrenatalMalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
 
 
 type alias PrenatalLabsNonRDTForm =

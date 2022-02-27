@@ -205,7 +205,7 @@ type Msg
     | HandleSavedSyphilisTest (WebData ())
     | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) PrenatalHepatitisBTestValue
     | HandleSavedHepatitisBTest (WebData ())
-    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalRapidTestValue
+    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalMalariaTestValue
     | HandleSavedMalariaTest (WebData ())
     | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) PrenatalBloodGpRsTestValue
     | HandleSavedBloodGpRsTest (WebData ())

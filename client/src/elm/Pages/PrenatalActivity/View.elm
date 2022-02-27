@@ -1282,8 +1282,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskMalariaTest ->
                             measurements.malariaTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRDTFormWithDefault data.malariaTestForm
-                                |> viewPrenatalRDTForm language currentDate TaskMalariaTest
+                                |> prenatalMalariaTestFormWithDefault data.malariaTestForm
+                                |> viewPrenatalMalariaTestForm language currentDate TaskMalariaTest
 
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
@@ -2905,7 +2905,7 @@ viewPrenatalHIVTestForm language currentDate form =
             else
                 prenatalRDTFormInputsAndTasks language currentDate TaskHIVTest form
     in
-    ( div [ class "ui form laboratory rdt" ] <|
+    ( div [ class "ui form laboratory hiv" ] <|
         [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) "" "label header"
         ]
             ++ initialSection
@@ -2915,15 +2915,14 @@ viewPrenatalHIVTestForm language currentDate form =
     )
 
 
-viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
-viewPrenatalRDTForm language currentDate task form =
+viewPrenatalMalariaTestForm : Language -> NominalDate -> LaboratoryTask -> PrenatalMalariaTestForm -> ( Html Msg, Int, Int )
+viewPrenatalMalariaTestForm language currentDate task form =
     let
         ( inputs, tasksCompleted, tasksTotal ) =
             prenatalRDTFormInputsAndTasks language currentDate task form
     in
-    ( div [ class "ui form laboratory rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
-        ]
+    ( div [ class "ui form laboratory malaria" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header" ]
             ++ inputs
     , tasksCompleted
     , tasksTotal
@@ -3181,7 +3180,8 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
                     SetHepatitisBTestFormBoolInput updateFunc
 
                 TaskMalariaTest ->
-                    SetMalariaTestFormBoolInput updateFunc
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
 
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test.

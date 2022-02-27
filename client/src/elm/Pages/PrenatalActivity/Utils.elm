@@ -2204,24 +2204,20 @@ toAppointmentConfirmationValue form =
     Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate
 
 
-prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm
-prenatalRDTFormWithDefault form saved =
+prenatalMalariaTestFormWithDefault : PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue -> PrenatalMalariaTestForm
+prenatalMalariaTestFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 let
-                    knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
-
                     testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
-                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
@@ -2235,14 +2231,14 @@ prenatalRDTFormWithDefault form saved =
             )
 
 
-toPrenatalRDTValueWithDefault : Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
-toPrenatalRDTValueWithDefault saved form =
-    prenatalRDTFormWithDefault form saved
-        |> toPrenatalRDTValue
+toPrenatalMalariaTestValueWithDefault : Maybe PrenatalMalariaTestValue -> PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue
+toPrenatalMalariaTestValueWithDefault saved form =
+    prenatalMalariaTestFormWithDefault form saved
+        |> toPrenatalMalariaTestValue
 
 
-toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
-toPrenatalRDTValue form =
+toPrenatalMalariaTestValue : PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue
+toPrenatalMalariaTestValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote

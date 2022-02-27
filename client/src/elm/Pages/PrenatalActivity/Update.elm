@@ -1957,7 +1957,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.malariaTestForm
-                        |> toPrenatalRDTValueWithDefault measurement
+                        |> toPrenatalMalariaTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveMalariaTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
