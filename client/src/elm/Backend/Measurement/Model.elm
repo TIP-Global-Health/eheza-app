@@ -850,6 +850,22 @@ type alias PrenatalHIVTest =
     PrenatalMeasurement PrenatalRapidTestValue
 
 
+type alias PrenatalHIVTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    , hivSigns : Maybe (List PrenatalHIVSign)
+    }
+
+
+type PrenatalHIVSign
+    = HIVProgramHC
+    | PartnerHIVPositive
+    | PartnerTakingARV
+    | PartnerSurpressedViralLoad
+    | NoPrenatalHIVSign
+
+
 type alias PrenatalRapidTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate

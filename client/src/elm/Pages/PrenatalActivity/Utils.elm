@@ -2253,6 +2253,57 @@ toPrenatalRDTValue form =
         form.executionNote
 
 
+prenatalHIVTestFormWithDefault : PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue -> PrenatalHIVTestForm
+prenatalHIVTestFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    knownAsPositiveValue =
+                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+
+                    testPerformedValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+                in
+                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , testResult = or form.testResult value.testResult
+                , hivSigns = or form.hivSigns (value.hivSigns |> Maybe.map EverySet.fromList)
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
+
+
+toPrenatalHIVTestValueWithDefault : Maybe PrenatalHIVTestValue -> PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue
+toPrenatalHIVTestValueWithDefault saved form =
+    prenatalHIVTestFormWithDefault form saved
+        |> toPrenatalHIVTestValue
+
+
+toPrenatalHIVTestValue : PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue
+toPrenatalHIVTestValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            , hivSigns = Maybe.map EverySet.toList form.hivSigns
+            }
+        )
+        form.executionNote
+
+
 prenatalUrineDipstickFormWithDefault : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
 prenatalUrineDipstickFormWithDefault form saved =
     saved

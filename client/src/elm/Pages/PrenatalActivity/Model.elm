@@ -97,7 +97,7 @@ type Msg
     | SetActiveLaboratoryTask LaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
-    | SetHIVTestFormBoolInput (Bool -> PrenatalLabsRDTForm -> PrenatalLabsRDTForm) Bool
+    | SetHIVTestFormBoolInput (Bool -> PrenatalHIVTestForm -> PrenatalHIVTestForm) Bool
     | SetHIVTestExecutionNote PrenatalTestExecutionNote
     | SetHIVTestExecutionDate NominalDate
     | SetHIVTestResult String
@@ -347,7 +347,7 @@ type alias LaboratoryData =
     , bloodGpRsTestForm : PrenatalLabsNonRDTForm
     , hemoglobinTestForm : PrenatalLabsNonRDTForm
     , hepatitisBTestForm : PrenatalLabsNonRDTForm
-    , hivTestForm : PrenatalLabsRDTForm
+    , hivTestForm : PrenatalHIVTestForm
     , malariaTestForm : PrenatalLabsRDTForm
     , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
@@ -362,7 +362,7 @@ emptyLaboratoryData =
     , bloodGpRsTestForm = emptyPrenatalLabsNonRDTForm
     , hemoglobinTestForm = emptyPrenatalLabsNonRDTForm
     , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
-    , hivTestForm = emptyPrenatalLabsRDTForm
+    , hivTestForm = emptyPrenatalHIVTestForm
     , malariaTestForm = emptyPrenatalLabsRDTForm
     , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
@@ -776,6 +776,27 @@ type alias PrenatalUrineDipstickForm =
 emptyPrenatalUrineDipstickForm : PrenatalUrineDipstickForm
 emptyPrenatalUrineDipstickForm =
     PrenatalUrineDipstickForm Nothing False Nothing False Nothing Nothing False Nothing False Nothing
+
+
+type alias PrenatalHIVTestForm =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe PrenatalTestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe PrenatalTestResult
+    , hivSigns : Maybe (EverySet PrenatalHIVSign)
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyPrenatalHIVTestForm : PrenatalHIVTestForm
+emptyPrenatalHIVTestForm =
+    PrenatalHIVTestForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing Nothing Nothing
 
 
 type alias AppointmentConfirmationForm =
