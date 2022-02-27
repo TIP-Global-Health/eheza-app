@@ -1599,7 +1599,15 @@ update currentDate id db msg model =
                     model.laboratoryData.hivTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form
+                        | testResult = prenatalTestResultFromString value
+                        , hivProgramHC = Nothing
+                        , partnerHIVPositive = Nothing
+                        , partnerHIVPositiveDirty = True
+                        , partnerTakingARV = Nothing
+                        , partnerTakingARVDirty = True
+                        , partnerSurpressedViralLoad = Nothing
+                    }
 
                 updatedData =
                     model.laboratoryData
