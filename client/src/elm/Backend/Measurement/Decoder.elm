@@ -415,7 +415,7 @@ decodePrenatalHepatitisBTestValue =
 
 decodePrenatalHIVTest : Decoder PrenatalHIVTest
 decodePrenatalHIVTest =
-    decodePrenatalMeasurement decodePrenatalRapidTestValue
+    decodePrenatalMeasurement decodePrenatalHIVTestValue
 
 
 decodePrenatalRapidTestValue : Decoder PrenatalRapidTestValue
@@ -424,7 +424,15 @@ decodePrenatalRapidTestValue =
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
-        |> optional "hiv_signs" (nullable list decodePrenatalHIVSign) Nothing
+
+
+decodePrenatalHIVTestValue : Decoder PrenatalHIVTestValue
+decodePrenatalHIVTestValue =
+    succeed PrenatalHIVTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "hiv_signs" (nullable (list decodePrenatalHIVSign)) Nothing
 
 
 decodePrenatalHIVSign : Decoder PrenatalHIVSign
@@ -436,47 +444,6 @@ decodePrenatalHIVSign =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| value ++ " is not a recognized PrenatalHIVSign")
             )
-
-
-prenatalHIVSignToString : PrenatalHIVSign -> String
-prenatalHIVSignToString sign =
-    case sign of
-        HIVProgramHC ->
-            "hiv-program-hc"
-
-        PartnerHIVPositive ->
-            "partner-hiv-positive"
-
-        PartnerTakingARV ->
-            "partner-taking-arv"
-
-        PartnerSurpressedViralLoad ->
-            "partner-surpressed-viral-load"
-
-        NoPrenatalHIVSign ->
-            "none"
-
-
-prenatalHIVSignFromString : String -> Maybe PrenatalHIVSign
-prenatalHIVSignFromString sign =
-    case sign of
-        "hiv-program-hc" ->
-            Just HIVProgramHC
-
-        "partner-hiv-positive" ->
-            Just PartnerHIVPositive
-
-        "partner-taking-arv" ->
-            Just PartnerTakingARV
-
-        "partner-surpressed-viral-load" ->
-            Just PartnerSurpressedViralLoad
-
-        "none" ->
-            Just NoPrenatalHIVSign
-
-        _ ->
-            Nothing
 
 
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest

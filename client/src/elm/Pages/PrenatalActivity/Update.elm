@@ -1643,7 +1643,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hivTestForm
-                        |> toPrenatalRDTValueWithDefault measurement
+                        |> toPrenatalHIVTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

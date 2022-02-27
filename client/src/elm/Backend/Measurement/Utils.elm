@@ -1460,3 +1460,44 @@ and do not provide option of filling the results.
 prenatalLabExpirationPeriod : Int
 prenatalLabExpirationPeriod =
     14
+
+
+prenatalHIVSignToString : PrenatalHIVSign -> String
+prenatalHIVSignToString sign =
+    case sign of
+        HIVProgramHC ->
+            "hiv-program-hc"
+
+        PartnerHIVPositive ->
+            "partner-hiv-positive"
+
+        PartnerTakingARV ->
+            "partner-taking-arv"
+
+        PartnerSurpressedViralLoad ->
+            "partner-surpressed-viral-load"
+
+        NoPrenatalHIVSign ->
+            "none"
+
+
+prenatalHIVSignFromString : String -> Maybe PrenatalHIVSign
+prenatalHIVSignFromString sign =
+    case sign of
+        "hiv-program-hc" ->
+            Just HIVProgramHC
+
+        "partner-hiv-positive" ->
+            Just PartnerHIVPositive
+
+        "partner-taking-arv" ->
+            Just PartnerTakingARV
+
+        "partner-surpressed-viral-load" ->
+            Just PartnerSurpressedViralLoad
+
+        "none" ->
+            Just NoPrenatalHIVSign
+
+        _ ->
+            Nothing

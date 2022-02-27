@@ -353,7 +353,45 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_hiv_test")
+    encodePrenatalMeasurement encodePrenatalHIVTestValue
+
+
+encodePrenatalHIVTestValue : PrenatalHIVTestValue -> List ( String, Value )
+encodePrenatalHIVTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                value.testResult
+                |> Maybe.withDefault []
+
+        hivSigns =
+            Maybe.withDefault [ NoPrenatalHIVSign ] value.hivSigns
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "hiv_signs", list encodePrenatalHIVSign hivSigns ) ]
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hiv_test" )
+           ]
+
+
+encodePrenatalHIVSign : PrenatalHIVSign -> Value
+encodePrenatalHIVSign signs =
+    string <|
+        prenatalHIVSignToString signs
+
+
+encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
+encodePrenatalMalariaTest =
+    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_malaria_test")
 
 
 encodePrenatalRapidTestValueWithType : String -> PrenatalRapidTestValue -> List ( String, Value )
@@ -377,11 +415,6 @@ encodePrenatalRapidTestValueWithType type_ value =
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
-
-
-encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
-encodePrenatalMalariaTest =
-    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_malaria_test")
 
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )

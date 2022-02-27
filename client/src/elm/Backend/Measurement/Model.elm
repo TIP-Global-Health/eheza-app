@@ -847,7 +847,7 @@ type PrenatalTestResult
 
 
 type alias PrenatalHIVTest =
-    PrenatalMeasurement PrenatalRapidTestValue
+    PrenatalMeasurement PrenatalHIVTestValue
 
 
 type alias PrenatalHIVTestValue =

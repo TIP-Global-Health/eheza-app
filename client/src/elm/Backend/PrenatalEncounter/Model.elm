@@ -199,7 +199,7 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())
-    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalRapidTestValue
+    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalHIVTestValue
     | HandleSavedHIVTest (WebData ())
     | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) PrenatalSyphilisTestValue
     | HandleSavedSyphilisTest (WebData ())

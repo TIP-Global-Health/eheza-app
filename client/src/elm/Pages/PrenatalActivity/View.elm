@@ -1264,8 +1264,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHIVTest ->
                             measurements.hivTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRDTFormWithDefault data.hivTestForm
-                                |> viewPrenatalRDTFormCheckKnownAsPositive language currentDate TaskHIVTest
+                                |> prenatalHIVTestFormWithDefault data.hivTestForm
+                                |> viewPrenatalHIVTestForm language currentDate
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest
@@ -2892,21 +2892,21 @@ viewMedicationDistributionForm language currentDate person form =
             ++ questions
 
 
-viewPrenatalRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
-viewPrenatalRDTFormCheckKnownAsPositive language currentDate task form =
+viewPrenatalHIVTestForm : Language -> NominalDate -> PrenatalHIVTestForm -> ( Html Msg, Int, Int )
+viewPrenatalHIVTestForm language currentDate form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate TaskHIVTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.knownAsPositive /= Just False then
                 ( [], 0, 0 )
 
             else
-                prenatalRDTFormInputsAndTasks language currentDate task form
+                prenatalRDTFormInputsAndTasks language currentDate TaskHIVTest form
     in
     ( div [ class "ui form laboratory rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -2930,7 +2930,20 @@ viewPrenatalRDTForm language currentDate task form =
     )
 
 
-prenatalRDTFormInputsAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( List (Html Msg), Int, Int )
+prenatalRDTFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> LaboratoryTask
+    ->
+        { f
+            | testPerformed : Maybe Bool
+            , testPerformedToday : Maybe Bool
+            , executionNote : Maybe PrenatalTestExecutionNote
+            , executionDate : Maybe NominalDate
+            , testResult : Maybe PrenatalTestResult
+            , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+        }
+    -> ( List (Html Msg), Int, Int )
 prenatalRDTFormInputsAndTasks language currentDate task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
