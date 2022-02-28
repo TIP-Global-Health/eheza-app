@@ -2006,6 +2006,9 @@ encodeReasonForNotSendingToHC event =
             ClientUnableToAffordFees ->
                 "unable-to-afford-fee"
 
+            ClientAlreadyInCare ->
+                "already-in-care"
+
             ReasonForNotSendingToHCOther ->
                 "other"
 

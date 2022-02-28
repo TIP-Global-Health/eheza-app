@@ -2491,6 +2491,9 @@ decodeReasonForNotSendingToHC =
                     "unable-to-afford-fee" ->
                         succeed ClientUnableToAffordFees
 
+                    "already-in-care" ->
+                        succeed ClientAlreadyInCare
+
                     "other" ->
                         succeed ReasonForNotSendingToHCOther
 

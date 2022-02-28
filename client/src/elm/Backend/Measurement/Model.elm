@@ -1408,6 +1408,7 @@ type ReasonForNotSendingToHC
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
+    | ClientAlreadyInCare
     | ReasonForNotSendingToHCOther
     | NoReasonForNotSendingToHC
 

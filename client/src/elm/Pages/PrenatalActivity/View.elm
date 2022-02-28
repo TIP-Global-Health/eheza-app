@@ -23,7 +23,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -1574,7 +1574,18 @@ viewNextStepsContent language currentDate isChw assembled data =
                                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
                             else
-                                ( viewSendToHospitalForm, Nothing )
+                                let
+                                    emergencyReferalDiagnosis =
+                                        EverySet.toList assembled.encounter.diagnoses
+                                            |> List.filter diagnosisRequiresEmergencyReferal
+                                            |> List.isEmpty
+                                            |> not
+                                in
+                                if emergencyReferalDiagnosis then
+                                    ( viewSendToHospitalForm, Nothing )
+
+                                else
+                                    ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
                     in
                     measurements.sendToHC
                         |> getMeasurementValueFunc

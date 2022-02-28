@@ -1040,6 +1040,7 @@ function hedley_acute_illness_field_default_field_bases() {
         'client-refused' => 'Client refused',
         'no-ambulance' => 'No ambulance available',
         'unable-to-afford-fee' => 'Client unable to afford fees',
+        'already-in-care' => 'Client already in care',
         'other' => 'Other',
         'none' => 'None',
       ),

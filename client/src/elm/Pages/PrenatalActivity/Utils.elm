@@ -265,10 +265,24 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    EverySet.toList assembled.encounter.diagnoses
-                        |> List.filter diagnosisRequiresEmergencyReferal
-                        |> List.isEmpty
-                        |> not
+                    let
+                        emergencyReferalDiagnosis =
+                            EverySet.toList assembled.encounter.diagnoses
+                                |> List.filter diagnosisRequiresEmergencyReferal
+                                |> List.isEmpty
+                                |> not
+
+                        hivDiagnosis =
+                            EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+
+                        hivProgramAtHC =
+                            getMeasurementValueFunc assembled.measurements.hivTest
+                                |> Maybe.andThen .hivSigns
+                                |> Maybe.map (EverySet.member HIVProgramHC)
+                                |> Maybe.withDefault False
+                    in
+                    emergencyReferalDiagnosis
+                        || (hivDiagnosis && hivProgramAtHC)
 
                 _ ->
                     dangerSigns
@@ -861,8 +875,8 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
                     (\hivSigns ->
                         -- Partner is HIV positive.
                         EverySet.member PartnerHIVPositive hivSigns
-                            && -- Partner is taking ARVs.
-                               EverySet.member PartnerTakingARV hivSigns
+                            -- Partner is taking ARVs.
+                            && EverySet.member PartnerTakingARV hivSigns
                             -- Partner reached surpressed viral load.
                             && EverySet.member PartnerSurpressedViralLoad hivSigns
                     )
@@ -1165,7 +1179,18 @@ nextStepsTasksCompletedFromTotal language isChw assembled data task =
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
                     else
-                        ( 0, 0 )
+                        let
+                            emergencyReferalDiagnosis =
+                                EverySet.toList assembled.encounter.diagnoses
+                                    |> List.filter diagnosisRequiresEmergencyReferal
+                                    |> List.isEmpty
+                                    |> not
+                        in
+                        if emergencyReferalDiagnosis then
+                            ( 0, 0 )
+
+                        else
+                            ( taskCompleted form.accompanyToHealthCenter, 1 )
             in
             ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
             , 1 + reasonForNotSentActive + accompanyToHealthCenterActive

@@ -9,6 +9,7 @@ module Measurement.View exposing
     , viewMeasurementFloatDiff
     , viewMother
     , viewReferToProgramForm
+    , viewSendToHIVProgramForm
     , viewSendToHealthCenterForm
     , viewSendToHospitalForm
     , viewVitalsForm
@@ -1164,6 +1165,19 @@ viewSendToHospitalForm language currentDate =
     viewSendToFacilityForm language currentDate FacilityHospital
 
 
+viewSendToHIVProgramForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToHIVProgramForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHIVProgram
+
+
 viewSendToFacilityForm :
     Language
     -> NominalDate
@@ -1184,6 +1198,9 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                 FacilityHospital ->
                     viewCustomLabel language Translate.AcuteIllnessHighRiskCaseHelper "." "instructions"
 
+                FacilityHIVProgram ->
+                    viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions"
+
         sendToHCSection =
             let
                 sentToHealthCenter =
@@ -1192,10 +1209,19 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
 
                 reasonForNotSendingToHCInput =
                     if not sentToHealthCenter then
+                        let
+                            options =
+                                case facility of
+                                    FacilityHIVProgram ->
+                                        [ ClientRefused, ClientAlreadyInCare, ReasonForNotSendingToHCOther ]
+
+                                    _ ->
+                                        [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                        in
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
-                                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                                options
                                 []
                                 form.reasonForNotSendingToHC
                                 setReasonForNotSendingToHCMsg
@@ -1227,18 +1253,18 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
             ]
 
         accompanyToHCSection =
-            setAccompanyToHCMsg
-                |> Maybe.map
-                    (\msg ->
-                        [ viewQuestionLabel language Translate.AccompanyToHCQuestion
-                        , viewBoolInput
-                            language
-                            form.accompanyToHealthCenter
-                            msg
-                            "accompany-to-hc"
-                            Nothing
-                        ]
-                    )
+            Maybe.map
+                (\msg ->
+                    [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
+                    , viewBoolInput
+                        language
+                        form.accompanyToHealthCenter
+                        msg
+                        "accompany-to-hc"
+                        Nothing
+                    ]
+                )
+                setAccompanyToHCMsg
                 |> Maybe.withDefault []
     in
     div [ class "ui form send-to-hc" ] <|

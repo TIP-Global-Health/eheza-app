@@ -281,7 +281,7 @@ type TranslationId
     | Abnormal
     | Abortions
     | AccompaniedByPartner
-    | AccompanyToHCQuestion
+    | AccompanyToFacilityQuestion ReferralFacility
     | AccessDenied
     | ActionsTaken
     | ActionsToTake
@@ -864,6 +864,7 @@ type TranslationId
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
+    | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
@@ -1255,10 +1256,22 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi yaherekejwe n'umugabo we mu gihe yaje kwipimisha?"
             }
 
-        AccompanyToHCQuestion ->
-            { english = "Will you accompany the patient to the health center"
-            , kinyarwanda = Just "Uraherekeza umubyeyi ku kigonderabuzima"
-            }
+        AccompanyToFacilityQuestion facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Will you accompany the patient to the health center"
+                    , kinyarwanda = Just "Uraherekeza umubyeyi ku kigonderabuzima"
+                    }
+
+                FacilityHospital ->
+                    { english = "Will you accompany the patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Will you accompany the patient to Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
 
         AccessDenied ->
             { english = "Access denied"
@@ -2752,11 +2765,16 @@ translationSet trans =
             case facility of
                 FacilityHealthCenter ->
                     { english = "Complete a health center referral form"
-                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
+                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima"
                     }
 
                 FacilityHospital ->
                     { english = "Complete a hospital referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Complete an Integration HIV/PMTCT referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -5969,6 +5987,11 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
+                ClientAlreadyInCare ->
+                    { english = "Client already in care"
+                    , kinyarwanda = Nothing
+                    }
+
                 ReasonForNotSendingToHCOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
@@ -7439,6 +7462,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
+        PrenatalHIVProgramHelper ->
+            { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalHIVSignQuestion sign ->
             case sign of
                 HIVProgramHC ->
@@ -8621,6 +8649,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityHIVProgram ->
+                    { english = "Have you referred the patient to the Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
             , kinyarwanda = Nothing
@@ -9661,6 +9694,11 @@ translationSet trans =
 
                 FacilityHospital ->
                     { english = "Send patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Direct patient to the appropriate location"
                     , kinyarwanda = Nothing
                     }
 
