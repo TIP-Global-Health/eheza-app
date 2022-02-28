@@ -73,7 +73,7 @@ decodePrenatalDiagnosis =
                         succeed DiagnosisHIV
 
                     "partner-hiv" ->
-                        succeed DiagnosisPartnerHIV
+                        succeed DiagnosisDiscordantPartnership
 
                     "hepatitis-b" ->
                         succeed DiagnosisHepatitisB

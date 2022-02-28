@@ -277,8 +277,8 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    -- @todo
-                    False
+                    -- Appear whenever HIV test was performed.
+                    isJust assembled.measurements.hivTest
 
                 ChwPostpartumEncounter ->
                     True
@@ -707,6 +707,29 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
 matchLabResultsPrenatalDiagnosis : PrenatalMeasurements -> PrenatalDiagnosis -> Bool
 matchLabResultsPrenatalDiagnosis measurements diagnosis =
     case diagnosis of
+        DiagnosisHIV ->
+            getMeasurementValueFunc measurements.hivTest
+                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.withDefault False
+
+        DiagnosisDiscordantPartnership ->
+            getMeasurementValueFunc measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            && (-- Partner is not taking ARVs.
+                                (not <| EverySet.member PartnerTakingARV hivSigns)
+                                    || -- Partner is taking ARVs, but did not
+                                       -- reach surpressed viral load.
+                                       (EverySet.member PartnerTakingARV hivSigns
+                                            && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
+                                       )
+                               )
+                    )
+                |> Maybe.withDefault False
+
         DiagnosisHepatitisB ->
             getMeasurementValueFunc measurements.hepatitisBTest
                 |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
@@ -762,7 +785,7 @@ maternityWardDiagnoses =
 labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
     [ DiagnosisHIV
-    , DiagnosisPartnerHIV
+    , DiagnosisDiscordantPartnership
     , DiagnosisHepatitisB
     , DiagnosisMalaria
     ]

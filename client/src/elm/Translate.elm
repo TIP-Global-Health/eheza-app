@@ -7166,8 +7166,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisPartnerHIV ->
-                    { english = "HIV Positive Partner"
+                DiagnosisDiscordantPartnership ->
+                    { english = "Discordant Partnership"
                     , kinyarwanda = Nothing
                     }
 
@@ -7268,6 +7268,16 @@ translationSet trans =
 
         PrenatalDiagnosisLabResultsMessage diagnosis ->
             case diagnosis of
+                DiagnosisHIV ->
+                    { english = "Patient has tested positive for HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiscordantPartnership ->
+                    { english = "Patient is part of a discordant partnership"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHepatitisB ->
                     { english = "Patient has tested positive for Hepatitis B"
                     , kinyarwanda = Nothing

@@ -39,7 +39,7 @@ type PrenatalEncounterType
 type PrenatalDiagnosis
     = DiagnosisPrescribeMebendezole
     | DiagnosisHIV
-    | DiagnosisPartnerHIV
+    | DiagnosisDiscordantPartnership
     | DiagnosisHepatitisB
     | DiagnosisMalaria
     | DiagnosisEclampsia
