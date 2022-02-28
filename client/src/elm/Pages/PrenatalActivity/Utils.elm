@@ -853,10 +853,41 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
 
         familyPlanningInput =
             healthEducationFormFamilyPlanningInput language False form
+
+        partnerSurpressedViralLoad =
+            getMeasurementValueFunc assembled.measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            && -- Partner is taking ARVs.
+                               EverySet.member PartnerTakingARV hivSigns
+                            -- Partner reached surpressed viral load.
+                            && EverySet.member PartnerSurpressedViralLoad hivSigns
+                    )
+                |> Maybe.withDefault False
     in
-    ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
-    , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
-    )
+    if
+        List.any
+            (\diagnosis ->
+                EverySet.member diagnosis assembled.encounter.diagnoses
+            )
+            [ DiagnosisHIV, DiagnosisDiscordantPartnership ]
+    then
+        ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
+        , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
+        )
+
+    else if partnerSurpressedViralLoad then
+        ( saferSexInput
+        , [ form.saferSex ]
+        )
+
+    else
+        ( saferSexInput ++ partnerTestingInput
+        , [ form.saferSex, form.partnerTesting ]
+        )
 
 
 healthEducationFormFamilyPlanningInput : Language -> Bool -> HealthEducationForm -> List (Html Msg)
