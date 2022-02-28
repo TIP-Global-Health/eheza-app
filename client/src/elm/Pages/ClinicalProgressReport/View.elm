@@ -303,30 +303,43 @@ viewChwActivityPane language currentDate isChw data =
                     )
                 |> List.any (.lastMenstrualPeriod >> isJust)
 
-        activities activity =
-            let
-                activityClass =
-                    if activity == DangerSigns then
-                        "activity-red"
+        sentToHCActivity =
+            allMeasurementsWithDates
+                |> List.filterMap
+                    (\( date_, encounterType_, measurements ) ->
+                        if encounterType_ /= NurseEncounter then
+                            Just measurements
 
-                    else if activity == Laboratory && activity == PregnancyDating then
-                        "activity-blue"
+                        else
+                            Nothing
+                    )
+                |> List.any (.sendToHC >> isJust)
 
-                    else if activity == HealthEducation && activity == BirthPlan then
-                        "activity-cyan"
+        activityClass =
+            if sentToHCActivity then
+                "activity-red"
 
-                    else
-                        "no-activity"
-            in
-            if pregnancyDatingAction then
-                div [ class "entry" ]
-                    [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
-                    , div [ class <| "cell activity " ++ activityClass ]
-                        [ text <| translate language <| Translate.PrenatalActivitiesTitle activity ]
-                    ]
+            else if pregnancyDatingAction then
+                "activity-blue"
+
+            else
+                ""
+
+        activity =
+            if sentToHCActivity then
+                li [] [ text "Danger Sign" ]
+
+            else if pregnancyDatingAction then
+                li [] [ text "Pregnancy Dating" ]
 
             else
                 emptyNode
+
+        activities =
+            div [ class "entry" ]
+                [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
+                , div [ style "color" "black", class <| "cell activity " ++ activityClass ] [ ul [] [ activity ] ]
+                ]
 
         heading =
             div [ class "heading" ]
@@ -337,7 +350,7 @@ viewChwActivityPane language currentDate isChw data =
     div [ class "chw-activity" ] <|
         [ viewItemHeading language Translate.ChwActivity "blue"
         , div [ class "pane-content" ] [ heading ]
-        , activities PregnancyDating
+        , activities
         ]
 
 
