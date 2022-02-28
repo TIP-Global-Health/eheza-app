@@ -194,6 +194,15 @@ encodePrenatalHealthEducationSign sign =
             EducationHygiene ->
                 "hygiene"
 
+            EducationPositiveHIV ->
+                "positive-hiv"
+
+            EducationSaferSex ->
+                "safer-sex"
+
+            EducationPartnerTesting ->
+                "partner-testing"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

@@ -232,7 +232,7 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -793,6 +793,90 @@ labResultsDiagnoses =
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
+
+        _ ->
+            healthEducationFormInputsAndTasksForChw language assembled healthEducationForm
+
+
+healthEducationFormInputsAndTasksForNurse : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm =
+    let
+        form =
+            assembled.measurements.healthEducation
+                |> getMeasurementValueFunc
+                |> healthEducationFormWithDefault healthEducationForm
+
+        translatePrenatalHealthEducationQuestion =
+            Translate.PrenatalHealthEducationQuestion False
+
+        positiveHIVUpdateFunc value form_ =
+            { form_ | positiveHIV = Just value }
+
+        positiveHIVInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
+            , viewBoolInput
+                language
+                form.positiveHIV
+                (SetHealthEducationBoolInput positiveHIVUpdateFunc)
+                "positive-hiv"
+                Nothing
+            ]
+
+        saferSexUpdateFunc value form_ =
+            { form_ | saferSex = Just value }
+
+        saferSexInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSex
+            , viewBoolInput
+                language
+                form.saferSex
+                (SetHealthEducationBoolInput saferSexUpdateFunc)
+                "safer-sex"
+                Nothing
+            ]
+
+        partnerTestingUpdateFunc value form_ =
+            { form_ | partnerTesting = Just value }
+
+        partnerTestingInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPartnerTesting
+            , viewBoolInput
+                language
+                form.partnerTesting
+                (SetHealthEducationBoolInput partnerTestingUpdateFunc)
+                "partner-testing"
+                Nothing
+            ]
+
+        familyPlanningInput =
+            healthEducationFormFamilyPlanningInput language False form
+    in
+    ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
+    , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
+    )
+
+
+healthEducationFormFamilyPlanningInput : Language -> Bool -> HealthEducationForm -> List (Html Msg)
+healthEducationFormFamilyPlanningInput language isChw form =
+    let
+        familyPlanningUpdateFunc value form_ =
+            { form_ | familyPlanning = Just value }
+    in
+    [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion isChw EducationFamilyPlanning
+    , viewBoolInput
+        language
+        form.familyPlanning
+        (SetHealthEducationBoolInput familyPlanningUpdateFunc)
+        "family-planning"
+        Nothing
+    ]
+
+
+healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForChw language assembled healthEducationForm =
     let
         form =
             assembled.measurements.healthEducation
@@ -849,8 +933,11 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 _ ->
                     SetHealthEducationBoolInput
 
+        translatePrenatalHealthEducationQuestion =
+            Translate.PrenatalHealthEducationQuestion True
+
         expectationsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationExpectations
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationExpectations
             , viewBoolInput
                 language
                 form.expectations
@@ -863,7 +950,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | visitsReview = Just value }
 
         visitsReviewInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationVisitsReview
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationVisitsReview
             , viewBoolInput
                 language
                 form.visitsReview
@@ -876,7 +963,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | warningSigns = Just value }
 
         warningSignsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationWarningSigns
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationWarningSigns
             , viewBoolInput
                 language
                 form.warningSigns
@@ -889,7 +976,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | hemorrhaging = Just value }
 
         hemorrhagingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHemorrhaging
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationHemorrhaging
             , viewBoolInput
                 language
                 form.hemorrhaging
@@ -898,24 +985,14 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 Nothing
             ]
 
-        familyPlanningUpdateFunc value form_ =
-            { form_ | familyPlanning = Just value }
-
         familyPlanningInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationFamilyPlanning
-            , viewBoolInput
-                language
-                form.familyPlanning
-                (setBoolInputMsg familyPlanningUpdateFunc)
-                "family-planning"
-                Nothing
-            ]
+            healthEducationFormFamilyPlanningInput language True form
 
         breastfeedingUpdateFunc value form_ =
             { form_ | breastfeeding = Just value }
 
         breastfeedingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationBreastfeeding
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationBreastfeeding
             , viewBoolInput
                 language
                 form.breastfeeding
@@ -928,7 +1005,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | immunization = Just value }
 
         immunizationInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationImmunization
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationImmunization
             , viewBoolInput
                 language
                 form.immunization
@@ -941,7 +1018,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | hygiene = Just value }
 
         hygieneInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHygiene
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationHygiene
             , viewBoolInput
                 language
                 form.hygiene
@@ -2107,19 +2184,6 @@ toBirthPlanValue form =
         |> andMap (Maybe.map EverySet.fromList form.familyPlanning)
 
 
-fromHealthEducationValue : Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
-fromHealthEducationValue saved =
-    { expectations = Maybe.map (EverySet.member EducationExpectations) saved
-    , visitsReview = Maybe.map (EverySet.member EducationVisitsReview) saved
-    , warningSigns = Maybe.map (EverySet.member EducationWarningSigns) saved
-    , hemorrhaging = Maybe.map (EverySet.member EducationHemorrhaging) saved
-    , familyPlanning = Maybe.map (EverySet.member EducationFamilyPlanning) saved
-    , breastfeeding = Maybe.map (EverySet.member EducationBreastfeeding) saved
-    , immunization = Maybe.map (EverySet.member EducationImmunization) saved
-    , hygiene = Maybe.map (EverySet.member EducationHygiene) saved
-    }
-
-
 healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
 healthEducationFormWithDefault form saved =
     saved
@@ -2134,6 +2198,9 @@ healthEducationFormWithDefault form saved =
                 , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding signs |> Just)
                 , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
                 , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
+                , positiveHIV = or form.hygiene (EverySet.member EducationPositiveHIV signs |> Just)
+                , saferSex = or form.hygiene (EverySet.member EducationSaferSex signs |> Just)
+                , partnerTesting = or form.hygiene (EverySet.member EducationPartnerTesting signs |> Just)
                 }
             )
 
@@ -2154,6 +2221,9 @@ toHealthEducationValue form =
     , ifNullableTrue EducationBreastfeeding form.breastfeeding
     , ifNullableTrue EducationImmunization form.immunization
     , ifNullableTrue EducationHygiene form.hygiene
+    , ifNullableTrue EducationPositiveHIV form.hygiene
+    , ifNullableTrue EducationSaferSex form.hygiene
+    , ifNullableTrue EducationPartnerTesting form.hygiene
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

@@ -3929,17 +3929,18 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                 mandatoryActivitiesCompleted
             then
                 let
-                    -- _ =
-                    --     Debug.log "diagnosesBefore" diagnosesBefore
-                    --
-                    -- _ =
-                    --     Debug.log "diagnosesAfter" diagnosesAfter
-                    --
-                    -- _ =
-                    --     Debug.log "addedDiagnoses" addedDiagnoses
-                    --
-                    -- _ =
-                    --     Debug.log "initialEncounterMsgs" initialEncounterMsgs
+                    _ =
+                        Debug.log "diagnosesBefore" diagnosesBefore
+
+                    _ =
+                        Debug.log "diagnosesAfter" diagnosesAfter
+
+                    _ =
+                        Debug.log "addedDiagnoses" addedDiagnoses
+
+                    _ =
+                        Debug.log "initialEncounterMsgs" initialEncounterMsgs
+
                     diagnosesBefore =
                         Pages.PrenatalActivity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledBefore
 

@@ -863,7 +863,7 @@ type TranslationId
     | PrenatalDiagnosis PrenatalDiagnosis
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
-    | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
@@ -7321,7 +7321,7 @@ translationSet trans =
                     , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
                     }
 
-        PrenatalHealthEducationQuestion sign ->
+        PrenatalHealthEducationQuestion isChw sign ->
             case sign of
                 EducationExpectations ->
                     { english = "Have you provided health education and anticipatory guidance on what to expect during the pregnancy"
@@ -7344,9 +7344,15 @@ translationSet trans =
                     }
 
                 EducationFamilyPlanning ->
-                    { english = "Have you provided education on family planning"
-                    , kinyarwanda = Just "Watanze inyigisho zijyanye no kuboneza urubyaro"
-                    }
+                    if isChw then
+                        { english = "Have you provided education on family planning"
+                        , kinyarwanda = Just "Watanze inyigisho zijyanye no kuboneza urubyaro"
+                        }
+
+                    else
+                        { english = "Have you counseled the patient on family planning options"
+                        , kinyarwanda = Nothing
+                        }
 
                 EducationBreastfeeding ->
                     { english = "Have you provided education on breastfeeding"
@@ -7361,6 +7367,21 @@ translationSet trans =
                 EducationHygiene ->
                     { english = "Have you provided education on hygiene"
                     , kinyarwanda = Just "Watanze inyigisho ku bijyanye n'isuku"
+                    }
+
+                EducationPositiveHIV ->
+                    { english = "Have you counseled patient on positive HIV test meaning"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationSaferSex ->
+                    { english = "Have you counseled patient on safer sex practices"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationPartnerTesting ->
+                    { english = "Have you encouraged the patient’s partner to get tested"
+                    , kinyarwanda = Nothing
                     }
 
                 NoPrenatalHealthEducationSigns ->

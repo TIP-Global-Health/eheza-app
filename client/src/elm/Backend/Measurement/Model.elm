@@ -793,6 +793,9 @@ type PrenatalHealthEducationSign
     | EducationBreastfeeding
     | EducationImmunization
     | EducationHygiene
+    | EducationPositiveHIV
+    | EducationSaferSex
+    | EducationPartnerTesting
     | NoPrenatalHealthEducationSigns
 
 

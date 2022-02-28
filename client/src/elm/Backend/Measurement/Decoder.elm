@@ -301,6 +301,15 @@ decodePrenatalHealthEducationSign =
                     "hygiene" ->
                         succeed EducationHygiene
 
+                    "positive-hiv" ->
+                        succeed EducationPositiveHIV
+
+                    "safer-sex" ->
+                        succeed EducationSaferSex
+
+                    "partner-testing" ->
+                        succeed EducationPartnerTesting
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

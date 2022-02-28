@@ -854,6 +854,9 @@ type alias HealthEducationForm =
     , breastfeeding : Maybe Bool
     , immunization : Maybe Bool
     , hygiene : Maybe Bool
+    , positiveHIV : Maybe Bool
+    , saferSex : Maybe Bool
+    , partnerTesting : Maybe Bool
     }
 
 
@@ -867,6 +870,9 @@ emptyHealthEducationForm =
     , breastfeeding = Nothing
     , immunization = Nothing
     , hygiene = Nothing
+    , positiveHIV = Nothing
+    , saferSex = Nothing
+    , partnerTesting = Nothing
     }
 
 
