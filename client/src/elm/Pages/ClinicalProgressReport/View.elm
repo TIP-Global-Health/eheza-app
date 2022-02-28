@@ -327,10 +327,10 @@ viewChwActivityPane language currentDate isChw data =
 
         activity =
             if sentToHCActivity then
-                li [] [ text "Danger Sign" ]
+                li [ class activityClass ] [ text "Referred Health Center" ]
 
             else if pregnancyDatingAction then
-                li [] [ text "Pregnancy Dating" ]
+                li [ class activityClass ] [ text "Pregnancy Dating" ]
 
             else
                 emptyNode
@@ -338,7 +338,7 @@ viewChwActivityPane language currentDate isChw data =
         activities =
             div [ class "entry" ]
                 [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
-                , div [ style "color" "black", class <| "cell activity " ++ activityClass ] [ ul [] [ activity ] ]
+                , div [ class <| "cell activity" ] [ ul [] [ activity ] ]
                 ]
 
         heading =
