@@ -2395,11 +2395,10 @@ update currentDate id db msg model =
 
         SetHealthEducationBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.healthEducationData.form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.healthEducationData.form
-                    in
                     model.healthEducationData
                         |> (\data -> { data | form = updatedForm })
             in

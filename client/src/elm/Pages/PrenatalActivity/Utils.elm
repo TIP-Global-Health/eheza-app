@@ -820,7 +820,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
             , viewBoolInput
                 language
                 form.positiveHIV
-                (SetHealthEducationBoolInput positiveHIVUpdateFunc)
+                (SetHealthEducationSubActivityBoolInput positiveHIVUpdateFunc)
                 "positive-hiv"
                 Nothing
             ]
@@ -833,7 +833,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
             , viewBoolInput
                 language
                 form.saferSex
-                (SetHealthEducationBoolInput saferSexUpdateFunc)
+                (SetHealthEducationSubActivityBoolInput saferSexUpdateFunc)
                 "safer-sex"
                 Nothing
             ]
@@ -846,7 +846,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
             , viewBoolInput
                 language
                 form.partnerTesting
-                (SetHealthEducationBoolInput partnerTestingUpdateFunc)
+                (SetHealthEducationSubActivityBoolInput partnerTestingUpdateFunc)
                 "partner-testing"
                 Nothing
             ]
@@ -869,7 +869,7 @@ healthEducationFormFamilyPlanningInput language isChw form =
     , viewBoolInput
         language
         form.familyPlanning
-        (SetHealthEducationBoolInput familyPlanningUpdateFunc)
+        (SetHealthEducationSubActivityBoolInput familyPlanningUpdateFunc)
         "family-planning"
         Nothing
     ]
