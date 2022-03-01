@@ -2747,7 +2747,7 @@ expectLaboratoryTask currentDate assembled task =
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
 generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     let
-        generateTestDates getMeasurementFunc resultsExistFunc =
+        generateTestDates getMeasurementFunc resultsExistFunc resultsValidFunc =
             List.filterMap
                 (\( _, measurements ) ->
                     let
@@ -2769,7 +2769,12 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
                         |> Maybe.andThen
                             (\value ->
                                 if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
-                                    if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate > prenatalLabExpirationPeriod) then
+                                    if resultsExistFunc value && (not <| resultsValidFunc value) then
+                                        -- Entered result is not valid, therefore,
+                                        -- we treat the test as if it was not performed.
+                                        Nothing
+
+                                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate > prenatalLabExpirationPeriod) then
                                         -- No results were entered for more than 14 days since the
                                         -- day on which measurement was taken.
                                         -- Test is considered expired, and is being ignored
@@ -2784,15 +2789,20 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
                             )
                 )
                 assembled.nursePreviousMeasurementsWithDates
+
+        isTestResultValid =
+            .testResult
+                >> Maybe.map ((/=) PrenatalTestIndeterminate)
+                >> Maybe.withDefault True
     in
-    [ ( TaskHIVTest, generateTestDates .hivTest (always True) )
-    , ( TaskSyphilisTest, generateTestDates .syphilisTest (.testResult >> isJust) )
-    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest (.testResult >> isJust) )
-    , ( TaskMalariaTest, generateTestDates .malariaTest (always True) )
-    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest (.bloodGroup >> isJust) )
-    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) )
-    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) )
-    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) )
+    [ ( TaskHIVTest, generateTestDates .hivTest (always True) isTestResultValid )
+    , ( TaskSyphilisTest, generateTestDates .syphilisTest (.testResult >> isJust) isTestResultValid )
+    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest (.testResult >> isJust) isTestResultValid )
+    , ( TaskMalariaTest, generateTestDates .malariaTest (always True) isTestResultValid )
+    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest (.bloodGroup >> isJust) (always True) )
+    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
+    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) (always True) )
+    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
     ]
         |> Dict.fromList
 
