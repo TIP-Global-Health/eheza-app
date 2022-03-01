@@ -2929,7 +2929,7 @@ viewPrenatalHIVTestForm language currentDate form =
                                         let
                                             updateFunc =
                                                 \value form_ ->
-                                                    { form_ | hivProgramHC = Just value }
+                                                    { form_ | hivProgramHC = Just value, hivProgramHCDirty = True }
                                         in
                                         ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion HIVProgramHC
                                           , viewBoolInput
@@ -2953,6 +2953,7 @@ viewPrenatalHIVTestForm language currentDate form =
                                                         , partnerTakingARV = Nothing
                                                         , partnerTakingARVDirty = True
                                                         , partnerSurpressedViralLoad = Nothing
+                                                        , partnerSurpressedViralLoadDirty = True
                                                     }
 
                                             ( partnerHivStatusSection, partnerHivStatusTasksCompleted, partnerHivStatusTasksTotal ) =
@@ -2964,6 +2965,7 @@ viewPrenatalHIVTestForm language currentDate form =
                                                                     | partnerTakingARV = Just value
                                                                     , partnerTakingARVDirty = True
                                                                     , partnerSurpressedViralLoad = Nothing
+                                                                    , partnerSurpressedViralLoadDirty = True
                                                                 }
 
                                                         ( partnerARVSection, partnerARVTasksCompleted, partnerARVTasksTotal ) =
@@ -2971,7 +2973,7 @@ viewPrenatalHIVTestForm language currentDate form =
                                                                 let
                                                                     partnerSurpressedViralLoadUpdateFunc =
                                                                         \value form_ ->
-                                                                            { form_ | partnerSurpressedViralLoad = Just value }
+                                                                            { form_ | partnerSurpressedViralLoad = Just value, partnerSurpressedViralLoadDirty = True }
                                                                 in
                                                                 ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerSurpressedViralLoad
                                                                   , viewBoolInput

@@ -789,11 +789,13 @@ type alias PrenatalHIVTestForm =
     , executionDateDirty : Bool
     , testResult : Maybe PrenatalTestResult
     , hivProgramHC : Maybe Bool
+    , hivProgramHCDirty : Bool
     , partnerHIVPositive : Maybe Bool
     , partnerHIVPositiveDirty : Bool
     , partnerTakingARV : Maybe Bool
     , partnerTakingARVDirty : Bool
     , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
@@ -811,11 +813,13 @@ emptyPrenatalHIVTestForm =
     , executionDateDirty = False
     , testResult = Nothing
     , hivProgramHC = Nothing
+    , hivProgramHCDirty = False
     , partnerHIVPositive = Nothing
     , partnerHIVPositiveDirty = False
     , partnerTakingARV = Nothing
     , partnerTakingARVDirty = False
     , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
     , dateSelectorPopupState = Nothing
     }
 

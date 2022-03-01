@@ -1602,11 +1602,13 @@ update currentDate id db msg model =
                     { form
                         | testResult = prenatalTestResultFromString value
                         , hivProgramHC = Nothing
+                        , hivProgramHCDirty = True
                         , partnerHIVPositive = Nothing
                         , partnerHIVPositiveDirty = True
                         , partnerTakingARV = Nothing
                         , partnerTakingARVDirty = True
                         , partnerSurpressedViralLoad = Nothing
+                        , partnerSurpressedViralLoadDirty = True
                     }
 
                 updatedData =

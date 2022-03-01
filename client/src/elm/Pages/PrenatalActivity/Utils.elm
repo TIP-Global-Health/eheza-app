@@ -2419,6 +2419,7 @@ prenatalHIVTestFormWithDefault form saved =
                     hivProgramHCValue =
                         Maybe.map (EverySet.member HIVProgramHC)
                             value.hivSigns
+                            |> Maybe.withDefault False
 
                     partnerHIVPositiveValue =
                         Maybe.map (EverySet.member PartnerHIVPositive)
@@ -2433,6 +2434,7 @@ prenatalHIVTestFormWithDefault form saved =
                     partnerSurpressedViralLoadValue =
                         Maybe.map (EverySet.member PartnerSurpressedViralLoad)
                             value.hivSigns
+                            |> Maybe.withDefault False
                 in
                 { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
                 , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
@@ -2444,12 +2446,14 @@ prenatalHIVTestFormWithDefault form saved =
                 , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
                 , executionDateDirty = form.executionDateDirty
                 , testResult = or form.testResult value.testResult
-                , hivProgramHC = or form.hivProgramHC hivProgramHCValue
+                , hivProgramHC = valueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC hivProgramHCValue
+                , hivProgramHCDirty = form.hivProgramHCDirty
                 , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
                 , partnerHIVPositiveDirty = form.partnerHIVPositiveDirty
                 , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
                 , partnerTakingARVDirty = form.partnerTakingARVDirty
-                , partnerSurpressedViralLoad = or form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
+                , partnerSurpressedViralLoad = valueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
+                , partnerSurpressedViralLoadDirty = form.partnerSurpressedViralLoadDirty
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
