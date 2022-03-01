@@ -1542,6 +1542,18 @@ nonAdministrationReasonToSign sign reason =
         Mebendezole ->
             MedicationMebendezole reason
 
+        Tenofovir ->
+            MedicationTenofovir reason
+
+        Lamivudine ->
+            MedicationLamivudine reason
+
+        Dolutegravir ->
+            MedicationDolutegravir reason
+
+        TDFWith3TC ->
+            MedicationTDFWith3TC reason
+
         _ ->
             NoMedicationNonAdministrationSigns
 

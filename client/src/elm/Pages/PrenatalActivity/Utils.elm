@@ -1240,9 +1240,6 @@ nextStepsTasksCompletedFromTotal language isChw assembled data task =
 
                     else
                         let
-                            nonAdministrationSigns =
-                                form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
-
                             valueSet =
                                 getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
                                     |> isJust
@@ -2883,3 +2880,23 @@ toMedicationDistributionValue form =
     in
     Maybe.map MedicationDistributionValue distributionSigns
         |> andMap nonAdministrationSigns
+
+
+resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveMebendezoleDosageAndIcon currentDate person =
+    Just ( "500 mg", "icon-pills" )
+
+
+resolveTenofovirDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveTenofovirDosageAndIcon currentDate person =
+    Just ( "300 mg", "icon-pills" )
+
+
+resolveLamivudineDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveLamivudineDosageAndIcon currentDate person =
+    Just ( "300 mg", "icon-pills" )
+
+
+resolveDolutegravirDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveDolutegravirDosageAndIcon currentDate person =
+    Just ( "50 mg", "icon-pills" )

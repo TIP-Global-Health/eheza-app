@@ -324,6 +324,7 @@ type TranslationId
     | AdministerAlbendazoleHelper
     | AdministerMebendezoleHelper
     | AdministerPrenatalMebendezoleHelper
+    | AdministerHIVARVHelper
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
@@ -1736,7 +1737,12 @@ translationSet trans =
 
         AdministerPrenatalMebendezoleHelper ->
             { english = "1 dose once a day for one day"
-            , kinyarwanda = Just "Abakuriye"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerHIVARVHelper ->
+            { english = "Take 1x a day by mouth"
+            , kinyarwanda = Nothing
             }
 
         AdministeVitaminAHelper ->

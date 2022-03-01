@@ -2715,6 +2715,21 @@ update currentDate id db msg model =
 
         SetMedicationDistributionAdministrationNote currentValue medication reason ->
             let
+                _ =
+                    Debug.log "currentValue" currentValue
+
+                _ =
+                    Debug.log "medication" medication
+
+                _ =
+                    Debug.log "reason" reason
+
+                _ =
+                    Debug.log "updatedValue" updatedValue
+
+                _ =
+                    Debug.log "updatedNonAdministrationSigns" updatedNonAdministrationSigns
+
                 form =
                     model.nextStepsData.medicationDistributionForm
 
