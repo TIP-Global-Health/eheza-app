@@ -2614,6 +2614,19 @@ decodeMedicationDistributionSign =
                     "paracetamol" ->
                         succeed Paracetamol
 
+                    "tenofovir" ->
+                        succeed Tenofovir
+
+                    "lamivudine" ->
+                        succeed Lamivudine
+
+                    "dolutegravir" ->
+                        succeed Dolutegravir
+
+                    "tdf-3tc" ->
+                        succeed
+                            TDFWith3TC
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2676,6 +2689,26 @@ decodeMedicationNonAdministrationSign =
                                     "mebendezole" ->
                                         administrationNote
                                             |> Maybe.map (MedicationMebendezole >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "tenofovir" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationTenofovir >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "lamivudine" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationLamivudine >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "dolutegravir" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationDolutegravir >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "tdf-3tc" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationTDFWith3TC >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

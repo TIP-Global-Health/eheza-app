@@ -1365,6 +1365,11 @@ type MedicationDistributionSign
     | Mebendezole
     | VitaminA
     | Paracetamol
+      -- HIV medication
+    | Tenofovir
+    | Lamivudine
+    | Dolutegravir
+    | TDFWith3TC
     | NoMedicationDistributionSigns
 
 
@@ -1387,6 +1392,10 @@ type MedicationNonAdministrationSign
     | MedicationZinc AdministrationNote
     | MedicationParacetamol AdministrationNote
     | MedicationMebendezole AdministrationNote
+    | MedicationTenofovir AdministrationNote
+    | MedicationLamivudine AdministrationNote
+    | MedicationDolutegravir AdministrationNote
+    | MedicationTDFWith3TC AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 

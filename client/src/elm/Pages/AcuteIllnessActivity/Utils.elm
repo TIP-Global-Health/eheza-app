@@ -2204,6 +2204,18 @@ resolveMedicationsNonAdministrationReasons measurements =
                         MedicationMebendezole reason ->
                             Just ( Mebendezole, reason )
 
+                        MedicationTenofovir reason ->
+                            Just ( Tenofovir, reason )
+
+                        MedicationLamivudine reason ->
+                            Just ( Lamivudine, reason )
+
+                        MedicationDolutegravir reason ->
+                            Just ( Dolutegravir, reason )
+
+                        MedicationTDFWith3TC reason ->
+                            Just ( TDFWith3TC, reason )
+
                         NoMedicationNonAdministrationSigns ->
                             Nothing
                 )

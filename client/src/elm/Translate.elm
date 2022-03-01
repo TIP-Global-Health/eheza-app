@@ -5540,6 +5540,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Tenofovir ->
+                    { english = "Tenofovir"
+                    , kinyarwanda = Nothing
+                    }
+
+                Lamivudine ->
+                    { english = "Lamivudine"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dolutegravir ->
+                    { english = "Dolutegravir"
+                    , kinyarwanda = Nothing
+                    }
+
+                TDFWith3TC ->
+                    { english = "TDF + 3TC"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing

@@ -2444,6 +2444,18 @@ encondeMedicationDistributionSign sign =
             Paracetamol ->
                 "paracetamol"
 
+            Tenofovir ->
+                "tenofovir"
+
+            Lamivudine ->
+                "lamivudine"
+
+            Dolutegravir ->
+                "dolutegravir"
+
+            TDFWith3TC ->
+                "tdf-3tc"
+
             NoMedicationDistributionSigns ->
                 "none"
 
@@ -2469,6 +2481,18 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationMebendezole reason ->
                 "mebendezole-" ++ administrationNoteToString reason
+
+            MedicationTenofovir reason ->
+                "tenofovir-" ++ administrationNoteToString reason
+
+            MedicationLamivudine reason ->
+                "lamivudine-" ++ administrationNoteToString reason
+
+            MedicationDolutegravir reason ->
+                "dolutegravir-" ++ administrationNoteToString reason
+
+            MedicationTDFWith3TC reason ->
+                "tdf-3tc-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

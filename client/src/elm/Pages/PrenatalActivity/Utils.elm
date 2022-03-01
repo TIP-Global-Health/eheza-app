@@ -2794,7 +2794,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
             .testResult
                 >> Maybe.map ((/=) PrenatalTestIndeterminate)
                 >> -- In case test result was not set yet, we consider
-                   -- it to bevalid, because results for some test are
+                   -- it to be valid, because results for some test are
                    -- updated after few hours, or even days.
                    Maybe.withDefault True
     in
