@@ -2277,9 +2277,9 @@ toHealthEducationValue form =
     , ifNullableTrue EducationBreastfeeding form.breastfeeding
     , ifNullableTrue EducationImmunization form.immunization
     , ifNullableTrue EducationHygiene form.hygiene
-    , ifNullableTrue EducationPositiveHIV form.hygiene
-    , ifNullableTrue EducationSaferSex form.hygiene
-    , ifNullableTrue EducationPartnerTesting form.hygiene
+    , ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
