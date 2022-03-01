@@ -2793,7 +2793,10 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
         isTestResultValid =
             .testResult
                 >> Maybe.map ((/=) PrenatalTestIndeterminate)
-                >> Maybe.withDefault True
+                >> -- In case test result was not set yet, we consider
+                   -- it to bevalid, because results for some test are
+                   -- updated after few hours, or even days.
+                   Maybe.withDefault True
     in
     [ ( TaskHIVTest, generateTestDates .hivTest (always True) isTestResultValid )
     , ( TaskSyphilisTest, generateTestDates .syphilisTest (.testResult >> isJust) isTestResultValid )
