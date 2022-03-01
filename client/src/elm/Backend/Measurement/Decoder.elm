@@ -2625,7 +2625,7 @@ decodeMedicationDistributionSign =
 
                     "tdf-3tc" ->
                         succeed
-                            TDFWith3TC
+                            TDF3TC
 
                     "none" ->
                         succeed NoMedicationDistributionSigns
@@ -2708,7 +2708,7 @@ decodeMedicationNonAdministrationSign =
 
                                     "tdf-3tc" ->
                                         administrationNote
-                                            |> Maybe.map (MedicationTDFWith3TC >> succeed)
+                                            |> Maybe.map (MedicationTDF3TC >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

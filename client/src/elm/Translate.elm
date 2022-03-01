@@ -5561,7 +5561,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TDFWith3TC ->
+                TDF3TC ->
                     { english = "TDF + 3TC"
                     , kinyarwanda = Nothing
                     }

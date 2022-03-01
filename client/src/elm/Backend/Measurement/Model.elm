@@ -1369,7 +1369,7 @@ type MedicationDistributionSign
     | Tenofovir
     | Lamivudine
     | Dolutegravir
-    | TDFWith3TC
+    | TDF3TC
     | NoMedicationDistributionSigns
 
 
@@ -1395,7 +1395,7 @@ type MedicationNonAdministrationSign
     | MedicationTenofovir AdministrationNote
     | MedicationLamivudine AdministrationNote
     | MedicationDolutegravir AdministrationNote
-    | MedicationTDFWith3TC AdministrationNote
+    | MedicationTDF3TC AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 

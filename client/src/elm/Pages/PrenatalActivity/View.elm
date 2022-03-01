@@ -9,7 +9,7 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueF
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (DateSelectorConfig, viewCalendarPopup)
 import EverySet exposing (EverySet)
@@ -2835,16 +2835,46 @@ resolveMedicationDistributionInputsAndTasks :
     -> MedicationDistributionForm
     -> ( List (Html Msg), Int, Int )
 resolveMedicationDistributionInputsAndTasks language currentDate person assembled form =
-    let
-        selectedMedications =
-            [ Mebendezole, Tenofovir, Lamivudine, Dolutegravir, TDFWith3TC ]
-    in
-    List.map (resolveMedicationDistributionInputsAndTasksForMedication language currentDate person form) selectedMedications
+    resolveMedicationsByDiagnoses assembled
+        |> List.map (resolveMedicationDistributionInputsAndTasksForMedication language currentDate person form)
         |> List.foldr
             (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
                 ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
             )
             ( [], 0, 0 )
+
+
+resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign
+resolveMedicationsByDiagnoses assembled =
+    List.filter
+        (\medication ->
+            let
+                hivDiagnosis =
+                    EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+
+                hivProgramHC =
+                    hivProgramAtHC assembled
+            in
+            case medication of
+                Mebendezole ->
+                    EverySet.member DiagnosisPrescribeMebendezole assembled.encounter.diagnoses
+
+                Tenofovir ->
+                    hivDiagnosis && hivProgramHC
+
+                Lamivudine ->
+                    hivDiagnosis && hivProgramHC
+
+                Dolutegravir ->
+                    hivDiagnosis && hivProgramHC
+
+                TDF3TC ->
+                    EverySet.member DiagnosisDiscordantPartnership assembled.encounter.diagnoses
+
+                _ ->
+                    False
+        )
+        [ Mebendezole, Tenofovir, Lamivudine, Dolutegravir, TDF3TC ]
 
 
 resolveMedicationDistributionInputsAndTasksForMedication :
@@ -2868,8 +2898,8 @@ resolveMedicationDistributionInputsAndTasksForMedication language currentDate pe
         Dolutegravir ->
             resolveDolutegravirDistributionInputsAndTasks language currentDate person form
 
-        TDFWith3TC ->
-            resolveTDFWith3TCDistributionInputsAndTasks language currentDate person form
+        TDF3TC ->
+            resolveTDF3TCDistributionInputsAndTasks language currentDate person form
 
         -- Other medications are not prescribed at Prenatal encounter.
         _ ->
@@ -3068,28 +3098,28 @@ resolveDolutegravirDistributionInputsAndTasks language currentDate person form =
     )
 
 
-resolveTDFWith3TCDistributionInputsAndTasks :
+resolveTDF3TCDistributionInputsAndTasks :
     Language
     -> NominalDate
     -> Person
     -> MedicationDistributionForm
     -> ( List (Html Msg), Int, Int )
-resolveTDFWith3TCDistributionInputsAndTasks language currentDate person form =
+resolveTDF3TCDistributionInputsAndTasks language currentDate person form =
     let
         instructions =
             div [ class "instructions" ]
-                [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign TDFWith3TC) "icon-pills" Nothing
+                [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign TDF3TC) "icon-pills" Nothing
                 , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                 ]
 
         updateFunc value form_ =
-            { form_ | tdf3tc = Just value, nonAdministrationSigns = updateNonAdministrationSigns TDFWith3TC MedicationTDFWith3TC value form_ }
+            { form_ | tdf3tc = Just value, nonAdministrationSigns = updateNonAdministrationSigns TDF3TC MedicationTDF3TC value form_ }
 
         ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
             if form.tdf3tc == Just False then
-                ( viewMedicationDistributionDerivedQuestion language TDFWith3TC MedicationTDFWith3TC form
+                ( viewMedicationDistributionDerivedQuestion language TDF3TC MedicationTDF3TC form
                 , taskCompleted <|
-                    getCurrentReasonForMedicationNonAdministration MedicationTDFWith3TC form
+                    getCurrentReasonForMedicationNonAdministration MedicationTDF3TC form
                 , 1
                 )
 
@@ -3097,7 +3127,7 @@ resolveTDFWith3TCDistributionInputsAndTasks language currentDate person form =
                 ( [], 0, 0 )
     in
     ( [ instructions
-      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign TDFWith3TC)
+      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign TDF3TC)
       , viewBoolInput
             language
             form.tdf3tc

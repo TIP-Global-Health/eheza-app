@@ -2453,7 +2453,7 @@ encondeMedicationDistributionSign sign =
             Dolutegravir ->
                 "dolutegravir"
 
-            TDFWith3TC ->
+            TDF3TC ->
                 "tdf-3tc"
 
             NoMedicationDistributionSigns ->
@@ -2491,7 +2491,7 @@ encodeMedicationNonAdministrationSign sign =
             MedicationDolutegravir reason ->
                 "dolutegravir-" ++ administrationNoteToString reason
 
-            MedicationTDFWith3TC reason ->
+            MedicationTDF3TC reason ->
                 "tdf-3tc-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->

@@ -1551,8 +1551,8 @@ nonAdministrationReasonToSign sign reason =
         Dolutegravir ->
             MedicationDolutegravir reason
 
-        TDFWith3TC ->
-            MedicationTDFWith3TC reason
+        TDF3TC ->
+            MedicationTDF3TC reason
 
         _ ->
             NoMedicationNonAdministrationSigns
@@ -2225,8 +2225,8 @@ resolveMedicationsNonAdministrationReasons measurements =
                         MedicationDolutegravir reason ->
                             Just ( Dolutegravir, reason )
 
-                        MedicationTDFWith3TC reason ->
-                            Just ( TDFWith3TC, reason )
+                        MedicationTDF3TC reason ->
+                            Just ( TDF3TC, reason )
 
                         NoMedicationNonAdministrationSigns ->
                             Nothing

@@ -274,15 +274,9 @@ expectNextStepsTask currentDate assembled task =
 
                         hivDiagnosis =
                             EverySet.member DiagnosisHIV assembled.encounter.diagnoses
-
-                        hivProgramAtHC =
-                            getMeasurementValueFunc assembled.measurements.hivTest
-                                |> Maybe.andThen .hivSigns
-                                |> Maybe.map (EverySet.member HIVProgramHC)
-                                |> Maybe.withDefault False
                     in
                     emergencyReferalDiagnosis
-                        || (hivDiagnosis && hivProgramAtHC)
+                        || (hivDiagnosis && hivProgramAtHC assembled)
 
                 _ ->
                     dangerSigns
@@ -317,6 +311,14 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.map (EverySet.member Mebendazole >> not)
                         |> Maybe.withDefault False
                    )
+
+
+hivProgramAtHC : AssembledData -> Bool
+hivProgramAtHC assembled =
+    getMeasurementValueFunc assembled.measurements.hivTest
+        |> Maybe.andThen .hivSigns
+        |> Maybe.map (EverySet.member HIVProgramHC)
+        |> Maybe.withDefault False
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -2847,7 +2849,7 @@ medicationDistributionFormWithDefault form saved =
                 , tenofovir = or form.tenofovir (EverySet.member Tenofovir value.distributionSigns |> Just)
                 , lamivudine = or form.lamivudine (EverySet.member Lamivudine value.distributionSigns |> Just)
                 , dolutegravir = or form.dolutegravir (EverySet.member Dolutegravir value.distributionSigns |> Just)
-                , tdf3tc = or form.tdf3tc (EverySet.member TDFWith3TC value.distributionSigns |> Just)
+                , tdf3tc = or form.tdf3tc (EverySet.member TDF3TC value.distributionSigns |> Just)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
@@ -2867,7 +2869,7 @@ toMedicationDistributionValue form =
             , ifNullableTrue Tenofovir form.tenofovir
             , ifNullableTrue Lamivudine form.lamivudine
             , ifNullableTrue Dolutegravir form.dolutegravir
-            , ifNullableTrue TDFWith3TC form.tdf3tc
+            , ifNullableTrue TDF3TC form.tdf3tc
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
