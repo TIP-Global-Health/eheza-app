@@ -2254,9 +2254,9 @@ healthEducationFormWithDefault form saved =
                 , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding signs |> Just)
                 , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
                 , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
-                , positiveHIV = or form.hygiene (EverySet.member EducationPositiveHIV signs |> Just)
-                , saferSex = or form.hygiene (EverySet.member EducationSaferSex signs |> Just)
-                , partnerTesting = or form.hygiene (EverySet.member EducationPartnerTesting signs |> Just)
+                , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
+                , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
                 }
             )
 
