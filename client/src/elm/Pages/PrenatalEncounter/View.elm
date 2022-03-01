@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.View exposing (generateActivityData, view, viewMotherAndMeasurements, viewPersonDetails)
+module Pages.PrenatalEncounter.View exposing (generateActivityData, view, viewMotherAndMeasurements)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
@@ -33,18 +33,12 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Utils exposing (activityCompleted, expectActivity, noDangerSigns)
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
+import Pages.Utils exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 120
-    , height = 120
-    }
 
 
 view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
@@ -186,72 +180,6 @@ viewMotherDetails language currentDate isChw data alertsDialogData =
     div [ class "item" ] <|
         viewPersonDetails language currentDate mother Nothing
             ++ alertsDialogSection
-
-
-viewPersonDetails : Language -> NominalDate -> Person -> Maybe TranslationId -> List (Html msg)
-viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
-    let
-        isAdult =
-            isPersonAnAdult currentDate person
-                |> Maybe.withDefault True
-
-        isAboveAgeOf2Years =
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age >= 2)
-                |> Maybe.withDefault False
-
-        ( thumbnailClass, maybeAge ) =
-            if isAdult then
-                ( "mother"
-                , ageInYears currentDate person
-                    |> Maybe.map (\age -> translate language <| Translate.YearsOld age)
-                )
-
-            else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
-                ( "child"
-                , person.birthDate
-                    |> Maybe.map
-                        (\birthDate -> renderAgeFunc language birthDate currentDate)
-                )
-    in
-    [ div [ class "ui image" ]
-        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
-    , div [ class "content person-details" ]
-        [ h2 [ class "ui header" ]
-            [ text person.name ]
-        , maybeAge
-            |> Maybe.map
-                (\age ->
-                    p [ class "age-wrapper" ]
-                        [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
-                        , span [] [ text age ]
-                        ]
-                )
-            |> Maybe.withDefault emptyNode
-        , maybeDiagnosisTranslationId
-            |> Maybe.map
-                (\diagnosis ->
-                    div
-                        [ classList
-                            [ ( "diagnosis-wrapper", True )
-                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19Suspect )
-                            ]
-                        ]
-                        [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
-                        , div [ class "diagnosis" ] [ text <| translate language diagnosis ]
-                        ]
-                )
-            |> Maybe.withDefault emptyNode
-        ]
-    ]
 
 
 alertsDialog :
