@@ -406,13 +406,17 @@ emptyNextStepsData =
 
 type alias MedicationDistributionForm =
     { mebendezole : Maybe Bool
+    , tenofovir : Maybe Bool
+    , lamivudine : Maybe Bool
+    , dolutegravir : Maybe Bool
+    , tdf3tc : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     }
 
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
-    MedicationDistributionForm Nothing Nothing
+    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 

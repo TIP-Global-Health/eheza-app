@@ -306,10 +306,12 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
+            --@todo
             -- Emergency refferal is not required.
-            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
-                && -- We were asking if Mebendazole was given already.
-                   showMebendazoleQuestion currentDate assembled
+            -- (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
+            --     &&
+            -- We were asking if Mebendazole was given already.
+            showMebendazoleQuestion currentDate assembled
                 && -- The answer was that Mebendazole was not given yet.
                    (getMeasurementValueFunc assembled.measurements.medication
                         |> Maybe.map (EverySet.member Mebendazole >> not)
@@ -2845,6 +2847,10 @@ medicationDistributionFormWithDefault form saved =
             form
             (\value ->
                 { mebendezole = or form.mebendezole (EverySet.member Mebendezole value.distributionSigns |> Just)
+                , tenofovir = or form.tenofovir (EverySet.member Tenofovir value.distributionSigns |> Just)
+                , lamivudine = or form.lamivudine (EverySet.member Lamivudine value.distributionSigns |> Just)
+                , dolutegravir = or form.dolutegravir (EverySet.member Dolutegravir value.distributionSigns |> Just)
+                , tdf3tc = or form.tdf3tc (EverySet.member TDFWith3TC value.distributionSigns |> Just)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
@@ -2861,6 +2867,10 @@ toMedicationDistributionValue form =
     let
         distributionSigns =
             [ ifNullableTrue Mebendezole form.mebendezole
+            , ifNullableTrue Tenofovir form.tenofovir
+            , ifNullableTrue Lamivudine form.lamivudine
+            , ifNullableTrue Dolutegravir form.dolutegravir
+            , ifNullableTrue TDFWith3TC form.tdf3tc
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
