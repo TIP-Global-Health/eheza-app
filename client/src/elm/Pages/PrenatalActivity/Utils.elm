@@ -318,9 +318,9 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.withDefault False
                    )
 
+        -- Exclusive Nurse task.
         NextStepsRecommendedTreatment ->
-            -- @todo
-            True
+            EverySet.member DiagnosisMalaria assembled.encounter.diagnoses
 
 
 generateNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
@@ -774,6 +774,11 @@ matchLabResultsPrenatalDiagnosis measurements diagnosis =
 
         DiagnosisHepatitisB ->
             getMeasurementValueFunc measurements.hepatitisBTest
+                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.withDefault False
+
+        DiagnosisMalaria ->
+            getMeasurementValueFunc measurements.malariaTest
                 |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
                 |> Maybe.withDefault False
 

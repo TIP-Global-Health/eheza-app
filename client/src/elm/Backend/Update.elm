@@ -1723,6 +1723,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
+                [ PrenatalMalariaTestRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ PrenatalUrineDipstickTestRevision uid data ] ->
                     let
                         ( newModel, extraMsgs ) =

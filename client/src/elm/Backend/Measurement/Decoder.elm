@@ -739,7 +739,7 @@ decodePrenatalMedicationDistribution =
 decodePrenatalRecommendedTreatment : Decoder PrenatalRecommendedTreatment
 decodePrenatalRecommendedTreatment =
     decodeEverySet decodeRecommendedTreatmentSign
-        |> field "prenatal_recommended_treatment"
+        |> field "recommended_treatment"
         |> decodePrenatalMeasurement
 
 
