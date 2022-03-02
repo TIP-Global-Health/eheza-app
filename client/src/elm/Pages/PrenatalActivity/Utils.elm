@@ -1260,8 +1260,15 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             ( completed, total )
 
         NextStepsRecommendedTreatment ->
-            -- @todo
-            ( 0, 1 )
+            let
+                form =
+                    assembled.measurements.recommendedTreatment
+                        |> getMeasurementValueFunc
+                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
