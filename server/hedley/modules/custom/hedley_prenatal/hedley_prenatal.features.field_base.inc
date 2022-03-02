@@ -503,6 +503,34 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_recommended_treatment'.
+  $field_bases['field_recommended_treatment'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_recommended_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'quinine-sulphate' => 'Quinine Sulphate',
+        'coartem' => 'Coartem',
+        'written-protocols' => 'Written Protocols',
+        'refer-to-hospital' => 'Refer to Hospital',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_rhesus'.
   $field_bases['field_rhesus'] = array(
     'active' => 1,
