@@ -6,12 +6,12 @@
  */
 
 $plugin = array(
-  'label' => t('Prenatal Recommended Treatment'),
-  'resource' => 'prenatal-recommended-treatment',
-  'name' => 'prenatal-recommended-treatment',
+  'label' => t('Prenatal Nutritions'),
+  'resource' => 'prenatal-nutritions',
+  'name' => 'prenatal-nutritions',
   'entity_type' => 'node',
-  'bundle' => 'prenatal_recommended_treatment',
+  'bundle' => 'prenatal_nutrition',
   'description' => t('Exports the Prenatal Nutrition bundle.'),
-  'class' => 'HedleyRestfulPrenatalRecommendedTreatment',
+  'class' => 'HedleyRestfulPrenatalNutritions',
   'authentication_types' => TRUE,
 );
