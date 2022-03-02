@@ -58,7 +58,6 @@ import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -70,6 +69,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
+        , viewPersonDetails
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel

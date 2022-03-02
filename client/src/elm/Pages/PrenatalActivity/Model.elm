@@ -17,6 +17,7 @@ type Msg
     | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe ( String, String ))
+    | ViewWarningPopupForNonUrgentDiagnoses
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
@@ -97,7 +98,7 @@ type Msg
     | SetActiveLaboratoryTask LaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
-    | SetHIVTestFormBoolInput (Bool -> PrenatalLabsRDTForm -> PrenatalLabsRDTForm) Bool
+    | SetHIVTestFormBoolInput (Bool -> PrenatalHIVTestForm -> PrenatalHIVTestForm) Bool
     | SetHIVTestExecutionNote PrenatalTestExecutionNote
     | SetHIVTestExecutionDate NominalDate
     | SetHIVTestResult String
@@ -113,7 +114,7 @@ type Msg
     | SetHepatitisBTestExecutionDate NominalDate
     | SetHepatitisBTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
-    | SetMalariaTestFormBoolInput (Bool -> PrenatalLabsRDTForm -> PrenatalLabsRDTForm) Bool
+    | SetMalariaTestFormBoolInput (Bool -> PrenatalMalariaTestForm -> PrenatalMalariaTestForm) Bool
     | SetMalariaTestExecutionNote PrenatalTestExecutionNote
     | SetMalariaTestExecutionDate NominalDate
     | SetMalariaTestResult String
@@ -347,8 +348,8 @@ type alias LaboratoryData =
     , bloodGpRsTestForm : PrenatalLabsNonRDTForm
     , hemoglobinTestForm : PrenatalLabsNonRDTForm
     , hepatitisBTestForm : PrenatalLabsNonRDTForm
-    , hivTestForm : PrenatalLabsRDTForm
-    , malariaTestForm : PrenatalLabsRDTForm
+    , hivTestForm : PrenatalHIVTestForm
+    , malariaTestForm : PrenatalMalariaTestForm
     , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
     , urineDipstickTestForm : PrenatalUrineDipstickForm
@@ -362,8 +363,8 @@ emptyLaboratoryData =
     , bloodGpRsTestForm = emptyPrenatalLabsNonRDTForm
     , hemoglobinTestForm = emptyPrenatalLabsNonRDTForm
     , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
-    , hivTestForm = emptyPrenatalLabsRDTForm
-    , malariaTestForm = emptyPrenatalLabsRDTForm
+    , hivTestForm = emptyPrenatalHIVTestForm
+    , malariaTestForm = emptyPrenatalMalariaTestForm
     , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
@@ -406,13 +407,17 @@ emptyNextStepsData =
 
 type alias MedicationDistributionForm =
     { mebendezole : Maybe Bool
+    , tenofovir : Maybe Bool
+    , lamivudine : Maybe Bool
+    , dolutegravir : Maybe Bool
+    , tdf3tc : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     }
 
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
-    MedicationDistributionForm Nothing Nothing
+    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 
@@ -720,9 +725,8 @@ type alias PregnancyTestForm =
     }
 
 
-type alias PrenatalLabsRDTForm =
-    { knownAsPositive : Maybe Bool
-    , testPerformed : Maybe Bool
+type alias PrenatalMalariaTestForm =
+    { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
@@ -735,9 +739,9 @@ type alias PrenatalLabsRDTForm =
     }
 
 
-emptyPrenatalLabsRDTForm : PrenatalLabsRDTForm
-emptyPrenatalLabsRDTForm =
-    PrenatalLabsRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+emptyPrenatalMalariaTestForm : PrenatalMalariaTestForm
+emptyPrenatalMalariaTestForm =
+    PrenatalMalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
 
 
 type alias PrenatalLabsNonRDTForm =
@@ -778,6 +782,53 @@ emptyPrenatalUrineDipstickForm =
     PrenatalUrineDipstickForm Nothing False Nothing False Nothing Nothing False Nothing False Nothing
 
 
+type alias PrenatalHIVTestForm =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe PrenatalTestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe PrenatalTestResult
+    , hivProgramHC : Maybe Bool
+    , hivProgramHCDirty : Bool
+    , partnerHIVPositive : Maybe Bool
+    , partnerHIVPositiveDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyPrenatalHIVTestForm : PrenatalHIVTestForm
+emptyPrenatalHIVTestForm =
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
+    , testPerformedDirty = False
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , hivProgramHC = Nothing
+    , hivProgramHCDirty = False
+    , partnerHIVPositive = Nothing
+    , partnerHIVPositiveDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
+    , dateSelectorPopupState = Nothing
+    }
+
+
 type alias AppointmentConfirmationForm =
     { appointmentDate : Maybe Date
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
@@ -812,6 +863,9 @@ type alias HealthEducationForm =
     , breastfeeding : Maybe Bool
     , immunization : Maybe Bool
     , hygiene : Maybe Bool
+    , positiveHIV : Maybe Bool
+    , saferSex : Maybe Bool
+    , partnerTesting : Maybe Bool
     }
 
 
@@ -825,6 +879,9 @@ emptyHealthEducationForm =
     , breastfeeding = Nothing
     , immunization = Nothing
     , hygiene = Nothing
+    , positiveHIV = Nothing
+    , saferSex = Nothing
+    , partnerTesting = Nothing
     }
 
 

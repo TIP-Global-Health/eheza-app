@@ -9,16 +9,21 @@ import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration)
+import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
+import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (calculateEGAWeeks, isFirstEncounter)
+import Pages.PrenatalRecurrentActivity.Utils
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -29,6 +34,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxSelectInput
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
@@ -232,7 +238,7 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -265,10 +271,18 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    EverySet.toList assembled.encounter.diagnoses
-                        |> List.filter diagnosisRequiresEmergencyReferal
-                        |> List.isEmpty
-                        |> not
+                    let
+                        emergencyReferalDiagnosis =
+                            EverySet.toList assembled.encounter.diagnoses
+                                |> List.filter diagnosisRequiresEmergencyReferal
+                                |> List.isEmpty
+                                |> not
+
+                        hivDiagnosis =
+                            EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+                    in
+                    emergencyReferalDiagnosis
+                        || (hivDiagnosis && hivProgramAtHC assembled)
 
                 _ ->
                     dangerSigns
@@ -277,8 +291,8 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    -- @todo
-                    False
+                    -- Appear whenever HIV test was performed.
+                    isJust assembled.measurements.hivTest
 
                 ChwPostpartumEncounter ->
                     True
@@ -292,15 +306,36 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
+            --@todo
             -- Emergency refferal is not required.
-            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
-                && -- We were asking if Mebendazole was given already.
-                   showMebendazoleQuestion currentDate assembled
+            -- (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
+            --     &&
+            -- We were asking if Mebendazole was given already.
+            showMebendazoleQuestion currentDate assembled
                 && -- The answer was that Mebendazole was not given yet.
                    (getMeasurementValueFunc assembled.measurements.medication
                         |> Maybe.map (EverySet.member Mebendazole >> not)
                         |> Maybe.withDefault False
                    )
+
+
+generateNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
+generateNonUrgentDiagnoses diagnoses =
+    let
+        exclusions =
+            DiagnosisPrescribeMebendezole
+                :: emergencyReferralDiagnoses
+                ++ Pages.PrenatalRecurrentActivity.Utils.emergencyReferralDiagnoses
+    in
+    List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
+
+
+hivProgramAtHC : AssembledData -> Bool
+hivProgramAtHC assembled =
+    getMeasurementValueFunc assembled.measurements.hivTest
+        |> Maybe.andThen .hivSigns
+        |> Maybe.map (EverySet.member HIVProgramHC)
+        |> Maybe.withDefault False
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -707,6 +742,29 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
 matchLabResultsPrenatalDiagnosis : PrenatalMeasurements -> PrenatalDiagnosis -> Bool
 matchLabResultsPrenatalDiagnosis measurements diagnosis =
     case diagnosis of
+        DiagnosisHIV ->
+            getMeasurementValueFunc measurements.hivTest
+                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.withDefault False
+
+        DiagnosisDiscordantPartnership ->
+            getMeasurementValueFunc measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            && (-- Partner is not taking ARVs.
+                                (not <| EverySet.member PartnerTakingARV hivSigns)
+                                    || -- Partner is taking ARVs, but did not
+                                       -- reach surpressed viral load.
+                                       (EverySet.member PartnerTakingARV hivSigns
+                                            && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
+                                       )
+                               )
+                    )
+                |> Maybe.withDefault False
+
         DiagnosisHepatitisB ->
             getMeasurementValueFunc measurements.hepatitisBTest
                 |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
@@ -761,13 +819,130 @@ maternityWardDiagnoses =
 
 labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
-    [ DiagnosisHepatitisB
+    [ DiagnosisHIV
+    , DiagnosisDiscordantPartnership
+    , DiagnosisHepatitisB
     , DiagnosisMalaria
     ]
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
+
+        _ ->
+            healthEducationFormInputsAndTasksForChw language assembled healthEducationForm
+
+
+healthEducationFormInputsAndTasksForNurse : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm =
+    let
+        form =
+            assembled.measurements.healthEducation
+                |> getMeasurementValueFunc
+                |> healthEducationFormWithDefault healthEducationForm
+
+        translatePrenatalHealthEducationQuestion =
+            Translate.PrenatalHealthEducationQuestion False
+
+        positiveHIVUpdateFunc value form_ =
+            { form_ | positiveHIV = Just value }
+
+        positiveHIVInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
+            , viewBoolInput
+                language
+                form.positiveHIV
+                (SetHealthEducationSubActivityBoolInput positiveHIVUpdateFunc)
+                "positive-hiv"
+                Nothing
+            ]
+
+        saferSexUpdateFunc value form_ =
+            { form_ | saferSex = Just value }
+
+        saferSexInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSex
+            , viewBoolInput
+                language
+                form.saferSex
+                (SetHealthEducationSubActivityBoolInput saferSexUpdateFunc)
+                "safer-sex"
+                Nothing
+            ]
+
+        partnerTestingUpdateFunc value form_ =
+            { form_ | partnerTesting = Just value }
+
+        partnerTestingInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPartnerTesting
+            , viewBoolInput
+                language
+                form.partnerTesting
+                (SetHealthEducationSubActivityBoolInput partnerTestingUpdateFunc)
+                "partner-testing"
+                Nothing
+            ]
+
+        familyPlanningInput =
+            healthEducationFormFamilyPlanningInput language False form
+
+        partnerSurpressedViralLoad =
+            getMeasurementValueFunc assembled.measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            -- Partner is taking ARVs.
+                            && EverySet.member PartnerTakingARV hivSigns
+                            -- Partner reached surpressed viral load.
+                            && EverySet.member PartnerSurpressedViralLoad hivSigns
+                    )
+                |> Maybe.withDefault False
+    in
+    if
+        List.any
+            (\diagnosis ->
+                EverySet.member diagnosis assembled.encounter.diagnoses
+            )
+            [ DiagnosisHIV, DiagnosisDiscordantPartnership ]
+    then
+        ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
+        , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
+        )
+
+    else if partnerSurpressedViralLoad then
+        ( saferSexInput
+        , [ form.saferSex ]
+        )
+
+    else
+        ( saferSexInput ++ partnerTestingInput
+        , [ form.saferSex, form.partnerTesting ]
+        )
+
+
+healthEducationFormFamilyPlanningInput : Language -> Bool -> HealthEducationForm -> List (Html Msg)
+healthEducationFormFamilyPlanningInput language isChw form =
+    let
+        familyPlanningUpdateFunc value form_ =
+            { form_ | familyPlanning = Just value }
+    in
+    [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion isChw EducationFamilyPlanning
+    , viewBoolInput
+        language
+        form.familyPlanning
+        (SetHealthEducationSubActivityBoolInput familyPlanningUpdateFunc)
+        "family-planning"
+        Nothing
+    ]
+
+
+healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForChw language assembled healthEducationForm =
     let
         form =
             assembled.measurements.healthEducation
@@ -824,8 +999,11 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 _ ->
                     SetHealthEducationBoolInput
 
+        translatePrenatalHealthEducationQuestion =
+            Translate.PrenatalHealthEducationQuestion True
+
         expectationsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationExpectations
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationExpectations
             , viewBoolInput
                 language
                 form.expectations
@@ -838,7 +1016,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | visitsReview = Just value }
 
         visitsReviewInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationVisitsReview
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationVisitsReview
             , viewBoolInput
                 language
                 form.visitsReview
@@ -851,7 +1029,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | warningSigns = Just value }
 
         warningSignsInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationWarningSigns
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationWarningSigns
             , viewBoolInput
                 language
                 form.warningSigns
@@ -864,7 +1042,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | hemorrhaging = Just value }
 
         hemorrhagingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHemorrhaging
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationHemorrhaging
             , viewBoolInput
                 language
                 form.hemorrhaging
@@ -873,24 +1051,14 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
                 Nothing
             ]
 
-        familyPlanningUpdateFunc value form_ =
-            { form_ | familyPlanning = Just value }
-
         familyPlanningInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationFamilyPlanning
-            , viewBoolInput
-                language
-                form.familyPlanning
-                (setBoolInputMsg familyPlanningUpdateFunc)
-                "family-planning"
-                Nothing
-            ]
+            healthEducationFormFamilyPlanningInput language True form
 
         breastfeedingUpdateFunc value form_ =
             { form_ | breastfeeding = Just value }
 
         breastfeedingInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationBreastfeeding
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationBreastfeeding
             , viewBoolInput
                 language
                 form.breastfeeding
@@ -903,7 +1071,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | immunization = Just value }
 
         immunizationInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationImmunization
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationImmunization
             , viewBoolInput
                 language
                 form.immunization
@@ -916,7 +1084,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             { form_ | hygiene = Just value }
 
         hygieneInput =
-            [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion EducationHygiene
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationHygiene
             , viewBoolInput
                 language
                 form.hygiene
@@ -975,12 +1143,13 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
 
 nextStepsTasksCompletedFromTotal :
     Language
+    -> NominalDate
     -> Bool
     -> AssembledData
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal language isChw assembled data task =
+nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task =
     case task of
         NextStepsAppointmentConfirmation ->
             let
@@ -1032,7 +1201,18 @@ nextStepsTasksCompletedFromTotal language isChw assembled data task =
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
                     else
-                        ( 0, 0 )
+                        let
+                            emergencyReferalDiagnosis =
+                                EverySet.toList assembled.encounter.diagnoses
+                                    |> List.filter diagnosisRequiresEmergencyReferal
+                                    |> List.isEmpty
+                                    |> not
+                        in
+                        if emergencyReferalDiagnosis then
+                            ( 0, 0 )
+
+                        else
+                            ( taskCompleted form.accompanyToHealthCenter, 1 )
             in
             ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
             , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
@@ -1067,35 +1247,10 @@ nextStepsTasksCompletedFromTotal language isChw assembled data task =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
 
-                derivedQuestionExists formValue =
-                    if formValue == Just False then
-                        1
-
-                    else
-                        0
-
-                derivedQuestionCompleted medication reasonToSignFunc formValue =
-                    if formValue /= Just False then
-                        0
-
-                    else
-                        let
-                            nonAdministrationSigns =
-                                form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
-
-                            valueSet =
-                                getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
-                                    |> isJust
-                        in
-                        if valueSet then
-                            1
-
-                        else
-                            0
+                ( _, completed, total ) =
+                    resolveMedicationDistributionInputsAndTasks language currentDate assembled form
             in
-            ( taskCompleted form.mebendezole + derivedQuestionCompleted Mebendezole MedicationMebendezole form.mebendezole
-            , 1 + derivedQuestionExists form.mebendezole
-            )
+            ( completed, total )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -2082,19 +2237,6 @@ toBirthPlanValue form =
         |> andMap (Maybe.map EverySet.fromList form.familyPlanning)
 
 
-fromHealthEducationValue : Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
-fromHealthEducationValue saved =
-    { expectations = Maybe.map (EverySet.member EducationExpectations) saved
-    , visitsReview = Maybe.map (EverySet.member EducationVisitsReview) saved
-    , warningSigns = Maybe.map (EverySet.member EducationWarningSigns) saved
-    , hemorrhaging = Maybe.map (EverySet.member EducationHemorrhaging) saved
-    , familyPlanning = Maybe.map (EverySet.member EducationFamilyPlanning) saved
-    , breastfeeding = Maybe.map (EverySet.member EducationBreastfeeding) saved
-    , immunization = Maybe.map (EverySet.member EducationImmunization) saved
-    , hygiene = Maybe.map (EverySet.member EducationHygiene) saved
-    }
-
-
 healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
 healthEducationFormWithDefault form saved =
     saved
@@ -2109,6 +2251,9 @@ healthEducationFormWithDefault form saved =
                 , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding signs |> Just)
                 , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
                 , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
+                , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
+                , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
                 }
             )
 
@@ -2129,6 +2274,9 @@ toHealthEducationValue form =
     , ifNullableTrue EducationBreastfeeding form.breastfeeding
     , ifNullableTrue EducationImmunization form.immunization
     , ifNullableTrue EducationHygiene form.hygiene
+    , ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
@@ -2204,24 +2352,20 @@ toAppointmentConfirmationValue form =
     Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate
 
 
-prenatalRDTFormWithDefault : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm
-prenatalRDTFormWithDefault form saved =
+prenatalMalariaTestFormWithDefault : PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue -> PrenatalMalariaTestForm
+prenatalMalariaTestFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 let
-                    knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
-
                     testPerformedValue =
                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
-                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
-                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
@@ -2235,19 +2379,107 @@ prenatalRDTFormWithDefault form saved =
             )
 
 
-toPrenatalRDTValueWithDefault : Maybe PrenatalRapidTestValue -> PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
-toPrenatalRDTValueWithDefault saved form =
-    prenatalRDTFormWithDefault form saved
-        |> toPrenatalRDTValue
+toPrenatalMalariaTestValueWithDefault : Maybe PrenatalMalariaTestValue -> PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue
+toPrenatalMalariaTestValueWithDefault saved form =
+    prenatalMalariaTestFormWithDefault form saved
+        |> toPrenatalMalariaTestValue
 
 
-toPrenatalRDTValue : PrenatalLabsRDTForm -> Maybe PrenatalRapidTestValue
-toPrenatalRDTValue form =
+toPrenatalMalariaTestValue : PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue
+toPrenatalMalariaTestValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            }
+        )
+        form.executionNote
+
+
+prenatalHIVTestFormWithDefault : PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue -> PrenatalHIVTestForm
+prenatalHIVTestFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    knownAsPositiveValue =
+                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+
+                    testPerformedValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+
+                    hivProgramHCValue =
+                        Maybe.map (EverySet.member HIVProgramHC)
+                            value.hivSigns
+                            |> Maybe.withDefault False
+
+                    partnerHIVPositiveValue =
+                        Maybe.map (EverySet.member PartnerHIVPositive)
+                            value.hivSigns
+                            |> Maybe.withDefault False
+
+                    partnerTakingARVValue =
+                        Maybe.map (EverySet.member PartnerTakingARV)
+                            value.hivSigns
+                            |> Maybe.withDefault False
+
+                    partnerSurpressedViralLoadValue =
+                        Maybe.map (EverySet.member PartnerSurpressedViralLoad)
+                            value.hivSigns
+                            |> Maybe.withDefault False
+                in
+                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , testResult = or form.testResult value.testResult
+                , hivProgramHC = valueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC hivProgramHCValue
+                , hivProgramHCDirty = form.hivProgramHCDirty
+                , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
+                , partnerHIVPositiveDirty = form.partnerHIVPositiveDirty
+                , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
+                , partnerTakingARVDirty = form.partnerTakingARVDirty
+                , partnerSurpressedViralLoad = valueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
+                , partnerSurpressedViralLoadDirty = form.partnerSurpressedViralLoadDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
+
+
+toPrenatalHIVTestValueWithDefault : Maybe PrenatalHIVTestValue -> PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue
+toPrenatalHIVTestValueWithDefault saved form =
+    prenatalHIVTestFormWithDefault form saved
+        |> toPrenatalHIVTestValue
+
+
+toPrenatalHIVTestValue : PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue
+toPrenatalHIVTestValue form =
+    Maybe.map
+        (\executionNote ->
+            let
+                hivSigns =
+                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
+                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
+                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                    ]
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+            in
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            , hivSigns = hivSigns
             }
         )
         form.executionNote
@@ -2512,7 +2744,7 @@ expectLaboratoryTask currentDate assembled task =
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
 generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     let
-        generateTestDates getMeasurementFunc resultsExistFunc =
+        generateTestDates getMeasurementFunc resultsExistFunc resultsValidFunc =
             List.filterMap
                 (\( _, measurements ) ->
                     let
@@ -2534,7 +2766,12 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
                         |> Maybe.andThen
                             (\value ->
                                 if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
-                                    if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate > prenatalLabExpirationPeriod) then
+                                    if resultsExistFunc value && (not <| resultsValidFunc value) then
+                                        -- Entered result is not valid, therefore,
+                                        -- we treat the test as if it was not performed.
+                                        Nothing
+
+                                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate > prenatalLabExpirationPeriod) then
                                         -- No results were entered for more than 14 days since the
                                         -- day on which measurement was taken.
                                         -- Test is considered expired, and is being ignored
@@ -2549,15 +2786,23 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
                             )
                 )
                 assembled.nursePreviousMeasurementsWithDates
+
+        isTestResultValid =
+            .testResult
+                >> Maybe.map ((/=) PrenatalTestIndeterminate)
+                >> -- In case test result was not set yet, we consider
+                   -- it to be valid, because results for some test are
+                   -- updated after few hours, or even days.
+                   Maybe.withDefault True
     in
-    [ ( TaskHIVTest, generateTestDates .hivTest (always True) )
-    , ( TaskSyphilisTest, generateTestDates .syphilisTest (.testResult >> isJust) )
-    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest (.testResult >> isJust) )
-    , ( TaskMalariaTest, generateTestDates .malariaTest (always True) )
-    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest (.bloodGroup >> isJust) )
-    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) )
-    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) )
-    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) )
+    [ ( TaskHIVTest, generateTestDates .hivTest (always True) isTestResultValid )
+    , ( TaskSyphilisTest, generateTestDates .syphilisTest (.testResult >> isJust) isTestResultValid )
+    , ( TaskHepatitisBTest, generateTestDates .hepatitisBTest (.testResult >> isJust) isTestResultValid )
+    , ( TaskMalariaTest, generateTestDates .malariaTest (always True) isTestResultValid )
+    , ( TaskBloodGpRsTest, generateTestDates .bloodGpRsTest (.bloodGroup >> isJust) (always True) )
+    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
+    , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) (always True) )
+    , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
     ]
         |> Dict.fromList
 
@@ -2597,6 +2842,10 @@ medicationDistributionFormWithDefault form saved =
             form
             (\value ->
                 { mebendezole = or form.mebendezole (EverySet.member Mebendezole value.distributionSigns |> Just)
+                , tenofovir = or form.tenofovir (EverySet.member Tenofovir value.distributionSigns |> Just)
+                , lamivudine = or form.lamivudine (EverySet.member Lamivudine value.distributionSigns |> Just)
+                , dolutegravir = or form.dolutegravir (EverySet.member Dolutegravir value.distributionSigns |> Just)
+                , tdf3tc = or form.tdf3tc (EverySet.member TDF3TC value.distributionSigns |> Just)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
@@ -2613,6 +2862,10 @@ toMedicationDistributionValue form =
     let
         distributionSigns =
             [ ifNullableTrue Mebendezole form.mebendezole
+            , ifNullableTrue Tenofovir form.tenofovir
+            , ifNullableTrue Lamivudine form.lamivudine
+            , ifNullableTrue Dolutegravir form.dolutegravir
+            , ifNullableTrue TDF3TC form.tdf3tc
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
@@ -2625,3 +2878,383 @@ toMedicationDistributionValue form =
     in
     Maybe.map MedicationDistributionValue distributionSigns
         |> andMap nonAdministrationSigns
+
+
+resolveMedicationDistributionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html Msg), Int, Int )
+resolveMedicationDistributionInputsAndTasks language currentDate assembled form =
+    resolveMedicationsByDiagnoses assembled
+        |> List.map (resolveMedicationDistributionInputsAndTasksForMedication language currentDate assembled.person form)
+        |> List.foldr
+            (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
+                ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
+            )
+            ( [], 0, 0 )
+
+
+resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign
+resolveMedicationsByDiagnoses assembled =
+    List.filter
+        (\medication ->
+            let
+                hivDiagnosis =
+                    EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+
+                hivProgramHC =
+                    hivProgramAtHC assembled
+            in
+            case medication of
+                Mebendezole ->
+                    EverySet.member DiagnosisPrescribeMebendezole assembled.encounter.diagnoses
+
+                Tenofovir ->
+                    hivDiagnosis && hivProgramHC
+
+                Lamivudine ->
+                    hivDiagnosis && hivProgramHC
+
+                Dolutegravir ->
+                    hivDiagnosis && hivProgramHC
+
+                TDF3TC ->
+                    EverySet.member DiagnosisDiscordantPartnership assembled.encounter.diagnoses
+
+                _ ->
+                    False
+        )
+        [ Mebendezole, Tenofovir, Lamivudine, Dolutegravir, TDF3TC ]
+
+
+resolveMedicationDistributionInputsAndTasksForMedication :
+    Language
+    -> NominalDate
+    -> Person
+    -> MedicationDistributionForm
+    -> MedicationDistributionSign
+    -> ( List (Html Msg), Int, Int )
+resolveMedicationDistributionInputsAndTasksForMedication language currentDate person form medication =
+    case medication of
+        Mebendezole ->
+            resolveMebendezoleDistributionInputsAndTasks language currentDate person form
+
+        Tenofovir ->
+            resolveTenofovirDistributionInputsAndTasks language currentDate person form
+
+        Lamivudine ->
+            resolveLamivudineDistributionInputsAndTasks language currentDate person form
+
+        Dolutegravir ->
+            resolveDolutegravirDistributionInputsAndTasks language currentDate person form
+
+        TDF3TC ->
+            resolveTDF3TCDistributionInputsAndTasks language currentDate person form
+
+        -- Other medications are not prescribed at Prenatal encounter.
+        _ ->
+            ( [], 0, 0 )
+
+
+resolveMebendezoleDistributionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> MedicationDistributionForm
+    -> ( List (Html Msg), Int, Int )
+resolveMebendezoleDistributionInputsAndTasks language currentDate person form =
+    let
+        instructions =
+            resolveMebendezoleDosageAndIcon currentDate person
+                |> Maybe.map
+                    (\( dosage, icon ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Mebendezole) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerPrenatalMebendezoleHelper ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        updateFunc value form_ =
+            { form_ | mebendezole = Just value, nonAdministrationSigns = updateNonAdministrationSigns Mebendezole MedicationMebendezole value form_ }
+
+        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+            if form.mebendezole == Just False then
+                ( viewMedicationDistributionDerivedQuestion language Mebendezole MedicationMebendezole form
+                , taskCompleted <|
+                    getCurrentReasonForMedicationNonAdministration MedicationMebendezole form
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( [ instructions
+      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Mebendezole)
+      , viewBoolInput
+            language
+            form.mebendezole
+            (SetMedicationDistributionBoolInput updateFunc)
+            "mebendezole-medication"
+            Nothing
+      ]
+        ++ derivedInput
+    , taskCompleted form.mebendezole + derrivedTaskCompleted
+    , 1 + derrivedTaskActive
+    )
+
+
+resolveTenofovirDistributionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> MedicationDistributionForm
+    -> ( List (Html Msg), Int, Int )
+resolveTenofovirDistributionInputsAndTasks language currentDate person form =
+    let
+        instructions =
+            resolveTenofovirDosageAndIcon currentDate person
+                |> Maybe.map
+                    (\( dosage, icon ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Tenofovir) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        updateFunc value form_ =
+            { form_ | tenofovir = Just value, nonAdministrationSigns = updateNonAdministrationSigns Tenofovir MedicationTenofovir value form_ }
+
+        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+            if form.tenofovir == Just False then
+                ( viewMedicationDistributionDerivedQuestion language Tenofovir MedicationTenofovir form
+                , taskCompleted <|
+                    getCurrentReasonForMedicationNonAdministration MedicationTenofovir form
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( [ instructions
+      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Tenofovir)
+      , viewBoolInput
+            language
+            form.tenofovir
+            (SetMedicationDistributionBoolInput updateFunc)
+            "tenofovir-medication"
+            Nothing
+      ]
+        ++ derivedInput
+    , taskCompleted form.tenofovir + derrivedTaskCompleted
+    , 1 + derrivedTaskActive
+    )
+
+
+resolveLamivudineDistributionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> MedicationDistributionForm
+    -> ( List (Html Msg), Int, Int )
+resolveLamivudineDistributionInputsAndTasks language currentDate person form =
+    let
+        instructions =
+            resolveLamivudineDosageAndIcon currentDate person
+                |> Maybe.map
+                    (\( dosage, icon ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Lamivudine) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        updateFunc value form_ =
+            { form_ | lamivudine = Just value, nonAdministrationSigns = updateNonAdministrationSigns Lamivudine MedicationLamivudine value form_ }
+
+        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+            if form.lamivudine == Just False then
+                ( viewMedicationDistributionDerivedQuestion language Lamivudine MedicationLamivudine form
+                , taskCompleted <|
+                    getCurrentReasonForMedicationNonAdministration MedicationLamivudine form
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( [ instructions
+      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Lamivudine)
+      , viewBoolInput
+            language
+            form.lamivudine
+            (SetMedicationDistributionBoolInput updateFunc)
+            "lamivudine-medication"
+            Nothing
+      ]
+        ++ derivedInput
+    , taskCompleted form.lamivudine + derrivedTaskCompleted
+    , 1 + derrivedTaskActive
+    )
+
+
+resolveDolutegravirDistributionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> MedicationDistributionForm
+    -> ( List (Html Msg), Int, Int )
+resolveDolutegravirDistributionInputsAndTasks language currentDate person form =
+    let
+        instructions =
+            resolveDolutegravirDosageAndIcon currentDate person
+                |> Maybe.map
+                    (\( dosage, icon ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Dolutegravir) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        updateFunc value form_ =
+            { form_ | dolutegravir = Just value, nonAdministrationSigns = updateNonAdministrationSigns Dolutegravir MedicationDolutegravir value form_ }
+
+        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+            if form.dolutegravir == Just False then
+                ( viewMedicationDistributionDerivedQuestion language Dolutegravir MedicationDolutegravir form
+                , taskCompleted <|
+                    getCurrentReasonForMedicationNonAdministration MedicationDolutegravir form
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( [ instructions
+      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Dolutegravir)
+      , viewBoolInput
+            language
+            form.dolutegravir
+            (SetMedicationDistributionBoolInput updateFunc)
+            "dolutegravir-medication"
+            Nothing
+      ]
+        ++ derivedInput
+    , taskCompleted form.dolutegravir + derrivedTaskCompleted
+    , 1 + derrivedTaskActive
+    )
+
+
+resolveTDF3TCDistributionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> MedicationDistributionForm
+    -> ( List (Html Msg), Int, Int )
+resolveTDF3TCDistributionInputsAndTasks language currentDate person form =
+    let
+        instructions =
+            div [ class "instructions" ]
+                [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign TDF3TC) "icon-pills" Nothing
+                , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
+                ]
+
+        updateFunc value form_ =
+            { form_ | tdf3tc = Just value, nonAdministrationSigns = updateNonAdministrationSigns TDF3TC MedicationTDF3TC value form_ }
+
+        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+            if form.tdf3tc == Just False then
+                ( viewMedicationDistributionDerivedQuestion language TDF3TC MedicationTDF3TC form
+                , taskCompleted <|
+                    getCurrentReasonForMedicationNonAdministration MedicationTDF3TC form
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( [ instructions
+      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign TDF3TC)
+      , viewBoolInput
+            language
+            form.tdf3tc
+            (SetMedicationDistributionBoolInput updateFunc)
+            "tdf3tc-medication"
+            Nothing
+      ]
+        ++ derivedInput
+    , taskCompleted form.tdf3tc + derrivedTaskCompleted
+    , 1 + derrivedTaskActive
+    )
+
+
+viewMedicationDistributionDerivedQuestion :
+    Language
+    -> MedicationDistributionSign
+    -> (AdministrationNote -> MedicationNonAdministrationSign)
+    -> MedicationDistributionForm
+    -> List (Html Msg)
+viewMedicationDistributionDerivedQuestion language medication reasonToSignFunc form =
+    let
+        currentValue =
+            getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
+    in
+    [ viewQuestionLabel language Translate.WhyNot
+    , viewCheckBoxSelectInput language
+        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+        currentValue
+        (SetMedicationDistributionAdministrationNote currentValue medication)
+        Translate.AdministrationNote
+    ]
+
+
+{-| When the answer for medication administration is Yes,
+we clean the reason for not administering the medication.
+-}
+updateNonAdministrationSigns :
+    MedicationDistributionSign
+    -> (AdministrationNote -> MedicationNonAdministrationSign)
+    -> Bool
+    -> MedicationDistributionForm
+    -> Maybe (EverySet MedicationNonAdministrationSign)
+updateNonAdministrationSigns medication reasonToSignFunc value form =
+    if value == True then
+        form.nonAdministrationSigns
+            |> Maybe.andThen
+                (\nonAdministrationSigns ->
+                    getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
+                        |> Maybe.map
+                            (\reason ->
+                                Just <| EverySet.remove (nonAdministrationReasonToSign medication reason) nonAdministrationSigns
+                            )
+                        |> Maybe.withDefault (Just nonAdministrationSigns)
+                )
+
+    else
+        form.nonAdministrationSigns
+
+
+resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveMebendezoleDosageAndIcon currentDate person =
+    Just ( "500 mg", "icon-pills" )
+
+
+resolveTenofovirDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveTenofovirDosageAndIcon currentDate person =
+    Just ( "300 mg", "icon-pills" )
+
+
+resolveLamivudineDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveLamivudineDosageAndIcon currentDate person =
+    Just ( "300 mg", "icon-pills" )
+
+
+resolveDolutegravirDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveDolutegravirDosageAndIcon currentDate person =
+    Just ( "50 mg", "icon-pills" )

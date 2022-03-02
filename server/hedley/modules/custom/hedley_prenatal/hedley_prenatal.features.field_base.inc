@@ -235,6 +235,34 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_hiv_signs'.
+  $field_bases['field_hiv_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv-program-hc' => 'HIV program at Health Center',
+        'partner-hiv-positive' => 'Partner HIV posiitve',
+        'partner-taking-arv' => 'Partner taking ARVs',
+        'partner-surpressed-viral-load' => 'Partner got surpressed viral load',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_ketone'.
   $field_bases['field_ketone'] = array(
     'active' => 1,
@@ -419,6 +447,8 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
+        'hiv' => 'HIV',
+        'partner-hiv' => 'HIV positive partner',
         'hepatitis-b' => 'Hepatitis B',
         'malaria' => 'Malaria',
         'eclampsia' => 'Eclampsia',

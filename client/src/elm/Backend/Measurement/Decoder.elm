@@ -301,6 +301,15 @@ decodePrenatalHealthEducationSign =
                     "hygiene" ->
                         succeed EducationHygiene
 
+                    "positive-hiv" ->
+                        succeed EducationPositiveHIV
+
+                    "safer-sex" ->
+                        succeed EducationSaferSex
+
+                    "partner-testing" ->
+                        succeed EducationPartnerTesting
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
@@ -415,20 +424,40 @@ decodePrenatalHepatitisBTestValue =
 
 decodePrenatalHIVTest : Decoder PrenatalHIVTest
 decodePrenatalHIVTest =
-    decodePrenatalMeasurement decodePrenatalRapidTestValue
+    decodePrenatalMeasurement decodePrenatalHIVTestValue
 
 
-decodePrenatalRapidTestValue : Decoder PrenatalRapidTestValue
-decodePrenatalRapidTestValue =
-    succeed PrenatalRapidTestValue
+decodePrenatalMalariaTestValue : Decoder PrenatalMalariaTestValue
+decodePrenatalMalariaTestValue =
+    succeed PrenatalMalariaTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
 
 
+decodePrenatalHIVTestValue : Decoder PrenatalHIVTestValue
+decodePrenatalHIVTestValue =
+    succeed PrenatalHIVTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
+
+
+decodePrenatalHIVSign : Decoder PrenatalHIVSign
+decodePrenatalHIVSign =
+    string
+        |> andThen
+            (\value ->
+                prenatalHIVSignFromString value
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| value ++ " is not a recognized PrenatalHIVSign")
+            )
+
+
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
 decodePrenatalMalariaTest =
-    decodePrenatalMeasurement decodePrenatalRapidTestValue
+    decodePrenatalMeasurement decodePrenatalMalariaTestValue
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest
@@ -2462,6 +2491,9 @@ decodeReasonForNotSendingToHC =
                     "unable-to-afford-fee" ->
                         succeed ClientUnableToAffordFees
 
+                    "already-in-care" ->
+                        succeed ClientAlreadyInCare
+
                     "other" ->
                         succeed ReasonForNotSendingToHCOther
 
@@ -2582,6 +2614,18 @@ decodeMedicationDistributionSign =
                     "paracetamol" ->
                         succeed Paracetamol
 
+                    "tenofovir" ->
+                        succeed Tenofovir
+
+                    "lamivudine" ->
+                        succeed Lamivudine
+
+                    "dolutegravir" ->
+                        succeed Dolutegravir
+
+                    "tdf3tc" ->
+                        succeed TDF3TC
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2644,6 +2688,26 @@ decodeMedicationNonAdministrationSign =
                                     "mebendezole" ->
                                         administrationNote
                                             |> Maybe.map (MedicationMebendezole >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "tenofovir" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationTenofovir >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "lamivudine" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationLamivudine >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "dolutegravir" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationDolutegravir >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "tdf3tc" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationTDF3TC >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

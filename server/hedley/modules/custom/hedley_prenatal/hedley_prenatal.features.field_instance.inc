@@ -2162,6 +2162,43 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_hiv_test-field_hiv_signs'.
+  $field_instances['node-prenatal_hiv_test-field_hiv_signs'] = array(
+    'bundle' => 'prenatal_hiv_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hiv_signs',
+    'label' => 'HIV signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 14,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_hiv_test-field_nurse'.
   $field_instances['node-prenatal_hiv_test-field_nurse'] = array(
     'bundle' => 'prenatal_hiv_test',
@@ -5581,6 +5618,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Execution Date');
   t('Follow up options');
   t('Glucose');
+  t('HIV signs');
   t('Haemoglobin');
   t('Hemoglobin Count');
   t('Ketone');

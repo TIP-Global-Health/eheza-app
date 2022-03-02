@@ -19,7 +19,7 @@ import Pages.HomeVisitActivity.Utils exposing (activityCompleted, expectActivity
 import Pages.HomeVisitEncounter.Model exposing (..)
 import Pages.HomeVisitEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
+import Pages.Utils exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem)

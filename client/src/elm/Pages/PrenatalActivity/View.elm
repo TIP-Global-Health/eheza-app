@@ -9,10 +9,10 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueF
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (DateSelectorConfig, viewCalendarPopup)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
@@ -23,9 +23,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
-import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
-import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
@@ -56,7 +54,6 @@ import Pages.Utils
         , viewSaveAction
         , viewYellowAlertForSelect
         )
-import Pages.WellChildActivity.Utils exposing (resolveMebendezoleDosageAndIcon)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -1264,8 +1261,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHIVTest ->
                             measurements.hivTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRDTFormWithDefault data.hivTestForm
-                                |> viewPrenatalRDTFormCheckKnownAsPositive language currentDate TaskHIVTest
+                                |> prenatalHIVTestFormWithDefault data.hivTestForm
+                                |> viewPrenatalHIVTestForm language currentDate
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest
@@ -1282,8 +1279,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskMalariaTest ->
                             measurements.malariaTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRDTFormWithDefault data.malariaTestForm
-                                |> viewPrenatalRDTForm language currentDate TaskMalariaTest
+                                |> prenatalMalariaTestFormWithDefault data.malariaTestForm
+                                |> viewPrenatalMalariaTestForm language currentDate TaskMalariaTest
 
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
@@ -1544,7 +1541,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal language isChw assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task )
                     )
                 |> Dict.fromList
 
@@ -1574,7 +1571,18 @@ viewNextStepsContent language currentDate isChw assembled data =
                                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
                             else
-                                ( viewSendToHospitalForm, Nothing )
+                                let
+                                    emergencyReferalDiagnosis =
+                                        EverySet.toList assembled.encounter.diagnoses
+                                            |> List.filter diagnosisRequiresEmergencyReferal
+                                            |> List.isEmpty
+                                            |> not
+                                in
+                                if emergencyReferalDiagnosis then
+                                    ( viewSendToHospitalForm, Nothing )
+
+                                else
+                                    ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
                     in
                     measurements.sendToHC
                         |> getMeasurementValueFunc
@@ -1599,7 +1607,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     measurements.medicationDistribution
                         |> getMeasurementValueFunc
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate person
+                        |> viewMedicationDistributionForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -2806,107 +2814,146 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
-viewMedicationDistributionForm : Language -> NominalDate -> Person -> MedicationDistributionForm -> Html Msg
-viewMedicationDistributionForm language currentDate person form =
+viewMedicationDistributionForm : Language -> NominalDate -> AssembledData -> MedicationDistributionForm -> Html Msg
+viewMedicationDistributionForm language currentDate assembled form =
     let
-        selectedMedication =
-            Mebendezole
-
-        ( instructions, questions ) =
-            let
-                viewDerivedQuestion medication reasonToSignFunc =
-                    let
-                        nonAdministrationSigns =
-                            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
-
-                        currentValue =
-                            getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
-                    in
-                    [ viewQuestionLabel language Translate.WhyNot
-                    , viewCheckBoxSelectInput language
-                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
-                        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
-                        currentValue
-                        (SetMedicationDistributionAdministrationNote currentValue medication)
-                        Translate.AdministrationNote
-                    ]
-
-                -- When the answer for medication administration is Yes, we clean the reason for not administering the medication.
-                updateNonAdministrationSigns medication reasonToSignFunc value form_ =
-                    if value == True then
-                        form_.nonAdministrationSigns
-                            |> Maybe.andThen
-                                (\nonAdministrationSigns ->
-                                    getCurrentReasonForMedicationNonAdministration reasonToSignFunc form_
-                                        |> Maybe.map
-                                            (\reason ->
-                                                Just <| EverySet.remove (nonAdministrationReasonToSign medication reason) nonAdministrationSigns
-                                            )
-                                        |> Maybe.withDefault (Just nonAdministrationSigns)
-                                )
-
-                    else
-                        form_.nonAdministrationSigns
-            in
-            case selectedMedication of
-                Mebendezole ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | mebendezole = Just value, nonAdministrationSigns = updateNonAdministrationSigns Mebendezole MedicationMebendezole value form_ }
-
-                        derivedQuestion =
-                            case form.mebendezole of
-                                Just False ->
-                                    viewDerivedQuestion Mebendezole MedicationMebendezole
-
-                                _ ->
-                                    []
-                    in
-                    ( resolveMebendezoleDosageAndIcon currentDate person
-                        |> Maybe.map
-                            (\( dosage, icon ) ->
-                                div [ class "instructions" ]
-                                    [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Mebendezole) ("(" ++ dosage ++ ")") icon ":" Nothing
-                                    , div [ class "prescription" ] [ text <| translate language Translate.AdministerPrenatalMebendezoleHelper ++ "." ]
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                    , [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Mebendezole)
-                      , viewBoolInput
-                            language
-                            form.mebendezole
-                            (SetMedicationDistributionBoolInput updateFunc)
-                            "mebendezole-medication"
-                            Nothing
-                      ]
-                        ++ derivedQuestion
-                    )
-
-                _ ->
-                    ( emptyNode, [] )
+        ( content, _, _ ) =
+            resolveMedicationDistributionInputsAndTasks language currentDate assembled form
     in
     div [ class "ui form medication-distribution" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , instructions
-        ]
-            ++ questions
+        h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+            :: content
 
 
-viewPrenatalRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
-viewPrenatalRDTFormCheckKnownAsPositive language currentDate task form =
+viewPrenatalHIVTestForm : Language -> NominalDate -> PrenatalHIVTestForm -> ( Html Msg, Int, Int )
+viewPrenatalHIVTestForm language currentDate form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate TaskHIVTest form
+
+        emptySection =
+            ( [], 0, 0 )
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.knownAsPositive /= Just False then
-                ( [], 0, 0 )
+                emptySection
 
             else
-                prenatalRDTFormInputsAndTasks language currentDate task form
+                let
+                    ( rdtSection, rdtTasksCompleted, rdtTasksTotal ) =
+                        prenatalRDTFormInputsAndTasks language currentDate TaskHIVTest form
+
+                    ( hivSignsSection, hivSignsTasksCompleted, hivSignsTasksTotal ) =
+                        Maybe.map
+                            (\testResult ->
+                                case testResult of
+                                    PrenatalTestPositive ->
+                                        let
+                                            updateFunc =
+                                                \value form_ ->
+                                                    { form_ | hivProgramHC = Just value, hivProgramHCDirty = True }
+                                        in
+                                        ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion HIVProgramHC
+                                          , viewBoolInput
+                                                language
+                                                form.hivProgramHC
+                                                (SetHIVTestFormBoolInput updateFunc)
+                                                "hiv-program"
+                                                Nothing
+                                          ]
+                                        , taskCompleted form.hivProgramHC
+                                        , 1
+                                        )
+
+                                    PrenatalTestNegative ->
+                                        let
+                                            partnerHIVPositiveUpdateFunc =
+                                                \value form_ ->
+                                                    { form_
+                                                        | partnerHIVPositive = Just value
+                                                        , partnerHIVPositiveDirty = True
+                                                        , partnerTakingARV = Nothing
+                                                        , partnerTakingARVDirty = True
+                                                        , partnerSurpressedViralLoad = Nothing
+                                                        , partnerSurpressedViralLoadDirty = True
+                                                    }
+
+                                            ( partnerHivStatusSection, partnerHivStatusTasksCompleted, partnerHivStatusTasksTotal ) =
+                                                if form.partnerHIVPositive == Just True then
+                                                    let
+                                                        partnerTakingARVUpdateFunc =
+                                                            \value form_ ->
+                                                                { form_
+                                                                    | partnerTakingARV = Just value
+                                                                    , partnerTakingARVDirty = True
+                                                                    , partnerSurpressedViralLoad = Nothing
+                                                                    , partnerSurpressedViralLoadDirty = True
+                                                                }
+
+                                                        ( partnerARVSection, partnerARVTasksCompleted, partnerARVTasksTotal ) =
+                                                            if form.partnerTakingARV == Just True then
+                                                                let
+                                                                    partnerSurpressedViralLoadUpdateFunc =
+                                                                        \value form_ ->
+                                                                            { form_ | partnerSurpressedViralLoad = Just value, partnerSurpressedViralLoadDirty = True }
+                                                                in
+                                                                ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerSurpressedViralLoad
+                                                                  , viewBoolInput
+                                                                        language
+                                                                        form.partnerSurpressedViralLoad
+                                                                        (SetHIVTestFormBoolInput partnerSurpressedViralLoadUpdateFunc)
+                                                                        "partner-surpressed-viral-load"
+                                                                        Nothing
+                                                                  ]
+                                                                , taskCompleted form.partnerSurpressedViralLoad
+                                                                , 1
+                                                                )
+
+                                                            else
+                                                                emptySection
+                                                    in
+                                                    ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
+                                                      , viewBoolInput
+                                                            language
+                                                            form.partnerTakingARV
+                                                            (SetHIVTestFormBoolInput partnerTakingARVUpdateFunc)
+                                                            "partner-taking-arv"
+                                                            Nothing
+                                                      ]
+                                                        ++ partnerARVSection
+                                                    , taskCompleted form.partnerTakingARV + partnerARVTasksCompleted
+                                                    , 1 + partnerARVTasksTotal
+                                                    )
+
+                                                else
+                                                    emptySection
+                                        in
+                                        ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerHIVPositive
+                                          , viewBoolInput
+                                                language
+                                                form.partnerHIVPositive
+                                                (SetHIVTestFormBoolInput partnerHIVPositiveUpdateFunc)
+                                                "partner-hiv-positive"
+                                                Nothing
+                                          ]
+                                            ++ partnerHivStatusSection
+                                        , taskCompleted form.partnerHIVPositive + partnerHivStatusTasksCompleted
+                                        , 1 + partnerHivStatusTasksTotal
+                                        )
+
+                                    PrenatalTestIndeterminate ->
+                                        emptySection
+                            )
+                            form.testResult
+                            |> Maybe.withDefault emptySection
+                in
+                ( rdtSection ++ hivSignsSection
+                , rdtTasksCompleted + hivSignsTasksCompleted
+                , rdtTasksTotal + hivSignsTasksTotal
+                )
     in
-    ( div [ class "ui form laboratory rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+    ( div [ class "ui form laboratory hiv" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -2915,22 +2962,34 @@ viewPrenatalRDTFormCheckKnownAsPositive language currentDate task form =
     )
 
 
-viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
-viewPrenatalRDTForm language currentDate task form =
+viewPrenatalMalariaTestForm : Language -> NominalDate -> LaboratoryTask -> PrenatalMalariaTestForm -> ( Html Msg, Int, Int )
+viewPrenatalMalariaTestForm language currentDate task form =
     let
         ( inputs, tasksCompleted, tasksTotal ) =
             prenatalRDTFormInputsAndTasks language currentDate task form
     in
-    ( div [ class "ui form laboratory rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
-        ]
+    ( div [ class "ui form laboratory malaria" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header" ]
             ++ inputs
     , tasksCompleted
     , tasksTotal
     )
 
 
-prenatalRDTFormInputsAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( List (Html Msg), Int, Int )
+prenatalRDTFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> LaboratoryTask
+    ->
+        { f
+            | testPerformed : Maybe Bool
+            , testPerformedToday : Maybe Bool
+            , executionNote : Maybe PrenatalTestExecutionNote
+            , executionDate : Maybe NominalDate
+            , testResult : Maybe PrenatalTestResult
+            , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+        }
+    -> ( List (Html Msg), Int, Int )
 prenatalRDTFormInputsAndTasks language currentDate task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
@@ -3168,7 +3227,8 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
                     SetHepatitisBTestFormBoolInput updateFunc
 
                 TaskMalariaTest ->
-                    SetMalariaTestFormBoolInput updateFunc
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
 
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test.

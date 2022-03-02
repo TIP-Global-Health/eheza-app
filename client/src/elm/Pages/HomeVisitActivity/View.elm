@@ -23,7 +23,6 @@ import Pages.HomeVisitActivity.Utils exposing (..)
 import Pages.HomeVisitEncounter.Model exposing (AssembledData)
 import Pages.HomeVisitEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
     exposing
         ( taskCompleted
@@ -33,6 +32,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
+        , viewPersonDetails
         , viewQuestionLabel
         )
 import RemoteData exposing (RemoteData(..), WebData)

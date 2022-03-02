@@ -793,6 +793,9 @@ type PrenatalHealthEducationSign
     | EducationBreastfeeding
     | EducationImmunization
     | EducationHygiene
+    | EducationPositiveHIV
+    | EducationSaferSex
+    | EducationPartnerTesting
     | NoPrenatalHealthEducationSigns
 
 
@@ -826,7 +829,7 @@ type alias PrenatalAppointmentConfirmation =
 
 
 type alias PrenatalMalariaTest =
-    PrenatalMeasurement PrenatalRapidTestValue
+    PrenatalMeasurement PrenatalMalariaTestValue
 
 
 type PrenatalTestExecutionNote
@@ -847,10 +850,26 @@ type PrenatalTestResult
 
 
 type alias PrenatalHIVTest =
-    PrenatalMeasurement PrenatalRapidTestValue
+    PrenatalMeasurement PrenatalHIVTestValue
 
 
-type alias PrenatalRapidTestValue =
+type alias PrenatalHIVTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    , hivSigns : Maybe (EverySet PrenatalHIVSign)
+    }
+
+
+type PrenatalHIVSign
+    = HIVProgramHC
+    | PartnerHIVPositive
+    | PartnerTakingARV
+    | PartnerSurpressedViralLoad
+    | NoPrenatalHIVSign
+
+
+type alias PrenatalMalariaTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
@@ -1346,6 +1365,11 @@ type MedicationDistributionSign
     | Mebendezole
     | VitaminA
     | Paracetamol
+      -- HIV medication
+    | Tenofovir
+    | Lamivudine
+    | Dolutegravir
+    | TDF3TC
     | NoMedicationDistributionSigns
 
 
@@ -1368,6 +1392,10 @@ type MedicationNonAdministrationSign
     | MedicationZinc AdministrationNote
     | MedicationParacetamol AdministrationNote
     | MedicationMebendezole AdministrationNote
+    | MedicationTenofovir AdministrationNote
+    | MedicationLamivudine AdministrationNote
+    | MedicationDolutegravir AdministrationNote
+    | MedicationTDF3TC AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1389,6 +1417,7 @@ type ReasonForNotSendingToHC
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
+    | ClientAlreadyInCare
     | ReasonForNotSendingToHCOther
     | NoReasonForNotSendingToHC
 

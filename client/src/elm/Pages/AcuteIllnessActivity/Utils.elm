@@ -1542,6 +1542,18 @@ nonAdministrationReasonToSign sign reason =
         Mebendezole ->
             MedicationMebendezole reason
 
+        Tenofovir ->
+            MedicationTenofovir reason
+
+        Lamivudine ->
+            MedicationLamivudine reason
+
+        Dolutegravir ->
+            MedicationDolutegravir reason
+
+        TDF3TC ->
+            MedicationTDF3TC reason
+
         _ ->
             NoMedicationNonAdministrationSigns
 
@@ -2203,6 +2215,18 @@ resolveMedicationsNonAdministrationReasons measurements =
 
                         MedicationMebendezole reason ->
                             Just ( Mebendezole, reason )
+
+                        MedicationTenofovir reason ->
+                            Just ( Tenofovir, reason )
+
+                        MedicationLamivudine reason ->
+                            Just ( Lamivudine, reason )
+
+                        MedicationDolutegravir reason ->
+                            Just ( Dolutegravir, reason )
+
+                        MedicationTDF3TC reason ->
+                            Just ( TDF3TC, reason )
 
                         NoMedicationNonAdministrationSigns ->
                             Nothing
