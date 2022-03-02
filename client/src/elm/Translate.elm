@@ -685,6 +685,8 @@ type TranslationId
     | MainWaterPreparationQuestion
     | MakeSureYouAreConnected
     | MalariaRapidDiagnosticTest
+    | MalariaRecommendedTreatmentHeader
+    | MalariaRecommendedTreatmentHelper
     | RapidTestResult RapidTestResult
     | MalnutritionWithComplications
     | MaritalStatusLabel
@@ -959,6 +961,7 @@ type TranslationId
     | RecommendationSite RecommendationSite
     | RecommendedButNotGivenDueTo
     | RecommendedSymptomRelief
+    | RecommendedTreatmentSignLabel RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -5358,6 +5361,16 @@ translationSet trans =
             , kinyarwanda = Just "Igikoresho gipima Malariya ku buryo bwihuse"
             }
 
+        MalariaRecommendedTreatmentHeader ->
+            { english = "This patient has tested positive for Malaria"
+            , kinyarwanda = Nothing
+            }
+
+        MalariaRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Nothing
+            }
+
         RapidTestResult result ->
             case result of
                 RapidTestNegative ->
@@ -7476,6 +7489,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
+                Pages.PrenatalActivity.Types.NextStepsRecommendedTreatment ->
+                    { english = "Diagnosis + Medicine"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalRecurrentNextStepsTask task ->
             case task of
                 Pages.PrenatalRecurrentActivity.Types.NextStepsSendToHC ->
@@ -8645,6 +8663,33 @@ translationSet trans =
             { english = "Recommended Symptom Relief"
             , kinyarwanda = Nothing
             }
+
+        RecommendedTreatmentSignLabel sign ->
+            case sign of
+                TreatmentQuinineSulphate ->
+                    { english = "Give quinine sulphate per os 10 mg/kg/dose, 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCoartem ->
+                    { english = "Give Coartem 4 tablets by mouth twice per day x 3 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentWrittenProtocols ->
+                    { english = "GI complications: followed Written Protocols"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementReferToHospital ->
+                    { english = "Severe Malaria: Stabilize and Refer to Hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoRecommendedTreatmentSign ->
+                    { english = "Recommended"
+                    , kinyarwanda = Nothing
+                    }
 
         RecordAcuteIllnessOutcome ->
             { english = "Record Acute Illness Outcome"

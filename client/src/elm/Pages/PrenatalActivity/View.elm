@@ -24,6 +24,7 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Pages.AcuteIllnessActivity.View exposing (viewInstructionsLabel)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
@@ -1480,40 +1481,34 @@ viewNextStepsContent language currentDate isChw assembled data =
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                iconClass =
                     case task of
                         NextStepsAppointmentConfirmation ->
-                            ( "next-steps-send-to-hc"
-                            , isJust measurements.appointmentConfirmation
-                            )
+                            "next-steps-send-to-hc"
 
                         NextStepsFollowUp ->
-                            ( "next-steps-follow-up"
-                            , isJust measurements.followUp
-                            )
+                            "next-steps-follow-up"
 
                         NextStepsSendToHC ->
-                            ( "next-steps-send-to-hc"
-                            , isJust measurements.sendToHC
-                            )
+                            "next-steps-send-to-hc"
 
                         NextStepsHealthEducation ->
-                            ( "next-steps-health-education"
-                            , isJust measurements.healthEducation
-                            )
+                            "next-steps-health-education"
 
                         NextStepsNewbornEnrolment ->
-                            ( "next-steps-newborn-enrolment"
-                            , isJust assembled.participant.newborn
-                            )
+                            "next-steps-newborn-enrolment"
 
                         NextStepsMedicationDistribution ->
-                            ( "next-steps-medication-distribution"
-                            , isJust measurements.medicationDistribution
-                            )
+                            "next-steps-medication-distribution"
+
+                        NextStepsRecommendedTreatment ->
+                            "next-steps-medication-distribution"
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    nextStepsMeasurementTaken assembled task
 
                 navigationAction =
                     if isActive then
@@ -1609,6 +1604,12 @@ viewNextStepsContent language currentDate isChw assembled data =
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language currentDate assembled
 
+                Just NextStepsRecommendedTreatment ->
+                    measurements.recommendedTreatment
+                        |> getMeasurementValueFunc
+                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+                        |> viewRecommendedTreatmentForm language currentDate assembled
+
                 Nothing ->
                     emptyNode
 
@@ -1649,6 +1650,9 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    NextStepsRecommendedTreatment ->
+                                        SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -2823,6 +2827,44 @@ viewMedicationDistributionForm language currentDate assembled form =
     div [ class "ui form medication-distribution" ] <|
         h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
             :: content
+
+
+viewRecommendedTreatmentForm : Language -> NominalDate -> AssembledData -> RecommendedTreatmentForm -> Html Msg
+viewRecommendedTreatmentForm language currentDate assembled form =
+    let
+        egaInWeeks =
+            Maybe.map
+                (calculateEGAWeeks currentDate)
+                assembled.globalLmpDate
+
+        medicationTreatment =
+            Maybe.map
+                (\egaWeeks ->
+                    if egaWeeks <= 14 then
+                        TreatmentQuinineSulphate
+
+                    else
+                        TreatmentCoartem
+                )
+                egaInWeeks
+                |> Maybe.withDefault TreatmentQuinineSulphate
+    in
+    div [ class "ui form recommended-treatment" ]
+        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+        , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+        , viewCheckBoxSelectInput language
+            [ medicationTreatment
+            , TreatmentWrittenProtocols
+            , TreatementReferToHospital
+            ]
+            []
+            (Maybe.andThen List.head form.signs)
+            SetRecommendedTreatmentSign
+            Translate.RecommendedTreatmentSignLabel
+        ]
 
 
 viewPrenatalHIVTestForm : Language -> NominalDate -> PrenatalHIVTestForm -> ( Html Msg, Int, Int )

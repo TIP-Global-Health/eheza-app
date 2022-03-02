@@ -238,7 +238,7 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -318,6 +318,10 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.withDefault False
                    )
 
+        NextStepsRecommendedTreatment ->
+            -- @todo
+            True
+
 
 generateNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
 generateNonUrgentDiagnoses diagnoses =
@@ -358,6 +362,9 @@ nextStepsMeasurementTaken assembled task =
 
         NextStepsMedicationDistribution ->
             isJust assembled.measurements.medicationDistribution
+
+        NextStepsRecommendedTreatment ->
+            isJust assembled.measurements.recommendedTreatment
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
@@ -1251,6 +1258,10 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     resolveMedicationDistributionInputsAndTasks language currentDate assembled form
             in
             ( completed, total )
+
+        NextStepsRecommendedTreatment ->
+            -- @todo
+            ( 0, 1 )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -3258,3 +3269,24 @@ resolveLamivudineDosageAndIcon currentDate person =
 resolveDolutegravirDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
 resolveDolutegravirDosageAndIcon currentDate person =
     Just ( "50 mg", "icon-pills" )
+
+
+recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
+recommendedTreatmentFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValueWithDefault saved form =
+    recommendedTreatmentFormWithDefault form saved
+        |> toRecommendedTreatmentValue
+
+
+toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoRecommendedTreatmentSign) form.signs

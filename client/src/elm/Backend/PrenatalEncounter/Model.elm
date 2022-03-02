@@ -115,6 +115,7 @@ type alias Model =
     , saveRandomBloodSugarTest : WebData ()
     , saveLabsResults : WebData ()
     , saveMedicationDistribution : WebData ()
+    , saveRecommendedTreatment : WebData ()
     }
 
 
@@ -152,6 +153,7 @@ emptyModel =
     , saveRandomBloodSugarTest = NotAsked
     , saveLabsResults = NotAsked
     , saveMedicationDistribution = NotAsked
+    , saveRecommendedTreatment = NotAsked
     }
 
 
@@ -221,3 +223,5 @@ type Msg
     | HandleSavedLabsResults (WebData ())
     | SaveMedicationDistribution PersonId (Maybe PrenatalMedicationDistributionId) MedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
+    | SaveRecommendedTreatment PersonId (Maybe PrenatalRecommendedTreatmentId) RecommendedTreatmentValue
+    | HandleSavedRecommendedTreatment (WebData ())

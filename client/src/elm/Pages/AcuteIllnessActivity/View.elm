@@ -6,6 +6,7 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewAmoxicillinAdministrationInstructions
     , viewHCRecommendation
     , viewHealthEducationLabel
+    , viewInstructionsLabel
     , viewOralSolutionPrescription
     , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
