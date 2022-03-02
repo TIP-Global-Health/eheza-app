@@ -1499,10 +1499,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                             "next-steps-newborn-enrolment"
 
                         NextStepsMedicationDistribution ->
-                            "next-steps-medication-distribution"
+                            "next-steps-treatment"
 
                         NextStepsRecommendedTreatment ->
-                            "next-steps-medication-distribution"
+                            "next-steps-treatment"
 
                 isActive =
                     activeTask == Just task
