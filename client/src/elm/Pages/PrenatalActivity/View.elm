@@ -37,7 +37,6 @@ import Pages.Utils
         , isTaskCompleted
         , taskAllCompleted
         , taskCompleted
-        , taskCompletedWithException
         , tasksBarId
         , viewAlert
         , viewBoolInput

@@ -2623,9 +2623,8 @@ decodeMedicationDistributionSign =
                     "dolutegravir" ->
                         succeed Dolutegravir
 
-                    "tdf-3tc" ->
-                        succeed
-                            TDF3TC
+                    "tdf3tc" ->
+                        succeed TDF3TC
 
                     "none" ->
                         succeed NoMedicationDistributionSigns
@@ -2706,7 +2705,7 @@ decodeMedicationNonAdministrationSign =
                                             |> Maybe.map (MedicationDolutegravir >> succeed)
                                             |> Maybe.withDefault failure
 
-                                    "tdf-3tc" ->
+                                    "tdf3tc" ->
                                         administrationNote
                                             |> Maybe.map (MedicationTDF3TC >> succeed)
                                             |> Maybe.withDefault failure
