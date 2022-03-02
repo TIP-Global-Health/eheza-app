@@ -13,7 +13,7 @@ class HedleyRestfulPrenatalRecommendedTreatment extends HedleyRestfulPrenatalAct
   /**
    * {@inheritdoc}
    */
-  protected $fields = [
+  protected $multiFields = [
     'field_recommended_treatment',
   ];
 

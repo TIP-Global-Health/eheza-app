@@ -506,7 +506,7 @@ function hedley_prenatal_field_default_field_bases() {
   // Exported field_base: 'field_recommended_treatment'.
   $field_bases['field_recommended_treatment'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_recommended_treatment',
