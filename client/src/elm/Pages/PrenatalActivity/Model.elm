@@ -17,6 +17,7 @@ type Msg
     | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe ( String, String ))
+    | ViewWarningPopupForNonUrgentDiagnoses
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool

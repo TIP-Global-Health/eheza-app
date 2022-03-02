@@ -3966,22 +3966,20 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                     addedDiagnoses
 
                             additionalMsgs =
-                                case addedDiagnoses of
-                                    [] ->
-                                        []
+                                if List.isEmpty urgentDiagnoses then
+                                    []
 
-                                    [ DiagnosisPrescribeMebendezole ] ->
-                                        []
+                                else
+                                    case addedDiagnoses of
+                                        [] ->
+                                            []
 
-                                    first :: rest ->
-                                        let
-                                            ( message, instructions ) =
-                                                if List.isEmpty urgentDiagnoses then
-                                                    ( translate language <| Translate.PrenatalDiagnosisLabResultsMessage first
-                                                    , ""
-                                                    )
+                                        [ DiagnosisPrescribeMebendezole ] ->
+                                            []
 
-                                                else
+                                        first :: rest ->
+                                            let
+                                                ( message, instructions ) =
                                                     let
                                                         signs =
                                                             List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
@@ -4001,49 +3999,56 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                                       else
                                                         translate language Translate.DangerSignsHelperReferToEmergencyObstetricCareServices
                                                     )
-                                        in
-                                        -- View warning popup and navigate to Next Steps activity.
-                                        [ initialEncounterWarningPopupMsg ( message, instructions )
-                                        , initialEncounterNextStepsMsg
-                                        ]
+                                            in
+                                            -- View warning popup and navigate to Next Steps activity.
+                                            [ initialEncounterWarningPopupMsg ( message, instructions )
+                                            , initialEncounterNextStepsMsg
+                                            ]
                         in
-                        updateDiagnosesMsg :: additionalMsgs
+                        -- These messages are sent when diagnoses set has changed.
+                        -- Therefore, in any case, we need to send command to update
+                        -- diagnoses set.
+                        updateDiagnosesMsg
+                            :: -- For urgent diagnoses, we show warning popup and
+                               -- navigate to Next Steps activity.
+                               additionalMsgs
 
                     recurrentEncounterMsgs =
-                        case addedDiagnoses of
-                            -- This can happen when nurses changes labs result,
-                            -- so it's not indicates a diagnosis anymore.
-                            -- Since diagnosis was removed, we need to update
-                            -- diagnoses set.
-                            [] ->
-                                [ updateDiagnosesMsg ]
+                        let
+                            urgentDiagnoses =
+                                List.filter
+                                    (\diagnosis ->
+                                        List.member diagnosis Pages.PrenatalRecurrentActivity.Utils.emergencyReferralDiagnoses
+                                    )
+                                    addedDiagnoses
 
-                            first :: rest ->
-                                let
-                                    nextStepsMsg =
-                                        if
-                                            List.any
-                                                (\diagnosis ->
-                                                    List.member diagnosis Pages.PrenatalRecurrentActivity.Utils.emergencyReferralDiagnoses
-                                                )
-                                                addedDiagnoses
-                                        then
+                            additionalMsgs =
+                                if List.isEmpty urgentDiagnoses then
+                                    []
+
+                                else
+                                    case addedDiagnoses of
+                                        [] ->
+                                            []
+
+                                        first :: rest ->
                                             [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
                                                 |> UserPage
                                                 |> App.Model.SetActivePage
+                                            , recurrentEncounterWarningPopupMsg
+                                                ( Translate.PrenatalDiagnosisLabResultsMessage first
+                                                    |> translate language
+                                                , ""
+                                                )
                                             ]
-
-                                        else
-                                            []
-                                in
-                                nextStepsMsg
-                                    ++ [ updateDiagnosesMsg
-                                       , recurrentEncounterWarningPopupMsg
-                                            ( Translate.PrenatalDiagnosisLabResultsMessage first
-                                                |> translate language
-                                            , ""
-                                            )
-                                       ]
+                        in
+                        -- These messages are sent when diagnoses set has changed.
+                        -- Therefore, in any case, we need to send command to update
+                        -- diagnoses set.
+                        updateDiagnosesMsg
+                            :: -- For urgent diagnoses, we show warning popup and
+                               -- navigate to Next Steps activity.
+                               additionalMsgs
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []

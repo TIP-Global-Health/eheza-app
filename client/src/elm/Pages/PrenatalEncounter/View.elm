@@ -418,7 +418,7 @@ viewMainPageContent language currentDate data model =
         endEcounterButtonAttributes =
             if allowEndEcounter then
                 [ class "ui fluid primary button"
-                , onClick <| CloseEncounter data.id
+                , onClick CloseEncounter
                 ]
 
             else

@@ -23,6 +23,7 @@ import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (calculateEGAWeeks, isFirstEncounter)
+import Pages.PrenatalRecurrentActivity.Utils
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -316,6 +317,17 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.map (EverySet.member Mebendazole >> not)
                         |> Maybe.withDefault False
                    )
+
+
+generateNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
+generateNonUrgentDiagnoses diagnoses =
+    let
+        exclusions =
+            DiagnosisPrescribeMebendezole
+                :: emergencyReferralDiagnoses
+                ++ Pages.PrenatalRecurrentActivity.Utils.emergencyReferralDiagnoses
+    in
+    List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
 
 
 hivProgramAtHC : AssembledData -> Bool
