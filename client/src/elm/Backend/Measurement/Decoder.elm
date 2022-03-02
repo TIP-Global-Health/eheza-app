@@ -126,6 +126,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
         |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
         |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
+        |> optional "prenatal_recommended_treatment" (decodeHead decodePrenatalRecommendedTreatment) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -733,6 +734,24 @@ decodePrenatalLaboratoryTest =
 decodePrenatalMedicationDistribution : Decoder PrenatalMedicationDistribution
 decodePrenatalMedicationDistribution =
     decodePrenatalMeasurement decodeMedicationDistributionValue
+
+
+decodePrenatalRecommendedTreatment : Decoder PrenatalRecommendedTreatment
+decodePrenatalRecommendedTreatment =
+    decodeEverySet decodeRecommendedTreatmentSign
+        |> field "prenatal_recommended_treatment"
+        |> decodePrenatalMeasurement
+
+
+decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign
+decodeRecommendedTreatmentSign =
+    string
+        |> andThen
+            (\s ->
+                recommendedTreatmentSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized RecommendedTreatmentSign")
+            )
 
 
 decodeHeight : Decoder Height

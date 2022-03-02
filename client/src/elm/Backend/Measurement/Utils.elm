@@ -1501,3 +1501,44 @@ prenatalHIVSignFromString sign =
 
         _ ->
             Nothing
+
+
+recommendedTreatmentSignToString : RecommendedTreatmentSign -> String
+recommendedTreatmentSignToString sign =
+    case sign of
+        TreatmentQuinineSulphate ->
+            "quinine-sulphate"
+
+        TreatmentCoartem ->
+            "coartem"
+
+        TreatmentWrittenProtocols ->
+            "written-protocols"
+
+        TreatementReferToHospital ->
+            "refer-to-hospital"
+
+        NoRecommendedTreatmentSign ->
+            "none"
+
+
+recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
+recommendedTreatmentSignFromString sign =
+    case sign of
+        "quinine-sulphate" ->
+            Just TreatmentQuinineSulphate
+
+        "coartem" ->
+            Just TreatmentCoartem
+
+        "written-protocols" ->
+            Just TreatmentWrittenProtocols
+
+        "refer-to-hospital" ->
+            Just TreatementReferToHospital
+
+        "none" ->
+            Just NoRecommendedTreatmentSign
+
+        _ ->
+            Nothing

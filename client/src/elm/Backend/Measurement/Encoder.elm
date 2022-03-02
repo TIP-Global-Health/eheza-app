@@ -2498,6 +2498,25 @@ encodeMedicationNonAdministrationSign sign =
                 "none"
 
 
+encodePrenatalRecommendedTreatment : PrenatalRecommendedTreatment -> List ( String, Value )
+encodePrenatalRecommendedTreatment =
+    encodePrenatalMeasurement encodeRecommendedTreatmentValue
+
+
+encodeRecommendedTreatmentValue : RecommendedTreatmentValue -> List ( String, Value )
+encodeRecommendedTreatmentValue value =
+    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_recommended_treatment" )
+    ]
+
+
+encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value
+encodeRecommendedTreatmentSign sign =
+    string <|
+        recommendedTreatmentSignToString sign
+
+
 encodeTravelHistory : TravelHistory -> List ( String, Value )
 encodeTravelHistory =
     encodeAcuteIllnessMeasurement encodeTravelHistoryValue
