@@ -400,5 +400,5 @@ diagnosed diagnosis assembled =
 
 emergencyReferralDiagnoses : List PrenatalDiagnosis
 emergencyReferralDiagnoses =
-    [ DiagnosisHepatitisB
+    [ DiagnosisSevereAnemiaWithComplications
     ]

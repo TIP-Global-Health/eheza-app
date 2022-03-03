@@ -42,6 +42,11 @@ type PrenatalDiagnosis
     | DiagnosisDiscordantPartnership
     | DiagnosisHepatitisB
     | DiagnosisMalaria
+    | DiagnosisMalariaWithAnemia
+    | DiagnosisMalariaWithSevereAnemia
+    | DiagnosisModerateAnemia
+    | DiagnosisSevereAnemia
+    | DiagnosisSevereAnemiaWithComplications
     | DiagnosisEclampsia
     | DiagnosisMiscarriage
     | DiagnosisMolarPregnancy
