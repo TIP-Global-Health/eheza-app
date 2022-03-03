@@ -337,7 +337,7 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            EverySet.member DiagnosisHepatitisB assembled.encounter.diagnoses
+            diagnosed DiagnosisHepatitisB assembled
 
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
@@ -391,6 +391,11 @@ nextStepsTasksCompletedFromTotal assembled data task =
             ( 0
             , 1
             )
+
+
+diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
+diagnosed diagnosis assembled =
+    EverySet.member diagnosis assembled.encounter.diagnoses
 
 
 emergencyReferralDiagnoses : List PrenatalDiagnosis

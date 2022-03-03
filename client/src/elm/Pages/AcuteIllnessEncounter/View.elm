@@ -23,7 +23,6 @@ import Pages.AcuteIllnessActivity.Utils
         , noImprovementOnSubsequentVisit
         , respiratoryRateElevated
         , sendToHCOnSubsequentVisitByNutrition
-        , talkedTo114
         )
 import Pages.AcuteIllnessEncounter.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)

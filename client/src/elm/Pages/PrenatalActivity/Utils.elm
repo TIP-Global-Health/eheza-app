@@ -272,17 +272,14 @@ expectNextStepsTask currentDate assembled task =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     let
-                        emergencyReferalDiagnosis =
-                            EverySet.toList assembled.encounter.diagnoses
-                                |> List.filter diagnosisRequiresEmergencyReferal
-                                |> List.isEmpty
-                                |> not
-
-                        hivDiagnosis =
-                            EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+                        severeMalariaTreatment =
+                            getMeasurementValueFunc assembled.measurements.recommendedTreatment
+                                |> Maybe.map (EverySet.member TreatementReferToHospital)
+                                |> Maybe.withDefault False
                     in
-                    emergencyReferalDiagnosis
-                        || (hivDiagnosis && hivProgramAtHC assembled)
+                    emergencyReferalRequired assembled
+                        || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
+                        || (diagnosed DiagnosisMalaria assembled && severeMalariaTreatment)
 
                 _ ->
                     dangerSigns
@@ -320,11 +317,24 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsRecommendedTreatment ->
-            EverySet.member DiagnosisMalaria assembled.encounter.diagnoses
+            diagnosed DiagnosisMalaria assembled
 
 
-generateNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
-generateNonUrgentDiagnoses diagnoses =
+diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
+diagnosed diagnosis assembled =
+    EverySet.member diagnosis assembled.encounter.diagnoses
+
+
+emergencyReferalRequired : AssembledData -> Bool
+emergencyReferalRequired assembled =
+    EverySet.toList assembled.encounter.diagnoses
+        |> List.filter diagnosisRequiresEmergencyReferal
+        |> List.isEmpty
+        |> not
+
+
+listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
+listNonUrgentDiagnoses diagnoses =
     let
         exclusions =
             DiagnosisPrescribeMebendezole
@@ -918,7 +928,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
     if
         List.any
             (\diagnosis ->
-                EverySet.member diagnosis assembled.encounter.diagnoses
+                diagnosed diagnosis assembled
             )
             [ DiagnosisHIV, DiagnosisDiscordantPartnership ]
     then
@@ -1212,19 +1222,11 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     if isChw then
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
-                    else
-                        let
-                            emergencyReferalDiagnosis =
-                                EverySet.toList assembled.encounter.diagnoses
-                                    |> List.filter diagnosisRequiresEmergencyReferal
-                                    |> List.isEmpty
-                                    |> not
-                        in
-                        if emergencyReferalDiagnosis then
-                            ( 0, 0 )
+                    else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
+                        ( 0, 0 )
 
-                        else
-                            ( taskCompleted form.accompanyToHealthCenter, 1 )
+                    else
+                        ( taskCompleted form.accompanyToHealthCenter, 1 )
             in
             ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
             , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
@@ -2924,27 +2926,27 @@ resolveMedicationsByDiagnoses assembled =
     List.filter
         (\medication ->
             let
-                hivDiagnosis =
-                    EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+                hivDiagnosed =
+                    diagnosed DiagnosisHIV assembled
 
                 hivProgramHC =
                     hivProgramAtHC assembled
             in
             case medication of
                 Mebendezole ->
-                    EverySet.member DiagnosisPrescribeMebendezole assembled.encounter.diagnoses
+                    diagnosed DiagnosisPrescribeMebendezole assembled
 
                 Tenofovir ->
-                    hivDiagnosis && hivProgramHC
+                    hivDiagnosed && hivProgramHC
 
                 Lamivudine ->
-                    hivDiagnosis && hivProgramHC
+                    hivDiagnosed && hivProgramHC
 
                 Dolutegravir ->
-                    hivDiagnosis && hivProgramHC
+                    hivDiagnosed && hivProgramHC
 
                 TDF3TC ->
-                    EverySet.member DiagnosisDiscordantPartnership assembled.encounter.diagnoses
+                    diagnosed DiagnosisDiscordantPartnership assembled
 
                 _ ->
                     False

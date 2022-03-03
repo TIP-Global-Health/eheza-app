@@ -1545,6 +1545,11 @@ viewNextStepsContent language currentDate isChw assembled data =
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
+        recommendedTreatmentForm =
+            measurements.recommendedTreatment
+                |> getMeasurementValueFunc
+                |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
@@ -1565,19 +1570,11 @@ viewNextStepsContent language currentDate isChw assembled data =
                             if isChw then
                                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
-                            else
-                                let
-                                    emergencyReferalDiagnosis =
-                                        EverySet.toList assembled.encounter.diagnoses
-                                            |> List.filter diagnosisRequiresEmergencyReferal
-                                            |> List.isEmpty
-                                            |> not
-                                in
-                                if emergencyReferalDiagnosis then
-                                    ( viewSendToHospitalForm, Nothing )
+                            else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
+                                ( viewSendToHospitalForm, Nothing )
 
-                                else
-                                    ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
+                            else
+                                ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
                     in
                     measurements.sendToHC
                         |> getMeasurementValueFunc
@@ -1605,16 +1602,47 @@ viewNextStepsContent language currentDate isChw assembled data =
                         |> viewMedicationDistributionForm language currentDate assembled
 
                 Just NextStepsRecommendedTreatment ->
-                    measurements.recommendedTreatment
-                        |> getMeasurementValueFunc
-                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-                        |> viewRecommendedTreatmentForm language currentDate assembled
+                    viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
 
                 Nothing ->
                     emptyNode
 
+        tasksAfterSave =
+            case activeTask of
+                Just NextStepsRecommendedTreatment ->
+                    let
+                        -- We know if patient was referred to hospital
+                        -- due to Malaria, based on saved measurement.
+                        referredToHospitalBeforeSave =
+                            getMeasurementValueFunc measurements.recommendedTreatment
+                                |> Maybe.map (EverySet.member TreatementReferToHospital)
+                                |> Maybe.withDefault False
+
+                        -- We know if patient will be referred to hospital
+                        -- due to Malaria, based on edited form.
+                        referredToHospitalAfterSave =
+                            Maybe.map (List.member TreatementReferToHospital)
+                                recommendedTreatmentForm.signs
+                                |> Maybe.withDefault False
+                    in
+                    if referredToHospitalAfterSave then
+                        EverySet.fromList tasks
+                            |> EverySet.insert NextStepsSendToHC
+                            |> EverySet.toList
+
+                    else if referredToHospitalBeforeSave then
+                        EverySet.fromList tasks
+                            |> EverySet.remove NextStepsSendToHC
+                            |> EverySet.toList
+
+                    else
+                        tasks
+
+                _ ->
+                    tasks
+
         nextTask =
-            tasks
+            tasksAfterSave
                 |> List.filter
                     (\task ->
                         (Just task /= activeTask)

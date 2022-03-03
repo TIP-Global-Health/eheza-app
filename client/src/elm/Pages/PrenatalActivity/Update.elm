@@ -100,7 +100,7 @@ update language currentDate id db msg model =
                 nonUrgentDiagnoses =
                     Dict.get id db.prenatalEncounters
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> generateNonUrgentDiagnoses)
+                        |> Maybe.map (.diagnoses >> EverySet.toList >> listNonUrgentDiagnoses)
                         |> Maybe.withDefault []
 
                 extraMsgs =
