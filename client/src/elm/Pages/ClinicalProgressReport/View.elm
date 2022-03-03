@@ -294,51 +294,40 @@ viewChwActivityPane language currentDate isChw data =
         pregnancyDatingAction =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, encounterType_, measurements ) ->
-                        if encounterType_ /= NurseEncounter then
-                            Just measurements
-
-                        else
-                            Nothing
+                    (\( date_, _, measurements ) ->
+                        Just measurements
                     )
                 |> List.any (.lastMenstrualPeriod >> isJust)
 
         sentToHCActivity =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, encounterType_, measurements ) ->
-                        if encounterType_ /= NurseEncounter then
-                            Just measurements
-
-                        else
-                            Nothing
+                    (\( date_, _, measurements ) ->
+                        Just measurements
                     )
                 |> List.any (.sendToHC >> isJust)
 
-        activityClass =
-            if sentToHCActivity then
-                "activity-red"
-
-            else if pregnancyDatingAction then
-                "activity-blue"
-
-            else
-                ""
+        birthPlan =
+            allMeasurementsWithDates
+                |> List.filterMap
+                    (\( date_, _, measurements ) ->
+                        Just measurements
+                    )
+                |> List.any (.birthPlan >> isJust)
 
         activity =
-            if sentToHCActivity then
-                li [ class activityClass ] [ text "Referred Health Center" ]
-
-            else if pregnancyDatingAction then
-                li [ class activityClass ] [ text "Pregnancy Dating" ]
+            if sentToHCActivity || pregnancyDatingAction || birthPlan then
+                [ li [ class "activity-red" ] [ text "Referred Health Center" ]
+                , li [ class "activity-blue" ] [ text "Pregnancy Dating" ]
+                ]
 
             else
-                emptyNode
+                [ emptyNode ]
 
         activities =
             div [ class "entry" ]
                 [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
-                , div [ class <| "cell activity" ] [ ul [] [ activity ] ]
+                , div [ class <| "cell activity" ] [ ul [] activity ]
                 ]
 
         heading =
