@@ -866,7 +866,7 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
              Maybe.map (\count -> count < 7) hemoglobinCount
                 |> Maybe.withDefault False
             )
-                && not anemiaComplicationSignsPresent
+                && anemiaComplicationSignsPresent
 
         -- Non Lab Results diagnoses.
         _ ->
