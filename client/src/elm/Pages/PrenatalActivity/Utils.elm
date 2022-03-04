@@ -921,6 +921,11 @@ labResultsDiagnoses =
     , DiagnosisDiscordantPartnership
     , DiagnosisHepatitisB
     , DiagnosisMalaria
+    , DiagnosisMalariaWithAnemia
+    , DiagnosisMalariaWithSevereAnemia
+    , DiagnosisModerateAnemia
+    , DiagnosisSevereAnemia
+    , DiagnosisSevereAnemiaWithComplications
     ]
 
 

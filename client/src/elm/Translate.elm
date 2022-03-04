@@ -7375,6 +7375,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisMalariaWithAnemia ->
+                    { english = "Malaria with Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithSevereAnemia ->
+                    { english = "Malaria with Severe Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModerateAnemia ->
+                    { english = "Mild to Moderate Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereAnemia ->
+                    { english = "Severe Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereAnemiaWithComplications ->
+                    { english = "Severe Anemia with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Non Lab Results diagnoses.
                 _ ->
                     { english = ""
