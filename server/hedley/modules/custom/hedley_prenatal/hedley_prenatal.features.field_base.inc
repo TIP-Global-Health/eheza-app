@@ -402,6 +402,32 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_prenatal_diagnoses'.
+  $field_bases['field_prenatal_diagnoses'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_diagnoses',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'prescribe-mebendezole' => 'Prescribe Mebendazole',
+        'imminent-delivery' => 'Imminent delivery',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_protein'.
   $field_bases['field_protein'] = array(
     'active' => 1,

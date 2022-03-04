@@ -56,15 +56,7 @@ turns it into an `EverySet`.
 -}
 decodeEverySet : Decoder a -> Decoder (EverySet a)
 decodeEverySet decoder =
-    oneOf
-        [ map EverySet.fromList <| list decoder
-        , succeed EverySet.empty
-        ]
-
-
-decodeWithDefault : a -> Decoder a -> Decoder a
-decodeWithDefault default decoder =
-    oneOf [ decoder, succeed default ]
+    decodeWithFallback EverySet.empty (map EverySet.fromList <| list decoder)
 
 
 encodeIfExists : String -> Maybe a -> (a -> Value) -> List ( String, Value )

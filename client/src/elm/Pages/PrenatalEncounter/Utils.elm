@@ -25,10 +25,10 @@ isFirstEncounter assembled =
 
 
 getAllActivities : AssembledData -> List PrenatalActivity
-getAllActivities data =
-    case data.encounter.encounterType of
+getAllActivities assembled =
+    case assembled.encounter.encounterType of
         NurseEncounter ->
-            if isFirstEncounter data then
+            if isFirstEncounter assembled then
                 [ PregnancyDating
                 , History
                 , Examination
@@ -347,54 +347,54 @@ generateAssembledData id db =
 
 
 getFirstEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
-getFirstEncounterMeasurements isChw data =
-    case data.nursePreviousMeasurementsWithDates of
+getFirstEncounterMeasurements isChw assembled =
+    case assembled.nursePreviousMeasurementsWithDates of
         [] ->
             if isChw then
                 emptyPrenatalMeasurements
 
             else
-                data.measurements
+                assembled.measurements
 
         first :: others ->
             Tuple.second first
 
 
 getLastEncounterMeasurementsWithDate : NominalDate -> Bool -> AssembledData -> ( NominalDate, PrenatalMeasurements )
-getLastEncounterMeasurementsWithDate currentDate isChw data =
-    case List.reverse data.nursePreviousMeasurementsWithDates of
+getLastEncounterMeasurementsWithDate currentDate isChw assembled =
+    case List.reverse assembled.nursePreviousMeasurementsWithDates of
         [] ->
             if isChw then
                 ( currentDate, emptyPrenatalMeasurements )
 
             else
-                ( currentDate, data.measurements )
+                ( currentDate, assembled.measurements )
 
         first :: others ->
             first
 
 
 getLastEncounterMeasurements : NominalDate -> Bool -> AssembledData -> PrenatalMeasurements
-getLastEncounterMeasurements currentDate isChw data =
-    getLastEncounterMeasurementsWithDate currentDate isChw data |> Tuple.second
+getLastEncounterMeasurements currentDate isChw assembled =
+    getLastEncounterMeasurementsWithDate currentDate isChw assembled |> Tuple.second
 
 
 getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List ( NominalDate, PrenatalMeasurements )
-getAllNurseMeasurements currentDate isChw data =
+getAllNurseMeasurements currentDate isChw assembled =
     let
         currentEncounterData =
             if isChw then
                 []
 
             else
-                [ ( currentDate, data.measurements ) ]
+                [ ( currentDate, assembled.measurements ) ]
     in
     currentEncounterData
-        ++ data.nursePreviousMeasurementsWithDates
+        ++ assembled.nursePreviousMeasurementsWithDates
 
 
 generateRecurringHighSeverityAlertData : Language -> NominalDate -> Bool -> AssembledData -> RecurringHighSeverityAlert -> List ( String, String, String )
-generateRecurringHighSeverityAlertData language currentDate isChw data alert =
+generateRecurringHighSeverityAlertData language currentDate isChw assembled alert =
     let
         trans =
             translate language
@@ -425,18 +425,18 @@ generateRecurringHighSeverityAlertData language currentDate isChw data alert =
                                         Nothing
                             )
             in
-            getAllNurseMeasurements currentDate isChw data
+            getAllNurseMeasurements currentDate isChw assembled
                 |> List.filterMap resolveAlert
 
 
 generateObstetricalDiagnosisAlertData : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> ObstetricalDiagnosis -> Maybe String
-generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements data diagnosis =
+generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled diagnosis =
     let
         transAlert diagnosis_ =
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis_)
 
         lastEncounterMeasurements =
-            getLastEncounterMeasurements currentDate isChw data
+            getLastEncounterMeasurements currentDate isChw assembled
     in
     case diagnosis of
         DiagnosisRhNegative ->
@@ -477,8 +477,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If nutrition measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.nutrition then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.nutrition then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -526,8 +526,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If nutrition measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.nutrition then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.nutrition then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -565,8 +565,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If nutrition measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.nutrition then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.nutrition then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -604,8 +604,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If nutrition measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.nutrition then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.nutrition then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -636,8 +636,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If corePhysicalExam measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.corePhysicalExam then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.corePhysicalExam then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -645,7 +645,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
         DiagnosisFetusBreech ->
             let
                 resolveAlert measurements =
-                    data.globalLmpDate
+                    assembled.globalLmpDate
                         |> Maybe.andThen
                             (\lmpDate ->
                                 let
@@ -674,8 +674,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If obstetricalExam measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.obstetricalExam then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.obstetricalExam then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -683,7 +683,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
         DiagnosisFetusTransverse ->
             let
                 resolveAlert measurements =
-                    data.globalLmpDate
+                    assembled.globalLmpDate
                         |> Maybe.andThen
                             (\lmpDate ->
                                 let
@@ -712,8 +712,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If obstetricalExam measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.obstetricalExam then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.obstetricalExam then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -748,8 +748,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If breastExam measurements were taken at current encounter,
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.breastExam then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.breastExam then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements
@@ -757,7 +757,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
         DiagnosisHypotension ->
             let
                 lowBloodPressureOccasions =
-                    getAllNurseMeasurements currentDate isChw data
+                    getAllNurseMeasurements currentDate isChw assembled
                         |> List.filterMap
                             (\( _, measurements ) ->
                                 getMeasurementValueFunc measurements.vitals
@@ -790,7 +790,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             else
                 let
                     highBloodPressureOccasions =
-                        getAllNurseMeasurements currentDate isChw data
+                        getAllNurseMeasurements currentDate isChw assembled
                             |> List.filterMap
                                 (\( _, measurements ) ->
                                     getMeasurementValueFunc measurements.vitals
@@ -855,8 +855,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
             -- If vitals and corePhysicalExam measurements were taken
             -- at current encounter, we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.vitals && isJust data.measurements.corePhysicalExam then
-                resolveAlert data.measurements
+            if isJust assembled.measurements.vitals && isJust assembled.measurements.corePhysicalExam then
+                resolveAlert assembled.measurements
 
             else
                 resolveAlert lastEncounterMeasurements

@@ -7,7 +7,7 @@ import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
-import Utils.Json exposing (decodeWithDefault)
+import Utils.Json exposing (decodeWithFallback)
 
 
 decodeAcuteIllnessEncounter : Decoder AcuteIllnessEncounter
@@ -17,7 +17,7 @@ decodeAcuteIllnessEncounter =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> optional "sequence_number" decodeInt 1
-        |> required "ai_encounter_type" (decodeWithDefault AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType)
+        |> required "ai_encounter_type" (decodeWithFallback AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType)
         |> required "acute_illness_diagnosis" decodeAcuteIllnessDiagnosis
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
