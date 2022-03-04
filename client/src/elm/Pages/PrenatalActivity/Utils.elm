@@ -648,7 +648,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 EverySet.empty
 
         diagnisisByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis assembled.measurements) labResultsDiagnoses
+            List.filter (matchLabResultsPrenatalDiagnosis dangerSignsList assembled.measurements) labResultsDiagnoses
                 |> EverySet.fromList
 
         dangerSignsList =
@@ -756,8 +756,31 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
             False
 
 
-matchLabResultsPrenatalDiagnosis : PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchLabResultsPrenatalDiagnosis measurements diagnosis =
+matchLabResultsPrenatalDiagnosis : List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
+matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
+    let
+        positiveMalariaTest =
+            getMeasurementValueFunc measurements.malariaTest
+                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.withDefault False
+
+        hemoglobinCount =
+            getMeasurementValueFunc measurements.hemoglobinTest
+                |> Maybe.andThen .hemoglobinCount
+
+        anemiaComplicationSignsPresent =
+            respiratoryRateElevated measurements
+                || List.member DifficultyBreathing dangerSigns
+                || anemiaComplicationSignsByExamination
+
+        anemiaComplicationSignsByExamination =
+            getMeasurementValueFunc measurements.corePhysicalExam
+                |> Maybe.map
+                    (\exam ->
+                        EverySet.member PallorHands exam.hands || EverySet.member PaleConjuctiva exam.eyes
+                    )
+                |> Maybe.withDefault False
+    in
     case diagnosis of
         DiagnosisHIV ->
             getMeasurementValueFunc measurements.hivTest
@@ -788,9 +811,62 @@ matchLabResultsPrenatalDiagnosis measurements diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisMalaria ->
-            getMeasurementValueFunc measurements.malariaTest
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+            positiveMalariaTest
+                && ((-- Either hemoglobin test was not performed, or,
+                     -- hemoglobin count is within normal ranges.
+                     Maybe.map (\count -> count >= 11) hemoglobinCount
+                        |> Maybe.withDefault True
+                    )
+                        || -- When severe Anemia with complications is diagnosed,
+                           -- we view Malaia as separate diagnosis.
+                           -- Therefore's not 'Malarial and Severe Anemia with
+                           -- complications' diagnosis.
+                           matchLabResultsPrenatalDiagnosis dangerSigns measurements DiagnosisSevereAnemiaWithComplications
+                   )
+
+        DiagnosisMalariaWithAnemia ->
+            positiveMalariaTest
+                && (-- Hemoglobin test was performed, and,
+                    -- hemoglobin count indicates mild to moderate anemia.
+                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
+
+        DiagnosisMalariaWithSevereAnemia ->
+            positiveMalariaTest
+                && (-- Hemoglobin test was performed, and,
+                    -- hemoglobin count indicates severe anemia.
+                    Maybe.map (\count -> count < 7) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
+
+        DiagnosisModerateAnemia ->
+            not positiveMalariaTest
+                && (-- No indication for being positive for malaria,
+                    -- Hemoglobin test was performed, and, hemoglobin
+                    -- count indicates mild to moderate anemia.
+                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
+
+        DiagnosisSevereAnemia ->
+            not positiveMalariaTest
+                && (-- No indication for being positive for malaria,
+                    -- Hemoglobin test was performed, and, hemoglobin
+                    -- count indicates severe anemia.
+                    Maybe.map (\count -> count < 7) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
+                && not anemiaComplicationSignsPresent
+
+        DiagnosisSevereAnemiaWithComplications ->
+            (-- No indication for being positive for malaria,
+             -- Hemoglobin test was performed, and, hemoglobin
+             -- count indicates severe anemia.
+             Maybe.map (\count -> count < 7) hemoglobinCount
                 |> Maybe.withDefault False
+            )
+                && not anemiaComplicationSignsPresent
 
         -- Non Lab Results diagnoses.
         _ ->
