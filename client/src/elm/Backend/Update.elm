@@ -3937,7 +3937,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                  initialEncounterNextStepsMsg
                                , initialEncounterWarningPopupMsg
                                     ( String.join ", " dangerSignsList
-                                    , translate language Translate.DangerSignsHelperReferToHC
+                                    , translate language Translate.EmergencyReferralHelperReferToHC
                                     )
                                ]
 
@@ -3995,6 +3995,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                         [ DiagnosisPrescribeMebendezole ] ->
                                             []
 
+                                        -- We expect only one diagnosis to be added
+                                        -- at a time, so we care only about `first`.
                                         first :: rest ->
                                             let
                                                 ( message, instructions ) =
@@ -4012,10 +4014,10 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                                             )
                                                             Pages.PrenatalActivity.Utils.maternityWardDiagnoses
                                                       then
-                                                        translate language Translate.DangerSignsHelperReferToMaternityWard
+                                                        translate language Translate.EmergencyReferralHelperReferToMaternityWard
 
                                                       else
-                                                        translate language Translate.DangerSignsHelperReferToEmergencyObstetricCareServices
+                                                        translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
                                                     )
                                             in
                                             -- View warning popup and navigate to Next Steps activity.
@@ -4049,14 +4051,25 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                         [] ->
                                             []
 
+                                        -- We expect only one diagnosis to be added
+                                        -- at a time, so we care only about `first`.
                                         first :: rest ->
+                                            let
+                                                instructions =
+                                                    case first of
+                                                        DiagnosisSevereAnemiaWithComplications ->
+                                                            translate language Translate.EmergencyReferralHelperReferToHospital
+
+                                                        _ ->
+                                                            ""
+                                            in
                                             [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
                                                 |> UserPage
                                                 |> App.Model.SetActivePage
                                             , recurrentEncounterWarningPopupMsg
                                                 ( Translate.PrenatalDiagnosisLabResultsMessage first
                                                     |> translate language
-                                                , ""
+                                                , instructions
                                                 )
                                             ]
                         in

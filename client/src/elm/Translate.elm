@@ -473,10 +473,6 @@ type TranslationId
     | DangerSign DangerSign
     | DangerSignsLabelForChw
     | DangerSignsLabelForNurse
-    | DangerSignsHelperReferToHC
-    | DangerSignsHelperReferToMaternityWard
-    | DangerSignsHelperReferToEmergencyObstetricCareServices
-    | DangerSignsTask DangerSignsTask
     | Date
     | DateConcludedEstimatedQuestion
     | DateOfContact
@@ -526,6 +522,11 @@ type TranslationId
     | Ega
     | EgaHeader
     | EgaWeeks
+    | EmergencyReferralHelperReferToHC
+    | EmergencyReferralHelperReferToHospital
+    | EmergencyReferralHelperReferToMaternityWard
+    | EmergencyReferralHelperReferToEmergencyObstetricCareServices
+    | DangerSignsTask DangerSignsTask
     | EmptyString
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
@@ -3231,21 +3232,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        DangerSignsHelperReferToHC ->
-            { english = "Refer patient to health center immediately"
-            , kinyarwanda = Just "Ibimenyetso Mpuruza"
-            }
-
-        DangerSignsHelperReferToMaternityWard ->
-            { english = "Refer to Maternity Ward Immediately"
-            , kinyarwanda = Nothing
-            }
-
-        DangerSignsHelperReferToEmergencyObstetricCareServices ->
-            { english = "Stabalize and Refer to Emergency Obstetric Care Services"
-            , kinyarwanda = Nothing
-            }
-
         DangerSignsTask task ->
             case task of
                 ReviewDangerSigns ->
@@ -3709,6 +3695,26 @@ translationSet trans =
         EgaWeeks ->
             { english = "EGA (Weeks)"
             , kinyarwanda = Just "EGA (Ibyumweru)"
+            }
+
+        EmergencyReferralHelperReferToHC ->
+            { english = "Refer patient to health center immediately"
+            , kinyarwanda = Nothing
+            }
+
+        EmergencyReferralHelperReferToHospital ->
+            { english = "Refer patient to hospital immediately"
+            , kinyarwanda = Nothing
+            }
+
+        EmergencyReferralHelperReferToMaternityWard ->
+            { english = "Refer to Maternity Ward Immediately"
+            , kinyarwanda = Nothing
+            }
+
+        EmergencyReferralHelperReferToEmergencyObstetricCareServices ->
+            { english = "Stabalize and Refer to Emergency Obstetric Care Services"
+            , kinyarwanda = Nothing
             }
 
         EmptyString ->
