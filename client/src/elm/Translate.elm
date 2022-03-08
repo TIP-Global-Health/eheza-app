@@ -1603,7 +1603,7 @@ translationSet trans =
 
         AcuteIllnessHistory ->
             { english = "Acute Illness History"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru ku ndwara ifatiyeho"
             }
 
         AcuteIllnessHighRiskCaseHelper ->
@@ -2516,7 +2516,7 @@ translationSet trans =
 
                 FilterNutrition ->
                     { english = "Home Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura Umurwayi"
                     }
 
                 FilterContactsTrace ->
@@ -3329,7 +3329,7 @@ translationSet trans =
 
         Delete ->
             { english = "Delete"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gusiba"
             }
 
         DemographicInformation ->
@@ -3655,17 +3655,17 @@ translationSet trans =
             case status of
                 StatusOnTrack ->
                     { english = "On Track"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Biri ku gihe"
                     }
 
                 StatusECDBehind ->
                     { english = "Behind"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Biri inyuma"
                     }
 
                 StatusOffTrack ->
                     { english = "Off Track"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakozwe"
                     }
 
                 NoECDStatus ->
@@ -4768,7 +4768,7 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Select Home Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hitamo Gusura Umurwayi"
                     }
 
                 WellChildEncounter ->
@@ -4838,7 +4838,7 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Home Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura Umurwayi"
                     }
 
                 WellChildEncounter ->
@@ -6946,7 +6946,7 @@ translationSet trans =
 
         PlaceholderSearchContactName ->
             { english = "Search contact name here"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Shakisha izina ry'uwo bahuye"
             }
 
         PleaseCall ->
@@ -8443,7 +8443,7 @@ translationSet trans =
 
         ProvidedSymtomReliefGuidanceQuestion ->
             { english = "Have you provided the guidance for symptom relief"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wamusobanuriye ibijyanye n'imiti itangwa mukuvura ibimenyesto"
             }
 
         Province ->
@@ -8643,7 +8643,7 @@ translationSet trans =
 
         RecommendedSymptomRelief ->
             { english = "Recommended Symptom Relief"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imiti yemewe mukuvura ibimenyesto"
             }
 
         RecordAcuteIllnessOutcome ->
@@ -9460,22 +9460,22 @@ translationSet trans =
             case type_ of
                 SymptomReliefParacetamol ->
                     { english = "Paracetamol for Fever"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Paracetamoro ugabanya umuriro"
                     }
 
                 SymptomReliefVitaminC ->
                     { english = "Effervescent Vitamin C tablets"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini bya Vitamine C"
                     }
 
                 SymptomReliefPaidoterineSyrup ->
                     { english = "Paidoterin syrup as a decongestant"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Siro Pedotere ku ndwara z'imyanya y'ubuhumekero"
                     }
 
                 SymptomReliefCoughMixture ->
                     { english = "Cough mixtures such as Ascoril, Bronchalene, etc."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Siro Pedotere ku ndwara z'imyanya y'ubuhumekero, n'indi"
                     }
 
         Symptoms ->
