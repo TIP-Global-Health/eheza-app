@@ -56,15 +56,13 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.examinationData.corePhysicalExamForm
 
-        generateLaboratoryMsgs =
-            navigationMsgsByNextStep SetActiveLaboratoryTask
-
-        generateNextStepsMsgs =
-            navigationMsgsByNextStep SetActiveNextStepsTask
-
-        navigationMsgsByNextStep setActiveTaskMsg nextTask =
-            Maybe.map (\task -> [ setActiveTaskMsg task ]) nextTask
+        generateLaboratoryMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorEncounterPage id) id ]
     in
     case msg of
         NoOp ->

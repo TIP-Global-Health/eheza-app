@@ -7143,8 +7143,83 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisEclampsia ->
+                    { english = "Eclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMiscarriage ->
+                    { english = "Miscarriage"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMolarPregnancy ->
+                    { english = "Molar Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentaPrevia ->
+                    { english = "Placenta Previa"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentalAbruption ->
+                    { english = "Placental Abruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUterineRupture ->
+                    { english = "Uterine Rupture"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisObstructedLabor ->
+                    { english = "Obstructed Labor"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostAbortionSepsis ->
+                    { english = "Post Abortion Sepsis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEctopicPregnancy ->
+                    { english = "Ectopic Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPROM ->
+                    { english = "Premature Rupture of Membranes (PROM)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPPROM ->
+                    { english = "Preterm Premature Rupture of Membranes (PPROM)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHyperemesisGravidum ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMaternalComplications ->
+                    { english = "Maternal Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisImminentDelivery ->
                     { english = "Imminent Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLaborAndDelivery ->
+                    { english = "Labor + Delivery"
                     , kinyarwanda = Nothing
                     }
 

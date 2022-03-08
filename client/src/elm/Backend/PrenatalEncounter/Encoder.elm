@@ -63,8 +63,53 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisPrescribeMebendezole ->
                 "prescribe-mebendezole"
 
+            DiagnosisEclampsia ->
+                "eclampsia"
+
+            DiagnosisMiscarriage ->
+                "miscarriage"
+
+            DiagnosisMolarPregnancy ->
+                "molar-pregnancy"
+
+            DiagnosisPlacentaPrevia ->
+                "placenta-previa"
+
+            DiagnosisPlacentalAbruption ->
+                "placental-abruption"
+
+            DiagnosisUterineRupture ->
+                "uterine-rupture"
+
+            DiagnosisObstructedLabor ->
+                "obstructed-labor"
+
+            DiagnosisPostAbortionSepsis ->
+                "post-abortion-sepsis"
+
+            DiagnosisEctopicPregnancy ->
+                "ectopic-pregnancy"
+
+            DiagnosisPROM ->
+                "prom"
+
+            DiagnosisPPROM ->
+                "pprom"
+
+            DiagnosisHyperemesisGravidum ->
+                "hyperemesis-gravidum"
+
+            DiagnosisMaternalComplications ->
+                "maternal-complications"
+
+            DiagnosisInfection ->
+                "infection"
+
             DiagnosisImminentDelivery ->
                 "imminent-delivery"
+
+            DiagnosisLaborAndDelivery ->
+                "labor"
 
             NoPrenatalDiagnosis ->
                 "none"
