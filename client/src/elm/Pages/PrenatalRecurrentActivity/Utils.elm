@@ -1,4 +1,4 @@
-module Pages.PrenatalLabResults.Utils exposing (..)
+module Pages.PrenatalRecurrentActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -10,7 +10,7 @@ import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalLabResults.Model exposing (..)
+import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -24,6 +24,25 @@ import Pages.Utils
         )
 
 
+expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
+expectActivity currentDate assembled activity =
+    case activity of
+        LabResults ->
+            resolveLaboratoryResultTask currentDate assembled
+                |> List.isEmpty
+                |> not
+
+
+activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
+activityCompleted currentDate assembled activity =
+    case activity of
+        LabResults ->
+            (not <| expectActivity currentDate assembled LabResults)
+                || (resolveLaboratoryResultTask currentDate assembled
+                        |> List.all (laboratoryResultTaskCompleted currentDate assembled)
+                   )
+
+
 laboratoryResultTasks : List LaboratoryTask
 laboratoryResultTasks =
     [ TaskSyphilisTest
@@ -33,6 +52,11 @@ laboratoryResultTasks =
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
     ]
+
+
+resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTask currentDate assembled =
+    List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
 
 
 laboratoryResultTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool

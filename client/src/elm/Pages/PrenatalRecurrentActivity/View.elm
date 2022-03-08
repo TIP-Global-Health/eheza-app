@@ -1,4 +1,4 @@
-module Pages.PrenatalLabResults.View exposing (view)
+module Pages.PrenatalRecurrentActivity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalActivity.Utils exposing (getActivityIcon)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Date exposing (Unit(..))
@@ -25,8 +25,8 @@ import Pages.PrenatalActivity.Utils exposing (laboratoryTaskIconClass)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.PrenatalLabResults.Model exposing (..)
-import Pages.PrenatalLabResults.Utils exposing (..)
+import Pages.PrenatalRecurrentActivity.Model exposing (..)
+import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -48,53 +48,53 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id activity db model assembled =
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language id assembled
-        , viewContent language currentDate db model assembled
+        [ viewHeader language id activity assembled
+        , viewContent language currentDate activity db model assembled
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> AssembledData -> Html Msg
-viewHeader language id assembled =
-    let
-        ( label, icon ) =
-            ( Translate.PrenatalActivitiesTitle Laboratory, getActivityIcon Laboratory )
-    in
+viewHeader : Language -> PrenatalEncounterId -> PrenatalRecurrentActivity -> AssembledData -> Html Msg
+viewHeader language id activity assembled =
     div
         [ class "ui basic segment head" ]
-        [ h1
-            [ class "ui header" ]
-            [ text <| translate language label ]
+        [ h1 [ class "ui header" ]
+            [ text <| translate language <| Translate.PrenatalRecurrentActivitiesTitle activity ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
+            , onClick <| SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
-viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate db model assembled =
+viewContent : Language -> NominalDate -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity db model assembled =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate False assembled Nothing
-            ++ viewLabResults language currentDate assembled model
+        viewMotherAndMeasurements language currentDate False assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewActivity language currentDate activity assembled db model
 
 
-viewLabResults : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewLabResults language currentDate assembled data =
+viewActivity : Language -> NominalDate -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate activity assembled db model =
+    case activity of
+        LabResults ->
+            viewLabResultsContent language currentDate assembled model
+
+
+viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewLabResultsContent language currentDate assembled model =
     let
         personId =
             assembled.participant.person
@@ -106,10 +106,10 @@ viewLabResults language currentDate assembled data =
             assembled.measurements
 
         tasks =
-            List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
+            resolveLaboratoryResultTask currentDate assembled
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            Maybe.Extra.or model.activeTask (List.head tasks)
 
         viewTask task =
             let
@@ -149,13 +149,13 @@ viewLabResults language currentDate assembled data =
                         TaskSyphilisTest ->
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault data.syphilisTestForm
+                                |> prenatalTestResultFormWithDefault model.syphilisTestForm
                                 |> prenatalTestResultFormAndTasks language currentDate TaskSyphilisTest
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault data.hepatitisBTestForm
+                                |> prenatalTestResultFormWithDefault model.hepatitisBTestForm
                                 |> prenatalTestResultFormAndTasks language currentDate TaskHepatitisBTest
 
                         TaskMalariaTest ->
@@ -164,25 +164,25 @@ viewLabResults language currentDate assembled data =
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
                                 |> getMeasurementValueFunc
-                                |> prenatalBloodGpRsResultFormWithDefault data.bloodGpRsTestForm
+                                |> prenatalBloodGpRsResultFormWithDefault model.bloodGpRsTestForm
                                 |> prenatalBloodGpRsResultFormAndTasks language currentDate
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
-                                |> prenatalUrineDipstickResultFormWithDefault data.urineDipstickTestForm
+                                |> prenatalUrineDipstickResultFormWithDefault model.urineDipstickTestForm
                                 |> prenatalUrineDipstickResultFormAndTasks language currentDate
 
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
                                 |> getMeasurementValueFunc
-                                |> prenatalHemoglobinResultFormWithDefault data.hemoglobinTestForm
+                                |> prenatalHemoglobinResultFormWithDefault model.hemoglobinTestForm
                                 |> prenatalHemoglobinResultFormAndTasks language currentDate
 
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRandomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+                                |> prenatalRandomBloodSugarResultFormWithDefault model.randomBloodSugarTestForm
                                 |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
                     )
                 )

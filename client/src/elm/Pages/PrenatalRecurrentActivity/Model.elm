@@ -1,4 +1,4 @@
-module Pages.PrenatalLabResults.Model exposing (..)
+module Pages.PrenatalRecurrentActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -10,6 +10,7 @@ import Pages.PrenatalActivity.Types exposing (LaboratoryTask)
 
 type Msg
     = SetActivePage Page
+    | SetAlertsDialogState Bool
     | SetActiveTask LaboratoryTask
     | SetSyphilisTestResult String
     | SaveSyphilisResult PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
@@ -43,6 +44,7 @@ type alias Model =
     , syphilisTestForm : PrenatalTestResultForm
     , urineDipstickTestForm : PrenatalUrineDipstickResultForm
     , activeTask : Maybe LaboratoryTask
+    , showAlertsDialog : Bool
     }
 
 
@@ -55,6 +57,7 @@ emptyModel =
     , syphilisTestForm = emptyPrenatalTestResultForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
     , activeTask = Nothing
+    , showAlertsDialog = False
     }
 
 

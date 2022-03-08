@@ -21,6 +21,10 @@ type PrenatalActivity
     | Medication
 
 
+type PrenatalRecurrentActivity
+    = LabResults
+
+
 type RiskFactor
     = FactorNumberOfCSections Int
     | FactorCSectionInPreviousDelivery

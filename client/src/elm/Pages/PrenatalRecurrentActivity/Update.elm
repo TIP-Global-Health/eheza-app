@@ -1,4 +1,4 @@
-module Pages.PrenatalLabResults.Update exposing (update)
+module Pages.PrenatalRecurrentActivity.Update exposing (update)
 
 import App.Model
 import AssocList as Dict
@@ -11,8 +11,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalLabResults.Model exposing (..)
-import Pages.PrenatalLabResults.Utils exposing (..)
+import Pages.PrenatalRecurrentActivity.Model exposing (..)
+import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -21,7 +21,7 @@ update currentDate id db msg model =
     let
         generateNextTaskMsgs nextTask =
             Maybe.map (\task -> [ SetActiveTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage GlobalCaseManagementPage ]
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -29,6 +29,9 @@ update currentDate id db msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetAlertsDialogState value ->
+            ( { model | showAlertsDialog = value }, Cmd.none, [] )
 
         SetActiveTask task ->
             ( { model | activeTask = Just task }

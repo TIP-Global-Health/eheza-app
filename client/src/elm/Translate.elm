@@ -51,6 +51,7 @@ import Backend.PrenatalActivity.Model
         , ObstetricalDiagnosis(..)
         , PregnancyTrimester(..)
         , PrenatalActivity(..)
+        , PrenatalRecurrentActivity(..)
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
@@ -856,6 +857,7 @@ type TranslationId
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
     | PrenatalActivitiesTitle PrenatalActivity
+    | PrenatalRecurrentActivitiesTitle PrenatalRecurrentActivity
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
@@ -7124,6 +7126,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalRecurrentActivitiesTitle activity ->
+            case activity of
+                Backend.PrenatalActivity.Model.LabResults ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->
@@ -10763,8 +10772,13 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalLabResultsPage _ ->
-                    { english = "Lab Results"
+                PrenatalRecurrentEncounterPage _ ->
+                    { english = "Antenatal Recurrent Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalRecurrentActivityPage _ _ ->
+                    { english = "Antenatal Recurrent Activity"
                     , kinyarwanda = Nothing
                     }
 

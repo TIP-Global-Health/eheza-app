@@ -126,7 +126,7 @@ viewChwWarningPopup language data model =
 viewMotherAndMeasurements : Language -> NominalDate -> Bool -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
 viewMotherAndMeasurements language currentDate isChw data alertsDialogData =
     [ viewMotherDetails language currentDate isChw data alertsDialogData
-    , viewMeasurements language currentDate data.globalLmpDate data.globalObstetricHistory
+    , viewIndicators language currentDate data.globalLmpDate data.globalObstetricHistory
     ]
 
 
@@ -344,8 +344,8 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData recurringHighSev
         Nothing
 
 
-viewMeasurements : Language -> NominalDate -> Maybe NominalDate -> Maybe ObstetricHistoryValue -> Html any
-viewMeasurements language currentDate lmpDate obstetricHistory =
+viewIndicators : Language -> NominalDate -> Maybe NominalDate -> Maybe ObstetricHistoryValue -> Html any
+viewIndicators language currentDate lmpDate obstetricHistory =
     let
         ( edd, ega ) =
             generateEDDandEGA language currentDate ( "--/--/----", "----" ) lmpDate

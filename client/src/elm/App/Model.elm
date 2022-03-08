@@ -7,7 +7,7 @@ import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionActivity.Model exposing (NutritionActivity)
-import Backend.PrenatalActivity.Model exposing (PrenatalActivity)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Browser
 import Browser.Navigation as Nav
@@ -41,8 +41,9 @@ import Pages.PinCode.Model
 import Pages.PregnancyOutcome.Model
 import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model
-import Pages.PrenatalLabResults.Model
 import Pages.PrenatalParticipant.Model
+import Pages.PrenatalRecurrentActivity.Model
+import Pages.PrenatalRecurrentEncounter.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.TraceContact.Model
@@ -249,8 +250,9 @@ type alias LoggedInModel =
     , nurse : ( NurseId, Nurse )
     , prenatalParticipantPages : Dict PersonId Pages.PrenatalParticipant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
+    , prenatalRecurrentEncounterPages : Dict PrenatalEncounterId Pages.PrenatalRecurrentEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
-    , prenatalLabResultsPages : Dict PrenatalEncounterId Pages.PrenatalLabResults.Model.Model
+    , prenatalRecurrentActivityPages : Dict ( PrenatalEncounterId, PrenatalRecurrentActivity ) Pages.PrenatalRecurrentActivity.Model.Model
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
@@ -285,8 +287,9 @@ emptyLoggedInModel villageId nurse =
     , nurse = nurse
     , prenatalParticipantPages = Dict.empty
     , prenatalEncounterPages = Dict.empty
+    , prenatalRecurrentEncounterPages = Dict.empty
     , prenatalActivityPages = Dict.empty
-    , prenatalLabResultsPages = Dict.empty
+    , prenatalRecurrentActivityPages = Dict.empty
     , pregnancyOutcomePages = Dict.empty
     , sessionPages = Dict.empty
     , nutritionEncounterPages = Dict.empty
@@ -355,11 +358,13 @@ type MsgLoggedIn
     | MsgPageAcuteIllnessParticipant PersonId Pages.AcuteIllnessParticipant.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
+    | MsgPagePrenatalRecurrentEncounter PrenatalEncounterId Pages.PrenatalRecurrentEncounter.Model.Msg
     | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
     | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Msg
     | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChildEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
+    | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.PrenatalRecurrentActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
     | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg
@@ -370,7 +375,6 @@ type MsgLoggedIn
     | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChildProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
-    | MsgPagePrenatalLabResults PrenatalEncounterId Pages.PrenatalLabResults.Model.Msg
     | MsgPageClinicalProgressReport PrenatalEncounterId Pages.ClinicalProgressReport.Model.Msg
     | MsgPagePatientRecord PersonId Pages.PatientRecord.Model.Msg
 

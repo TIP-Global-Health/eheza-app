@@ -1,12 +1,4 @@
-module Backend.PrenatalActivity.Utils exposing
-    ( decodeActivityFromString
-    , encodeActivityAsString
-    , generateHighRiskAlertData
-    , generateHighSeverityAlertData
-    , generateRiskFactorAlertData
-    , getActivityIcon
-    , getEncounterTrimesterData
-    )
+module Backend.PrenatalActivity.Utils exposing (..)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -32,8 +24,8 @@ import Translate exposing (Language, TranslationId, translate)
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
 for that).
 -}
-encodeActivityAsString : PrenatalActivity -> String
-encodeActivityAsString activity =
+activityToString : PrenatalActivity -> String
+activityToString activity =
     case activity of
         DangerSigns ->
             "danger-signs"
@@ -77,8 +69,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe PrenatalActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe PrenatalActivity
+activityFromString s =
     case s of
         "danger-signs" ->
             Just DangerSigns
@@ -123,12 +115,34 @@ decodeActivityFromString s =
             Nothing
 
 
+recurrentActivityToString : PrenatalRecurrentActivity -> String
+recurrentActivityToString activity =
+    case activity of
+        LabResults ->
+            "laboratory"
+
+
+recurrentActivityFromString : String -> Maybe PrenatalRecurrentActivity
+recurrentActivityFromString s =
+    case s of
+        "laboratory" ->
+            Just LabResults
+
+        _ ->
+            Nothing
+
+
 {-| Returns a string representing an icon for the activity, for use in a
 "class" attribute.
 -}
 getActivityIcon : PrenatalActivity -> String
 getActivityIcon activity =
-    encodeActivityAsString activity
+    activityToString activity
+
+
+getRecurrentActivityIcon : PrenatalRecurrentActivity -> String
+getRecurrentActivityIcon activity =
+    recurrentActivityToString activity
 
 
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String

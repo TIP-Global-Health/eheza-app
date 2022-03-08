@@ -36,8 +36,9 @@ import Pages.PinCode.Fetch
 import Pages.PregnancyOutcome.Fetch
 import Pages.PrenatalActivity.Fetch
 import Pages.PrenatalEncounter.Fetch
-import Pages.PrenatalLabResults.Fetch
 import Pages.PrenatalParticipant.Fetch
+import Pages.PrenatalRecurrentActivity.Fetch
+import Pages.PrenatalRecurrentEncounter.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 import Pages.TraceContact.Fetch
@@ -207,8 +208,12 @@ fetch model =
                 Pages.PrenatalActivity.Fetch.fetch prenatalEncounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (PrenatalLabResultsPage id) ->
-                Pages.PrenatalLabResults.Fetch.fetch id model.indexedDb
+            UserPage (PrenatalRecurrentEncounterPage id) ->
+                Pages.PrenatalRecurrentEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (PrenatalRecurrentActivityPage prenatalEncounterId _) ->
+                Pages.PrenatalRecurrentActivity.Fetch.fetch prenatalEncounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage IndividualEncounterTypesPage ->
