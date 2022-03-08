@@ -4,14 +4,18 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Model exposing (SendToHCForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask)
+import Pages.PrenatalRecurrentActivity.Types exposing (NextStepsTask(..))
 
 
 type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetActiveTask LaboratoryTask
+    | SetWarningPopupState (Maybe ( String, String ))
+      -- Lab Results msgs
+    | SetActiveLabResultsTask LaboratoryTask
     | SetSyphilisTestResult String
     | SaveSyphilisResult PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
     | SetHepatitisBTestResult String
@@ -34,9 +38,33 @@ type Msg
     | SaveHemoglobinResult PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugar String
     | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
+      -- NextStepsMsgs
+    | SetActiveNextStepsTask NextStepsTask
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
 
 
 type alias Model =
+    { labResultsData : LabResultsData
+    , nextStepsData : NextStepsData
+    , showAlertsDialog : Bool
+    , warningPopupState : Maybe ( String, String )
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { labResultsData = emptyLabResultsData
+    , nextStepsData = emptyNextStepsData
+    , showAlertsDialog = False
+    , warningPopupState = Nothing
+    }
+
+
+type alias LabResultsData =
     { bloodGpRsTestForm : PrenatalBloodGpRsResultForm
     , hemoglobinTestForm : PrenatalHemoglobinResultForm
     , hepatitisBTestForm : PrenatalTestResultForm
@@ -44,12 +72,11 @@ type alias Model =
     , syphilisTestForm : PrenatalTestResultForm
     , urineDipstickTestForm : PrenatalUrineDipstickResultForm
     , activeTask : Maybe LaboratoryTask
-    , showAlertsDialog : Bool
     }
 
 
-emptyModel : Model
-emptyModel =
+emptyLabResultsData : LabResultsData
+emptyLabResultsData =
     { bloodGpRsTestForm = emptyPrenatalBloodGpRsResultForm
     , hemoglobinTestForm = emptyPrenatalHemoglobinResultForm
     , hepatitisBTestForm = emptyPrenatalTestResultForm
@@ -57,8 +84,31 @@ emptyModel =
     , syphilisTestForm = emptyPrenatalTestResultForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
     , activeTask = Nothing
-    , showAlertsDialog = False
     }
+
+
+type alias NextStepsData =
+    { sendToHCForm : SendToHCForm
+    , medicationDistributionForm : MedicationDistributionForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { sendToHCForm = emptySendToHCForm
+    , medicationDistributionForm = emptyMedicationDistributionForm
+    , activeTask = Nothing
+    }
+
+
+type alias MedicationDistributionForm =
+    {}
+
+
+emptyMedicationDistributionForm : MedicationDistributionForm
+emptyMedicationDistributionForm =
+    MedicationDistributionForm
 
 
 type alias PrenatalTestResultForm =

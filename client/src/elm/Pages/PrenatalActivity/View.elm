@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.View exposing (view)
+module Pages.PrenatalActivity.View exposing (view, warningPopup)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -79,7 +79,7 @@ viewHeaderAndContent language currentDate id isChw activity db model assembled =
         [ viewHeader language id activity assembled
         , viewContent language currentDate isChw activity db model assembled
         , viewModal <|
-            warningPopup language currentDate isChw model.warningPopupState
+            warningPopup language currentDate isChw SetWarningPopupState model.warningPopupState
         ]
 
 
@@ -118,19 +118,11 @@ viewContent language currentDate isChw activity db model assembled =
             ++ viewActivity language currentDate isChw activity assembled db model
 
 
-warningPopup : Language -> NominalDate -> Bool -> Maybe ( String, String ) -> Maybe (Html Msg)
-warningPopup language currentDate isChw state =
+warningPopup : Language -> NominalDate -> Bool -> (Maybe ( String, String ) -> msg) -> Maybe ( String, String ) -> Maybe (Html msg)
+warningPopup language currentDate isChw setStateMsg state =
     state
         |> Maybe.map
-            (\( signs, instructions ) ->
-                let
-                    message =
-                        if isChw then
-                            translate language Translate.DangerSignsLabelForChw ++ ": " ++ signs
-
-                        else
-                            translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                in
+            (\( message, instructions ) ->
                 div [ class "ui active modal diagnosis-popup" ]
                     [ div [ class "content" ] <|
                         [ div [ class "popup-heading-wrapper" ]
@@ -146,7 +138,7 @@ warningPopup language currentDate isChw state =
                         [ class "actions" ]
                         [ button
                             [ class "ui primary fluid button"
-                            , onClick <| SetWarningPopupState Nothing
+                            , onClick <| setStateMsg Nothing
                             ]
                             [ text <| translate language Translate.Continue ]
                         ]

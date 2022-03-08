@@ -595,6 +595,10 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             else
                 EverySet.empty
 
+        diagnisisByLabResults =
+            List.filter (matchLabResultsPrenatalDiagnosis assembled.measurements) labResultsDiagnoses
+                |> EverySet.fromList
+
         dangerSignsList =
             generateDangerSignsListForNurse assembled
 
@@ -602,7 +606,8 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnoses
                 |> EverySet.fromList
     in
-    EverySet.union diagnosesByMedication diagnosesByDangerSigns
+    EverySet.union diagnosesByMedication diagnisisByLabResults
+        |> EverySet.union diagnosesByDangerSigns
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
@@ -699,6 +704,19 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
             False
 
 
+matchLabResultsPrenatalDiagnosis : PrenatalMeasurements -> PrenatalDiagnosis -> Bool
+matchLabResultsPrenatalDiagnosis measurements diagnosis =
+    case diagnosis of
+        DiagnosisHepatitisB ->
+            getMeasurementValueFunc measurements.hepatitisBTest
+                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.withDefault False
+
+        -- Non Lab Results diagnoses.
+        _ ->
+            False
+
+
 respiratoryRateElevated : PrenatalMeasurements -> Bool
 respiratoryRateElevated measurements =
     getMeasurementValueFunc measurements.vitals
@@ -738,6 +756,12 @@ maternityWardDiagnoses : List PrenatalDiagnosis
 maternityWardDiagnoses =
     [ DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
+    ]
+
+
+labResultsDiagnoses : List PrenatalDiagnosis
+labResultsDiagnoses =
+    [ DiagnosisHepatitisB
     ]
 
 

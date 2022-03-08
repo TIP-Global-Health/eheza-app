@@ -177,8 +177,6 @@ type alias Model =
     , healthEducationData : HealthEducationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-
-    -- Maybe (Danger Signs list, Instructions)
     , warningPopupState : Maybe ( String, String )
     }
 

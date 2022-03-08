@@ -23,6 +23,7 @@ type PrenatalActivity
 
 type PrenatalRecurrentActivity
     = LabResults
+    | RecurrentNextSteps
 
 
 type RiskFactor

@@ -10,7 +10,9 @@ import Backend.PrenatalEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalActivity.Utils exposing (toMedicationDistributionValueWithDefault)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -19,8 +21,12 @@ import RemoteData exposing (RemoteData(..))
 update : NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
-        generateNextTaskMsgs nextTask =
-            Maybe.map (\task -> [ SetActiveTask task ]) nextTask
+        generateLabResultsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveLabResultsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
+
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
     in
     case msg of
@@ -33,8 +39,16 @@ update currentDate id db msg model =
         SetAlertsDialogState value ->
             ( { model | showAlertsDialog = value }, Cmd.none, [] )
 
-        SetActiveTask task ->
-            ( { model | activeTask = Just task }
+        SetWarningPopupState state ->
+            ( { model | warningPopupState = state }, Cmd.none, [] )
+
+        SetActiveLabResultsTask task ->
+            let
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -42,12 +56,16 @@ update currentDate id db msg model =
         SetSyphilisTestResult value ->
             let
                 form =
-                    model.syphilisTestForm
+                    model.labResultsData.syphilisTestForm
 
                 updatedForm =
                     { form | testResult = prenatalTestResultFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
             in
-            ( { model | syphilisTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -61,10 +79,10 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalTestResultsValueWithDefault measurement model.syphilisTestForm
+                    toPrenatalTestResultsValueWithDefault measurement model.labResultsData.syphilisTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -82,12 +100,16 @@ update currentDate id db msg model =
         SetHepatitisBTestResult value ->
             let
                 form =
-                    model.hepatitisBTestForm
+                    model.labResultsData.hepatitisBTestForm
 
                 updatedForm =
                     { form | testResult = prenatalTestResultFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
             in
-            ( { model | hepatitisBTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -101,10 +123,10 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalTestResultsValueWithDefault measurement model.hepatitisBTestForm
+                    toPrenatalTestResultsValueWithDefault measurement model.labResultsData.hepatitisBTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -122,12 +144,16 @@ update currentDate id db msg model =
         SetBloodGroup value ->
             let
                 form =
-                    model.bloodGpRsTestForm
+                    model.labResultsData.bloodGpRsTestForm
 
                 updatedForm =
                     { form | bloodGroup = bloodGroupFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
             in
-            ( { model | bloodGpRsTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -135,12 +161,16 @@ update currentDate id db msg model =
         SetRhesus value ->
             let
                 form =
-                    model.bloodGpRsTestForm
+                    model.labResultsData.bloodGpRsTestForm
 
                 updatedForm =
                     { form | rhesus = rhesusFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
             in
-            ( { model | bloodGpRsTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -154,10 +184,10 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalBloodGpRsResultsValueWithDefault measurement model.bloodGpRsTestForm
+                    toPrenatalBloodGpRsResultsValueWithDefault measurement model.labResultsData.bloodGpRsTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -175,12 +205,16 @@ update currentDate id db msg model =
         SetProtein value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | protein = proteinValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -188,12 +222,16 @@ update currentDate id db msg model =
         SetPH value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | ph = phValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -201,12 +239,16 @@ update currentDate id db msg model =
         SetGlucose value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | glucose = glucoseValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -214,12 +256,16 @@ update currentDate id db msg model =
         SetLeukocytes value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | leukocytes = leukocytesValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -227,12 +273,16 @@ update currentDate id db msg model =
         SetNitrite value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | nitrite = nitriteValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -240,12 +290,16 @@ update currentDate id db msg model =
         SetUrobilinogen value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | urobilinogen = urobilinogenValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -253,12 +307,16 @@ update currentDate id db msg model =
         SetHaemoglobin value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | haemoglobin = haemoglobinValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -266,12 +324,16 @@ update currentDate id db msg model =
         SetSpecificGravity value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | specificGravity = specificGravityValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -279,12 +341,16 @@ update currentDate id db msg model =
         SetKetone value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | ketone = ketoneValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -292,12 +358,16 @@ update currentDate id db msg model =
         SetBilirubin value ->
             let
                 form =
-                    model.urineDipstickTestForm
+                    model.labResultsData.urineDipstickTestForm
 
                 updatedForm =
                     { form | bilirubin = bilirubinValueFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
             in
-            ( { model | urineDipstickTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -311,10 +381,10 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalUrineDipstickResultsValueWithDefault measurement model.urineDipstickTestForm
+                    toPrenatalUrineDipstickResultsValueWithDefault measurement model.labResultsData.urineDipstickTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -332,12 +402,16 @@ update currentDate id db msg model =
         SetHemoglobin value ->
             let
                 form =
-                    model.hemoglobinTestForm
+                    model.labResultsData.hemoglobinTestForm
 
                 updatedForm =
                     { form | hemoglobinCount = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
             in
-            ( { model | hemoglobinTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -351,10 +425,10 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalHemoglobinResultsValueWithDefault measurement model.hemoglobinTestForm
+                    toPrenatalHemoglobinResultsValueWithDefault measurement model.labResultsData.hemoglobinTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -372,12 +446,16 @@ update currentDate id db msg model =
         SetRandomBloodSugar value ->
             let
                 form =
-                    model.randomBloodSugarTestForm
+                    model.labResultsData.randomBloodSugarTestForm
 
                 updatedForm =
                     { form | sugarCount = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
             in
-            ( { model | randomBloodSugarTestForm = updatedForm }
+            ( { model | labResultsData = updatedData }
             , Cmd.none
             , []
             )
@@ -391,10 +469,10 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextTaskMsgs nextTask
+                    generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement model.randomBloodSugarTestForm
+                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -402,6 +480,126 @@ update currentDate id db msg model =
                                 >> List.singleton
                             )
                         |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetActiveNextStepsTask task ->
+            let
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotSendingToHC value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    model.nextStepsData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveMedicationDistribution personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    -- @todo
+                    -- model.nextStepsData.medicationDistributionForm
+                    -- |> toMedicationDistributionValueWithDefault measurement
+                    -- |> Maybe.map
+                    --     (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
+                    --         >> Backend.Model.MsgPrenatalEncounter id
+                    --         >> App.Model.MsgIndexedDb
+                    --         >> List.singleton
+                    --     )
+                    -- |> Maybe.withDefault []
+                    []
             in
             ( model
             , Cmd.none

@@ -98,6 +98,7 @@ import Pages.PrenatalActivity.Types
         , HistoryTask(..)
         , LmpRange(..)
         )
+import Pages.PrenatalRecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChildActivity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -860,6 +861,7 @@ type TranslationId
     | PrenatalRecurrentActivitiesTitle PrenatalRecurrentActivity
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
+    | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -909,6 +911,7 @@ type TranslationId
     | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalNextStepsTask Bool Pages.PrenatalActivity.Types.NextStepsTask
     | PrenatalPhotoHelper
+    | PrenatalRecurrentNextStepsTask Pages.PrenatalRecurrentActivity.Types.NextStepsTask
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
@@ -7133,6 +7136,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                RecurrentNextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->
@@ -7149,6 +7157,11 @@ translationSet trans =
             case diagnosis of
                 DiagnosisPrescribeMebendezole ->
                     { english = "Prescribe Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHepatitisB ->
+                    { english = "Hepatitis B"
                     , kinyarwanda = Nothing
                     }
 
@@ -7235,6 +7248,19 @@ translationSet trans =
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
+                    }
+
+        PrenatalDiagnosisLabResultsMessage diagnosis ->
+            case diagnosis of
+                DiagnosisHepatitisB ->
+                    { english = "Patient has tested positive for Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Non Lab Results diagnoses.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalEncounterType encounterType ->
@@ -7345,6 +7371,18 @@ translationSet trans =
                     }
 
                 Pages.PrenatalActivity.Types.NextStepsMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
+        PrenatalRecurrentNextStepsTask task ->
+            case task of
+                Pages.PrenatalRecurrentActivity.Types.NextStepsSendToHC ->
+                    { english = "Referral"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalRecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
