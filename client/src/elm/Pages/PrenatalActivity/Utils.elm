@@ -2705,7 +2705,7 @@ toHepatitisBTestValueWithEmptyResults note date =
 
 toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalSyphilisTestValue
 toSyphilisTestValueWithEmptyResults note date =
-    PrenatalSyphilisTestValue note date Nothing
+    PrenatalSyphilisTestValue note date Nothing Nothing
 
 
 toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue

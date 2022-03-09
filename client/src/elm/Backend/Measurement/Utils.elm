@@ -1542,3 +1542,50 @@ recommendedTreatmentSignFromString sign =
 
         _ ->
             Nothing
+
+
+illnessSymptomToString : IllnessSymptom -> String
+illnessSymptomToString symptom =
+    case symptom of
+        IllnessSymptomHeadache ->
+            "headache"
+
+        IllnessSymptomVisionChanges ->
+            "vision-changes"
+
+        IllnessSymptomRash ->
+            "rash"
+
+        IllnessSymptomPainlessUlcerMouth ->
+            "painless-ulcer-mouth"
+
+        IllnessSymptomPainlessUlcerGenitals ->
+            "painless-ulcer-genitals"
+
+        NoIllnessSymptoms ->
+            "none"
+
+
+illnessSymptomFromString : String -> Maybe IllnessSymptom
+illnessSymptomFromString symptom =
+    case symptom of
+        "headache" ->
+            Just IllnessSymptomHeadache
+
+        "vision-changes" ->
+            Just IllnessSymptomVisionChanges
+
+        "rash" ->
+            Just IllnessSymptomRash
+
+        "painless-ulcer-mouth" ->
+            Just IllnessSymptomPainlessUlcerMouth
+
+        "painless-ulcer-genitals" ->
+            Just IllnessSymptomPainlessUlcerGenitals
+
+        "none" ->
+            Just NoIllnessSymptoms
+
+        _ ->
+            Nothing

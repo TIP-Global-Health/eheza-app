@@ -895,7 +895,17 @@ type alias PrenatalSyphilisTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , symptoms : Maybe (EverySet IllnessSymptom)
     }
+
+
+type IllnessSymptom
+    = IllnessSymptomHeadache
+    | IllnessSymptomVisionChanges
+    | IllnessSymptomRash
+    | IllnessSymptomPainlessUlcerMouth
+    | IllnessSymptomPainlessUlcerGenitals
+    | NoIllnessSymptoms
 
 
 type alias PrenatalHemoglobinTest =

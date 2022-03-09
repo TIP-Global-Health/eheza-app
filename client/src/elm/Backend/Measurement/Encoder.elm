@@ -484,13 +484,26 @@ encodePrenatalSyphilisTestValue value =
                 (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
+
+        illnessSymptoms =
+            Maybe.map
+                (\symptoms -> [ ( "illness_symptoms", encodeEverySet encodeIllnessSymptom symptoms ) ])
+                value.symptoms
+                |> Maybe.withDefault []
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
+        ++ illnessSymptoms
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_syphilis_test" )
            ]
+
+
+encodeIllnessSymptom : IllnessSymptom -> Value
+encodeIllnessSymptom symptom =
+    string <|
+        illnessSymptomToString symptom
 
 
 encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
