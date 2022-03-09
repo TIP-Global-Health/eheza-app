@@ -3947,18 +3947,6 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                 mandatoryActivitiesCompleted
             then
                 let
-                    _ =
-                        Debug.log "diagnosesBefore" diagnosesBefore
-
-                    _ =
-                        Debug.log "diagnosesAfter" diagnosesAfter
-
-                    _ =
-                        Debug.log "addedDiagnoses" addedDiagnoses
-
-                    _ =
-                        Debug.log "initialEncounterMsgs" initialEncounterMsgs
-
                     diagnosesBefore =
                         Pages.PrenatalActivity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledBefore
 
@@ -3993,6 +3981,9 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             []
 
                                         [ DiagnosisPrescribeMebendezole ] ->
+                                            -- Since this diagnosis is used only as an indication
+                                            -- for prescribing Mebendezole at Medication distribution,
+                                            -- there're no additional actions to take if it was added.
                                             []
 
                                         first :: rest ->

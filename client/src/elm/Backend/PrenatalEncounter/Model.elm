@@ -37,7 +37,9 @@ type PrenatalEncounterType
 
 
 type PrenatalDiagnosis
-    = DiagnosisPrescribeMebendezole
+    = -- This diagnosis is used only as an indication for prescribing
+      -- Mebendezole at Medication distribution activity.
+      DiagnosisPrescribeMebendezole
     | DiagnosisHIV
     | DiagnosisDiscordantPartnership
     | DiagnosisHepatitisB
