@@ -4847,6 +4847,44 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_syphilis_test-field_illness_symptoms'.
+  $field_instances['node-prenatal_syphilis_test-field_illness_symptoms'] = array(
+    'bundle' => 'prenatal_syphilis_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_illness_symptoms',
+    'label' => 'Illness Symptoms',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 13,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_syphilis_test-field_nurse'.
   $field_instances['node-prenatal_syphilis_test-field_nurse'] = array(
     'bundle' => 'prenatal_syphilis_test',
@@ -5935,6 +5973,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('HIV signs');
   t('Haemoglobin');
   t('Hemoglobin Count');
+  t('Illness Symptoms');
   t('Ketone');
   t('Leukocytes');
   t('Nitrite');
