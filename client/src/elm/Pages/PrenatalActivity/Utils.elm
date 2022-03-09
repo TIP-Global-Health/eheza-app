@@ -921,6 +921,9 @@ labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
     [ DiagnosisHIV
     , DiagnosisDiscordantPartnership
+    , DiagnosisSyphilis
+    , DiagnosisSyphilisWithComplications
+    , DiagnosisNeurosyphilis
     , DiagnosisHepatitisB
     , DiagnosisMalaria
     , DiagnosisMalariaWithAnemia

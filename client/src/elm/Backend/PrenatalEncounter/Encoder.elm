@@ -69,6 +69,15 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisDiscordantPartnership ->
                 "partner-hiv"
 
+            DiagnosisSyphilis ->
+                "syphilis"
+
+            DiagnosisSyphilisWithComplications ->
+                "syphilis-complications"
+
+            DiagnosisNeurosyphilis ->
+                "neurosyphilis"
+
             DiagnosisHepatitisB ->
                 "hepatitis-b"
 

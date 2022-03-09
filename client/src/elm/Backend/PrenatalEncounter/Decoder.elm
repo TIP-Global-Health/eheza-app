@@ -75,6 +75,15 @@ decodePrenatalDiagnosis =
                     "partner-hiv" ->
                         succeed DiagnosisDiscordantPartnership
 
+                    "syphilis" ->
+                        succeed DiagnosisSyphilis
+
+                    "syphilis-complications" ->
+                        succeed DiagnosisSyphilisWithComplications
+
+                    "neurosyphilis" ->
+                        succeed DiagnosisNeurosyphilis
+
                     "hepatitis-b" ->
                         succeed DiagnosisHepatitisB
 

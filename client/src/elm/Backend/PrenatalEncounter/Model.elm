@@ -42,6 +42,9 @@ type PrenatalDiagnosis
       DiagnosisPrescribeMebendezole
     | DiagnosisHIV
     | DiagnosisDiscordantPartnership
+    | DiagnosisSyphilis
+    | DiagnosisSyphilisWithComplications
+    | DiagnosisNeurosyphilis
     | DiagnosisHepatitisB
     | DiagnosisMalaria
     | DiagnosisMalariaWithAnemia

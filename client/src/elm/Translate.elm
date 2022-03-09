@@ -7239,6 +7239,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilisWithComplications ->
+                    { english = "Syphilis with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisNeurosyphilis ->
+                    { english = "Neurosyphilis"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHepatitisB ->
                     { english = "Hepatitis B"
                     , kinyarwanda = Nothing
@@ -7368,6 +7383,21 @@ translationSet trans =
 
                 DiagnosisDiscordantPartnership ->
                     { english = "Patient is part of a discordant partnership"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilis ->
+                    { english = "Patient has tested positive for Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilisWithComplications ->
+                    { english = "Patient has tested positive for Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisNeurosyphilis ->
+                    { english = "Patient has tested positive for Syphilis and show signs of Neurosyphilis"
                     , kinyarwanda = Nothing
                     }
 
