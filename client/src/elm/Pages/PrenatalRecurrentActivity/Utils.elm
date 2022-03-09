@@ -190,7 +190,7 @@ syphilisResultFormWithDefault form saved =
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
                 , testResult = or form.testResult value.testResult
-                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms value.symptoms
+                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
                 , symptomsDirty = form.symptomsDirty
                 }
             )
@@ -209,7 +209,7 @@ toSyphilisResultValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
-            , symptoms = form.symptoms
+            , symptoms = Maybe.map EverySet.fromList form.symptoms
             }
         )
         form.executionNote

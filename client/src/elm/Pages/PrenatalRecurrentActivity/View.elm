@@ -279,19 +279,18 @@ prenatalSyphilisResultFormAndTasks language currentDate task form =
                 ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
                     if form.testResult == Just PrenatalTestPositive then
                         ( [ viewLabel language Translate.SelectIllnessSymptoms
-
-                          -- , viewCheckBoxMultipleSelectInput language
-                          --       [ IllnessSymptomHeadache
-                          --       , IllnessSymptomVisionChanges
-                          --       , IllnessSymptomRash
-                          --       , IllnessSymptomPainlessUlcerMouth
-                          --       , IllnessSymptomPainlessUlcerGenitals
-                          --       ]
-                          --       []
-                          --       (form.symptoms |> Maybe.map EverySet.toList |> Maybe.withDefault [])
-                          --       (Just NoIllnessSymptoms)
-                          --       SetIllnessSymptom
-                          --       Translate.IllnessSymptom
+                          , viewCheckBoxMultipleSelectInput language
+                                [ IllnessSymptomHeadache
+                                , IllnessSymptomVisionChanges
+                                , IllnessSymptomRash
+                                , IllnessSymptomPainlessUlcerMouth
+                                , IllnessSymptomPainlessUlcerGenitals
+                                ]
+                                []
+                                (form.symptoms |> Maybe.withDefault [])
+                                (Just NoIllnessSymptoms)
+                                SetIllnessSymptom
+                                Translate.IllnessSymptom
                           ]
                         , taskCompleted form.symptoms
                         , 1
@@ -307,8 +306,9 @@ prenatalSyphilisResultFormAndTasks language currentDate task form =
                 prenatalTestResultToString
                 [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
                 SetSyphilisTestResult
-            , taskCompleted form.testResult
-            , 1
+                ++ symptomsSection
+            , taskCompleted form.testResult + symptomsTasksCompleted
+            , 1 + symptomsTasksTotal
             )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|

@@ -4688,7 +4688,7 @@ translationSet trans =
                     }
 
                 NoIllnessSymptoms ->
-                    { english = "None"
+                    { english = "None of these"
                     , kinyarwanda = Nothing
                     }
 

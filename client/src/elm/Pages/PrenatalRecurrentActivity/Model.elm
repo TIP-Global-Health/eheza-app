@@ -19,6 +19,7 @@ type Msg
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
     | SetSyphilisTestResult String
+    | SetIllnessSymptom IllnessSymptom
     | SaveSyphilisResult PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
     | SetHepatitisBTestResult String
     | SaveHepatitisBResult PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
@@ -117,7 +118,7 @@ type alias SyphilisResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
-    , symptoms : Maybe (EverySet IllnessSymptom)
+    , symptoms : Maybe (List IllnessSymptom)
     , symptomsDirty : Bool
     }
 

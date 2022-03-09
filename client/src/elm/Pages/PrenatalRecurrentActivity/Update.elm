@@ -3,7 +3,7 @@ module Pages.PrenatalRecurrentActivity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model
+import Backend.Measurement.Model exposing (IllnessSymptom(..))
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
@@ -16,6 +16,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Utils exposing (listNonUrgentDiagnoses, toMedicationDistributionValueWithDefault)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.PrenatalRecurrentActivity.Utils exposing (..)
+import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
@@ -86,7 +87,35 @@ update language currentDate id db msg model =
                     model.labResultsData.syphilisTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form | testResult = prenatalTestResultFromString value, symptoms = Nothing, symptomsDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetIllnessSymptom symptom ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.syphilisTest
+                                >> getMeasurementValueFunc
+                                >> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
+                            )
+                        |> Maybe.withDefault model.labResultsData.syphilisTestForm
+
+                updatedForm =
+                    setMultiSelectInputValue .symptoms
+                        (\symptoms -> { form | symptoms = symptoms, symptomsDirty = True })
+                        NoIllnessSymptoms
+                        symptom
+                        form
 
                 updatedData =
                     model.labResultsData
