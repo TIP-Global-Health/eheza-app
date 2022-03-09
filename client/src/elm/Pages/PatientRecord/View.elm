@@ -38,7 +38,7 @@ import Pages.Utils
         , viewStartEncounterButton
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
-import Pages.WellChildProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisMode(..), PaneEntryStatus(..), WellChildProgressReportInitiator(..))
 import Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
@@ -67,7 +67,12 @@ viewHeader language model =
         backAction =
             case model.viewMode of
                 ViewPatientRecord ->
-                    SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
+                    case model.diagnosisMode of
+                        ModeActiveDiagnosis ->
+                            SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
+
+                        ModeCompletedDiagnosis ->
+                            SetDiagnosisMode ModeActiveDiagnosis
 
                 ViewStartEncounter ->
                     SetViewMode ViewPatientRecord
