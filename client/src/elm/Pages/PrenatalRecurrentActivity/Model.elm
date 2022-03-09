@@ -70,7 +70,7 @@ type alias LabResultsData =
     , hemoglobinTestForm : PrenatalHemoglobinResultForm
     , hepatitisBTestForm : PrenatalTestResultForm
     , randomBloodSugarTestForm : PrenatalRandomBloodSugarResultForm
-    , syphilisTestForm : PrenatalTestResultForm
+    , syphilisTestForm : SyphilisTestResultForm
     , urineDipstickTestForm : PrenatalUrineDipstickResultForm
     , activeTask : Maybe LaboratoryTask
     }
@@ -82,7 +82,7 @@ emptyLabResultsData =
     , hemoglobinTestForm = emptyPrenatalHemoglobinResultForm
     , hepatitisBTestForm = emptyPrenatalTestResultForm
     , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarResultForm
-    , syphilisTestForm = emptyPrenatalTestResultForm
+    , syphilisTestForm = emptySyphilisTestResultForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
     , activeTask = Nothing
     }
@@ -110,6 +110,19 @@ type alias MedicationDistributionForm =
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
     MedicationDistributionForm
+
+
+type alias SyphilisTestResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    , symptoms : Maybe (List IllnessSymptom)
+    }
+
+
+emptySyphilisTestResultForm : SyphilisTestResultForm
+emptySyphilisTestResultForm =
+    SyphilisTestResultForm Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalTestResultForm =
