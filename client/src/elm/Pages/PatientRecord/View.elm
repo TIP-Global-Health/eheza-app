@@ -67,12 +67,7 @@ viewHeader language model =
         backAction =
             case model.viewMode of
                 ViewPatientRecord ->
-                    case model.diagnosisMode of
-                        ModeActiveDiagnosis ->
-                            SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
-
-                        ModeCompletedDiagnosis ->
-                            SetDiagnosisMode ModeActiveDiagnosis
+                    SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
 
                 ViewStartEncounter ->
                     SetViewMode ViewPatientRecord
