@@ -37,8 +37,13 @@ type PrenatalEncounterType
 
 
 type PrenatalDiagnosis
-    = DiagnosisPrescribeMebendezole
+    = -- This diagnosis is used only as an indication for prescribing
+      -- Mebendezole at Medication distribution activity.
+      DiagnosisPrescribeMebendezole
+    | DiagnosisHIV
+    | DiagnosisDiscordantPartnership
     | DiagnosisHepatitisB
+    | DiagnosisMalaria
     | DiagnosisEclampsia
     | DiagnosisMiscarriage
     | DiagnosisMolarPregnancy
@@ -198,13 +203,13 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())
-    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalRapidTestValue
+    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalHIVTestValue
     | HandleSavedHIVTest (WebData ())
     | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) PrenatalSyphilisTestValue
     | HandleSavedSyphilisTest (WebData ())
     | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) PrenatalHepatitisBTestValue
     | HandleSavedHepatitisBTest (WebData ())
-    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalRapidTestValue
+    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalMalariaTestValue
     | HandleSavedMalariaTest (WebData ())
     | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) PrenatalBloodGpRsTestValue
     | HandleSavedBloodGpRsTest (WebData ())

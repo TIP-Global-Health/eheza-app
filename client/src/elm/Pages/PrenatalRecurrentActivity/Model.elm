@@ -14,6 +14,7 @@ type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe ( String, String ))
+    | ViewWarningPopupForNonUrgentDiagnoses
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
     | SetSyphilisTestResult String

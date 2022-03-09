@@ -7,20 +7,25 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Utils exposing (toMedicationDistributionValueWithDefault)
+import Pages.PrenatalActivity.Utils exposing (generateNonUrgentDiagnoses, toMedicationDistributionValueWithDefault)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
+import Translate exposing (Language, translate)
 
 
-update : NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update language currentDate id db msg model =
     let
+        noChange =
+            ( model, Cmd.none, [] )
+
         generateLabResultsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLabResultsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
@@ -41,6 +46,28 @@ update currentDate id db msg model =
 
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
+
+        ViewWarningPopupForNonUrgentDiagnoses ->
+            let
+                nonUrgentDiagnoses =
+                    Dict.get id db.prenatalEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map (.diagnoses >> EverySet.toList >> generateNonUrgentDiagnoses)
+                        |> Maybe.withDefault []
+
+                extraMsgs =
+                    if List.isEmpty nonUrgentDiagnoses then
+                        []
+
+                    else
+                        let
+                            message =
+                                List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) nonUrgentDiagnoses
+                                    |> String.join ","
+                        in
+                        [ SetWarningPopupState <| Just ( message, "" ) ]
+            in
+            sequenceExtra (update language currentDate id db) extraMsgs noChange
 
         SetActiveLabResultsTask task ->
             let
@@ -95,7 +122,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetHepatitisBTestResult value ->
             let
@@ -139,7 +166,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetBloodGroup value ->
             let
@@ -200,7 +227,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetProtein value ->
             let
@@ -397,7 +424,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetHemoglobin value ->
             let
@@ -441,7 +468,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetRandomBloodSugar value ->
             let
@@ -485,7 +512,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetActiveNextStepsTask task ->
             let
@@ -575,7 +602,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SaveMedicationDistribution personId saved nextTask ->
             let
@@ -605,4 +632,4 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update language currentDate id db) extraMsgs

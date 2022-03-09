@@ -403,3 +403,4 @@ type InvokationModule
 type ReferralFacility
     = FacilityHealthCenter
     | FacilityHospital
+    | FacilityHIVProgram

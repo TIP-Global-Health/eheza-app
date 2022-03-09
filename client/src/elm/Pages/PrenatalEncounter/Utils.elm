@@ -992,7 +992,7 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
                             Nothing
                     )
 
-        DiagnosisHIV ->
+        DiagnosisKnownHIV ->
             measurements.medicalHistory
                 |> Maybe.andThen
                     (\measurement ->

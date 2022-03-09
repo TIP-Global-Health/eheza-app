@@ -149,7 +149,7 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .randomBloodSugarTest
 
 
-prenatalTestResultFormWithDefault : PrenatalTestResultForm -> Maybe PrenatalRapidTestValue -> PrenatalTestResultForm
+prenatalTestResultFormWithDefault : PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue -> PrenatalTestResultForm
 prenatalTestResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -162,13 +162,13 @@ prenatalTestResultFormWithDefault form saved =
             )
 
 
-toPrenatalTestResultsValueWithDefault : Maybe PrenatalRapidTestValue -> PrenatalTestResultForm -> Maybe PrenatalRapidTestValue
+toPrenatalTestResultsValueWithDefault : Maybe PrenatalMalariaTestValue -> PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue
 toPrenatalTestResultsValueWithDefault saved form =
     prenatalTestResultFormWithDefault form saved
         |> toPrenatalTestResultsValue
 
 
-toPrenatalTestResultsValue : PrenatalTestResultForm -> Maybe PrenatalRapidTestValue
+toPrenatalTestResultsValue : PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue
 toPrenatalTestResultsValue form =
     Maybe.map
         (\executionNote ->

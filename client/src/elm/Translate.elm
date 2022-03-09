@@ -281,7 +281,7 @@ type TranslationId
     | Abnormal
     | Abortions
     | AccompaniedByPartner
-    | AccompanyToHCQuestion
+    | AccompanyToFacilityQuestion ReferralFacility
     | AccessDenied
     | ActionsTaken
     | ActionsToTake
@@ -324,6 +324,7 @@ type TranslationId
     | AdministerAlbendazoleHelper
     | AdministerMebendezoleHelper
     | AdministerPrenatalMebendezoleHelper
+    | AdministerHIVARVHelper
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
@@ -863,7 +864,9 @@ type TranslationId
     | PrenatalDiagnosis PrenatalDiagnosis
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
-    | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
+    | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
+    | PrenatalHIVProgramHelper
+    | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
     | PrenatalLaboratoryBloodGroup BloodGroup
@@ -1254,10 +1257,22 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi yaherekejwe n'umugabo we mu gihe yaje kwipimisha?"
             }
 
-        AccompanyToHCQuestion ->
-            { english = "Will you accompany the patient to the health center"
-            , kinyarwanda = Just "Uraherekeza umubyeyi ku kigonderabuzima"
-            }
+        AccompanyToFacilityQuestion facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Will you accompany the patient to the health center"
+                    , kinyarwanda = Just "Uraherekeza umubyeyi ku kigonderabuzima"
+                    }
+
+                FacilityHospital ->
+                    { english = "Will you accompany the patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Will you accompany the patient to Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
 
         AccessDenied ->
             { english = "Access denied"
@@ -1722,7 +1737,12 @@ translationSet trans =
 
         AdministerPrenatalMebendezoleHelper ->
             { english = "1 dose once a day for one day"
-            , kinyarwanda = Just "Abakuriye"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerHIVARVHelper ->
+            { english = "Take 1x a day by mouth"
+            , kinyarwanda = Nothing
             }
 
         AdministeVitaminAHelper ->
@@ -2751,11 +2771,16 @@ translationSet trans =
             case facility of
                 FacilityHealthCenter ->
                     { english = "Complete a health center referral form"
-                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima."
+                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima"
                     }
 
                 FacilityHospital ->
                     { english = "Complete a hospital referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Complete an Integration HIV/PMTCT referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -5459,7 +5484,7 @@ translationSet trans =
                     , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
                     }
 
-                DiagnosisHIV ->
+                DiagnosisKnownHIV ->
                     { english = "HIV"
                     , kinyarwanda = Just "Virus itera SIDA"
                     }
@@ -5518,6 +5543,26 @@ translationSet trans =
 
                 Paracetamol ->
                     { english = "Paracetamol"
+                    , kinyarwanda = Nothing
+                    }
+
+                Tenofovir ->
+                    { english = "Tenofovir"
+                    , kinyarwanda = Nothing
+                    }
+
+                Lamivudine ->
+                    { english = "Lamivudine"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dolutegravir ->
+                    { english = "Dolutegravir"
+                    , kinyarwanda = Nothing
+                    }
+
+                TDF3TC ->
+                    { english = "TDF + 3TC"
                     , kinyarwanda = Nothing
                     }
 
@@ -5966,6 +6011,11 @@ translationSet trans =
                 ClientUnableToAffordFees ->
                     { english = "Client unable to afford fees"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                ClientAlreadyInCare ->
+                    { english = "Client already in care"
+                    , kinyarwanda = Nothing
                     }
 
                 ReasonForNotSendingToHCOther ->
@@ -7160,8 +7210,23 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiscordantPartnership ->
+                    { english = "Discordant Partnership"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHepatitisB ->
                     { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalaria ->
+                    { english = "Malaria"
                     , kinyarwanda = Nothing
                     }
 
@@ -7252,8 +7317,23 @@ translationSet trans =
 
         PrenatalDiagnosisLabResultsMessage diagnosis ->
             case diagnosis of
+                DiagnosisHIV ->
+                    { english = "Patient has tested positive for HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiscordantPartnership ->
+                    { english = "Patient is part of a discordant partnership"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHepatitisB ->
                     { english = "Patient has tested positive for Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalaria ->
+                    { english = "Patient has tested positive for Malaria"
                     , kinyarwanda = Nothing
                     }
 
@@ -7290,7 +7370,7 @@ translationSet trans =
                     , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
                     }
 
-        PrenatalHealthEducationQuestion sign ->
+        PrenatalHealthEducationQuestion isChw sign ->
             case sign of
                 EducationExpectations ->
                     { english = "Have you provided health education and anticipatory guidance on what to expect during the pregnancy"
@@ -7313,9 +7393,15 @@ translationSet trans =
                     }
 
                 EducationFamilyPlanning ->
-                    { english = "Have you provided education on family planning"
-                    , kinyarwanda = Just "Watanze inyigisho zijyanye no kuboneza urubyaro"
-                    }
+                    if isChw then
+                        { english = "Have you provided education on family planning"
+                        , kinyarwanda = Just "Watanze inyigisho zijyanye no kuboneza urubyaro"
+                        }
+
+                    else
+                        { english = "Have you counseled the patient on family planning options"
+                        , kinyarwanda = Nothing
+                        }
 
                 EducationBreastfeeding ->
                     { english = "Have you provided education on breastfeeding"
@@ -7330,6 +7416,21 @@ translationSet trans =
                 EducationHygiene ->
                     { english = "Have you provided education on hygiene"
                     , kinyarwanda = Just "Watanze inyigisho ku bijyanye n'isuku"
+                    }
+
+                EducationPositiveHIV ->
+                    { english = "Have you counseled patient on positive HIV test meaning"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationSaferSex ->
+                    { english = "Have you counseled patient on safer sex practices"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationPartnerTesting ->
+                    { english = "Have you encouraged the patient’s partner to get tested"
+                    , kinyarwanda = Nothing
                     }
 
                 NoPrenatalHealthEducationSigns ->
@@ -7385,6 +7486,38 @@ translationSet trans =
                 Pages.PrenatalRecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
+        PrenatalHIVProgramHelper ->
+            { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHIVSignQuestion sign ->
+            case sign of
+                HIVProgramHC ->
+                    { english = "Does the health center have a HIV/PMTCT program"
+                    , kinyarwanda = Nothing
+                    }
+
+                PartnerHIVPositive ->
+                    { english = "Is the patients partner HIV positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                PartnerTakingARV ->
+                    { english = "Is the patients partner taking ARVs"
+                    , kinyarwanda = Nothing
+                    }
+
+                PartnerSurpressedViralLoad ->
+                    { english = "Does the partner have a surpressed viral load"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalHIVSign ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalLaboratoryBloodGroupLabel ->
@@ -8542,6 +8675,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityHIVProgram ->
+                    { english = "Have you referred the patient to the Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
             , kinyarwanda = Nothing
@@ -9582,6 +9720,11 @@ translationSet trans =
 
                 FacilityHospital ->
                     { english = "Send patient to the hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Direct patient to the appropriate location"
                     , kinyarwanda = Nothing
                     }
 

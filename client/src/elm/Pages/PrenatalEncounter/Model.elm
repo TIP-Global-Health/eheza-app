@@ -38,7 +38,7 @@ type alias AssembledData =
 
 
 type Msg
-    = CloseEncounter PrenatalEncounterId
+    = CloseEncounter
     | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetChwWarningVisible Bool

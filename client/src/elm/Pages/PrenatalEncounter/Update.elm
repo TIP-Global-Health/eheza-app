@@ -1,16 +1,19 @@
 module Pages.PrenatalEncounter.Update exposing (update)
 
 import App.Model
+import Backend.Entities exposing (..)
 import Backend.Model
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model exposing (..)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : PrenatalEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update id msg model =
     case msg of
-        CloseEncounter id ->
+        CloseEncounter ->
             ( model
             , Cmd.none
             , [ Backend.PrenatalEncounter.Model.ClosePrenatalEncounter
@@ -21,9 +24,21 @@ update msg model =
             )
 
         SetActivePage page ->
+            let
+                appMsgs =
+                    case page of
+                        UserPage (PrenatalActivityPage _ NextSteps) ->
+                            Pages.PrenatalActivity.Model.ViewWarningPopupForNonUrgentDiagnoses
+                                |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
+                                |> App.Model.MsgLoggedIn
+                                |> List.singleton
+
+                        _ ->
+                            []
+            in
             ( model
             , Cmd.none
-            , [ App.Model.SetActivePage page ]
+            , App.Model.SetActivePage page :: appMsgs
             )
 
         SetAlertsDialogState value ->

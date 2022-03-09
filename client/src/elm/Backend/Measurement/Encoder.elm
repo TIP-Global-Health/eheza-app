@@ -194,6 +194,15 @@ encodePrenatalHealthEducationSign sign =
             EducationHygiene ->
                 "hygiene"
 
+            EducationPositiveHIV ->
+                "positive-hiv"
+
+            EducationSaferSex ->
+                "safer-sex"
+
+            EducationPartnerTesting ->
+                "partner-testing"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -353,11 +362,58 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_hiv_test")
+    encodePrenatalMeasurement encodePrenatalHIVTestValue
 
 
-encodePrenatalRapidTestValueWithType : String -> PrenatalRapidTestValue -> List ( String, Value )
-encodePrenatalRapidTestValueWithType type_ value =
+encodePrenatalHIVTestValue : PrenatalHIVTestValue -> List ( String, Value )
+encodePrenatalHIVTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                value.testResult
+                |> Maybe.withDefault []
+
+        hivSigns =
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        EverySet.singleton NoPrenatalHIVSign
+
+                    else
+                        signs
+                )
+                value.hivSigns
+                |> Maybe.withDefault (EverySet.singleton NoPrenatalHIVSign)
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns ) ]
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hiv_test" )
+           ]
+
+
+encodePrenatalHIVSign : PrenatalHIVSign -> Value
+encodePrenatalHIVSign signs =
+    string <|
+        prenatalHIVSignToString signs
+
+
+encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
+encodePrenatalMalariaTest =
+    encodePrenatalMeasurement encodePrenatalMalariaTestValue
+
+
+encodePrenatalMalariaTestValue : PrenatalMalariaTestValue -> List ( String, Value )
+encodePrenatalMalariaTestValue value =
     let
         executionDate =
             Maybe.map
@@ -375,13 +431,8 @@ encodePrenatalRapidTestValueWithType type_ value =
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
-           , ( "type", string type_ )
+           , ( "type", string "prenatal_malaria_test" )
            ]
-
-
-encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
-encodePrenatalMalariaTest =
-    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_malaria_test")
 
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
@@ -669,12 +720,6 @@ encodeWellChildNutrition =
 
 encodeNutritionValueWithType : String -> NutritionValue -> List ( String, Value )
 encodeNutritionValueWithType type_ value =
-    let
-        assesment =
-            EverySet.toList value.assesment
-                |> List.head
-                |> Maybe.withDefault NoNutritionAssessment
-    in
     [ ( "nutrition_signs", encodeEverySet encodeNutritionSign value.signs )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
     , ( "deleted", bool False )
@@ -1961,6 +2006,9 @@ encodeReasonForNotSendingToHC event =
             ClientUnableToAffordFees ->
                 "unable-to-afford-fee"
 
+            ClientAlreadyInCare ->
+                "already-in-care"
+
             ReasonForNotSendingToHCOther ->
                 "other"
 
@@ -2396,6 +2444,18 @@ encondeMedicationDistributionSign sign =
             Paracetamol ->
                 "paracetamol"
 
+            Tenofovir ->
+                "tenofovir"
+
+            Lamivudine ->
+                "lamivudine"
+
+            Dolutegravir ->
+                "dolutegravir"
+
+            TDF3TC ->
+                "tdf3tc"
+
             NoMedicationDistributionSigns ->
                 "none"
 
@@ -2421,6 +2481,18 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationMebendezole reason ->
                 "mebendezole-" ++ administrationNoteToString reason
+
+            MedicationTenofovir reason ->
+                "tenofovir-" ++ administrationNoteToString reason
+
+            MedicationLamivudine reason ->
+                "lamivudine-" ++ administrationNoteToString reason
+
+            MedicationDolutegravir reason ->
+                "dolutegravir-" ++ administrationNoteToString reason
+
+            MedicationTDF3TC reason ->
+                "tdf3tc-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"
