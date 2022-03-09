@@ -630,6 +630,7 @@ type TranslationId
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IdleWaitingForSync
+    | IllnessSymptom IllnessSymptom
     | Immunisation
     | ImmunisationHistory
     | IncompleteCervixPreviousPregnancy
@@ -1032,9 +1033,10 @@ type TranslationId
     | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
-    | SelectPostpartumChildDangerSigns
     | SelectDangerSigns
     | SelectDate
+    | SelectIllnessSymptoms
+    | SelectPostpartumChildDangerSigns
     | SelectPostpartumMotherDangerSigns
     | SelectedProgram
     | SelectedVillage
@@ -4657,6 +4659,38 @@ translationSet trans =
             { english = "Idle, waiting for next Sync cycle"
             , kinyarwanda = Nothing
             }
+
+        IllnessSymptom symptom ->
+            case symptom of
+                IllnessSymptomHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomVisionChanges ->
+                    { english = "Vision Changes"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomRash ->
+                    { english = "Rash on body, feet or hands"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomPainlessUlcerMouth ->
+                    { english = "Painless ulcer in mouth"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomPainlessUlcerGenitals ->
+                    { english = "Painless ulcer in genital area"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoIllnessSymptoms ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         Immunisation ->
             { english = "Immunization"
@@ -9315,11 +9349,6 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite"
             }
 
-        SelectPostpartumChildDangerSigns ->
-            { english = "Please select one or more of the danger signs the child is experiencing"
-            , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umwana  yaba afite?"
-            }
-
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
@@ -9328,6 +9357,16 @@ translationSet trans =
         SelectDate ->
             { english = "Select Date"
             , kinyarwanda = Just "Hitamo Itariki"
+            }
+
+        SelectIllnessSymptoms ->
+            { english = "Please select one or more symptoms the patient is experiencing"
+            , kinyarwanda = Nothing
+            }
+
+        SelectPostpartumChildDangerSigns ->
+            { english = "Please select one or more of the danger signs the child is experiencing"
+            , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umwana  yaba afite?"
             }
 
         SelectPostpartumMotherDangerSigns ->

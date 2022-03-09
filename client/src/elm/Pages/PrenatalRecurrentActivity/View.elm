@@ -276,12 +276,29 @@ prenatalSyphilisResultFormAndTasks language currentDate task form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
-                emptyOption =
-                    if isNothing form.testResult then
-                        emptySelectOption True
+                ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
+                    if form.testResult == Just PrenatalTestPositive then
+                        ( [ viewLabel language Translate.SelectIllnessSymptoms
+
+                          -- , viewCheckBoxMultipleSelectInput language
+                          --       [ IllnessSymptomHeadache
+                          --       , IllnessSymptomVisionChanges
+                          --       , IllnessSymptomRash
+                          --       , IllnessSymptomPainlessUlcerMouth
+                          --       , IllnessSymptomPainlessUlcerGenitals
+                          --       ]
+                          --       []
+                          --       (form.symptoms |> Maybe.map EverySet.toList |> Maybe.withDefault [])
+                          --       (Just NoIllnessSymptoms)
+                          --       SetIllnessSymptom
+                          --       Translate.IllnessSymptom
+                          ]
+                        , taskCompleted form.symptoms
+                        , 1
+                        )
 
                     else
-                        emptyNode
+                        ( [], 0, 0 )
             in
             ( viewSelectInput language
                 (Translate.PrenatalLaboratoryTaskResult task)
