@@ -238,7 +238,7 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -272,17 +272,14 @@ expectNextStepsTask currentDate assembled task =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     let
-                        emergencyReferalDiagnosis =
-                            EverySet.toList assembled.encounter.diagnoses
-                                |> List.filter diagnosisRequiresEmergencyReferal
-                                |> List.isEmpty
-                                |> not
-
-                        hivDiagnosis =
-                            EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+                        severeMalariaTreatment =
+                            getMeasurementValueFunc assembled.measurements.recommendedTreatment
+                                |> Maybe.map (EverySet.member TreatementReferToHospital)
+                                |> Maybe.withDefault False
                     in
-                    emergencyReferalDiagnosis
-                        || (hivDiagnosis && hivProgramAtHC assembled)
+                    emergencyReferalRequired assembled
+                        || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
+                        || (diagnosed DiagnosisMalaria assembled && severeMalariaTreatment)
 
                 _ ->
                     dangerSigns
@@ -318,9 +315,26 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.withDefault False
                    )
 
+        -- Exclusive Nurse task.
+        NextStepsRecommendedTreatment ->
+            diagnosed DiagnosisMalaria assembled
 
-generateNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
-generateNonUrgentDiagnoses diagnoses =
+
+diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
+diagnosed diagnosis assembled =
+    EverySet.member diagnosis assembled.encounter.diagnoses
+
+
+emergencyReferalRequired : AssembledData -> Bool
+emergencyReferalRequired assembled =
+    EverySet.toList assembled.encounter.diagnoses
+        |> List.filter diagnosisRequiresEmergencyReferal
+        |> List.isEmpty
+        |> not
+
+
+listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
+listNonUrgentDiagnoses diagnoses =
     let
         exclusions =
             DiagnosisPrescribeMebendezole
@@ -358,6 +372,9 @@ nextStepsMeasurementTaken assembled task =
 
         NextStepsMedicationDistribution ->
             isJust assembled.measurements.medicationDistribution
+
+        NextStepsRecommendedTreatment ->
+            isJust assembled.measurements.recommendedTreatment
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
@@ -770,6 +787,11 @@ matchLabResultsPrenatalDiagnosis measurements diagnosis =
                 |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
                 |> Maybe.withDefault False
 
+        DiagnosisMalaria ->
+            getMeasurementValueFunc measurements.malariaTest
+                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.withDefault False
+
         -- Non Lab Results diagnoses.
         _ ->
             False
@@ -906,7 +928,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
     if
         List.any
             (\diagnosis ->
-                EverySet.member diagnosis assembled.encounter.diagnoses
+                diagnosed diagnosis assembled
             )
             [ DiagnosisHIV, DiagnosisDiscordantPartnership ]
     then
@@ -1200,19 +1222,11 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     if isChw then
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
-                    else
-                        let
-                            emergencyReferalDiagnosis =
-                                EverySet.toList assembled.encounter.diagnoses
-                                    |> List.filter diagnosisRequiresEmergencyReferal
-                                    |> List.isEmpty
-                                    |> not
-                        in
-                        if emergencyReferalDiagnosis then
-                            ( 0, 0 )
+                    else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
+                        ( 0, 0 )
 
-                        else
-                            ( taskCompleted form.accompanyToHealthCenter, 1 )
+                    else
+                        ( taskCompleted form.accompanyToHealthCenter, 1 )
             in
             ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
             , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
@@ -1251,6 +1265,17 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     resolveMedicationDistributionInputsAndTasks language currentDate assembled form
             in
             ( completed, total )
+
+        NextStepsRecommendedTreatment ->
+            let
+                form =
+                    assembled.measurements.recommendedTreatment
+                        |> getMeasurementValueFunc
+                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -2901,27 +2926,27 @@ resolveMedicationsByDiagnoses assembled =
     List.filter
         (\medication ->
             let
-                hivDiagnosis =
-                    EverySet.member DiagnosisHIV assembled.encounter.diagnoses
+                hivDiagnosed =
+                    diagnosed DiagnosisHIV assembled
 
                 hivProgramHC =
                     hivProgramAtHC assembled
             in
             case medication of
                 Mebendezole ->
-                    EverySet.member DiagnosisPrescribeMebendezole assembled.encounter.diagnoses
+                    diagnosed DiagnosisPrescribeMebendezole assembled
 
                 Tenofovir ->
-                    hivDiagnosis && hivProgramHC
+                    hivDiagnosed && hivProgramHC
 
                 Lamivudine ->
-                    hivDiagnosis && hivProgramHC
+                    hivDiagnosed && hivProgramHC
 
                 Dolutegravir ->
-                    hivDiagnosis && hivProgramHC
+                    hivDiagnosed && hivProgramHC
 
                 TDF3TC ->
-                    EverySet.member DiagnosisDiscordantPartnership assembled.encounter.diagnoses
+                    diagnosed DiagnosisDiscordantPartnership assembled
 
                 _ ->
                     False
@@ -3258,3 +3283,24 @@ resolveLamivudineDosageAndIcon currentDate person =
 resolveDolutegravirDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
 resolveDolutegravirDosageAndIcon currentDate person =
     Just ( "50 mg", "icon-pills" )
+
+
+recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
+recommendedTreatmentFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValueWithDefault saved form =
+    recommendedTreatmentFormWithDefault form saved
+        |> toRecommendedTreatmentValue
+
+
+toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoRecommendedTreatmentSign) form.signs

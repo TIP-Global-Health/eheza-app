@@ -6,6 +6,7 @@ module Pages.AcuteIllnessActivity.View exposing
     , viewAmoxicillinAdministrationInstructions
     , viewHCRecommendation
     , viewHealthEducationLabel
+    , viewInstructionsLabel
     , viewOralSolutionPrescription
     , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
@@ -1682,6 +1683,11 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                 |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
                 |> Maybe.withDefault ( 0, 0 )
 
+        call114Form =
+            measurements.call114
+                |> getMeasurementValueFunc
+                |> call114FormWithDefault data.call114Form
+
         viewForm =
             case activeTask of
                 Just NextStepsIsolation ->
@@ -1697,10 +1703,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                         |> viewHCContactForm language currentDate assembled.initialEncounter measurements
 
                 Just NextStepsCall114 ->
-                    measurements.call114
-                        |> getMeasurementValueFunc
-                        |> call114FormWithDefault data.call114Form
-                        |> viewCall114Form language currentDate measurements
+                    viewCall114Form language currentDate measurements call114Form
 
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
@@ -1760,12 +1763,6 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                 -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
                 Just NextStepsCall114 ->
                     if assembled.initialEncounter then
-                        let
-                            call114Form =
-                                measurements.call114
-                                    |> getMeasurementValueFunc
-                                    |> call114FormWithDefault data.call114Form
-                        in
                         if call114Form.called114 == Just False then
                             [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ]
 

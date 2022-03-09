@@ -338,6 +338,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveRecommendedTreatment personId valueId value ->
+            ( { model | saveRecommendedTreatment = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalRecommendedTreatmentEndpoint HandleSavedRecommendedTreatment
+            )
+
+        HandleSavedRecommendedTreatment data ->
+            ( { model | saveRecommendedTreatment = data }
+            , Cmd.none
+            )
+
 
 updateEncounter : NominalDate -> PrenatalEncounterId -> Maybe PrenatalEncounter -> (PrenatalEncounter -> PrenatalEncounter) -> Model -> ( Model, Cmd Msg )
 updateEncounter currentDate encounterId maybeEncounter updateFunc model =

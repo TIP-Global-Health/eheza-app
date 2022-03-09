@@ -453,6 +453,7 @@ type Revision
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
+    | PrenatalRecommendedTreatmentRevision PrenatalRecommendedTreatmentId PrenatalRecommendedTreatment
     | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
     | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest

@@ -1078,6 +1078,22 @@ type alias PrenatalMedicationDistribution =
     PrenatalMeasurement MedicationDistributionValue
 
 
+type alias PrenatalRecommendedTreatment =
+    PrenatalMeasurement RecommendedTreatmentValue
+
+
+type alias RecommendedTreatmentValue =
+    EverySet RecommendedTreatmentSign
+
+
+type RecommendedTreatmentSign
+    = TreatmentQuinineSulphate
+    | TreatmentCoartem
+    | TreatmentWrittenProtocols
+    | TreatementReferToHospital
+    | NoRecommendedTreatmentSign
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1931,6 +1947,7 @@ type alias PrenatalMeasurements =
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
     , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
+    , recommendedTreatment : Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )
     }
 
 
@@ -1967,6 +1984,7 @@ emptyPrenatalMeasurements =
     , urineDipstickTest = Nothing
     , labsResults = Nothing
     , medicationDistribution = Nothing
+    , recommendedTreatment = Nothing
     }
 
 

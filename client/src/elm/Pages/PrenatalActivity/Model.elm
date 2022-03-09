@@ -162,6 +162,8 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
+    | SetRecommendedTreatmentSign RecommendedTreatmentSign
+    | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -389,6 +391,7 @@ type alias NextStepsData =
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
+    , recommendedTreatmentForm : RecommendedTreatmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -401,6 +404,7 @@ emptyNextStepsData =
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm
+    , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
 
@@ -418,6 +422,16 @@ type alias MedicationDistributionForm =
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
     MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
+
+
+type alias RecommendedTreatmentForm =
+    { signs : Maybe (List RecommendedTreatmentSign)
+    }
+
+
+emptyRecommendedTreatmentForm : RecommendedTreatmentForm
+emptyRecommendedTreatmentForm =
+    RecommendedTreatmentForm Nothing
 
 
 

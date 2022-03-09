@@ -13,7 +13,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Utils exposing (generateNonUrgentDiagnoses, toMedicationDistributionValueWithDefault)
+import Pages.PrenatalActivity.Utils exposing (listNonUrgentDiagnoses, toMedicationDistributionValueWithDefault)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -52,7 +52,7 @@ update language currentDate id db msg model =
                 nonUrgentDiagnoses =
                     Dict.get id db.prenatalEncounters
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> generateNonUrgentDiagnoses)
+                        |> Maybe.map (.diagnoses >> EverySet.toList >> listNonUrgentDiagnoses)
                         |> Maybe.withDefault []
 
                 extraMsgs =
@@ -63,7 +63,7 @@ update language currentDate id db msg model =
                         let
                             message =
                                 List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) nonUrgentDiagnoses
-                                    |> String.join ","
+                                    |> String.join ", "
                         in
                         [ SetWarningPopupState <| Just ( message, "" ) ]
             in

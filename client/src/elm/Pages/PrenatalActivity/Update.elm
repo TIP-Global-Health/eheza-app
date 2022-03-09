@@ -100,7 +100,7 @@ update language currentDate id db msg model =
                 nonUrgentDiagnoses =
                     Dict.get id db.prenatalEncounters
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> generateNonUrgentDiagnoses)
+                        |> Maybe.map (.diagnoses >> EverySet.toList >> listNonUrgentDiagnoses)
                         |> Maybe.withDefault []
 
                 extraMsgs =
@@ -111,7 +111,7 @@ update language currentDate id db msg model =
                         let
                             message =
                                 List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) nonUrgentDiagnoses
-                                    |> String.join ","
+                                    |> String.join ", "
                         in
                         [ SetWarningPopupState <| Just ( message, "" ) ]
             in
@@ -2786,6 +2786,49 @@ update language currentDate id db msg model =
                         |> toMedicationDistributionValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetRecommendedTreatmentSign sign ->
+            let
+                updatedForm =
+                    model.nextStepsData.recommendedTreatmentForm
+                        |> (\form -> { form | signs = Just [ sign ] })
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | recommendedTreatmentForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveRecommendedTreatment personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    model.nextStepsData.recommendedTreatmentForm
+                        |> toRecommendedTreatmentValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveRecommendedTreatment personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

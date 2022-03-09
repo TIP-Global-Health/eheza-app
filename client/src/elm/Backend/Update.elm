@@ -1723,6 +1723,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
+                [ PrenatalMalariaTestRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ PrenatalUrineDipstickTestRevision uid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -3467,6 +3477,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalRecommendedTreatmentRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | recommendedTreatment = Just ( uuid, data ) })
                 model
             , recalc
             )

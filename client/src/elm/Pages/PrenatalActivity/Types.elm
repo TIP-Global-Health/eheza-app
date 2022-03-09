@@ -28,6 +28,7 @@ type NextStepsTask
     | NextStepsHealthEducation
     | NextStepsNewbornEnrolment
     | NextStepsMedicationDistribution
+    | NextStepsRecommendedTreatment
 
 
 type PatientProvisionsTask
