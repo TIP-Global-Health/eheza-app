@@ -3,6 +3,7 @@ module Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (SendToHCForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
@@ -68,9 +69,9 @@ emptyModel =
 type alias LabResultsData =
     { bloodGpRsTestForm : PrenatalBloodGpRsResultForm
     , hemoglobinTestForm : PrenatalHemoglobinResultForm
-    , hepatitisBTestForm : PrenatalTestResultForm
+    , hepatitisBTestForm : HepatitisBResultForm
     , randomBloodSugarTestForm : PrenatalRandomBloodSugarResultForm
-    , syphilisTestForm : SyphilisTestResultForm
+    , syphilisTestForm : SyphilisResultForm
     , urineDipstickTestForm : PrenatalUrineDipstickResultForm
     , activeTask : Maybe LaboratoryTask
     }
@@ -80,9 +81,9 @@ emptyLabResultsData : LabResultsData
 emptyLabResultsData =
     { bloodGpRsTestForm = emptyPrenatalBloodGpRsResultForm
     , hemoglobinTestForm = emptyPrenatalHemoglobinResultForm
-    , hepatitisBTestForm = emptyPrenatalTestResultForm
+    , hepatitisBTestForm = emptyHepatitisBResultForm
     , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarResultForm
-    , syphilisTestForm = emptySyphilisTestResultForm
+    , syphilisTestForm = emptySyphilisResultForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
     , activeTask = Nothing
     }
@@ -112,29 +113,30 @@ emptyMedicationDistributionForm =
     MedicationDistributionForm
 
 
-type alias SyphilisTestResultForm =
+type alias SyphilisResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
-    , symptoms : Maybe (List IllnessSymptom)
+    , symptoms : Maybe (EverySet IllnessSymptom)
+    , symptomsDirty : Bool
     }
 
 
-emptySyphilisTestResultForm : SyphilisTestResultForm
-emptySyphilisTestResultForm =
-    SyphilisTestResultForm Nothing Nothing Nothing Nothing
+emptySyphilisResultForm : SyphilisResultForm
+emptySyphilisResultForm =
+    SyphilisResultForm Nothing Nothing Nothing Nothing False
 
 
-type alias PrenatalTestResultForm =
+type alias HepatitisBResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     }
 
 
-emptyPrenatalTestResultForm : PrenatalTestResultForm
-emptyPrenatalTestResultForm =
-    PrenatalTestResultForm Nothing Nothing Nothing
+emptyHepatitisBResultForm : HepatitisBResultForm
+emptyHepatitisBResultForm =
+    HepatitisBResultForm Nothing Nothing Nothing
 
 
 type alias PrenatalBloodGpRsResultForm =

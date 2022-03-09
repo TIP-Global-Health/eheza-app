@@ -19,6 +19,7 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
@@ -149,8 +150,8 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .randomBloodSugarTest
 
 
-prenatalTestResultFormWithDefault : PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue -> PrenatalTestResultForm
-prenatalTestResultFormWithDefault form saved =
+hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm
+hepatitisBFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -162,19 +163,53 @@ prenatalTestResultFormWithDefault form saved =
             )
 
 
-toPrenatalTestResultsValueWithDefault : Maybe PrenatalMalariaTestValue -> PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue
-toPrenatalTestResultsValueWithDefault saved form =
-    prenatalTestResultFormWithDefault form saved
-        |> toPrenatalTestResultsValue
+toHepatitisBValueWithDefault : Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
+toHepatitisBValueWithDefault saved form =
+    hepatitisBFormWithDefault form saved
+        |> toHepatitisBValue
 
 
-toPrenatalTestResultsValue : PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue
-toPrenatalTestResultsValue form =
+toHepatitisBValue : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
+toHepatitisBValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            }
+        )
+        form.executionNote
+
+
+syphilisResultFormWithDefault : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue -> SyphilisResultForm
+syphilisResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testResult = or form.testResult value.testResult
+                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms value.symptoms
+                , symptomsDirty = form.symptomsDirty
+                }
+            )
+
+
+toSyphilisResultValueWithDefault : Maybe PrenatalSyphilisTestValue -> SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
+toSyphilisResultValueWithDefault saved form =
+    syphilisResultFormWithDefault form saved
+        |> toSyphilisResultValue
+
+
+toSyphilisResultValue : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
+toSyphilisResultValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            , symptoms = form.symptoms
             }
         )
         form.executionNote

@@ -159,14 +159,14 @@ viewLabResultsContent language currentDate assembled model =
                         TaskSyphilisTest ->
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> prenatalTestResultFormAndTasks language currentDate TaskSyphilisTest
+                                |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
+                                |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault model.labResultsData.hepatitisBTestForm
-                                |> prenatalTestResultFormAndTasks language currentDate TaskHepatitisBTest
+                                |> hepatitisBFormWithDefault model.labResultsData.hepatitisBTestForm
+                                |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
 
                         TaskMalariaTest ->
                             ( emptyNode, 0, 0 )
@@ -271,44 +271,59 @@ viewLabResultsContent language currentDate assembled model =
     ]
 
 
-prenatalTestResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalTestResultForm -> ( Html Msg, Int, Int )
-prenatalTestResultFormAndTasks language currentDate task form =
+prenatalSyphilisResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> SyphilisResultForm -> ( Html Msg, Int, Int )
+prenatalSyphilisResultFormAndTasks language currentDate task form =
     let
-        setTestResultMsg =
-            case task of
-                TaskHepatitisBTest ->
-                    Just SetHepatitisBTestResult
-
-                TaskSyphilisTest ->
-                    Just SetSyphilisTestResult
-
-                _ ->
-                    Nothing
-
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            Maybe.map
-                (\setResultMsg ->
-                    let
-                        emptyOption =
-                            if isNothing form.testResult then
-                                emptySelectOption True
+            let
+                emptyOption =
+                    if isNothing form.testResult then
+                        emptySelectOption True
 
-                            else
-                                emptyNode
-                    in
-                    ( viewSelectInput language
-                        (Translate.PrenatalLaboratoryTaskResult task)
-                        form.testResult
-                        Translate.PrenatalTestResult
-                        prenatalTestResultToString
-                        [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
-                        setResultMsg
-                    , taskCompleted form.testResult
-                    , 1
-                    )
-                )
-                setTestResultMsg
-                |> Maybe.withDefault ( [], 0, 0 )
+                    else
+                        emptyNode
+            in
+            ( viewSelectInput language
+                (Translate.PrenatalLaboratoryTaskResult task)
+                form.testResult
+                Translate.PrenatalTestResult
+                prenatalTestResultToString
+                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                SetSyphilisTestResult
+            , taskCompleted form.testResult
+            , 1
+            )
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate task
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+prenatalHepatitisBResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> HepatitisBResultForm -> ( Html Msg, Int, Int )
+prenatalHepatitisBResultFormAndTasks language currentDate task form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                emptyOption =
+                    if isNothing form.testResult then
+                        emptySelectOption True
+
+                    else
+                        emptyNode
+            in
+            ( viewSelectInput language
+                (Translate.PrenatalLaboratoryTaskResult task)
+                form.testResult
+                Translate.PrenatalTestResult
+                prenatalTestResultToString
+                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                SetHepatitisBTestResult
+            , taskCompleted form.testResult
+            , 1
+            )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate task

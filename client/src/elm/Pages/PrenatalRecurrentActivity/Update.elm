@@ -109,7 +109,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalTestResultsValueWithDefault measurement model.labResultsData.syphilisTestForm
+                    toSyphilisResultValueWithDefault measurement model.labResultsData.syphilisTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -153,7 +153,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalTestResultsValueWithDefault measurement model.labResultsData.hepatitisBTestForm
+                    toHepatitisBValueWithDefault measurement model.labResultsData.hepatitisBTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

@@ -832,6 +832,13 @@ type alias PrenatalMalariaTest =
     PrenatalMeasurement PrenatalMalariaTestValue
 
 
+type alias PrenatalMalariaTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
 type PrenatalTestExecutionNote
     = TestNoteRunToday
     | TestNoteRunPreviously
@@ -867,13 +874,6 @@ type PrenatalHIVSign
     | PartnerTakingARV
     | PartnerSurpressedViralLoad
     | NoPrenatalHIVSign
-
-
-type alias PrenatalMalariaTestValue =
-    { executionNote : PrenatalTestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
-    }
 
 
 type alias PrenatalHepatitisBTest =
