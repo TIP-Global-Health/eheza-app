@@ -288,8 +288,10 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    -- Appear whenever HIV test was performed.
-                    isJust assembled.measurements.hivTest
+                    -- Emergency refferal is not required.
+                    (not <| emergencyReferalRequired assembled)
+                        && -- Appear whenever HIV test was performed.
+                           isJust assembled.measurements.hivTest
 
                 ChwPostpartumEncounter ->
                     True
@@ -303,12 +305,10 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
-            --@todo
             -- Emergency refferal is not required.
-            -- (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
-            --     &&
-            -- We were asking if Mebendazole was given already.
-            showMebendazoleQuestion currentDate assembled
+            (not <| emergencyReferalRequired assembled)
+                && -- We were asking if Mebendazole was given already.
+                   showMebendazoleQuestion currentDate assembled
                 && -- The answer was that Mebendazole was not given yet.
                    (getMeasurementValueFunc assembled.measurements.medication
                         |> Maybe.map (EverySet.member Mebendazole >> not)
@@ -317,7 +317,9 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsRecommendedTreatment ->
-            diagnosed DiagnosisMalaria assembled
+            -- Emergency refferal is not required.
+            (not <| emergencyReferalRequired assembled)
+                && diagnosed DiagnosisMalaria assembled
 
 
 diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
