@@ -762,7 +762,14 @@ matchLabResultsPrenatalDiagnosis : List DangerSign -> PrenatalMeasurements -> Pr
 matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
     let
         positiveMalariaTest =
-            getMeasurementValueFunc measurements.malariaTest
+            testedPositiveAt .malariaTest
+
+        positiveSyphilisTest =
+            testedPositiveAt .syphilisTest
+
+        testedPositiveAt getMeasurementFunc =
+            getMeasurementFunc measurements
+                |> getMeasurementValueFunc
                 |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
                 |> Maybe.withDefault False
 
@@ -785,9 +792,7 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
     in
     case diagnosis of
         DiagnosisHIV ->
-            getMeasurementValueFunc measurements.hivTest
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
-                |> Maybe.withDefault False
+            testedPositiveAt .hivTest
 
         DiagnosisDiscordantPartnership ->
             getMeasurementValueFunc measurements.hivTest
@@ -807,10 +812,45 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
                     )
                 |> Maybe.withDefault False
 
+        DiagnosisSyphilis ->
+            positiveSyphilisTest
+                && -- No symptoms were reported.
+                   (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                EverySet.isEmpty symptoms || (EverySet.toList symptoms == [ NoIllnessSymptoms ])
+                            )
+                        |> Maybe.withDefault True
+                   )
+
+        DiagnosisSyphilisWithComplications ->
+            positiveSyphilisTest
+                && (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                EverySet.member IllnessSymptomRash symptoms
+                                    || EverySet.member IllnessSymptomPainlessUlcerMouth symptoms
+                                    || EverySet.member IllnessSymptomPainlessUlcerGenitals symptoms
+                            )
+                        |> Maybe.withDefault False
+                   )
+
+        DiagnosisNeurosyphilis ->
+            positiveSyphilisTest
+                && (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                EverySet.member IllnessSymptomHeadache symptoms
+                                    || EverySet.member IllnessSymptomVisionChanges symptoms
+                            )
+                        |> Maybe.withDefault False
+                   )
+
         DiagnosisHepatitisB ->
-            getMeasurementValueFunc measurements.hepatitisBTest
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
-                |> Maybe.withDefault False
+            testedPositiveAt .hepatitisBTest
 
         DiagnosisMalaria ->
             positiveMalariaTest
