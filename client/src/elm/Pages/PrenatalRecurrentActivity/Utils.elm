@@ -338,11 +338,14 @@ expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
             diagnosed DiagnosisHepatitisB assembled
+                || diagnosed DiagnosisMalariaWithSevereAnemia assembled
+                || diagnosed DiagnosisSevereAnemia assembled
+                || diagnosed DiagnosisSevereAnemiaWithComplications assembled
 
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && False
+                && diagnosed DiagnosisModerateAnemia assembled
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
