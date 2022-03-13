@@ -13,7 +13,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Utils exposing (listNonUrgentDiagnoses, toMedicationDistributionValueWithDefault)
+import Pages.PrenatalActivity.Utils exposing (listNonUrgentDiagnoses, toMedicationDistributionValueWithDefault, toRecommendedTreatmentValueWithDefault)
 import Pages.PrenatalRecurrentActivity.Model exposing (..)
 import Pages.PrenatalRecurrentActivity.Utils exposing (..)
 import Pages.Utils exposing (setMultiSelectInputValue)
@@ -656,6 +656,34 @@ update language currentDate id db msg model =
                     --     )
                     -- |> Maybe.withDefault []
                     []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SaveRecommendedTreatment personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    model.nextStepsData.recommendedTreatmentForm
+                        |> toRecommendedTreatmentValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveRecommendedTreatment personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none

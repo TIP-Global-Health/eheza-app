@@ -6,7 +6,7 @@ import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model exposing (DropZoneFile, RecommendedTreatmentForm, SendToHCForm, VitalsForm, emptyRecommendedTreatmentForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
 import Pages.PrenatalActivity.Types exposing (..)
 
@@ -422,16 +422,6 @@ type alias MedicationDistributionForm =
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
     MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
-
-
-type alias RecommendedTreatmentForm =
-    { signs : Maybe (List RecommendedTreatmentSign)
-    }
-
-
-emptyRecommendedTreatmentForm : RecommendedTreatmentForm
-emptyRecommendedTreatmentForm =
-    RecommendedTreatmentForm Nothing
 
 
 

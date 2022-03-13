@@ -5,7 +5,7 @@ import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (SendToHCForm, emptySendToHCForm)
+import Measurement.Model exposing (RecommendedTreatmentForm, SendToHCForm, emptyRecommendedTreatmentForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 import Pages.PrenatalActivity.Types exposing (LaboratoryTask)
 import Pages.PrenatalRecurrentActivity.Types exposing (NextStepsTask(..))
@@ -48,6 +48,7 @@ type Msg
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -93,6 +94,7 @@ emptyLabResultsData =
 type alias NextStepsData =
     { sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
+    , recommendedTreatmentForm : RecommendedTreatmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -101,6 +103,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = emptyMedicationDistributionForm
+    , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
 

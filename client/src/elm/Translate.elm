@@ -7626,6 +7626,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
+                Pages.PrenatalRecurrentActivity.Types.NextStepsRecommendedTreatment ->
+                    { english = "Diagnosis + Medicine"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalHIVProgramHelper ->
             { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
             , kinyarwanda = Nothing

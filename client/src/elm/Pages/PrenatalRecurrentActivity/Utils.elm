@@ -364,7 +364,7 @@ toPrenatalUrineDipstickResultsValue form =
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
     -- The order is important. Do not change.
-    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC ]
         |> List.filter (expectNextStepsTask currentDate assembled)
 
 
@@ -373,11 +373,20 @@ expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
             diagnosed DiagnosisHepatitisB assembled
+                || diagnosed DiagnosisNeurosyphilis assembled
 
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
                 && False
+
+        -- Exclusive Nurse task.
+        NextStepsRecommendedTreatment ->
+            -- Emergency refferal is not required.
+            (not <| emergencyReferalRequired assembled)
+                && (diagnosed DiagnosisSyphilis assembled
+                        || diagnosed DiagnosisSyphilisWithComplications assembled
+                   )
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -388,6 +397,9 @@ nextStepsMeasurementTaken assembled task =
 
         NextStepsMedicationDistribution ->
             isJust assembled.measurements.medicationDistribution
+
+        NextStepsRecommendedTreatment ->
+            isJust assembled.measurements.recommendedTreatment
 
 
 nextStepsTasksCompletedFromTotal : AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
@@ -421,6 +433,12 @@ nextStepsTasksCompletedFromTotal assembled data task =
             )
 
         NextStepsMedicationDistribution ->
+            --@todo
+            ( 0
+            , 1
+            )
+
+        NextStepsRecommendedTreatment ->
             --@todo
             ( 0
             , 1

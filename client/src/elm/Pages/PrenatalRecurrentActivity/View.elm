@@ -627,20 +627,22 @@ viewNextStepsContent language currentDate assembled data =
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                iconClass =
                     case task of
                         NextStepsSendToHC ->
-                            ( "next-steps-send-to-hc"
-                            , isJust measurements.sendToHC
-                            )
+                            "next-steps-send-to-hc"
 
                         NextStepsMedicationDistribution ->
-                            ( "next-steps-medication-distribution"
-                            , isJust measurements.medicationDistribution
-                            )
+                            "next-steps-medication-distribution"
+
+                        NextStepsRecommendedTreatment ->
+                            "next-steps-treatment"
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    nextStepsMeasurementTaken assembled task
 
                 navigationAction =
                     if isActive then
@@ -694,6 +696,12 @@ viewNextStepsContent language currentDate assembled data =
                     -- @todo
                     emptyNode
 
+                Just NextStepsRecommendedTreatment ->
+                    measurements.recommendedTreatment
+                        |> getMeasurementValueFunc
+                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+                        |> viewRecommendedTreatmentForm language currentDate assembled
+
                 Nothing ->
                     emptyNode
 
@@ -718,6 +726,9 @@ viewNextStepsContent language currentDate assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    NextStepsRecommendedTreatment ->
+                                        SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -741,6 +752,28 @@ viewNextStepsContent language currentDate assembled data =
             ]
         ]
     ]
+
+
+viewRecommendedTreatmentForm : Language -> NominalDate -> AssembledData -> RecommendedTreatmentForm -> Html Msg
+viewRecommendedTreatmentForm language currentDate assembled form =
+    -- @todo
+    div [ class "ui form recommended-treatment" ]
+        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+        , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+
+        -- , viewCheckBoxSelectInput language
+        --     [ medicationTreatment
+        --     , TreatmentWrittenProtocols
+        --     , TreatementReferToHospital
+        --     ]
+        --     []
+        --     (Maybe.andThen List.head form.signs)
+        --     SetRecommendedTreatmentSign
+        --     Translate.RecommendedTreatmentSignLabel
+        ]
 
 
 
