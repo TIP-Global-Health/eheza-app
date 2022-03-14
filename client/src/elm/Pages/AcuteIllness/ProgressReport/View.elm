@@ -1,4 +1,4 @@
-module  Pages.AcuteIllness.ProgressReport.View exposing (view)
+module Pages.AcuteIllness.ProgressReport.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -20,8 +20,8 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model exposing (ReferralFacility(..))
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
-import  Pages.AcuteIllness.Activity.Types exposing (NextStepsTask(..))
-import  Pages.AcuteIllness.Activity.Utils
+import Pages.AcuteIllness.Activity.Types exposing (NextStepsTask(..))
+import Pages.AcuteIllness.Activity.Utils
     exposing
         ( muacRedOnSubsequentVisit
         , resolveAcuteIllnessDiagnosis
@@ -32,7 +32,7 @@ import  Pages.AcuteIllness.Activity.Utils
         , resolveZincDosage
         , respiratoryRateAbnormalForAge
         )
-import  Pages.AcuteIllness.Activity.View
+import Pages.AcuteIllness.Activity.View
     exposing
         ( viewAdministeredMedicationLabel
         , viewAmoxicillinAdministrationInstructions
@@ -41,14 +41,14 @@ import  Pages.AcuteIllness.Activity.View
         , viewParacetamolAdministrationInstructions
         , viewTabletsPrescription
         )
-import  Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
-import  Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
-import  Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitionActivities)
-import  Pages.AcuteIllness.ProgressReport.Model exposing (..)
+import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
+import Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitionActivities)
+import Pages.AcuteIllness.ProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
-import  Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
+import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)

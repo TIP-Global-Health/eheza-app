@@ -14,8 +14,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
-import  Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
-import  Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
@@ -30,7 +30,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSaveAction
         )
-import  Pages.WellChild.Encounter.View exposing (thumbnailDimensions, viewPersonDetails)
+import Pages.WellChild.Encounter.View exposing (thumbnailDimensions, viewPersonDetails)
 import RemoteData exposing (RemoteData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage, viewModal)

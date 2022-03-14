@@ -1,8 +1,8 @@
-module  Pages.Prenatal.ProgressReport.Update exposing (update)
+module Pages.Prenatal.ProgressReport.Update exposing (update)
 
 import App.Model
-import  Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..))
+import Pages.Prenatal.ProgressReport.Model exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

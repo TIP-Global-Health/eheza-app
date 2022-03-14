@@ -67,9 +67,9 @@ import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (OutMsgMother(..))
-import  Pages.AcuteIllness.Activity.Model
-import  Pages.AcuteIllness.Activity.Types
-import  Pages.AcuteIllness.Activity.Utils
+import Pages.AcuteIllness.Activity.Model
+import Pages.AcuteIllness.Activity.Types
+import Pages.AcuteIllness.Activity.Utils
     exposing
         ( activityCompleted
         , mandatoryActivitiesCompletedSubsequentVisit
@@ -79,15 +79,15 @@ import  Pages.AcuteIllness.Activity.Utils
         , resolveNextStepSubsequentEncounter
         , respiratoryRateAbnormalForAge
         )
-import  Pages.AcuteIllness.Encounter.Model
-import  Pages.AcuteIllness.Encounter.Utils
+import Pages.AcuteIllness.Encounter.Model
+import Pages.AcuteIllness.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.NextSteps.Model
-import  Pages.Nutrition.Activity.Model
-import  Pages.Nutrition.Activity.Utils
-import  Pages.Nutrition.Encounter.Model
-import  Pages.Nutrition.Encounter.Utils
+import Pages.Nutrition.Activity.Model
+import Pages.Nutrition.Activity.Utils
+import Pages.Nutrition.Encounter.Model
+import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
@@ -99,10 +99,10 @@ import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
-import  Pages.WellChild.Activity.Model
-import  Pages.WellChild.Activity.Utils
-import  Pages.WellChild.Encounter.Model
-import  Pages.WellChild.Encounter.Utils
+import Pages.WellChild.Activity.Model
+import Pages.WellChild.Activity.Utils
+import Pages.WellChild.Encounter.Model
+import Pages.WellChild.Encounter.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import SyncManager.Model
@@ -1159,7 +1159,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         encounterId
                             |> Maybe.andThen
                                 (\id ->
-                                     Pages.WellChild.Encounter.Utils.generateAssembledData id after
+                                    Pages.WellChild.Encounter.Utils.generateAssembledData id after
                                         |> RemoteData.toMaybe
                                         |> Maybe.map
                                             (\assembledAfter ->
@@ -1175,33 +1175,33 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                                         ageMonths =
                                                                             Date.diff Months birthDate currentDate
                                                                     in
-                                                                     Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
+                                                                    Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
                                                                         |> List.filterMap
                                                                             (\sign ->
-                                                                                if List.member sign  Pages.WellChild.Activity.Utils.ecdSignsFrom5Weeks then
+                                                                                if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom5Weeks then
                                                                                     if ageMonths >= 6 then
-                                                                                        Just  Pages.WellChild.Encounter.Model.ReferToSpecialist
+                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
                                                                                     else if ageWeeks >= 14 then
-                                                                                        Just  Pages.WellChild.Encounter.Model.ChildBehind
+                                                                                        Just Pages.WellChild.Encounter.Model.ChildBehind
 
                                                                                     else
                                                                                         Nothing
 
-                                                                                else if List.member sign  Pages.WellChild.Activity.Utils.ecdSignsFrom13Weeks then
+                                                                                else if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom13Weeks then
                                                                                     if ageMonths >= 6 then
-                                                                                        Just  Pages.WellChild.Encounter.Model.ReferToSpecialist
+                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
                                                                                     else
                                                                                         Nothing
 
-                                                                                else if List.member sign  Pages.WellChild.Activity.Utils.ecdSigns6To12MonthsMajors then
+                                                                                else if List.member sign Pages.WellChild.Activity.Utils.ecdSigns6To12MonthsMajors then
                                                                                     -- Signs will be displayed until child is 13 months old.
                                                                                     if ageMonths == 12 then
-                                                                                        Just  Pages.WellChild.Encounter.Model.ReferToSpecialist
+                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
                                                                                     else if ageMonths >= 9 then
-                                                                                        Just  Pages.WellChild.Encounter.Model.ChildBehind
+                                                                                        Just Pages.WellChild.Encounter.Model.ChildBehind
 
                                                                                     else
                                                                                         Nothing
@@ -1213,29 +1213,29 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                             |> Maybe.withDefault []
 
                                                     warning =
-                                                        if List.member  Pages.WellChild.Encounter.Model.ReferToSpecialist warningsList then
+                                                        if List.member Pages.WellChild.Encounter.Model.ReferToSpecialist warningsList then
                                                             WarningECDMilestoneReferToSpecialist
 
-                                                        else if List.member  Pages.WellChild.Encounter.Model.ChildBehind warningsList then
+                                                        else if List.member Pages.WellChild.Encounter.Model.ChildBehind warningsList then
                                                             WarningECDMilestoneBehind
 
                                                         else
                                                             NoECDMilstoneWarning
 
                                                     setPopUpStateMsg popupType =
-                                                         Pages.WellChild.Encounter.Model.PopupECD popupType
+                                                        Pages.WellChild.Encounter.Model.PopupECD popupType
                                                             |> Just
-                                                            |>  Pages.WellChild.Encounter.Model.SetWarningPopupState
+                                                            |> Pages.WellChild.Encounter.Model.SetWarningPopupState
                                                             |> App.Model.MsgPageWellChildEncounter id
                                                             |> App.Model.MsgLoggedIn
 
                                                     popUpMsg =
                                                         case warning of
                                                             WarningECDMilestoneReferToSpecialist ->
-                                                                [ setPopUpStateMsg  Pages.WellChild.Encounter.Model.ReferToSpecialist ]
+                                                                [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ReferToSpecialist ]
 
                                                             WarningECDMilestoneBehind ->
-                                                                [ setPopUpStateMsg  Pages.WellChild.Encounter.Model.ChildBehind ]
+                                                                [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ChildBehind ]
 
                                                             _ ->
                                                                 []
@@ -2400,10 +2400,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     AcuteIllnessContactsTracingActivityOrigin encounterId ->
                                         let
                                             setContactsTracingFormStateMsg =
-                                                 Pages.AcuteIllness.Activity.Model.ContactsTracingFormRecordContactDetails
+                                                Pages.AcuteIllness.Activity.Model.ContactsTracingFormRecordContactDetails
                                                     personId
-                                                     Pages.AcuteIllness.Activity.Model.emptyRecordContactDetailsData
-                                                    |>  Pages.AcuteIllness.Activity.Model.SetContactsTracingFormState
+                                                    Pages.AcuteIllness.Activity.Model.emptyRecordContactDetailsData
+                                                    |> Pages.AcuteIllness.Activity.Model.SetContactsTracingFormState
                                                     |> App.Model.MsgPageAcuteIllnessActivity encounterId Backend.AcuteIllnessActivity.Model.AcuteIllnessNextSteps
                                                     |> App.Model.MsgLoggedIn
                                                     |> List.singleton
@@ -4226,7 +4226,7 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
-                     Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
+                    Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
                         currentDate
                         zscores
                         assembledAfter.person
@@ -4241,11 +4241,11 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after
             else
                 let
                     assessmentBefore =
-                         Pages.Nutrition.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledBefore
+                        Pages.Nutrition.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledBefore
                             |> nutritionAssessmentForBackend
 
                     assessmentAfter =
-                         Pages.Nutrition.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+                        Pages.Nutrition.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
 
                     assessmentForBackend =
                         nutritionAssessmentForBackend assessmentAfter
@@ -4305,13 +4305,13 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after
                              App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
 
                            -- Show warning popup with new assesment.
-                           ,  Pages.Nutrition.Activity.Model.SetWarningPopupState assessmentAfter
+                           , Pages.Nutrition.Activity.Model.SetWarningPopupState assessmentAfter
                                 |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
                                 |> App.Model.MsgLoggedIn
                            ]
         )
-        (RemoteData.toMaybe <|  Pages.Nutrition.Encounter.Utils.generateAssembledData id before)
-        (RemoteData.toMaybe <|  Pages.Nutrition.Encounter.Utils.generateAssembledData id after)
+        (RemoteData.toMaybe <| Pages.Nutrition.Encounter.Utils.generateAssembledData id before)
+        (RemoteData.toMaybe <| Pages.Nutrition.Encounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 
 
@@ -4502,7 +4502,7 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
-                     Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
+                    Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                         currentDate
                         isChw
                         assembledAfter
@@ -4515,11 +4515,11 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
             else
                 let
                     assessmentBefore =
-                         Pages.WellChild.Activity.Utils.generateNutritionAssessment currentDate zscores before assembledBefore
+                        Pages.WellChild.Activity.Utils.generateNutritionAssessment currentDate zscores before assembledBefore
                             |> nutritionAssessmentForBackend
 
                     assessmentForBackend =
-                         Pages.WellChild.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+                        Pages.WellChild.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
                             |> nutritionAssessmentForBackend
 
                     -- Update the assesment field on Follow Up measurement (if it exists already).
@@ -4565,8 +4565,8 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
                 else
                     []
         )
-        (RemoteData.toMaybe <|  Pages.WellChild.Encounter.Utils.generateAssembledData id before)
-        (RemoteData.toMaybe <|  Pages.WellChild.Encounter.Utils.generateAssembledData id after)
+        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData id before)
+        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 
 
@@ -4580,8 +4580,8 @@ generateSuspectedDiagnosisMsgs currentDate isChw before after id person =
             else
                 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw assembledAfter
         )
-        (RemoteData.toMaybe <|  Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw before)
-        (RemoteData.toMaybe <|  Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw after)
+        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw before)
+        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw after)
         |> Maybe.withDefault []
 
 
@@ -4590,8 +4590,8 @@ generateSuspectedDiagnosisMsgsFirstEncounter :
     -> Bool
     -> AcuteIllnessEncounterId
     -> Person
-    ->  Pages.AcuteIllness.Encounter.Model.AssembledData
-    ->  Pages.AcuteIllness.Encounter.Model.AssembledData
+    -> Pages.AcuteIllness.Encounter.Model.AssembledData
+    -> Pages.AcuteIllness.Encounter.Model.AssembledData
     -> List App.Model.Msg
 generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter =
     let
@@ -4624,7 +4624,7 @@ generateMsgsForNewDiagnosis :
     -> Bool
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe  Pages.AcuteIllness.Activity.Types.NextStepsTask
+    -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
     if isChw then
@@ -4638,7 +4638,7 @@ generateMsgsForNewDiagnosisForNurse :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe  Pages.AcuteIllness.Activity.Types.NextStepsTask
+    -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
     case diagnosis of
@@ -4646,12 +4646,12 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
             [ -- Navigate to Acute Ilness Laboratory activty page.
               App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , -- Focus on Covid testing task.
-               Pages.AcuteIllness.Activity.Model.SetActiveLaboratoryTask  Pages.AcuteIllness.Activity.Types.LaboratoryCovidTesting
+              Pages.AcuteIllness.Activity.Model.SetActiveLaboratoryTask Pages.AcuteIllness.Activity.Types.LaboratoryCovidTesting
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.
-            ,  Pages.AcuteIllness.Activity.Model.SetWarningPopupState (Just diagnosis)
+            , Pages.AcuteIllness.Activity.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
             ]
@@ -4664,7 +4664,7 @@ generateCustomMsgsForNewDiagnosis :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe  Pages.AcuteIllness.Activity.Types.NextStepsTask
+    -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
 generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
     case nextStep of
@@ -4672,12 +4672,12 @@ generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
             [ -- Navigate to Acute Ilness NextSteps activty page.
               App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
             , -- Focus on first task on that page.
-               Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask step
+              Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask step
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                 |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.
-            ,  Pages.AcuteIllness.Activity.Model.SetWarningPopupState (Just diagnosis)
+            , Pages.AcuteIllness.Activity.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                 |> App.Model.MsgLoggedIn
             ]
@@ -4687,18 +4687,18 @@ generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
               App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
 
             -- Focus on 'Todo' tab.
-            ,  Pages.AcuteIllness.Encounter.Model.SetSelectedTab  Pages.AcuteIllness.Encounter.Model.Pending
+            , Pages.AcuteIllness.Encounter.Model.SetSelectedTab Pages.AcuteIllness.Encounter.Model.Pending
                 |> App.Model.MsgPageAcuteIllnessEncounter id
                 |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.
-            ,  Pages.AcuteIllness.Encounter.Model.SetWarningPopupState (Just diagnosis)
+            , Pages.AcuteIllness.Encounter.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessEncounter id
                 |> App.Model.MsgLoggedIn
             ]
 
 
-generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Bool ->  Pages.AcuteIllness.Encounter.Model.AssembledData -> List App.Model.Msg
+generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Bool -> Pages.AcuteIllness.Encounter.Model.AssembledData -> List App.Model.Msg
 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         let
@@ -4718,7 +4718,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
             setActiveTaskMsg =
                 resolveNextStepSubsequentEncounter currentDate isChw data
                     |> Maybe.map
-                        ( Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask
+                        (Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask
                             >> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
                             >> App.Model.MsgLoggedIn
                             >> List.singleton
@@ -4730,7 +4730,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
 
         -- Show warning popup with new diagnosis.
         , Maybe.map Tuple.second data.diagnosis
-            |>  Pages.AcuteIllness.Activity.Model.SetWarningPopupState
+            |> Pages.AcuteIllness.Activity.Model.SetWarningPopupState
             |> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
             |> App.Model.MsgLoggedIn
         ]
@@ -4752,7 +4752,7 @@ updateAcuteIllnessDiagnosisMsg id diagnosis =
 
 generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> Bool -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
 generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw after id =
-     Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw after
+    Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
@@ -4783,7 +4783,7 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
             -- Show danger signs alert popup.
-            ,  Pages.WellChild.Encounter.Model.SetWarningPopupState (Just  Pages.WellChild.Encounter.Model.PopupDangerSigns)
+            , Pages.WellChild.Encounter.Model.SetWarningPopupState (Just Pages.WellChild.Encounter.Model.PopupDangerSigns)
                 |> App.Model.MsgPageWellChildEncounter id
                 |> App.Model.MsgLoggedIn
             ]

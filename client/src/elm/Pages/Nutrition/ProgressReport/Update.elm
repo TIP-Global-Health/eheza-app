@@ -1,9 +1,9 @@
-module  Pages.Nutrition.ProgressReport.Update exposing (update)
+module Pages.Nutrition.ProgressReport.Update exposing (update)
 
 import App.Model
 import Backend.Model
 import Backend.NutritionEncounter.Model
-import  Pages.Nutrition.ProgressReport.Model exposing (..)
+import Pages.Nutrition.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..))
 
 

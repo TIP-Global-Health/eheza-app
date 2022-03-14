@@ -17,39 +17,39 @@ import Error.Model exposing (Error)
 import Http
 import Json.Encode exposing (Value)
 import List.Zipper as Zipper
-import  Pages.AcuteIllness.Activity.Model
-import  Pages.AcuteIllness.Encounter.Model
-import  Pages.AcuteIllness.Outcome.Model
-import  Pages.AcuteIllness.Participant.Model
-import  Pages.AcuteIllness.ProgressReport.Model
-import  Pages.Prenatal.ProgressReport.Model
+import Pages.AcuteIllness.Activity.Model
+import Pages.AcuteIllness.Encounter.Model
+import Pages.AcuteIllness.Outcome.Model
+import Pages.AcuteIllness.Participant.Model
+import Pages.AcuteIllness.ProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.GlobalCaseManagement.Model
-import  Pages.HomeVisit.Activity.Model
-import  Pages.HomeVisit.Encounter.Model
+import Pages.HomeVisit.Activity.Model
+import Pages.HomeVisit.Encounter.Model
 import Pages.IndividualEncounterParticipants.Model
-import  Pages.Nutrition.Activity.Model
-import  Pages.Nutrition.Encounter.Model
-import  Pages.Nutrition.ProgressReport.Model
+import Pages.Nutrition.Activity.Model
+import Pages.Nutrition.Encounter.Model
+import Pages.Nutrition.ProgressReport.Model
 import Pages.Page exposing (DashboardPage(..), Page(..))
 import Pages.PatientRecord.Model
 import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
-import  Pages.Prenatal.Outcome.Model
 import Pages.Prenatal.Activity.Model
 import Pages.Prenatal.Encounter.Model
+import Pages.Prenatal.Outcome.Model
 import Pages.Prenatal.Participant.Model
+import Pages.Prenatal.ProgressReport.Model
 import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentEncounter.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.TraceContact.Model
-import  Pages.WellChild.Activity.Model
-import  Pages.WellChild.Encounter.Model
-import  Pages.WellChild.ProgressReport.Model
+import Pages.WellChild.Activity.Model
+import Pages.WellChild.Encounter.Model
+import Pages.WellChild.ProgressReport.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
@@ -253,23 +253,23 @@ type alias LoggedInModel =
     , prenatalRecurrentEncounterPages : Dict PrenatalEncounterId Pages.Prenatal.RecurrentEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.Prenatal.Activity.Model.Model
     , prenatalRecurrentActivityPages : Dict ( PrenatalEncounterId, PrenatalRecurrentActivity ) Pages.Prenatal.RecurrentActivity.Model.Model
-    , pregnancyOutcomePages : Dict IndividualEncounterParticipantId  Pages.Prenatal.Outcome.Model.Model
+    , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.Prenatal.Outcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
-    , nutritionEncounterPages : Dict NutritionEncounterId  Pages.Nutrition.Encounter.Model.Model
-    , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity )  Pages.Nutrition.Activity.Model.Model
-    , nutritionProgressReportPages : Dict NutritionEncounterId  Pages.Nutrition.ProgressReport.Model.Model
-    , acuteIllnessParticipantPages : Dict PersonId  Pages.AcuteIllness.Participant.Model.Model
-    , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId  Pages.AcuteIllness.Encounter.Model.Model
-    , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity )  Pages.AcuteIllness.Activity.Model.Model
-    , acuteIllnessProgressReportPages : Dict AcuteIllnessEncounterId  Pages.AcuteIllness.ProgressReport.Model.Model
-    , acuteIllnessOutcomePages : Dict IndividualEncounterParticipantId  Pages.AcuteIllness.Outcome.Model.Model
-    , homeVisitEncounterPages : Dict HomeVisitEncounterId  Pages.HomeVisit.Encounter.Model.Model
-    , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity )  Pages.HomeVisit.Activity.Model.Model
-    , wellChildEncounterPages : Dict WellChildEncounterId  Pages.WellChild.Encounter.Model.Model
-    , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity )  Pages.WellChild.Activity.Model.Model
-    , wellChildProgressReportPages : Dict WellChildEncounterId  Pages.WellChild.ProgressReport.Model.Model
+    , nutritionEncounterPages : Dict NutritionEncounterId Pages.Nutrition.Encounter.Model.Model
+    , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.Nutrition.Activity.Model.Model
+    , nutritionProgressReportPages : Dict NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Model
+    , acuteIllnessParticipantPages : Dict PersonId Pages.AcuteIllness.Participant.Model.Model
+    , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllness.Encounter.Model.Model
+    , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllness.Activity.Model.Model
+    , acuteIllnessProgressReportPages : Dict AcuteIllnessEncounterId Pages.AcuteIllness.ProgressReport.Model.Model
+    , acuteIllnessOutcomePages : Dict IndividualEncounterParticipantId Pages.AcuteIllness.Outcome.Model.Model
+    , homeVisitEncounterPages : Dict HomeVisitEncounterId Pages.HomeVisit.Encounter.Model.Model
+    , homeVisitActivityPages : Dict ( HomeVisitEncounterId, HomeVisitActivity ) Pages.HomeVisit.Activity.Model.Model
+    , wellChildEncounterPages : Dict WellChildEncounterId Pages.WellChild.Encounter.Model.Model
+    , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChild.Activity.Model.Model
+    , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChild.ProgressReport.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
-    , clinicalProgressReportPages : Dict PrenatalEncounterId  Pages.Prenatal.ProgressReport.Model.Model
+    , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model
     }
 
@@ -355,27 +355,27 @@ type MsgLoggedIn
     | MsgPagePrenatalParticipant PersonId Pages.Prenatal.Participant.Model.Msg
     | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
-    | MsgPageAcuteIllnessParticipant PersonId  Pages.AcuteIllness.Participant.Model.Msg
+    | MsgPageAcuteIllnessParticipant PersonId Pages.AcuteIllness.Participant.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.Prenatal.Encounter.Model.Msg
     | MsgPagePrenatalRecurrentEncounter PrenatalEncounterId Pages.Prenatal.RecurrentEncounter.Model.Msg
-    | MsgPageNutritionEncounter NutritionEncounterId  Pages.Nutrition.Encounter.Model.Msg
-    | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId  Pages.AcuteIllness.Encounter.Model.Msg
-    | MsgPageHomeVisitEncounter HomeVisitEncounterId  Pages.HomeVisit.Encounter.Model.Msg
-    | MsgPageWellChildEncounter WellChildEncounterId  Pages.WellChild.Encounter.Model.Msg
+    | MsgPageNutritionEncounter NutritionEncounterId Pages.Nutrition.Encounter.Model.Msg
+    | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllness.Encounter.Model.Msg
+    | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisit.Encounter.Model.Msg
+    | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChild.Encounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
-    | MsgPageNutritionActivity NutritionEncounterId NutritionActivity  Pages.Nutrition.Activity.Model.Msg
-    | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity  Pages.AcuteIllness.Activity.Model.Msg
-    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity  Pages.HomeVisit.Activity.Model.Msg
-    | MsgPageWellChildActivity WellChildEncounterId WellChildActivity  Pages.WellChild.Activity.Model.Msg
-    | MsgPagePregnancyOutcome IndividualEncounterParticipantId  Pages.Prenatal.Outcome.Model.Msg
-    | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId  Pages.AcuteIllness.ProgressReport.Model.Msg
-    | MsgPageNutritionProgressReport NutritionEncounterId  Pages.Nutrition.ProgressReport.Model.Msg
-    | MsgPageWellChildProgressReport WellChildEncounterId  Pages.WellChild.ProgressReport.Model.Msg
-    | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId  Pages.AcuteIllness.Outcome.Model.Msg
+    | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.Nutrition.Activity.Model.Msg
+    | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllness.Activity.Model.Msg
+    | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisit.Activity.Model.Msg
+    | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChild.Activity.Model.Msg
+    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.Prenatal.Outcome.Model.Msg
+    | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllness.ProgressReport.Model.Msg
+    | MsgPageNutritionProgressReport NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Msg
+    | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChild.ProgressReport.Model.Msg
+    | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllness.Outcome.Model.Msg
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
-    | MsgPageClinicalProgressReport PrenatalEncounterId  Pages.Prenatal.ProgressReport.Model.Msg
+    | MsgPageClinicalProgressReport PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Msg
     | MsgPagePatientRecord PersonId Pages.PatientRecord.Model.Msg
 
 
