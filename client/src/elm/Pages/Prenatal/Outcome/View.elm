@@ -17,7 +17,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Encounter.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))

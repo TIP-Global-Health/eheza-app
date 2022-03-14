@@ -16,7 +16,7 @@ import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust)
-import Pages.Prenatal.Encounter.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Encounter.Utils exposing (getLastEncounterMeasurements, getLastEncounterMeasurementsWithDate)
 import Translate exposing (Language, TranslationId, translate)
 

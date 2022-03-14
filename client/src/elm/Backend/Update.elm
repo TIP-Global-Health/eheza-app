@@ -3972,9 +3972,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                         let
                             urgentDiagnoses =
                                 List.filter
-                                    (\diagnosis ->
-                                        List.member diagnosis Pages.Prenatal.Activity.Utils.emergencyReferralDiagnoses
-                                    )
+                                    Pages.Prenatal.Activity.Utils.diagnosisRequiresEmergencyReferal
                                     addedDiagnoses
 
                             additionalMsgs =
@@ -4034,9 +4032,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                         let
                             urgentDiagnoses =
                                 List.filter
-                                    (\diagnosis ->
-                                        List.member diagnosis Pages.Prenatal.RecurrentActivity.Utils.emergencyReferralDiagnoses
-                                    )
+                                    Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
                                     addedDiagnoses
 
                             additionalMsgs =

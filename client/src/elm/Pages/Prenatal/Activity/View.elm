@@ -29,9 +29,11 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Activity.Utils exposing (..)
-import Pages.Prenatal.Encounter.Model exposing (AssembledData)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
+import Pages.Prenatal.Model exposing (..)
+import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -1599,7 +1601,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     measurements.medicationDistribution
                         |> getMeasurementValueFunc
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate assembled
+                        |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
 
                 Just NextStepsRecommendedTreatment ->
                     viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
@@ -2844,17 +2846,6 @@ viewNewbornEnrolmentForm language currentDate assembled =
             ]
             [ text <| translate language Translate.EnrolNewborn ]
         ]
-
-
-viewMedicationDistributionForm : Language -> NominalDate -> AssembledData -> MedicationDistributionForm -> Html Msg
-viewMedicationDistributionForm language currentDate assembled form =
-    let
-        ( content, _, _ ) =
-            resolveMedicationDistributionInputsAndTasks language currentDate assembled form
-    in
-    div [ class "ui form medication-distribution" ] <|
-        h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-            :: content
 
 
 viewRecommendedTreatmentForm : Language -> NominalDate -> AssembledData -> RecommendedTreatmentForm -> Html Msg

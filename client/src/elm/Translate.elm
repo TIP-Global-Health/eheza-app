@@ -5585,6 +5585,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Iron ->
+                    { english = "Iron"
+                    , kinyarwanda = Nothing
+                    }
+
+                FolicAcid ->
+                    { english = "Folic Acid"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
