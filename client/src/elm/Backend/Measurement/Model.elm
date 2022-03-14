@@ -1097,10 +1097,17 @@ type alias RecommendedTreatmentValue =
 
 
 type RecommendedTreatmentSign
-    = TreatmentQuinineSulphate
+    = -- For Malaria:
+      TreatmentQuinineSulphate
     | TreatmentCoartem
     | TreatmentWrittenProtocols
     | TreatementReferToHospital
+      -- For Syphilis:
+    | TreatementPenecilin1
+    | TreatementPenecilin3
+    | TreatementErythromycin
+    | TreatementAzithromycin
+    | TreatementCeftriaxon
     | NoRecommendedTreatmentSign
 
 

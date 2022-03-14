@@ -8833,8 +8833,33 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatementPenecilin1 ->
+                    { english = "Penicillin: (2.4 million units) IM x 1"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementPenecilin3 ->
+                    { english = "Penicillin: (2.4 million units) IM 1x a week for 3 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementErythromycin ->
+                    { english = "Erythromycin (500mg): by mouth 4x a day for 14 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementAzithromycin ->
+                    { english = "Azithromycin: (2g) 4 tabs by mouth x one day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementCeftriaxon ->
+                    { english = "Ceftriaxone (1g): IM daily x 10 days"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoRecommendedTreatmentSign ->
-                    { english = "Recommended"
+                    { english = "None"
                     , kinyarwanda = Nothing
                     }
 

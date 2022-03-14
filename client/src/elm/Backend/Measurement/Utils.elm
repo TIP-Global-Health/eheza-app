@@ -1518,6 +1518,21 @@ recommendedTreatmentSignToString sign =
         TreatementReferToHospital ->
             "refer-to-hospital"
 
+        TreatementPenecilin1 ->
+            "penecilin-1"
+
+        TreatementPenecilin3 ->
+            "penecilin-3"
+
+        TreatementErythromycin ->
+            "erythromycin"
+
+        TreatementAzithromycin ->
+            "azithromycin"
+
+        TreatementCeftriaxon ->
+            "ceftriaxon"
+
         NoRecommendedTreatmentSign ->
             "none"
 
@@ -1536,6 +1551,21 @@ recommendedTreatmentSignFromString sign =
 
         "refer-to-hospital" ->
             Just TreatementReferToHospital
+
+        "penecilin-1" ->
+            Just TreatementPenecilin1
+
+        "penecilin-3" ->
+            Just TreatementPenecilin3
+
+        "erythromycin" ->
+            Just TreatementErythromycin
+
+        "azithromycin" ->
+            Just TreatementAzithromycin
+
+        "ceftriaxon" ->
+            Just TreatementCeftriaxon
 
         "none" ->
             Just NoRecommendedTreatmentSign
