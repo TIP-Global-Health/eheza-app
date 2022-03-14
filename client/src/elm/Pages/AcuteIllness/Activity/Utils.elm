@@ -1554,6 +1554,12 @@ nonAdministrationReasonToSign sign reason =
         TDF3TC ->
             MedicationTDF3TC reason
 
+        Iron ->
+            MedicationIron reason
+
+        FolicAcid ->
+            MedicationFolicAcid reason
+
         _ ->
             NoMedicationNonAdministrationSigns
 
@@ -2227,6 +2233,12 @@ resolveMedicationsNonAdministrationReasons measurements =
 
                         MedicationTDF3TC reason ->
                             Just ( TDF3TC, reason )
+
+                        MedicationIron reason ->
+                            Just ( Iron, reason )
+
+                        MedicationFolicAcid reason ->
+                            Just ( FolicAcid, reason )
 
                         NoMedicationNonAdministrationSigns ->
                             Nothing

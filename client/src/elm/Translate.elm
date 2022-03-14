@@ -324,7 +324,9 @@ type TranslationId
     | AdministerAlbendazoleHelper
     | AdministerMebendezoleHelper
     | AdministerPrenatalMebendezoleHelper
+    | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
+    | AdministerIronHelper
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
@@ -1744,8 +1746,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        AdministerFolicAcidHelper ->
+            { english = "Take daily for 3 months"
+            , kinyarwanda = Nothing
+            }
+
         AdministerHIVARVHelper ->
             { english = "Take 1x a day by mouth"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerIronHelper ->
+            { english = "Take 2 60 mg tabs 2x a day x 3 months"
             , kinyarwanda = Nothing
             }
 
@@ -5582,6 +5594,16 @@ translationSet trans =
 
                 TDF3TC ->
                     { english = "TDF + 3TC"
+                    , kinyarwanda = Nothing
+                    }
+
+                Iron ->
+                    { english = "Iron"
+                    , kinyarwanda = Nothing
+                    }
+
+                FolicAcid ->
+                    { english = "Folic Acid"
                     , kinyarwanda = Nothing
                     }
 

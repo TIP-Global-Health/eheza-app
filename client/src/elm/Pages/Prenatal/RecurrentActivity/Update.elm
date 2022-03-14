@@ -12,10 +12,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault)
+import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Utils exposing (listNonUrgentDiagnoses, toMedicationDistributionValueWithDefault)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
+import Pages.Prenatal.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
@@ -604,6 +605,54 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetMedicationDistributionBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.medicationDistributionForm
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationDistributionAdministrationNote currentValue medication reason ->
+            let
+                form =
+                    model.nextStepsData.medicationDistributionForm
+
+                updatedValue =
+                    nonAdministrationReasonToSign medication reason
+
+                updatedNonAdministrationSigns =
+                    form.nonAdministrationSigns
+                        |> Maybe.map
+                            (\nonAdministrationSigns ->
+                                case currentValue of
+                                    Just value ->
+                                        EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
+                                            |> EverySet.insert updatedValue
+
+                                    Nothing ->
+                                        EverySet.insert updatedValue nonAdministrationSigns
+                            )
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedForm =
+                    { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveMedicationDistribution personId saved nextTask ->
             let
                 measurementId =
@@ -616,17 +665,15 @@ update language currentDate id db msg model =
                     generateNextStepsMsgs nextTask
 
                 appMsgs =
-                    -- @todo
-                    -- model.nextStepsData.medicationDistributionForm
-                    -- |> toMedicationDistributionValueWithDefault measurement
-                    -- |> Maybe.map
-                    --     (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
-                    --         >> Backend.Model.MsgPrenatalEncounter id
-                    --         >> App.Model.MsgIndexedDb
-                    --         >> List.singleton
-                    --     )
-                    -- |> Maybe.withDefault []
-                    []
+                    model.nextStepsData.medicationDistributionForm
+                        |> toMedicationDistributionValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none

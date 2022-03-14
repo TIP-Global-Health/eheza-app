@@ -2645,6 +2645,12 @@ decodeMedicationDistributionSign =
                     "tdf3tc" ->
                         succeed TDF3TC
 
+                    "iron" ->
+                        succeed Iron
+
+                    "folicacid" ->
+                        succeed FolicAcid
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2727,6 +2733,16 @@ decodeMedicationNonAdministrationSign =
                                     "tdf3tc" ->
                                         administrationNote
                                             |> Maybe.map (MedicationTDF3TC >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "iron" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationIron >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "folicacid" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationFolicAcid >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->
