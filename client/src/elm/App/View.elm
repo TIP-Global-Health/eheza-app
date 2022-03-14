@@ -57,14 +57,14 @@ import Pages.Person.View
 import Pages.PinCode.View
 import Pages.PregnancyOutcome.Model
 import Pages.PregnancyOutcome.View
-import Pages.PrenatalActivity.Model
-import Pages.PrenatalActivity.View
+import Pages.Prenatal.Activity.Model
+import Pages.Prenatal.Activity.View
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
 import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipant.View
-import Pages.PrenatalRecurrentActivity.Model
-import Pages.PrenatalRecurrentActivity.View
+import Pages.Prenatal.RecurrentActivity.Model
+import Pages.Prenatal.RecurrentActivity.View
 import Pages.PrenatalRecurrentEncounter.Model
 import Pages.PrenatalRecurrentEncounter.View
 import Pages.Relationship.Model
@@ -497,9 +497,9 @@ viewUserPage page deviceName model configured =
                         let
                             page_ =
                                 Dict.get ( id, activity ) loggedInModel.prenatalActivityPages
-                                    |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
+                                    |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
                         in
-                        Pages.PrenatalActivity.View.view model.language currentDate id isChw activity model.indexedDb page_
+                        Pages.Prenatal.Activity.View.view model.language currentDate id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
                             |> flexPageWrapper model
 
@@ -517,9 +517,9 @@ viewUserPage page deviceName model configured =
                         let
                             page_ =
                                 Dict.get ( id, activity ) loggedInModel.prenatalRecurrentActivityPages
-                                    |> Maybe.withDefault Pages.PrenatalRecurrentActivity.Model.emptyModel
+                                    |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyModel
                         in
-                        Pages.PrenatalRecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.Prenatal.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity)
                             |> flexPageWrapper model
 

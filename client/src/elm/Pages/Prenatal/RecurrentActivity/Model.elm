@@ -1,4 +1,4 @@
-module Pages.PrenatalRecurrentActivity.Model exposing (..)
+module Pages.Prenatal.RecurrentActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -7,8 +7,8 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RecommendedTreatmentForm, SendToHCForm, emptyRecommendedTreatmentForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
-import Pages.PrenatalActivity.Types exposing (LaboratoryTask)
-import Pages.PrenatalRecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.Prenatal.Activity.Types exposing (LaboratoryTask)
+import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 
 
 type Msg

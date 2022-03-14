@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Types exposing (..)
+module Pages.Prenatal.Activity.Types exposing (..)
 
 
 type ExaminationTask

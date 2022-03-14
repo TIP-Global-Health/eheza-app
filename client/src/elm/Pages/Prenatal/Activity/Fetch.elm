@@ -1,4 +1,4 @@
-module Pages.PrenatalRecurrentActivity.Fetch exposing (fetch)
+module Pages.Prenatal.Activity.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)

@@ -39,10 +39,10 @@ import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
 import Pages.PregnancyOutcome.Model
-import Pages.PrenatalActivity.Model
+import Pages.Prenatal.Activity.Model
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalParticipant.Model
-import Pages.PrenatalRecurrentActivity.Model
+import Pages.Prenatal.RecurrentActivity.Model
 import Pages.PrenatalRecurrentEncounter.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
@@ -251,8 +251,8 @@ type alias LoggedInModel =
     , prenatalParticipantPages : Dict PersonId Pages.PrenatalParticipant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalRecurrentEncounterPages : Dict PrenatalEncounterId Pages.PrenatalRecurrentEncounter.Model.Model
-    , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
-    , prenatalRecurrentActivityPages : Dict ( PrenatalEncounterId, PrenatalRecurrentActivity ) Pages.PrenatalRecurrentActivity.Model.Model
+    , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.Prenatal.Activity.Model.Model
+    , prenatalRecurrentActivityPages : Dict ( PrenatalEncounterId, PrenatalRecurrentActivity ) Pages.Prenatal.RecurrentActivity.Model.Model
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
@@ -363,8 +363,8 @@ type MsgLoggedIn
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Msg
     | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisitEncounter.Model.Msg
     | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChildEncounter.Model.Msg
-    | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
-    | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.PrenatalRecurrentActivity.Model.Msg
+    | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
+    | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
     | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisitActivity.Model.Msg

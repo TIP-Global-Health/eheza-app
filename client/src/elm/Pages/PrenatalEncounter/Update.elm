@@ -6,7 +6,7 @@ import Backend.Model
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Model
+import Pages.Prenatal.Activity.Model
 import Pages.PrenatalEncounter.Model exposing (..)
 
 
@@ -28,7 +28,7 @@ update id msg model =
                 appMsgs =
                     case page of
                         UserPage (PrenatalActivityPage _ NextSteps) ->
-                            Pages.PrenatalActivity.Model.ViewWarningPopupForNonUrgentDiagnoses
+                            Pages.Prenatal.Activity.Model.ViewWarningPopupForNonUrgentDiagnoses
                                 |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
                                 |> App.Model.MsgLoggedIn
                                 |> List.singleton

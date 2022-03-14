@@ -91,12 +91,12 @@ import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
-import Pages.PrenatalActivity.Model
-import Pages.PrenatalActivity.Utils
+import Pages.Prenatal.Activity.Model
+import Pages.Prenatal.Activity.Utils
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Utils
-import Pages.PrenatalRecurrentActivity.Model
-import Pages.PrenatalRecurrentActivity.Utils
+import Pages.Prenatal.RecurrentActivity.Model
+import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.WellChildActivity.Model
@@ -3883,7 +3883,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
-                    Pages.PrenatalActivity.Utils.mandatoryActivitiesForNextStepsCompleted
+                    Pages.Prenatal.Activity.Utils.mandatoryActivitiesForNextStepsCompleted
                         currentDate
                         assembledAfter
 
@@ -3893,12 +3893,12 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                         |> App.Model.SetActivePage
 
                 initialEncounterWarningPopupMsg state =
-                    Pages.PrenatalActivity.Model.SetWarningPopupState (Just state)
+                    Pages.Prenatal.Activity.Model.SetWarningPopupState (Just state)
                         |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
                         |> App.Model.MsgLoggedIn
 
                 recurrentEncounterWarningPopupMsg state =
-                    Pages.PrenatalRecurrentActivity.Model.SetWarningPopupState (Just state)
+                    Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just state)
                         |> App.Model.MsgPagePrenatalRecurrentActivity id Backend.PrenatalActivity.Model.RecurrentNextSteps
                         |> App.Model.MsgLoggedIn
             in
@@ -3914,7 +3914,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                                 measurement.value
                                                     |> (\value ->
                                                             { value
-                                                                | assesment = Pages.PrenatalActivity.Utils.generatePrenatalAssesmentForChw assembledAfter
+                                                                | assesment = Pages.Prenatal.Activity.Utils.generatePrenatalAssesmentForChw assembledAfter
                                                             }
                                                        )
                                         in
@@ -3937,7 +3937,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                 else
                     let
                         dangerSignsList =
-                            Pages.PrenatalActivity.Utils.generateDangerSignsListForChw language
+                            Pages.Prenatal.Activity.Utils.generateDangerSignsListForChw language
                                 assembledAfter
                     in
                     if List.isEmpty dangerSignsList then
@@ -3960,10 +3960,10 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
             then
                 let
                     diagnosesBefore =
-                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledBefore
+                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledBefore
 
                     diagnosesAfter =
-                        Pages.PrenatalActivity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
+                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
 
                     updateDiagnosesMsg =
                         Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosesAfter
@@ -3979,7 +3979,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             urgentDiagnoses =
                                 List.filter
                                     (\diagnosis ->
-                                        List.member diagnosis Pages.PrenatalActivity.Utils.emergencyReferralDiagnoses
+                                        List.member diagnosis Pages.Prenatal.Activity.Utils.emergencyReferralDiagnoses
                                     )
                                     addedDiagnoses
 
@@ -4015,7 +4015,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                                             (\maternityWardDiagnosis ->
                                                                 List.member maternityWardDiagnosis urgentDiagnoses
                                                             )
-                                                            Pages.PrenatalActivity.Utils.maternityWardDiagnoses
+                                                            Pages.Prenatal.Activity.Utils.maternityWardDiagnoses
                                                       then
                                                         translate language Translate.EmergencyReferralHelperReferToMaternityWard
 
@@ -4041,7 +4041,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             urgentDiagnoses =
                                 List.filter
                                     (\diagnosis ->
-                                        List.member diagnosis Pages.PrenatalRecurrentActivity.Utils.emergencyReferralDiagnoses
+                                        List.member diagnosis Pages.Prenatal.RecurrentActivity.Utils.emergencyReferralDiagnoses
                                     )
                                     addedDiagnoses
 

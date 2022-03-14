@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Model exposing (..)
+module Pages.Prenatal.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -8,7 +8,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (DropZoneFile, RecommendedTreatmentForm, SendToHCForm, VitalsForm, emptyRecommendedTreatmentForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
-import Pages.PrenatalActivity.Types exposing (..)
+import Pages.Prenatal.Activity.Types exposing (..)
 
 
 type Msg

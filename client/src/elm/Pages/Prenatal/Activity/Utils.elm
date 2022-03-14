@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Utils exposing (..)
+module Pages.Prenatal.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -19,11 +19,11 @@ import Measurement.Model exposing (RecommendedTreatmentForm, VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllnessActivity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
-import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Types exposing (..)
+import Pages.Prenatal.Activity.Model exposing (..)
+import Pages.Prenatal.Activity.Types exposing (..)
+import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (calculateEGAWeeks, isFirstEncounter)
-import Pages.PrenatalRecurrentActivity.Utils
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -341,7 +341,7 @@ listNonUrgentDiagnoses diagnoses =
         exclusions =
             DiagnosisPrescribeMebendezole
                 :: emergencyReferralDiagnoses
-                ++ Pages.PrenatalRecurrentActivity.Utils.emergencyReferralDiagnoses
+                ++ Pages.Prenatal.RecurrentActivity.Utils.emergencyReferralDiagnoses
     in
     List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
 

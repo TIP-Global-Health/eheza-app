@@ -1,4 +1,4 @@
-module Pages.PrenatalRecurrentActivity.Update exposing (update)
+module Pages.Prenatal.RecurrentActivity.Update exposing (update)
 
 import App.Model
 import AssocList as Dict
@@ -13,9 +13,9 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Utils exposing (listNonUrgentDiagnoses, toMedicationDistributionValueWithDefault, toRecommendedTreatmentValueWithDefault)
-import Pages.PrenatalRecurrentActivity.Model exposing (..)
-import Pages.PrenatalRecurrentActivity.Utils exposing (..)
+import Pages.Prenatal.Activity.Utils exposing (listNonUrgentDiagnoses, toMedicationDistributionValueWithDefault, toRecommendedTreatmentValueWithDefault)
+import Pages.Prenatal.RecurrentActivity.Model exposing (..)
+import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)

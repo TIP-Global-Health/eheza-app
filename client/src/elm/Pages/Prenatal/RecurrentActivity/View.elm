@@ -1,4 +1,4 @@
-module Pages.PrenatalRecurrentActivity.View exposing (view)
+module Pages.Prenatal.RecurrentActivity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -22,15 +22,15 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Measurement.View exposing (viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
-import Pages.PrenatalActivity.Utils exposing (laboratoryTaskIconClass, toMedicationDistributionValueWithDefault)
-import Pages.PrenatalActivity.View exposing (warningPopup)
+import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
+import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass, toMedicationDistributionValueWithDefault)
+import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.PrenatalRecurrentActivity.Model exposing (..)
-import Pages.PrenatalRecurrentActivity.Types exposing (NextStepsTask(..))
-import Pages.PrenatalRecurrentActivity.Utils exposing (..)
+import Pages.Prenatal.RecurrentActivity.Model exposing (..)
+import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Utils
     exposing
         ( emptySelectOption

@@ -1,4 +1,4 @@
-module Pages.PrenatalRecurrentActivity.Utils exposing (..)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -10,10 +10,10 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault)
-import Pages.PrenatalActivity.Types exposing (LaboratoryTask(..))
+import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalRecurrentActivity.Model exposing (..)
-import Pages.PrenatalRecurrentActivity.Types exposing (..)
+import Pages.Prenatal.RecurrentActivity.Model exposing (..)
+import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty

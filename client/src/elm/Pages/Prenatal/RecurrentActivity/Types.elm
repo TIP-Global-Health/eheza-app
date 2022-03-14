@@ -1,4 +1,4 @@
-module Pages.PrenatalRecurrentActivity.Types exposing (..)
+module Pages.Prenatal.RecurrentActivity.Types exposing (..)
 
 
 type NextStepsTask

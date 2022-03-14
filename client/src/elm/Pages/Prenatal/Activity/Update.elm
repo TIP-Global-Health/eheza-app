@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Update exposing (update)
+module Pages.Prenatal.Activity.Update exposing (update)
 
 import App.Model
 import AssocList as Dict
@@ -34,9 +34,9 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
 import Pages.AcuteIllnessActivity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Types exposing (..)
-import Pages.PrenatalActivity.Utils exposing (..)
+import Pages.Prenatal.Activity.Model exposing (..)
+import Pages.Prenatal.Activity.Types exposing (..)
+import Pages.Prenatal.Activity.Utils exposing (..)
 import Pages.Utils exposing (setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)

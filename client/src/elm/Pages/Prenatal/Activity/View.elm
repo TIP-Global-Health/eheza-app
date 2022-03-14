@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.View exposing (view, warningPopup)
+module Pages.Prenatal.Activity.View exposing (view, warningPopup)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -26,9 +26,9 @@ import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefaul
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllnessActivity.View exposing (viewInstructionsLabel)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Types exposing (..)
-import Pages.PrenatalActivity.Utils exposing (..)
+import Pages.Prenatal.Activity.Model exposing (..)
+import Pages.Prenatal.Activity.Types exposing (..)
+import Pages.Prenatal.Activity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (generateActivityData, viewMotherAndMeasurements)
