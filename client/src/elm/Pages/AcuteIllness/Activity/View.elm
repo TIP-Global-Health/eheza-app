@@ -1,4 +1,4 @@
-module  Pages.AcuteIllness.Activity.View exposing
+module Pages.AcuteIllness.Activity.View exposing
     ( view
     , viewAdministeredMedicationCustomLabel
     , viewAdministeredMedicationLabel
@@ -47,13 +47,13 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHealthCenterForm, viewSendToHospitalForm, viewVitalsForm)
-import  Pages.AcuteIllness.Activity.Model exposing (..)
-import  Pages.AcuteIllness.Activity.Types exposing (..)
-import  Pages.AcuteIllness.Activity.Utils exposing (..)
-import  Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
-import  Pages.AcuteIllness.Encounter.Utils exposing (..)
-import  Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
-import  Pages.Nutrition.Activity.View exposing (viewMuacForm)
+import Pages.AcuteIllness.Activity.Model exposing (..)
+import Pages.AcuteIllness.Activity.Types exposing (..)
+import Pages.AcuteIllness.Activity.Utils exposing (..)
+import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
+import Pages.AcuteIllness.Encounter.Utils exposing (..)
+import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
+import Pages.Nutrition.Activity.View exposing (viewMuacForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
@@ -752,7 +752,7 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled data =
                 Just PhysicalExamNutrition ->
                     measurements.nutrition
                         |> getMeasurementValueFunc
-                        |>  Pages.AcuteIllness.Activity.Utils.nutritionFormWithDefault data.nutritionForm
+                        |> Pages.AcuteIllness.Activity.Utils.nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate
 
                 Nothing ->
