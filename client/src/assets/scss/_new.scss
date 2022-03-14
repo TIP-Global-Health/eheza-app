@@ -1570,6 +1570,20 @@ div.page-activity.home-visit {
     .form.patient-provisions {
       min-height: 335px;
     }
+
+    .form.recommended-treatment {
+
+      .instructions-warning {
+        margin-left: 50px;
+        margin-top: 15px;
+      }
+
+      label span.treatment {
+        color: $color-primary;
+        font-weight: 500;
+        margin-right: 10px;
+      }
+    }
   }
 }
 

@@ -965,6 +965,7 @@ type TranslationId
     | RecommendationSite RecommendationSite
     | RecommendedButNotGivenDueTo
     | RecommendedSymptomRelief
+    | RecommendedTreatmentSignDosage RecommendedTreatmentSign
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
@@ -1095,6 +1096,9 @@ type TranslationId
     | SymptomsGISignAbbrev SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
     | SymptomsTask SymptomsTask
+    | SyphilisRecommendedTreatmentHeader
+    | SyphilisRecommendedTreatmentHelper
+    | SyphilisRecommendedTreatmentWarning
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading
@@ -8811,6 +8815,39 @@ translationSet trans =
             , kinyarwanda = Just "Imiti yemewe mukuvura ibimenyesto"
             }
 
+        RecommendedTreatmentSignDosage sign ->
+            case sign of
+                TreatementPenecilin1 ->
+                    { english = "IM x 1"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementPenecilin3 ->
+                    { english = "IM 1x a week for 3 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementErythromycin ->
+                    { english = "by mouth 4x a day for 14 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementAzithromycin ->
+                    { english = "4 tabs by mouth x one day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementCeftriaxon ->
+                    { english = "IM daily x 10 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Dosage is not applicable for other options.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         RecommendedTreatmentSignLabel sign ->
             case sign of
                 TreatmentQuinineSulphate ->
@@ -8834,27 +8871,27 @@ translationSet trans =
                     }
 
                 TreatementPenecilin1 ->
-                    { english = "Penicillin: (2.4 million units) IM x 1"
+                    { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementPenecilin3 ->
-                    { english = "Penicillin: (2.4 million units) IM 1x a week for 3 weeks"
+                    { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementErythromycin ->
-                    { english = "Erythromycin (500mg): by mouth 4x a day for 14 days"
+                    { english = "Erythromycin (500mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementAzithromycin ->
-                    { english = "Azithromycin: (2g) 4 tabs by mouth x one day"
+                    { english = "Azithromycin (2g)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementCeftriaxon ->
-                    { english = "Ceftriaxone (1g): IM daily x 10 days"
+                    { english = "Ceftriaxone (1g)"
                     , kinyarwanda = Nothing
                     }
 
@@ -9897,6 +9934,21 @@ translationSet trans =
                     { english = "GI"
                     , kinyarwanda = Just "Urwungano ngogozi"
                     }
+
+        SyphilisRecommendedTreatmentHeader ->
+            { english = "This patient has tested positive for Syphilis"
+            , kinyarwanda = Nothing
+            }
+
+        SyphilisRecommendedTreatmentHelper ->
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Nothing
+            }
+
+        SyphilisRecommendedTreatmentWarning ->
+            { english = "Ensure the patient is not allergic to the medication before prescribing"
+            , kinyarwanda = Nothing
+            }
 
         GroupEncounterClosed ->
             { english = "Group Encounter closed"

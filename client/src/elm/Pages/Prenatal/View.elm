@@ -11,7 +11,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (viewCheckBoxSelectInput, viewCustomLabel, viewInstructionsLabel)
+import Pages.Utils exposing (viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCustomLabel, viewInstructionsLabel)
 import Translate exposing (Language, TranslationId, translate)
 
 
@@ -107,5 +107,30 @@ viewRecommendedTreatmentForSyphilis :
     -> RecommendedTreatmentForm
     -> List (Html msg)
 viewRecommendedTreatmentForSyphilis language currentDate assembled setRecommendedTreatmentSignMsg form =
-    -- @todo
-    []
+    [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+    , h2 []
+        [ text <| translate language Translate.ActionsToTake ++ ":" ]
+    , div [ class "instructions" ]
+        [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+        , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentWarning ++ "." ]
+        ]
+    , viewCheckBoxSelectCustomInput language
+        [ TreatementPenecilin1
+        , TreatementPenecilin3
+        , TreatementErythromycin
+        , TreatementAzithromycin
+        , TreatementCeftriaxon
+        ]
+        []
+        (Maybe.andThen List.head form.signs)
+        setRecommendedTreatmentSignMsg
+        (viewTreatmentOptionForSyphilis language)
+    ]
+
+
+viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForSyphilis language sign =
+    label []
+        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+        , span [] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+        ]
