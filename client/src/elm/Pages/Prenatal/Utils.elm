@@ -490,7 +490,7 @@ resolveIronDistributionInputsAndTasks language currentDate person setMedicationD
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
                             [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Iron) ("(" ++ dosage ++ ")") icon ":" Nothing
-                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
+                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerIronHelper ++ "." ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -540,7 +540,7 @@ resolveFolicAcidDistributionInputsAndTasks language currentDate person setMedica
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
                             [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign FolicAcid) ("(" ++ dosage ++ ")") icon ":" Nothing
-                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
+                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerFolicAcidHelper ++ "." ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
