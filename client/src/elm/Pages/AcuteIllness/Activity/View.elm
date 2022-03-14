@@ -6,7 +6,6 @@ module Pages.AcuteIllness.Activity.View exposing
     , viewAmoxicillinAdministrationInstructions
     , viewHCRecommendation
     , viewHealthEducationLabel
-    , viewInstructionsLabel
     , viewOralSolutionPrescription
     , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
@@ -69,6 +68,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
         , viewCustomLabel
+        , viewInstructionsLabel
         , viewLabel
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
@@ -2982,14 +2982,6 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
                     ++ [ text "." ]
     in
     viewInstructionsLabel iconClass message
-
-
-viewInstructionsLabel : String -> Html any -> Html any
-viewInstructionsLabel iconClass message =
-    div [ class "header icon-label" ] <|
-        [ i [ class iconClass ] []
-        , message
-        ]
 
 
 viewFollowUpForm : Language -> NominalDate -> Bool -> FollowUpForm -> Html Msg

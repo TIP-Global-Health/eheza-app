@@ -710,6 +710,21 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetRecommendedTreatmentSign sign ->
+            let
+                updatedForm =
+                    model.nextStepsData.recommendedTreatmentForm
+                        |> (\form -> { form | signs = Just [ sign ] })
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | recommendedTreatmentForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveRecommendedTreatment personId saved nextTask ->
             let
                 measurementId =

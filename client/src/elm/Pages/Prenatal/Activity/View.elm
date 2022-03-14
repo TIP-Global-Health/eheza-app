@@ -24,7 +24,6 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
-import Pages.AcuteIllness.Activity.View exposing (viewInstructionsLabel)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -33,7 +32,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForm)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -1604,7 +1603,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                         |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
 
                 Just NextStepsRecommendedTreatment ->
-                    viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
+                    viewRecommendedTreatmentForm language currentDate assembled SetRecommendedTreatmentSign recommendedTreatmentForm
 
                 Nothing ->
                     emptyNode
@@ -2845,44 +2844,6 @@ viewNewbornEnrolmentForm language currentDate assembled =
                             Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
             ]
             [ text <| translate language Translate.EnrolNewborn ]
-        ]
-
-
-viewRecommendedTreatmentForm : Language -> NominalDate -> AssembledData -> RecommendedTreatmentForm -> Html Msg
-viewRecommendedTreatmentForm language currentDate assembled form =
-    let
-        egaInWeeks =
-            Maybe.map
-                (calculateEGAWeeks currentDate)
-                assembled.globalLmpDate
-
-        medicationTreatment =
-            Maybe.map
-                (\egaWeeks ->
-                    if egaWeeks <= 14 then
-                        TreatmentQuinineSulphate
-
-                    else
-                        TreatmentCoartem
-                )
-                egaInWeeks
-                |> Maybe.withDefault TreatmentQuinineSulphate
-    in
-    div [ class "ui form recommended-treatment" ]
-        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
-        , h2 []
-            [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
-        , viewCheckBoxSelectInput language
-            [ medicationTreatment
-            , TreatmentWrittenProtocols
-            , TreatementReferToHospital
-            ]
-            []
-            (Maybe.andThen List.head form.signs)
-            SetRecommendedTreatmentSign
-            Translate.RecommendedTreatmentSignLabel
         ]
 
 

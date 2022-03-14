@@ -21,7 +21,7 @@ import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedication
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (calculateEGAWeeks, isFirstEncounter)
+import Pages.Prenatal.Encounter.Utils exposing (isFirstEncounter)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils

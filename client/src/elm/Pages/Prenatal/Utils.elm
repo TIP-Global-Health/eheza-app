@@ -34,6 +34,16 @@ import Pages.Utils
 import Translate exposing (Language, translate)
 
 
+calculateEGAWeeks : NominalDate -> NominalDate -> Int
+calculateEGAWeeks currentDate lmpDate =
+    calculateEGADays currentDate lmpDate // 7
+
+
+calculateEGADays : NominalDate -> NominalDate -> Int
+calculateEGADays currentDate lmpDate =
+    diffDays lmpDate currentDate
+
+
 diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
 diagnosed diagnosis assembled =
     EverySet.member diagnosis assembled.encounter.diagnoses

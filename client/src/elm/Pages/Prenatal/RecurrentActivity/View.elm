@@ -21,7 +21,6 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Measurement.View exposing (viewSendToHospitalForm)
-import Pages.AcuteIllness.Activity.View exposing (viewInstructionsLabel)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
@@ -33,7 +32,7 @@ import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefault, recommendedTreatmentFormWithDefault)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForm)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -45,6 +44,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
+        , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
         , viewQuestionLabel
@@ -705,7 +705,7 @@ viewNextStepsContent language currentDate assembled data =
                     measurements.recommendedTreatment
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-                        |> viewRecommendedTreatmentForm language currentDate assembled
+                        |> viewRecommendedTreatmentForm language currentDate assembled SetRecommendedTreatmentSign
 
                 Nothing ->
                     emptyNode
@@ -757,28 +757,6 @@ viewNextStepsContent language currentDate assembled data =
             ]
         ]
     ]
-
-
-viewRecommendedTreatmentForm : Language -> NominalDate -> AssembledData -> RecommendedTreatmentForm -> Html Msg
-viewRecommendedTreatmentForm language currentDate assembled form =
-    -- @todo
-    div [ class "ui form recommended-treatment" ]
-        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
-        , h2 []
-            [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
-
-        -- , viewCheckBoxSelectInput language
-        --     [ medicationTreatment
-        --     , TreatmentWrittenProtocols
-        --     , TreatementReferToHospital
-        --     ]
-        --     []
-        --     (Maybe.andThen List.head form.signs)
-        --     SetRecommendedTreatmentSign
-        --     Translate.RecommendedTreatmentSignLabel
-        ]
 
 
 

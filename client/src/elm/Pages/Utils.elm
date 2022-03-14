@@ -690,6 +690,14 @@ viewAlert color =
     img [ src icon ] []
 
 
+viewInstructionsLabel : String -> Html any -> Html any
+viewInstructionsLabel iconClass message =
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
+
+
 taskCompleted : Maybe a -> Int
 taskCompleted maybe =
     if isJust maybe then
