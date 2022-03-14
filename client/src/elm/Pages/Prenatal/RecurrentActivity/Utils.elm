@@ -455,8 +455,13 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             ( completed, total )
 
         NextStepsRecommendedTreatment ->
-            --@todo
-            ( 0
+            let
+                form =
+                    assembled.measurements.recommendedTreatment
+                        |> getMeasurementValueFunc
+                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+            in
+            ( taskCompleted form.signs
             , 1
             )
 

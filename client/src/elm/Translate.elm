@@ -1098,6 +1098,7 @@ type TranslationId
     | SymptomsTask SymptomsTask
     | SyphilisRecommendedTreatmentHeader
     | SyphilisRecommendedTreatmentHelper
+    | SyphilisRecommendedTreatmentInstructions
     | SyphilisRecommendedTreatmentWarning
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
@@ -9945,8 +9946,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SyphilisRecommendedTreatmentWarning ->
+        SyphilisRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
+            , kinyarwanda = Nothing
+            }
+
+        SyphilisRecommendedTreatmentWarning ->
+            { english = "If Erythromycin or Azithromycin used, must treat newborn immediately after delivery (does not cross into placenta)"
             , kinyarwanda = Nothing
             }
 

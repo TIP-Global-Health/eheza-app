@@ -107,12 +107,31 @@ viewRecommendedTreatmentForSyphilis :
     -> RecommendedTreatmentForm
     -> List (Html msg)
 viewRecommendedTreatmentForSyphilis language currentDate assembled setRecommendedTreatmentSignMsg form =
+    let
+        warning =
+            Maybe.map
+                (\signs ->
+                    if
+                        List.any (\sign -> List.member sign signs)
+                            [ TreatementErythromycin, TreatementAzithromycin ]
+                    then
+                        div [ class "warning" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , text <| translate language Translate.SyphilisRecommendedTreatmentWarning
+                            ]
+
+                    else
+                        emptyNode
+                )
+                form.signs
+                |> Maybe.withDefault emptyNode
+    in
     [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
     , h2 []
         [ text <| translate language Translate.ActionsToTake ++ ":" ]
     , div [ class "instructions" ]
         [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
-        , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentWarning ++ "." ]
+        , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
         ]
     , viewCheckBoxSelectCustomInput language
         [ TreatementPenecilin1
@@ -125,6 +144,7 @@ viewRecommendedTreatmentForSyphilis language currentDate assembled setRecommende
         (Maybe.andThen List.head form.signs)
         setRecommendedTreatmentSignMsg
         (viewTreatmentOptionForSyphilis language)
+    , warning
     ]
 
 
@@ -132,5 +152,5 @@ viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html an
 viewTreatmentOptionForSyphilis language sign =
     label []
         [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
-        , span [] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+        , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
         ]

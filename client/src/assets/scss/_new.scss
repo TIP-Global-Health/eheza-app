@@ -1578,12 +1578,34 @@ div.page-activity.home-visit {
         margin-top: 15px;
       }
 
-      label span.treatment {
-        color: $color-primary;
-        font-weight: 500;
-        margin-right: 10px;
+      label {
+
+        .treatment {
+          color: $color-primary;
+          font-size: 23px;
+          font-weight: 500;
+          margin-right: 10px;
+        }
+
+        .dosage {
+          font-size: 22px;
+        }
+      }
+
+      .warning {
+        display: flex;
+        font-size: 20px;
+        line-height: 25px;
+        padding: 20px;
+
+        img {
+          height: 30px;
+          margin-left: 5px;
+          margin-right: 10px;
+        }
       }
     }
+
   }
 }
 
