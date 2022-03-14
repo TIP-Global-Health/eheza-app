@@ -21,7 +21,7 @@ import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.AcuteIllnessEncounter.Utils
+import Pages.AcuteIllness.Encounter.Utils
     exposing
         ( compareAcuteIllnessEncounterDataDesc
         , getAcuteIllnessEncountersForParticipant
@@ -30,7 +30,7 @@ import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.PrenatalEncounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -229,7 +229,7 @@ viewStartFollowUpPrenatalEncounterDialog language currentDate data =
             else
                 let
                     subsequentEncounterButton =
-                        Pages.PrenatalEncounter.Utils.getSubsequentEncounterType data.encounterType
+                        Pages.Prenatal.Encounter.Utils.getSubsequentEncounterType data.encounterType
                             |> Maybe.map
                                 (\subsequentEncounterType ->
                                     button
