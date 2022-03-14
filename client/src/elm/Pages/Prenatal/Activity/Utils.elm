@@ -274,7 +274,7 @@ expectNextStepsTask currentDate assembled task =
                     let
                         severeMalariaTreatment =
                             getMeasurementValueFunc assembled.measurements.recommendedTreatment
-                                |> Maybe.map (EverySet.member TreatementReferToHospital)
+                                |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
                                 |> Maybe.withDefault False
                     in
                     emergencyReferalRequired assembled

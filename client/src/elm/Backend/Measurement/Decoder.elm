@@ -750,9 +750,13 @@ decodePrenatalMedicationDistribution =
 
 decodePrenatalRecommendedTreatment : Decoder PrenatalRecommendedTreatment
 decodePrenatalRecommendedTreatment =
-    decodeEverySet decodeRecommendedTreatmentSign
-        |> field "recommended_treatment"
-        |> decodePrenatalMeasurement
+    decodePrenatalMeasurement decodeRecommendedTreatmentValue
+
+
+decodeRecommendedTreatmentValue : Decoder RecommendedTreatmentValue
+decodeRecommendedTreatmentValue =
+    succeed RecommendedTreatmentValue
+        |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
 
 
 decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign

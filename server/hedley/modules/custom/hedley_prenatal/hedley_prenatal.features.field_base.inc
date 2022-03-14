@@ -565,7 +565,6 @@ function hedley_prenatal_field_default_field_bases() {
         'erythromycin' => 'Erythromycin',
         'azithromycin' => 'Azithromycin',
         'ceftriaxon' =>'Ceftriaxon',
-        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

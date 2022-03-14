@@ -2530,10 +2530,19 @@ encodePrenatalRecommendedTreatment =
 
 encodeRecommendedTreatmentValue : RecommendedTreatmentValue -> List ( String, Value )
 encodeRecommendedTreatmentValue value =
-    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign value )
-    , ( "deleted", bool False )
-    , ( "type", string "prenatal_recommended_treatment" )
-    ]
+    let
+        treatment =
+            Maybe.map
+                (\signs ->
+                    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
+                )
+                value.signs
+                |> Maybe.withDefault []
+    in
+    treatment
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_recommended_treatment" )
+           ]
 
 
 encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value

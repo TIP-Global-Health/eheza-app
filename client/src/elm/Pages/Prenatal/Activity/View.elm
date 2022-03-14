@@ -1616,7 +1616,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                         -- due to Malaria, based on saved measurement.
                         referredToHospitalBeforeSave =
                             getMeasurementValueFunc measurements.recommendedTreatment
-                                |> Maybe.map (EverySet.member TreatementReferToHospital)
+                                |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
                                 |> Maybe.withDefault False
 
                         -- We know if patient will be referred to hospital

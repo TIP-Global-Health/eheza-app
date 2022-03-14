@@ -1093,7 +1093,8 @@ type alias PrenatalRecommendedTreatment =
 
 
 type alias RecommendedTreatmentValue =
-    EverySet RecommendedTreatmentSign
+    { signs : Maybe (EverySet RecommendedTreatmentSign)
+    }
 
 
 type RecommendedTreatmentSign
@@ -1108,7 +1109,6 @@ type RecommendedTreatmentSign
     | TreatementErythromycin
     | TreatementAzithromycin
     | TreatementCeftriaxon
-    | NoRecommendedTreatmentSign
 
 
 

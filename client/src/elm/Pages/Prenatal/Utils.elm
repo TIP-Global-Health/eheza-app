@@ -676,7 +676,7 @@ recommendedTreatmentFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
+                { signs = or form.signs (Maybe.map EverySet.toList value.signs) }
             )
 
 
@@ -688,4 +688,9 @@ toRecommendedTreatmentValueWithDefault saved form =
 
 toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
 toRecommendedTreatmentValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoRecommendedTreatmentSign) form.signs
+    Maybe.map
+        (\signs ->
+            { signs = EverySet.fromList signs |> Just
+            }
+        )
+        form.signs

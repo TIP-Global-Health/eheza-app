@@ -8896,11 +8896,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoRecommendedTreatmentSign ->
-                    { english = "None"
-                    , kinyarwanda = Nothing
-                    }
-
         RecordAcuteIllnessOutcome ->
             { english = "Record Acute Illness Outcome"
             , kinyarwanda = Just "Andika iherezo ry'indwara ifatiyeho"

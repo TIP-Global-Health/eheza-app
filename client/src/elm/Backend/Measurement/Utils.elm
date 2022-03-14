@@ -1533,9 +1533,6 @@ recommendedTreatmentSignToString sign =
         TreatementCeftriaxon ->
             "ceftriaxon"
 
-        NoRecommendedTreatmentSign ->
-            "none"
-
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
 recommendedTreatmentSignFromString sign =
@@ -1566,9 +1563,6 @@ recommendedTreatmentSignFromString sign =
 
         "ceftriaxon" ->
             Just TreatementCeftriaxon
-
-        "none" ->
-            Just NoRecommendedTreatmentSign
 
         _ ->
             Nothing
