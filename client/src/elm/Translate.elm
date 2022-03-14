@@ -64,7 +64,7 @@ import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
 import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
-import Pages.AcuteIllnessActivity.Types
+import Pages.AcuteIllness.Activity.Types
     exposing
         ( DangerSignsTask(..)
         , ExposureTask(..)
@@ -76,9 +76,8 @@ import Pages.AcuteIllnessActivity.Types
         , SymptomReliefType(..)
         , SymptomsTask(..)
         )
-import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
+import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
-import Pages.ClinicalProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Dashboard.Model as Dashboard
     exposing
         ( BeneficiariesTableLabels(..)
@@ -89,20 +88,21 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
-import Pages.NutritionActivity.Model
+import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
-import Pages.PrenatalActivity.Types
+import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
         , HistoryTask(..)
         , LmpRange(..)
         )
-import Pages.PrenatalRecurrentActivity.Types
+import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
+import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
-import Pages.WellChildActivity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
-import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (ECDStatus(..), PaneEntryStatus(..))
+import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
+import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
+import Pages.WellChild.ProgressReport.Model exposing (ECDStatus(..), PaneEntryStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -648,7 +648,7 @@ type TranslationId
     | IsolatedAtHome
     | KilogramShorthand
     | KilogramsPerMonth
-    | KnownAsPositiveQuestion Pages.PrenatalActivity.Types.LaboratoryTask
+    | KnownAsPositiveQuestion Pages.Prenatal.Activity.Types.LaboratoryTask
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
@@ -750,7 +750,7 @@ type TranslationId
     | NextImmunisationVisit
     | NextPediatricVisit
     | NextSteps
-    | NextStepsTask Bool Pages.AcuteIllnessActivity.Types.NextStepsTask
+    | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -908,16 +908,16 @@ type TranslationId
     | PrenatalLaboratoryBilirubinValue BilirubinValue
     | PrenatalLaboratoryHemoglobinTestResult
     | PrenatalLaboratoryRandomBloodSugarTestResult
-    | PrenatalLaboratoryTask Pages.PrenatalActivity.Types.LaboratoryTask
-    | PrenatalLaboratoryTaskLabel Pages.PrenatalActivity.Types.LaboratoryTask
-    | PrenatalLaboratoryTaskDate Pages.PrenatalActivity.Types.LaboratoryTask
-    | PrenatalLaboratoryTaskResult Pages.PrenatalActivity.Types.LaboratoryTask
+    | PrenatalLaboratoryTask Pages.Prenatal.Activity.Types.LaboratoryTask
+    | PrenatalLaboratoryTaskLabel Pages.Prenatal.Activity.Types.LaboratoryTask
+    | PrenatalLaboratoryTaskDate Pages.Prenatal.Activity.Types.LaboratoryTask
+    | PrenatalLaboratoryTaskResult Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskResultsHelper
     | PrenatalLabsCaseManagementType
     | PrenatalLabsEntryState PrenatalLabsEntryState
-    | PrenatalNextStepsTask Bool Pages.PrenatalActivity.Types.NextStepsTask
+    | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalPhotoHelper
-    | PrenatalRecurrentNextStepsTask Pages.PrenatalRecurrentActivity.Types.NextStepsTask
+    | PrenatalRecurrentNextStepsTask Pages.Prenatal.RecurrentActivity.Types.NextStepsTask
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
@@ -1166,7 +1166,7 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
-    | WellChildDangerSignsTask Pages.WellChildActivity.Types.DangerSignsTask
+    | WellChildDangerSignsTask Pages.WellChild.Activity.Types.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
@@ -1175,9 +1175,9 @@ type TranslationId
     | WellChildImmunisationDosage VaccineType
     | WellChildImmunisationHeader VaccineType
     | WellChildImmunisationHistory VaccineType
-    | WellChildImmunisationTask Pages.WellChildActivity.Types.ImmunisationTask
-    | WellChildMedicationTask Pages.WellChildActivity.Types.MedicationTask
-    | WellChildNextStepsTask Bool Pages.WellChildActivity.Types.NextStepsTask
+    | WellChildImmunisationTask Pages.WellChild.Activity.Types.ImmunisationTask
+    | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
+    | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
     | WellChildVaccineLabel VaccineType
     | WhatDoYouWantToDo
@@ -3935,7 +3935,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
-                Pages.PrenatalActivity.Types.NutritionAssessment ->
+                Pages.Prenatal.Activity.Types.NutritionAssessment ->
                     { english = "Nutrition Assessment"
                     , kinyarwanda = Just "Gusuzuma imirire"
                     }
@@ -3950,7 +3950,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibipimo by'inda"
                     }
 
-                Pages.PrenatalActivity.Types.BreastExam ->
+                Pages.Prenatal.Activity.Types.BreastExam ->
                     translationSet BreastExam
 
         ExposureTask task ->
@@ -4916,48 +4916,48 @@ translationSet trans =
 
         KnownAsPositiveQuestion task ->
             case task of
-                Pages.PrenatalActivity.Types.TaskHIVTest ->
+                Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "Is this patient known to be HIV positive"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskSyphilisTest ->
+                Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Is this patient known to be yphilis - RPR positive"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHepatitisBTest ->
+                Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Is this patient known to be Hepatitis B positive"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskMalariaTest ->
+                Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Is this patient known to be Malaria positive"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskBloodGpRsTest ->
+                Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskUrineDipstickTest ->
+                Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHemoglobinTest ->
+                Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskRandomBloodSugarTest ->
+                Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
                     { english = ""
@@ -5925,7 +5925,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsSendToHC ->
+                Pages.AcuteIllness.Activity.Types.NextStepsSendToHC ->
                     if isChw then
                         { english = "Send to Health Center"
                         , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
@@ -5936,17 +5936,17 @@ translationSet trans =
                         , kinyarwanda = Just "Ohereza ku Bitaro"
                         }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsHealthEducation ->
+                Pages.AcuteIllness.Activity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsFollowUp ->
+                Pages.AcuteIllness.Activity.Types.NextStepsFollowUp ->
                     { english = "Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsContactTracing ->
+                Pages.AcuteIllness.Activity.Types.NextStepsContactTracing ->
                     { english = "Contact Tracing"
                     , kinyarwanda = Just "Gushakisha abahuye n'uwanduye"
                     }
@@ -7509,17 +7509,17 @@ translationSet trans =
 
         PrenatalNextStepsTask isChw task ->
             case task of
-                Pages.PrenatalActivity.Types.NextStepsAppointmentConfirmation ->
+                Pages.Prenatal.Activity.Types.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
                     , kinyarwanda = Just "Kwemeza itariki yo kugaruka"
                     }
 
-                Pages.PrenatalActivity.Types.NextStepsFollowUp ->
+                Pages.Prenatal.Activity.Types.NextStepsFollowUp ->
                     { english = "CHW Follow Up"
                     , kinyarwanda = Just "Isura ry'umujyanama w'ubuzima"
                     }
 
-                Pages.PrenatalActivity.Types.NextStepsSendToHC ->
+                Pages.Prenatal.Activity.Types.NextStepsSendToHC ->
                     if isChw then
                         { english = "Send to Health Center"
                         , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
@@ -7530,34 +7530,34 @@ translationSet trans =
                         , kinyarwanda = Nothing
                         }
 
-                Pages.PrenatalActivity.Types.NextStepsHealthEducation ->
+                Pages.Prenatal.Activity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.PrenatalActivity.Types.NextStepsNewbornEnrolment ->
+                Pages.Prenatal.Activity.Types.NextStepsNewbornEnrolment ->
                     { english = "Newborn Enrollment"
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
 
-                Pages.PrenatalActivity.Types.NextStepsMedicationDistribution ->
+                Pages.Prenatal.Activity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.PrenatalActivity.Types.NextStepsRecommendedTreatment ->
+                Pages.Prenatal.Activity.Types.NextStepsRecommendedTreatment ->
                     { english = "Diagnosis + Medicine"
                     , kinyarwanda = Nothing
                     }
 
         PrenatalRecurrentNextStepsTask task ->
             case task of
-                Pages.PrenatalRecurrentActivity.Types.NextStepsSendToHC ->
+                Pages.Prenatal.RecurrentActivity.Types.NextStepsSendToHC ->
                     { english = "Referral"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalRecurrentActivity.Types.NextStepsMedicationDistribution ->
+                Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
@@ -8050,168 +8050,168 @@ translationSet trans =
 
         PrenatalLaboratoryTask task ->
             case task of
-                Pages.PrenatalActivity.Types.TaskHIVTest ->
+                Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskSyphilisTest ->
+                Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHepatitisBTest ->
+                Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskMalariaTest ->
+                Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskBloodGpRsTest ->
+                Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskUrineDipstickTest ->
+                Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHemoglobinTest ->
+                Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskRandomBloodSugarTest ->
+                Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar"
                     , kinyarwanda = Nothing
                     }
 
         PrenatalLaboratoryTaskLabel task ->
             case task of
-                Pages.PrenatalActivity.Types.TaskHIVTest ->
+                Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV RDT"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskSyphilisTest ->
+                Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHepatitisBTest ->
+                Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskMalariaTest ->
+                Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria RDT"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskBloodGpRsTest ->
+                Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskUrineDipstickTest ->
+                Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHemoglobinTest ->
+                Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskRandomBloodSugarTest ->
+                Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar"
                     , kinyarwanda = Nothing
                     }
 
         PrenatalLaboratoryTaskDate task ->
             case task of
-                Pages.PrenatalActivity.Types.TaskHIVTest ->
+                Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV Antibody Test Date"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskSyphilisTest ->
+                Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR Test Date"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHepatitisBTest ->
+                Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B Test Date"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskMalariaTest ->
+                Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria RDT Test Date"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskBloodGpRsTest ->
+                Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus Test Date"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskUrineDipstickTest ->
+                Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick Test Date"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHemoglobinTest ->
+                Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin Test Date"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskRandomBloodSugarTest ->
+                Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar Test Date"
                     , kinyarwanda = Nothing
                     }
 
         PrenatalLaboratoryTaskResult task ->
             case task of
-                Pages.PrenatalActivity.Types.TaskHIVTest ->
+                Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV Antibody Test Result"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskSyphilisTest ->
+                Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR Test Result"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHepatitisBTest ->
+                Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B Test Result"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskMalariaTest ->
+                Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria RDT Test Result"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskBloodGpRsTest ->
+                Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus Test Result"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskUrineDipstickTest ->
+                Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick Test Result"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskHemoglobinTest ->
+                Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin Test Result"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Types.TaskRandomBloodSugarTest ->
+                Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar Test Result"
                     , kinyarwanda = Nothing
                     }
@@ -10265,12 +10265,12 @@ translationSet trans =
 
         WellChildDangerSignsTask task ->
             case task of
-                Pages.WellChildActivity.Types.TaskSymptomsReview ->
+                Pages.WellChild.Activity.Types.TaskSymptomsReview ->
                     { english = "Symptom Review"
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
-                Pages.WellChildActivity.Types.TaskVitals ->
+                Pages.WellChild.Activity.Types.TaskVitals ->
                     { english = "Vitals"
                     , kinyarwanda = Just "Ibipimo by'ubuzima"
                     }
@@ -10526,64 +10526,64 @@ translationSet trans =
 
         WellChildImmunisationTask task ->
             case task of
-                Pages.WellChildActivity.Types.TaskBCG ->
+                Pages.WellChild.Activity.Types.TaskBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
                     }
 
-                Pages.WellChildActivity.Types.TaskDTP ->
+                Pages.WellChild.Activity.Types.TaskDTP ->
                     { english = "DTP - HepB - Hib"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Types.TaskHPV ->
+                Pages.WellChild.Activity.Types.TaskHPV ->
                     { english = "HPV"
                     , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
                     }
 
-                Pages.WellChildActivity.Types.TaskIPV ->
+                Pages.WellChild.Activity.Types.TaskIPV ->
                     { english = "IPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
                     }
 
-                Pages.WellChildActivity.Types.TaskMR ->
+                Pages.WellChild.Activity.Types.TaskMR ->
                     { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                     }
 
-                Pages.WellChildActivity.Types.TaskOPV ->
+                Pages.WellChild.Activity.Types.TaskOPV ->
                     { english = "OPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa"
                     }
 
-                Pages.WellChildActivity.Types.TaskPCV13 ->
+                Pages.WellChild.Activity.Types.TaskPCV13 ->
                     { english = "PCV 13"
                     , kinyarwanda = Just "Urukingo rw'umusonga"
                     }
 
-                Pages.WellChildActivity.Types.TaskRotarix ->
+                Pages.WellChild.Activity.Types.TaskRotarix ->
                     { english = "Rotarix"
                     , kinyarwanda = Just "Urukingo rw'impiswi"
                     }
 
-                Pages.WellChildActivity.Types.TaskOverview ->
+                Pages.WellChild.Activity.Types.TaskOverview ->
                     { english = "Overview"
                     , kinyarwanda = Just "Ishusho Rusange"
                     }
 
         WellChildMedicationTask task ->
             case task of
-                Pages.WellChildActivity.Types.TaskAlbendazole ->
+                Pages.WellChild.Activity.Types.TaskAlbendazole ->
                     { english = "Albendazole"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Types.TaskMebendezole ->
+                Pages.WellChild.Activity.Types.TaskMebendezole ->
                     { english = "Mebendazole"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Types.TaskVitaminA ->
+                Pages.WellChild.Activity.Types.TaskVitaminA ->
                     { english = "Vitamin A"
                     , kinyarwanda = Nothing
                     }

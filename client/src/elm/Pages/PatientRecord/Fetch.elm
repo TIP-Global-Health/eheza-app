@@ -7,8 +7,8 @@ import Backend.NutritionEncounter.Fetch
 import Backend.Person.Utils exposing (isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.AcuteIllnessParticipant.Fetch
-import Pages.PrenatalParticipant.Fetch
+import Pages.AcuteIllness.Participant.Fetch
+import Pages.Prenatal.Participant.Fetch
 import RemoteData exposing (RemoteData)
 
 
@@ -36,12 +36,12 @@ fetch currentDate personId db =
                                         |> Maybe.withDefault []
                             in
                             fetchChildrenMsgs
-                                ++ Pages.PrenatalParticipant.Fetch.fetch personId db
+                                ++ Pages.Prenatal.Participant.Fetch.fetch personId db
                     )
                 |> Maybe.withDefault []
     in
     [ FetchPerson personId
     , FetchRelationshipsForPerson personId
     ]
-        ++ Pages.AcuteIllnessParticipant.Fetch.fetch personId db
+        ++ Pages.AcuteIllness.Participant.Fetch.fetch personId db
         ++ msgsByAge
