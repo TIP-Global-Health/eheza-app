@@ -10,10 +10,12 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.PrenatalEncounter.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
+import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -26,6 +28,7 @@ import Pages.Utils
         , viewBoolInput
         , viewQuestionLabel
         )
+import Translate exposing (Language, TranslationId, translate)
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
@@ -374,11 +377,14 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             diagnosed DiagnosisHepatitisB assembled
                 || diagnosed DiagnosisNeurosyphilis assembled
+                || diagnosed DiagnosisMalariaWithSevereAnemia assembled
+                || diagnosed DiagnosisSevereAnemia assembled
+                || diagnosed DiagnosisSevereAnemiaWithComplications assembled
 
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && False
+                && diagnosed DiagnosisModerateAnemia assembled
 
         -- Exclusive Nurse task.
         NextStepsRecommendedTreatment ->
@@ -402,8 +408,8 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.measurements.recommendedTreatment
 
 
-nextStepsTasksCompletedFromTotal : AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal assembled data task =
+nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal language currentDate assembled data task =
     case task of
         NextStepsSendToHC ->
             let
@@ -433,10 +439,20 @@ nextStepsTasksCompletedFromTotal assembled data task =
             )
 
         NextStepsMedicationDistribution ->
-            --@todo
-            ( 0
-            , 1
-            )
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                ( _, completed, total ) =
+                    resolveMedicationDistributionInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetMedicationDistributionBoolInput
+                        SetMedicationDistributionAdministrationNote
+                        form
+            in
+            ( completed, total )
 
         NextStepsRecommendedTreatment ->
             --@todo
@@ -455,15 +471,4 @@ emergencyReferalRequired assembled =
 
 diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
 diagnosisRequiresEmergencyReferal diagnosis =
-    List.member diagnosis emergencyReferralDiagnoses
-
-
-emergencyReferralDiagnoses : List PrenatalDiagnosis
-emergencyReferralDiagnoses =
-    [ DiagnosisSevereAnemiaWithComplications
-    ]
-
-
-diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
-diagnosed diagnosis assembled =
-    EverySet.member diagnosis assembled.encounter.diagnoses
+    List.member diagnosis emergencyReferralDiagnosesRecurrent

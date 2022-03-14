@@ -1396,6 +1396,9 @@ type MedicationDistributionSign
     | Lamivudine
     | Dolutegravir
     | TDF3TC
+      -- Anemia medication
+    | Iron
+    | FolicAcid
     | NoMedicationDistributionSigns
 
 
@@ -1422,6 +1425,8 @@ type MedicationNonAdministrationSign
     | MedicationLamivudine AdministrationNote
     | MedicationDolutegravir AdministrationNote
     | MedicationTDF3TC AdministrationNote
+    | MedicationIron AdministrationNote
+    | MedicationFolicAcid AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 

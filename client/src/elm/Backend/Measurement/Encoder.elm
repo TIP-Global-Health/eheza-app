@@ -2469,6 +2469,12 @@ encondeMedicationDistributionSign sign =
             TDF3TC ->
                 "tdf3tc"
 
+            Iron ->
+                "iron"
+
+            FolicAcid ->
+                "folicacid"
+
             NoMedicationDistributionSigns ->
                 "none"
 
@@ -2506,6 +2512,12 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationTDF3TC reason ->
                 "tdf3tc-" ++ administrationNoteToString reason
+
+            MedicationIron reason ->
+                "iron-" ++ administrationNoteToString reason
+
+            MedicationFolicAcid reason ->
+                "folicacid-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

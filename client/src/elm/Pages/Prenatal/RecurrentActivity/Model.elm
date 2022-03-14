@@ -8,6 +8,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RecommendedTreatmentForm, SendToHCForm, emptyRecommendedTreatmentForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask)
+import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 
 
@@ -46,8 +47,10 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
+    | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
+    | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
     | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
 
 
@@ -106,15 +109,6 @@ emptyNextStepsData =
     , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
-
-
-type alias MedicationDistributionForm =
-    {}
-
-
-emptyMedicationDistributionForm : MedicationDistributionForm
-emptyMedicationDistributionForm =
-    MedicationDistributionForm
 
 
 type alias SyphilisResultForm =

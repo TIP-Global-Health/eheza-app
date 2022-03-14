@@ -64,7 +64,7 @@ import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
 import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
-import Pages.AcuteIllnessActivity.Types
+import Pages.AcuteIllness.Activity.Types
     exposing
         ( DangerSignsTask(..)
         , ExposureTask(..)
@@ -76,9 +76,8 @@ import Pages.AcuteIllnessActivity.Types
         , SymptomReliefType(..)
         , SymptomsTask(..)
         )
-import Pages.AcuteIllnessProgressReport.Model exposing (AcuteIllnessStatus(..))
+import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
-import Pages.ClinicalProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Dashboard.Model as Dashboard
     exposing
         ( BeneficiariesTableLabels(..)
@@ -89,7 +88,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
-import Pages.NutritionActivity.Model
+import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.Prenatal.Activity.Types
@@ -98,11 +97,12 @@ import Pages.Prenatal.Activity.Types
         , HistoryTask(..)
         , LmpRange(..)
         )
+import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
-import Pages.WellChildActivity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
-import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (ECDStatus(..), PaneEntryStatus(..))
+import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
+import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
+import Pages.WellChild.ProgressReport.Model exposing (ECDStatus(..), PaneEntryStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -324,7 +324,9 @@ type TranslationId
     | AdministerAlbendazoleHelper
     | AdministerMebendezoleHelper
     | AdministerPrenatalMebendezoleHelper
+    | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
+    | AdministerIronHelper
     | AdministeVitaminAHelper
     | Administered
     | AdministeredMedicationQuestion
@@ -751,7 +753,7 @@ type TranslationId
     | NextImmunisationVisit
     | NextPediatricVisit
     | NextSteps
-    | NextStepsTask Bool Pages.AcuteIllnessActivity.Types.NextStepsTask
+    | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -1168,7 +1170,7 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
-    | WellChildDangerSignsTask Pages.WellChildActivity.Types.DangerSignsTask
+    | WellChildDangerSignsTask Pages.WellChild.Activity.Types.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
@@ -1177,9 +1179,9 @@ type TranslationId
     | WellChildImmunisationDosage VaccineType
     | WellChildImmunisationHeader VaccineType
     | WellChildImmunisationHistory VaccineType
-    | WellChildImmunisationTask Pages.WellChildActivity.Types.ImmunisationTask
-    | WellChildMedicationTask Pages.WellChildActivity.Types.MedicationTask
-    | WellChildNextStepsTask Bool Pages.WellChildActivity.Types.NextStepsTask
+    | WellChildImmunisationTask Pages.WellChild.Activity.Types.ImmunisationTask
+    | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
+    | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
     | WellChildVaccineLabel VaccineType
     | WhatDoYouWantToDo
@@ -1746,8 +1748,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        AdministerFolicAcidHelper ->
+            { english = "Take daily for 3 months"
+            , kinyarwanda = Nothing
+            }
+
         AdministerHIVARVHelper ->
             { english = "Take 1x a day by mouth"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerIronHelper ->
+            { english = "Take 2 60 mg tabs 2x a day x 3 months"
             , kinyarwanda = Nothing
             }
 
@@ -5619,6 +5631,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Iron ->
+                    { english = "Iron"
+                    , kinyarwanda = Nothing
+                    }
+
+                FolicAcid ->
+                    { english = "Folic Acid"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -5959,7 +5981,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsSendToHC ->
+                Pages.AcuteIllness.Activity.Types.NextStepsSendToHC ->
                     if isChw then
                         { english = "Send to Health Center"
                         , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
@@ -5970,17 +5992,17 @@ translationSet trans =
                         , kinyarwanda = Just "Ohereza ku Bitaro"
                         }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsHealthEducation ->
+                Pages.AcuteIllness.Activity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsFollowUp ->
+                Pages.AcuteIllness.Activity.Types.NextStepsFollowUp ->
                     { english = "Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi"
                     }
 
-                Pages.AcuteIllnessActivity.Types.NextStepsContactTracing ->
+                Pages.AcuteIllness.Activity.Types.NextStepsContactTracing ->
                     { english = "Contact Tracing"
                     , kinyarwanda = Just "Gushakisha abahuye n'uwanduye"
                     }
@@ -10339,12 +10361,12 @@ translationSet trans =
 
         WellChildDangerSignsTask task ->
             case task of
-                Pages.WellChildActivity.Types.TaskSymptomsReview ->
+                Pages.WellChild.Activity.Types.TaskSymptomsReview ->
                     { english = "Symptom Review"
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
-                Pages.WellChildActivity.Types.TaskVitals ->
+                Pages.WellChild.Activity.Types.TaskVitals ->
                     { english = "Vitals"
                     , kinyarwanda = Just "Ibipimo by'ubuzima"
                     }
@@ -10600,64 +10622,64 @@ translationSet trans =
 
         WellChildImmunisationTask task ->
             case task of
-                Pages.WellChildActivity.Types.TaskBCG ->
+                Pages.WellChild.Activity.Types.TaskBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
                     }
 
-                Pages.WellChildActivity.Types.TaskDTP ->
+                Pages.WellChild.Activity.Types.TaskDTP ->
                     { english = "DTP - HepB - Hib"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Types.TaskHPV ->
+                Pages.WellChild.Activity.Types.TaskHPV ->
                     { english = "HPV"
                     , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
                     }
 
-                Pages.WellChildActivity.Types.TaskIPV ->
+                Pages.WellChild.Activity.Types.TaskIPV ->
                     { english = "IPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
                     }
 
-                Pages.WellChildActivity.Types.TaskMR ->
+                Pages.WellChild.Activity.Types.TaskMR ->
                     { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                     }
 
-                Pages.WellChildActivity.Types.TaskOPV ->
+                Pages.WellChild.Activity.Types.TaskOPV ->
                     { english = "OPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa"
                     }
 
-                Pages.WellChildActivity.Types.TaskPCV13 ->
+                Pages.WellChild.Activity.Types.TaskPCV13 ->
                     { english = "PCV 13"
                     , kinyarwanda = Just "Urukingo rw'umusonga"
                     }
 
-                Pages.WellChildActivity.Types.TaskRotarix ->
+                Pages.WellChild.Activity.Types.TaskRotarix ->
                     { english = "Rotarix"
                     , kinyarwanda = Just "Urukingo rw'impiswi"
                     }
 
-                Pages.WellChildActivity.Types.TaskOverview ->
+                Pages.WellChild.Activity.Types.TaskOverview ->
                     { english = "Overview"
                     , kinyarwanda = Just "Ishusho Rusange"
                     }
 
         WellChildMedicationTask task ->
             case task of
-                Pages.WellChildActivity.Types.TaskAlbendazole ->
+                Pages.WellChild.Activity.Types.TaskAlbendazole ->
                     { english = "Albendazole"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Types.TaskMebendezole ->
+                Pages.WellChild.Activity.Types.TaskMebendezole ->
                     { english = "Mebendazole"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Types.TaskVitaminA ->
+                Pages.WellChild.Activity.Types.TaskVitaminA ->
                     { english = "Vitamin A"
                     , kinyarwanda = Nothing
                     }

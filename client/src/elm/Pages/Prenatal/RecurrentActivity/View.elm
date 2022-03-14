@@ -23,14 +23,16 @@ import Measurement.Utils exposing (sendToHCFormWithDefault)
 import Measurement.View exposing (viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass, toMedicationDistributionValueWithDefault)
+import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
-import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalEncounter.Utils exposing (..)
-import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
+import Pages.Prenatal.Encounter.Utils exposing (..)
+import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefault)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -670,7 +672,7 @@ viewNextStepsContent language currentDate assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal language currentDate assembled data task )
                     )
                 |> Dict.fromList
 
@@ -693,8 +695,10 @@ viewNextStepsContent language currentDate assembled data =
                             Nothing
 
                 Just NextStepsMedicationDistribution ->
-                    -- @todo
-                    emptyNode
+                    measurements.medicationDistribution
+                        |> getMeasurementValueFunc
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
 
                 Just NextStepsRecommendedTreatment ->
                     measurements.recommendedTreatment

@@ -9,6 +9,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (DropZoneFile, RecommendedTreatmentForm, SendToHCForm, VitalsForm, emptyRecommendedTreatmentForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (..)
+import Pages.Prenatal.Model exposing (..)
 
 
 type Msg
@@ -409,19 +410,14 @@ emptyNextStepsData =
     }
 
 
-type alias MedicationDistributionForm =
-    { mebendezole : Maybe Bool
-    , tenofovir : Maybe Bool
-    , lamivudine : Maybe Bool
-    , dolutegravir : Maybe Bool
-    , tdf3tc : Maybe Bool
-    , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+type alias RecommendedTreatmentForm =
+    { signs : Maybe (List RecommendedTreatmentSign)
     }
 
 
-emptyMedicationDistributionForm : MedicationDistributionForm
-emptyMedicationDistributionForm =
-    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
+emptyRecommendedTreatmentForm : RecommendedTreatmentForm
+emptyRecommendedTreatmentForm =
+    RecommendedTreatmentForm Nothing
 
 
 

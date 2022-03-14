@@ -33,7 +33,7 @@ import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
+import Pages.AcuteIllness.Encounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
 import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
