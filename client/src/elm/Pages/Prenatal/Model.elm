@@ -2,7 +2,7 @@ module Pages.Prenatal.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (MedicationNonAdministrationSign, ObstetricHistoryValue, PrenatalMeasurements)
+import Backend.Measurement.Model exposing (MedicationNonAdministrationSign, ObstetricHistoryValue, PrenatalMeasurements, RecommendedTreatmentSign)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (..)
 import EverySet exposing (EverySet)
@@ -37,3 +37,13 @@ type alias MedicationDistributionForm =
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
     MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+
+
+type alias RecommendedTreatmentForm =
+    { signs : Maybe (List RecommendedTreatmentSign)
+    }
+
+
+emptyRecommendedTreatmentForm : RecommendedTreatmentForm
+emptyRecommendedTreatmentForm =
+    RecommendedTreatmentForm Nothing

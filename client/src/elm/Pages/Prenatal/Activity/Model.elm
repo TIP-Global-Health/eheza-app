@@ -6,7 +6,7 @@ import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (DropZoneFile, RecommendedTreatmentForm, SendToHCForm, VitalsForm, emptyRecommendedTreatmentForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Model exposing (..)
@@ -408,16 +408,6 @@ emptyNextStepsData =
     , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
-
-
-type alias RecommendedTreatmentForm =
-    { signs : Maybe (List RecommendedTreatmentSign)
-    }
-
-
-emptyRecommendedTreatmentForm : RecommendedTreatmentForm
-emptyRecommendedTreatmentForm =
-    RecommendedTreatmentForm Nothing
 
 
 

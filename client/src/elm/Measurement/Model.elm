@@ -151,16 +151,6 @@ emptySendToHCForm =
     }
 
 
-type alias RecommendedTreatmentForm =
-    { signs : Maybe (List RecommendedTreatmentSign)
-    }
-
-
-emptyRecommendedTreatmentForm : RecommendedTreatmentForm
-emptyRecommendedTreatmentForm =
-    RecommendedTreatmentForm Nothing
-
-
 {-| The UI for participant consent forms for a particular mother.
 
   - `expected` tracks which forms we expect to deal with for that mother.

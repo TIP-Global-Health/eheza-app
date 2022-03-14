@@ -15,7 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (RecommendedTreatmentForm, VitalsForm)
+import Measurement.Model exposing (VitalsForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
@@ -2942,24 +2942,3 @@ laboratoryTaskIconClass task =
 
         TaskRandomBloodSugarTest ->
             "laboratory-blood-sugar"
-
-
-recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
-recommendedTreatmentFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValueWithDefault saved form =
-    recommendedTreatmentFormWithDefault form saved
-        |> toRecommendedTreatmentValue
-
-
-toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoRecommendedTreatmentSign) form.signs

@@ -658,3 +658,24 @@ hivProgramAtHC assembled =
         |> Maybe.andThen .hivSigns
         |> Maybe.map (EverySet.member HIVProgramHC)
         |> Maybe.withDefault False
+
+
+recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
+recommendedTreatmentFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValueWithDefault saved form =
+    recommendedTreatmentFormWithDefault form saved
+        |> toRecommendedTreatmentValue
+
+
+toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoRecommendedTreatmentSign) form.signs
