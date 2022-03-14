@@ -30,7 +30,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalActivity.Utils exposing (activityCompleted, expectActivity, noDangerSigns)
+import Pages.PrenatalActivity.Utils exposing (activityCompleted, emergencyReferalRequired, expectActivity, noDangerSigns)
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPersonDetails)
@@ -44,31 +44,31 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id isChw db model =
     let
-        data =
+        assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw model) identity assembled
 
 
 viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw model data =
+viewHeaderAndContent language currentDate id isChw model assembled =
     let
         header =
-            viewHeader language isChw data
+            viewHeader language isChw assembled
 
         content =
-            viewContent language currentDate isChw data model
+            viewContent language currentDate isChw assembled model
     in
     div [ class "page-encounter prenatal" ]
         [ header
         , content
         , viewModal <|
-            viewChwWarningPopup language data model
+            viewChwWarningPopup language assembled model
         ]
 
 
 viewHeader : Language -> Bool -> AssembledData -> Html Msg
-viewHeader language isChw data =
+viewHeader language isChw assembled =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -76,7 +76,7 @@ viewHeader language isChw data =
             [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter isChw ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -85,19 +85,19 @@ viewHeader language isChw data =
 
 
 viewContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> Html Msg
-viewContent language currentDate isChw data model =
+viewContent language currentDate isChw assembled model =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate isChw data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewMainPageContent language currentDate data model
+        viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewMainPageContent language currentDate assembled model
 
 
 viewChwWarningPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
-viewChwWarningPopup language data model =
+viewChwWarningPopup language assembled model =
     if model.showWarningForChw then
         Just <|
             div [ class "ui tiny active modal" ]
                 [ div [ class "content" ]
-                    [ span [ class "person-name" ] [ text data.person.name ]
+                    [ span [ class "person-name" ] [ text assembled.person.name ]
                     , text " "
                     , text <| translate language Translate.PatientNotYetSeenAtHCLabel
                     , text "."
@@ -118,20 +118,20 @@ viewChwWarningPopup language data model =
 
 
 viewMotherAndMeasurements : Language -> NominalDate -> Bool -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
-viewMotherAndMeasurements language currentDate isChw data alertsDialogData =
-    [ viewMotherDetails language currentDate isChw data alertsDialogData
-    , viewIndicators language currentDate data.globalLmpDate data.globalObstetricHistory
+viewMotherAndMeasurements language currentDate isChw assembled alertsDialogData =
+    [ viewMotherDetails language currentDate isChw assembled alertsDialogData
+    , viewIndicators language currentDate assembled.globalLmpDate assembled.globalObstetricHistory
     ]
 
 
 viewMotherDetails : Language -> NominalDate -> Bool -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> Html msg
-viewMotherDetails language currentDate isChw data alertsDialogData =
+viewMotherDetails language currentDate isChw assembled alertsDialogData =
     let
         mother =
-            data.person
+            assembled.person
 
         firstEncounterMeasurements =
-            getFirstEncounterMeasurements isChw data
+            getFirstEncounterMeasurements isChw assembled
 
         highRiskAlertsData =
             allHighRiskFactors
@@ -139,11 +139,11 @@ viewMotherDetails language currentDate isChw data alertsDialogData =
 
         highSeverityAlertsData =
             allHighSeverityAlerts
-                |> List.filterMap (generateHighSeverityAlertData language currentDate isChw data)
+                |> List.filterMap (generateHighSeverityAlertData language currentDate isChw assembled)
 
         recurringHighSeverityAlertsData =
             allRecurringHighSeverityAlerts
-                |> List.map (generateRecurringHighSeverityAlertData language currentDate isChw data)
+                |> List.map (generateRecurringHighSeverityAlertData language currentDate isChw assembled)
                 |> List.filter (List.isEmpty >> not)
 
         alertsDialogSection =
@@ -309,12 +309,12 @@ viewIndicators language currentDate lmpDate obstetricHistory =
 
 
 viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate data model =
+viewMainPageContent language currentDate assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            getAllActivities data
-                |> List.filter (expectActivity currentDate data)
-                |> List.partition (activityCompleted currentDate data)
+            getAllActivities assembled
+                |> List.filter (expectActivity currentDate assembled)
+                |> List.partition (activityCompleted currentDate assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -335,7 +335,7 @@ viewMainPageContent language currentDate data model =
         viewCard activity =
             let
                 ( label, icon ) =
-                    generateActivityData activity data
+                    generateActivityData activity assembled
 
                 navigationAction =
                     case activity of
@@ -343,14 +343,14 @@ viewMainPageContent language currentDate data model =
                             [ onClick <|
                                 SetActivePage <|
                                     UserPage <|
-                                        PregnancyOutcomePage (InitiatorPostpartumEncounter data.id) data.encounter.participant
+                                        PregnancyOutcomePage (InitiatorPostpartumEncounter assembled.id) assembled.encounter.participant
                             ]
 
                         _ ->
                             [ onClick <|
                                 SetActivePage <|
                                     UserPage <|
-                                        PrenatalActivityPage data.id activity
+                                        PrenatalActivityPage assembled.id activity
                             ]
             in
             div [ class "card" ]
@@ -386,8 +386,8 @@ viewMainPageContent language currentDate data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorEncounterPage data.id) data.id)
-                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorEncounterPage data.id) data.participant.person)
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorEncounterPage assembled.id) assembled.id)
+                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorEncounterPage assembled.id) assembled.participant.person)
                     ]
 
             else
@@ -403,17 +403,21 @@ viewMainPageContent language currentDate data model =
                     ]
 
         allowEndEcounter =
-            case pendingActivities of
-                -- Either all activities are completed
-                [] ->
-                    True
+            if emergencyReferalRequired assembled then
+                List.member NextSteps completedActivities
 
-                -- Or only one none mandatory activity remains
-                [ PrenatalPhoto ] ->
-                    True
+            else
+                case pendingActivities of
+                    -- Either all activities are completed
+                    [] ->
+                        True
 
-                _ ->
-                    False
+                    -- Or only one none mandatory activity remains
+                    [ PrenatalPhoto ] ->
+                        True
+
+                    _ ->
+                        False
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
@@ -440,14 +444,14 @@ viewMainPageContent language currentDate data model =
 
 
 generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, String )
-generateActivityData activity data =
+generateActivityData activity assembled =
     let
         default =
             ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )
     in
     case activity of
         NextSteps ->
-            case data.encounter.encounterType of
+            case assembled.encounter.encounterType of
                 NurseEncounter ->
                     default
 
@@ -456,7 +460,7 @@ generateActivityData activity data =
 
                 -- Other types of CHW encounters
                 _ ->
-                    if noDangerSigns data then
+                    if noDangerSigns assembled then
                         ( Translate.AppointmentConfirmation, "appointment-confirmation" )
 
                     else

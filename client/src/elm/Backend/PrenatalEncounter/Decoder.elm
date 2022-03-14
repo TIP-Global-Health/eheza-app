@@ -81,6 +81,21 @@ decodePrenatalDiagnosis =
                     "malaria" ->
                         succeed DiagnosisMalaria
 
+                    "malaria-anemia" ->
+                        succeed DiagnosisMalariaWithAnemia
+
+                    "malaria-severe-anemia" ->
+                        succeed DiagnosisMalariaWithSevereAnemia
+
+                    "anemia" ->
+                        succeed DiagnosisModerateAnemia
+
+                    "severe-anemia" ->
+                        succeed DiagnosisSevereAnemia
+
+                    "severe-anemia-complications" ->
+                        succeed DiagnosisSevereAnemiaWithComplications
+
                     "eclampsia" ->
                         succeed DiagnosisEclampsia
 

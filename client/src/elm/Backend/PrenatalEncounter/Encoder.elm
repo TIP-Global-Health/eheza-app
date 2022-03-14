@@ -75,6 +75,21 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisMalaria ->
                 "malaria"
 
+            DiagnosisMalariaWithAnemia ->
+                "malaria-anemia"
+
+            DiagnosisMalariaWithSevereAnemia ->
+                "malaria-severe-anemia"
+
+            DiagnosisModerateAnemia ->
+                "anemia"
+
+            DiagnosisSevereAnemia ->
+                "severe-anemia"
+
+            DiagnosisSevereAnemiaWithComplications ->
+                "severe-anemia-complications"
+
             DiagnosisEclampsia ->
                 "eclampsia"
 

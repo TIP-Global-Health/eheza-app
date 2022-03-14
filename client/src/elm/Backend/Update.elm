@@ -1765,17 +1765,23 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ PrenatalHemoglobinTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestHemoglobin
                                 data.value.executionNote
                                 (isJust data.value.hemoglobinCount)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgs
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ PrenatalRandomBloodSugarTestRevision uid data ] ->
@@ -3937,7 +3943,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                  initialEncounterNextStepsMsg
                                , initialEncounterWarningPopupMsg
                                     ( String.join ", " dangerSignsList
-                                    , translate language Translate.DangerSignsHelperReferToHC
+                                    , translate language Translate.EmergencyReferralHelperReferToHC
                                     )
                                ]
 
@@ -3986,6 +3992,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             -- there're no additional actions to take if it was added.
                                             []
 
+                                        -- We expect only one diagnosis to be added
+                                        -- at a time, so we care only about `first`.
                                         first :: rest ->
                                             let
                                                 ( message, instructions ) =
@@ -4003,10 +4011,10 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                                             )
                                                             Pages.PrenatalActivity.Utils.maternityWardDiagnoses
                                                       then
-                                                        translate language Translate.DangerSignsHelperReferToMaternityWard
+                                                        translate language Translate.EmergencyReferralHelperReferToMaternityWard
 
                                                       else
-                                                        translate language Translate.DangerSignsHelperReferToEmergencyObstetricCareServices
+                                                        translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
                                                     )
                                             in
                                             -- View warning popup and navigate to Next Steps activity.
@@ -4040,14 +4048,25 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                         [] ->
                                             []
 
+                                        -- We expect only one diagnosis to be added
+                                        -- at a time, so we care only about `first`.
                                         first :: rest ->
+                                            let
+                                                instructions =
+                                                    case first of
+                                                        DiagnosisSevereAnemiaWithComplications ->
+                                                            translate language Translate.EmergencyReferralHelperReferToHospital
+
+                                                        _ ->
+                                                            ""
+                                            in
                                             [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
                                                 |> UserPage
                                                 |> App.Model.SetActivePage
                                             , recurrentEncounterWarningPopupMsg
                                                 ( Translate.PrenatalDiagnosisLabResultsMessage first
                                                     |> translate language
-                                                , ""
+                                                , instructions
                                                 )
                                             ]
                         in

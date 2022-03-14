@@ -338,12 +338,14 @@ expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
             diagnosed DiagnosisHepatitisB assembled
+                || diagnosed DiagnosisMalariaWithSevereAnemia assembled
+                || diagnosed DiagnosisSevereAnemia assembled
+                || diagnosed DiagnosisSevereAnemiaWithComplications assembled
 
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
-            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
-                && -- @todo
-                   False
+            (not <| emergencyReferalRequired assembled)
+                && diagnosed DiagnosisModerateAnemia assembled
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -393,12 +395,25 @@ nextStepsTasksCompletedFromTotal assembled data task =
             )
 
 
-diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
-diagnosed diagnosis assembled =
-    EverySet.member diagnosis assembled.encounter.diagnoses
+emergencyReferalRequired : AssembledData -> Bool
+emergencyReferalRequired assembled =
+    EverySet.toList assembled.encounter.diagnoses
+        |> List.filter diagnosisRequiresEmergencyReferal
+        |> List.isEmpty
+        |> not
+
+
+diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
+diagnosisRequiresEmergencyReferal diagnosis =
+    List.member diagnosis emergencyReferralDiagnoses
 
 
 emergencyReferralDiagnoses : List PrenatalDiagnosis
 emergencyReferralDiagnoses =
-    [ DiagnosisHepatitisB
+    [ DiagnosisSevereAnemiaWithComplications
     ]
+
+
+diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
+diagnosed diagnosis assembled =
+    EverySet.member diagnosis assembled.encounter.diagnoses
