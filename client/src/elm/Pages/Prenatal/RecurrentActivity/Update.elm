@@ -651,7 +651,14 @@ update language currentDate id db msg model =
         SetMedicationDistributionAdministrationNote currentValue medication reason ->
             let
                 form =
-                    model.nextStepsData.medicationDistributionForm
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.medicationDistribution
+                                >> getMeasurementValueFunc
+                                >> medicationDistributionFormWithDefaultRecurrentPhase model.nextStepsData.medicationDistributionForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
 
                 updatedValue =
                     nonAdministrationReasonToSign medication reason
