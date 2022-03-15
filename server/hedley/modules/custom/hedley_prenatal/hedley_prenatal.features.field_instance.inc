@@ -5959,6 +5959,98 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-vitals-field_dia_repeated'.
+  $field_instances['node-vitals-field_dia_repeated'] = array(
+    'bundle' => 'vitals',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_dia_repeated',
+    'label' => 'Dia Repeated',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
+    ),
+  );
+
+  // Exported field_instance: 'node-vitals-field_sys_repeated'.
+  $field_instances['node-vitals-field_sys_repeated'] = array(
+    'bundle' => 'vitals',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_sys_repeated',
+    'label' => 'Sys Repeated',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 12,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('Appointment Confirmation');
@@ -5967,6 +6059,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Completed Tests');
   t('Date Measured');
   t('Date concluded');
+  t('Dia Repeated');
   t('Execution Date');
   t('Follow up options');
   t('Glucose');
@@ -5994,6 +6087,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Shards');
   t('Specific Gravity');
   t('Sugar Count');
+  t('Sys Repeated');
   t('Test Execution Note');
   t('Test Result');
   t('Test variant');
