@@ -2534,7 +2534,11 @@ encodeRecommendedTreatmentValue value =
         treatment =
             Maybe.map
                 (\signs ->
-                    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
                 )
                 value.signs
                 |> Maybe.withDefault []
