@@ -7300,6 +7300,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisChronicHypertension ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertension ->
+                    { english = "Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHIV ->
                     { english = "HIV"
                     , kinyarwanda = Nothing
@@ -7468,7 +7478,7 @@ translationSet trans =
                     }
 
                 DiagnosisNeurosyphilis ->
-                    { english = "Patient has tested positive for Syphilis and show signs of Neurosyphilis"
+                    { english = "Patient has tested positive for Syphilis and shows signs of Neurosyphilis"
                     , kinyarwanda = Nothing
                     }
 
@@ -7504,6 +7514,16 @@ translationSet trans =
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Severe Anemia with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertension ->
+                    { english = "Patient shows signs of Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertension ->
+                    { english = "Patient shows signs of Gestational Hypertension"
                     , kinyarwanda = Nothing
                     }
 

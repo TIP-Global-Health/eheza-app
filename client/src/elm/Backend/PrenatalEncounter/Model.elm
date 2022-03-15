@@ -43,6 +43,8 @@ type PrenatalDiagnosis
     | DiagnosisHIV
     | DiagnosisDiscordantPartnership
     | DiagnosisSyphilis
+    | DiagnosisChronicHypertension
+    | DiagnosisGestationalHypertension
     | DiagnosisSyphilisWithComplications
     | DiagnosisNeurosyphilis
     | DiagnosisHepatitisB

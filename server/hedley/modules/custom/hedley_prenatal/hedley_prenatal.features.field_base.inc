@@ -476,6 +476,8 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
+        'chronic-hypertension' => 'Chronic Hypertension',
+        'gestational-hypertension' => 'Gestational Hypertension',
         'hiv' => 'HIV',
         'partner-hiv' => 'HIV positive partner',
         'syphilis' => 'Syphilis',
