@@ -2783,7 +2783,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.medicationDistributionForm
-                        |> toMedicationDistributionValueWithDefault measurement
+                        |> toMedicationDistributionValueWithDefaultInitialPhase measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

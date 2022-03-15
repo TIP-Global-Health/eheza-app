@@ -938,6 +938,8 @@ function hedley_acute_illness_field_default_field_bases() {
         'iron' => 'Iron',
         'folicacid' => 'Folic Acid',
         'none' => 'None of these',
+        'none-initial' => 'None at initial pahse',
+        'none-recurrent' => 'None at recurrent pahse',
       ),
       'allowed_values_function' => '',
     ),

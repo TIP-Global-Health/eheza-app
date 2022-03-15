@@ -2478,6 +2478,12 @@ encondeMedicationDistributionSign sign =
             NoMedicationDistributionSigns ->
                 "none"
 
+            NoMedicationDistributionSignsInitialPhase ->
+                "none-initial"
+
+            NoMedicationDistributionSignsRecurrentPhase ->
+                "none-recurrent"
+
 
 encodeMedicationNonAdministrationSign : MedicationNonAdministrationSign -> Value
 encodeMedicationNonAdministrationSign sign =

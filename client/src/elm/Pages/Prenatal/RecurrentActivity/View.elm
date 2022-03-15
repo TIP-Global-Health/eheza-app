@@ -31,7 +31,7 @@ import Pages.Prenatal.Model exposing (AssembledData, RecommendedTreatmentForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
-import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefault, recommendedTreatmentFormWithDefault)
+import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
@@ -699,8 +699,13 @@ viewNextStepsContent language currentDate assembled data =
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
                         |> getMeasurementValueFunc
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
+                        |> medicationDistributionFormWithDefaultRecurrentPhase data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language
+                            currentDate
+                            assembled
+                            SetMedicationDistributionBoolInput
+                            SetMedicationDistributionAdministrationNote
+                            medicationsRecurrentPhase
 
                 Just NextStepsRecommendedTreatment ->
                     measurements.recommendedTreatment

@@ -5651,6 +5651,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoMedicationDistributionSignsInitialPhase ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationDistributionSignsRecurrentPhase ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         MedicationDoxycycline ->
             { english = "Doxycycline"
             , kinyarwanda = Nothing

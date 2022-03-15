@@ -308,12 +308,9 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && -- We were asking if Mebendazole was given already.
-                   showMebendazoleQuestion currentDate assembled
-                && -- The answer was that Mebendazole was not given yet.
-                   (getMeasurementValueFunc assembled.measurements.medication
-                        |> Maybe.map (EverySet.member Mebendazole >> not)
-                        |> Maybe.withDefault False
+                && (resolveMedicationsByDiagnoses assembled medicationsInitialPhase
+                        |> List.isEmpty
+                        |> not
                    )
 
         -- Exclusive Nurse task.
@@ -357,7 +354,11 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.participant.newborn
 
         NextStepsMedicationDistribution ->
-            isJust assembled.measurements.medicationDistribution
+            let
+                allowedSigns =
+                    NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+            in
+            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
         NextStepsRecommendedTreatment ->
             recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
@@ -1355,7 +1356,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             let
                 form =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
 
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
@@ -1363,6 +1364,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         assembled
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
+                        medicationsInitialPhase
                         form
             in
             ( completed, total )

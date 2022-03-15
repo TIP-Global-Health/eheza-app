@@ -391,7 +391,10 @@ expectNextStepsTask currentDate assembled task =
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
                 && (diagnosed DiagnosisSyphilis assembled
-                        || diagnosed DiagnosisSyphilisWithComplications assembled
+                        || (resolveMedicationsByDiagnoses assembled medicationsRecurrentPhase
+                                |> List.isEmpty
+                                |> not
+                           )
                    )
 
 
@@ -402,7 +405,11 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.measurements.sendToHC
 
         NextStepsMedicationDistribution ->
-            isJust assembled.measurements.medicationDistribution
+            let
+                allowedSigns =
+                    NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+            in
+            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
         NextStepsRecommendedTreatment ->
             recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
@@ -452,7 +459,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             let
                 form =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> medicationDistributionFormWithDefaultRecurrentPhase data.medicationDistributionForm
 
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
@@ -460,6 +467,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         assembled
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
+                        medicationsRecurrentPhase
                         form
             in
             ( completed, total )

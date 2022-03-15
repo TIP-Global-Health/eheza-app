@@ -1407,6 +1407,8 @@ type MedicationDistributionSign
     | Iron
     | FolicAcid
     | NoMedicationDistributionSigns
+    | NoMedicationDistributionSignsInitialPhase
+    | NoMedicationDistributionSignsRecurrentPhase
 
 
 type AdministrationNote

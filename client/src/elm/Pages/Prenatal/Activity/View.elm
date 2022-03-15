@@ -1600,8 +1600,13 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
                         |> getMeasurementValueFunc
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
+                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language
+                            currentDate
+                            assembled
+                            SetMedicationDistributionBoolInput
+                            SetMedicationDistributionAdministrationNote
+                            medicationsInitialPhase
 
                 Just NextStepsRecommendedTreatment ->
                     viewRecommendedTreatmentForMalaria language currentDate assembled recommendedTreatmentForm

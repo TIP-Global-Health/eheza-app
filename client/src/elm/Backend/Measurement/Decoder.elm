@@ -2670,6 +2670,12 @@ decodeMedicationDistributionSign =
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
+                    "none-initial" ->
+                        succeed NoMedicationDistributionSignsInitialPhase
+
+                    "none-recurrent" ->
+                        succeed NoMedicationDistributionSignsRecurrentPhase
+
                     _ ->
                         fail <| sign ++ " is not a recognized MedicationDistributionSign"
             )

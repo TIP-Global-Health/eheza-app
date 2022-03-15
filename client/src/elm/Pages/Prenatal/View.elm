@@ -19,12 +19,19 @@ viewMedicationDistributionForm :
     -> AssembledData
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
+    -> List MedicationDistributionSign
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg form =
+viewMedicationDistributionForm language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
     let
         ( content, _, _ ) =
-            resolveMedicationDistributionInputsAndTasks language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg form
+            resolveMedicationDistributionInputsAndTasks language
+                currentDate
+                assembled
+                setMedicationDistributionBoolInputMsg
+                setMedicationDistributionAdministrationNoteMsg
+                allowedMedications
+                form
     in
     div [ class "ui form medication-distribution" ] <|
         h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
