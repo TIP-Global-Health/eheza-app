@@ -32,7 +32,7 @@ import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefault, recommendedTreatmentFormWithDefault)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForm)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -41,6 +41,7 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
@@ -705,7 +706,7 @@ viewNextStepsContent language currentDate assembled data =
                     measurements.recommendedTreatment
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-                        |> viewRecommendedTreatmentForm language currentDate assembled SetRecommendedTreatmentSign
+                        |> viewRecommendedTreatmentForSyphilis language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -757,6 +758,74 @@ viewNextStepsContent language currentDate assembled data =
             ]
         ]
     ]
+
+
+viewRecommendedTreatmentForSyphilis :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> RecommendedTreatmentForm
+    -> Html Msg
+viewRecommendedTreatmentForSyphilis language currentDate assembled form =
+    let
+        -- Since we may have values from inital phase of encounter, we need
+        -- to filter them out, to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (\signs ->
+                    List.filter (\sign -> List.member sign allowedRecommendedTreatmentSigns)
+                        signs
+                        |> List.head
+                )
+                form.signs
+
+        warning =
+            Maybe.map
+                (\signs ->
+                    if
+                        List.any (\sign -> List.member sign signs)
+                            [ TreatementErythromycin, TreatementAzithromycin ]
+                    then
+                        div [ class "warning" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , text <| translate language Translate.SyphilisRecommendedTreatmentWarning
+                            ]
+
+                    else
+                        emptyNode
+                )
+                form.signs
+                |> Maybe.withDefault emptyNode
+    in
+    div [ class "ui form recommended-treatment" ]
+        [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+        , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+            , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
+            ]
+        , viewCheckBoxSelectCustomInput language
+            [ TreatementPenecilin1
+            , TreatementPenecilin3
+            , TreatementErythromycin
+            , TreatementAzithromycin
+            , TreatementCeftriaxon
+            ]
+            []
+            currentValue
+            SetRecommendedTreatmentSign
+            (viewTreatmentOptionForSyphilis language)
+        , warning
+        ]
+
+
+viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForSyphilis language sign =
+    label []
+        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+        , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+        ]
 
 
 

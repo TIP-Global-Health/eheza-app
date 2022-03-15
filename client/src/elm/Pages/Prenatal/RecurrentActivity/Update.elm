@@ -712,9 +712,29 @@ update language currentDate id db msg model =
 
         SetRecommendedTreatmentSign sign ->
             let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.recommendedTreatment
+                                >> getMeasurementValueFunc
+                                >> recommendedTreatmentFormWithDefault model.nextStepsData.recommendedTreatmentForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.recommendedTreatmentForm
+
+                updatedSigns =
+                    -- Since we may have values from inital phase of encounter, we make
+                    -- sure to preserve them, before setting new value at recurrent phase.
+                    Maybe.map
+                        (\signs ->
+                            List.filter (\sign_ -> not <| List.member sign_ allowedRecommendedTreatmentSigns) signs
+                                |> List.append [ sign ]
+                        )
+                        form.signs
+                        |> Maybe.withDefault [ sign ]
+
                 updatedForm =
-                    model.nextStepsData.recommendedTreatmentForm
-                        |> (\form -> { form | signs = Just [ sign ] })
+                    { form | signs = Just updatedSigns }
 
                 updatedData =
                     model.nextStepsData

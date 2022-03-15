@@ -32,7 +32,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForm)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -46,6 +46,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
+        , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -1603,7 +1604,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                         |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
 
                 Just NextStepsRecommendedTreatment ->
-                    viewRecommendedTreatmentForm language currentDate assembled SetRecommendedTreatmentSign recommendedTreatmentForm
+                    viewRecommendedTreatmentForMalaria language currentDate assembled recommendedTreatmentForm
 
                 Nothing ->
                     emptyNode
@@ -3538,6 +3539,60 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
         , taskCompleted form.testPerformedToday + derivedTasksCompleted
         , 1 + derivedTasksTotal
         )
+
+
+viewRecommendedTreatmentForMalaria :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> RecommendedTreatmentForm
+    -> Html Msg
+viewRecommendedTreatmentForMalaria language currentDate assembled form =
+    let
+        egaInWeeks =
+            Maybe.map
+                (calculateEGAWeeks currentDate)
+                assembled.globalLmpDate
+
+        medicationTreatment =
+            Maybe.map
+                (\egaWeeks ->
+                    if egaWeeks <= 14 then
+                        TreatmentQuinineSulphate
+
+                    else
+                        TreatmentCoartem
+                )
+                egaInWeeks
+                |> Maybe.withDefault TreatmentQuinineSulphate
+
+        -- Since we may have values from recurrent phase of encounter, we need
+        -- to filter them out, to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (\signs ->
+                    List.filter (\sign -> List.member sign allowedRecommendedTreatmentSigns)
+                        signs
+                        |> List.head
+                )
+                form.signs
+    in
+    div [ class "ui form recommended-treatment" ]
+        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+        , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+        , viewCheckBoxSelectInput language
+            [ medicationTreatment
+            , TreatmentWrittenProtocols
+            , TreatementReferToHospital
+            ]
+            []
+            currentValue
+            SetRecommendedTreatmentSign
+            Translate.RecommendedTreatmentSignLabel
+        ]
 
 
 

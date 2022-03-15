@@ -35,6 +35,7 @@ import Pages.Utils
         , valueConsideringIsDirtyField
         , viewBoolInput
         , viewCheckBoxSelectInput
+        , viewInstructionsLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
@@ -279,7 +280,7 @@ expectNextStepsTask currentDate assembled task =
                     in
                     emergencyReferalRequired assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
-                        || (diagnosed DiagnosisMalaria assembled && severeMalariaTreatment)
+                        || (diagnosedMalaria assembled && severeMalariaTreatment)
 
                 _ ->
                     dangerSigns
@@ -319,10 +320,14 @@ expectNextStepsTask currentDate assembled task =
         NextStepsRecommendedTreatment ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && (diagnosed DiagnosisMalaria assembled
-                        || diagnosed DiagnosisMalariaWithAnemia assembled
-                        || diagnosed DiagnosisMalariaWithSevereAnemia assembled
-                   )
+                && diagnosedMalaria assembled
+
+
+diagnosedMalaria : AssembledData -> Bool
+diagnosedMalaria assembled =
+    diagnosed DiagnosisMalaria assembled
+        || diagnosed DiagnosisMalariaWithAnemia assembled
+        || diagnosed DiagnosisMalariaWithSevereAnemia assembled
 
 
 emergencyReferalRequired : AssembledData -> Bool
