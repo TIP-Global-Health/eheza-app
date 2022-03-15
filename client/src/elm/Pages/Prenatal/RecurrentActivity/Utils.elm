@@ -384,17 +384,17 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && diagnosed DiagnosisModerateAnemia assembled
+                && (resolveMedicationsByDiagnoses assembled medicationsRecurrentPhase
+                        |> List.isEmpty
+                        |> not
+                   )
 
         -- Exclusive Nurse task.
         NextStepsRecommendedTreatment ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
                 && (diagnosed DiagnosisSyphilis assembled
-                        || (resolveMedicationsByDiagnoses assembled medicationsRecurrentPhase
-                                |> List.isEmpty
-                                |> not
-                           )
+                        || diagnosed DiagnosisSyphilisWithComplications assembled
                    )
 
 

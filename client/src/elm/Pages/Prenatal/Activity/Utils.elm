@@ -824,9 +824,13 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
                         |> Maybe.andThen .symptoms
                         |> Maybe.map
                             (\symptoms ->
-                                EverySet.member IllnessSymptomRash symptoms
+                                (EverySet.member IllnessSymptomRash symptoms
                                     || EverySet.member IllnessSymptomPainlessUlcerMouth symptoms
                                     || EverySet.member IllnessSymptomPainlessUlcerGenitals symptoms
+                                )
+                                    -- Exclude Neurosyphilis conditions.
+                                    && (not <| EverySet.member IllnessSymptomHeadache symptoms)
+                                    && (not <| EverySet.member IllnessSymptomVisionChanges symptoms)
                             )
                         |> Maybe.withDefault False
                    )
