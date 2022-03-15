@@ -405,7 +405,17 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.measurements.medicationDistribution
 
         NextStepsRecommendedTreatment ->
-            isJust assembled.measurements.recommendedTreatment
+            recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
+
+
+allowedRecommendedTreatmentSigns : List RecommendedTreatmentSign
+allowedRecommendedTreatmentSigns =
+    [ TreatementPenecilin1
+    , TreatementPenecilin3
+    , TreatementErythromycin
+    , TreatementAzithromycin
+    , TreatementCeftriaxon
+    ]
 
 
 nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
@@ -460,8 +470,20 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                     assembled.measurements.recommendedTreatment
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+
+                completed =
+                    Maybe.map
+                        (\signs ->
+                            List.any (\sign -> List.member sign signs) allowedRecommendedTreatmentSigns
+                        )
+                        form.signs
+                        |> Maybe.withDefault False
             in
-            ( taskCompleted form.signs
+            ( if completed then
+                1
+
+              else
+                0
             , 1
             )
 

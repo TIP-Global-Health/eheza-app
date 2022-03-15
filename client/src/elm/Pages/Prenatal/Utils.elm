@@ -694,3 +694,21 @@ toRecommendedTreatmentValue form =
             }
         )
         form.signs
+
+
+{-| Recommended Treatment activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used, and at least one of
+them must ber set.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> PrenatalMeasurements -> Bool
+recommendedTreatmentMeasurementTaken allowedSigns measurements =
+    getMeasurementValueFunc measurements.recommendedTreatment
+        |> Maybe.andThen .signs
+        |> Maybe.map
+            (\signs ->
+                List.any (\sign -> EverySet.member sign signs)
+                    allowedSigns
+            )
+        |> Maybe.withDefault False
