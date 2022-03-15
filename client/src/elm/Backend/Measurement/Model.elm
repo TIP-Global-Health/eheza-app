@@ -743,6 +743,8 @@ type alias VitalsValue =
     , heartRate : Maybe Int
     , respiratoryRate : Int
     , bodyTemperature : Float
+    , sysRepeated : Maybe Float
+    , diaRepeated : Maybe Float
     }
 
 

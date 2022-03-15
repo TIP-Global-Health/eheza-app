@@ -1631,6 +1631,8 @@ decodeVitalsValue =
         |> optional "heart_rate" (nullable decodeInt) Nothing
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
+        |> optional "sys_repeated" (nullable decodeFloat) Nothing
+        |> optional "dia_repeated" (nullable decodeFloat) Nothing
 
 
 decodeCSectionReason : Decoder CSectionReason
