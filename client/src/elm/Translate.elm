@@ -8926,6 +8926,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentMethyldopa2 ->
+                    { english = "Methyldopa 250mg by mouth two times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa3 ->
+                    { english = "Methyldopa 250mg by mouth three times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa4 ->
+                    { english = "Methyldopa 250mg by mouth four times a day"
+                    , kinyarwanda = Nothing
+                    }
+
         RecordAcuteIllnessOutcome ->
             { english = "Record Acute Illness Outcome"
             , kinyarwanda = Just "Andika iherezo ry'indwara ifatiyeho"

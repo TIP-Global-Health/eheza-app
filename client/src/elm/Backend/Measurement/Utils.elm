@@ -1533,6 +1533,15 @@ recommendedTreatmentSignToString sign =
         TreatementCeftriaxon ->
             "ceftriaxon"
 
+        TreatmentMethyldopa2 ->
+            "methyldopa-2"
+
+        TreatmentMethyldopa3 ->
+            "methyldopa-3"
+
+        TreatmentMethyldopa4 ->
+            "methyldopa-4"
+
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
 recommendedTreatmentSignFromString sign =
@@ -1563,6 +1572,15 @@ recommendedTreatmentSignFromString sign =
 
         "ceftriaxon" ->
             Just TreatementCeftriaxon
+
+        "methyldopa-2" ->
+            Just TreatmentMethyldopa2
+
+        "methyldopa-3" ->
+            Just TreatmentMethyldopa3
+
+        "methyldopa-4" ->
+            Just TreatmentMethyldopa4
 
         _ ->
             Nothing

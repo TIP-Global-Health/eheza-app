@@ -1112,6 +1112,10 @@ type RecommendedTreatmentSign
     | TreatementErythromycin
     | TreatementAzithromycin
     | TreatementCeftriaxon
+      -- For Hypertension:
+    | TreatmentMethyldopa2
+    | TreatmentMethyldopa3
+    | TreatmentMethyldopa4
 
 
 
