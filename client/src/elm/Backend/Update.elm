@@ -1127,43 +1127,48 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                     else
                         let
-                            _ =
-                                Debug.log "value" value
-
                             ( newModel, _ ) =
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
                                 Maybe.map2
-                                    (\sys dia ->
-                                        if (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160) then
-                                            Maybe.map
-                                                (\encounterId_ ->
-                                                    let
-                                                        resultsAdded =
-                                                            isJust value.diaRepeated
+                                    (\dia sys ->
+                                        let
+                                            executionNote =
+                                                -- When we suspect hypertension, we'll try to schedule vitals recheck.
+                                                -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
+                                                if Pages.Prenatal.Activity.Utils.suspectedHypertensionCondition dia sys then
+                                                    Backend.Measurement.Model.TestNoteRunToday
 
-                                                        generateMsgsFunc =
-                                                            if resultsAdded then
-                                                                generatePrenatalLabsResultsAddedMsgs
+                                                else
+                                                    -- If not, we try to unschedule vitals recheck.
+                                                    -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                    Backend.Measurement.Model.TestNoteNotIndicated
+                                        in
+                                        Maybe.map
+                                            (\encounterId_ ->
+                                                let
+                                                    resultsAdded =
+                                                        isJust value.diaRepeated
 
-                                                            else
-                                                                generatePrenatalLabsTestAddedMsgs
-                                                    in
-                                                    generateMsgsFunc currentDate
-                                                        newModel
-                                                        Backend.Measurement.Model.TestVitalsRecheck
-                                                        Backend.Measurement.Model.TestNoteRunToday
-                                                        encounterId_
-                                                )
-                                                encounterId
-                                                |> Maybe.withDefault []
+                                                    generateMsgsFunc =
+                                                        if resultsAdded then
+                                                            generatePrenatalLabsResultsAddedMsgs
 
-                                        else
-                                            []
+                                                        else
+                                                            generatePrenatalLabsTestAddedMsgs
+                                                in
+                                                generateMsgsFunc currentDate
+                                                    newModel
+                                                    Backend.Measurement.Model.TestVitalsRecheck
+                                                    executionNote
+                                                    encounterId_
+                                            )
+                                            encounterId
+                                            |> Maybe.withDefault []
                                     )
-                                    value.sys
                                     value.dia
+                                    value.sys
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
@@ -4190,7 +4195,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                 Maybe.map
                     (\( resultsId, measurement ) ->
                         let
-                            resultsValue =
+                            updatedValue =
                                 measurement.value
                                     |> (\value ->
                                             { value
@@ -4204,7 +4209,15 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                             }
                                        )
                         in
-                        [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) resultsValue ]
+                        if
+                            (testExecuted && (not <| EverySet.member test measurement.value.performedTests))
+                                || (not testExecuted && EverySet.member test measurement.value.performedTests)
+                        then
+                            -- Update value only when really needed, as it may be set up properly already.
+                            [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+
+                        else
+                            []
                     )
                     assembled.measurements.labsResults
                     |> Maybe.withDefault
@@ -4240,7 +4253,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test executionNote id =
                 Maybe.map
                     (\( resultsId, measurement ) ->
                         let
-                            resultsValue =
+                            updatedValue =
                                 measurement.value
                                     |> (\value ->
                                             let
@@ -4262,7 +4275,12 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test executionNote id =
                                             }
                                        )
                         in
-                        [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) resultsValue ]
+                        if EverySet.member test measurement.value.completedTests then
+                            -- Do not update value if we have it set up properly already.
+                            []
+
+                        else
+                            [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )
                     assembled.measurements.labsResults
             )

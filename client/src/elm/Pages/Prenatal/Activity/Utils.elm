@@ -944,9 +944,6 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
 diagnosedHypertension : PrenatalMeasurements -> Bool
 diagnosedHypertension measurements =
     let
-        immediateCondition dia sys =
-            dia >= 110 || sys >= 160
-
         -- We measure BP again when we suspect Hypertension (dia between 90
         -- and 110, and dia between 140 and 160).
         -- We diagnose Hypertension if repeated measurements are within
@@ -958,10 +955,20 @@ diagnosedHypertension measurements =
         |> Maybe.andThen
             (\value ->
                 Maybe.Extra.or
-                    (Maybe.map2 immediateCondition value.dia value.sys)
+                    (Maybe.map2 immediateHypertensionCondition value.dia value.sys)
                     (Maybe.map2 retestCondition value.diaRepeated value.sysRepeated)
             )
         |> Maybe.withDefault False
+
+
+immediateHypertensionCondition : Float -> Float -> Bool
+immediateHypertensionCondition dia sys =
+    dia >= 110 || sys >= 160
+
+
+suspectedHypertensionCondition : Float -> Float -> Bool
+suspectedHypertensionCondition dia sys =
+    (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)
 
 
 respiratoryRateElevated : PrenatalMeasurements -> Bool
