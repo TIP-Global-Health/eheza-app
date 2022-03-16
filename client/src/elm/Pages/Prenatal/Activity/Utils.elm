@@ -653,9 +653,19 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         diagnosesByDangerSigns =
             List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnosesInitial
                 |> EverySet.fromList
+
+        diagnisisByExamination =
+            Maybe.map
+                (\egaWeeks ->
+                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements) examinationDiagnoses
+                        |> EverySet.fromList
+                )
+                egaInWeeks
+                |> Maybe.withDefault EverySet.empty
     in
     EverySet.union diagnosesByMedication diagnisisByLabResults
         |> EverySet.union diagnosesByDangerSigns
+        |> EverySet.union diagnisisByExamination
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
@@ -913,6 +923,47 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
             False
 
 
+matchExaminationPrenatalDiagnosis : Int -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
+matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
+    let
+        hypertensionCondition dia sys =
+            dia >= 110 || sys >= 160
+    in
+    case diagnosis of
+        DiagnosisChronicHypertension ->
+            egaInWeeks < 20 && diagnosedHypertension measurements
+
+        DiagnosisGestationalHypertension ->
+            egaInWeeks >= 20 && diagnosedHypertension measurements
+
+        -- Non Examination diagnoses.
+        _ ->
+            False
+
+
+diagnosedHypertension : PrenatalMeasurements -> Bool
+diagnosedHypertension measurements =
+    let
+        immediateCondition dia sys =
+            dia >= 110 || sys >= 160
+
+        -- We measure BP again when we suspect Hypertension (dia between 90
+        -- and 110, and dia between 140 and 160).
+        -- We diagnose Hypertension if repeated measurements are within
+        -- those boundries, or exceed them.
+        retestCondition diaRepeated sysRepeated =
+            diaRepeated >= 90 || sysRepeated >= 140
+    in
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.Extra.or
+                    (Maybe.map2 immediateCondition value.dia value.sys)
+                    (Maybe.map2 retestCondition value.diaRepeated value.sysRepeated)
+            )
+        |> Maybe.withDefault False
+
+
 respiratoryRateElevated : PrenatalMeasurements -> Bool
 respiratoryRateElevated measurements =
     getMeasurementValueFunc measurements.vitals
@@ -946,6 +997,13 @@ labResultsDiagnoses =
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia
     , DiagnosisSevereAnemiaWithComplications
+    ]
+
+
+examinationDiagnoses : List PrenatalDiagnosis
+examinationDiagnoses =
+    [ DiagnosisChronicHypertension
+    , DiagnosisGestationalHypertension
     ]
 
 

@@ -715,6 +715,9 @@ encodePrenatalLaboratoryTest value =
             TestRandomBloodSugar ->
                 "random-blood-sugar"
 
+            TestVitalsRecheck ->
+                "vitals-recheck"
+
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =

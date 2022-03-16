@@ -1084,6 +1084,7 @@ type PrenatalLaboratoryTest
     | TestRandomBloodSugar
     | TestSyphilis
     | TestUrineDipstick
+    | TestVitalsRecheck
 
 
 type alias PrenatalMedicationDistribution =

@@ -736,6 +736,9 @@ decodePrenatalLaboratoryTest =
                     "random-blood-sugar" ->
                         succeed TestRandomBloodSugar
 
+                    "vitals-recheck" ->
+                        succeed TestVitalsRecheck
+
                     _ ->
                         fail <|
                             value
