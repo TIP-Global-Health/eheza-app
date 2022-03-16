@@ -1107,15 +1107,15 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                             ( newModel, _ ) =
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
-                            generateMsgsFunc =
-                                if resultsAdded then
-                                    generatePrenatalLabsResultsAddedMsgs
-
-                                else
-                                    generatePrenatalLabsTestAddedMsgs
-
                             extraMsgs =
-                                Maybe.map (generateMsgsFunc currentDate newModel test executionNote)
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        if resultsAdded then
+                                            generatePrenatalLabsResultsAddedMsgs currentDate newModel test encounterId_
+
+                                        else
+                                            generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+                                    )
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1133,36 +1133,38 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                             extraMsgs =
                                 Maybe.map2
                                     (\dia sys ->
-                                        let
-                                            executionNote =
-                                                -- When we suspect hypertension, we'll try to schedule vitals recheck.
-                                                -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
-                                                if Pages.Prenatal.Activity.Utils.suspectedHypertensionCondition dia sys then
-                                                    Backend.Measurement.Model.TestNoteRunToday
-
-                                                else
-                                                    -- If not, we try to unschedule vitals recheck.
-                                                    -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
-                                                    Backend.Measurement.Model.TestNoteNotIndicated
-                                        in
                                         Maybe.map
                                             (\encounterId_ ->
                                                 let
                                                     resultsAdded =
                                                         isJust value.diaRepeated
-
-                                                    generateMsgsFunc =
-                                                        if resultsAdded then
-                                                            generatePrenatalLabsResultsAddedMsgs
-
-                                                        else
-                                                            generatePrenatalLabsTestAddedMsgs
                                                 in
-                                                generateMsgsFunc currentDate
-                                                    newModel
-                                                    Backend.Measurement.Model.TestVitalsRecheck
-                                                    executionNote
-                                                    encounterId_
+                                                if resultsAdded then
+                                                    generatePrenatalLabsResultsAddedMsgs
+                                                        currentDate
+                                                        newModel
+                                                        Backend.Measurement.Model.TestVitalsRecheck
+                                                        encounterId_
+
+                                                else
+                                                    let
+                                                        executionNote =
+                                                            -- When we suspect hypertension, we'll try to schedule vitals recheck.
+                                                            -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
+                                                            if Pages.Prenatal.Activity.Utils.suspectedHypertensionCondition dia sys then
+                                                                Backend.Measurement.Model.TestNoteRunToday
+
+                                                            else
+                                                                -- If not, we try to unschedule vitals recheck.
+                                                                -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                Backend.Measurement.Model.TestNoteNotIndicated
+                                                    in
+                                                    generatePrenatalLabsTestAddedMsgs
+                                                        currentDate
+                                                        newModel
+                                                        Backend.Measurement.Model.TestVitalsRecheck
+                                                        executionNote
+                                                        encounterId_
                                             )
                                             encounterId
                                             |> Maybe.withDefault []
@@ -4242,10 +4244,9 @@ generatePrenatalLabsResultsAddedMsgs :
     NominalDate
     -> ModelIndexedDb
     -> Backend.Measurement.Model.PrenatalLaboratoryTest
-    -> Backend.Measurement.Model.PrenatalTestExecutionNote
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalLabsResultsAddedMsgs currentDate after test executionNote id =
+generatePrenatalLabsResultsAddedMsgs currentDate after test id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.andThen
