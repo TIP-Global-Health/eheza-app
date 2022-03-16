@@ -69,11 +69,17 @@ decodePrenatalDiagnosis =
                     "prescribe-mebendezole" ->
                         succeed DiagnosisPrescribeMebendezole
 
-                    "chronic-hypertension" ->
-                        succeed DiagnosisChronicHypertension
+                    "chronic-hypertension-immediate" ->
+                        succeed DiagnosisChronicHypertensionImmediate
 
-                    "gestational-hypertension" ->
-                        succeed DiagnosisGestationalHypertension
+                    "chronic-hypertension-recheck" ->
+                        succeed DiagnosisChronicHypertensionAfterRecheck
+
+                    "gestational-hypertension-immediate" ->
+                        succeed DiagnosisGestationalHypertensionImmediate
+
+                    "gestational-hypertension-recheck" ->
+                        succeed DiagnosisGestationalHypertensionAfterRecheck
 
                     "hiv" ->
                         succeed DiagnosisHIV

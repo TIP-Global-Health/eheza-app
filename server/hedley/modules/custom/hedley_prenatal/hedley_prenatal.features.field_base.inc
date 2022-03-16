@@ -495,8 +495,10 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
-        'chronic-hypertension' => 'Chronic Hypertension',
-        'gestational-hypertension' => 'Gestational Hypertension',
+        'chronic-hypertension-immediate' => 'Chronic Hypertension',
+        'chronic-hypertension-recheck' => 'Chronic Hypertension',
+        'gestational-hypertension-immediate' => 'Gestational Hypertension',
+        'gestational-hypertension-recheck' => 'Gestational Hypertension',
         'hiv' => 'HIV',
         'partner-hiv' => 'HIV positive partner',
         'syphilis' => 'Syphilis',
@@ -588,7 +590,7 @@ function hedley_prenatal_field_default_field_bases() {
         'ceftriaxon' =>'Ceftriaxon',
         'methyldopa-2' => 'Methyldopa twice a day',
         'methyldopa-3' => 'Methyldopa three times a day',
-        'methyldopa-4' => 'Methyldopa four times a day',        
+        'methyldopa-4' => 'Methyldopa four times a day',
       ),
       'allowed_values_function' => '',
     ),

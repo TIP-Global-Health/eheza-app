@@ -7300,12 +7300,22 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisChronicHypertension ->
+                DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisGestationalHypertension ->
+                DiagnosisChronicHypertensionAfterRecheck ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionImmediate ->
+                    { english = "Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionAfterRecheck ->
                     { english = "Gestational Hypertension"
                     , kinyarwanda = Nothing
                     }
@@ -7517,12 +7527,22 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisChronicHypertension ->
+                DiagnosisChronicHypertensionImmediate ->
                     { english = "Patient shows signs of Chronic Hypertension"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisGestationalHypertension ->
+                DiagnosisChronicHypertensionAfterRecheck ->
+                    { english = "Patient shows signs of Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionImmediate ->
+                    { english = "Patient shows signs of Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionAfterRecheck ->
                     { english = "Patient shows signs of Gestational Hypertension"
                     , kinyarwanda = Nothing
                     }

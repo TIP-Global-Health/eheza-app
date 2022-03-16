@@ -40,11 +40,13 @@ type PrenatalDiagnosis
     = -- This diagnosis is used only as an indication for prescribing
       -- Mebendezole at Medication distribution activity.
       DiagnosisPrescribeMebendezole
+    | DiagnosisChronicHypertensionImmediate
+    | DiagnosisChronicHypertensionAfterRecheck
+    | DiagnosisGestationalHypertensionImmediate
+    | DiagnosisGestationalHypertensionAfterRecheck
     | DiagnosisHIV
     | DiagnosisDiscordantPartnership
     | DiagnosisSyphilis
-    | DiagnosisChronicHypertension
-    | DiagnosisGestationalHypertension
     | DiagnosisSyphilisWithComplications
     | DiagnosisNeurosyphilis
     | DiagnosisHepatitisB

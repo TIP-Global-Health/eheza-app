@@ -323,16 +323,29 @@ expectNextStepsTask currentDate assembled task =
 
 
 diagnosedMalaria : AssembledData -> Bool
-diagnosedMalaria assembled =
-    diagnosed DiagnosisMalaria assembled
-        || diagnosed DiagnosisMalariaWithAnemia assembled
-        || diagnosed DiagnosisMalariaWithSevereAnemia assembled
+diagnosedMalaria =
+    diagnosedOneOf
+        [ DiagnosisMalaria
+        , DiagnosisMalariaWithAnemia
+        , DiagnosisMalariaWithSevereAnemia
+        ]
 
 
 diagnosedHypertension : AssembledData -> Bool
-diagnosedHypertension assembled =
-    diagnosed DiagnosisGestationalHypertension assembled
-        || diagnosed DiagnosisChronicHypertension assembled
+diagnosedHypertension =
+    diagnosedOneOf
+        [ DiagnosisGestationalHypertensionImmediate
+        , DiagnosisGestationalHypertensionAfterRecheck
+        , DiagnosisGestationalHypertensionImmediate
+        , DiagnosisGestationalHypertensionAfterRecheck
+        ]
+
+
+diagnosedOneOf : List PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedOneOf diagnoses assembled =
+    List.any
+        (\diagnosis -> diagnosed diagnosis assembled)
+        diagnoses
 
 
 emergencyReferalRequired : AssembledData -> Bool
@@ -938,33 +951,39 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
             dia >= 110 || sys >= 160
     in
     case diagnosis of
-        DiagnosisChronicHypertension ->
-            egaInWeeks < 20 && hypertensionByMeasurements measurements
+        DiagnosisChronicHypertensionImmediate ->
+            egaInWeeks < 20 && immediateHypertensionByMeasurements measurements
 
-        DiagnosisGestationalHypertension ->
-            egaInWeeks >= 20 && hypertensionByMeasurements measurements
+        DiagnosisChronicHypertensionAfterRecheck ->
+            egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements
+
+        DiagnosisGestationalHypertensionImmediate ->
+            egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements
+
+        DiagnosisGestationalHypertensionAfterRecheck ->
+            egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements
 
         -- Non Examination diagnoses.
         _ ->
             False
 
 
-hypertensionByMeasurements : PrenatalMeasurements -> Bool
-hypertensionByMeasurements measurements =
-    let
-        -- We measure BP again when we suspect Hypertension (dia between 90
-        -- and 110, and dia between 140 and 160).
-        -- We diagnose Hypertension if repeated measurements are within
-        -- those boundries, or exceed them.
-        retestCondition diaRepeated sysRepeated =
-            diaRepeated >= 90 || sysRepeated >= 140
-    in
+immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
+immediateHypertensionByMeasurements measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.andThen
             (\value ->
-                Maybe.Extra.or
-                    (Maybe.map2 immediateHypertensionCondition value.dia value.sys)
-                    (Maybe.map2 retestCondition value.diaRepeated value.sysRepeated)
+                Maybe.map2 immediateHypertensionCondition value.dia value.sys
+            )
+        |> Maybe.withDefault False
+
+
+recheckedHypertensionByMeasurements : PrenatalMeasurements -> Bool
+recheckedHypertensionByMeasurements measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2 recheckHypertensionCondition value.diaRepeated value.sysRepeated
             )
         |> Maybe.withDefault False
 
@@ -972,6 +991,16 @@ hypertensionByMeasurements measurements =
 immediateHypertensionCondition : Float -> Float -> Bool
 immediateHypertensionCondition dia sys =
     dia >= 110 || sys >= 160
+
+
+{-| We measure BP again when we suspect Hypertension (dia between 90
+and 110, and dia between 140 and 160).
+We diagnose Hypertension if repeated measurements are within
+those boundries, or exceed them.
+-}
+recheckHypertensionCondition : Float -> Float -> Bool
+recheckHypertensionCondition diaRepeated sysRepeated =
+    diaRepeated >= 90 || sysRepeated >= 140
 
 
 suspectedHypertensionCondition : Float -> Float -> Bool
@@ -1017,8 +1046,10 @@ labResultsDiagnoses =
 
 examinationDiagnoses : List PrenatalDiagnosis
 examinationDiagnoses =
-    [ DiagnosisChronicHypertension
-    , DiagnosisGestationalHypertension
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
     ]
 
 
@@ -1099,13 +1130,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
                     )
                 |> Maybe.withDefault False
     in
-    if
-        List.any
-            (\diagnosis ->
-                diagnosed diagnosis assembled
-            )
-            [ DiagnosisHIV, DiagnosisDiscordantPartnership ]
-    then
+    if diagnosedOneOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
         ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
         , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
         )
