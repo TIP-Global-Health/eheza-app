@@ -49,6 +49,13 @@ diagnosed diagnosis assembled =
     EverySet.member diagnosis assembled.encounter.diagnoses
 
 
+diagnosedAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedAnyOf diagnoses assembled =
+    List.any
+        (\diagnosis -> diagnosed diagnosis assembled)
+        diagnoses
+
+
 listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
 listNonUrgentDiagnoses diagnoses =
     let
@@ -282,6 +289,24 @@ resolveMedicationDistributionInputsAndTasks language currentDate assembled setMe
                 ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
             )
             ( [], 0, 0 )
+
+
+{-| Medication Distribution activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+medicationDistributionMeasurementTaken : List MedicationDistributionSign -> PrenatalMeasurements -> Bool
+medicationDistributionMeasurementTaken allowedSigns measurements =
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.map
+            (.distributionSigns
+                >> (\signs ->
+                        List.any (\sign -> EverySet.member sign signs)
+                            allowedSigns
+                   )
+            )
+        |> Maybe.withDefault False
 
 
 resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
@@ -852,19 +877,9 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-{-| Medication Distribution activity appears on both initial and recurrent encounters.
-Each one of them got unique set of signs that can be used.
-In order to know if activity was completed or not, we check if at least one
-of those signs was set.
--}
-medicationDistributionMeasurementTaken : List MedicationDistributionSign -> PrenatalMeasurements -> Bool
-medicationDistributionMeasurementTaken allowedSigns measurements =
-    getMeasurementValueFunc measurements.medicationDistribution
-        |> Maybe.map
-            (.distributionSigns
-                >> (\signs ->
-                        List.any (\sign -> EverySet.member sign signs)
-                            allowedSigns
-                   )
-            )
-        |> Maybe.withDefault False
+recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
+recommendedTreatmentSignsForHypertension =
+    [ TreatmentMethyldopa2
+    , TreatmentMethyldopa3
+    , TreatmentMethyldopa4
+    ]

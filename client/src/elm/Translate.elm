@@ -631,6 +631,8 @@ type TranslationId
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
     | HypertensionBeforePregnancy
+    | HypertensionRecommendedTreatmentHeader
+    | HypertensionRecommendedTreatmentHelper
     | IdleWaitingForSync
     | IllnessSymptom IllnessSymptom
     | Immunisation
@@ -4670,6 +4672,16 @@ translationSet trans =
         HypertensionBeforePregnancy ->
             { english = "Hypertension before pregnancy"
             , kinyarwanda = Just "Umuvuduko w'amaraso mbere yo gutwita"
+            }
+
+        HypertensionRecommendedTreatmentHeader ->
+            { english = "This patient shows signs of hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient bellow"
+            , kinyarwanda = Nothing
             }
 
         IdleWaitingForSync ->

@@ -717,7 +717,7 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetRecommendedTreatmentSign sign ->
+        SetRecommendedTreatmentSign allowedSigns sign ->
             let
                 form =
                     Dict.get id db.prenatalMeasurements
@@ -734,7 +734,7 @@ update language currentDate id db msg model =
                     -- sure to preserve them, before setting new value at recurrent phase.
                     Maybe.map
                         (\signs ->
-                            List.filter (\sign_ -> not <| List.member sign_ allowedRecommendedTreatmentSigns) signs
+                            List.filter (\sign_ -> not <| List.member sign_ allowedSigns) signs
                                 |> List.append [ sign ]
                         )
                         form.signs

@@ -32,7 +32,7 @@ import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForHypertension)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -711,7 +711,7 @@ viewNextStepsContent language currentDate assembled data =
                     measurements.recommendedTreatment
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-                        |> viewRecommendedTreatmentForSyphilis language currentDate assembled
+                        |> viewRecommendedTreatmentForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -765,22 +765,52 @@ viewNextStepsContent language currentDate assembled data =
     ]
 
 
-viewRecommendedTreatmentForSyphilis :
+viewRecommendedTreatmentForm :
     Language
     -> NominalDate
     -> AssembledData
     -> RecommendedTreatmentForm
     -> Html Msg
-viewRecommendedTreatmentForSyphilis language currentDate assembled form =
+viewRecommendedTreatmentForm language currentDate assembled form =
     let
-        -- Since we may have values from inital phase of encounter, we need
-        -- to filter them out, to be able to determine current value.
+        allowedSigns =
+            resolveAllowedRecommendedTreatmentSigns assembled
+
+        hypertensionSection =
+            if diagnosedHypertensionAfterRecheck assembled then
+                viewRecommendedTreatmentForHypertension language currentDate (SetRecommendedTreatmentSign allowedSigns) form
+
+            else
+                []
+
+        syphilisSection =
+            if diagnosedSyphilis assembled then
+                viewRecommendedTreatmentForSyphilis language currentDate allowedSigns assembled form
+
+            else
+                []
+    in
+    div [ class "ui form recommended-treatment" ] <|
+        hypertensionSection
+            ++ syphilisSection
+
+
+viewRecommendedTreatmentForSyphilis :
+    Language
+    -> NominalDate
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> RecommendedTreatmentForm
+    -> List (Html Msg)
+viewRecommendedTreatmentForSyphilis language currentDate allowedSigns assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- inital phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
         currentValue =
             Maybe.andThen
-                (\signs ->
-                    List.filter (\sign -> List.member sign allowedRecommendedTreatmentSigns)
-                        signs
-                        |> List.head
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
+                    >> List.head
                 )
                 form.signs
 
@@ -802,27 +832,25 @@ viewRecommendedTreatmentForSyphilis language currentDate assembled form =
                 form.signs
                 |> Maybe.withDefault emptyNode
     in
-    div [ class "ui form recommended-treatment" ]
-        [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
-        , h2 []
-            [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
-            , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
-            ]
-        , viewCheckBoxSelectCustomInput language
-            [ TreatementPenecilin1
-            , TreatementPenecilin3
-            , TreatementErythromycin
-            , TreatementAzithromycin
-            , TreatementCeftriaxon
-            ]
-            []
-            currentValue
-            SetRecommendedTreatmentSign
-            (viewTreatmentOptionForSyphilis language)
-        , warning
+    [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+    , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+    , div [ class "instructions" ]
+        [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+        , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
         ]
+    , viewCheckBoxSelectCustomInput language
+        [ TreatementPenecilin1
+        , TreatementPenecilin3
+        , TreatementErythromycin
+        , TreatementAzithromycin
+        , TreatementCeftriaxon
+        ]
+        []
+        currentValue
+        (SetRecommendedTreatmentSign allowedSigns)
+        (viewTreatmentOptionForSyphilis language)
+    , warning
+    ]
 
 
 viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any

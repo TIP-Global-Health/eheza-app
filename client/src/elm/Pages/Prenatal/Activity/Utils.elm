@@ -318,34 +318,25 @@ expectNextStepsTask currentDate assembled task =
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
                 && (diagnosedMalaria assembled
-                        || diagnosedHypertension assembled
+                        || diagnosedHypertensionImmediate assembled
                    )
 
 
 diagnosedMalaria : AssembledData -> Bool
 diagnosedMalaria =
-    diagnosedOneOf
+    diagnosedAnyOf
         [ DiagnosisMalaria
         , DiagnosisMalariaWithAnemia
         , DiagnosisMalariaWithSevereAnemia
         ]
 
 
-diagnosedHypertension : AssembledData -> Bool
-diagnosedHypertension =
-    diagnosedOneOf
-        [ DiagnosisGestationalHypertensionImmediate
-        , DiagnosisGestationalHypertensionAfterRecheck
+diagnosedHypertensionImmediate : AssembledData -> Bool
+diagnosedHypertensionImmediate =
+    diagnosedAnyOf
+        [ DiagnosisChronicHypertensionImmediate
         , DiagnosisGestationalHypertensionImmediate
-        , DiagnosisGestationalHypertensionAfterRecheck
         ]
-
-
-diagnosedOneOf : List PrenatalDiagnosis -> AssembledData -> Bool
-diagnosedOneOf diagnoses assembled =
-    List.any
-        (\diagnosis -> diagnosed diagnosis assembled)
-        diagnoses
 
 
 emergencyReferalRequired : AssembledData -> Bool
@@ -382,16 +373,44 @@ nextStepsMeasurementTaken assembled task =
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
         NextStepsRecommendedTreatment ->
-            recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
+            let
+                malariaTreatmentCompleted =
+                    if diagnosedMalaria assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
+
+                    else
+                        True
+
+                hypertensionTreatmentCompleted =
+                    if diagnosedHypertensionImmediate assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+            in
+            malariaTreatmentCompleted && hypertensionTreatmentCompleted
 
 
-allowedRecommendedTreatmentSigns : List RecommendedTreatmentSign
-allowedRecommendedTreatmentSigns =
+recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
+recommendedTreatmentSignsForMalaria =
     [ TreatmentQuinineSulphate
     , TreatmentCoartem
     , TreatmentWrittenProtocols
     , TreatementReferToHospital
     ]
+
+
+resolveAllowedRecommendedTreatmentSigns : AssembledData -> List RecommendedTreatmentSign
+resolveAllowedRecommendedTreatmentSigns assembled =
+    let
+        hypertensionSigns =
+            if diagnosedHypertensionImmediate assembled then
+                recommendedTreatmentSignsForHypertension
+
+            else
+                []
+    in
+    recommendedTreatmentSignsForMalaria ++ hypertensionSigns
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
@@ -1130,7 +1149,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
                     )
                 |> Maybe.withDefault False
     in
-    if diagnosedOneOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
+    if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
         ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
         , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
         )
@@ -1479,12 +1498,14 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
 
                 completed =
-                    Maybe.map
-                        (\signs ->
-                            List.any (\sign -> List.member sign signs) allowedRecommendedTreatmentSigns
-                        )
-                        form.signs
-                        |> Maybe.withDefault False
+                    -- @todo
+                    -- Maybe.map
+                    --     (\signs ->
+                    --         List.any (\sign -> List.member sign signs) resolveAllowedRecommendedTreatmentSigns
+                    --     )
+                    --     form.signs
+                    --     |> Maybe.withDefault
+                    False
             in
             ( if completed then
                 1

@@ -32,7 +32,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForHypertension)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -1609,7 +1609,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             medicationsInitialPhase
 
                 Just NextStepsRecommendedTreatment ->
-                    viewRecommendedTreatmentForMalaria language currentDate assembled recommendedTreatmentForm
+                    viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
 
                 Nothing ->
                     emptyNode
@@ -3546,13 +3546,44 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
         )
 
 
-viewRecommendedTreatmentForMalaria :
+viewRecommendedTreatmentForm :
     Language
     -> NominalDate
     -> AssembledData
     -> RecommendedTreatmentForm
     -> Html Msg
-viewRecommendedTreatmentForMalaria language currentDate assembled form =
+viewRecommendedTreatmentForm language currentDate assembled form =
+    let
+        allowedSigns =
+            resolveAllowedRecommendedTreatmentSigns assembled
+
+        hypertensionSection =
+            if diagnosedHypertensionImmediate assembled then
+                viewRecommendedTreatmentForHypertension language currentDate (SetRecommendedTreatmentSign allowedSigns) form
+
+            else
+                []
+
+        malariaSection =
+            if diagnosedMalaria assembled then
+                viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled form
+
+            else
+                []
+    in
+    div [ class "ui form recommended-treatment" ] <|
+        hypertensionSection
+            ++ malariaSection
+
+
+viewRecommendedTreatmentForMalaria :
+    Language
+    -> NominalDate
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> RecommendedTreatmentForm
+    -> List (Html Msg)
+viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled form =
     let
         egaInWeeks =
             Maybe.map
@@ -3571,33 +3602,31 @@ viewRecommendedTreatmentForMalaria language currentDate assembled form =
                 egaInWeeks
                 |> Maybe.withDefault TreatmentQuinineSulphate
 
-        -- Since we may have values from recurrent phase of encounter, we need
-        -- to filter them out, to be able to determine current value.
+        -- Since we may have values set for another diagnosis, or from
+        -- recurrent phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
         currentValue =
             Maybe.andThen
-                (\signs ->
-                    List.filter (\sign -> List.member sign allowedRecommendedTreatmentSigns)
-                        signs
-                        |> List.head
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+                    >> List.head
                 )
                 form.signs
     in
-    div [ class "ui form recommended-treatment" ]
-        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
-        , h2 []
-            [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
-        , viewCheckBoxSelectInput language
-            [ medicationTreatment
-            , TreatmentWrittenProtocols
-            , TreatementReferToHospital
-            ]
-            []
-            currentValue
-            SetRecommendedTreatmentSign
-            Translate.RecommendedTreatmentSignLabel
+    [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+    , h2 []
+        [ text <| translate language Translate.ActionsToTake ++ ":" ]
+    , div [ class "instructions" ]
+        [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+    , viewCheckBoxSelectInput language
+        [ medicationTreatment
+        , TreatmentWrittenProtocols
+        , TreatementReferToHospital
         ]
+        []
+        currentValue
+        (SetRecommendedTreatmentSign allowedSigns)
+        Translate.RecommendedTreatmentSignLabel
+    ]
 
 
 
