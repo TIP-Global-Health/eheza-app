@@ -1149,13 +1149,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                 else
                                                     let
                                                         executionNote =
+                                                            if Pages.Prenatal.Activity.Utils.immediateHypertensionCondition dia sys then
+                                                                -- When we have diagnosed Hypertension, we'll try to unschedule
+                                                                -- vitals recheck (as we do not know if it was scheduled before).
+                                                                -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                Backend.Measurement.Model.TestNoteNotIndicated
+
+                                                            else
                                                             -- When we suspect hypertension, we'll try to schedule vitals recheck.
                                                             -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
-                                                            if Pages.Prenatal.Activity.Utils.suspectedHypertensionCondition dia sys then
+                                                            if
+                                                                Pages.Prenatal.Activity.Utils.suspectedHypertensionCondition dia sys
+                                                            then
                                                                 Backend.Measurement.Model.TestNoteRunToday
 
                                                             else
-                                                                -- If not, we try to unschedule vitals recheck.
+                                                                -- Otherwise, we try to unschedule vitals recheck.
                                                                 -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
                                                                 Backend.Measurement.Model.TestNoteNotIndicated
                                                     in
