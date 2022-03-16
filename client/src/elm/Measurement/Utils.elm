@@ -561,9 +561,9 @@ vitalsFormWithDefault form saved =
                 , respiratoryRateDirty = form.respiratoryRateDirty
                 , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
                 , bodyTemperatureDirty = form.bodyTemperatureDirty
-                , sysRepeated = maybeValueConsideringIsDirtyField form.sysRepeatedDirty form.sysRepeated value.sys
+                , sysRepeated = maybeValueConsideringIsDirtyField form.sysRepeatedDirty form.sysRepeated value.sysRepeated
                 , sysRepeatedDirty = form.sysRepeatedDirty
-                , diaRepeated = maybeValueConsideringIsDirtyField form.diaRepeatedDirty form.diaRepeated value.dia
+                , diaRepeated = maybeValueConsideringIsDirtyField form.diaRepeatedDirty form.diaRepeated value.diaRepeated
                 , diaRepeatedDirty = form.diaRepeatedDirty
                 }
             )
