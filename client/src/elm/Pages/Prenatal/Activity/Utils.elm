@@ -317,7 +317,9 @@ expectNextStepsTask currentDate assembled task =
         NextStepsRecommendedTreatment ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && diagnosedMalaria assembled
+                && (diagnosedMalaria assembled
+                        || diagnosedHypertension assembled
+                   )
 
 
 diagnosedMalaria : AssembledData -> Bool
@@ -325,6 +327,12 @@ diagnosedMalaria assembled =
     diagnosed DiagnosisMalaria assembled
         || diagnosed DiagnosisMalariaWithAnemia assembled
         || diagnosed DiagnosisMalariaWithSevereAnemia assembled
+
+
+diagnosedHypertension : AssembledData -> Bool
+diagnosedHypertension assembled =
+    diagnosed DiagnosisGestationalHypertension assembled
+        || diagnosed DiagnosisChronicHypertension assembled
 
 
 emergencyReferalRequired : AssembledData -> Bool
