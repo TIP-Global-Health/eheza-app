@@ -939,18 +939,18 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
     in
     case diagnosis of
         DiagnosisChronicHypertension ->
-            egaInWeeks < 20 && diagnosedHypertension measurements
+            egaInWeeks < 20 && hypertensionByMeasurements measurements
 
         DiagnosisGestationalHypertension ->
-            egaInWeeks >= 20 && diagnosedHypertension measurements
+            egaInWeeks >= 20 && hypertensionByMeasurements measurements
 
         -- Non Examination diagnoses.
         _ ->
             False
 
 
-diagnosedHypertension : PrenatalMeasurements -> Bool
-diagnosedHypertension measurements =
+hypertensionByMeasurements : PrenatalMeasurements -> Bool
+hypertensionByMeasurements measurements =
     let
         -- We measure BP again when we suspect Hypertension (dia between 90
         -- and 110, and dia between 140 and 160).
