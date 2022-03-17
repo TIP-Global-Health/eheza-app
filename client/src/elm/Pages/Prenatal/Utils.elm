@@ -877,6 +877,30 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
+resolveRecommendedTreatmentSectionState : Bool -> List RecommendedTreatmentSign -> Maybe (List RecommendedTreatmentSign) -> ( Int, Int )
+resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
+    if isDiagnosed then
+        Maybe.map
+            (\signs ->
+                let
+                    completed =
+                        -- We know that section is completed when one of allowed
+                        -- signs is set (as only single selection is allowed).
+                        List.any (\sign -> List.member sign signs) allowedSigns
+                in
+                if completed then
+                    ( 1, 1 )
+
+                else
+                    ( 0, 1 )
+            )
+            currentSigns
+            |> Maybe.withDefault ( 0, 0 )
+
+    else
+        ( 0, 0 )
+
+
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
 recommendedTreatmentSignsForHypertension =
     [ TreatmentMethyldopa2

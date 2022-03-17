@@ -1497,22 +1497,14 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
 
-                completed =
-                    -- @todo
-                    -- Maybe.map
-                    --     (\signs ->
-                    --         List.any (\sign -> List.member sign signs) resolveAllowedRecommendedTreatmentSigns
-                    --     )
-                    --     form.signs
-                    --     |> Maybe.withDefault
-                    False
-            in
-            ( if completed then
-                1
+                ( malariaSectionCompleted, malariaSectionActive ) =
+                    resolveRecommendedTreatmentSectionState (diagnosedMalaria assembled) recommendedTreatmentSignsForMalaria form.signs
 
-              else
-                0
-            , 1
+                ( hypertensionSectionCompleted, hypertensionSectionActive ) =
+                    resolveRecommendedTreatmentSectionState (diagnosedHypertensionImmediate assembled) recommendedTreatmentSignsForHypertension form.signs
+            in
+            ( malariaSectionCompleted + hypertensionSectionCompleted
+            , malariaSectionActive + hypertensionSectionActive
             )
 
 
