@@ -895,7 +895,7 @@ resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
                     ( 0, 1 )
             )
             currentSigns
-            |> Maybe.withDefault ( 0, 0 )
+            |> Maybe.withDefault ( 0, 1 )
 
     else
         ( 0, 0 )

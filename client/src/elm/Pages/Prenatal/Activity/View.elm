@@ -3554,19 +3554,16 @@ viewRecommendedTreatmentForm :
     -> Html Msg
 viewRecommendedTreatmentForm language currentDate assembled form =
     let
-        allowedSigns =
-            resolveAllowedRecommendedTreatmentSigns assembled
-
         hypertensionSection =
             if diagnosedHypertensionImmediate assembled then
-                viewRecommendedTreatmentForHypertension language currentDate (SetRecommendedTreatmentSign allowedSigns) form
+                viewRecommendedTreatmentForHypertension language currentDate (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension) form
 
             else
                 []
 
         malariaSection =
             if diagnosedMalaria assembled then
-                viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled form
+                viewRecommendedTreatmentForMalaria language currentDate recommendedTreatmentSignsForMalaria assembled form
 
             else
                 []

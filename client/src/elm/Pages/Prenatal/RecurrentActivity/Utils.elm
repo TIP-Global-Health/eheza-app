@@ -459,19 +459,6 @@ recommendedTreatmentSignsForSyphilis =
     ]
 
 
-resolveAllowedRecommendedTreatmentSigns : AssembledData -> List RecommendedTreatmentSign
-resolveAllowedRecommendedTreatmentSigns assembled =
-    let
-        hypertensionSigns =
-            if diagnosedHypertensionAfterRecheck assembled then
-                recommendedTreatmentSignsForHypertension
-
-            else
-                []
-    in
-    recommendedTreatmentSignsForSyphilis ++ hypertensionSigns
-
-
 nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal language currentDate assembled data task =
     case task of

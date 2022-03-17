@@ -400,19 +400,6 @@ recommendedTreatmentSignsForMalaria =
     ]
 
 
-resolveAllowedRecommendedTreatmentSigns : AssembledData -> List RecommendedTreatmentSign
-resolveAllowedRecommendedTreatmentSigns assembled =
-    let
-        hypertensionSigns =
-            if diagnosedHypertensionImmediate assembled then
-                recommendedTreatmentSignsForHypertension
-
-            else
-                []
-    in
-    recommendedTreatmentSignsForMalaria ++ hypertensionSigns
-
-
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
 showMebendazoleQuestion currentDate assembled =
     assembled.globalLmpDate
