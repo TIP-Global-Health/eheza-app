@@ -7294,6 +7294,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
+                RecurrentExamination ->
+                    { english = "Examination"
+                    , kinyarwanda = Just "Gusuzuma"
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->

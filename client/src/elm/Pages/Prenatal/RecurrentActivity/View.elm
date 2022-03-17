@@ -106,6 +106,10 @@ viewActivity language currentDate activity assembled db model =
         RecurrentNextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
 
+        RecurrentExamination ->
+            --@todo
+            []
+
 
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate assembled model =
