@@ -11,7 +11,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (toSendToHCValueWithDefault)
+import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
@@ -37,6 +37,9 @@ update language currentDate id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
     in
     case msg of
+        NoOp ->
+            noChange
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -70,6 +73,46 @@ update language currentDate id db msg model =
                         [ SetWarningPopupState <| Just ( message, "" ) ]
             in
             sequenceExtra (update language currentDate id db) extraMsgs noChange
+
+        SetVitalsFloatInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc (String.toFloat value) model.examinationData.vitalsForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveVitals personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.examinationData.vitalsForm
+                        |> toVitalsValueWithDefault measurement
+                        |> Maybe.map
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveVitals personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
 
         SetActiveLabResultsTask task ->
             let

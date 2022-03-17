@@ -1329,12 +1329,27 @@ viewVitalsForm language currentDate config form =
         bodyTemperatureUpdateFunc value form_ =
             { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
 
+        sysRepeatedUpdateFunc value form_ =
+            { form_ | sysRepeated = value, sysRepeatedDirty = True }
+
+        diaRepeatedUpdateFunc value form_ =
+            { form_ | diaRepeated = value, diaRepeatedDirty = True }
+
         ageInYears =
             Maybe.map
                 (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
                 config.birthDate
 
         bloodPressureSection =
+            viewBloodPressureSection
+                form.sysBloodPressure
+                form.diaBloodPressure
+                sysBloodPressureUpdateFunc
+                diaBloodPressureUpdateFunc
+                config.sysBloodPressurePreviousValue
+                config.diaBloodPressurePreviousValue
+
+        viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue =
             Maybe.map
                 (\ageYears ->
                     if ageYears < 12 then
@@ -1535,6 +1550,15 @@ viewVitalsForm language currentDate config form =
                         ++ heartRateSection
                         ++ respiratoryRateSection
                         ++ bodyTemperatureSection
+
+                VitalsFormRepeated ->
+                    viewBloodPressureSection
+                        form.sysRepeated
+                        form.diaRepeated
+                        sysRepeatedUpdateFunc
+                        diaRepeatedUpdateFunc
+                        form.sysBloodPressure
+                        form.diaBloodPressure
     in
     div [ class <| "ui form " ++ config.formClass ]
         content

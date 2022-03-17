@@ -548,6 +548,7 @@ type TranslationId
     | ErrorConfigurationError
     | Estimated
     | ExaminationTask ExaminationTask
+    | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
     | ExposureTask ExposureTask
     | Extremities
     | Eyes
@@ -3974,6 +3975,13 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.BreastExam ->
                     translationSet BreastExam
+
+        ExaminationTaskRecurrent task ->
+            case task of
+                Pages.Prenatal.RecurrentActivity.Types.ExaminationVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Just "Ibimenyetso by'ubuzima"
+                    }
 
         ExposureTask task ->
             case task of

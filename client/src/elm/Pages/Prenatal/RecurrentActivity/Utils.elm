@@ -9,7 +9,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Model exposing (AssembledData)
@@ -576,5 +576,23 @@ examinationMeasurementTaken assembled task =
         ExaminationVitals ->
             getMeasurementValueFunc assembled.measurements.vitals
                 |> Maybe.map
+                    -- We meassure sysRepeated and diaRepeated, but we know for sure
+                    -- that if one is set, other one is set as well.
+                    -- So, it's enough to check only one.
                     (.sysRepeated >> isJust)
                 |> Maybe.withDefault False
+
+
+examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal assembled data task =
+    case task of
+        ExaminationVitals ->
+            let
+                form =
+                    assembled.measurements.vitals
+                        |> getMeasurementValueFunc
+                        |> vitalsFormWithDefault data.vitalsForm
+            in
+            ( taskAllCompleted [ form.sysRepeated, form.diaRepeated ]
+            , 1
+            )

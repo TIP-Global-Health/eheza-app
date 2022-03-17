@@ -400,6 +400,7 @@ type alias VitalsFormConfig msg =
 type VitalsFormMode
     = VitalsFormBasic
     | VitalsFormFull
+    | VitalsFormRepeated
 
 
 type InvokationModule
