@@ -104,6 +104,7 @@ import Pages.Prenatal.Encounter.Model
 import Pages.Prenatal.Encounter.Utils
 import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentActivity.Utils
+import Pages.Prenatal.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.WellChild.Activity.Model
@@ -1159,7 +1160,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                             -- When we suspect hypertension, we'll try to schedule vitals recheck.
                                                             -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
                                                             if
-                                                                Pages.Prenatal.Activity.Utils.suspectedHypertensionCondition dia sys
+                                                                Pages.Prenatal.Utils.suspectedHypertensionCondition dia sys
                                                             then
                                                                 Backend.Measurement.Model.TestNoteRunToday
 

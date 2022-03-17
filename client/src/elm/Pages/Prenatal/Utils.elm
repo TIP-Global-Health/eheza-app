@@ -935,3 +935,8 @@ recommendedTreatmentSignsForHypertension =
     , TreatmentMethyldopa3
     , TreatmentMethyldopa4
     ]
+
+
+suspectedHypertensionCondition : Float -> Float -> Bool
+suspectedHypertensionCondition dia sys =
+    (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)

@@ -952,10 +952,6 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
 
 matchExaminationPrenatalDiagnosis : Int -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
 matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
-    let
-        hypertensionCondition dia sys =
-            dia >= 110 || sys >= 160
-    in
     case diagnosis of
         DiagnosisChronicHypertensionImmediate ->
             egaInWeeks < 20 && immediateHypertensionByMeasurements measurements
@@ -1007,11 +1003,6 @@ those boundries, or exceed them.
 recheckHypertensionCondition : Float -> Float -> Bool
 recheckHypertensionCondition diaRepeated sysRepeated =
     diaRepeated >= 90 || sysRepeated >= 140
-
-
-suspectedHypertensionCondition : Float -> Float -> Bool
-suspectedHypertensionCondition dia sys =
-    (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)
 
 
 respiratoryRateElevated : PrenatalMeasurements -> Bool

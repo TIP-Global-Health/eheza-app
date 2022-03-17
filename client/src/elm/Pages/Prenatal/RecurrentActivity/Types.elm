@@ -5,3 +5,7 @@ type NextStepsTask
     = NextStepsSendToHC
     | NextStepsMedicationDistribution
     | NextStepsRecommendedTreatment
+
+
+type ExaminationTask
+    = ExaminationVitals

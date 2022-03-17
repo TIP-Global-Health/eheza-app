@@ -45,8 +45,9 @@ expectActivity currentDate assembled activity =
                 |> not
 
         RecurrentExamination ->
-            --@todo
-            True
+            resolveExaminationTasks currentDate assembled
+                |> List.isEmpty
+                |> not
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
@@ -65,8 +66,10 @@ activityCompleted currentDate assembled activity =
                    )
 
         RecurrentExamination ->
-            --@todo
-            False
+            (not <| expectActivity currentDate assembled RecurrentExamination)
+                || (resolveExaminationTasks currentDate assembled
+                        |> List.all (examinationMeasurementTaken assembled)
+                   )
 
 
 laboratoryResultTasks : List LaboratoryTask
@@ -543,3 +546,35 @@ emergencyReferalRequired assembled =
 diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
 diagnosisRequiresEmergencyReferal diagnosis =
     List.member diagnosis emergencyReferralDiagnosesRecurrent
+
+
+resolveExaminationTasks : NominalDate -> AssembledData -> List ExaminationTask
+resolveExaminationTasks currentDate assembled =
+    -- The order is important. Do not change.
+    [ ExaminationVitals ]
+        |> List.filter (expectExaminationTask currentDate assembled)
+
+
+expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
+expectExaminationTask currentDate assembled task =
+    case task of
+        ExaminationVitals ->
+            getMeasurementValueFunc assembled.measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map2
+                            suspectedHypertensionCondition
+                            value.dia
+                            value.sys
+                    )
+                |> Maybe.withDefault False
+
+
+examinationMeasurementTaken : AssembledData -> ExaminationTask -> Bool
+examinationMeasurementTaken assembled task =
+    case task of
+        ExaminationVitals ->
+            getMeasurementValueFunc assembled.measurements.vitals
+                |> Maybe.map
+                    (.sysRepeated >> isJust)
+                |> Maybe.withDefault False
