@@ -901,6 +901,34 @@ resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
         ( 0, 0 )
 
 
+recommendTreatmentForHypertension : AssembledData -> RecommendedTreatmentSign
+recommendTreatmentForHypertension assembled =
+    let
+        numberOfTimesMethyldopaWasPerscribed =
+            assembled.nursePreviousMeasurementsWithDates
+                |> List.filter
+                    (\( _, measurements ) ->
+                        getMeasurementValueFunc measurements.recommendedTreatment
+                            |> Maybe.andThen .signs
+                            |> Maybe.map
+                                (\signs ->
+                                    List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
+                                )
+                            |> Maybe.withDefault False
+                    )
+                |> List.length
+    in
+    case numberOfTimesMethyldopaWasPerscribed of
+        0 ->
+            TreatmentMethyldopa2
+
+        1 ->
+            TreatmentMethyldopa3
+
+        _ ->
+            TreatmentMethyldopa4
+
+
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
 recommendedTreatmentSignsForHypertension =
     [ TreatmentMethyldopa2

@@ -965,6 +965,7 @@ type TranslationId
     | ReceivedMosquitoNet
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
+    | Recommended
     | RecommendedButNotGivenDueTo
     | RecommendedSymptomRelief
     | RecommendedTreatmentSignDosage RecommendedTreatmentSign
@@ -8867,6 +8868,11 @@ translationSet trans =
                     { english = "Not Applicable"
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
+
+        Recommended ->
+            { english = "Recommended"
+            , kinyarwanda = Nothing
+            }
 
         RecommendedButNotGivenDueTo ->
             { english = "recommended but not given due to"

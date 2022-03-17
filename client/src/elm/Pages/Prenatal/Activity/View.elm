@@ -3556,7 +3556,11 @@ viewRecommendedTreatmentForm language currentDate assembled form =
     let
         hypertensionSection =
             if diagnosedHypertensionImmediate assembled then
-                viewRecommendedTreatmentForHypertension language currentDate (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension) form
+                viewRecommendedTreatmentForHypertension language
+                    currentDate
+                    (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension)
+                    assembled
+                    form
 
             else
                 []

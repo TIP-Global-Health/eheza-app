@@ -1433,6 +1433,13 @@ div.page-activity.home-visit {
             width: 24px;
           }
         }
+
+        .recommendation .marker {
+          color: $color-primary;
+          font-size: 22px;
+          margin-top: 5px;
+          padding-left: 70px;
+        }
       }
     }
 

@@ -10,7 +10,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (viewCheckBoxSelectInput, viewCustomLabel, viewInstructionsLabel)
+import Pages.Utils exposing (viewCheckBoxSelectInputWithRecommendation, viewCustomLabel, viewInstructionsLabel)
 import Translate exposing (Language, translate)
 
 
@@ -43,9 +43,10 @@ viewRecommendedTreatmentForHypertension :
     Language
     -> NominalDate
     -> (RecommendedTreatmentSign -> msg)
+    -> AssembledData
     -> RecommendedTreatmentForm
     -> List (Html msg)
-viewRecommendedTreatmentForHypertension language currentDate setRecommendedTreatmentSignMsg form =
+viewRecommendedTreatmentForHypertension language currentDate setRecommendedTreatmentSignMsg assembled form =
     let
         -- Since we may have values set for other diagnoses, we need
         -- to filter them out, to be able to determine current value.
@@ -55,14 +56,18 @@ viewRecommendedTreatmentForHypertension language currentDate setRecommendedTreat
                     >> List.head
                 )
                 form.signs
+
+        recommendedSign =
+            recommendTreatmentForHypertension assembled
     in
     [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
     , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
     , div [ class "instructions" ]
         [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":") ]
-    , viewCheckBoxSelectInput language
+    , viewCheckBoxSelectInputWithRecommendation language
         recommendedTreatmentSignsForHypertension
         []
+        recommendedSign
         currentValue
         setRecommendedTreatmentSignMsg
         Translate.RecommendedTreatmentSignLabel
