@@ -387,8 +387,11 @@ class RoboFile extends Tasks {
   /**
    * Generates the demographics report.
    */
-  public function reportDemographics() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php');
+  public function reportDemographics($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date");
   }
 
   /**
