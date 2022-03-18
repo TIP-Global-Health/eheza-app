@@ -190,6 +190,11 @@ $registered = [
     classified_count('mt50y', 'male'),
     classified_count('mt50y', 'female'),
   ],
+  [
+    'Total',
+    '',
+    classified_count('is NOT NULL', 'is NOT NULL'),
+  ],
 ];
 $text_table = new HedleyAdminTextTable(['Registered', 'Male', 'Female']);
 $text_table->addData($registered);
