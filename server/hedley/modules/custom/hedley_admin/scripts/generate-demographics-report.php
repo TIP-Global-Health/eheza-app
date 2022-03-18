@@ -37,6 +37,10 @@ $measurement_types_sql_list = implode(', ', $types);
  *   Amount of patients.
  */
 function classified_count($age, $gender) {
+  if ($age === 'all' && $gender === 'all') {
+    return db_query("SELECT COUNT(*) FROM person_classified")->fetchField();
+  }
+  else {
   return db_query("SELECT
     COUNT(*)
 FROM
@@ -48,6 +52,7 @@ WHERE
     ':age' => $age,
     ':gender' => $gender,
   ])->fetchField();
+}
 }
 
 /**
@@ -62,6 +67,12 @@ WHERE
  *   Amount of patients.
  */
 function impacted_count($age, $gender) {
+  if ($age === 'all' && $gender === 'all') {
+    return (int) db_query("SELECT COUNT(*)
+      FROM person_classified cl
+      INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id")->fetchField();
+  }
+  else {
   return (int) db_query("
 SELECT
     COUNT(*)
@@ -75,6 +86,7 @@ SELECT
     ':age' => $age,
     ':gender' => $gender,
   ])->fetchField();
+  }
 }
 
 /**
@@ -191,9 +203,9 @@ $registered = [
     classified_count('mt50y', 'female'),
   ],
   [
-    'Total',
+    'TOTAL',
     '',
-    classified_count('is NOT NULL', 'is NOT NULL'),
+    classified_count('all', 'all'),
   ],
 ];
 $text_table = new HedleyAdminTextTable(['Registered', 'Male', 'Female']);
@@ -236,6 +248,11 @@ $impacted = [
     '50Y +',
     impacted_count('mt50y', 'male'),
     impacted_count('mt50y', 'female'),
+  ],
+  [
+    'TOTAL',
+    '',
+    impacted_count('all', 'all'),
   ],
 ];
 $text_table = new HedleyAdminTextTable([
