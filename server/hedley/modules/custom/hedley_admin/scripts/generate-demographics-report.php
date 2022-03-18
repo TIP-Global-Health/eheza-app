@@ -41,18 +41,18 @@ function classified_count($age, $gender) {
     return db_query("SELECT COUNT(*) FROM person_classified")->fetchField();
   }
   else {
-  return db_query("SELECT
+    return db_query("SELECT
     COUNT(*)
-FROM
-  person_classified
-WHERE
-  age = :age AND
-  gender = :gender
-  ", [
-    ':age' => $age,
-    ':gender' => $gender,
-  ])->fetchField();
-}
+    FROM
+    person_classified
+    WHERE
+    age = :age AND
+    gender = :gender
+    ", [
+      ':age' => $age,
+      ':gender' => $gender,
+    ])->fetchField();
+  }
 }
 
 /**
@@ -73,19 +73,19 @@ function impacted_count($age, $gender) {
       INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id")->fetchField();
   }
   else {
-  return (int) db_query("
-SELECT
-    COUNT(*)
-  FROM
-    person_classified cl INNER JOIN
-    person_impacted pi ON cl.entity_id = pi.entity_id
-  WHERE
-      age = :age AND
-      gender = :gender
-  ", [
-    ':age' => $age,
-    ':gender' => $gender,
-  ])->fetchField();
+    return (int) db_query("
+    SELECT
+        COUNT(*)
+      FROM
+        person_classified cl INNER JOIN
+        person_impacted pi ON cl.entity_id = pi.entity_id
+      WHERE
+          age = :age AND
+          gender = :gender
+      ", [
+        ':age' => $age,
+        ':gender' => $gender,
+      ])->fetchField();
   }
 }
 
