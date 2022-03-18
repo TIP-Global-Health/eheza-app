@@ -165,6 +165,7 @@ FROM
     LEFT JOIN field_data_field_acute_illness_encounter acute ON acute.entity_id = ms.nid
 WHERE
     ms.type IN (__MEASUREMENT_TYPES_LIST__)
+AND FROM_UNIXTIME(ms.created) < :limit
 AND ((sess.field_session_target_id IS NOT NULL AND clinic.field_clinic_target_id IS NOT NULL) OR
      nutr.field_nutrition_encounter_target_id IS NOT NULL OR pren.field_prenatal_encounter_target_id IS NOT NULL OR
      acute.field_acute_illness_encounter_target_id IS NOT NULL)
