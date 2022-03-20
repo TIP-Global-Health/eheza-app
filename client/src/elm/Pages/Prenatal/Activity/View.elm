@@ -1615,8 +1615,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
 
                 Just NextStepsWait ->
-                    -- @todo
-                    emptyNode
+                    viewWaitForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -1714,7 +1713,13 @@ viewNextStepsContent language currentDate isChw assembled data =
         [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div
+        [ classList
+            [ ( "tasks-count", True )
+            , ( "full-screen", activeTask == Just NextStepsWait )
+            ]
+        ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -3639,6 +3644,40 @@ viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled f
         (SetRecommendedTreatmentSign allowedSigns)
         Translate.RecommendedTreatmentSignLabel
     ]
+
+
+viewWaitForm : Language -> NominalDate -> AssembledData -> Html Msg
+viewWaitForm language currentDate assembled =
+    let
+        ( vitalsInstructions, labsResultsInstructions ) =
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map
+                    (\value ->
+                        let
+                            labTestPerformed =
+                                EverySet.toList value.performedTests
+                                    |> List.any ((/=) TestVitalsRecheck)
+                        in
+                        ( if EverySet.member TestVitalsRecheck value.performedTests then
+                            viewInstructionsLabel "icon-vitals" (text <| translate language Translate.WaitForVitalsRecheckHelper)
+
+                          else
+                            emptyNode
+                        , if labTestPerformed then
+                            viewInstructionsLabel "icon-labs" (text <| translate language Translate.WaitForLabsResultsHelper)
+
+                          else
+                            emptyNode
+                        )
+                    )
+                |> Maybe.withDefault ( emptyNode, emptyNode )
+    in
+    div [ class "ui form wait" ]
+        [ div [ class "instructions" ]
+            [ labsResultsInstructions
+            , vitalsInstructions
+            ]
+        ]
 
 
 

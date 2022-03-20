@@ -2331,6 +2331,21 @@ input::placeholder {
   }
 }
 
+/* @todo: replace with correct icon */
+.icon-next-steps-wait {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-center-gray.svg);
+  }
+}
+
 .icon-physical-exam-muac {
   .active &:after {
     background-image: url(#{$img-path}icon-muac-white.svg);

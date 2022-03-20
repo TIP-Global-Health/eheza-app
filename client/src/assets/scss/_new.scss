@@ -101,6 +101,23 @@
           height: 36px;
           width: 52px;
         }
+
+        &.icon-labs {
+          background: url(#{$img-path}icon-laboratory-blue.svg) center center no-repeat;
+          background-size: 36px 50px;
+          height: 50px;
+          margin-right: 20px;
+          width: 65px;
+        }
+
+        &.icon-vitals {
+          background: url(#{$img-path}icon-physical-exam-blue.svg) center center no-repeat;
+          background-size: 40px 54px;
+          height: 50px;
+          margin-right: 18px;
+          width: 80px;
+        }
+
       }
     }
 

@@ -322,8 +322,12 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsWait ->
-            -- @todo
-            True
+            -- We show Wait activity when there's at least one
+            -- test that was performed, or, 2 hours waiting is
+            -- required for blood preasure recheck.
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map .performedTests
+                |> isJust
 
 
 diagnosedMalaria : AssembledData -> Bool
@@ -1494,8 +1498,9 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
         NextStepsWait ->
-            -- @todo
-            ( 0, 1 )
+            -- There're no real tasks here.
+            -- Just notification message is displayed.
+            ( 0, 0 )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined

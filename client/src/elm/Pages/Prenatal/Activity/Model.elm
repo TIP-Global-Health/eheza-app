@@ -393,6 +393,7 @@ type alias NextStepsData =
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
     , recommendedTreatmentForm : RecommendedTreatmentForm
+    , waitViewed : Bool
     , activeTask : Maybe NextStepsTask
     }
 
@@ -406,6 +407,7 @@ emptyNextStepsData =
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm
     , recommendedTreatmentForm = emptyRecommendedTreatmentForm
+    , waitViewed = False
     , activeTask = Nothing
     }
 
