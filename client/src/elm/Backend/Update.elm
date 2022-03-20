@@ -1150,7 +1150,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                 else
                                                     let
                                                         executionNote =
-                                                            if Pages.Prenatal.Activity.Utils.immediateHypertensionCondition dia sys then
+                                                            if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
                                                                 -- When we have diagnosed Hypertension, we'll try to unschedule
                                                                 -- vitals recheck (as we do not know if it was scheduled before).
                                                                 -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
