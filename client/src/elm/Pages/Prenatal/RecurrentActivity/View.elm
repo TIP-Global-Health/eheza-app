@@ -844,7 +844,7 @@ viewRecommendedTreatmentForSyphilis language currentDate allowedSigns assembled 
         , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
         ]
     , viewCheckBoxSelectCustomInput language
-        allowedRecommendedTreatmentSigns
+        recommendedTreatmentSignsForSyphilis
         []
         currentValue
         (SetRecommendedTreatmentSign allowedSigns)
