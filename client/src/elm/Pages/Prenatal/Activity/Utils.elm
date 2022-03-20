@@ -399,8 +399,9 @@ nextStepsMeasurementTaken assembled task =
             malariaTreatmentCompleted && hypertensionTreatmentCompleted
 
         NextStepsWait ->
-            -- @todo
-            False
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map .patientNotified
+                |> Maybe.withDefault False
 
 
 recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign

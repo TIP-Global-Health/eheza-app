@@ -1696,8 +1696,16 @@ viewNextStepsContent language currentDate isChw assembled data =
                                         SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
 
                                     NextStepsWait ->
-                                        -- @todo
-                                        NoOp
+                                        Maybe.map
+                                            (\( measurementId, measurement ) ->
+                                                let
+                                                    value =
+                                                        measurement.value
+                                                in
+                                                SaveWait personId (Just measurementId) { value | patientNotified = True } nextTask
+                                            )
+                                            measurements.labsResults
+                                            |> Maybe.withDefault NoOp
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -3655,8 +3663,10 @@ viewWaitForm language currentDate assembled =
                     (\value ->
                         let
                             labTestPerformed =
-                                EverySet.toList value.performedTests
-                                    |> List.any ((/=) TestVitalsRecheck)
+                                (not <| EverySet.isEmpty value.performedTests)
+                                    && (EverySet.toList value.performedTests
+                                            |> List.any ((/=) TestVitalsRecheck)
+                                       )
                         in
                         ( if EverySet.member TestVitalsRecheck value.performedTests then
                             viewInstructionsLabel "icon-vitals" (text <| translate language Translate.WaitForVitalsRecheckHelper)

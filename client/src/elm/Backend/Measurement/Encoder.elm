@@ -687,6 +687,7 @@ encodePrenatalLabsResultsValue value =
     [ ( "performed_tests", encodeEverySet encodePrenatalLaboratoryTest value.performedTests )
     , ( "completed_tests", encodeEverySet encodePrenatalLaboratoryTest value.completedTests )
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
+    , ( "patient_notified", bool value.patientNotified )
     ]
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_labs_results" )
