@@ -7348,6 +7348,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisModeratePreeclampsiaImmediate ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaImmediate ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEclampsia ->
+                    { english = "Eclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHIV ->
                     { english = "HIV"
                     , kinyarwanda = Nothing
@@ -7405,11 +7430,6 @@ translationSet trans =
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Severe Anemia with Complications"
-                    , kinyarwanda = Nothing
-                    }
-
-                DiagnosisEclampsia ->
-                    { english = "Eclampsia"
                     , kinyarwanda = Nothing
                     }
 
@@ -7572,6 +7592,26 @@ translationSet trans =
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
                     { english = "Patient shows signs of Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaImmediate ->
+                    { english = "Patient shows signs of Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Patient shows signs of Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaImmediate ->
+                    { english = "Patient shows signs of Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Patient shows signs of Severe Preeclampsia"
                     , kinyarwanda = Nothing
                     }
 

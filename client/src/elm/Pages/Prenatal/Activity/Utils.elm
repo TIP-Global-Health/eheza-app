@@ -711,6 +711,14 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
 matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
     case diagnosis of
+        DiagnosisSeverePreeclampsiaImmediate ->
+            --@todo
+            False
+
+        DiagnosisSeverePreeclampsiaAfterRecheck ->
+            --@todo
+            False
+
         DiagnosisEclampsia ->
             List.member Convulsions signs
 

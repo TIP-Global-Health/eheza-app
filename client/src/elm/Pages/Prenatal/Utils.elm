@@ -69,7 +69,8 @@ listNonUrgentDiagnoses diagnoses =
 
 emergencyReferralDiagnosesInitial : List PrenatalDiagnosis
 emergencyReferralDiagnosesInitial =
-    [ DiagnosisEclampsia
+    [ DiagnosisSeverePreeclampsiaImmediate
+    , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy
     , DiagnosisPlacentaPrevia
@@ -92,7 +93,8 @@ emergencyReferralDiagnosesInitial =
 
 emergencyReferralDiagnosesRecurrent : List PrenatalDiagnosis
 emergencyReferralDiagnosesRecurrent =
-    [ DiagnosisSevereAnemiaWithComplications
+    [ DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisSevereAnemiaWithComplications
     ]
 
 

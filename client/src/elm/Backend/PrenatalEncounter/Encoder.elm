@@ -75,6 +75,21 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisGestationalHypertensionAfterRecheck ->
                 "gestational-hypertension-recheck"
 
+            DiagnosisModeratePreeclampsiaImmediate ->
+                "moderate-preeclampsia-immediate"
+
+            DiagnosisModeratePreeclampsiaAfterRecheck ->
+                "moderate-preeclampsia-recheck"
+
+            DiagnosisSeverePreeclampsiaImmediate ->
+                "severe-preeclampsia-immediate"
+
+            DiagnosisSeverePreeclampsiaAfterRecheck ->
+                "severe-preeclampsia-recheck"
+
+            DiagnosisEclampsia ->
+                "eclampsia"
+
             DiagnosisHIV ->
                 "hiv"
 
@@ -110,9 +125,6 @@ encodePrenatalDiagnosis diagnosis =
 
             DiagnosisSevereAnemiaWithComplications ->
                 "severe-anemia-complications"
-
-            DiagnosisEclampsia ->
-                "eclampsia"
 
             DiagnosisMiscarriage ->
                 "miscarriage"
