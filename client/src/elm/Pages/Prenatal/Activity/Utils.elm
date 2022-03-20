@@ -239,7 +239,7 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC, NextStepsWait ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -321,6 +321,10 @@ expectNextStepsTask currentDate assembled task =
                         || diagnosedHypertensionImmediate assembled
                    )
 
+        NextStepsWait ->
+            -- @todo
+            True
+
 
 diagnosedMalaria : AssembledData -> Bool
 diagnosedMalaria =
@@ -389,6 +393,10 @@ nextStepsMeasurementTaken assembled task =
                         True
             in
             malariaTreatmentCompleted && hypertensionTreatmentCompleted
+
+        NextStepsWait ->
+            -- @todo
+            False
 
 
 recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
@@ -1484,6 +1492,10 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             ( malariaSectionCompleted + hypertensionSectionCompleted
             , malariaSectionActive + hypertensionSectionActive
             )
+
+        NextStepsWait ->
+            -- @todo
+            ( 0, 1 )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined

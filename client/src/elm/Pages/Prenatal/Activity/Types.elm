@@ -29,6 +29,7 @@ type NextStepsTask
     | NextStepsNewbornEnrolment
     | NextStepsMedicationDistribution
     | NextStepsRecommendedTreatment
+    | NextStepsWait
 
 
 type PatientProvisionsTask

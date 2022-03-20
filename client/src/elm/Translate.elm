@@ -7717,6 +7717,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Pages.Prenatal.Activity.Types.NextStepsWait ->
+                    { english = "Wait"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalRecurrentNextStepsTask task ->
             case task of
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsSendToHC ->

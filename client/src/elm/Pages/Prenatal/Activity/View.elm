@@ -1506,6 +1506,9 @@ viewNextStepsContent language currentDate isChw assembled data =
                         NextStepsRecommendedTreatment ->
                             "next-steps-treatment"
 
+                        NextStepsWait ->
+                            "next-steps-wait"
+
                 isActive =
                     activeTask == Just task
 
@@ -1611,6 +1614,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsRecommendedTreatment ->
                     viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
 
+                Just NextStepsWait ->
+                    -- @todo
+                    emptyNode
+
                 Nothing ->
                     emptyNode
 
@@ -1688,6 +1695,10 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                                     NextStepsRecommendedTreatment ->
                                         SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
+
+                                    NextStepsWait ->
+                                        -- @todo
+                                        NoOp
                         in
                         div [ class "actions next-steps" ]
                             [ button
