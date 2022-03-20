@@ -393,6 +393,31 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_patient_notified'.
+  $field_bases['field_patient_notified'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_patient_notified',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        0 => '',
+        1 => '',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_boolean',
+  );
+
   // Exported field_base: 'field_performed_tests'.
   $field_bases['field_performed_tests'] = array(
     'active' => 1,
@@ -587,7 +612,7 @@ function hedley_prenatal_field_default_field_bases() {
         'penecilin-3' => 'Penecilin 3',
         'erythromycin' => 'Erythromycin',
         'azithromycin' => 'Azithromycin',
-        'ceftriaxon' =>'Ceftriaxon',
+        'ceftriaxon' => 'Ceftriaxon',
         'methyldopa-2' => 'Methyldopa twice a day',
         'methyldopa-3' => 'Methyldopa three times a day',
         'methyldopa-4' => 'Methyldopa four times a day',

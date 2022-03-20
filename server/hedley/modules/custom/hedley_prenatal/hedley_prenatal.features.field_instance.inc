@@ -2685,6 +2685,44 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-prenatal_labs_results-field_patient_notified'.
+  $field_instances['node-prenatal_labs_results-field_patient_notified'] = array(
+    'bundle' => 'prenatal_labs_results',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_patient_notified',
+    'label' => 'Patient Notified',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-prenatal_labs_results-field_performed_tests'.
   $field_instances['node-prenatal_labs_results-field_performed_tests'] = array(
     'bundle' => 'prenatal_labs_results',
@@ -6073,6 +6111,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Non Administration reason');
   t('Nurse');
   t('PH');
+  t('Patient Notified');
   t('Performed tests');
   t('Person');
   t('Prenatal Assesment');
