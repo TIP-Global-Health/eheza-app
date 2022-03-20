@@ -1392,10 +1392,10 @@ viewVitalsForm language currentDate config form =
                         , viewMeasurementInput
                             language
                             sys
-                            (config.setFloatInputMsg sysBloodPressureUpdateFunc)
+                            (config.setFloatInputMsg sysUpdateFunc)
                             "sys-blood-pressure"
                             Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language config.sysBloodPressurePreviousValue Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language sysPrevValue Translate.MMHGUnit
                         , div [ class "ui grid" ]
                             [ div [ class "twelve wide column" ]
                                 [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
@@ -1408,10 +1408,10 @@ viewVitalsForm language currentDate config form =
                         , viewMeasurementInput
                             language
                             dia
-                            (config.setFloatInputMsg diaBloodPressureUpdateFunc)
+                            (config.setFloatInputMsg diaUpdateFunc)
                             "dia-blood-pressure"
                             Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language config.diaBloodPressurePreviousValue Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
                         , separator
                         ]
                 )

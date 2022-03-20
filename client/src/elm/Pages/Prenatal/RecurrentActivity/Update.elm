@@ -104,7 +104,7 @@ update language currentDate id db msg model =
                                 [ Backend.PrenatalEncounter.Model.SaveVitals personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                , App.Model.SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id
                                 ]
                             )
                         |> Maybe.withDefault []
