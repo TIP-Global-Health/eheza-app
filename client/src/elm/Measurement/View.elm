@@ -1384,14 +1384,14 @@ viewVitalsForm language currentDate config form =
                             [ div [ class "twelve wide column" ]
                                 [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
                             , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.sysBloodPressure
+                                [ viewConditionalAlert sys
                                     redAlertsSys
                                     []
                                 ]
                             ]
                         , viewMeasurementInput
                             language
-                            form.sysBloodPressure
+                            sys
                             (config.setFloatInputMsg sysBloodPressureUpdateFunc)
                             "sys-blood-pressure"
                             Translate.MMHGUnit
@@ -1400,14 +1400,14 @@ viewVitalsForm language currentDate config form =
                             [ div [ class "twelve wide column" ]
                                 [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
                             , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.diaBloodPressure
+                                [ viewConditionalAlert dia
                                     redAlertsDia
                                     []
                                 ]
                             ]
                         , viewMeasurementInput
                             language
-                            form.diaBloodPressure
+                            dia
                             (config.setFloatInputMsg diaBloodPressureUpdateFunc)
                             "dia-blood-pressure"
                             Translate.MMHGUnit
