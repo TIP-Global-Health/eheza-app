@@ -712,12 +712,7 @@ matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> Prenata
 matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
     case diagnosis of
         DiagnosisSeverePreeclampsiaImmediate ->
-            --@todo
-            False
-
-        DiagnosisSeverePreeclampsiaAfterRecheck ->
-            --@todo
-            False
+            List.member HeadacheBlurredVision signs
 
         DiagnosisEclampsia ->
             List.member Convulsions signs
@@ -843,6 +838,10 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
                 |> Maybe.withDefault False
     in
     case diagnosis of
+        DiagnosisSeverePreeclampsiaAfterRecheck ->
+            --@todo
+            False
+
         DiagnosisHIV ->
             testedPositiveAt .hivTest
 
@@ -986,44 +985,87 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
         DiagnosisGestationalHypertensionAfterRecheck ->
             egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements
 
+        DiagnosisModeratePreeclampsiaImmediate ->
+            egaInWeeks >= 20 && immediatePreeclampsiaByMeasurements measurements
+
+        DiagnosisModeratePreeclampsiaAfterRecheck ->
+            egaInWeeks >= 20 && recheckedPreeclampsiaByMeasurements measurements
+
         -- Non Examination diagnoses.
         _ ->
             False
 
 
 immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
-immediateHypertensionByMeasurements measurements =
-    getMeasurementValueFunc measurements.vitals
-        |> Maybe.andThen
-            (\value ->
-                Maybe.map2 immediateHypertensionCondition value.dia value.sys
-            )
-        |> Maybe.withDefault False
+immediateHypertensionByMeasurements =
+    highBloodPressureByMeasurements
 
 
 recheckedHypertensionByMeasurements : PrenatalMeasurements -> Bool
-recheckedHypertensionByMeasurements measurements =
+recheckedHypertensionByMeasurements =
+    marginalBloodPressureByMeasurements
+
+
+immediatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
+immediatePreeclampsiaByMeasurements measurements =
+    highBloodPressureByMeasurements measurements
+        && -- @todo
+           -- && urine protein condition.
+           edemaOnHandOrLegs measurements
+
+
+recheckedPreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
+recheckedPreeclampsiaByMeasurements measurements =
+    marginalBloodPressureByMeasurements measurements
+        && -- @todo
+           -- && urine protein condition.
+           edemaOnHandOrLegs measurements
+
+
+highBloodPressureByMeasurements : PrenatalMeasurements -> Bool
+highBloodPressureByMeasurements measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.andThen
             (\value ->
-                Maybe.map2 recheckHypertensionCondition value.diaRepeated value.sysRepeated
+                Maybe.map2 highBloodPressureCondition value.dia value.sys
             )
         |> Maybe.withDefault False
 
 
-immediateHypertensionCondition : Float -> Float -> Bool
-immediateHypertensionCondition dia sys =
+marginalBloodPressureByMeasurements : PrenatalMeasurements -> Bool
+marginalBloodPressureByMeasurements measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2 marginalBloodPressureCondition value.diaRepeated value.sysRepeated
+            )
+        |> Maybe.withDefault False
+
+
+highBloodPressureCondition : Float -> Float -> Bool
+highBloodPressureCondition dia sys =
     dia >= 110 || sys >= 160
 
 
-{-| We measure BP again when we suspect Hypertension (dia between 90
-and 110, and dia between 140 and 160).
+{-| We measure BP again when we suspect Hypertension or Preeclamsia
+(dia between 90 and 110, and dia between 140 and 160).
 We diagnose Hypertension if repeated measurements are within
 those boundries, or exceed them.
 -}
-recheckHypertensionCondition : Float -> Float -> Bool
-recheckHypertensionCondition diaRepeated sysRepeated =
+marginalBloodPressureCondition : Float -> Float -> Bool
+marginalBloodPressureCondition diaRepeated sysRepeated =
     diaRepeated >= 90 || sysRepeated >= 140
+
+
+edemaOnHandOrLegs : PrenatalMeasurements -> Bool
+edemaOnHandOrLegs measurements =
+    getMeasurementValueFunc measurements.corePhysicalExam
+        |> Maybe.map
+            (\value ->
+                EverySet.member EdemaHands value.hands
+                    || EverySet.member EdemaLegs value.legs
+            )
+        |> Maybe.withDefault False
 
 
 respiratoryRateElevated : PrenatalMeasurements -> Bool
