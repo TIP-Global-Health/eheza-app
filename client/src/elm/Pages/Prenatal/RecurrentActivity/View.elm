@@ -844,12 +844,7 @@ viewRecommendedTreatmentForSyphilis language currentDate allowedSigns assembled 
         , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
         ]
     , viewCheckBoxSelectCustomInput language
-        [ TreatementPenecilin1
-        , TreatementPenecilin3
-        , TreatementErythromycin
-        , TreatementAzithromycin
-        , TreatementCeftriaxon
-        ]
+        allowedRecommendedTreatmentSigns
         []
         currentValue
         (SetRecommendedTreatmentSign allowedSigns)
