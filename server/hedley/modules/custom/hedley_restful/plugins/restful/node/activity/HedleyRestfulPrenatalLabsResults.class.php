@@ -15,7 +15,7 @@ class HedleyRestfulPrenatalLabsResults extends HedleyRestfulPrenatalActivityBase
    */
   protected $fields = [
     'field_date_concluded',
-    'field_patient_notified'
+    'field_patient_notified',
   ];
 
   /**
@@ -46,5 +46,5 @@ class HedleyRestfulPrenatalLabsResults extends HedleyRestfulPrenatalActivityBase
     return $items;
   }
 
-
 }
+
