@@ -47,4 +47,3 @@ class HedleyRestfulPrenatalLabsResults extends HedleyRestfulPrenatalActivityBase
   }
 
 }
-
