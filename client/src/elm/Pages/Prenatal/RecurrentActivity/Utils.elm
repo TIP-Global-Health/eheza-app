@@ -21,6 +21,7 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
@@ -152,8 +153,8 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .randomBloodSugarTest
 
 
-prenatalTestResultFormWithDefault : PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue -> PrenatalTestResultForm
-prenatalTestResultFormWithDefault form saved =
+hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm
+hepatitisBFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -165,19 +166,53 @@ prenatalTestResultFormWithDefault form saved =
             )
 
 
-toPrenatalTestResultsValueWithDefault : Maybe PrenatalMalariaTestValue -> PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue
-toPrenatalTestResultsValueWithDefault saved form =
-    prenatalTestResultFormWithDefault form saved
-        |> toPrenatalTestResultsValue
+toHepatitisBValueWithDefault : Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
+toHepatitisBValueWithDefault saved form =
+    hepatitisBFormWithDefault form saved
+        |> toHepatitisBValue
 
 
-toPrenatalTestResultsValue : PrenatalTestResultForm -> Maybe PrenatalMalariaTestValue
-toPrenatalTestResultsValue form =
+toHepatitisBValue : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
+toHepatitisBValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            }
+        )
+        form.executionNote
+
+
+syphilisResultFormWithDefault : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue -> SyphilisResultForm
+syphilisResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testResult = or form.testResult value.testResult
+                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
+                , symptomsDirty = form.symptomsDirty
+                }
+            )
+
+
+toSyphilisResultValueWithDefault : Maybe PrenatalSyphilisTestValue -> SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
+toSyphilisResultValueWithDefault saved form =
+    syphilisResultFormWithDefault form saved
+        |> toSyphilisResultValue
+
+
+toSyphilisResultValue : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
+toSyphilisResultValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            , symptoms = Maybe.map EverySet.fromList form.symptoms
             }
         )
         form.executionNote
@@ -332,7 +367,7 @@ toPrenatalUrineDipstickResultsValue form =
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
     -- The order is important. Do not change.
-    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC ]
         |> List.filter (expectNextStepsTask currentDate assembled)
 
 
@@ -341,6 +376,7 @@ expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
             diagnosed DiagnosisHepatitisB assembled
+                || diagnosed DiagnosisNeurosyphilis assembled
                 || diagnosed DiagnosisMalariaWithSevereAnemia assembled
                 || diagnosed DiagnosisSevereAnemia assembled
                 || diagnosed DiagnosisSevereAnemiaWithComplications assembled
@@ -348,7 +384,18 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && diagnosed DiagnosisModerateAnemia assembled
+                && (resolveMedicationsByDiagnoses assembled medicationsRecurrentPhase
+                        |> List.isEmpty
+                        |> not
+                   )
+
+        -- Exclusive Nurse task.
+        NextStepsRecommendedTreatment ->
+            -- Emergency refferal is not required.
+            (not <| emergencyReferalRequired assembled)
+                && (diagnosed DiagnosisSyphilis assembled
+                        || diagnosed DiagnosisSyphilisWithComplications assembled
+                   )
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -358,7 +405,24 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.measurements.sendToHC
 
         NextStepsMedicationDistribution ->
-            isJust assembled.measurements.medicationDistribution
+            let
+                allowedSigns =
+                    NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+            in
+            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+
+        NextStepsRecommendedTreatment ->
+            recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
+
+
+allowedRecommendedTreatmentSigns : List RecommendedTreatmentSign
+allowedRecommendedTreatmentSigns =
+    [ TreatementPenecilin1
+    , TreatementPenecilin3
+    , TreatementErythromycin
+    , TreatementAzithromycin
+    , TreatementCeftriaxon
+    ]
 
 
 nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
@@ -395,7 +459,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             let
                 form =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> medicationDistributionFormWithDefaultRecurrentPhase data.medicationDistributionForm
 
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
@@ -403,9 +467,33 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         assembled
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
+                        medicationsRecurrentPhase
                         form
             in
             ( completed, total )
+
+        NextStepsRecommendedTreatment ->
+            let
+                form =
+                    assembled.measurements.recommendedTreatment
+                        |> getMeasurementValueFunc
+                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+
+                completed =
+                    Maybe.map
+                        (\signs ->
+                            List.any (\sign -> List.member sign signs) allowedRecommendedTreatmentSigns
+                        )
+                        form.signs
+                        |> Maybe.withDefault False
+            in
+            ( if completed then
+                1
+
+              else
+                0
+            , 1
+            )
 
 
 emergencyReferalRequired : AssembledData -> Bool

@@ -484,13 +484,26 @@ encodePrenatalSyphilisTestValue value =
                 (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
+
+        illnessSymptoms =
+            Maybe.map
+                (\symptoms -> [ ( "illness_symptoms", encodeEverySet encodeIllnessSymptom symptoms ) ])
+                value.symptoms
+                |> Maybe.withDefault []
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
+        ++ illnessSymptoms
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_syphilis_test" )
            ]
+
+
+encodeIllnessSymptom : IllnessSymptom -> Value
+encodeIllnessSymptom symptom =
+    string <|
+        illnessSymptomToString symptom
 
 
 encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
@@ -2465,6 +2478,12 @@ encondeMedicationDistributionSign sign =
             NoMedicationDistributionSigns ->
                 "none"
 
+            NoMedicationDistributionSignsInitialPhase ->
+                "none-initial"
+
+            NoMedicationDistributionSignsRecurrentPhase ->
+                "none-recurrent"
+
 
 encodeMedicationNonAdministrationSign : MedicationNonAdministrationSign -> Value
 encodeMedicationNonAdministrationSign sign =
@@ -2517,10 +2536,23 @@ encodePrenatalRecommendedTreatment =
 
 encodeRecommendedTreatmentValue : RecommendedTreatmentValue -> List ( String, Value )
 encodeRecommendedTreatmentValue value =
-    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign value )
-    , ( "deleted", bool False )
-    , ( "type", string "prenatal_recommended_treatment" )
-    ]
+    let
+        treatment =
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
+                )
+                value.signs
+                |> Maybe.withDefault []
+    in
+    treatment
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_recommended_treatment" )
+           ]
 
 
 encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value

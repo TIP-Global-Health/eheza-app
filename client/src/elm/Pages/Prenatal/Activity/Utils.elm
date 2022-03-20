@@ -21,7 +21,7 @@ import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedication
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (calculateEGAWeeks, isFirstEncounter)
+import Pages.Prenatal.Encounter.Utils exposing (isFirstEncounter)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -35,6 +35,7 @@ import Pages.Utils
         , valueConsideringIsDirtyField
         , viewBoolInput
         , viewCheckBoxSelectInput
+        , viewInstructionsLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
@@ -274,12 +275,12 @@ expectNextStepsTask currentDate assembled task =
                     let
                         severeMalariaTreatment =
                             getMeasurementValueFunc assembled.measurements.recommendedTreatment
-                                |> Maybe.map (EverySet.member TreatementReferToHospital)
+                                |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
                                 |> Maybe.withDefault False
                     in
                     emergencyReferalRequired assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
-                        || (diagnosed DiagnosisMalaria assembled && severeMalariaTreatment)
+                        || (diagnosedMalaria assembled && severeMalariaTreatment)
 
                 _ ->
                     dangerSigns
@@ -307,19 +308,23 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && -- We were asking if Mebendazole was given already.
-                   showMebendazoleQuestion currentDate assembled
-                && -- The answer was that Mebendazole was not given yet.
-                   (getMeasurementValueFunc assembled.measurements.medication
-                        |> Maybe.map (EverySet.member Mebendazole >> not)
-                        |> Maybe.withDefault False
+                && (resolveMedicationsByDiagnoses assembled medicationsInitialPhase
+                        |> List.isEmpty
+                        |> not
                    )
 
         -- Exclusive Nurse task.
         NextStepsRecommendedTreatment ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && diagnosed DiagnosisMalaria assembled
+                && diagnosedMalaria assembled
+
+
+diagnosedMalaria : AssembledData -> Bool
+diagnosedMalaria assembled =
+    diagnosed DiagnosisMalaria assembled
+        || diagnosed DiagnosisMalariaWithAnemia assembled
+        || diagnosed DiagnosisMalariaWithSevereAnemia assembled
 
 
 emergencyReferalRequired : AssembledData -> Bool
@@ -349,10 +354,23 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.participant.newborn
 
         NextStepsMedicationDistribution ->
-            isJust assembled.measurements.medicationDistribution
+            let
+                allowedSigns =
+                    NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+            in
+            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
         NextStepsRecommendedTreatment ->
-            isJust assembled.measurements.recommendedTreatment
+            recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
+
+
+allowedRecommendedTreatmentSigns : List RecommendedTreatmentSign
+allowedRecommendedTreatmentSigns =
+    [ TreatmentQuinineSulphate
+    , TreatmentCoartem
+    , TreatmentWrittenProtocols
+    , TreatementReferToHospital
+    ]
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
@@ -738,7 +756,14 @@ matchLabResultsPrenatalDiagnosis : List DangerSign -> PrenatalMeasurements -> Pr
 matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
     let
         positiveMalariaTest =
-            getMeasurementValueFunc measurements.malariaTest
+            testedPositiveAt .malariaTest
+
+        positiveSyphilisTest =
+            testedPositiveAt .syphilisTest
+
+        testedPositiveAt getMeasurementFunc =
+            getMeasurementFunc measurements
+                |> getMeasurementValueFunc
                 |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
                 |> Maybe.withDefault False
 
@@ -761,9 +786,7 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
     in
     case diagnosis of
         DiagnosisHIV ->
-            getMeasurementValueFunc measurements.hivTest
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
-                |> Maybe.withDefault False
+            testedPositiveAt .hivTest
 
         DiagnosisDiscordantPartnership ->
             getMeasurementValueFunc measurements.hivTest
@@ -783,10 +806,49 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
                     )
                 |> Maybe.withDefault False
 
+        DiagnosisSyphilis ->
+            positiveSyphilisTest
+                && -- No symptoms were reported.
+                   (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                EverySet.isEmpty symptoms || (EverySet.toList symptoms == [ NoIllnessSymptoms ])
+                            )
+                        |> Maybe.withDefault True
+                   )
+
+        DiagnosisSyphilisWithComplications ->
+            positiveSyphilisTest
+                && (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                (EverySet.member IllnessSymptomRash symptoms
+                                    || EverySet.member IllnessSymptomPainlessUlcerMouth symptoms
+                                    || EverySet.member IllnessSymptomPainlessUlcerGenitals symptoms
+                                )
+                                    -- Exclude Neurosyphilis conditions.
+                                    && (not <| EverySet.member IllnessSymptomHeadache symptoms)
+                                    && (not <| EverySet.member IllnessSymptomVisionChanges symptoms)
+                            )
+                        |> Maybe.withDefault False
+                   )
+
+        DiagnosisNeurosyphilis ->
+            positiveSyphilisTest
+                && (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                EverySet.member IllnessSymptomHeadache symptoms
+                                    || EverySet.member IllnessSymptomVisionChanges symptoms
+                            )
+                        |> Maybe.withDefault False
+                   )
+
         DiagnosisHepatitisB ->
-            getMeasurementValueFunc measurements.hepatitisBTest
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
-                |> Maybe.withDefault False
+            testedPositiveAt .hepatitisBTest
 
         DiagnosisMalaria ->
             positiveMalariaTest
@@ -874,6 +936,9 @@ labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
     [ DiagnosisHIV
     , DiagnosisDiscordantPartnership
+    , DiagnosisSyphilis
+    , DiagnosisSyphilisWithComplications
+    , DiagnosisNeurosyphilis
     , DiagnosisHepatitisB
     , DiagnosisMalaria
     , DiagnosisMalariaWithAnemia
@@ -1295,7 +1360,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             let
                 form =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
 
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
@@ -1303,6 +1368,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         assembled
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
+                        medicationsInitialPhase
                         form
             in
             ( completed, total )
@@ -1313,8 +1379,20 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     assembled.measurements.recommendedTreatment
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+
+                completed =
+                    Maybe.map
+                        (\signs ->
+                            List.any (\sign -> List.member sign signs) allowedRecommendedTreatmentSigns
+                        )
+                        form.signs
+                        |> Maybe.withDefault False
             in
-            ( taskCompleted form.signs
+            ( if completed then
+                1
+
+              else
+                0
             , 1
             )
 
@@ -2660,7 +2738,7 @@ toHepatitisBTestValueWithEmptyResults note date =
 
 toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalSyphilisTestValue
 toSyphilisTestValueWithEmptyResults note date =
-    PrenatalSyphilisTestValue note date Nothing
+    PrenatalSyphilisTestValue note date Nothing Nothing
 
 
 toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue
@@ -2899,24 +2977,3 @@ laboratoryTaskIconClass task =
 
         TaskRandomBloodSugarTest ->
             "laboratory-blood-sugar"
-
-
-recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
-recommendedTreatmentFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValueWithDefault saved form =
-    recommendedTreatmentFormWithDefault form saved
-        |> toRecommendedTreatmentValue
-
-
-toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoRecommendedTreatmentSign) form.signs

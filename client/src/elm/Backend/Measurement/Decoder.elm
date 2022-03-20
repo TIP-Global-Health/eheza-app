@@ -485,6 +485,18 @@ decodePrenatalSyphilisTestValue =
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "illness_symptoms" (nullable (decodeEverySet decodeIllnessSymptom)) Nothing
+
+
+decodeIllnessSymptom : Decoder IllnessSymptom
+decodeIllnessSymptom =
+    string
+        |> andThen
+            (\value ->
+                illnessSymptomFromString value
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| value ++ " is not a recognized IllnessSymptom")
+            )
 
 
 decodePrenatalUrineDipstickTest : Decoder PrenatalUrineDipstickTest
@@ -738,9 +750,13 @@ decodePrenatalMedicationDistribution =
 
 decodePrenatalRecommendedTreatment : Decoder PrenatalRecommendedTreatment
 decodePrenatalRecommendedTreatment =
-    decodeEverySet decodeRecommendedTreatmentSign
-        |> field "recommended_treatment"
-        |> decodePrenatalMeasurement
+    decodePrenatalMeasurement decodeRecommendedTreatmentValue
+
+
+decodeRecommendedTreatmentValue : Decoder RecommendedTreatmentValue
+decodeRecommendedTreatmentValue =
+    succeed RecommendedTreatmentValue
+        |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
 
 
 decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign
@@ -2653,6 +2669,12 @@ decodeMedicationDistributionSign =
 
                     "none" ->
                         succeed NoMedicationDistributionSigns
+
+                    "none-initial" ->
+                        succeed NoMedicationDistributionSignsInitialPhase
+
+                    "none-recurrent" ->
+                        succeed NoMedicationDistributionSignsRecurrentPhase
 
                     _ ->
                         fail <| sign ++ " is not a recognized MedicationDistributionSign"

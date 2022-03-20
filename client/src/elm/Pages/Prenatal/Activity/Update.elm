@@ -52,8 +52,7 @@ update language currentDate id db msg model =
 
         corePhysicalExamForm =
             Dict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (.corePhysicalExam
                         >> getMeasurementValueFunc
@@ -2740,7 +2739,14 @@ update language currentDate id db msg model =
         SetMedicationDistributionAdministrationNote currentValue medication reason ->
             let
                 form =
-                    model.nextStepsData.medicationDistributionForm
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.medicationDistribution
+                                >> getMeasurementValueFunc
+                                >> medicationDistributionFormWithDefaultInitialPhase model.nextStepsData.medicationDistributionForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
 
                 updatedValue =
                     nonAdministrationReasonToSign medication reason
@@ -2784,7 +2790,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.medicationDistributionForm
-                        |> toMedicationDistributionValueWithDefault measurement
+                        |> toMedicationDistributionValueWithDefaultInitialPhase measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2801,9 +2807,29 @@ update language currentDate id db msg model =
 
         SetRecommendedTreatmentSign sign ->
             let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.recommendedTreatment
+                                >> getMeasurementValueFunc
+                                >> recommendedTreatmentFormWithDefault model.nextStepsData.recommendedTreatmentForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.recommendedTreatmentForm
+
+                updatedSigns =
+                    -- Since we may have values from recurrent phase of encounter, we make
+                    -- sure to preserve them, before setting new value at inital phase.
+                    Maybe.map
+                        (\signs ->
+                            List.filter (\sign_ -> not <| List.member sign_ allowedRecommendedTreatmentSigns) signs
+                                |> List.append [ sign ]
+                        )
+                        form.signs
+                        |> Maybe.withDefault [ sign ]
+
                 updatedForm =
-                    model.nextStepsData.recommendedTreatmentForm
-                        |> (\form -> { form | signs = Just [ sign ] })
+                    { form | signs = Just updatedSigns }
 
                 updatedData =
                     model.nextStepsData

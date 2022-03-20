@@ -15,6 +15,7 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
 import Pages.Prenatal.Activity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
@@ -123,16 +124,6 @@ calculateEDDandEGADays currentDate lmpDate =
     ( lmpToEDDDate lmpDate
     , calculateEGADays currentDate lmpDate
     )
-
-
-calculateEGADays : NominalDate -> NominalDate -> Int
-calculateEGADays currentDate lmpDate =
-    diffDays lmpDate currentDate
-
-
-calculateEGAWeeks : NominalDate -> NominalDate -> Int
-calculateEGAWeeks currentDate lmpDate =
-    calculateEGADays currentDate lmpDate // 7
 
 
 generateEGAWeeksDaysLabel : Language -> Int -> String

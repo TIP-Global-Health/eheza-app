@@ -27,11 +27,11 @@ import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, RecommendedTreatmentForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
-import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefault)
+import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
@@ -41,9 +41,11 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
+        , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
         , viewQuestionLabel
@@ -161,14 +163,14 @@ viewLabResultsContent language currentDate assembled model =
                         TaskSyphilisTest ->
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> prenatalTestResultFormAndTasks language currentDate TaskSyphilisTest
+                                |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
+                                |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
-                                |> prenatalTestResultFormWithDefault model.labResultsData.hepatitisBTestForm
-                                |> prenatalTestResultFormAndTasks language currentDate TaskHepatitisBTest
+                                |> hepatitisBFormWithDefault model.labResultsData.hepatitisBTestForm
+                                |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
 
                         TaskMalariaTest ->
                             ( emptyNode, 0, 0 )
@@ -273,44 +275,76 @@ viewLabResultsContent language currentDate assembled model =
     ]
 
 
-prenatalTestResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalTestResultForm -> ( Html Msg, Int, Int )
-prenatalTestResultFormAndTasks language currentDate task form =
+prenatalSyphilisResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> SyphilisResultForm -> ( Html Msg, Int, Int )
+prenatalSyphilisResultFormAndTasks language currentDate task form =
     let
-        setTestResultMsg =
-            case task of
-                TaskHepatitisBTest ->
-                    Just SetHepatitisBTestResult
-
-                TaskSyphilisTest ->
-                    Just SetSyphilisTestResult
-
-                _ ->
-                    Nothing
-
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            Maybe.map
-                (\setResultMsg ->
-                    let
-                        emptyOption =
-                            if isNothing form.testResult then
-                                emptySelectOption True
+            let
+                ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
+                    if form.testResult == Just PrenatalTestPositive then
+                        ( [ viewLabel language Translate.SelectIllnessSymptoms
+                          , viewCheckBoxMultipleSelectInput language
+                                [ IllnessSymptomHeadache
+                                , IllnessSymptomVisionChanges
+                                , IllnessSymptomRash
+                                , IllnessSymptomPainlessUlcerMouth
+                                , IllnessSymptomPainlessUlcerGenitals
+                                ]
+                                []
+                                (form.symptoms |> Maybe.withDefault [])
+                                (Just NoIllnessSymptoms)
+                                SetIllnessSymptom
+                                Translate.IllnessSymptom
+                          ]
+                        , taskCompleted form.symptoms
+                        , 1
+                        )
 
-                            else
-                                emptyNode
-                    in
-                    ( viewSelectInput language
-                        (Translate.PrenatalLaboratoryTaskResult task)
-                        form.testResult
-                        Translate.PrenatalTestResult
-                        prenatalTestResultToString
-                        [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
-                        setResultMsg
-                    , taskCompleted form.testResult
-                    , 1
-                    )
-                )
-                setTestResultMsg
-                |> Maybe.withDefault ( [], 0, 0 )
+                    else
+                        ( [], 0, 0 )
+            in
+            ( viewSelectInput language
+                (Translate.PrenatalLaboratoryTaskResult task)
+                form.testResult
+                Translate.PrenatalTestResult
+                prenatalTestResultToString
+                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                SetSyphilisTestResult
+                ++ symptomsSection
+            , taskCompleted form.testResult + symptomsTasksCompleted
+            , 1 + symptomsTasksTotal
+            )
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate task
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+prenatalHepatitisBResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> HepatitisBResultForm -> ( Html Msg, Int, Int )
+prenatalHepatitisBResultFormAndTasks language currentDate task form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                emptyOption =
+                    if isNothing form.testResult then
+                        emptySelectOption True
+
+                    else
+                        emptyNode
+            in
+            ( viewSelectInput language
+                (Translate.PrenatalLaboratoryTaskResult task)
+                form.testResult
+                Translate.PrenatalTestResult
+                prenatalTestResultToString
+                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                SetHepatitisBTestResult
+            , taskCompleted form.testResult
+            , 1
+            )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate task
@@ -597,20 +631,22 @@ viewNextStepsContent language currentDate assembled data =
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                iconClass =
                     case task of
                         NextStepsSendToHC ->
-                            ( "next-steps-send-to-hc"
-                            , isJust measurements.sendToHC
-                            )
+                            "next-steps-send-to-hc"
 
                         NextStepsMedicationDistribution ->
-                            ( "next-steps-medication-distribution"
-                            , isJust measurements.medicationDistribution
-                            )
+                            "next-steps-medication-distribution"
+
+                        NextStepsRecommendedTreatment ->
+                            "next-steps-treatment"
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    nextStepsMeasurementTaken assembled task
 
                 navigationAction =
                     if isActive then
@@ -663,8 +699,19 @@ viewNextStepsContent language currentDate assembled data =
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
                         |> getMeasurementValueFunc
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
+                        |> medicationDistributionFormWithDefaultRecurrentPhase data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language
+                            currentDate
+                            assembled
+                            SetMedicationDistributionBoolInput
+                            SetMedicationDistributionAdministrationNote
+                            medicationsRecurrentPhase
+
+                Just NextStepsRecommendedTreatment ->
+                    measurements.recommendedTreatment
+                        |> getMeasurementValueFunc
+                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+                        |> viewRecommendedTreatmentForSyphilis language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -690,6 +737,9 @@ viewNextStepsContent language currentDate assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    NextStepsRecommendedTreatment ->
+                                        SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -713,6 +763,69 @@ viewNextStepsContent language currentDate assembled data =
             ]
         ]
     ]
+
+
+viewRecommendedTreatmentForSyphilis :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> RecommendedTreatmentForm
+    -> Html Msg
+viewRecommendedTreatmentForSyphilis language currentDate assembled form =
+    let
+        -- Since we may have values from inital phase of encounter, we need
+        -- to filter them out, to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (\signs ->
+                    List.filter (\sign -> List.member sign allowedRecommendedTreatmentSigns)
+                        signs
+                        |> List.head
+                )
+                form.signs
+
+        warning =
+            Maybe.map
+                (\signs ->
+                    if
+                        List.any (\sign -> List.member sign signs)
+                            [ TreatementErythromycin, TreatementAzithromycin ]
+                    then
+                        div [ class "warning" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , text <| translate language Translate.SyphilisRecommendedTreatmentWarning
+                            ]
+
+                    else
+                        emptyNode
+                )
+                form.signs
+                |> Maybe.withDefault emptyNode
+    in
+    div [ class "ui form recommended-treatment" ]
+        [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+        , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+            , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
+            ]
+        , viewCheckBoxSelectCustomInput language
+            allowedRecommendedTreatmentSigns
+            []
+            currentValue
+            SetRecommendedTreatmentSign
+            (viewTreatmentOptionForSyphilis language)
+        , warning
+        ]
+
+
+viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForSyphilis language sign =
+    label []
+        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+        , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+        ]
 
 
 

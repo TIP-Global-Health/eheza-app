@@ -263,6 +263,35 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_illness_symptoms'.
+  $field_bases['field_illness_symptoms'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_illness_symptoms',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'headache' => 'Headache',
+        'vision-changes' => 'Vision Changes',
+        'rash' => 'Rash',
+        'painless-ulcer-mouth' => 'Painless ulcer in Mouth',
+        'painless-ulcer-genitals' => 'Painless ulcer in genital area',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_ketone'.
   $field_bases['field_ketone'] = array(
     'active' => 1,
@@ -449,13 +478,16 @@ function hedley_prenatal_field_default_field_bases() {
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
         'hiv' => 'HIV',
         'partner-hiv' => 'HIV positive partner',
+        'syphilis' => 'Syphilis',
+        'syphilis-complications' => 'Syphilis with Complications',
+        'neurosyphilis' => 'Neurosyphilis',
         'hepatitis-b' => 'Hepatitis B',
         'malaria' => 'Malaria',
-        'malaria-anemia' =>'Malaria with Anemia',
-        'malaria-severe-anemia' =>'Malaria with Severe Anemia',
-        'anemia' =>'Mild to Moderate Anemia',
-        'severe-anemia' =>'Severe Anemia',
-        'severe-anemia-complications' =>'Severe Anemia with Complications',
+        'malaria-anemia' => 'Malaria with Anemia',
+        'malaria-severe-anemia' => 'Malaria with Severe Anemia',
+        'anemia' => 'Mild to Moderate Anemia',
+        'severe-anemia' => 'Severe Anemia',
+        'severe-anemia-complications' => 'Severe Anemia with Complications',
         'eclampsia' => 'Eclampsia',
         'miscarriage' => 'Miscarriage',
         'molar-pregnancy' => 'Molar Pregnancy',
@@ -528,7 +560,11 @@ function hedley_prenatal_field_default_field_bases() {
         'coartem' => 'Coartem',
         'written-protocols' => 'Written Protocols',
         'refer-to-hospital' => 'Refer to Hospital',
-        'none' => 'None',
+        'penecilin-1' => 'Penecilin 1',
+        'penecilin-3' => 'Penecilin 3',
+        'erythromycin' => 'Erythromycin',
+        'azithromycin' => 'Azithromycin',
+        'ceftriaxon' =>'Ceftriaxon',
       ),
       'allowed_values_function' => '',
     ),

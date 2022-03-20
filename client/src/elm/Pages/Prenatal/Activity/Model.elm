@@ -410,16 +410,6 @@ emptyNextStepsData =
     }
 
 
-type alias RecommendedTreatmentForm =
-    { signs : Maybe (List RecommendedTreatmentSign)
-    }
-
-
-emptyRecommendedTreatmentForm : RecommendedTreatmentForm
-emptyRecommendedTreatmentForm =
-    RecommendedTreatmentForm Nothing
-
-
 
 -- FORMS
 

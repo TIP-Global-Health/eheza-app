@@ -832,6 +832,13 @@ type alias PrenatalMalariaTest =
     PrenatalMeasurement PrenatalMalariaTestValue
 
 
+type alias PrenatalMalariaTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
 type PrenatalTestExecutionNote
     = TestNoteRunToday
     | TestNoteRunPreviously
@@ -869,13 +876,6 @@ type PrenatalHIVSign
     | NoPrenatalHIVSign
 
 
-type alias PrenatalMalariaTestValue =
-    { executionNote : PrenatalTestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
-    }
-
-
 type alias PrenatalHepatitisBTest =
     PrenatalMeasurement PrenatalHepatitisBTestValue
 
@@ -895,7 +895,17 @@ type alias PrenatalSyphilisTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , symptoms : Maybe (EverySet IllnessSymptom)
     }
+
+
+type IllnessSymptom
+    = IllnessSymptomHeadache
+    | IllnessSymptomVisionChanges
+    | IllnessSymptomRash
+    | IllnessSymptomPainlessUlcerMouth
+    | IllnessSymptomPainlessUlcerGenitals
+    | NoIllnessSymptoms
 
 
 type alias PrenatalHemoglobinTest =
@@ -1083,15 +1093,22 @@ type alias PrenatalRecommendedTreatment =
 
 
 type alias RecommendedTreatmentValue =
-    EverySet RecommendedTreatmentSign
+    { signs : Maybe (EverySet RecommendedTreatmentSign)
+    }
 
 
 type RecommendedTreatmentSign
-    = TreatmentQuinineSulphate
+    = -- For Malaria:
+      TreatmentQuinineSulphate
     | TreatmentCoartem
     | TreatmentWrittenProtocols
     | TreatementReferToHospital
-    | NoRecommendedTreatmentSign
+      -- For Syphilis:
+    | TreatementPenecilin1
+    | TreatementPenecilin3
+    | TreatementErythromycin
+    | TreatementAzithromycin
+    | TreatementCeftriaxon
 
 
 
@@ -1390,6 +1407,8 @@ type MedicationDistributionSign
     | Iron
     | FolicAcid
     | NoMedicationDistributionSigns
+    | NoMedicationDistributionSignsInitialPhase
+    | NoMedicationDistributionSignsRecurrentPhase
 
 
 type AdministrationNote

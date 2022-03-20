@@ -3,6 +3,7 @@ module Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (SendToHCForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
@@ -19,6 +20,7 @@ type Msg
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
     | SetSyphilisTestResult String
+    | SetIllnessSymptom IllnessSymptom
     | SaveSyphilisResult PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
     | SetHepatitisBTestResult String
     | SaveHepatitisBResult PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
@@ -49,6 +51,8 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
+    | SetRecommendedTreatmentSign RecommendedTreatmentSign
+    | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -71,9 +75,9 @@ emptyModel =
 type alias LabResultsData =
     { bloodGpRsTestForm : PrenatalBloodGpRsResultForm
     , hemoglobinTestForm : PrenatalHemoglobinResultForm
-    , hepatitisBTestForm : PrenatalTestResultForm
+    , hepatitisBTestForm : HepatitisBResultForm
     , randomBloodSugarTestForm : PrenatalRandomBloodSugarResultForm
-    , syphilisTestForm : PrenatalTestResultForm
+    , syphilisTestForm : SyphilisResultForm
     , urineDipstickTestForm : PrenatalUrineDipstickResultForm
     , activeTask : Maybe LaboratoryTask
     }
@@ -83,9 +87,9 @@ emptyLabResultsData : LabResultsData
 emptyLabResultsData =
     { bloodGpRsTestForm = emptyPrenatalBloodGpRsResultForm
     , hemoglobinTestForm = emptyPrenatalHemoglobinResultForm
-    , hepatitisBTestForm = emptyPrenatalTestResultForm
+    , hepatitisBTestForm = emptyHepatitisBResultForm
     , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarResultForm
-    , syphilisTestForm = emptyPrenatalTestResultForm
+    , syphilisTestForm = emptySyphilisResultForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
     , activeTask = Nothing
     }
@@ -94,6 +98,7 @@ emptyLabResultsData =
 type alias NextStepsData =
     { sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
+    , recommendedTreatmentForm : RecommendedTreatmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -102,20 +107,35 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = emptyMedicationDistributionForm
+    , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
 
 
-type alias PrenatalTestResultForm =
+type alias SyphilisResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    , symptoms : Maybe (List IllnessSymptom)
+    , symptomsDirty : Bool
+    }
+
+
+emptySyphilisResultForm : SyphilisResultForm
+emptySyphilisResultForm =
+    SyphilisResultForm Nothing Nothing Nothing Nothing False
+
+
+type alias HepatitisBResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     }
 
 
-emptyPrenatalTestResultForm : PrenatalTestResultForm
-emptyPrenatalTestResultForm =
-    PrenatalTestResultForm Nothing Nothing Nothing
+emptyHepatitisBResultForm : HepatitisBResultForm
+emptyHepatitisBResultForm =
+    HepatitisBResultForm Nothing Nothing Nothing
 
 
 type alias PrenatalBloodGpRsResultForm =

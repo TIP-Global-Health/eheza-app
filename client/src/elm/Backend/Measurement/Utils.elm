@@ -1518,8 +1518,20 @@ recommendedTreatmentSignToString sign =
         TreatementReferToHospital ->
             "refer-to-hospital"
 
-        NoRecommendedTreatmentSign ->
-            "none"
+        TreatementPenecilin1 ->
+            "penecilin-1"
+
+        TreatementPenecilin3 ->
+            "penecilin-3"
+
+        TreatementErythromycin ->
+            "erythromycin"
+
+        TreatementAzithromycin ->
+            "azithromycin"
+
+        TreatementCeftriaxon ->
+            "ceftriaxon"
 
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
@@ -1537,8 +1549,67 @@ recommendedTreatmentSignFromString sign =
         "refer-to-hospital" ->
             Just TreatementReferToHospital
 
+        "penecilin-1" ->
+            Just TreatementPenecilin1
+
+        "penecilin-3" ->
+            Just TreatementPenecilin3
+
+        "erythromycin" ->
+            Just TreatementErythromycin
+
+        "azithromycin" ->
+            Just TreatementAzithromycin
+
+        "ceftriaxon" ->
+            Just TreatementCeftriaxon
+
+        _ ->
+            Nothing
+
+
+illnessSymptomToString : IllnessSymptom -> String
+illnessSymptomToString symptom =
+    case symptom of
+        IllnessSymptomHeadache ->
+            "headache"
+
+        IllnessSymptomVisionChanges ->
+            "vision-changes"
+
+        IllnessSymptomRash ->
+            "rash"
+
+        IllnessSymptomPainlessUlcerMouth ->
+            "painless-ulcer-mouth"
+
+        IllnessSymptomPainlessUlcerGenitals ->
+            "painless-ulcer-genitals"
+
+        NoIllnessSymptoms ->
+            "none"
+
+
+illnessSymptomFromString : String -> Maybe IllnessSymptom
+illnessSymptomFromString symptom =
+    case symptom of
+        "headache" ->
+            Just IllnessSymptomHeadache
+
+        "vision-changes" ->
+            Just IllnessSymptomVisionChanges
+
+        "rash" ->
+            Just IllnessSymptomRash
+
+        "painless-ulcer-mouth" ->
+            Just IllnessSymptomPainlessUlcerMouth
+
+        "painless-ulcer-genitals" ->
+            Just IllnessSymptomPainlessUlcerGenitals
+
         "none" ->
-            Just NoRecommendedTreatmentSign
+            Just NoIllnessSymptoms
 
         _ ->
             Nothing

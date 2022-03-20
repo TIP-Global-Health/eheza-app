@@ -24,7 +24,6 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
-import Pages.AcuteIllness.Activity.View exposing (viewInstructionsLabel)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -47,6 +46,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
+        , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -1600,11 +1600,16 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsMedicationDistribution ->
                     measurements.medicationDistribution
                         |> getMeasurementValueFunc
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate assembled SetMedicationDistributionBoolInput SetMedicationDistributionAdministrationNote
+                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language
+                            currentDate
+                            assembled
+                            SetMedicationDistributionBoolInput
+                            SetMedicationDistributionAdministrationNote
+                            medicationsInitialPhase
 
                 Just NextStepsRecommendedTreatment ->
-                    viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
+                    viewRecommendedTreatmentForMalaria language currentDate assembled recommendedTreatmentForm
 
                 Nothing ->
                     emptyNode
@@ -1617,7 +1622,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                         -- due to Malaria, based on saved measurement.
                         referredToHospitalBeforeSave =
                             getMeasurementValueFunc measurements.recommendedTreatment
-                                |> Maybe.map (EverySet.member TreatementReferToHospital)
+                                |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
                                 |> Maybe.withDefault False
 
                         -- We know if patient will be referred to hospital
@@ -2848,44 +2853,6 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
-viewRecommendedTreatmentForm : Language -> NominalDate -> AssembledData -> RecommendedTreatmentForm -> Html Msg
-viewRecommendedTreatmentForm language currentDate assembled form =
-    let
-        egaInWeeks =
-            Maybe.map
-                (calculateEGAWeeks currentDate)
-                assembled.globalLmpDate
-
-        medicationTreatment =
-            Maybe.map
-                (\egaWeeks ->
-                    if egaWeeks <= 14 then
-                        TreatmentQuinineSulphate
-
-                    else
-                        TreatmentCoartem
-                )
-                egaInWeeks
-                |> Maybe.withDefault TreatmentQuinineSulphate
-    in
-    div [ class "ui form recommended-treatment" ]
-        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
-        , h2 []
-            [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
-        , viewCheckBoxSelectInput language
-            [ medicationTreatment
-            , TreatmentWrittenProtocols
-            , TreatementReferToHospital
-            ]
-            []
-            (Maybe.andThen List.head form.signs)
-            SetRecommendedTreatmentSign
-            Translate.RecommendedTreatmentSignLabel
-        ]
-
-
 viewPrenatalHIVTestForm : Language -> NominalDate -> PrenatalHIVTestForm -> ( Html Msg, Int, Int )
 viewPrenatalHIVTestForm language currentDate form =
     let
@@ -3577,6 +3544,60 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
         , taskCompleted form.testPerformedToday + derivedTasksCompleted
         , 1 + derivedTasksTotal
         )
+
+
+viewRecommendedTreatmentForMalaria :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> RecommendedTreatmentForm
+    -> Html Msg
+viewRecommendedTreatmentForMalaria language currentDate assembled form =
+    let
+        egaInWeeks =
+            Maybe.map
+                (calculateEGAWeeks currentDate)
+                assembled.globalLmpDate
+
+        medicationTreatment =
+            Maybe.map
+                (\egaWeeks ->
+                    if egaWeeks <= 14 then
+                        TreatmentQuinineSulphate
+
+                    else
+                        TreatmentCoartem
+                )
+                egaInWeeks
+                |> Maybe.withDefault TreatmentQuinineSulphate
+
+        -- Since we may have values from recurrent phase of encounter, we need
+        -- to filter them out, to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (\signs ->
+                    List.filter (\sign -> List.member sign allowedRecommendedTreatmentSigns)
+                        signs
+                        |> List.head
+                )
+                form.signs
+    in
+    div [ class "ui form recommended-treatment" ]
+        [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+        , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+        , viewCheckBoxSelectInput language
+            [ medicationTreatment
+            , TreatmentWrittenProtocols
+            , TreatementReferToHospital
+            ]
+            []
+            currentValue
+            SetRecommendedTreatmentSign
+            Translate.RecommendedTreatmentSignLabel
+        ]
 
 
 

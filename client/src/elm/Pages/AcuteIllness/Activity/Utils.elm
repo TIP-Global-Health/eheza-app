@@ -22,7 +22,7 @@ import Measurement.Utils
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField)
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField, viewInstructionsLabel)
 import Translate exposing (TranslationId)
 
 

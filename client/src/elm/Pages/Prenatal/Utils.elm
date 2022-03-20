@@ -34,6 +34,16 @@ import Pages.Utils
 import Translate exposing (Language, translate)
 
 
+calculateEGAWeeks : NominalDate -> NominalDate -> Int
+calculateEGAWeeks currentDate lmpDate =
+    calculateEGADays currentDate lmpDate // 7
+
+
+calculateEGADays : NominalDate -> NominalDate -> Int
+calculateEGADays currentDate lmpDate =
+    diffDays lmpDate currentDate
+
+
 diagnosed : PrenatalDiagnosis -> AssembledData -> Bool
 diagnosed diagnosis assembled =
     EverySet.member diagnosis assembled.encounter.diagnoses
@@ -79,32 +89,152 @@ emergencyReferralDiagnosesRecurrent =
     ]
 
 
-medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
-medicationDistributionFormWithDefault form saved =
+medicationDistributionFormWithDefaultInitialPhase : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefaultInitialPhase form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { mebendezole = or form.mebendezole (EverySet.member Mebendezole value.distributionSigns |> Just)
-                , tenofovir = or form.tenofovir (EverySet.member Tenofovir value.distributionSigns |> Just)
-                , lamivudine = or form.lamivudine (EverySet.member Lamivudine value.distributionSigns |> Just)
-                , dolutegravir = or form.dolutegravir (EverySet.member Dolutegravir value.distributionSigns |> Just)
-                , tdf3tc = or form.tdf3tc (EverySet.member TDF3TC value.distributionSigns |> Just)
-                , iron = or form.iron (EverySet.member Iron value.distributionSigns |> Just)
-                , folicAcid = or form.folicAcid (EverySet.member FolicAcid value.distributionSigns |> Just)
+                let
+                    allowedSigns =
+                        NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+                in
+                { mebendezole = or form.mebendezole (medicationDistributionResolveFromValue allowedSigns value Mebendezole)
+                , tenofovir = or form.tenofovir (medicationDistributionResolveFromValue allowedSigns value Tenofovir)
+                , lamivudine = or form.lamivudine (medicationDistributionResolveFromValue allowedSigns value Lamivudine)
+                , dolutegravir = or form.dolutegravir (medicationDistributionResolveFromValue allowedSigns value Dolutegravir)
+                , tdf3tc = or form.tdf3tc (medicationDistributionResolveFromValue allowedSigns value TDF3TC)
+
+                -- Following 2 do not participate at initial phase, therefore,
+                -- resolved directly from value.
+                , iron = EverySet.member Iron value.distributionSigns |> Just
+                , folicAcid = EverySet.member FolicAcid value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 }
             )
 
 
-toMedicationDistributionValueWithDefault : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
-toMedicationDistributionValueWithDefault saved form =
-    medicationDistributionFormWithDefault form saved
-        |> toMedicationDistributionValue
+medicationDistributionFormWithDefaultRecurrentPhase : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefaultRecurrentPhase form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    allowedSigns =
+                        NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+                in
+                { iron = or form.iron (medicationDistributionResolveFromValue allowedSigns value Iron)
+                , folicAcid = or form.folicAcid (medicationDistributionResolveFromValue allowedSigns value FolicAcid)
+
+                -- Following 5 do not participate at recurrent phase, therefore,
+                -- resolved directly from value.
+                , mebendezole = EverySet.member Mebendezole value.distributionSigns |> Just
+                , tenofovir = EverySet.member Tenofovir value.distributionSigns |> Just
+                , lamivudine = EverySet.member Lamivudine value.distributionSigns |> Just
+                , dolutegravir = EverySet.member Dolutegravir value.distributionSigns |> Just
+                , tdf3tc = EverySet.member TDF3TC value.distributionSigns |> Just
+                , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
+                }
+            )
 
 
-toMedicationDistributionValue : MedicationDistributionForm -> Maybe MedicationDistributionValue
-toMedicationDistributionValue form =
+medicationDistributionResolveFromValue : List MedicationDistributionSign -> MedicationDistributionValue -> MedicationDistributionSign -> Maybe Bool
+medicationDistributionResolveFromValue allowedSigns value sign =
+    let
+        valueSetForSign =
+            EverySet.member sign value.distributionSigns
+
+        nonAdministrationNoteSetForSign =
+            EverySet.toList value.nonAdministrationSigns
+                |> List.filterMap
+                    (\sign_ ->
+                        case sign_ of
+                            MedicationAmoxicillin reason ->
+                                Just ( Amoxicillin, reason )
+
+                            MedicationCoartem reason ->
+                                Just ( Coartem, reason )
+
+                            MedicationORS reason ->
+                                Just ( ORS, reason )
+
+                            MedicationZinc reason ->
+                                Just ( Zinc, reason )
+
+                            MedicationParacetamol reason ->
+                                Just ( Paracetamol, reason )
+
+                            MedicationMebendezole reason ->
+                                Just ( Mebendezole, reason )
+
+                            MedicationTenofovir reason ->
+                                Just ( Tenofovir, reason )
+
+                            MedicationLamivudine reason ->
+                                Just ( Lamivudine, reason )
+
+                            MedicationDolutegravir reason ->
+                                Just ( Dolutegravir, reason )
+
+                            MedicationTDF3TC reason ->
+                                Just ( TDF3TC, reason )
+
+                            MedicationIron reason ->
+                                Just ( Iron, reason )
+
+                            MedicationFolicAcid reason ->
+                                Just ( FolicAcid, reason )
+
+                            NoMedicationNonAdministrationSigns ->
+                                Nothing
+                    )
+                |> List.filter (Tuple.first >> (==) sign)
+                |> List.isEmpty
+                |> not
+    in
+    if valueSetForSign then
+        Just True
+
+    else if nonAdministrationNoteSetForSign then
+        Just False
+
+    else
+        Nothing
+
+
+medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefault valueForNone form saved =
+    case valueForNone of
+        NoMedicationDistributionSignsInitialPhase ->
+            medicationDistributionFormWithDefaultInitialPhase form saved
+
+        NoMedicationDistributionSignsRecurrentPhase ->
+            medicationDistributionFormWithDefaultRecurrentPhase form saved
+
+        -- We should never get here.
+        _ ->
+            form
+
+
+toMedicationDistributionValueWithDefaultInitialPhase : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefaultInitialPhase =
+    toMedicationDistributionValueWithDefault NoMedicationDistributionSignsInitialPhase
+
+
+toMedicationDistributionValueWithDefaultRecurrentPhase : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefaultRecurrentPhase =
+    toMedicationDistributionValueWithDefault NoMedicationDistributionSignsRecurrentPhase
+
+
+toMedicationDistributionValueWithDefault : MedicationDistributionSign -> Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefault valueForNone saved form =
+    medicationDistributionFormWithDefault valueForNone form saved
+        |> toMedicationDistributionValue valueForNone
+
+
+toMedicationDistributionValue : MedicationDistributionSign -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValue valueForNone form =
     let
         distributionSigns =
             [ ifNullableTrue Mebendezole form.mebendezole
@@ -116,7 +246,7 @@ toMedicationDistributionValue form =
             , ifNullableTrue FolicAcid form.folicAcid
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationDistributionSigns)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty valueForNone)
 
         nonAdministrationSigns =
             form.nonAdministrationSigns
@@ -134,10 +264,11 @@ resolveMedicationDistributionInputsAndTasks :
     -> AssembledData
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
+    -> List MedicationDistributionSign
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveMedicationDistributionInputsAndTasks language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg form =
-    resolveMedicationsByDiagnoses assembled
+resolveMedicationDistributionInputsAndTasks language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
+    resolveMedicationsByDiagnoses assembled allowedMedications
         |> List.map
             (resolveMedicationDistributionInputsAndTasksForMedication language
                 currentDate
@@ -153,8 +284,8 @@ resolveMedicationDistributionInputsAndTasks language currentDate assembled setMe
             ( [], 0, 0 )
 
 
-resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign
-resolveMedicationsByDiagnoses assembled =
+resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
+resolveMedicationsByDiagnoses assembled allowedMedications =
     List.filter
         (\medication ->
             let
@@ -169,13 +300,13 @@ resolveMedicationsByDiagnoses assembled =
                     diagnosed DiagnosisPrescribeMebendezole assembled
 
                 Tenofovir ->
-                    hivDiagnosed && hivProgramHC
+                    hivDiagnosed && not hivProgramHC
 
                 Lamivudine ->
-                    hivDiagnosed && hivProgramHC
+                    hivDiagnosed && not hivProgramHC
 
                 Dolutegravir ->
-                    hivDiagnosed && hivProgramHC
+                    hivDiagnosed && not hivProgramHC
 
                 TDF3TC ->
                     diagnosed DiagnosisDiscordantPartnership assembled
@@ -189,7 +320,7 @@ resolveMedicationsByDiagnoses assembled =
                 _ ->
                     False
         )
-        [ Mebendezole, Tenofovir, Lamivudine, Dolutegravir, TDF3TC, Iron, FolicAcid ]
+        allowedMedications
 
 
 resolveMedicationDistributionInputsAndTasksForMedication :
@@ -652,9 +783,88 @@ resolveFolicAcidDosageAndIcon currentDate person =
     Just ( "400 IU", "icon-pills" )
 
 
+medicationsInitialPhase : List MedicationDistributionSign
+medicationsInitialPhase =
+    [ Mebendezole
+    , Tenofovir
+    , Lamivudine
+    , Dolutegravir
+    , TDF3TC
+    ]
+
+
+medicationsRecurrentPhase : List MedicationDistributionSign
+medicationsRecurrentPhase =
+    [ Iron
+    , FolicAcid
+    ]
+
+
 hivProgramAtHC : AssembledData -> Bool
 hivProgramAtHC assembled =
     getMeasurementValueFunc assembled.measurements.hivTest
         |> Maybe.andThen .hivSigns
         |> Maybe.map (EverySet.member HIVProgramHC)
+        |> Maybe.withDefault False
+
+
+recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
+recommendedTreatmentFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (Maybe.map EverySet.toList value.signs) }
+            )
+
+
+toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValueWithDefault saved form =
+    recommendedTreatmentFormWithDefault form saved
+        |> toRecommendedTreatmentValue
+
+
+toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+toRecommendedTreatmentValue form =
+    Maybe.map
+        (\signs ->
+            { signs = EverySet.fromList signs |> Just
+            }
+        )
+        form.signs
+
+
+{-| Recommended Treatment activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used, and at least one of
+them must be set.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> PrenatalMeasurements -> Bool
+recommendedTreatmentMeasurementTaken allowedSigns measurements =
+    getMeasurementValueFunc measurements.recommendedTreatment
+        |> Maybe.andThen .signs
+        |> Maybe.map
+            (\signs ->
+                List.any (\sign -> EverySet.member sign signs)
+                    allowedSigns
+            )
+        |> Maybe.withDefault False
+
+
+{-| Medication Distribution activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+medicationDistributionMeasurementTaken : List MedicationDistributionSign -> PrenatalMeasurements -> Bool
+medicationDistributionMeasurementTaken allowedSigns measurements =
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.map
+            (.distributionSigns
+                >> (\signs ->
+                        List.any (\sign -> EverySet.member sign signs)
+                            allowedSigns
+                   )
+            )
         |> Maybe.withDefault False

@@ -632,6 +632,7 @@ type TranslationId
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IdleWaitingForSync
+    | IllnessSymptom IllnessSymptom
     | Immunisation
     | ImmunisationHistory
     | IncompleteCervixPreviousPregnancy
@@ -964,6 +965,7 @@ type TranslationId
     | RecommendationSite RecommendationSite
     | RecommendedButNotGivenDueTo
     | RecommendedSymptomRelief
+    | RecommendedTreatmentSignDosage RecommendedTreatmentSign
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
@@ -1034,9 +1036,10 @@ type TranslationId
     | SeeMore
     | SelectAntenatalVisit
     | SelectAllSigns
-    | SelectPostpartumChildDangerSigns
     | SelectDangerSigns
     | SelectDate
+    | SelectIllnessSymptoms
+    | SelectPostpartumChildDangerSigns
     | SelectPostpartumMotherDangerSigns
     | SelectedProgram
     | SelectedVillage
@@ -1093,6 +1096,10 @@ type TranslationId
     | SymptomsGISignAbbrev SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
     | SymptomsTask SymptomsTask
+    | SyphilisRecommendedTreatmentHeader
+    | SyphilisRecommendedTreatmentHelper
+    | SyphilisRecommendedTreatmentInstructions
+    | SyphilisRecommendedTreatmentWarning
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading
@@ -4670,6 +4677,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        IllnessSymptom symptom ->
+            case symptom of
+                IllnessSymptomHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomVisionChanges ->
+                    { english = "Vision Changes"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomRash ->
+                    { english = "Rash on body, feet or hands"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomPainlessUlcerMouth ->
+                    { english = "Painless ulcer in mouth"
+                    , kinyarwanda = Nothing
+                    }
+
+                IllnessSymptomPainlessUlcerGenitals ->
+                    { english = "Painless ulcer in genital area"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoIllnessSymptoms ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
         Immunisation ->
             { english = "Immunization"
             , kinyarwanda = Just "Inkingo"
@@ -5608,6 +5647,16 @@ translationSet trans =
                     }
 
                 NoMedicationDistributionSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationDistributionSignsInitialPhase ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationDistributionSignsRecurrentPhase ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -7261,6 +7310,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilisWithComplications ->
+                    { english = "Syphilis with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisNeurosyphilis ->
+                    { english = "Neurosyphilis"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHepatitisB ->
                     { english = "Hepatitis B"
                     , kinyarwanda = Nothing
@@ -7390,6 +7454,21 @@ translationSet trans =
 
                 DiagnosisDiscordantPartnership ->
                     { english = "Patient is part of a discordant partnership"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilis ->
+                    { english = "Patient has tested positive for Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilisWithComplications ->
+                    { english = "Patient has tested positive for Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisNeurosyphilis ->
+                    { english = "Patient has tested positive for Syphilis and show signs of Neurosyphilis"
                     , kinyarwanda = Nothing
                     }
 
@@ -7582,6 +7661,11 @@ translationSet trans =
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
+                Pages.Prenatal.RecurrentActivity.Types.NextStepsRecommendedTreatment ->
+                    { english = "Diagnosis + Medicine"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalHIVProgramHelper ->
@@ -8742,6 +8826,39 @@ translationSet trans =
             , kinyarwanda = Just "Imiti yemewe mukuvura ibimenyesto"
             }
 
+        RecommendedTreatmentSignDosage sign ->
+            case sign of
+                TreatementPenecilin1 ->
+                    { english = "IM x 1"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementPenecilin3 ->
+                    { english = "IM 1x a week for 3 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementErythromycin ->
+                    { english = "by mouth 4x a day for 14 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementAzithromycin ->
+                    { english = "4 tabs by mouth x one day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementCeftriaxon ->
+                    { english = "IM daily x 10 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Dosage is not applicable for other options.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         RecommendedTreatmentSignLabel sign ->
             case sign of
                 TreatmentQuinineSulphate ->
@@ -8764,8 +8881,28 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoRecommendedTreatmentSign ->
-                    { english = "Recommended"
+                TreatementPenecilin1 ->
+                    { english = "Penicillin (2.4 million units)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementPenecilin3 ->
+                    { english = "Penicillin (2.4 million units)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementErythromycin ->
+                    { english = "Erythromycin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementAzithromycin ->
+                    { english = "Azithromycin (2g)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementCeftriaxon ->
+                    { english = "Ceftriaxone (1g)"
                     , kinyarwanda = Nothing
                     }
 
@@ -9307,11 +9444,6 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite"
             }
 
-        SelectPostpartumChildDangerSigns ->
-            { english = "Please select one or more of the danger signs the child is experiencing"
-            , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umwana  yaba afite?"
-            }
-
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
@@ -9320,6 +9452,16 @@ translationSet trans =
         SelectDate ->
             { english = "Select Date"
             , kinyarwanda = Just "Hitamo Itariki"
+            }
+
+        SelectIllnessSymptoms ->
+            { english = "Please select one or more symptoms the patient is experiencing"
+            , kinyarwanda = Nothing
+            }
+
+        SelectPostpartumChildDangerSigns ->
+            { english = "Please select one or more of the danger signs the child is experiencing"
+            , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umwana  yaba afite?"
             }
 
         SelectPostpartumMotherDangerSigns ->
@@ -9798,6 +9940,26 @@ translationSet trans =
                     { english = "GI"
                     , kinyarwanda = Just "Urwungano ngogozi"
                     }
+
+        SyphilisRecommendedTreatmentHeader ->
+            { english = "This patient has tested positive for Syphilis"
+            , kinyarwanda = Nothing
+            }
+
+        SyphilisRecommendedTreatmentHelper ->
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Nothing
+            }
+
+        SyphilisRecommendedTreatmentInstructions ->
+            { english = "Ensure the patient is not allergic to the medication before prescribing"
+            , kinyarwanda = Nothing
+            }
+
+        SyphilisRecommendedTreatmentWarning ->
+            { english = "If Erythromycin or Azithromycin used, must treat newborn immediately after delivery (does not cross into placenta)"
+            , kinyarwanda = Nothing
+            }
 
         GroupEncounterClosed ->
             { english = "Group Encounter closed"
