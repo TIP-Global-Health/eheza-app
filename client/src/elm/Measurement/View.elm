@@ -1412,7 +1412,6 @@ viewVitalsForm language currentDate config form =
                             "dia-blood-pressure"
                             Translate.MMHGUnit
                         , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
-                        , separator
                         ]
                 )
                 ageInYears
@@ -1468,7 +1467,6 @@ viewVitalsForm language currentDate config form =
                 "heart-rate"
                 Translate.BpmUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BpmUnitLabel
-            , separator
             ]
 
         respiratoryRateSection =
@@ -1515,7 +1513,6 @@ viewVitalsForm language currentDate config form =
                 "respiratory-rate"
                 Translate.BpmUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BpmUnitLabel
-            , separator
             ]
 
         bodyTemperatureSection =
@@ -1538,17 +1535,22 @@ viewVitalsForm language currentDate config form =
             ]
 
         separator =
-            div [ class "separator" ] []
+            [ div [ class "separator" ] [] ]
 
         content =
             case config.mode of
                 VitalsFormBasic ->
-                    respiratoryRateSection ++ bodyTemperatureSection
+                    respiratoryRateSection
+                        ++ separator
+                        ++ bodyTemperatureSection
 
                 VitalsFormFull ->
                     bloodPressureSection
+                        ++ separator
                         ++ heartRateSection
+                        ++ separator
                         ++ respiratoryRateSection
+                        ++ separator
                         ++ bodyTemperatureSection
 
                 VitalsFormRepeated ->
