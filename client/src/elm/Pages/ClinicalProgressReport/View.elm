@@ -2,7 +2,7 @@ module Pages.ClinicalProgressReport.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (PrenatalLaboratoryTest(..), PrenatalMeasurements, PrenatalTestExecutionNote(..), PrenatalTestVariant(..))
+import Backend.Measurement.Model exposing (DangerSign(..), PrenatalLaboratoryTest(..), PrenatalMeasurements, PrenatalTestExecutionNote(..), PrenatalTestVariant(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
@@ -314,6 +314,45 @@ viewChwActivityPane language currentDate isChw data =
                         Just measurements
                     )
                 |> List.any (.birthPlan >> isJust)
+
+        labActivity =
+            allMeasurementsWithDates
+                |> List.filterMap
+                    (\( date_, _, measurements ) ->
+                        Just measurements
+                    )
+                |> List.any (.pregnancyTest >> isJust)
+
+        appointmentActivity =
+            allMeasurementsWithDates
+                |> List.filterMap
+                    (\( date_, _, measurements ) ->
+                        Just measurements
+                    )
+                |> List.any (.appointmentConfirmation >> isJust)
+
+        healthEducationActivity =
+            allMeasurementsWithDates
+                |> List.filterMap
+                    (\( date_, _, measurements ) ->
+                        Just measurements
+                    )
+                |> List.any (.healthEducation >> isJust)
+
+        dangerSignActivity =
+            Maybe.map
+                (\sign ->
+                    if sign /= NoDangerSign then
+                        allMeasurementsWithDates
+                            |> List.filterMap
+                                (\( date_, _, measurements ) ->
+                                    Just measurements
+                                )
+                            |> List.any (.dangerSigns >> isJust)
+
+                    else
+                        False
+                )
 
         activity =
             if sentToHCActivity || pregnancyDatingAction || birthPlan then

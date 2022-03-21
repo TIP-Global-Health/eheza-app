@@ -2338,8 +2338,7 @@ div.page-report.clinical .ui.unstackable.items {
   .chw-activity .entry .activity ul {
     display: inline-block;
     list-style-type: none;
-    margin: 0 0 0 15px;
-    width: auto;
+    margin: 0 0 0 30px;
     padding: 0;
 
     &:last-child {
@@ -2350,40 +2349,34 @@ div.page-report.clinical .ui.unstackable.items {
       border-radius: 10px;
       color: $color-white;
       float: left;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: bold;
-      margin: 3px 3px;
-      height: 50px;
+      margin: 3px 5px;
       padding: 0 10px;
-      min-width: 100px;
       text-transform:capitalize;
 
       &.activity-red {
         background: $color-velvet
       }
-    &.activity-blue {
-      background: $color-blue
+      &.activity-blue {
+       background: $color-blue
     }
     }
 
 
-  //.chw-activity {
-  //  .entry {
-  //    .activity {
-  //      border-radius: 10px;
-  //      color: $color-white;
-  //      font-size: 17px;
-  //      margin: 3px 5px;
-  //      padding: 0 10px;
-  //      text-transform: uppercase;
-  //
-  //
-  //      }
-  //
-  //
-  //
-  //    }
-  //}
+  .chw-activity {
+    .heading {
+      .activity {
+        text-align: left;
+      }
+    }
+    .entry {
+      .activity {
+        min-width: 215px;
+      }
+
+      }
+  }
 
   .lab-results,
   .chw-activity {
@@ -2394,7 +2387,6 @@ div.page-report.clinical .ui.unstackable.items {
       .name,
       .date,
       .result,
-      .activity
       {
         width: 215px;
       }
