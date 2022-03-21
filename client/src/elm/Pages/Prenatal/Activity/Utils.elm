@@ -688,7 +688,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 EverySet.empty
 
         diagnisisByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis dangerSignsList assembled.measurements) labResultsDiagnoses
+            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) labResultsDiagnoses
                 |> EverySet.fromList
 
         dangerSignsList =
@@ -809,8 +809,8 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
             False
 
 
-matchLabResultsPrenatalDiagnosis : List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
+matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
+matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
     let
         positiveMalariaTest =
             testedPositiveAt .malariaTest
@@ -843,11 +843,17 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
-            (highBloodPressure measurements
-                || repeatedHighBloodPressure measurements
-            )
-                && highUrineProtein measurements
-                && severePreeclampsiaSigns measurements
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20)
+                        && (highBloodPressure measurements
+                                || repeatedHighBloodPressure measurements
+                           )
+                        && highUrineProtein measurements
+                        && severePreeclampsiaSigns measurements
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         DiagnosisHIV ->
             testedPositiveAt .hivTest
@@ -925,7 +931,7 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
                            -- we view Malaia as separate diagnosis.
                            -- Therefore's not 'Malarial and Severe Anemia with
                            -- complications' diagnosis.
-                           matchLabResultsPrenatalDiagnosis dangerSigns measurements DiagnosisSevereAnemiaWithComplications
+                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements DiagnosisSevereAnemiaWithComplications
                    )
 
         DiagnosisMalariaWithAnemia ->
