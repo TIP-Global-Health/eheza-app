@@ -1708,6 +1708,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ CorePhysicalExamRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ LastMenstrualPeriodRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -1821,17 +1831,23 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ PrenatalUrineDipstickTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestUrineDipstick
                                 data.value.executionNote
                                 (isJust data.value.protein)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgs
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ PrenatalBloodGpRsTestRevision uid data ] ->
@@ -4066,45 +4082,32 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                     []
 
                                 else
-                                    case addedDiagnoses of
-                                        [] ->
-                                            []
-
-                                        [ DiagnosisPrescribeMebendezole ] ->
-                                            -- Since this diagnosis is used only as an indication
-                                            -- for prescribing Mebendezole at Medication distribution,
-                                            -- there're no additional actions to take if it was added.
-                                            []
-
-                                        -- We expect only one diagnosis to be added
-                                        -- at a time, so we care only about `first`.
-                                        first :: rest ->
+                                    let
+                                        ( message, instructions ) =
                                             let
-                                                ( message, instructions ) =
-                                                    let
-                                                        signs =
-                                                            List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
-                                                                |> String.join ", "
-                                                    in
-                                                    -- Instructions for Emergency Referral.
-                                                    ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                                                    , if
-                                                        List.any
-                                                            (\maternityWardDiagnosis ->
-                                                                List.member maternityWardDiagnosis urgentDiagnoses
-                                                            )
-                                                            Pages.Prenatal.Activity.Utils.maternityWardDiagnoses
-                                                      then
-                                                        translate language Translate.EmergencyReferralHelperReferToMaternityWard
-
-                                                      else
-                                                        translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
-                                                    )
+                                                signs =
+                                                    List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
+                                                        |> String.join ", "
                                             in
-                                            -- View warning popup and navigate to Next Steps activity.
-                                            [ initialEncounterWarningPopupMsg ( message, instructions )
-                                            , initialEncounterNextStepsMsg
-                                            ]
+                                            -- Instructions for Emergency Referral.
+                                            ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
+                                            , if
+                                                List.any
+                                                    (\maternityWardDiagnosis ->
+                                                        List.member maternityWardDiagnosis urgentDiagnoses
+                                                    )
+                                                    Pages.Prenatal.Activity.Utils.maternityWardDiagnoses
+                                              then
+                                                translate language Translate.EmergencyReferralHelperReferToMaternityWard
+
+                                              else
+                                                translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
+                                            )
+                                    in
+                                    -- View warning popup and navigate to Next Steps activity.
+                                    [ initialEncounterWarningPopupMsg ( message, instructions )
+                                    , initialEncounterNextStepsMsg
+                                    ]
                         in
                         -- These messages are sent when diagnoses set has changed.
                         -- Therefore, in any case, we need to send command to update
