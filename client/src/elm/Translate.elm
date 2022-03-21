@@ -7879,28 +7879,28 @@ translationSet trans =
 
         PrenatalLaboratoryProteinValue value ->
             case value of
-                ProteinNegative ->
-                    { english = "Negative"
+                Protein0 ->
+                    { english = "0"
                     , kinyarwanda = Nothing
                     }
 
-                Protein30 ->
-                    { english = "30"
+                ProteinPlus1 ->
+                    { english = "+1"
                     , kinyarwanda = Nothing
                     }
 
-                Protein100 ->
-                    { english = "100"
+                ProteinPlus2 ->
+                    { english = "+2"
                     , kinyarwanda = Nothing
                     }
 
-                Protein300 ->
-                    { english = "300"
+                ProteinPlus3 ->
+                    { english = "+3"
                     , kinyarwanda = Nothing
                     }
 
-                Protein2000 ->
-                    { english = "2000"
+                ProteinPlus4 ->
+                    { english = "+4"
                     , kinyarwanda = Nothing
                     }
 

@@ -194,7 +194,7 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => 0,
+        '0' => '0',
         '+1' => '+1',
         '+2' => '+2',
         '+3' => '+3',
@@ -580,11 +580,11 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'negative' => 'Negative',
-        30 => 30,
-        100 => 100,
-        300 => 300,
-        2000 => 2000,
+        '0' => '0',
+        '+1' => '+1',
+        '+2' => '+2',
+        '+3' => '+3',
+        '+4' => '+4',
       ),
       'allowed_values_function' => '',
     ),
