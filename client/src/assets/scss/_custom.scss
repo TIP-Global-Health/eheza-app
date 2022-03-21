@@ -2331,18 +2331,17 @@ input::placeholder {
   }
 }
 
-/* @todo: replace with correct icon */
 .icon-next-steps-wait {
   .active &:after {
-    background-image: url(#{$img-path}icon-health-center-white.svg);
+    background-image: url(#{$img-path}icon-sand-watch-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-sand-watch-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-health-center-gray.svg);
+    background-image: url(#{$img-path}icon-sand-watch-gray.svg);
   }
 }
 
