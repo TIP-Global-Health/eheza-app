@@ -839,8 +839,11 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
-            --@todo
-            False
+            (highBloodPressure measurements
+                || repeatedHighBloodPressure measurements
+            )
+                && highUrineProtein measurements
+                && severePreeclampsiaSigns measurements
 
         DiagnosisHIV ->
             testedPositiveAt .hivTest
@@ -998,46 +1001,69 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
 
 immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
 immediateHypertensionByMeasurements =
-    highBloodPressureByMeasurements
+    highBloodPressure
 
 
 recheckedHypertensionByMeasurements : PrenatalMeasurements -> Bool
 recheckedHypertensionByMeasurements =
-    marginalBloodPressureByMeasurements
+    repeatedTestForMarginalBloodPressure
 
 
 immediatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
 immediatePreeclampsiaByMeasurements measurements =
-    highBloodPressureByMeasurements measurements
-        && -- @todo
-           -- && urine protein condition.
-           edemaOnHandOrLegs measurements
+    highBloodPressure measurements
+        && edemaOnHandOrLegs measurements
 
 
 recheckedPreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
 recheckedPreeclampsiaByMeasurements measurements =
-    marginalBloodPressureByMeasurements measurements
-        && -- @todo
-           -- && urine protein condition.
-           edemaOnHandOrLegs measurements
+    repeatedTestForMarginalBloodPressure measurements
+        && ((highUrineProtein measurements
+                && -- Adding this, so we would not have both Moderate and
+                   -- Severe Preeclapsia diagnoses.
+                   (not <| severePreeclampsiaSigns measurements)
+            )
+                || edemaOnHandOrLegs measurements
+           )
 
 
-highBloodPressureByMeasurements : PrenatalMeasurements -> Bool
-highBloodPressureByMeasurements measurements =
+highBloodPressure : PrenatalMeasurements -> Bool
+highBloodPressure measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.andThen
             (\value ->
-                Maybe.map2 highBloodPressureCondition value.dia value.sys
+                Maybe.map2 highBloodPressureCondition
+                    value.dia
+                    value.sys
             )
         |> Maybe.withDefault False
 
 
-marginalBloodPressureByMeasurements : PrenatalMeasurements -> Bool
-marginalBloodPressureByMeasurements measurements =
+repeatedHighBloodPressure : PrenatalMeasurements -> Bool
+repeatedHighBloodPressure measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.andThen
             (\value ->
-                Maybe.map2 marginalBloodPressureCondition value.diaRepeated value.sysRepeated
+                Maybe.map2 highBloodPressureCondition
+                    value.diaRepeated
+                    value.sysRepeated
+            )
+        |> Maybe.withDefault False
+
+
+{-| We measure BP again when we suspect Hypertension or Preeclamsia
+(dia between 90 and 110, and dia between 140 and 160).
+We diagnose Hypertension if repeated measurements are within
+those boundries, or exceed them.
+-}
+repeatedTestForMarginalBloodPressure : PrenatalMeasurements -> Bool
+repeatedTestForMarginalBloodPressure measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2 (\dia sys -> dia >= 90 || sys >= 140)
+                    value.diaRepeated
+                    value.sysRepeated
             )
         |> Maybe.withDefault False
 
@@ -1047,16 +1073,6 @@ highBloodPressureCondition dia sys =
     dia >= 110 || sys >= 160
 
 
-{-| We measure BP again when we suspect Hypertension or Preeclamsia
-(dia between 90 and 110, and dia between 140 and 160).
-We diagnose Hypertension if repeated measurements are within
-those boundries, or exceed them.
--}
-marginalBloodPressureCondition : Float -> Float -> Bool
-marginalBloodPressureCondition diaRepeated sysRepeated =
-    diaRepeated >= 90 || sysRepeated >= 140
-
-
 edemaOnHandOrLegs : PrenatalMeasurements -> Bool
 edemaOnHandOrLegs measurements =
     getMeasurementValueFunc measurements.corePhysicalExam
@@ -1064,6 +1080,34 @@ edemaOnHandOrLegs measurements =
             (\value ->
                 EverySet.member EdemaHands value.hands
                     || EverySet.member EdemaLegs value.legs
+            )
+        |> Maybe.withDefault False
+
+
+severePreeclampsiaSigns : PrenatalMeasurements -> Bool
+severePreeclampsiaSigns measurements =
+    getMeasurementValueFunc measurements.corePhysicalExam
+        |> Maybe.map
+            (\value ->
+                EverySet.member Wheezes value.lungs
+                    || EverySet.member Crackles value.lungs
+                    || EverySet.member TPRightUpper value.abdomen
+            )
+        |> Maybe.withDefault False
+
+
+highUrineProtein : PrenatalMeasurements -> Bool
+highUrineProtein measurements =
+    getMeasurementValueFunc measurements.urineDipstickTest
+        |> Maybe.andThen .protein
+        |> Maybe.map
+            (\protein ->
+                List.member protein
+                    [ ProteinPlus1
+                    , ProteinPlus2
+                    , ProteinPlus3
+                    , ProteinPlus4
+                    ]
             )
         |> Maybe.withDefault False
 

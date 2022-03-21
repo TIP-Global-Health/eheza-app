@@ -939,6 +939,6 @@ recommendedTreatmentSignsForHypertension =
     ]
 
 
-suspectedHypertensionCondition : Float -> Float -> Bool
-suspectedHypertensionCondition dia sys =
+marginalBloodPressureCondition : Float -> Float -> Bool
+marginalBloodPressureCondition dia sys =
     (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)

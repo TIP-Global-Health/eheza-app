@@ -563,7 +563,7 @@ expectExaminationTask currentDate assembled task =
                 |> Maybe.andThen
                     (\value ->
                         Maybe.map2
-                            suspectedHypertensionCondition
+                            marginalBloodPressureCondition
                             value.dia
                             value.sys
                     )

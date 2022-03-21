@@ -1160,7 +1160,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                             -- When we suspect hypertension, we'll try to schedule vitals recheck.
                                                             -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
                                                             if
-                                                                Pages.Prenatal.Utils.suspectedHypertensionCondition dia sys
+                                                                Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
                                                             then
                                                                 Backend.Measurement.Model.TestNoteRunToday
 
