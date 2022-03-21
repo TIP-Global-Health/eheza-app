@@ -323,12 +323,15 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsWait ->
-            -- We show Wait activity when there's at least one
-            -- test that was performed, or, 2 hours waiting is
-            -- required for blood preasure recheck.
-            getMeasurementValueFunc assembled.measurements.labsResults
-                |> Maybe.map .performedTests
-                |> isJust
+            -- If we reffer patient somewhere, there's no need to wait.
+            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
+                && -- We show Wait activity when there's at least one
+                   -- test that was performed, or, 2 hours waiting is
+                   -- required for blood preasure recheck.
+                   (getMeasurementValueFunc assembled.measurements.labsResults
+                        |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
+                        |> Maybe.withDefault False
+                   )
 
 
 diagnosedMalaria : AssembledData -> Bool
@@ -1134,7 +1137,8 @@ maternityWardDiagnoses =
 
 labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
-    [ DiagnosisHIV
+    [ DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisHIV
     , DiagnosisDiscordantPartnership
     , DiagnosisSyphilis
     , DiagnosisSyphilisWithComplications
@@ -1155,6 +1159,8 @@ examinationDiagnoses =
     , DiagnosisChronicHypertensionAfterRecheck
     , DiagnosisGestationalHypertensionImmediate
     , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisModeratePreeclampsiaAfterRecheck
     ]
 
 
