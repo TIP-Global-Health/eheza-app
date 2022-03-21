@@ -4091,7 +4091,10 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             in
                                             -- Instructions for Emergency Referral.
                                             ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                                            , if
+                                            , if List.member DiagnosisSeverePreeclampsiaImmediate urgentDiagnoses then
+                                                translate language Translate.EmergencyReferralHelperReferToHospital
+
+                                              else if
                                                 List.any
                                                     (\maternityWardDiagnosis ->
                                                         List.member maternityWardDiagnosis urgentDiagnoses
@@ -4129,31 +4132,19 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                     []
 
                                 else
-                                    case addedDiagnoses of
-                                        [] ->
-                                            []
-
-                                        -- We expect only one diagnosis to be added
-                                        -- at a time, so we care only about `first`.
-                                        first :: rest ->
-                                            let
-                                                instructions =
-                                                    case first of
-                                                        DiagnosisSevereAnemiaWithComplications ->
-                                                            translate language Translate.EmergencyReferralHelperReferToHospital
-
-                                                        _ ->
-                                                            ""
-                                            in
-                                            [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
-                                                |> UserPage
-                                                |> App.Model.SetActivePage
-                                            , recurrentEncounterWarningPopupMsg
-                                                ( Translate.PrenatalDiagnosisLabResultsMessage first
-                                                    |> translate language
-                                                , instructions
-                                                )
-                                            ]
+                                    let
+                                        signs =
+                                            List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) urgentDiagnoses
+                                                |> String.join ", "
+                                    in
+                                    [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
+                                        |> UserPage
+                                        |> App.Model.SetActivePage
+                                    , recurrentEncounterWarningPopupMsg
+                                        ( signs
+                                        , translate language Translate.EmergencyReferralHelperReferToHospital
+                                        )
+                                    ]
                         in
                         -- These messages are sent when diagnoses set has changed.
                         -- Therefore, in any case, we need to send command to update
