@@ -281,6 +281,7 @@ expectNextStepsTask currentDate assembled task =
                     emergencyReferalRequired assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
                         || (diagnosedMalaria assembled && severeMalariaTreatment)
+                        || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
 
                 _ ->
                     dangerSigns
@@ -318,7 +319,7 @@ expectNextStepsTask currentDate assembled task =
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
                 && (diagnosedMalaria assembled
-                        || diagnosedHypertensionImmediate assembled
+                        || diagnosedHypertension assembled
                    )
 
         NextStepsWait ->
@@ -339,8 +340,8 @@ diagnosedMalaria =
         ]
 
 
-diagnosedHypertensionImmediate : AssembledData -> Bool
-diagnosedHypertensionImmediate =
+diagnosedHypertension : AssembledData -> Bool
+diagnosedHypertension =
     diagnosedAnyOf
         [ DiagnosisChronicHypertensionImmediate
         , DiagnosisGestationalHypertensionImmediate
@@ -390,7 +391,7 @@ nextStepsMeasurementTaken assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertensionImmediate assembled then
+                    if diagnosedHypertension assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
@@ -1586,7 +1587,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     resolveRecommendedTreatmentSectionState (diagnosedMalaria assembled) recommendedTreatmentSignsForMalaria form.signs
 
                 ( hypertensionSectionCompleted, hypertensionSectionActive ) =
-                    resolveRecommendedTreatmentSectionState (diagnosedHypertensionImmediate assembled) recommendedTreatmentSignsForHypertension form.signs
+                    resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
             in
             ( malariaSectionCompleted + hypertensionSectionCompleted
             , malariaSectionActive + hypertensionSectionActive

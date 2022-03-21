@@ -392,6 +392,7 @@ expectNextStepsTask currentDate assembled task =
                 , DiagnosisMalariaWithSevereAnemia
                 , DiagnosisSevereAnemia
                 , DiagnosisSevereAnemiaWithComplications
+                , DiagnosisSeverePreeclampsiaAfterRecheck
                 ]
                 assembled
 
@@ -408,7 +409,7 @@ expectNextStepsTask currentDate assembled task =
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
                 && (diagnosedSyphilis assembled
-                        || diagnosedHypertensionAfterRecheck assembled
+                        || diagnosedHypertension assembled
                    )
 
 
@@ -420,8 +421,8 @@ diagnosedSyphilis =
         ]
 
 
-diagnosedHypertensionAfterRecheck : AssembledData -> Bool
-diagnosedHypertensionAfterRecheck =
+diagnosedHypertension : AssembledData -> Bool
+diagnosedHypertension =
     diagnosedAnyOf
         [ DiagnosisChronicHypertensionAfterRecheck
         , DiagnosisGestationalHypertensionAfterRecheck
@@ -451,7 +452,7 @@ nextStepsMeasurementTaken assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertensionAfterRecheck assembled then
+                    if diagnosedHypertension assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
@@ -528,7 +529,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                     resolveRecommendedTreatmentSectionState (diagnosedSyphilis assembled) recommendedTreatmentSignsForSyphilis form.signs
 
                 ( hypertensionSectionCompleted, hypertensionSectionActive ) =
-                    resolveRecommendedTreatmentSectionState (diagnosedHypertensionAfterRecheck assembled) recommendedTreatmentSignsForHypertension form.signs
+                    resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
             in
             ( syphilisSectionCompleted + hypertensionSectionCompleted
             , syphilisSectionActive + hypertensionSectionActive
