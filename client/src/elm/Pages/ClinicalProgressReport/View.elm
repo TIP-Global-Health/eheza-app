@@ -99,30 +99,29 @@ viewHeader language id initiator model =
                             ]
                             []
                         ]
+
+                goBackActionByLabResultsState defaultAction =
+                    Maybe.map
+                        (\mode ->
+                            case mode of
+                                LabResultsCurrent ->
+                                    SetLabResultsMode Nothing
+
+                                LabResultsHistory _ ->
+                                    SetLabResultsMode (Just LabResultsCurrent)
+                        )
+                        model.labResultsMode
+                        |> Maybe.withDefault defaultAction
             in
             case initiator of
                 InitiatorEncounterPage prenatalEncounterId ->
-                    let
-                        action =
-                            Maybe.map
-                                (\mode ->
-                                    case mode of
-                                        LabResultsCurrent ->
-                                            SetLabResultsMode Nothing
-
-                                        LabResultsHistory _ ->
-                                            SetLabResultsMode (Just LabResultsCurrent)
-                                )
-                                model.labResultsMode
-                                |> Maybe.withDefault (SetActivePage <| UserPage <| PrenatalEncounterPage id)
-                    in
-                    iconForView action
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage id)
 
                 InitiatorNewEncounter _ ->
                     emptyNode
 
                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
-                    iconForView <| SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId)
     in
     div
         [ class "ui basic segment head" ]

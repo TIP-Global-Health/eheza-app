@@ -38,7 +38,7 @@ import Pages.Utils
         , viewStartEncounterButton
         )
 import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
-import Pages.WellChildProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
+import Pages.WellChildProgressReport.Model exposing (DiagnosisMode(..), PaneEntryStatus(..), WellChildProgressReportInitiator(..))
 import Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
