@@ -2532,8 +2532,8 @@ viewObstetricalExamForm language currentDate assembled form =
             (Maybe.map toFloat form.fetalHeartRate)
             (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
             "fetal-heart-rate"
-            Translate.BpmUnitLabel
-        , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BpmUnitLabel
+            Translate.HeartBpmUnitLabel
+        , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.HeartBpmUnitLabel
         , div [ class "separator" ] []
         , viewLabel language Translate.PreviousCSectionScar
         , viewCheckBoxSelectInput language

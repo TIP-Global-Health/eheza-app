@@ -1425,8 +1425,8 @@ viewVitalsForm language currentDate config form =
                 (Maybe.map toFloat form.heartRate)
                 (config.setIntInputMsg heartRateUpdateFunc)
                 "heart-rate"
-                Translate.BpmUnitLabel
-            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BpmUnitLabel
+                Translate.HeartBpmUnitLabel
+            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.HeartBpmUnitLabel
             , separator
             ]
 

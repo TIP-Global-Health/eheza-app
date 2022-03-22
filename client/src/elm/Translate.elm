@@ -593,6 +593,7 @@ type TranslationId
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
+    | HeartBpmUnitLabel
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
@@ -2383,7 +2384,7 @@ translationSet trans =
 
         CaseManagement ->
             { english = "Case Management"
-            , kinyarwanda = Just "Kuvura Uburwayi"
+            , kinyarwanda = Just "Gukurikirana Umurwayi"
             }
 
         CaseManagementFilterLabel filter ->
@@ -4244,6 +4245,11 @@ translationSet trans =
         Heart ->
             { english = "Heart"
             , kinyarwanda = Just "Umutima"
+            }
+
+        HeartBpmUnitLabel ->
+            { english = "bpm"
+            , kinyarwanda = Just "Inshuro umutima utera ku munota"
             }
 
         HeartMurmur ->
@@ -9386,7 +9392,7 @@ translateActivePage page =
 
                 GlobalCaseManagementPage ->
                     { english = "Case Management"
-                    , kinyarwanda = Just "Kuvura Uburwayi"
+                    , kinyarwanda = Just "Gukurikirana Umurwayi"
                     }
 
                 DemographicsReportPage _ ->
@@ -9860,7 +9866,7 @@ translateDashboard trans =
 
         CaseManagementLabel ->
             { english = "Case Management"
-            , kinyarwanda = Just "Kuvura Uburwayi"
+            , kinyarwanda = Just "Gukurikirana Umurwayi"
             }
 
         ChildrenWhoDied ->
@@ -10629,7 +10635,7 @@ translateFormError error =
     case error of
         Empty ->
             { english = "should not be empty"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "igomba kuzuzwa"
             }
 
         InvalidString ->
