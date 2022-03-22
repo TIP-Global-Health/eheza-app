@@ -147,9 +147,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -46,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_content-list:admin/content.
-  $menu_links['menu-ihangane-admin-menu_content-list:admin/content'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_content-list:admin/content.
+  $menu_links['menu-eheza-app-admin-menu_content-list:admin/content'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'admin/content',
     'router_path' => 'admin/content',
     'link_title' => 'Content list',
@@ -157,7 +157,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_content-list:admin/content',
+      'identifier' => 'menu-eheza-app-admin-menu_content-list:admin/content',
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -167,9 +167,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -43,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-device:node/add/device.
-  $menu_links['menu-ihangane-admin-menu_create-device:node/add/device'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_create-device:node/add/device.
+  $menu_links['menu-eheza-app-admin-menu_create-device:node/add/device'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'node/add/device',
     'router_path' => 'node/add/device',
     'link_title' => 'Create Device',
@@ -177,7 +177,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_create-device:node/add/device',
+      'identifier' => 'menu-eheza-app-admin-menu_create-device:node/add/device',
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -187,9 +187,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -50,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-group-encounter:node/add/session.
-  $menu_links['menu-ihangane-admin-menu_create-group-encounter:node/add/session'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_create-group-encounter:node/add/session.
+  $menu_links['menu-eheza-app-admin-menu_create-group-encounter:node/add/session'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'node/add/session',
     'router_path' => 'node/add',
     'link_title' => 'Create group encounter',
@@ -197,7 +197,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_create-group-encounter:node/add/session',
+      'identifier' => 'menu-eheza-app-admin-menu_create-group-encounter:node/add/session',
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -207,9 +207,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -44,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-group:node/add/clinic.
-  $menu_links['menu-ihangane-admin-menu_create-group:node/add/clinic'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_create-group:node/add/clinic.
+  $menu_links['menu-eheza-app-admin-menu_create-group:node/add/clinic'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'node/add/clinic',
     'router_path' => 'node/add',
     'link_title' => 'Create group',
@@ -217,7 +217,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_create-group:node/add/clinic',
+      'identifier' => 'menu-eheza-app-admin-menu_create-group:node/add/clinic',
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -227,9 +227,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -45,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-nurse:node/add/nurse.
-  $menu_links['menu-ihangane-admin-menu_create-nurse:node/add/nurse'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_create-nurse:node/add/nurse.
+  $menu_links['menu-eheza-app-admin-menu_create-nurse:node/add/nurse'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'node/add/nurse',
     'router_path' => 'node/add/nurse',
     'link_title' => 'Create Nurse',
@@ -237,7 +237,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_create-nurse:node/add/nurse',
+      'identifier' => 'menu-eheza-app-admin-menu_create-nurse:node/add/nurse',
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -247,9 +247,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -49,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-person:node/add/person.
-  $menu_links['menu-ihangane-admin-menu_create-person:node/add/person'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_create-person:node/add/person.
+  $menu_links['menu-eheza-app-admin-menu_create-person:node/add/person'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'node/add/person',
     'router_path' => 'node/add/person',
     'link_title' => 'Create Person',
@@ -257,7 +257,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_create-person:node/add/person',
+      'identifier' => 'menu-eheza-app-admin-menu_create-person:node/add/person',
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -267,9 +267,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -48,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation.
-  $menu_links['menu-ihangane-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation.
+  $menu_links['menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'node/add/pmtct-paticipation',
     'router_path' => 'node/add',
     'link_title' => 'Create PMTCT Participation',
@@ -277,7 +277,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation',
+      'identifier' => 'menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation',
     ),
     'module' => 'menu',
     'hidden' => 0,
@@ -287,9 +287,9 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -46,
     'customized' => 1,
   );
-  // Exported menu link: menu-ihangane-admin-menu_create-relationship:node/add/relationship.
-  $menu_links['menu-ihangane-admin-menu_create-relationship:node/add/relationship'] = array(
-    'menu_name' => 'menu-ihangane-admin-menu',
+  // Exported menu link: menu-eheza-app-admin-menu_create-relationship:node/add/relationship.
+  $menu_links['menu-eheza-app-admin-menu_create-relationship:node/add/relationship'] = array(
+    'menu_name' => 'menu-eheza-app-admin-menu',
     'link_path' => 'node/add/relationship',
     'router_path' => 'node/add/relationship',
     'link_title' => 'Create Relationship',
@@ -297,7 +297,7 @@ function hedley_admin_menu_default_menu_links() {
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-ihangane-admin-menu_create-relationship:node/add/relationship',
+      'identifier' => 'menu-eheza-app-admin-menu_create-relationship:node/add/relationship',
     ),
     'module' => 'menu',
     'hidden' => 0,

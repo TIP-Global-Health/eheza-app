@@ -423,7 +423,10 @@ function reportQuota() {
     elmApp.ports.storageQuota.send(quota);
   });
 
-  elmApp.ports.memoryQuota.send(performance.memory);
+  if (!!performance.memory) {
+    // Firefox doesn't have this property.
+    elmApp.ports.memoryQuota.send(performance.memory);
+  };
 }
 
 // Do it right away.

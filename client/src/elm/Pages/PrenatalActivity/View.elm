@@ -11,7 +11,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -26,6 +26,7 @@ import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefaul
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
+import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
@@ -204,10 +205,10 @@ viewPregnancyDatingContent language currentDate assembled data =
             [ viewQuestionLabel language Translate.LmpRangeHeader
             , lmpRangeInput
             , viewLabel language Translate.LmpDateHeader
-            , div [ class "form-input date" ]
-                [ lmpDateInput ]
+            , lmpDateInput
             , viewQuestionLabel language Translate.LmpDateConfidentHeader
             , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
+            , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
             ]
 
         lmpRangeInput =
@@ -228,18 +229,40 @@ viewPregnancyDatingContent language currentDate assembled data =
                    )
                 |> select [ onInput SetLmpRange, class "form-input select" ]
 
-        lmpDateInput =
-            if isJust form.lmpRange then
-                DateSelector.SelectorDropdown.view
-                    ToggleDateSelector
-                    SetLmpDate
-                    form.isDateSelectorOpen
-                    (Date.add Days -280 currentDate)
-                    currentDate
-                    form.lmpDate
+        lmpdDateForView =
+            Maybe.map formatDDMMYYYY form.lmpDate
+                |> Maybe.withDefault ""
 
-            else
-                emptyNode
+        lmpDateAction =
+            Maybe.map
+                (\range ->
+                    let
+                        dateFrom =
+                            case range of
+                                OneMonth ->
+                                    Date.add Months -1 currentDate
+
+                                ThreeMonth ->
+                                    Date.add Months -3 currentDate
+
+                                SixMonth ->
+                                    Date.add Months -6 currentDate
+
+                        dateSelectorConfig =
+                            { select = SetLmpDate
+                            , close = SetLmpDateSelectorState Nothing
+                            , dateFrom = dateFrom
+                            , dateTo = currentDate
+                            }
+                    in
+                    [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
+                )
+                form.lmpRange
+                |> Maybe.withDefault []
+
+        lmpDateInput =
+            div (class "form-input date" :: lmpDateAction)
+                [ text lmpdDateForView ]
 
         newLmpInputTasksCompleted =
             taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
@@ -2640,19 +2663,25 @@ viewFollowUpForm language assembled currentDate form =
 viewAppointmentConfirmationForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
 viewAppointmentConfirmationForm language currentDate assembled form =
     let
-        appointmentDateInput =
-            DateSelector.SelectorDropdown.view
-                AppointmentToggleDateSelector
-                SetAppointmentConfirmation
-                form.isDateSelectorOpen
-                currentDate
-                (Date.add Months 9 currentDate)
-                form.appointmentDate
+        appointmentDateForView =
+            Maybe.map formatDDMMYYYY form.appointmentDate
+                |> Maybe.withDefault ""
+
+        dateSelectorConfig =
+            { select = SetAppointmentConfirmation
+            , close = SetAppointmentDateSelectorState Nothing
+            , dateFrom = currentDate
+            , dateTo = Date.add Months 9 currentDate
+            }
     in
     div [ class "form appointment-confirmation" ]
         [ viewLabel language Translate.AppointmentConfirmationInstrunction
-        , div [ class "form-input date" ]
-            [ appointmentDateInput ]
+        , div
+            [ class "form-input date"
+            , onClick <| SetAppointmentDateSelectorState (Just dateSelectorConfig)
+            ]
+            [ text appointmentDateForView ]
+        , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.appointmentDate
         ]
 
 

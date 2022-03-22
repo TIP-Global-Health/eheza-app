@@ -304,16 +304,16 @@ function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $fa
  *  - Level 4: village
  */
 function hedley_migrate_generate_geo_terms_vocabulary() {
-  if (taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
+  if (taxonomy_vocabulary_machine_name_load('eheza_geolocation')) {
     // Vocabulary already exists.
     return;
   }
 
   // Create new vocabulary.
   $vocabulary = (object) array(
-    'name' => 'Ihangane geolocation vocabulary',
+    'name' => 'Eheza geolocation vocabulary',
     'description' => 'This vocabulary lists all geolocations',
-    'machine_name' => 'ihangane_geolocation',
+    'machine_name' => 'eheza_geolocation',
   );
   taxonomy_vocabulary_save($vocabulary);
 
@@ -396,7 +396,7 @@ function _hedley_migrate_process_column(array &$data, array &$locator, $index, a
  * Generates static geolocation structure to be used by client.
  */
 function hedley_migrate_generate_geolocation_structure_for_client() {
-  if (!$vocabulary = taxonomy_vocabulary_machine_name_load('ihangane_geolocation')) {
+  if (!$vocabulary = taxonomy_vocabulary_machine_name_load('eheza_geolocation')) {
     // Vocabulary does not exist.
     return;
   }

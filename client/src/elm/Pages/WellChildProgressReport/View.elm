@@ -53,7 +53,7 @@ import Pages.NutritionActivity.View exposing (translateNutritionAssement)
 import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
-import Pages.WellChildActivity.Model exposing (VaccinationStatus(..))
+import Pages.WellChildActivity.Types exposing (VaccinationStatus(..))
 import Pages.WellChildActivity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildActivity.View exposing (viewVaccinationOverview)
 import Pages.WellChildEncounter.Model exposing (AssembledData, VaccinationProgressDict)

@@ -8,9 +8,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(.
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
-import DateSelector.SelectorDropdown
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -23,6 +23,7 @@ import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -123,23 +124,24 @@ viewPregnancyOutcome language currentDate initiator data model =
                    )
                 |> select [ onInput SetPregnancyOutcome, class "form-input pregnancy-outcome" ]
 
-        today =
-            currentDate
+        pregnancyConcludedDateForView =
+            Maybe.map formatDDMMYYYY form.pregnancyConcludedDate
+                |> Maybe.withDefault ""
 
-        pregnancyConcludedDateInput =
-            DateSelector.SelectorDropdown.view
-                ToggleDateSelector
-                SetPregnancyConcludedDate
-                form.isDateSelectorOpen
-                (Date.add Months -3 today)
-                today
-                form.pregnancyConcludedDate
+        dateSelectorConfig =
+            { select = SetPregnancyConcludedDate
+            , close = SetDateSelectorState Nothing
+            , dateFrom = Date.add Months -3 currentDate
+            , dateTo = currentDate
+            }
 
         totalTasks =
             3
 
         tasksCompleted =
-            taskCompleted form.pregnancyConcludedDate + taskCompleted form.pregnancyOutcome + taskCompleted form.deliveryLocation
+            taskCompleted form.pregnancyConcludedDate
+                + taskCompleted form.pregnancyOutcome
+                + taskCompleted form.deliveryLocation
 
         destinationPage =
             case initiator of
@@ -157,8 +159,12 @@ viewPregnancyOutcome language currentDate initiator data model =
         [ div [ class "full content" ]
             [ div [ class "form pregnancy-dating" ]
                 [ viewLabel language Translate.DatePregnancyConcluded
-                , div [ class "form-input date" ]
-                    [ pregnancyConcludedDateInput ]
+                , div
+                    [ class "form-input date"
+                    , onClick <| SetDateSelectorState (Just dateSelectorConfig)
+                    ]
+                    [ text pregnancyConcludedDateForView ]
+                , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.pregnancyConcludedDate
                 , viewLabel language Translate.PregnancyOutcomeLabel
                 , pregnancyOutcomeInput
                 , viewLabel language Translate.DeliveryLocation

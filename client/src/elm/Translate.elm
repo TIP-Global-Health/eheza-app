@@ -88,7 +88,7 @@ import Pages.Dashboard.Model as Dashboard
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model
+import Pages.PrenatalActivity.Types
     exposing
         ( ExaminationTask(..)
         , HistoryTask(..)
@@ -96,7 +96,7 @@ import Pages.PrenatalActivity.Model
         , PatientProvisionsTask(..)
         )
 import Pages.TraceContact.Model exposing (NoContactReason(..))
-import Pages.WellChildActivity.Model exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
+import Pages.WellChildActivity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -841,7 +841,7 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion PrenatalHealthEducationSign
-    | PrenatalNextStepsTask Pages.PrenatalActivity.Model.NextStepsTask
+    | PrenatalNextStepsTask Pages.PrenatalActivity.Types.NextStepsTask
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -1073,7 +1073,7 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WellChildActivityTitle WellChildActivity
-    | WellChildDangerSignsTask Pages.WellChildActivity.Model.DangerSignsTask
+    | WellChildDangerSignsTask Pages.WellChildActivity.Types.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
@@ -1082,9 +1082,9 @@ type TranslationId
     | WellChildImmunisationDosage VaccineType
     | WellChildImmunisationHeader VaccineType
     | WellChildImmunisationHistory VaccineType
-    | WellChildImmunisationTask Pages.WellChildActivity.Model.ImmunisationTask
-    | WellChildMedicationTask Pages.WellChildActivity.Model.MedicationTask
-    | WellChildNextStepsTask Bool Pages.WellChildActivity.Model.NextStepsTask
+    | WellChildImmunisationTask Pages.WellChildActivity.Types.ImmunisationTask
+    | WellChildMedicationTask Pages.WellChildActivity.Types.MedicationTask
+    | WellChildNextStepsTask Bool Pages.WellChildActivity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
     | WellChildVaccineLabel VaccineType
     | WhatDoYouWantToDo
@@ -1502,7 +1502,7 @@ translationSet trans =
 
         AcuteIllnessHistory ->
             { english = "Acute Illness History"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru ku ndwara ifatiyeho"
             }
 
         AcuteIllnessHighRiskCaseHelper ->
@@ -2400,7 +2400,7 @@ translationSet trans =
 
                 FilterNutrition ->
                     { english = "Home Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura Umurwayi"
                     }
 
                 FilterContactsTrace ->
@@ -3153,7 +3153,7 @@ translationSet trans =
 
         Delete ->
             { english = "Delete"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gusiba"
             }
 
         DemographicInformation ->
@@ -3205,12 +3205,12 @@ translationSet trans =
             case status of
                 StatusOngoing ->
                     { english = "Ongoing"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ararwaye"
                     }
 
                 StatusResolved ->
                     { english = "Resolved"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yarakize"
                     }
 
         DifferenceBetweenDueAndDeliveryDates ->
@@ -3491,17 +3491,17 @@ translationSet trans =
             case status of
                 StatusOnTrack ->
                     { english = "On Track"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Biri ku gihe"
                     }
 
                 StatusECDBehind ->
                     { english = "Behind"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Biri inyuma"
                     }
 
                 StatusOffTrack ->
                     { english = "Off Track"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyakozwe"
                     }
 
                 NoECDStatus ->
@@ -3738,7 +3738,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
-                Pages.PrenatalActivity.Model.NutritionAssessment ->
+                Pages.PrenatalActivity.Types.NutritionAssessment ->
                     { english = "Nutrition Assessment"
                     , kinyarwanda = Just "Gusuzuma imirire"
                     }
@@ -3753,7 +3753,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibipimo by'inda"
                     }
 
-                Pages.PrenatalActivity.Model.BreastExam ->
+                Pages.PrenatalActivity.Types.BreastExam ->
                     translationSet BreastExam
 
         ExposureTask task ->
@@ -4565,7 +4565,7 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Select Home Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hitamo Gusura Umurwayi"
                     }
 
                 WellChildEncounter ->
@@ -4635,7 +4635,7 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     { english = "Home Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusura Umurwayi"
                     }
 
                 WellChildEncounter ->
@@ -6556,7 +6556,7 @@ translationSet trans =
 
         PlaceholderSearchContactName ->
             { english = "Search contact name here"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Shakisha izina ry'uwo bahuye"
             }
 
         PleaseCall ->
@@ -6862,27 +6862,27 @@ translationSet trans =
 
         PrenatalNextStepsTask task ->
             case task of
-                Pages.PrenatalActivity.Model.NextStepsAppointmentConfirmation ->
+                Pages.PrenatalActivity.Types.NextStepsAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
                     , kinyarwanda = Just "Kwemeza itariki yo kugaruka"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsFollowUp ->
+                Pages.PrenatalActivity.Types.NextStepsFollowUp ->
                     { english = "CHW Follow Up"
                     , kinyarwanda = Just "Isura ry'umujyanama w'ubuzima"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsSendToHC ->
+                Pages.PrenatalActivity.Types.NextStepsSendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsHealthEducation ->
+                Pages.PrenatalActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-                Pages.PrenatalActivity.Model.NextStepsNewbornEnrolment ->
+                Pages.PrenatalActivity.Types.NextStepsNewbornEnrolment ->
                     { english = "Newborn Enrollment"
                     , kinyarwanda = Just "Kwandika uruhinja"
                     }
@@ -7070,7 +7070,7 @@ translationSet trans =
 
         ProvidedSymtomReliefGuidanceQuestion ->
             { english = "Have you provided the guidance for symptom relief"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wamusobanuriye ibijyanye n'imiti itangwa mukuvura ibimenyesto"
             }
 
         Province ->
@@ -7265,7 +7265,7 @@ translationSet trans =
 
         RecommendedSymptomRelief ->
             { english = "Recommended Symptom Relief"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imiti yemewe mukuvura ibimenyesto"
             }
 
         RecordAcuteIllnessOutcome ->
@@ -8057,22 +8057,22 @@ translationSet trans =
             case type_ of
                 SymptomReliefParacetamol ->
                     { english = "Paracetamol for Fever"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Paracetamoro ugabanya umuriro"
                     }
 
                 SymptomReliefVitaminC ->
                     { english = "Effervescent Vitamin C tablets"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini bya Vitamine C"
                     }
 
                 SymptomReliefPaidoterineSyrup ->
                     { english = "Paidoterin syrup as a decongestant"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Siro Pedotere ku ndwara z'imyanya y'ubuhumekero"
                     }
 
                 SymptomReliefCoughMixture ->
                     { english = "Cough mixtures such as Ascoril, Bronchalene, etc."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Siro Pedotere ku ndwara z'imyanya y'ubuhumekero, n'indi"
                     }
 
         Symptoms ->
@@ -8719,12 +8719,12 @@ translationSet trans =
 
         WellChildDangerSignsTask task ->
             case task of
-                Pages.WellChildActivity.Model.TaskSymptomsReview ->
+                Pages.WellChildActivity.Types.TaskSymptomsReview ->
                     { english = "Symptom Review"
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
-                Pages.WellChildActivity.Model.TaskVitals ->
+                Pages.WellChildActivity.Types.TaskVitals ->
                     { english = "Vitals"
                     , kinyarwanda = Just "Ibipimo by'ubuzima"
                     }
@@ -8980,64 +8980,64 @@ translationSet trans =
 
         WellChildImmunisationTask task ->
             case task of
-                Pages.WellChildActivity.Model.TaskBCG ->
+                Pages.WellChildActivity.Types.TaskBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
                     }
 
-                Pages.WellChildActivity.Model.TaskDTP ->
+                Pages.WellChildActivity.Types.TaskDTP ->
                     { english = "DTP - HepB - Hib"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskHPV ->
+                Pages.WellChildActivity.Types.TaskHPV ->
                     { english = "HPV"
                     , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
                     }
 
-                Pages.WellChildActivity.Model.TaskIPV ->
+                Pages.WellChildActivity.Types.TaskIPV ->
                     { english = "IPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
                     }
 
-                Pages.WellChildActivity.Model.TaskMR ->
+                Pages.WellChildActivity.Types.TaskMR ->
                     { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                     }
 
-                Pages.WellChildActivity.Model.TaskOPV ->
+                Pages.WellChildActivity.Types.TaskOPV ->
                     { english = "OPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa"
                     }
 
-                Pages.WellChildActivity.Model.TaskPCV13 ->
+                Pages.WellChildActivity.Types.TaskPCV13 ->
                     { english = "PCV 13"
                     , kinyarwanda = Just "Urukingo rw'umusonga"
                     }
 
-                Pages.WellChildActivity.Model.TaskRotarix ->
+                Pages.WellChildActivity.Types.TaskRotarix ->
                     { english = "Rotarix"
                     , kinyarwanda = Just "Urukingo rw'impiswi"
                     }
 
-                Pages.WellChildActivity.Model.TaskOverview ->
+                Pages.WellChildActivity.Types.TaskOverview ->
                     { english = "Overview"
                     , kinyarwanda = Just "Ishusho Rusange"
                     }
 
         WellChildMedicationTask task ->
             case task of
-                Pages.WellChildActivity.Model.TaskAlbendazole ->
+                Pages.WellChildActivity.Types.TaskAlbendazole ->
                     { english = "Albendazole"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskMebendezole ->
+                Pages.WellChildActivity.Types.TaskMebendezole ->
                     { english = "Mebendezole"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChildActivity.Model.TaskVitaminA ->
+                Pages.WellChildActivity.Types.TaskVitaminA ->
                     { english = "Vitamin A"
                     , kinyarwanda = Nothing
                     }

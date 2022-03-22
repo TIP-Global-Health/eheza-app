@@ -73,8 +73,8 @@ update currentDate id msg model =
             , []
             )
 
-        ToggleDateSelector ->
-            ( { model | isDateSelectorOpen = not model.isDateSelectorOpen }
+        SetDateSelectorState state ->
+            ( { model | dateSelectorPopupState = state }
             , Cmd.none
             , []
             )
