@@ -1510,5 +1510,26 @@ viewDiagnosisTreatement language date measurements diagnosis =
         DiagnosisLaborAndDelivery ->
             referredToHospitalMsg
 
+        DiagnosisSeverePreeclampsiaAfterRecheck ->
+            referredToHospitalMsg
+
+        DiagnosisSevereAnemiaWithComplications ->
+            referredToHospitalMsg
+
+        DiagnosisHepatitisB ->
+            referredToHospitalMsg
+
+        DiagnosisNeurosyphilis ->
+            referredToHospitalMsg
+
+        DiagnosisMalariaWithSevereAnemia ->
+            referredToHospitalMsg
+
+        DiagnosisSevereAnemia ->
+            referredToHospitalMsg
+
+        DiagnosisModeratePreeclampsiaImmediate ->
+            referredToHospitalMsg
+
         _ ->
             ""

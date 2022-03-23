@@ -386,15 +386,15 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            diagnosedAnyOf
-                [ DiagnosisHepatitisB
-                , DiagnosisNeurosyphilis
-                , DiagnosisMalariaWithSevereAnemia
-                , DiagnosisSevereAnemia
-                , DiagnosisSevereAnemiaWithComplications
-                , DiagnosisSeverePreeclampsiaAfterRecheck
-                ]
-                assembled
+            emergencyReferalRequired assembled
+                || diagnosedAnyOf
+                    [ DiagnosisHepatitisB
+                    , DiagnosisNeurosyphilis
+                    , DiagnosisMalariaWithSevereAnemia
+                    , DiagnosisSevereAnemia
+                    , DiagnosisModeratePreeclampsiaAfterRecheck
+                    ]
+                    assembled
 
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
