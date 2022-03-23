@@ -443,7 +443,7 @@ viewHistoryContent language currentDate assembled data_ =
                         showCounselingQuestion =
                             assembled.nursePreviousMeasurementsWithDates
                                 |> List.filter
-                                    (\( _, measurements ) ->
+                                    (\( _, _, measurements ) ->
                                         measurements.socialHistory
                                             |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
                                             |> Maybe.withDefault False
@@ -453,7 +453,7 @@ viewHistoryContent language currentDate assembled data_ =
                         showTestingQuestions =
                             assembled.nursePreviousMeasurementsWithDates
                                 |> List.filter
-                                    (\( _, measurements ) ->
+                                    (\( _, _, measurements ) ->
                                         measurements.socialHistory
                                             |> Maybe.map
                                                 (\socialHistory ->
@@ -668,7 +668,10 @@ viewExaminationContent language currentDate assembled data =
                             if hideHeightInput then
                                 assembled.nursePreviousMeasurementsWithDates
                                     |> List.head
-                                    |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                                    |> Maybe.andThen
+                                        (\( _, _, measurements ) ->
+                                            getMotherHeightMeasurement measurements
+                                        )
                                     |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
                                     |> Maybe.withDefault form_
 
@@ -753,7 +756,10 @@ viewExaminationContent language currentDate assembled data =
                                     if passHeight then
                                         assembled.nursePreviousMeasurementsWithDates
                                             |> List.head
-                                            |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                                            |> Maybe.andThen
+                                                (\( _, _, measurements ) ->
+                                                    getMotherHeightMeasurement measurements
+                                                )
                                             |> Maybe.map heightValueFunc
 
                                     else

@@ -245,7 +245,10 @@ generatePreviousMeasurements :
     PrenatalEncounterId
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
-    -> ( List ( NominalDate, PrenatalMeasurements ), List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements ) )
+    ->
+        ( List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
+        , List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
+        )
 generatePreviousMeasurements currentEncounterId participantId db =
     getPrenatalEncountersForParticipant db participantId
         |> List.filter
@@ -259,7 +262,15 @@ generatePreviousMeasurements currentEncounterId participantId db =
                     ( nurseEncounters, chwEncounters ) =
                         List.partition (Tuple.second >> .encounterType >> (==) NurseEncounter) previousEncounters
 
-                    getEncounterMeasurements ( encounterId, encounter ) =
+                    getEncounterDataForNurse ( encounterId, encounter ) =
+                        case Dict.get encounterId db.prenatalMeasurements of
+                            Just (Success measurements) ->
+                                Just ( encounter.startDate, encounter.diagnoses, measurements )
+
+                            _ ->
+                                Nothing
+
+                    getEncounterDataForChw ( encounterId, encounter ) =
                         case Dict.get encounterId db.prenatalMeasurements of
                             Just (Success measurements) ->
                                 Just ( encounter.startDate, encounter.encounterType, measurements )
@@ -267,9 +278,8 @@ generatePreviousMeasurements currentEncounterId participantId db =
                             _ ->
                                 Nothing
                 in
-                ( List.filterMap getEncounterMeasurements nurseEncounters
-                    |> List.map (\( date, _, measurements ) -> ( date, measurements ))
-                , List.filterMap getEncounterMeasurements chwEncounters
+                ( List.filterMap getEncounterDataForNurse nurseEncounters
+                , List.filterMap getEncounterDataForChw chwEncounters
                 )
            )
 
@@ -311,7 +321,7 @@ generateAssembledData id db =
                 |> Maybe.withDefault ( [], [] )
 
         nursePreviousMeasurements =
-            List.map Tuple.second nursePreviousMeasurementsWithDates
+            List.map (\( _, _, previousMeasurements ) -> previousMeasurements) nursePreviousMeasurementsWithDates
 
         chwPreviousMeasurements =
             List.map (\( _, _, previousMeasurements ) -> previousMeasurements) chwPreviousMeasurementsWithDates
@@ -347,8 +357,8 @@ getFirstEncounterMeasurements isChw assembled =
             else
                 assembled.measurements
 
-        first :: others ->
-            Tuple.second first
+        ( _, _, measurements ) :: others ->
+            measurements
 
 
 getLastEncounterMeasurementsWithDate : NominalDate -> Bool -> AssembledData -> ( NominalDate, PrenatalMeasurements )
@@ -361,8 +371,8 @@ getLastEncounterMeasurementsWithDate currentDate isChw assembled =
             else
                 ( currentDate, assembled.measurements )
 
-        first :: others ->
-            first
+        ( date, _, measurements ) :: others ->
+            ( date, measurements )
 
 
 getLastEncounterMeasurements : NominalDate -> Bool -> AssembledData -> PrenatalMeasurements
@@ -370,7 +380,7 @@ getLastEncounterMeasurements currentDate isChw assembled =
     getLastEncounterMeasurementsWithDate currentDate isChw assembled |> Tuple.second
 
 
-getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List ( NominalDate, PrenatalMeasurements )
+getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
 getAllNurseMeasurements currentDate isChw assembled =
     let
         currentEncounterData =
@@ -378,7 +388,7 @@ getAllNurseMeasurements currentDate isChw assembled =
                 []
 
             else
-                [ ( currentDate, assembled.measurements ) ]
+                [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
     in
     currentEncounterData
         ++ assembled.nursePreviousMeasurementsWithDates
@@ -396,7 +406,7 @@ generateRecurringHighSeverityAlertData language currentDate isChw assembled aler
     case alert of
         BloodPressure ->
             let
-                resolveAlert ( date, measurements ) =
+                resolveAlert ( date, _, measurements ) =
                     getMeasurementValueFunc measurements.vitals
                         |> Maybe.andThen
                             (\value ->
@@ -750,7 +760,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                 lowBloodPressureOccasions =
                     getAllNurseMeasurements currentDate isChw assembled
                         |> List.filterMap
-                            (\( _, measurements ) ->
+                            (\( _, _, measurements ) ->
                                 getMeasurementValueFunc measurements.vitals
                                     |> Maybe.andThen
                                         (\value ->
@@ -783,7 +793,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                     highBloodPressureOccasions =
                         getAllNurseMeasurements currentDate isChw assembled
                             |> List.filterMap
-                                (\( _, measurements ) ->
+                                (\( _, _, measurements ) ->
                                     getMeasurementValueFunc measurements.vitals
                                         |> Maybe.andThen
                                             (\value ->

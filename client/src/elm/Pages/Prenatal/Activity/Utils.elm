@@ -62,7 +62,7 @@ expectActivity currentDate assembled activity =
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
                     assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
-                            (\( _, measurements ) ->
+                            (\( _, _, measurements ) ->
                                 measurements.malariaPrevention
                                     |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
                                     |> Maybe.withDefault False
@@ -428,7 +428,7 @@ showMebendazoleQuestion currentDate assembled =
 
                     dewormingPillNotGiven =
                         List.filter
-                            (\( _, measurements ) ->
+                            (\( _, _, measurements ) ->
                                 measurements.medication
                                     |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
                                     |> Maybe.withDefault False
@@ -438,7 +438,7 @@ showMebendazoleQuestion currentDate assembled =
 
                     mebenadazoleNotPrescribed =
                         List.filter
-                            (\( _, measurements ) ->
+                            (\( _, _, measurements ) ->
                                 measurements.medicationDistribution
                                     |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
                                     |> Maybe.withDefault False
@@ -520,7 +520,7 @@ expectPrenatalPhoto currentDate assembled =
             [ [ (>) 13 ], [ (>) 28, (<=) 13 ], [ (<=) 28 ] ]
 
         nursePreviousMeasurements =
-            List.map Tuple.second assembled.nursePreviousMeasurementsWithDates
+            List.map (\( _, _, measurements ) -> measurements) assembled.nursePreviousMeasurementsWithDates
     in
     assembled.globalLmpDate
         |> Maybe.map
@@ -544,7 +544,7 @@ expectPrenatalPhoto currentDate assembled =
                             -- that got a photo measurement.
                             assembled.nursePreviousMeasurementsWithDates
                                 |> List.filterMap
-                                    (\( encounterDate, measurements ) ->
+                                    (\( encounterDate, _, measurements ) ->
                                         let
                                             encounterWeek =
                                                 diffDays lmpDate encounterDate // 7
@@ -1627,7 +1627,7 @@ resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, Pre
 resolvePreviousValue assembled measurementFunc valueFunc =
     assembled.nursePreviousMeasurementsWithDates
         |> List.filterMap
-            (\( _, measurements ) ->
+            (\( _, _, measurements ) ->
                 measurementFunc measurements
                     |> Maybe.map (Tuple.second >> .value >> valueFunc)
             )
@@ -1639,7 +1639,7 @@ resolvePreviousMaybeValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id
 resolvePreviousMaybeValue assembled measurementFunc valueFunc =
     assembled.nursePreviousMeasurementsWithDates
         |> List.filterMap
-            (\( _, measurements ) ->
+            (\( _, _, measurements ) ->
                 measurementFunc measurements
                     |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
@@ -2348,7 +2348,7 @@ historyTasksCompletedFromTotal assembled data task =
                 showCounselingQuestion =
                     assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
-                            (\( _, measurements ) ->
+                            (\( _, _, measurements ) ->
                                 measurements.socialHistory
                                     |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
                                     |> Maybe.withDefault False
@@ -2365,7 +2365,7 @@ historyTasksCompletedFromTotal assembled data task =
                 showTestingQuestions =
                     assembled.nursePreviousMeasurementsWithDates
                         |> List.filter
-                            (\( _, measurements ) ->
+                            (\( _, _, measurements ) ->
                                 measurements.socialHistory
                                     |> Maybe.map
                                         (\socialHistory ->
@@ -2441,7 +2441,7 @@ examinationTasksCompletedFromTotal assembled data firstEncounter task =
                     if hideHeightInput then
                         assembled.nursePreviousMeasurementsWithDates
                             |> List.head
-                            |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                            |> Maybe.andThen (\( _, _, measurements ) -> getMotherHeightMeasurement measurements)
                             |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
                             |> Maybe.withDefault form_
 
@@ -3061,11 +3061,11 @@ expectLaboratoryTask currentDate assembled task =
             -- in testing for it.
             isKnownAsPositive getMeasurementFunc =
                 List.filter
-                    (Tuple.second
-                        >> getMeasurementFunc
-                        >> getMeasurementValueFunc
-                        >> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
-                        >> Maybe.withDefault False
+                    (\( _, _, measurements ) ->
+                        getMeasurementFunc measurements
+                            |> getMeasurementValueFunc
+                            |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                            |> Maybe.withDefault False
                     )
                     assembled.nursePreviousMeasurementsWithDates
                     |> List.isEmpty
@@ -3104,7 +3104,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     let
         generateTestDates getMeasurementFunc resultsExistFunc resultsValidFunc =
             List.filterMap
-                (\( _, measurements ) ->
+                (\( _, _, measurements ) ->
                     let
                         measurement =
                             getMeasurementFunc measurements

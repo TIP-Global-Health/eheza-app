@@ -61,6 +61,7 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html, text)
 import Http
 import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
@@ -871,6 +872,7 @@ type TranslationId
     | PrenatalRecurrentActivitiesTitle PrenatalRecurrentActivity
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
+    | PrenatalDiagnosisForProgressReport PrenatalDiagnosis
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
@@ -976,6 +978,7 @@ type TranslationId
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToFacilityQuestion ReferralFacility
+    | ReferredToFacilityOn ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -7514,6 +7517,198 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabyo"
                     }
 
+        PrenatalDiagnosisForProgressReport diagnosis ->
+            case diagnosis of
+                DiagnosisPrescribeMebendezole ->
+                    { english = "Prescribe Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionImmediate ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionAfterRecheck ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionImmediate ->
+                    { english = "Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionAfterRecheck ->
+                    { english = "Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaImmediate ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaImmediate ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEclampsia ->
+                    { english = "Eclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiscordantPartnership ->
+                    { english = "Discordant Partnership"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilisWithComplications ->
+                    { english = "Syphilis with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisNeurosyphilis ->
+                    { english = "Neurosyphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithAnemia ->
+                    { english = "Malaria with Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithSevereAnemia ->
+                    { english = "Malaria with Severe Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModerateAnemia ->
+                    { english = "Mild to Mederate Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereAnemia ->
+                    { english = "Severe Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereAnemiaWithComplications ->
+                    { english = "Severe Anemia with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMiscarriage ->
+                    { english = "Possible Miscarriage"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMolarPregnancy ->
+                    { english = "Possible Molar Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentaPrevia ->
+                    { english = "Possible Placenta Previa"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentalAbruption ->
+                    { english = "Possible Placental Abruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUterineRupture ->
+                    { english = "Possible Uterine Rupture"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisObstructedLabor ->
+                    { english = "Possible Obstructed Labor"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostAbortionSepsis ->
+                    { english = "Possible Post Abortion Sepsis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEctopicPregnancy ->
+                    { english = "Possible Ectopic Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPROM ->
+                    { english = "PROM"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPPROM ->
+                    { english = "PPROM"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHyperemesisGravidum ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMaternalComplications ->
+                    { english = "Maternal Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisImminentDelivery ->
+                    { english = "Imminent Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLaborAndDelivery ->
+                    { english = "Labor + Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalDiagnosis ->
+                    { english = "None"
+                    , kinyarwanda = Just "Ntabyo"
+                    }
+
         PrenatalDiagnosisLabResultsMessage diagnosis ->
             case diagnosis of
                 DiagnosisHIV ->
@@ -9076,6 +9271,23 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Have you referred the patient to the Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReferredToFacilityOn facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "referred to health center on"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHospital ->
+                    { english = "referred to hospital on"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "referred to HIV/PMTCT"
                     , kinyarwanda = Nothing
                     }
 

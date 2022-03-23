@@ -2,6 +2,7 @@ module Pages.Prenatal.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
@@ -41,6 +42,52 @@ type LabResultsHistoryMode
     | LabResultsHistoryHemoglobin (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryBloodGroup (List ( NominalDate, Maybe BloodGroup ))
     | LabResultsHistoryRhesus (List ( NominalDate, Maybe Rhesus ))
+
+
+obstetricalDiagnoses : List PrenatalDiagnosis
+obstetricalDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisModeratePreeclampsiaAfterRecheck
+    , DiagnosisSeverePreeclampsiaImmediate
+    , DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisEclampsia
+    , DiagnosisMiscarriage
+    , DiagnosisMolarPregnancy
+    , DiagnosisPlacentaPrevia
+    , DiagnosisPlacentalAbruption
+    , DiagnosisUterineRupture
+    , DiagnosisObstructedLabor
+    , DiagnosisPostAbortionSepsis
+    , DiagnosisEctopicPregnancy
+    , DiagnosisPROM
+    , DiagnosisPPROM
+    , DiagnosisHyperemesisGravidum
+    , DiagnosisMaternalComplications
+    , DiagnosisInfection
+    , DiagnosisImminentDelivery
+    , DiagnosisLaborAndDelivery
+    ]
+
+
+medicalDiagnoses : List PrenatalDiagnosis
+medicalDiagnoses =
+    [ DiagnosisSyphilis
+    , DiagnosisSyphilisWithComplications
+    , DiagnosisNeurosyphilis
+    , DiagnosisModerateAnemia
+    , DiagnosisSevereAnemia
+    , DiagnosisSevereAnemiaWithComplications
+    , DiagnosisHIV
+    , DiagnosisDiscordantPartnership
+    , DiagnosisHepatitisB
+    , DiagnosisMalaria
+    , DiagnosisMalariaWithAnemia
+    , DiagnosisMalariaWithSevereAnemia
+    ]
 
 
 type Msg

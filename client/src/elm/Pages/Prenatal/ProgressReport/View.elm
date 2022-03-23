@@ -22,7 +22,7 @@ import Backend.PrenatalActivity.Utils
         ( generateRiskFactorAlertData
         , getEncounterTrimesterData
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounter, PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Interval(..), Unit(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -32,6 +32,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, unwrap)
+import Measurement.Model exposing (ReferralFacility(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
@@ -57,14 +58,14 @@ thumbnailDimensions =
 view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id isChw initiator db model =
     let
-        data =
+        assembled =
             generateAssembledData id db
 
         header =
             viewHeader language id initiator model
 
         content =
-            viewWebData language (viewContent language currentDate isChw initiator model) identity data
+            viewWebData language (viewContent language currentDate isChw initiator model) identity assembled
     in
     div [ class "page-report clinical" ] <|
         [ header
@@ -132,14 +133,14 @@ viewHeader language id initiator model =
 
 
 viewContent : Language -> NominalDate -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate isChw initiator model data =
+viewContent language currentDate isChw initiator model assembled =
     let
         derivedContent =
             case model.labResultsMode of
                 Just mode ->
                     case mode of
                         LabResultsCurrent ->
-                            [ viewLabResultsPane language currentDate data ]
+                            [ viewLabResultsPane language currentDate assembled ]
 
                         LabResultsHistory historyMode ->
                             [ viewLabResultsHistoryPane language currentDate historyMode ]
@@ -147,7 +148,7 @@ viewContent language currentDate isChw initiator model data =
                 Nothing ->
                     let
                         firstEncounterMeasurements =
-                            getFirstEncounterMeasurements isChw data
+                            getFirstEncounterMeasurements isChw assembled
 
                         actions =
                             case initiator of
@@ -167,31 +168,31 @@ viewContent language currentDate isChw initiator model data =
                                     emptyNode
                     in
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
-                    , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
-                    , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data
-                    , viewPatientProgressPane language currentDate isChw data
-                    , viewLabsPane language currentDate data
-                    , viewProgressPhotosPane language currentDate isChw data
+                    , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembled
+                    , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    , viewPatientProgressPane language currentDate isChw assembled
+                    , viewLabsPane language currentDate assembled
+                    , viewProgressPhotosPane language currentDate isChw assembled
                     , actions
                     ]
     in
     div [ class "ui unstackable items" ] <|
-        viewHeaderPane language currentDate data
+        viewHeaderPane language currentDate assembled
             :: derivedContent
 
 
 viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewHeaderPane language currentDate data =
+viewHeaderPane language currentDate assembled =
     let
         mother =
-            data.person
+            assembled.person
 
         ( edd, ega ) =
-            data.globalLmpDate
+            assembled.globalLmpDate
                 |> generateEDDandEGA language currentDate ( "--/--/----", "----" )
 
         obstetricHistoryValue =
-            data.globalObstetricHistory
+            assembled.globalObstetricHistory
 
         ( gravida, para ) =
             unwrap
@@ -277,44 +278,68 @@ viewRiskFactorsPane language currentDate measurements =
         ]
 
 
-viewMedicalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewMedicalDiagnosisPane language currentDate measurements =
+viewMedicalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembled =
     let
+        dignoses =
+            List.map
+                (viewDiagnosisTreatement language currentDate assembled.measurements
+                    >> text
+                    >> List.singleton
+                    >> li []
+                )
+                medicalDiagnoses
+                |> ul []
+
         alerts =
             allMedicalDiagnosis
-                |> List.filterMap (generateMedicalDiagnosisAlertData language currentDate measurements)
+                |> List.filterMap (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
-        , div [ class "pane-content" ] alerts
+        , div [ class "pane-content" ] <|
+            dignoses
+                :: alerts
         ]
 
 
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements data =
+viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
+        dignoses =
+            List.map
+                (viewDiagnosisTreatement language currentDate assembled.measurements
+                    >> text
+                    >> List.singleton
+                    >> li []
+                )
+                obstetricalDiagnoses
+                |> ul []
+
         alerts =
             allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements data)
+                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
-        , div [ class "pane-content" ] alerts
+        , div [ class "pane-content" ] <|
+            dignoses
+                :: alerts
         ]
 
 
 viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate isChw data =
+viewPatientProgressPane language currentDate isChw assembled =
     let
         allMeasurementsWithDates =
-            data.nursePreviousMeasurementsWithDates
+            List.map (\( date, _, measurements ) -> ( date, measurements )) assembled.nursePreviousMeasurementsWithDates
                 ++ (if isChw then
                         []
 
                     else
-                        [ ( currentDate, data.measurements ) ]
+                        [ ( currentDate, assembled.measurements ) ]
                    )
 
         allMeasurements =
@@ -326,7 +351,7 @@ viewPatientProgressPane language currentDate isChw data =
                 |> List.map
                     (\( date, _ ) ->
                         ( date
-                        , getEncounterTrimesterData date data.globalLmpDate
+                        , getEncounterTrimesterData date assembled.globalLmpDate
                         )
                     )
 
@@ -383,7 +408,7 @@ viewPatientProgressPane language currentDate isChw data =
             generateEGAWeeksDaysLabel language_ diffInDays
 
         ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
-            data.globalLmpDate
+            assembled.globalLmpDate
                 |> Maybe.map
                     (\lmpDate ->
                         let
@@ -601,7 +626,7 @@ viewPatientProgressPane language currentDate isChw data =
             allMeasurementsWithDates
                 |> List.filterMap
                     (\( date, measurements ) ->
-                        data.globalLmpDate
+                        assembled.globalLmpDate
                             |> Maybe.map
                                 (\lmpDate ->
                                     let
@@ -635,7 +660,7 @@ viewPatientProgressPane language currentDate isChw data =
             allMeasurementsWithDates
                 |> List.filterMap
                     (\( date, measurements ) ->
-                        data.globalLmpDate
+                        assembled.globalLmpDate
                             |> Maybe.map
                                 (\lmpDate ->
                                     let
@@ -675,13 +700,13 @@ viewPatientProgressPane language currentDate isChw data =
                 [ viewMarkers
                 , div [ class "bmi-info" ]
                     [ viewChartHeading Translate.BMI
-                    , heightWeightBMITable language currentDate data.globalLmpDate allMeasurementsWithDates
+                    , heightWeightBMITable language currentDate assembled.globalLmpDate allMeasurementsWithDates
                     , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
-                    , fundalHeightTable language currentDate data.globalLmpDate allMeasurementsWithDates
+                    , fundalHeightTable language currentDate assembled.globalLmpDate allMeasurementsWithDates
                     , viewFundalHeightForEGA language egaFundalHeightValues
                     , illustrativePurposes language
                     ]
@@ -908,7 +933,7 @@ viewLabResultsPane language currentDate assembled =
 
         measurementsWithLabResults =
             assembled.measurements
-                :: List.map Tuple.second assembled.nursePreviousMeasurementsWithDates
+                :: List.map (\( _, _, measurements ) -> measurements) assembled.nursePreviousMeasurementsWithDates
 
         getTestResults getMeasurementFunc getResultFunc =
             List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
@@ -1072,130 +1097,130 @@ viewLabResultsEntry language currentDate results =
     let
         config =
             case results of
-                LabResultsHistoryHIV data ->
+                LabResultsHistoryHIV assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHIVTest
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistorySyphilis data ->
+                LabResultsHistorySyphilis assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryHepatitisB data ->
+                LabResultsHistoryHepatitisB assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryMalaria data ->
+                LabResultsHistoryMalaria assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryProtein data ->
+                LabResultsHistoryProtein assembled ->
                     { label = Translate.PrenatalLaboratoryProteinLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryProteinValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryProteinValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryPH data ->
+                LabResultsHistoryPH assembled ->
                     { label = Translate.PrenatalLaboratoryPHLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryPHValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryPHValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryGlucose data ->
+                LabResultsHistoryGlucose assembled ->
                     { label = Translate.PrenatalLaboratoryGlucoseLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryLeukocytes data ->
+                LabResultsHistoryLeukocytes assembled ->
                     { label = Translate.PrenatalLaboratoryGlucoseLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryNitrite data ->
+                LabResultsHistoryNitrite assembled ->
                     { label = Translate.PrenatalLaboratoryNitriteLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryNitriteValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryNitriteValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryUrobilinogen data ->
+                LabResultsHistoryUrobilinogen assembled ->
                     { label = Translate.PrenatalLaboratoryUrobilinogenLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryHaemoglobin data ->
+                LabResultsHistoryHaemoglobin assembled ->
                     { label = Translate.PrenatalLaboratoryHaemoglobinLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistorySpecificGravity data ->
+                LabResultsHistorySpecificGravity assembled ->
                     { label = Translate.PrenatalLaboratorySpecificGravityLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryKetone data ->
+                LabResultsHistoryKetone assembled ->
                     { label = Translate.PrenatalLaboratoryKetoneLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryKetoneValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryKetoneValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryBilirubin data ->
+                LabResultsHistoryBilirubin assembled ->
                     { label = Translate.PrenatalLaboratoryBilirubinLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBilirubinValue >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBilirubinValue >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryRandomBloodSugar data ->
+                LabResultsHistoryRandomBloodSugar assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryHemoglobin data ->
+                LabResultsHistoryHemoglobin assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHemoglobinTest
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryBloodGroup data ->
+                LabResultsHistoryBloodGroup assembled ->
                     { label = Translate.PrenatalLaboratoryBloodGroupLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBloodGroup >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBloodGroup >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
-                LabResultsHistoryRhesus data ->
+                LabResultsHistoryRhesus assembled ->
                     { label = Translate.PrenatalLaboratoryRhesusLabel
-                    , recentResult = List.head data |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language)
-                    , recentResultDate = List.head data |> Maybe.map Tuple.first
-                    , totalResults = List.length data
+                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language)
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
                     }
 
         dateCell =
@@ -1258,59 +1283,59 @@ viewLabResultsHistoryPane language currentDate mode =
 
         entries =
             case mode of
-                LabResultsHistoryHIV data ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+                LabResultsHistoryHIV assembled ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
 
-                LabResultsHistorySyphilis data ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+                LabResultsHistorySyphilis assembled ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
 
-                LabResultsHistoryHepatitisB data ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+                LabResultsHistoryHepatitisB assembled ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
 
-                LabResultsHistoryMalaria data ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) data
+                LabResultsHistoryMalaria assembled ->
+                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
 
-                LabResultsHistoryProtein data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryProteinValue >> translate language)) data
+                LabResultsHistoryProtein assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryProteinValue >> translate language)) assembled
 
-                LabResultsHistoryPH data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryPHValue >> translate language)) data
+                LabResultsHistoryPH assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryPHValue >> translate language)) assembled
 
-                LabResultsHistoryGlucose data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryGlucoseValue >> translate language)) data
+                LabResultsHistoryGlucose assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryGlucoseValue >> translate language)) assembled
 
-                LabResultsHistoryLeukocytes data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)) data
+                LabResultsHistoryLeukocytes assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)) assembled
 
-                LabResultsHistoryNitrite data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryNitriteValue >> translate language)) data
+                LabResultsHistoryNitrite assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryNitriteValue >> translate language)) assembled
 
-                LabResultsHistoryUrobilinogen data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)) data
+                LabResultsHistoryUrobilinogen assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)) assembled
 
-                LabResultsHistoryHaemoglobin data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)) data
+                LabResultsHistoryHaemoglobin assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)) assembled
 
-                LabResultsHistorySpecificGravity data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)) data
+                LabResultsHistorySpecificGravity assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)) assembled
 
-                LabResultsHistoryKetone data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryKetoneValue >> translate language)) data
+                LabResultsHistoryKetone assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryKetoneValue >> translate language)) assembled
 
-                LabResultsHistoryBilirubin data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryBilirubinValue >> translate language)) data
+                LabResultsHistoryBilirubin assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryBilirubinValue >> translate language)) assembled
 
-                LabResultsHistoryRandomBloodSugar data ->
-                    List.map (viewEntry String.fromFloat) data
+                LabResultsHistoryRandomBloodSugar assembled ->
+                    List.map (viewEntry String.fromFloat) assembled
 
-                LabResultsHistoryHemoglobin data ->
-                    List.map (viewEntry String.fromFloat) data
+                LabResultsHistoryHemoglobin assembled ->
+                    List.map (viewEntry String.fromFloat) assembled
 
-                LabResultsHistoryBloodGroup data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryBloodGroup >> translate language)) data
+                LabResultsHistoryBloodGroup assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryBloodGroup >> translate language)) assembled
 
-                LabResultsHistoryRhesus data ->
-                    List.map (viewEntry (Translate.PrenatalLaboratoryRhesus >> translate language)) data
+                LabResultsHistoryRhesus assembled ->
+                    List.map (viewEntry (Translate.PrenatalLaboratoryRhesus >> translate language)) assembled
 
         viewEntry resultToStringFunc ( date, maybeResult ) =
             let
@@ -1332,15 +1357,15 @@ viewLabResultsHistoryPane language currentDate mode =
 
 
 viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
-viewProgressPhotosPane language currentDate isChw data =
+viewProgressPhotosPane language currentDate isChw assembled =
     let
         allMeasurementsWithDates =
-            data.nursePreviousMeasurementsWithDates
+            List.map (\( date, _, measurements ) -> ( date, measurements )) assembled.nursePreviousMeasurementsWithDates
                 ++ (if isChw then
                         []
 
                     else
-                        [ ( currentDate, data.measurements ) ]
+                        [ ( currentDate, assembled.measurements ) ]
                    )
 
         content =
@@ -1354,7 +1379,7 @@ viewProgressPhotosPane language currentDate isChw data =
                                     >> (\photoUrl ->
                                             let
                                                 egaLabel =
-                                                    data.globalLmpDate
+                                                    assembled.globalLmpDate
                                                         |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
                                                         |> Maybe.withDefault ""
                                             in
@@ -1370,3 +1395,66 @@ viewProgressPhotosPane language currentDate isChw data =
         [ viewItemHeading language Translate.ProgressPhotos "blue"
         , div [ class "pane-content" ] content
         ]
+
+
+viewDiagnosisTreatement : Language -> NominalDate -> PrenatalMeasurements -> PrenatalDiagnosis -> String
+viewDiagnosisTreatement language date measurements diagnosis =
+    let
+        referredToHospitalMsg =
+            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                ++ " - "
+                ++ (translate language <| Translate.ReferredToFacilityOn FacilityHospital)
+                ++ " "
+                ++ formatDDMMYYYY date
+    in
+    case diagnosis of
+        DiagnosisEclampsia ->
+            referredToHospitalMsg
+
+        DiagnosisMiscarriage ->
+            referredToHospitalMsg
+
+        DiagnosisMolarPregnancy ->
+            referredToHospitalMsg
+
+        DiagnosisPlacentaPrevia ->
+            referredToHospitalMsg
+
+        DiagnosisPlacentalAbruption ->
+            referredToHospitalMsg
+
+        DiagnosisUterineRupture ->
+            referredToHospitalMsg
+
+        DiagnosisObstructedLabor ->
+            referredToHospitalMsg
+
+        DiagnosisPostAbortionSepsis ->
+            referredToHospitalMsg
+
+        DiagnosisEctopicPregnancy ->
+            referredToHospitalMsg
+
+        DiagnosisPROM ->
+            referredToHospitalMsg
+
+        DiagnosisPPROM ->
+            referredToHospitalMsg
+
+        DiagnosisHyperemesisGravidum ->
+            referredToHospitalMsg
+
+        DiagnosisMaternalComplications ->
+            referredToHospitalMsg
+
+        DiagnosisInfection ->
+            referredToHospitalMsg
+
+        DiagnosisImminentDelivery ->
+            referredToHospitalMsg
+
+        DiagnosisLaborAndDelivery ->
+            referredToHospitalMsg
+
+        _ ->
+            ""
