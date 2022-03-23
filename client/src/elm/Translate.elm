@@ -2847,7 +2847,7 @@ translationSet trans =
 
         DeliveryComplicationsPresentQuestion ->
             { english = "Were there any complications with the delivery"
-            , kinyarwanda = Just "Ni iyihe taliki yari iteganyijwe ko umubyeyi azabyariraho"
+            , kinyarwanda = Just "Haba hari ibibazo umubyeyi yagize abyara"
             }
 
         DeliveryComplicationsSelectionLabel ->
@@ -6592,7 +6592,7 @@ translationSet trans =
 
         PostpartumEncounter ->
             { english = "Postpartum Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa cya nyuma yo kubyara"
             }
 
         PostpartumChildDangerSign sign ->
@@ -8011,7 +8011,7 @@ translationSet trans =
 
         SubsequentEncounter ->
             { english = "Subsequent Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa gikurikiyeho"
             }
 
         SubsequentAntenatalVisit ->
