@@ -2,7 +2,14 @@ module Pages.Prenatal.ProgressReport.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (PrenatalMeasurements, PrenatalTestExecutionNote(..), PrenatalTestVariant(..))
+import Backend.Measurement.Model
+    exposing
+        ( PrenatalMeasurements
+        , PrenatalTestExecutionNote(..)
+        , PrenatalTestVariant(..)
+        , ReasonForNotSendingToHC(..)
+        , SendToHCSign(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
@@ -25,13 +32,14 @@ import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounter, PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Interval(..), Unit(..))
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (ReferralFacility(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
@@ -1401,11 +1409,57 @@ viewDiagnosisTreatement : Language -> NominalDate -> PrenatalMeasurements -> Pre
 viewDiagnosisTreatement language date measurements diagnosis =
     let
         referredToHospitalMsg =
-            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
-                ++ " - "
-                ++ (translate language <| Translate.ReferredToFacilityOn FacilityHospital)
-                ++ " "
-                ++ formatDDMMYYYY date
+            if isNothing measurements.sendToHC then
+                (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                    ++ " "
+                    ++ (String.toLower <| translate language Translate.On)
+                    ++ " "
+                    ++ formatDDMMYYYY date
+                    ++ " - "
+                    ++ (String.toLower <| translate language Translate.NoTreatmentRecorder)
+
+            else
+                let
+                    sentToHospital =
+                        getMeasurementValueFunc measurements.sendToHC
+                            |> Maybe.map (.signs >> EverySet.member ReferToHealthCenter)
+                            |> Maybe.withDefault False
+                in
+                if sentToHospital then
+                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                        ++ " - "
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacility FacilityHospital)
+                        ++ " "
+                        ++ (String.toLower <| translate language Translate.On)
+                        ++ " "
+                        ++ formatDDMMYYYY date
+
+                else
+                    let
+                        reason =
+                            getMeasurementValueFunc measurements.sendToHC
+                                |> Maybe.map .reasonForNotSendingToHC
+
+                        suffix =
+                            Maybe.map
+                                (\reason_ ->
+                                    if reason_ == NoReasonForNotSendingToHC then
+                                        ""
+
+                                    else
+                                        " - " ++ (translate language <| Translate.ReasonForNotSendingToHC reason_)
+                                )
+                                reason
+                                |> Maybe.withDefault ""
+                    in
+                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                        ++ " - "
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot FacilityHospital)
+                        ++ " "
+                        ++ (String.toLower <| translate language Translate.On)
+                        ++ " "
+                        ++ formatDDMMYYYY date
+                        ++ suffix
     in
     case diagnosis of
         DiagnosisEclampsia ->

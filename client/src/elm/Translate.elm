@@ -766,6 +766,8 @@ type TranslationId
     | NoContactReason NoContactReason
     | NoGroupsFound
     | NoMatchesFound
+    | NoTreatmentAdministered
+    | NoTreatmentRecorder
     | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
@@ -978,7 +980,8 @@ type TranslationId
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToFacilityQuestion ReferralFacility
-    | ReferredToFacilityOn ReferralFacility
+    | ReferredToFacility ReferralFacility
+    | ReferredToFacilityNot ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -6108,6 +6111,16 @@ translationSet trans =
             , kinyarwanda = Just "Ibyo wifuza ntibiboneste"
             }
 
+        NoTreatmentAdministered ->
+            { english = "No treatment administered"
+            , kinyarwanda = Nothing
+            }
+
+        NoTreatmentRecorder ->
+            { english = "No treatment recorded"
+            , kinyarwanda = Nothing
+            }
+
         NutritionSigns ->
             { english = "Nutrition Signs"
             , kinyarwanda = Just "Ibimenyetso by'imirire"
@@ -9274,20 +9287,37 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        ReferredToFacilityOn facility ->
+        ReferredToFacility facility ->
             case facility of
                 FacilityHealthCenter ->
-                    { english = "referred to health center on"
+                    { english = "Referred to health center"
                     , kinyarwanda = Nothing
                     }
 
                 FacilityHospital ->
-                    { english = "referred to hospital on"
+                    { english = "Referred to hospital"
                     , kinyarwanda = Nothing
                     }
 
                 FacilityHIVProgram ->
-                    { english = "referred to HIV/PMTCT"
+                    { english = "Referred to HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReferredToFacilityNot facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Not referred to health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHospital ->
+                    { english = "Not referred to hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Not referred to HIV/PMTCT"
                     , kinyarwanda = Nothing
                     }
 
