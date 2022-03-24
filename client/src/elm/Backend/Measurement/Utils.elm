@@ -1518,6 +1518,9 @@ recommendedTreatmentSignToString sign =
         TreatementReferToHospital ->
             "refer-to-hospital"
 
+        NoTreatmentForMalaria ->
+            "no-treatment-malaria"
+
         TreatementPenecilin1 ->
             "penecilin-1"
 
@@ -1533,6 +1536,9 @@ recommendedTreatmentSignToString sign =
         TreatementCeftriaxon ->
             "ceftriaxon"
 
+        NoTreatmentForSyphilis ->
+            "no-treatment-syphilis"
+
         TreatmentMethyldopa2 ->
             "methyldopa-2"
 
@@ -1541,6 +1547,9 @@ recommendedTreatmentSignToString sign =
 
         TreatmentMethyldopa4 ->
             "methyldopa-4"
+
+        NoTreatmentForHypertension ->
+            "no-treatment-hypertension"
 
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
@@ -1558,6 +1567,9 @@ recommendedTreatmentSignFromString sign =
         "refer-to-hospital" ->
             Just TreatementReferToHospital
 
+        "no-treatment-malaria" ->
+            Just NoTreatmentForMalaria
+
         "penecilin-1" ->
             Just TreatementPenecilin1
 
@@ -1573,6 +1585,9 @@ recommendedTreatmentSignFromString sign =
         "ceftriaxon" ->
             Just TreatementCeftriaxon
 
+        "no-treatment-syphilis" ->
+            Just NoTreatmentForSyphilis
+
         "methyldopa-2" ->
             Just TreatmentMethyldopa2
 
@@ -1581,6 +1596,9 @@ recommendedTreatmentSignFromString sign =
 
         "methyldopa-4" ->
             Just TreatmentMethyldopa4
+
+        "no-treatment-hypertension" ->
+            Just NoTreatmentForHypertension
 
         _ ->
             Nothing
