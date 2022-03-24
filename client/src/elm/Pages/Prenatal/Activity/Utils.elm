@@ -414,6 +414,7 @@ recommendedTreatmentSignsForMalaria =
     , TreatmentCoartem
     , TreatmentWrittenProtocols
     , TreatementReferToHospital
+    , NoTreatmentForMalaria
     ]
 
 

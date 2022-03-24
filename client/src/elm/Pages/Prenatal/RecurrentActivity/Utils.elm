@@ -468,6 +468,7 @@ recommendedTreatmentSignsForSyphilis =
     , TreatementErythromycin
     , TreatementAzithromycin
     , TreatementCeftriaxon
+    , NoTreatmentForSyphilis
     ]
 
 

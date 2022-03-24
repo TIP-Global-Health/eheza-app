@@ -9213,6 +9213,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoTreatmentForMalaria ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Nothing
+                    }
+
                 TreatementPenecilin1 ->
                     { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
@@ -9238,6 +9243,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoTreatmentForSyphilis ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Nothing
+                    }
+
                 TreatmentMethyldopa2 ->
                     { english = "Methyldopa 250mg by mouth two times a day"
                     , kinyarwanda = Nothing
@@ -9250,6 +9260,11 @@ translationSet trans =
 
                 TreatmentMethyldopa4 ->
                     { english = "Methyldopa 250mg by mouth four times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTreatmentForHypertension ->
+                    { english = "No Treatment Administered"
                     , kinyarwanda = Nothing
                     }
 

@@ -3652,6 +3652,7 @@ viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled f
         [ medicationTreatment
         , TreatmentWrittenProtocols
         , TreatementReferToHospital
+        , NoTreatmentForMalaria
         ]
         []
         currentValue

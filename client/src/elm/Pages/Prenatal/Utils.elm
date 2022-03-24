@@ -936,6 +936,7 @@ recommendedTreatmentSignsForHypertension =
     [ TreatmentMethyldopa2
     , TreatmentMethyldopa3
     , TreatmentMethyldopa4
+    , NoTreatmentForHypertension
     ]
 
 
