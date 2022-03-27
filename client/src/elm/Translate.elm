@@ -1154,6 +1154,7 @@ type TranslationId
     | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
+    | TreatedWith
     | TreatedWithMethyldopa
     | Treatment
     | TrySyncing
@@ -10565,6 +10566,11 @@ translationSet trans =
         TravelHistory ->
             { english = "Travel History"
             , kinyarwanda = Just "Amukuru ku ngendo"
+            }
+
+        TreatedWith ->
+            { english = "treated with"
+            , kinyarwanda = Nothing
             }
 
         TreatedWithMethyldopa ->

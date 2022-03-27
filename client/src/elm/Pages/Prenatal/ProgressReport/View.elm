@@ -4,7 +4,8 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
-        ( PrenatalMeasurements
+        ( IllnessSymptom(..)
+        , PrenatalMeasurements
         , PrenatalTestExecutionNote(..)
         , PrenatalTestVariant(..)
         , ReasonForNotSendingToHC(..)
@@ -49,6 +50,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
+import Pages.Prenatal.RecurrentActivity.Utils exposing (recommendedTreatmentSignsForSyphilis)
 import Pages.Prenatal.Utils exposing (recommendedTreatmentSignsForHypertension)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -1461,24 +1463,61 @@ viewDiagnosisTreatement language date measurements diagnosis =
             getMeasurementValueFunc measurements.recommendedTreatment
                 |> Maybe.andThen .signs
                 |> Maybe.map
-                    (\treatment ->
-                        if EverySet.member NoTreatmentForHypertension treatment then
-                            noTreatmentAdministeredMessage
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
 
-                        else if
-                            List.any (\sign -> EverySet.member sign treatment)
-                                recommendedTreatmentSignsForHypertension
-                        then
-                            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
-                                ++ " - "
-                                ++ translate language Translate.TreatedWithMethyldopa
-                                ++ " "
-                                ++ (String.toLower <| translate language Translate.On)
-                                ++ " "
-                                ++ formatDDMMYYYY date
+                                else if List.member NoTreatmentForHypertension treatment then
+                                    noTreatmentAdministeredMessage
 
-                        else
-                            noTreatmentRecordedMessage
+                                else
+                                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                                        ++ " - "
+                                        ++ translate language Translate.TreatedWithMethyldopa
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                           )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
+        syphilisTreatmentMessage complications =
+            getMeasurementValueFunc measurements.recommendedTreatment
+                |> Maybe.andThen .signs
+                |> Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
+
+                                else if List.member NoTreatmentForSyphilis treatment then
+                                    noTreatmentAdministeredMessage
+
+                                else
+                                    let
+                                        treatedWithMessage =
+                                            List.head treatment
+                                                |> Maybe.map
+                                                    (\medication ->
+                                                        " - "
+                                                            ++ translate language Translate.TreatedWith
+                                                            ++ " "
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                    )
+                                                |> Maybe.withDefault ""
+                                    in
+                                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                                        ++ complications
+                                        ++ treatedWithMessage
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                           )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
@@ -1501,6 +1540,34 @@ viewDiagnosisTreatement language date measurements diagnosis =
                 ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
     in
     case diagnosis of
+        DiagnosisSyphilis ->
+            syphilisTreatmentMessage ""
+
+        DiagnosisSyphilisWithComplications ->
+            let
+                complications =
+                    getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                if EverySet.isEmpty symptoms then
+                                    ""
+
+                                else if EverySet.member NoIllnessSymptoms symptoms then
+                                    ""
+
+                                else
+                                    " - ["
+                                        ++ (EverySet.toList symptoms
+                                                |> List.map (Translate.IllnessSymptom >> translate language)
+                                                |> String.join ", "
+                                           )
+                                        ++ "]"
+                            )
+                        |> Maybe.withDefault ""
+            in
+            syphilisTreatmentMessage complications
+
         DiagnosisChronicHypertensionImmediate ->
             hypertensionTreatmentMessage
 
