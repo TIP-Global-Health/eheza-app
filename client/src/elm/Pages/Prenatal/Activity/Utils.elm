@@ -239,7 +239,7 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC, NextStepsWait ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -321,6 +321,14 @@ expectNextStepsTask currentDate assembled task =
                         || diagnosedHypertensionImmediate assembled
                    )
 
+        NextStepsWait ->
+            -- We show Wait activity when there's at least one
+            -- test that was performed, or, 2 hours waiting is
+            -- required for blood preasure recheck.
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map .performedTests
+                |> isJust
+
 
 diagnosedMalaria : AssembledData -> Bool
 diagnosedMalaria =
@@ -389,6 +397,11 @@ nextStepsMeasurementTaken assembled task =
                         True
             in
             malariaTreatmentCompleted && hypertensionTreatmentCompleted
+
+        NextStepsWait ->
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map .patientNotified
+                |> Maybe.withDefault False
 
 
 recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
@@ -1484,6 +1497,11 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             ( malariaSectionCompleted + hypertensionSectionCompleted
             , malariaSectionActive + hypertensionSectionActive
             )
+
+        NextStepsWait ->
+            -- There're no real tasks here.
+            -- Just notification message is displayed.
+            ( 0, 0 )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined

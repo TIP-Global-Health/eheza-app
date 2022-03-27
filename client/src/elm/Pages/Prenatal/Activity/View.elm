@@ -1506,6 +1506,9 @@ viewNextStepsContent language currentDate isChw assembled data =
                         NextStepsRecommendedTreatment ->
                             "next-steps-treatment"
 
+                        NextStepsWait ->
+                            "next-steps-wait"
+
                 isActive =
                     activeTask == Just task
 
@@ -1611,6 +1614,9 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsRecommendedTreatment ->
                     viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
 
+                Just NextStepsWait ->
+                    viewWaitForm language currentDate assembled
+
                 Nothing ->
                     emptyNode
 
@@ -1688,6 +1694,18 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                                     NextStepsRecommendedTreatment ->
                                         SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
+
+                                    NextStepsWait ->
+                                        Maybe.map
+                                            (\( measurementId, measurement ) ->
+                                                let
+                                                    value =
+                                                        measurement.value
+                                                in
+                                                SaveWait personId (Just measurementId) { value | patientNotified = True } nextTask
+                                            )
+                                            measurements.labsResults
+                                            |> Maybe.withDefault NoOp
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -1703,7 +1721,13 @@ viewNextStepsContent language currentDate isChw assembled data =
         [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div
+        [ classList
+            [ ( "tasks-count", True )
+            , ( "full-screen", activeTask == Just NextStepsWait )
+            ]
+        ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -3628,6 +3652,42 @@ viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled f
         (SetRecommendedTreatmentSign allowedSigns)
         Translate.RecommendedTreatmentSignLabel
     ]
+
+
+viewWaitForm : Language -> NominalDate -> AssembledData -> Html Msg
+viewWaitForm language currentDate assembled =
+    let
+        ( vitalsInstructions, labsResultsInstructions ) =
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map
+                    (\value ->
+                        let
+                            labTestPerformed =
+                                (not <| EverySet.isEmpty value.performedTests)
+                                    && (EverySet.toList value.performedTests
+                                            |> List.any ((/=) TestVitalsRecheck)
+                                       )
+                        in
+                        ( if EverySet.member TestVitalsRecheck value.performedTests then
+                            viewInstructionsLabel "icon-vitals" (text <| translate language Translate.WaitForVitalsRecheckHelper)
+
+                          else
+                            emptyNode
+                        , if labTestPerformed then
+                            viewInstructionsLabel "icon-labs" (text <| translate language Translate.WaitForLabsResultsHelper)
+
+                          else
+                            emptyNode
+                        )
+                    )
+                |> Maybe.withDefault ( emptyNode, emptyNode )
+    in
+    div [ class "ui form wait" ]
+        [ div [ class "instructions" ]
+            [ labsResultsInstructions
+            , vitalsInstructions
+            ]
+        ]
 
 
 

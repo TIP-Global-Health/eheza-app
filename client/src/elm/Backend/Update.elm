@@ -4240,6 +4240,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                         (EverySet.singleton test)
                                         EverySet.empty
                                         (Date.add Days (prenatalLabExpirationPeriod + 1) currentDate)
+                                        False
                             in
                             [ saveLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
 

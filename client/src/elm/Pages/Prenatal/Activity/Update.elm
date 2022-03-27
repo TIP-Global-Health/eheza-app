@@ -2867,3 +2867,20 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SaveWait personId measurementId updatedValue nextTask ->
+            let
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    [ Backend.PrenatalEncounter.Model.SaveLabsResults personId measurementId updatedValue
+                        |> Backend.Model.MsgPrenatalEncounter id
+                        |> App.Model.MsgIndexedDb
+                    ]
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs

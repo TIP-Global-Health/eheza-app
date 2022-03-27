@@ -1173,6 +1173,8 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | WaitForVitalsRecheckHelper
+    | WaitForLabsResultsHelper
     | Warning
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
@@ -7717,6 +7719,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Pages.Prenatal.Activity.Types.NextStepsWait ->
+                    { english = "Wait"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalRecurrentNextStepsTask task ->
             case task of
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsSendToHC ->
@@ -10451,6 +10458,16 @@ translationSet trans =
         Village ->
             { english = "Village"
             , kinyarwanda = Just "Umudugudu"
+            }
+
+        WaitForVitalsRecheckHelper ->
+            { english = "Patient needs to return in 2 hours to confirm blood pressure. Instruct the patient to wait until called for further testing."
+            , kinyarwanda = Nothing
+            }
+
+        WaitForLabsResultsHelper ->
+            { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and futher diagnoses."
+            , kinyarwanda = Nothing
             }
 
         Warning ->

@@ -165,6 +165,7 @@ type Msg
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
+    | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue (Maybe NextStepsTask)
 
 
 type alias Model =
