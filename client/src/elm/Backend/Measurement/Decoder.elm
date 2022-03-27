@@ -362,7 +362,7 @@ decodeNutritionValue : Decoder NutritionValue
 decodeNutritionValue =
     succeed NutritionValue
         |> required "nutrition_signs" (decodeEverySet decodeChildNutritionSign)
-        |> custom decodeNutritionAssessment
+        |> custom (decodeWithFallback (EverySet.fromList [ NoNutritionAssessment ]) decodeNutritionAssessment)
 
 
 decodePhoto : Decoder Photo
@@ -942,7 +942,7 @@ decodeLastMenstrualPeriod =
     succeed LastMenstrualPeriodValue
         |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
         |> required "confident" bool
-        |> required "confirmation" (decodeWithFallback False bool)
+        |> optional "confirmation" (decodeWithFallback False bool) False
         |> decodePrenatalMeasurement
 
 
