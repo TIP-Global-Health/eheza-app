@@ -68,7 +68,7 @@ foreach ($chunks as $ids) {
     $lmp_date = $wrapper->field_last_menstrual_period->value();
     // Calculate EDD date.
     $edd_date = $timestamp = strtotime('+280 days', $lmp_date);
-    drush_print("Participant $participant_id got LMP with ID $lmp_id. Setting EDD to $edd_date.");
+    drush_print("Participant $participant_id has LMP with ID $lmp_id. Setting EDD to $edd_date.");
 
     // Set EDD date.
     $wrapper = entity_metadata_wrapper('node', $participant_id);
