@@ -4,7 +4,15 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (AcuteIllnessTraceContact, FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..), PrenatalLabsResults)
+import Backend.Measurement.Model
+    exposing
+        ( AcuteIllnessTraceContact
+        , FollowUpMeasurements
+        , NutritionAssessment(..)
+        , PrenatalAssesment(..)
+        , PrenatalLaboratoryTest(..)
+        , PrenatalLabsResults
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
@@ -904,8 +912,20 @@ generatePrenatalLabsEntryData language currentDate db item =
 
                     else
                         PrenatalLabsEntryPending
+
+                label =
+                    if
+                        EverySet.member TestVitalsRecheck item.value.performedTests
+                            && (not <| EverySet.member TestVitalsRecheck item.value.completedTests)
+                    then
+                        -- Vitals recheck was scheduled, but not completed yet.
+                        Translate.PrenatalLabsCaseManagementEntryTypeVitals
+
+                    else
+                        Translate.PrenatalLabsCaseManagementEntryTypeResults
             in
-            PrenatalLabsEntryData item.participantId name encounterId state
+            translate language label
+                |> PrenatalLabsEntryData item.participantId name encounterId state
         )
         item.encounterId
 
@@ -929,7 +949,7 @@ viewPrenatalLabsEntry language data =
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text data.personName ]
         , div [ class entryStateClass ] [ translateText language <| Translate.PrenatalLabsEntryState data.state ]
-        , div [ class "assesment center" ] [ translateText language Translate.PrenatalLabsCaseManagementType ]
+        , div [ class "assesment center" ] [ text data.label ]
         , div
             [ class "icon-forward"
             , onClick <| SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage data.encounterId

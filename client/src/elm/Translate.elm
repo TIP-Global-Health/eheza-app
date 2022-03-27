@@ -919,7 +919,8 @@ type TranslationId
     | PrenatalLaboratoryTaskDate Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskResult Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskResultsHelper
-    | PrenatalLabsCaseManagementType
+    | PrenatalLabsCaseManagementEntryTypeResults
+    | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalPhotoHelper
@@ -8440,8 +8441,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalLabsCaseManagementType ->
+        PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsCaseManagementEntryTypeVitals ->
+            { english = "Vitals Recheck"
             , kinyarwanda = Nothing
             }
 
