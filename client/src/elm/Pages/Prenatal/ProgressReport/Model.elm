@@ -46,9 +46,7 @@ type LabResultsHistoryMode
 
 obstetricalDiagnoses : List PrenatalDiagnosis
 obstetricalDiagnoses =
-    [ DiagnosisChronicHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
-    , DiagnosisGestationalHypertensionImmediate
+    [ DiagnosisGestationalHypertensionImmediate
     , DiagnosisGestationalHypertensionAfterRecheck
     , DiagnosisModeratePreeclampsiaImmediate
     , DiagnosisModeratePreeclampsiaAfterRecheck
@@ -75,7 +73,9 @@ obstetricalDiagnoses =
 
 medicalDiagnoses : List PrenatalDiagnosis
 medicalDiagnoses =
-    [ DiagnosisSyphilis
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisSyphilis
     , DiagnosisSyphilisWithComplications
     , DiagnosisNeurosyphilis
     , DiagnosisModerateAnemia

@@ -767,7 +767,7 @@ type TranslationId
     | NoGroupsFound
     | NoMatchesFound
     | NoTreatmentAdministered
-    | NoTreatmentRecorder
+    | NoTreatmentRecorded
     | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
@@ -1154,6 +1154,7 @@ type TranslationId
     | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
+    | TreatedWithMethyldopa
     | Treatment
     | TrySyncing
     | TuberculosisPast
@@ -6116,7 +6117,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NoTreatmentRecorder ->
+        NoTreatmentRecorded ->
             { english = "No treatment recorded"
             , kinyarwanda = Nothing
             }
@@ -7603,7 +7604,7 @@ translationSet trans =
                     }
 
                 DiagnosisNeurosyphilis ->
-                    { english = "Neurosyphilis"
+                    { english = "Suspected Neurosyphilis"
                     , kinyarwanda = Nothing
                     }
 
@@ -10564,6 +10565,11 @@ translationSet trans =
         TravelHistory ->
             { english = "Travel History"
             , kinyarwanda = Just "Amukuru ku ngendo"
+            }
+
+        TreatedWithMethyldopa ->
+            { english = "treated with Methyldopa"
+            , kinyarwanda = Nothing
             }
 
         Treatment ->

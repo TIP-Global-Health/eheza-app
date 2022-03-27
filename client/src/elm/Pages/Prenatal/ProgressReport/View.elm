@@ -8,6 +8,7 @@ import Backend.Measurement.Model
         , PrenatalTestExecutionNote(..)
         , PrenatalTestVariant(..)
         , ReasonForNotSendingToHC(..)
+        , RecommendedTreatmentSign(..)
         , SendToHCSign(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
@@ -48,6 +49,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
+import Pages.Prenatal.Utils exposing (recommendedTreatmentSignsForHypertension)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -1408,15 +1410,9 @@ viewProgressPhotosPane language currentDate isChw assembled =
 viewDiagnosisTreatement : Language -> NominalDate -> PrenatalMeasurements -> PrenatalDiagnosis -> String
 viewDiagnosisTreatement language date measurements diagnosis =
     let
-        referredToHospitalMsg =
+        referredToHospitalMessage =
             if isNothing measurements.sendToHC then
-                (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
-                    ++ " "
-                    ++ (String.toLower <| translate language Translate.On)
-                    ++ " "
-                    ++ formatDDMMYYYY date
-                    ++ " - "
-                    ++ (String.toLower <| translate language Translate.NoTreatmentRecorder)
+                noTreatmentRecordedMessage
 
             else
                 let
@@ -1460,76 +1456,131 @@ viewDiagnosisTreatement language date measurements diagnosis =
                         ++ " "
                         ++ formatDDMMYYYY date
                         ++ suffix
+
+        hypertensionTreatmentMessage =
+            getMeasurementValueFunc measurements.recommendedTreatment
+                |> Maybe.andThen .signs
+                |> Maybe.map
+                    (\treatment ->
+                        if EverySet.member NoTreatmentForHypertension treatment then
+                            noTreatmentAdministeredMessage
+
+                        else if
+                            List.any (\sign -> EverySet.member sign treatment)
+                                recommendedTreatmentSignsForHypertension
+                        then
+                            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                                ++ " - "
+                                ++ translate language Translate.TreatedWithMethyldopa
+                                ++ " "
+                                ++ (String.toLower <| translate language Translate.On)
+                                ++ " "
+                                ++ formatDDMMYYYY date
+
+                        else
+                            noTreatmentRecordedMessage
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
+        noTreatmentRecordedMessage =
+            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                ++ " - "
+                ++ (String.toLower <| translate language Translate.NoTreatmentRecorded)
+
+        noTreatmentAdministeredMessage =
+            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                ++ " - "
+                ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
     in
     case diagnosis of
+        DiagnosisChronicHypertensionImmediate ->
+            hypertensionTreatmentMessage
+
+        DiagnosisChronicHypertensionAfterRecheck ->
+            hypertensionTreatmentMessage
+
+        DiagnosisGestationalHypertensionImmediate ->
+            hypertensionTreatmentMessage
+
+        DiagnosisGestationalHypertensionAfterRecheck ->
+            hypertensionTreatmentMessage
+
         DiagnosisEclampsia ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisMiscarriage ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisMolarPregnancy ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisPlacentaPrevia ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisPlacentalAbruption ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisUterineRupture ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisObstructedLabor ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisPostAbortionSepsis ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisEctopicPregnancy ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisPROM ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisPPROM ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisHyperemesisGravidum ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisMaternalComplications ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisInfection ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisImminentDelivery ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisLaborAndDelivery ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisSeverePreeclampsiaAfterRecheck ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisSevereAnemiaWithComplications ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisHepatitisB ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisNeurosyphilis ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisMalariaWithSevereAnemia ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisSevereAnemia ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaImmediate ->
-            referredToHospitalMsg
+            referredToHospitalMessage
 
         _ ->
             ""
