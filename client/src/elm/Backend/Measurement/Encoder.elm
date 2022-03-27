@@ -715,6 +715,9 @@ encodePrenatalLaboratoryTest value =
             TestRandomBloodSugar ->
                 "random-blood-sugar"
 
+            TestVitalsRecheck ->
+                "vitals-recheck"
+
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
@@ -1655,10 +1658,22 @@ encodeVitalsValueWithType type_ value =
             Maybe.map (\heartRate -> [ ( "heart_rate", int heartRate ) ])
                 value.heartRate
                 |> Maybe.withDefault []
+
+        sysRepeatedEntry =
+            Maybe.map (\sysRepeated -> [ ( "sys_repeated", float sysRepeated ) ])
+                value.sysRepeated
+                |> Maybe.withDefault []
+
+        diaRepeatedEntry =
+            Maybe.map (\diaRepeated -> [ ( "dia_repeated", float diaRepeated ) ])
+                value.diaRepeated
+                |> Maybe.withDefault []
     in
     sysEntry
         ++ diaEntry
         ++ heartRateEntry
+        ++ sysRepeatedEntry
+        ++ diaRepeatedEntry
         ++ [ ( "respiratory_rate", int value.respiratoryRate )
            , ( "body_temperature", float value.bodyTemperature )
            , ( "deleted", bool False )

@@ -561,6 +561,10 @@ vitalsFormWithDefault form saved =
                 , respiratoryRateDirty = form.respiratoryRateDirty
                 , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
                 , bodyTemperatureDirty = form.bodyTemperatureDirty
+                , sysRepeated = maybeValueConsideringIsDirtyField form.sysRepeatedDirty form.sysRepeated value.sysRepeated
+                , sysRepeatedDirty = form.sysRepeatedDirty
+                , diaRepeated = maybeValueConsideringIsDirtyField form.diaRepeatedDirty form.diaRepeated value.diaRepeated
+                , diaRepeatedDirty = form.diaRepeatedDirty
                 }
             )
 
@@ -575,7 +579,13 @@ toVitalsValue : VitalsForm -> Maybe VitalsValue
 toVitalsValue form =
     Maybe.map2
         (\respiratoryRate bodyTemperature ->
-            VitalsValue form.sysBloodPressure form.diaBloodPressure form.heartRate respiratoryRate bodyTemperature
+            VitalsValue form.sysBloodPressure
+                form.diaBloodPressure
+                form.heartRate
+                respiratoryRate
+                bodyTemperature
+                form.sysRepeated
+                form.diaRepeated
         )
         form.respiratoryRate
         form.bodyTemperature

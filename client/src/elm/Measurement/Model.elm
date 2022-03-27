@@ -356,6 +356,10 @@ type alias VitalsForm =
     , respiratoryRateDirty : Bool
     , bodyTemperature : Maybe Float
     , bodyTemperatureDirty : Bool
+    , sysRepeated : Maybe Float
+    , sysRepeatedDirty : Bool
+    , diaRepeated : Maybe Float
+    , diaRepeatedDirty : Bool
     }
 
 
@@ -371,6 +375,10 @@ emptyVitalsForm =
     , respiratoryRateDirty = False
     , bodyTemperature = Nothing
     , bodyTemperatureDirty = False
+    , sysRepeated = Nothing
+    , sysRepeatedDirty = False
+    , diaRepeated = Nothing
+    , diaRepeatedDirty = False
     }
 
 
@@ -392,6 +400,7 @@ type alias VitalsFormConfig msg =
 type VitalsFormMode
     = VitalsFormBasic
     | VitalsFormFull
+    | VitalsFormRepeated
 
 
 type InvokationModule

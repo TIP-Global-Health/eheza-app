@@ -5,18 +5,22 @@ import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (SendToHCForm, emptySendToHCForm)
+import Measurement.Model exposing (SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask)
 import Pages.Prenatal.Model exposing (..)
-import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe ( String, String ))
     | ViewWarningPopupForNonUrgentDiagnoses
+      -- ExaminationMsgs
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SaveVitals PersonId (Maybe ( VitalsId, Vitals ))
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
     | SetSyphilisTestResult String
@@ -51,12 +55,13 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
-    | SetRecommendedTreatmentSign RecommendedTreatmentSign
+    | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
 
 
 type alias Model =
-    { labResultsData : LabResultsData
+    { examinationData : ExaminationData
+    , labResultsData : LabResultsData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -65,10 +70,24 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { labResultsData = emptyLabResultsData
+    { examinationData = emptyExaminationData
+    , labResultsData = emptyLabResultsData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
+    }
+
+
+type alias ExaminationData =
+    { vitalsForm : VitalsForm
+    , activeTask : Maybe ExaminationTask
+    }
+
+
+emptyExaminationData : ExaminationData
+emptyExaminationData =
+    { vitalsForm = emptyVitalsForm
+    , activeTask = Nothing
     }
 
 

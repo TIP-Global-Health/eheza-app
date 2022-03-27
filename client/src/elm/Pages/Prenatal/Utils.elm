@@ -49,6 +49,13 @@ diagnosed diagnosis assembled =
     EverySet.member diagnosis assembled.encounter.diagnoses
 
 
+diagnosedAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedAnyOf diagnoses assembled =
+    List.any
+        (\diagnosis -> diagnosed diagnosis assembled)
+        diagnoses
+
+
 listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
 listNonUrgentDiagnoses diagnoses =
     let
@@ -282,6 +289,24 @@ resolveMedicationDistributionInputsAndTasks language currentDate assembled setMe
                 ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
             )
             ( [], 0, 0 )
+
+
+{-| Medication Distribution activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+medicationDistributionMeasurementTaken : List MedicationDistributionSign -> PrenatalMeasurements -> Bool
+medicationDistributionMeasurementTaken allowedSigns measurements =
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.map
+            (.distributionSigns
+                >> (\signs ->
+                        List.any (\sign -> EverySet.member sign signs)
+                            allowedSigns
+                   )
+            )
+        |> Maybe.withDefault False
 
 
 resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
@@ -852,19 +877,66 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-{-| Medication Distribution activity appears on both initial and recurrent encounters.
-Each one of them got unique set of signs that can be used.
-In order to know if activity was completed or not, we check if at least one
-of those signs was set.
--}
-medicationDistributionMeasurementTaken : List MedicationDistributionSign -> PrenatalMeasurements -> Bool
-medicationDistributionMeasurementTaken allowedSigns measurements =
-    getMeasurementValueFunc measurements.medicationDistribution
-        |> Maybe.map
-            (.distributionSigns
-                >> (\signs ->
-                        List.any (\sign -> EverySet.member sign signs)
-                            allowedSigns
-                   )
+resolveRecommendedTreatmentSectionState : Bool -> List RecommendedTreatmentSign -> Maybe (List RecommendedTreatmentSign) -> ( Int, Int )
+resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
+    if isDiagnosed then
+        Maybe.map
+            (\signs ->
+                let
+                    completed =
+                        -- We know that section is completed when one of allowed
+                        -- signs is set (as only single selection is allowed).
+                        List.any (\sign -> List.member sign signs) allowedSigns
+                in
+                if completed then
+                    ( 1, 1 )
+
+                else
+                    ( 0, 1 )
             )
-        |> Maybe.withDefault False
+            currentSigns
+            |> Maybe.withDefault ( 0, 1 )
+
+    else
+        ( 0, 0 )
+
+
+recommendTreatmentForHypertension : AssembledData -> RecommendedTreatmentSign
+recommendTreatmentForHypertension assembled =
+    let
+        numberOfTimesMethyldopaWasPerscribed =
+            assembled.nursePreviousMeasurementsWithDates
+                |> List.filter
+                    (\( _, measurements ) ->
+                        getMeasurementValueFunc measurements.recommendedTreatment
+                            |> Maybe.andThen .signs
+                            |> Maybe.map
+                                (\signs ->
+                                    List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
+                                )
+                            |> Maybe.withDefault False
+                    )
+                |> List.length
+    in
+    case numberOfTimesMethyldopaWasPerscribed of
+        0 ->
+            TreatmentMethyldopa2
+
+        1 ->
+            TreatmentMethyldopa3
+
+        _ ->
+            TreatmentMethyldopa4
+
+
+recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
+recommendedTreatmentSignsForHypertension =
+    [ TreatmentMethyldopa2
+    , TreatmentMethyldopa3
+    , TreatmentMethyldopa4
+    ]
+
+
+suspectedHypertensionCondition : Float -> Float -> Bool
+suspectedHypertensionCondition dia sys =
+    (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)

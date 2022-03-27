@@ -743,6 +743,8 @@ type alias VitalsValue =
     , heartRate : Maybe Int
     , respiratoryRate : Int
     , bodyTemperature : Float
+    , sysRepeated : Maybe Float
+    , diaRepeated : Maybe Float
     }
 
 
@@ -1082,6 +1084,7 @@ type PrenatalLaboratoryTest
     | TestRandomBloodSugar
     | TestSyphilis
     | TestUrineDipstick
+    | TestVitalsRecheck
 
 
 type alias PrenatalMedicationDistribution =
@@ -1109,6 +1112,10 @@ type RecommendedTreatmentSign
     | TreatementErythromycin
     | TreatementAzithromycin
     | TreatementCeftriaxon
+      -- For Hypertension:
+    | TreatmentMethyldopa2
+    | TreatmentMethyldopa3
+    | TreatmentMethyldopa4
 
 
 

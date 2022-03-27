@@ -1329,12 +1329,27 @@ viewVitalsForm language currentDate config form =
         bodyTemperatureUpdateFunc value form_ =
             { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
 
+        sysRepeatedUpdateFunc value form_ =
+            { form_ | sysRepeated = value, sysRepeatedDirty = True }
+
+        diaRepeatedUpdateFunc value form_ =
+            { form_ | diaRepeated = value, diaRepeatedDirty = True }
+
         ageInYears =
             Maybe.map
                 (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
                 config.birthDate
 
         bloodPressureSection =
+            viewBloodPressureSection
+                form.sysBloodPressure
+                form.diaBloodPressure
+                sysBloodPressureUpdateFunc
+                diaBloodPressureUpdateFunc
+                config.sysBloodPressurePreviousValue
+                config.diaBloodPressurePreviousValue
+
+        viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue =
             Maybe.map
                 (\ageYears ->
                     if ageYears < 12 then
@@ -1369,35 +1384,34 @@ viewVitalsForm language currentDate config form =
                             [ div [ class "twelve wide column" ]
                                 [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
                             , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.sysBloodPressure
+                                [ viewConditionalAlert sys
                                     redAlertsSys
                                     []
                                 ]
                             ]
                         , viewMeasurementInput
                             language
-                            form.sysBloodPressure
-                            (config.setFloatInputMsg sysBloodPressureUpdateFunc)
+                            sys
+                            (config.setFloatInputMsg sysUpdateFunc)
                             "sys-blood-pressure"
                             Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language config.sysBloodPressurePreviousValue Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language sysPrevValue Translate.MMHGUnit
                         , div [ class "ui grid" ]
                             [ div [ class "twelve wide column" ]
                                 [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
                             , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.diaBloodPressure
+                                [ viewConditionalAlert dia
                                     redAlertsDia
                                     []
                                 ]
                             ]
                         , viewMeasurementInput
                             language
-                            form.diaBloodPressure
-                            (config.setFloatInputMsg diaBloodPressureUpdateFunc)
+                            dia
+                            (config.setFloatInputMsg diaUpdateFunc)
                             "dia-blood-pressure"
                             Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language config.diaBloodPressurePreviousValue Translate.MMHGUnit
-                        , separator
+                        , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
                         ]
                 )
                 ageInYears
@@ -1453,7 +1467,6 @@ viewVitalsForm language currentDate config form =
                 "heart-rate"
                 Translate.BpmUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BpmUnitLabel
-            , separator
             ]
 
         respiratoryRateSection =
@@ -1500,7 +1513,6 @@ viewVitalsForm language currentDate config form =
                 "respiratory-rate"
                 Translate.BpmUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BpmUnitLabel
-            , separator
             ]
 
         bodyTemperatureSection =
@@ -1523,18 +1535,32 @@ viewVitalsForm language currentDate config form =
             ]
 
         separator =
-            div [ class "separator" ] []
+            [ div [ class "separator" ] [] ]
 
         content =
             case config.mode of
                 VitalsFormBasic ->
-                    respiratoryRateSection ++ bodyTemperatureSection
+                    respiratoryRateSection
+                        ++ separator
+                        ++ bodyTemperatureSection
 
                 VitalsFormFull ->
                     bloodPressureSection
+                        ++ separator
                         ++ heartRateSection
+                        ++ separator
                         ++ respiratoryRateSection
+                        ++ separator
                         ++ bodyTemperatureSection
+
+                VitalsFormRepeated ->
+                    viewBloodPressureSection
+                        form.sysRepeated
+                        form.diaRepeated
+                        sysRepeatedUpdateFunc
+                        diaRepeatedUpdateFunc
+                        form.sysBloodPressure
+                        form.diaBloodPressure
     in
     div [ class <| "ui form " ++ config.formClass ]
         content

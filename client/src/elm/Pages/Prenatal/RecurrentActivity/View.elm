@@ -19,8 +19,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault)
-import Measurement.View exposing (viewSendToHospitalForm)
+import Measurement.Model exposing (InvokationModule(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.View exposing (viewSendToHospitalForm, viewVitalsForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
@@ -29,10 +30,10 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, RecommendedTreatmentForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
-import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForHypertension)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -105,6 +106,9 @@ viewActivity language currentDate activity assembled db model =
 
         RecurrentNextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
+
+        RecurrentExamination ->
+            viewExaminationContent language currentDate assembled model.examinationData
 
 
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
@@ -711,7 +715,7 @@ viewNextStepsContent language currentDate assembled data =
                     measurements.recommendedTreatment
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-                        |> viewRecommendedTreatmentForSyphilis language currentDate assembled
+                        |> viewRecommendedTreatmentForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -765,22 +769,53 @@ viewNextStepsContent language currentDate assembled data =
     ]
 
 
-viewRecommendedTreatmentForSyphilis :
+viewRecommendedTreatmentForm :
     Language
     -> NominalDate
     -> AssembledData
     -> RecommendedTreatmentForm
     -> Html Msg
-viewRecommendedTreatmentForSyphilis language currentDate assembled form =
+viewRecommendedTreatmentForm language currentDate assembled form =
     let
-        -- Since we may have values from inital phase of encounter, we need
-        -- to filter them out, to be able to determine current value.
+        hypertensionSection =
+            if diagnosedHypertensionAfterRecheck assembled then
+                viewRecommendedTreatmentForHypertension language
+                    currentDate
+                    (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension)
+                    assembled
+                    form
+
+            else
+                []
+
+        syphilisSection =
+            if diagnosedSyphilis assembled then
+                viewRecommendedTreatmentForSyphilis language currentDate recommendedTreatmentSignsForSyphilis assembled form
+
+            else
+                []
+    in
+    div [ class "ui form recommended-treatment" ] <|
+        hypertensionSection
+            ++ syphilisSection
+
+
+viewRecommendedTreatmentForSyphilis :
+    Language
+    -> NominalDate
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> RecommendedTreatmentForm
+    -> List (Html Msg)
+viewRecommendedTreatmentForSyphilis language currentDate allowedSigns assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- inital phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
         currentValue =
             Maybe.andThen
-                (\signs ->
-                    List.filter (\sign -> List.member sign allowedRecommendedTreatmentSigns)
-                        signs
-                        |> List.head
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
+                    >> List.head
                 )
                 form.signs
 
@@ -802,22 +837,20 @@ viewRecommendedTreatmentForSyphilis language currentDate assembled form =
                 form.signs
                 |> Maybe.withDefault emptyNode
     in
-    div [ class "ui form recommended-treatment" ]
-        [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
-        , h2 []
-            [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
-            , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
-            ]
-        , viewCheckBoxSelectCustomInput language
-            allowedRecommendedTreatmentSigns
-            []
-            currentValue
-            SetRecommendedTreatmentSign
-            (viewTreatmentOptionForSyphilis language)
-        , warning
+    [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+    , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+    , div [ class "instructions" ]
+        [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+        , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
         ]
+    , viewCheckBoxSelectCustomInput language
+        recommendedTreatmentSignsForSyphilis
+        []
+        currentValue
+        (SetRecommendedTreatmentSign allowedSigns)
+        (viewTreatmentOptionForSyphilis language)
+    , warning
+    ]
 
 
 viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
@@ -826,6 +859,135 @@ viewTreatmentOptionForSyphilis language sign =
         [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
         , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
         ]
+
+
+viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            [ ExaminationVitals ]
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        ExaminationVitals ->
+                            "vitals"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    examinationMeasurementTaken
+                        assembled
+                        task
+
+                attributes =
+                    -- Currently, this is a single taske at Examinaiton activity.
+                    -- Therefore, we do not need to react on click action.
+                    [ classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                    ]
+            in
+            div [ class <| "column " ++ iconClass ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.ExaminationTaskRecurrent task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, examinationTasksCompletedFromTotal assembled data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just ExaminationVitals ->
+                    assembled.measurements.vitals
+                        |> getMeasurementValueFunc
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> viewVitalsForm language currentDate assembled
+
+                Nothing ->
+                    emptyNode
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveAction =
+                                case task of
+                                    ExaminationVitals ->
+                                        SaveVitals personId measurements.vitals
+                        in
+                        div [ class "actions examination" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveAction
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask <|
+                tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate assembled form =
+    let
+        formConfig =
+            { setIntInputMsg = \_ _ -> NoOp
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = form.sysBloodPressure
+            , diaBloodPressurePreviousValue = form.diaBloodPressure
+            , heartRatePreviousValue = Nothing
+            , respiratoryRatePreviousValue = Nothing
+            , bodyTemperaturePreviousValue = Nothing
+            , birthDate = assembled.person.birthDate
+            , formClass = "examination vitals"
+            , mode = VitalsFormRepeated
+            , invokationModule = InvokationModulePrenatal
+            }
+    in
+    Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
 

@@ -299,10 +299,28 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
 viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
 viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
     let
-        checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+        viewOptionFunc option =
+            label []
+                [ translateFunc option |> translate language |> text ]
     in
-    viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
+    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
+
+
+viewCheckBoxSelectInputWithRecommendation : Language -> List a -> List a -> a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
+viewCheckBoxSelectInputWithRecommendation language leftOptions rightOptions recommendedOption currentValue setMsg translateFunc =
+    let
+        viewOptionFunc option =
+            if option == recommendedOption then
+                div [ class "recommendation" ]
+                    [ label [] [ translateFunc option |> translate language |> text ]
+                    , div [ class "marker" ] [ text <| "(" ++ translate language Translate.Recommended ++ ")" ]
+                    ]
+
+            else
+                label []
+                    [ translateFunc option |> translate language |> text ]
+    in
+    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
 
 
 viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg

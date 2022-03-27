@@ -548,6 +548,7 @@ type TranslationId
     | ErrorConfigurationError
     | Estimated
     | ExaminationTask ExaminationTask
+    | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
     | ExposureTask ExposureTask
     | Extremities
     | Eyes
@@ -631,6 +632,8 @@ type TranslationId
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
     | HypertensionBeforePregnancy
+    | HypertensionRecommendedTreatmentHeader
+    | HypertensionRecommendedTreatmentHelper
     | IdleWaitingForSync
     | IllnessSymptom IllnessSymptom
     | Immunisation
@@ -963,6 +966,7 @@ type TranslationId
     | ReceivedMosquitoNet
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
+    | Recommended
     | RecommendedButNotGivenDueTo
     | RecommendedSymptomRelief
     | RecommendedTreatmentSignDosage RecommendedTreatmentSign
@@ -3972,6 +3976,13 @@ translationSet trans =
                 Pages.Prenatal.Activity.Types.BreastExam ->
                     translationSet BreastExam
 
+        ExaminationTaskRecurrent task ->
+            case task of
+                Pages.Prenatal.RecurrentActivity.Types.ExaminationVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Just "Ibimenyetso by'ubuzima"
+                    }
+
         ExposureTask task ->
             case task of
                 ExposureTravel ->
@@ -4670,6 +4681,16 @@ translationSet trans =
         HypertensionBeforePregnancy ->
             { english = "Hypertension before pregnancy"
             , kinyarwanda = Just "Umuvuduko w'amaraso mbere yo gutwita"
+            }
+
+        HypertensionRecommendedTreatmentHeader ->
+            { english = "This patient shows signs of hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient bellow"
+            , kinyarwanda = Nothing
             }
 
         IdleWaitingForSync ->
@@ -7281,6 +7302,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
+                RecurrentExamination ->
+                    { english = "Examination"
+                    , kinyarwanda = Just "Gusuzuma"
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->
@@ -7297,6 +7323,26 @@ translationSet trans =
             case diagnosis of
                 DiagnosisPrescribeMebendezole ->
                     { english = "Prescribe Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionImmediate ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionAfterRecheck ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionImmediate ->
+                    { english = "Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionAfterRecheck ->
+                    { english = "Gestational Hypertension"
                     , kinyarwanda = Nothing
                     }
 
@@ -7468,7 +7514,7 @@ translationSet trans =
                     }
 
                 DiagnosisNeurosyphilis ->
-                    { english = "Patient has tested positive for Syphilis and show signs of Neurosyphilis"
+                    { english = "Patient has tested positive for Syphilis and shows signs of Neurosyphilis"
                     , kinyarwanda = Nothing
                     }
 
@@ -7504,6 +7550,26 @@ translationSet trans =
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Severe Anemia with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionImmediate ->
+                    { english = "Patient shows signs of Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionAfterRecheck ->
+                    { english = "Patient shows signs of Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionImmediate ->
+                    { english = "Patient shows signs of Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionAfterRecheck ->
+                    { english = "Patient shows signs of Gestational Hypertension"
                     , kinyarwanda = Nothing
                     }
 
@@ -8816,6 +8882,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibi ntibikorwa"
                     }
 
+        Recommended ->
+            { english = "Recommended"
+            , kinyarwanda = Nothing
+            }
+
         RecommendedButNotGivenDueTo ->
             { english = "recommended but not given due to"
             , kinyarwanda = Nothing
@@ -8903,6 +8974,21 @@ translationSet trans =
 
                 TreatementCeftriaxon ->
                     { english = "Ceftriaxone (1g)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa2 ->
+                    { english = "Methyldopa 250mg by mouth two times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa3 ->
+                    { english = "Methyldopa 250mg by mouth three times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa4 ->
+                    { english = "Methyldopa 250mg by mouth four times a day"
                     , kinyarwanda = Nothing
                     }
 

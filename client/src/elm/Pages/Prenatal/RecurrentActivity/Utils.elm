@@ -9,7 +9,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (Html)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault)
+import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Model exposing (AssembledData)
@@ -44,6 +44,11 @@ expectActivity currentDate assembled activity =
                 |> List.isEmpty
                 |> not
 
+        RecurrentExamination ->
+            resolveExaminationTasks currentDate assembled
+                |> List.isEmpty
+                |> not
+
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
 activityCompleted currentDate assembled activity =
@@ -58,6 +63,12 @@ activityCompleted currentDate assembled activity =
             (not <| expectActivity currentDate assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
                         |> List.all (nextStepsMeasurementTaken assembled)
+                   )
+
+        RecurrentExamination ->
+            (not <| expectActivity currentDate assembled RecurrentExamination)
+                || (resolveExaminationTasks currentDate assembled
+                        |> List.all (examinationMeasurementTaken assembled)
                    )
 
 
@@ -375,11 +386,14 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            diagnosed DiagnosisHepatitisB assembled
-                || diagnosed DiagnosisNeurosyphilis assembled
-                || diagnosed DiagnosisMalariaWithSevereAnemia assembled
-                || diagnosed DiagnosisSevereAnemia assembled
-                || diagnosed DiagnosisSevereAnemiaWithComplications assembled
+            diagnosedAnyOf
+                [ DiagnosisHepatitisB
+                , DiagnosisNeurosyphilis
+                , DiagnosisMalariaWithSevereAnemia
+                , DiagnosisSevereAnemia
+                , DiagnosisSevereAnemiaWithComplications
+                ]
+                assembled
 
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
@@ -393,9 +407,25 @@ expectNextStepsTask currentDate assembled task =
         NextStepsRecommendedTreatment ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && (diagnosed DiagnosisSyphilis assembled
-                        || diagnosed DiagnosisSyphilisWithComplications assembled
+                && (diagnosedSyphilis assembled
+                        || diagnosedHypertensionAfterRecheck assembled
                    )
+
+
+diagnosedSyphilis : AssembledData -> Bool
+diagnosedSyphilis =
+    diagnosedAnyOf
+        [ DiagnosisSyphilis
+        , DiagnosisSyphilisWithComplications
+        ]
+
+
+diagnosedHypertensionAfterRecheck : AssembledData -> Bool
+diagnosedHypertensionAfterRecheck =
+    diagnosedAnyOf
+        [ DiagnosisChronicHypertensionAfterRecheck
+        , DiagnosisGestationalHypertensionAfterRecheck
+        ]
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -412,11 +442,26 @@ nextStepsMeasurementTaken assembled task =
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
         NextStepsRecommendedTreatment ->
-            recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
+            let
+                syphilisTreatmentCompleted =
+                    if diagnosedSyphilis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForSyphilis assembled.measurements
+
+                    else
+                        True
+
+                hypertensionTreatmentCompleted =
+                    if diagnosedHypertensionAfterRecheck assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+            in
+            syphilisTreatmentCompleted && hypertensionTreatmentCompleted
 
 
-allowedRecommendedTreatmentSigns : List RecommendedTreatmentSign
-allowedRecommendedTreatmentSigns =
+recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
+recommendedTreatmentSignsForSyphilis =
     [ TreatementPenecilin1
     , TreatementPenecilin3
     , TreatementErythromycin
@@ -479,20 +524,14 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
 
-                completed =
-                    Maybe.map
-                        (\signs ->
-                            List.any (\sign -> List.member sign signs) allowedRecommendedTreatmentSigns
-                        )
-                        form.signs
-                        |> Maybe.withDefault False
-            in
-            ( if completed then
-                1
+                ( syphilisSectionCompleted, syphilisSectionActive ) =
+                    resolveRecommendedTreatmentSectionState (diagnosedSyphilis assembled) recommendedTreatmentSignsForSyphilis form.signs
 
-              else
-                0
-            , 1
+                ( hypertensionSectionCompleted, hypertensionSectionActive ) =
+                    resolveRecommendedTreatmentSectionState (diagnosedHypertensionAfterRecheck assembled) recommendedTreatmentSignsForHypertension form.signs
+            in
+            ( syphilisSectionCompleted + hypertensionSectionCompleted
+            , syphilisSectionActive + hypertensionSectionActive
             )
 
 
@@ -507,3 +546,53 @@ emergencyReferalRequired assembled =
 diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
 diagnosisRequiresEmergencyReferal diagnosis =
     List.member diagnosis emergencyReferralDiagnosesRecurrent
+
+
+resolveExaminationTasks : NominalDate -> AssembledData -> List ExaminationTask
+resolveExaminationTasks currentDate assembled =
+    -- The order is important. Do not change.
+    [ ExaminationVitals ]
+        |> List.filter (expectExaminationTask currentDate assembled)
+
+
+expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
+expectExaminationTask currentDate assembled task =
+    case task of
+        ExaminationVitals ->
+            getMeasurementValueFunc assembled.measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map2
+                            suspectedHypertensionCondition
+                            value.dia
+                            value.sys
+                    )
+                |> Maybe.withDefault False
+
+
+examinationMeasurementTaken : AssembledData -> ExaminationTask -> Bool
+examinationMeasurementTaken assembled task =
+    case task of
+        ExaminationVitals ->
+            getMeasurementValueFunc assembled.measurements.vitals
+                |> Maybe.map
+                    -- We meassure sysRepeated and diaRepeated, but we know for sure
+                    -- that if one is set, other one is set as well.
+                    -- So, it's enough to check only one.
+                    (.sysRepeated >> isJust)
+                |> Maybe.withDefault False
+
+
+examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal assembled data task =
+    case task of
+        ExaminationVitals ->
+            let
+                form =
+                    assembled.measurements.vitals
+                        |> getMeasurementValueFunc
+                        |> vitalsFormWithDefault data.vitalsForm
+            in
+            ( taskAllCompleted [ form.sysRepeated, form.diaRepeated ]
+            , 1
+            )

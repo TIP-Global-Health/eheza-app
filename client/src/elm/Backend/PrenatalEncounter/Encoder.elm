@@ -63,6 +63,18 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisPrescribeMebendezole ->
                 "prescribe-mebendezole"
 
+            DiagnosisChronicHypertensionImmediate ->
+                "chronic-hypertension-immediate"
+
+            DiagnosisChronicHypertensionAfterRecheck ->
+                "chronic-hypertension-recheck"
+
+            DiagnosisGestationalHypertensionImmediate ->
+                "gestational-hypertension-immediate"
+
+            DiagnosisGestationalHypertensionAfterRecheck ->
+                "gestational-hypertension-recheck"
+
             DiagnosisHIV ->
                 "hiv"
 

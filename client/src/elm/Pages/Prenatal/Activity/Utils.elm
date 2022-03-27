@@ -317,14 +317,26 @@ expectNextStepsTask currentDate assembled task =
         NextStepsRecommendedTreatment ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && diagnosedMalaria assembled
+                && (diagnosedMalaria assembled
+                        || diagnosedHypertensionImmediate assembled
+                   )
 
 
 diagnosedMalaria : AssembledData -> Bool
-diagnosedMalaria assembled =
-    diagnosed DiagnosisMalaria assembled
-        || diagnosed DiagnosisMalariaWithAnemia assembled
-        || diagnosed DiagnosisMalariaWithSevereAnemia assembled
+diagnosedMalaria =
+    diagnosedAnyOf
+        [ DiagnosisMalaria
+        , DiagnosisMalariaWithAnemia
+        , DiagnosisMalariaWithSevereAnemia
+        ]
+
+
+diagnosedHypertensionImmediate : AssembledData -> Bool
+diagnosedHypertensionImmediate =
+    diagnosedAnyOf
+        [ DiagnosisChronicHypertensionImmediate
+        , DiagnosisGestationalHypertensionImmediate
+        ]
 
 
 emergencyReferalRequired : AssembledData -> Bool
@@ -361,11 +373,26 @@ nextStepsMeasurementTaken assembled task =
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
         NextStepsRecommendedTreatment ->
-            recommendedTreatmentMeasurementTaken allowedRecommendedTreatmentSigns assembled.measurements
+            let
+                malariaTreatmentCompleted =
+                    if diagnosedMalaria assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
+
+                    else
+                        True
+
+                hypertensionTreatmentCompleted =
+                    if diagnosedHypertensionImmediate assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+            in
+            malariaTreatmentCompleted && hypertensionTreatmentCompleted
 
 
-allowedRecommendedTreatmentSigns : List RecommendedTreatmentSign
-allowedRecommendedTreatmentSigns =
+recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
+recommendedTreatmentSignsForMalaria =
     [ TreatmentQuinineSulphate
     , TreatmentCoartem
     , TreatmentWrittenProtocols
@@ -653,9 +680,19 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         diagnosesByDangerSigns =
             List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnosesInitial
                 |> EverySet.fromList
+
+        diagnisisByExamination =
+            Maybe.map
+                (\egaWeeks ->
+                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements) examinationDiagnoses
+                        |> EverySet.fromList
+                )
+                egaInWeeks
+                |> Maybe.withDefault EverySet.empty
     in
     EverySet.union diagnosesByMedication diagnisisByLabResults
         |> EverySet.union diagnosesByDangerSigns
+        |> EverySet.union diagnisisByExamination
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
@@ -913,6 +950,61 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
             False
 
 
+matchExaminationPrenatalDiagnosis : Int -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
+matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
+    case diagnosis of
+        DiagnosisChronicHypertensionImmediate ->
+            egaInWeeks < 20 && immediateHypertensionByMeasurements measurements
+
+        DiagnosisChronicHypertensionAfterRecheck ->
+            egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements
+
+        DiagnosisGestationalHypertensionImmediate ->
+            egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements
+
+        DiagnosisGestationalHypertensionAfterRecheck ->
+            egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements
+
+        -- Non Examination diagnoses.
+        _ ->
+            False
+
+
+immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
+immediateHypertensionByMeasurements measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2 immediateHypertensionCondition value.dia value.sys
+            )
+        |> Maybe.withDefault False
+
+
+recheckedHypertensionByMeasurements : PrenatalMeasurements -> Bool
+recheckedHypertensionByMeasurements measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2 recheckHypertensionCondition value.diaRepeated value.sysRepeated
+            )
+        |> Maybe.withDefault False
+
+
+immediateHypertensionCondition : Float -> Float -> Bool
+immediateHypertensionCondition dia sys =
+    dia >= 110 || sys >= 160
+
+
+{-| We measure BP again when we suspect Hypertension (dia between 90
+and 110, and dia between 140 and 160).
+We diagnose Hypertension if repeated measurements are within
+those boundries, or exceed them.
+-}
+recheckHypertensionCondition : Float -> Float -> Bool
+recheckHypertensionCondition diaRepeated sysRepeated =
+    diaRepeated >= 90 || sysRepeated >= 140
+
+
 respiratoryRateElevated : PrenatalMeasurements -> Bool
 respiratoryRateElevated measurements =
     getMeasurementValueFunc measurements.vitals
@@ -946,6 +1038,15 @@ labResultsDiagnoses =
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia
     , DiagnosisSevereAnemiaWithComplications
+    ]
+
+
+examinationDiagnoses : List PrenatalDiagnosis
+examinationDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
     ]
 
 
@@ -1026,13 +1127,7 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
                     )
                 |> Maybe.withDefault False
     in
-    if
-        List.any
-            (\diagnosis ->
-                diagnosed diagnosis assembled
-            )
-            [ DiagnosisHIV, DiagnosisDiscordantPartnership ]
-    then
+    if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
         ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
         , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
         )
@@ -1380,20 +1475,14 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         |> getMeasurementValueFunc
                         |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
 
-                completed =
-                    Maybe.map
-                        (\signs ->
-                            List.any (\sign -> List.member sign signs) allowedRecommendedTreatmentSigns
-                        )
-                        form.signs
-                        |> Maybe.withDefault False
-            in
-            ( if completed then
-                1
+                ( malariaSectionCompleted, malariaSectionActive ) =
+                    resolveRecommendedTreatmentSectionState (diagnosedMalaria assembled) recommendedTreatmentSignsForMalaria form.signs
 
-              else
-                0
-            , 1
+                ( hypertensionSectionCompleted, hypertensionSectionActive ) =
+                    resolveRecommendedTreatmentSectionState (diagnosedHypertensionImmediate assembled) recommendedTreatmentSignsForHypertension form.signs
+            in
+            ( malariaSectionCompleted + hypertensionSectionCompleted
+            , malariaSectionActive + hypertensionSectionActive
             )
 
 

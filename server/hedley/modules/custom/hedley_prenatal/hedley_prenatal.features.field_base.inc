@@ -120,11 +120,29 @@ function hedley_prenatal_field_default_field_bases() {
         'urine-dipstick' => 'Urine Dipstick',
         'hemoglobin' => 'Hemoglobin',
         'random-blood-sugar' => 'Random Blood Sugar',
+        'vitals-recheck' => 'Vitals Recheck',
       ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_dia_repeated'.
+  $field_bases['field_dia_repeated'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_dia_repeated',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_execution_date'.
@@ -397,6 +415,7 @@ function hedley_prenatal_field_default_field_bases() {
         'urine-dipstick' => 'Urine Dipstick',
         'hemoglobin' => 'Hemoglobin',
         'random-blood-sugar' => 'Random Blood Sugar',
+        'vitals-recheck' => 'Vitals Recheck',
       ),
       'allowed_values_function' => '',
     ),
@@ -476,6 +495,10 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'prescribe-mebendezole' => 'Prescribe Mebendazole',
+        'chronic-hypertension-immediate' => 'Chronic Hypertension',
+        'chronic-hypertension-recheck' => 'Chronic Hypertension',
+        'gestational-hypertension-immediate' => 'Gestational Hypertension',
+        'gestational-hypertension-recheck' => 'Gestational Hypertension',
         'hiv' => 'HIV',
         'partner-hiv' => 'HIV positive partner',
         'syphilis' => 'Syphilis',
@@ -565,6 +588,9 @@ function hedley_prenatal_field_default_field_bases() {
         'erythromycin' => 'Erythromycin',
         'azithromycin' => 'Azithromycin',
         'ceftriaxon' =>'Ceftriaxon',
+        'methyldopa-2' => 'Methyldopa twice a day',
+        'methyldopa-3' => 'Methyldopa three times a day',
+        'methyldopa-4' => 'Methyldopa four times a day',
       ),
       'allowed_values_function' => '',
     ),
@@ -640,6 +666,23 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_sys_repeated'.
+  $field_bases['field_sys_repeated'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_sys_repeated',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_test_execution_note'.
