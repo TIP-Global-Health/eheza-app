@@ -295,12 +295,9 @@ viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembl
     let
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled.measurements
-                    >> text
-                    >> List.singleton
-                    >> li []
-                )
+                (viewDiagnosisTreatement language currentDate assembled.measurements)
                 medicalDiagnoses
+                |> List.concat
                 |> ul []
 
         alerts =
@@ -321,12 +318,9 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
     let
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled.measurements
-                    >> text
-                    >> List.singleton
-                    >> li []
-                )
+                (viewDiagnosisTreatement language currentDate assembled.measurements)
                 obstetricalDiagnoses
+                |> List.concat
                 |> ul []
 
         alerts =
@@ -1409,7 +1403,7 @@ viewProgressPhotosPane language currentDate isChw assembled =
         ]
 
 
-viewDiagnosisTreatement : Language -> NominalDate -> PrenatalMeasurements -> PrenatalDiagnosis -> String
+viewDiagnosisTreatement : Language -> NominalDate -> PrenatalMeasurements -> PrenatalDiagnosis -> List (Html any)
 viewDiagnosisTreatement language date measurements diagnosis =
     let
         referredToHospitalMessage =
@@ -1431,6 +1425,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                         ++ (String.toLower <| translate language Translate.On)
                         ++ " "
                         ++ formatDDMMYYYY date
+                        |> intoLIs
 
                 else
                     let
@@ -1458,6 +1453,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                         ++ " "
                         ++ formatDDMMYYYY date
                         ++ suffix
+                        |> intoLIs
 
         hypertensionTreatmentMessage =
             getMeasurementValueFunc measurements.recommendedTreatment
@@ -1480,6 +1476,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                         ++ (String.toLower <| translate language Translate.On)
                                         ++ " "
                                         ++ formatDDMMYYYY date
+                                        |> intoLIs
                            )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
@@ -1517,6 +1514,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                         ++ (String.toLower <| translate language Translate.On)
                                         ++ " "
                                         ++ formatDDMMYYYY date
+                                        |> intoLIs
                            )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
@@ -1529,6 +1527,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                 ++ formatDDMMYYYY date
                 ++ " - "
                 ++ (String.toLower <| translate language Translate.NoTreatmentRecorded)
+                |> intoLIs
 
         noTreatmentAdministeredMessage =
             (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
@@ -1538,6 +1537,13 @@ viewDiagnosisTreatement language date measurements diagnosis =
                 ++ formatDDMMYYYY date
                 ++ " - "
                 ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
+                |> intoLIs
+
+        intoLIs =
+            intoLI >> List.singleton
+
+        intoLI =
+            text >> List.singleton >> li []
     in
     case diagnosis of
         DiagnosisSyphilis ->
@@ -1628,10 +1634,13 @@ viewDiagnosisTreatement language date measurements diagnosis =
         DiagnosisLaborAndDelivery ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaAfterRecheck ->
+        DiagnosisSevereAnemia ->
             referredToHospitalMessage
 
         DiagnosisSevereAnemiaWithComplications ->
+            referredToHospitalMessage
+
+        DiagnosisMalariaWithSevereAnemia ->
             referredToHospitalMessage
 
         DiagnosisHepatitisB ->
@@ -1640,14 +1649,11 @@ viewDiagnosisTreatement language date measurements diagnosis =
         DiagnosisNeurosyphilis ->
             referredToHospitalMessage
 
-        DiagnosisMalariaWithSevereAnemia ->
-            referredToHospitalMessage
-
-        DiagnosisSevereAnemia ->
-            referredToHospitalMessage
-
         DiagnosisModeratePreeclampsiaImmediate ->
             referredToHospitalMessage
 
+        DiagnosisSeverePreeclampsiaAfterRecheck ->
+            referredToHospitalMessage
+
         _ ->
-            ""
+            []
