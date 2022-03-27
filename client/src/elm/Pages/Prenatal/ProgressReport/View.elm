@@ -1597,6 +1597,12 @@ viewDiagnosisTreatement language date measurements diagnosis =
             text >> List.singleton >> li []
     in
     case diagnosis of
+        DiagnosisHIV ->
+            []
+
+        DiagnosisDiscordantPartnership ->
+            []
+
         DiagnosisSyphilis ->
             syphilisTreatmentMessage ""
 
@@ -1712,8 +1718,17 @@ viewDiagnosisTreatement language date measurements diagnosis =
         DiagnosisModeratePreeclampsiaImmediate ->
             referredToHospitalMessage
 
+        DiagnosisModeratePreeclampsiaAfterRecheck ->
+            referredToHospitalMessage
+
+        DiagnosisSeverePreeclampsiaImmediate ->
+            referredToHospitalMessage
+
         DiagnosisSeverePreeclampsiaAfterRecheck ->
             referredToHospitalMessage
 
-        _ ->
+        DiagnosisPrescribeMebendezole ->
+            []
+
+        NoPrenatalDiagnosis ->
             []
