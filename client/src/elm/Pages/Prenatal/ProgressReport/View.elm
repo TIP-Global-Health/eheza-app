@@ -45,6 +45,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (ReferralFacility(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
+import Pages.Prenatal.Activity.Utils exposing (recommendedTreatmentSignsForMalaria)
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
@@ -1519,6 +1520,56 @@ viewDiagnosisTreatement language date measurements diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
+        malariaTreatmentMessage =
+            getMeasurementValueFunc measurements.recommendedTreatment
+                |> Maybe.andThen .signs
+                |> Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
+
+                                else if List.member NoTreatmentForMalaria treatment then
+                                    noTreatmentAdministeredMessage
+
+                                else if List.member TreatementReferToHospital treatment then
+                                    referredToHospitalMessage
+
+                                else if List.member TreatmentWrittenProtocols treatment then
+                                    translate language Translate.MalariaWithGIComplications
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        ++ " - "
+                                        ++ translate language Translate.WrittenProtocolsFollowed
+                                        |> intoLIs
+
+                                else
+                                    let
+                                        treatedWithMessage =
+                                            List.head treatment
+                                                |> Maybe.map
+                                                    (\medication ->
+                                                        " - "
+                                                            ++ translate language Translate.TreatedWith
+                                                            ++ " "
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                    )
+                                                |> Maybe.withDefault ""
+                                    in
+                                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                                        ++ treatedWithMessage
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> intoLIs
+                           )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         noTreatmentRecordedMessage =
             (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
                 ++ " "
@@ -1634,14 +1685,23 @@ viewDiagnosisTreatement language date measurements diagnosis =
         DiagnosisLaborAndDelivery ->
             referredToHospitalMessage
 
+        DiagnosisModerateAnemia ->
+            []
+
         DiagnosisSevereAnemia ->
             referredToHospitalMessage
 
         DiagnosisSevereAnemiaWithComplications ->
             referredToHospitalMessage
 
+        DiagnosisMalaria ->
+            malariaTreatmentMessage
+
+        DiagnosisMalariaWithAnemia ->
+            malariaTreatmentMessage
+
         DiagnosisMalariaWithSevereAnemia ->
-            referredToHospitalMessage
+            malariaTreatmentMessage ++ referredToHospitalMessage
 
         DiagnosisHepatitisB ->
             referredToHospitalMessage

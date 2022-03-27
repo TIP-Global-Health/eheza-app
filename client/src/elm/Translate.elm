@@ -695,6 +695,7 @@ type TranslationId
     | MalariaRapidDiagnosticTest
     | MalariaRecommendedTreatmentHeader
     | MalariaRecommendedTreatmentHelper
+    | MalariaWithGIComplications
     | RapidTestResult RapidTestResult
     | MalnutritionWithComplications
     | MaritalStatusLabel
@@ -1210,6 +1211,7 @@ type TranslationId
     | WhoCaresForTheChildDuringTheDay
     | WhyNot
     | WhyDifferentFbfAmount Activity
+    | WrittenProtocolsFollowed
     | Year
     | YearsOld Int
     | Yes
@@ -5457,6 +5459,11 @@ translationSet trans =
 
         MalariaRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Nothing
+            }
+
+        MalariaWithGIComplications ->
+            { english = "Malaria with GI complications"
             , kinyarwanda = Nothing
             }
 
@@ -11378,6 +11385,11 @@ translationSet trans =
                     { english = "Select why mother received a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
+
+        WrittenProtocolsFollowed ->
+            { english = "Written protocols followed"
+            , kinyarwanda = Nothing
+            }
 
         Year ->
             { english = "Year"
