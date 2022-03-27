@@ -21,18 +21,26 @@ drush_print("# ANC report - " . $limit_date);
 
 $queries = [
   // As the group of all pregnancies.
-  "# Patients who have had " => file_get_contents(__DIR__ . '/anc-report-all-pregnancies.SQL'),
+  "All Preganancies - Any location" => file_get_contents(__DIR__ . '/anc-report-all-pregnancies.SQL'),
   // As the group of pregnancies which is current - defined as NOT > 30 days
   // past the EDD and AND NOT "closed" (if today is November 1, my pregnancy
   // is current if it is Nov 15 of the same year and the pregnancy
   // has not been closed). The closed-ness of the pregnancy was introduced
   // recently, so this filter is not added there.
   // @todo later, after 1-2 years, it might make sense to add closed filter.
-  "Of Active Pregnancies (within 30 days of EDD AND not completed)" => file_get_contents(__DIR__ . '/anc-report-active-pregnancies.SQL'),
+  "Active Pregnancies - Any Location" => file_get_contents(__DIR__ . '/anc-report-active-pregnancies.SQL'),
   // As a group of pregnancies that is completed - defined as > 30 past
   // the EDD OR "closed".
   // @todo introduce "closed" when meaningful
-  "Of Completed Pregnancies (30 days beyond EDD)" => file_get_contents(__DIR__ . '/anc-report-completed-pregnancies.SQL'),
+  "Completed Pregnancies - Any Location" => file_get_contents(__DIR__ . '/anc-report-completed-pregnancies.SQL'),
+  // Health center encounters (nurse) only.
+  "All Preganancies - Health Center" => file_get_contents(__DIR__ . '/anc-report-all-pregnancies-nurse.SQL'),
+  "Active Pregnancies - Health Center" => file_get_contents(__DIR__ . '/anc-report-active-pregnancies-nurse.SQL'),
+  "Completed Pregnancies - Health Center" => file_get_contents(__DIR__ . '/anc-report-completed-pregnancies-nurse.SQL'),
+  // CHW encounters only.
+  "All Preganancies - CHW" => file_get_contents(__DIR__ . '/anc-report-all-pregnancies-chw.SQL'),
+  "Active Pregnancies - CHW" => file_get_contents(__DIR__ . '/anc-report-active-pregnancies-chw.SQL'),
+  "Completed Pregnancies - CHW" => file_get_contents(__DIR__ . '/anc-report-completed-pregnancies-chw.SQL'),
 ];
 
 // For the upper end, we group the grouped counters all together, so let's say
