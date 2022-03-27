@@ -123,6 +123,9 @@ projects[vbo_export][version] = "1.3"
 projects[views_data_export][subdir] = "contrib"
 projects[views_data_export][version] = "3.2"
 
+projects[views_litepager][subdir] = "contrib"
+projects[views_litepager][version] = "3.0"
+
 ; Libraries
 ; For the 'hedley_faker' module.
 libraries[faker][download][type] = get
