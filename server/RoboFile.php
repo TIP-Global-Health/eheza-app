@@ -387,8 +387,11 @@ class RoboFile extends Tasks {
   /**
    * Generates the demographics report.
    */
-  public function reportDemographics() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php');
+  public function reportDemographics($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date");
   }
 
   /**
@@ -401,15 +404,21 @@ class RoboFile extends Tasks {
   /**
    * Generates the ANC report.
    */
-  public function reportAnc() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php');
+  public function reportAnc($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php --limit_date=$limit_date");
   }
 
   /**
    * Generates the pregnancy report.
    */
-  public function reportPregnancy() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php');
+  public function reportPregnancy($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php --limit_date=$limit_date");
   }
 
   /**
