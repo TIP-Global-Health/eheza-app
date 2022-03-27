@@ -69,7 +69,8 @@ listNonUrgentDiagnoses diagnoses =
 
 emergencyReferralDiagnosesInitial : List PrenatalDiagnosis
 emergencyReferralDiagnosesInitial =
-    [ DiagnosisEclampsia
+    [ DiagnosisSeverePreeclampsiaImmediate
+    , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy
     , DiagnosisPlacentaPrevia
@@ -92,7 +93,8 @@ emergencyReferralDiagnosesInitial =
 
 emergencyReferralDiagnosesRecurrent : List PrenatalDiagnosis
 emergencyReferralDiagnosesRecurrent =
-    [ DiagnosisSevereAnemiaWithComplications
+    [ DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisSevereAnemiaWithComplications
     ]
 
 
@@ -937,6 +939,6 @@ recommendedTreatmentSignsForHypertension =
     ]
 
 
-suspectedHypertensionCondition : Float -> Float -> Bool
-suspectedHypertensionCondition dia sys =
+marginalBloodPressureCondition : Float -> Float -> Bool
+marginalBloodPressureCondition dia sys =
     (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)

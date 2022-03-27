@@ -1023,39 +1023,39 @@ rhesusFromString value =
 proteinValueToString : ProteinValue -> String
 proteinValueToString value =
     case value of
-        ProteinNegative ->
-            "negative"
+        Protein0 ->
+            "0"
 
-        Protein30 ->
-            "30"
+        ProteinPlus1 ->
+            "+1"
 
-        Protein100 ->
-            "100"
+        ProteinPlus2 ->
+            "+2"
 
-        Protein300 ->
-            "300"
+        ProteinPlus3 ->
+            "+3"
 
-        Protein2000 ->
-            "2000"
+        ProteinPlus4 ->
+            "+4"
 
 
 proteinValueFromString : String -> Maybe ProteinValue
 proteinValueFromString value =
     case value of
-        "negative" ->
-            Just ProteinNegative
+        "0" ->
+            Just Protein0
 
-        "30" ->
-            Just Protein30
+        "+1" ->
+            Just ProteinPlus1
 
-        "100" ->
-            Just Protein100
+        "+2" ->
+            Just ProteinPlus2
 
-        "300" ->
-            Just Protein300
+        "+3" ->
+            Just ProteinPlus3
 
-        "2000" ->
-            Just Protein2000
+        "+4" ->
+            Just ProteinPlus4
 
         _ ->
             Nothing

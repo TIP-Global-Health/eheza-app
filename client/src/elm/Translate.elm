@@ -7348,6 +7348,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisModeratePreeclampsiaImmediate ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaImmediate ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEclampsia ->
+                    { english = "Eclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHIV ->
                     { english = "HIV"
                     , kinyarwanda = Nothing
@@ -7405,11 +7430,6 @@ translationSet trans =
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Severe Anemia with Complications"
-                    , kinyarwanda = Nothing
-                    }
-
-                DiagnosisEclampsia ->
-                    { english = "Eclampsia"
                     , kinyarwanda = Nothing
                     }
 
@@ -7572,6 +7592,26 @@ translationSet trans =
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
                     { english = "Patient shows signs of Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaImmediate ->
+                    { english = "Patient shows signs of Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Patient shows signs of Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaImmediate ->
+                    { english = "Patient shows signs of Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Patient shows signs of Severe Preeclampsia"
                     , kinyarwanda = Nothing
                     }
 
@@ -7839,28 +7879,28 @@ translationSet trans =
 
         PrenatalLaboratoryProteinValue value ->
             case value of
-                ProteinNegative ->
-                    { english = "Negative"
+                Protein0 ->
+                    { english = "0"
                     , kinyarwanda = Nothing
                     }
 
-                Protein30 ->
-                    { english = "30"
+                ProteinPlus1 ->
+                    { english = "+1"
                     , kinyarwanda = Nothing
                     }
 
-                Protein100 ->
-                    { english = "100"
+                ProteinPlus2 ->
+                    { english = "+2"
                     , kinyarwanda = Nothing
                     }
 
-                Protein300 ->
-                    { english = "300"
+                ProteinPlus3 ->
+                    { english = "+3"
                     , kinyarwanda = Nothing
                     }
 
-                Protein2000 ->
-                    { english = "2000"
+                ProteinPlus4 ->
+                    { english = "+4"
                     , kinyarwanda = Nothing
                     }
 

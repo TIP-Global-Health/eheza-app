@@ -281,6 +281,7 @@ expectNextStepsTask currentDate assembled task =
                     emergencyReferalRequired assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
                         || (diagnosedMalaria assembled && severeMalariaTreatment)
+                        || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
 
                 _ ->
                     dangerSigns
@@ -318,16 +319,19 @@ expectNextStepsTask currentDate assembled task =
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
                 && (diagnosedMalaria assembled
-                        || diagnosedHypertensionImmediate assembled
+                        || diagnosedHypertension assembled
                    )
 
         NextStepsWait ->
-            -- We show Wait activity when there's at least one
-            -- test that was performed, or, 2 hours waiting is
-            -- required for blood preasure recheck.
-            getMeasurementValueFunc assembled.measurements.labsResults
-                |> Maybe.map .performedTests
-                |> isJust
+            -- If we refer patients somewhere, there's no need to wait.
+            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
+                && -- We show Wait activity when there's at least one
+                   -- test that was performed, or, 2 hours waiting is
+                   -- required for blood preasure recheck.
+                   (getMeasurementValueFunc assembled.measurements.labsResults
+                        |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
+                        |> Maybe.withDefault False
+                   )
 
 
 diagnosedMalaria : AssembledData -> Bool
@@ -339,8 +343,8 @@ diagnosedMalaria =
         ]
 
 
-diagnosedHypertensionImmediate : AssembledData -> Bool
-diagnosedHypertensionImmediate =
+diagnosedHypertension : AssembledData -> Bool
+diagnosedHypertension =
     diagnosedAnyOf
         [ DiagnosisChronicHypertensionImmediate
         , DiagnosisGestationalHypertensionImmediate
@@ -390,7 +394,7 @@ nextStepsMeasurementTaken assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertensionImmediate assembled then
+                    if diagnosedHypertension assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
@@ -684,7 +688,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 EverySet.empty
 
         diagnisisByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis dangerSignsList assembled.measurements) labResultsDiagnoses
+            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) labResultsDiagnoses
                 |> EverySet.fromList
 
         dangerSignsList =
@@ -711,6 +715,9 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
 matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
     case diagnosis of
+        DiagnosisSeverePreeclampsiaImmediate ->
+            List.member HeadacheBlurredVision signs
+
         DiagnosisEclampsia ->
             List.member Convulsions signs
 
@@ -802,8 +809,8 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
             False
 
 
-matchLabResultsPrenatalDiagnosis : List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
+matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
+matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
     let
         positiveMalariaTest =
             testedPositiveAt .malariaTest
@@ -835,6 +842,19 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
                 |> Maybe.withDefault False
     in
     case diagnosis of
+        DiagnosisSeverePreeclampsiaAfterRecheck ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20)
+                        && (highBloodPressure measurements
+                                || repeatedHighBloodPressure measurements
+                           )
+                        && highUrineProtein measurements
+                        && severePreeclampsiaSigns measurements
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
         DiagnosisHIV ->
             testedPositiveAt .hivTest
 
@@ -911,7 +931,7 @@ matchLabResultsPrenatalDiagnosis dangerSigns measurements diagnosis =
                            -- we view Malaia as separate diagnosis.
                            -- Therefore's not 'Malarial and Severe Anemia with
                            -- complications' diagnosis.
-                           matchLabResultsPrenatalDiagnosis dangerSigns measurements DiagnosisSevereAnemiaWithComplications
+                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements DiagnosisSevereAnemiaWithComplications
                    )
 
         DiagnosisMalariaWithAnemia ->
@@ -978,44 +998,128 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
         DiagnosisGestationalHypertensionAfterRecheck ->
             egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements
 
+        DiagnosisModeratePreeclampsiaImmediate ->
+            egaInWeeks >= 20 && immediatePreeclampsiaByMeasurements measurements
+
+        DiagnosisModeratePreeclampsiaAfterRecheck ->
+            egaInWeeks >= 20 && recheckedPreeclampsiaByMeasurements measurements
+
         -- Non Examination diagnoses.
         _ ->
             False
 
 
 immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
-immediateHypertensionByMeasurements measurements =
-    getMeasurementValueFunc measurements.vitals
-        |> Maybe.andThen
-            (\value ->
-                Maybe.map2 immediateHypertensionCondition value.dia value.sys
-            )
-        |> Maybe.withDefault False
+immediateHypertensionByMeasurements =
+    highBloodPressure
 
 
 recheckedHypertensionByMeasurements : PrenatalMeasurements -> Bool
-recheckedHypertensionByMeasurements measurements =
+recheckedHypertensionByMeasurements =
+    repeatedTestForMarginalBloodPressure
+
+
+immediatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
+immediatePreeclampsiaByMeasurements measurements =
+    highBloodPressure measurements
+        && edemaOnHandOrLegs measurements
+
+
+recheckedPreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
+recheckedPreeclampsiaByMeasurements measurements =
+    repeatedTestForMarginalBloodPressure measurements
+        && ((highUrineProtein measurements
+                && -- Adding this, so we would not have both Moderate and
+                   -- Severe Preeclapsia diagnoses.
+                   (not <| severePreeclampsiaSigns measurements)
+            )
+                || edemaOnHandOrLegs measurements
+           )
+
+
+highBloodPressure : PrenatalMeasurements -> Bool
+highBloodPressure measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.andThen
             (\value ->
-                Maybe.map2 recheckHypertensionCondition value.diaRepeated value.sysRepeated
+                Maybe.map2 highBloodPressureCondition
+                    value.dia
+                    value.sys
             )
         |> Maybe.withDefault False
 
 
-immediateHypertensionCondition : Float -> Float -> Bool
-immediateHypertensionCondition dia sys =
-    dia >= 110 || sys >= 160
+repeatedHighBloodPressure : PrenatalMeasurements -> Bool
+repeatedHighBloodPressure measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2 highBloodPressureCondition
+                    value.diaRepeated
+                    value.sysRepeated
+            )
+        |> Maybe.withDefault False
 
 
-{-| We measure BP again when we suspect Hypertension (dia between 90
-and 110, and dia between 140 and 160).
+{-| We measure BP again when we suspect Hypertension or Preeclamsia
+(dia between 90 and 110, and dia between 140 and 160).
 We diagnose Hypertension if repeated measurements are within
 those boundries, or exceed them.
 -}
-recheckHypertensionCondition : Float -> Float -> Bool
-recheckHypertensionCondition diaRepeated sysRepeated =
-    diaRepeated >= 90 || sysRepeated >= 140
+repeatedTestForMarginalBloodPressure : PrenatalMeasurements -> Bool
+repeatedTestForMarginalBloodPressure measurements =
+    getMeasurementValueFunc measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2 (\dia sys -> dia >= 90 || sys >= 140)
+                    value.diaRepeated
+                    value.sysRepeated
+            )
+        |> Maybe.withDefault False
+
+
+highBloodPressureCondition : Float -> Float -> Bool
+highBloodPressureCondition dia sys =
+    dia >= 110 || sys >= 160
+
+
+edemaOnHandOrLegs : PrenatalMeasurements -> Bool
+edemaOnHandOrLegs measurements =
+    getMeasurementValueFunc measurements.corePhysicalExam
+        |> Maybe.map
+            (\value ->
+                EverySet.member EdemaHands value.hands
+                    || EverySet.member EdemaLegs value.legs
+            )
+        |> Maybe.withDefault False
+
+
+severePreeclampsiaSigns : PrenatalMeasurements -> Bool
+severePreeclampsiaSigns measurements =
+    getMeasurementValueFunc measurements.corePhysicalExam
+        |> Maybe.map
+            (\value ->
+                EverySet.member Wheezes value.lungs
+                    || EverySet.member Crackles value.lungs
+                    || EverySet.member TPRightUpper value.abdomen
+            )
+        |> Maybe.withDefault False
+
+
+highUrineProtein : PrenatalMeasurements -> Bool
+highUrineProtein measurements =
+    getMeasurementValueFunc measurements.urineDipstickTest
+        |> Maybe.andThen .protein
+        |> Maybe.map
+            (\protein ->
+                List.member protein
+                    [ ProteinPlus1
+                    , ProteinPlus2
+                    , ProteinPlus3
+                    , ProteinPlus4
+                    ]
+            )
+        |> Maybe.withDefault False
 
 
 respiratoryRateElevated : PrenatalMeasurements -> Bool
@@ -1039,7 +1143,8 @@ maternityWardDiagnoses =
 
 labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
-    [ DiagnosisHIV
+    [ DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisHIV
     , DiagnosisDiscordantPartnership
     , DiagnosisSyphilis
     , DiagnosisSyphilisWithComplications
@@ -1060,6 +1165,8 @@ examinationDiagnoses =
     , DiagnosisChronicHypertensionAfterRecheck
     , DiagnosisGestationalHypertensionImmediate
     , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisModeratePreeclampsiaAfterRecheck
     ]
 
 
@@ -1492,7 +1599,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     resolveRecommendedTreatmentSectionState (diagnosedMalaria assembled) recommendedTreatmentSignsForMalaria form.signs
 
                 ( hypertensionSectionCompleted, hypertensionSectionActive ) =
-                    resolveRecommendedTreatmentSectionState (diagnosedHypertensionImmediate assembled) recommendedTreatmentSignsForHypertension form.signs
+                    resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
             in
             ( malariaSectionCompleted + hypertensionSectionCompleted
             , malariaSectionActive + hypertensionSectionActive

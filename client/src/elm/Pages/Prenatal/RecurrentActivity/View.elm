@@ -401,11 +401,11 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                 form.protein
                                 Translate.PrenatalLaboratoryProteinValue
                                 proteinValueToString
-                                [ ProteinNegative
-                                , Protein30
-                                , Protein100
-                                , Protein300
-                                , Protein2000
+                                [ Protein0
+                                , ProteinPlus1
+                                , ProteinPlus2
+                                , ProteinPlus3
+                                , ProteinPlus4
                                 ]
                                 SetProtein
                                 ++ viewSelectInput language
@@ -778,7 +778,7 @@ viewRecommendedTreatmentForm :
 viewRecommendedTreatmentForm language currentDate assembled form =
     let
         hypertensionSection =
-            if diagnosedHypertensionAfterRecheck assembled then
+            if diagnosedHypertension assembled then
                 viewRecommendedTreatmentForHypertension language
                     currentDate
                     (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension)

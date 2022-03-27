@@ -983,11 +983,11 @@ type PrenatalTestVariant
 
 
 type ProteinValue
-    = ProteinNegative
-    | Protein30
-    | Protein100
-    | Protein300
-    | Protein2000
+    = Protein0
+    | ProteinPlus1
+    | ProteinPlus2
+    | ProteinPlus3
+    | ProteinPlus4
 
 
 type PHValue

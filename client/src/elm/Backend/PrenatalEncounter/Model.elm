@@ -44,6 +44,11 @@ type PrenatalDiagnosis
     | DiagnosisChronicHypertensionAfterRecheck
     | DiagnosisGestationalHypertensionImmediate
     | DiagnosisGestationalHypertensionAfterRecheck
+    | DiagnosisModeratePreeclampsiaImmediate
+    | DiagnosisModeratePreeclampsiaAfterRecheck
+    | DiagnosisSeverePreeclampsiaImmediate
+    | DiagnosisSeverePreeclampsiaAfterRecheck
+    | DiagnosisEclampsia
     | DiagnosisHIV
     | DiagnosisDiscordantPartnership
     | DiagnosisSyphilis
@@ -56,7 +61,6 @@ type PrenatalDiagnosis
     | DiagnosisModerateAnemia
     | DiagnosisSevereAnemia
     | DiagnosisSevereAnemiaWithComplications
-    | DiagnosisEclampsia
     | DiagnosisMiscarriage
     | DiagnosisMolarPregnancy
     | DiagnosisPlacentaPrevia

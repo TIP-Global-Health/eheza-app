@@ -81,6 +81,21 @@ decodePrenatalDiagnosis =
                     "gestational-hypertension-recheck" ->
                         succeed DiagnosisGestationalHypertensionAfterRecheck
 
+                    "moderate-preeclampsia-immediate" ->
+                        succeed DiagnosisModeratePreeclampsiaImmediate
+
+                    "moderate-preeclampsia-recheck" ->
+                        succeed DiagnosisModeratePreeclampsiaAfterRecheck
+
+                    "severe-preeclampsia-immediate" ->
+                        succeed DiagnosisSeverePreeclampsiaImmediate
+
+                    "severe-preeclampsia-recheck" ->
+                        succeed DiagnosisSeverePreeclampsiaAfterRecheck
+
+                    "eclampsia" ->
+                        succeed DiagnosisEclampsia
+
                     "hiv" ->
                         succeed DiagnosisHIV
 
@@ -116,9 +131,6 @@ decodePrenatalDiagnosis =
 
                     "severe-anemia-complications" ->
                         succeed DiagnosisSevereAnemiaWithComplications
-
-                    "eclampsia" ->
-                        succeed DiagnosisEclampsia
 
                     "miscarriage" ->
                         succeed DiagnosisMiscarriage
