@@ -323,7 +323,7 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsWait ->
-            -- If we reffer patient somewhere, there's no need to wait.
+            -- If we refer patients somewhere, there's no need to wait.
             (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
                    -- test that was performed, or, 2 hours waiting is
