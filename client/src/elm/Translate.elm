@@ -4710,17 +4710,17 @@ translationSet trans =
 
         LabelOnePregnancyEpisodeOpen ->
             { english = "There is one pregnancy episode that is open"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hari isuzuma rigifunguye ku mugore utwite"
             }
 
         LabelSeenHealthcareProviderForPregnancy ->
             { english = "Have you seen a healthcare provider for current pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba warigeze usuzumwa n'umuganga kuri iyinda utwite"
             }
 
         LabelDocumentPregnancyOutcome ->
             { english = "No - document pregnancy outcome"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntabwo iherezo ry'inda ryanditswe"
             }
 
         LaboratoryTask task ->
