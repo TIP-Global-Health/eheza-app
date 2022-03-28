@@ -526,6 +526,7 @@ type TranslationId
     | Ega
     | EgaHeader
     | EgaWeeks
+    | ElevatedRespiratoryRate
     | EmergencyReferralHelperReferToHC
     | EmergencyReferralHelperReferToHospital
     | EmergencyReferralHelperReferToMaternityWard
@@ -600,6 +601,7 @@ type TranslationId
     | Growth
     | HalfOfDosage String
     | HandedReferralFormQuestion
+    | HandPallor
     | Hands
     | HandsCPESign HandsCPESign
     | HCRecommendation HCRecommendation
@@ -3740,6 +3742,11 @@ translationSet trans =
             , kinyarwanda = Just "EGA (Ibyumweru)"
             }
 
+        ElevatedRespiratoryRate ->
+            { english = "Elevated respiratory rate"
+            , kinyarwanda = Nothing
+            }
+
         EmergencyReferralHelperReferToHC ->
             { english = "Refer patient to health center immediately"
             , kinyarwanda = Nothing
@@ -4413,6 +4420,11 @@ translationSet trans =
         HandedReferralFormQuestion ->
             { english = "Did you hand the referral form to the patient"
             , kinyarwanda = Just "Wahaye umurwayi urupapuro rumwohereza"
+            }
+
+        HandPallor ->
+            { english = "Hand Pallor"
+            , kinyarwanda = Nothing
             }
 
         Hands ->
@@ -7644,17 +7656,17 @@ translationSet trans =
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Mild to Mederate Anemia"
+                    { english = "Anemia (Mild to Mederate)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisSevereAnemia ->
-                    { english = "Severe Anemia"
+                    { english = "Anemia (Severe)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisSevereAnemiaWithComplications ->
-                    { english = "Severe Anemia with Complications"
+                    { english = "Anemia (Severe with Complications)"
                     , kinyarwanda = Nothing
                     }
 

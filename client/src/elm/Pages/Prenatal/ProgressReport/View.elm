@@ -5,7 +5,10 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
-        ( IllnessSymptom(..)
+        ( DangerSign(..)
+        , EyesCPESign(..)
+        , HandsCPESign(..)
+        , IllnessSymptom(..)
         , MedicationDistributionSign(..)
         , PrenatalMeasurements
         , PrenatalTestExecutionNote(..)
@@ -47,7 +50,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (ReferralFacility(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils exposing (recommendedTreatmentSignsForMalaria)
+import Pages.Prenatal.Activity.Utils exposing (recommendedTreatmentSignsForMalaria, respiratoryRateElevated)
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
@@ -1410,8 +1413,11 @@ viewDiagnosisTreatement : Language -> NominalDate -> PrenatalMeasurements -> Pre
 viewDiagnosisTreatement language date measurements diagnosis =
     let
         referredToHospitalMessage =
+            referredToHospitalMessageWithComplications ""
+
+        referredToHospitalMessageWithComplications complications =
             if isNothing measurements.sendToHC then
-                noTreatmentRecordedMessage
+                noTreatmentRecordedMessageWithComplications complications
 
             else
                 let
@@ -1422,6 +1428,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                 in
                 if sentToHospital then
                     (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                        ++ complications
                         ++ " - "
                         ++ (String.toLower <| translate language <| Translate.ReferredToFacility FacilityHospital)
                         ++ " "
@@ -1449,6 +1456,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                 |> Maybe.withDefault ""
                     in
                     (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                        ++ complications
                         ++ " - "
                         ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot FacilityHospital)
                         ++ " "
@@ -1573,8 +1581,11 @@ viewDiagnosisTreatement language date measurements diagnosis =
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
         noTreatmentRecordedMessage =
+            noTreatmentRecordedMessageWithComplications ""
+
+        noTreatmentRecordedMessageWithComplications complication =
             (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
-                ++ " "
+                ++ complication
                 ++ (String.toLower <| translate language Translate.On)
                 ++ " "
                 ++ formatDDMMYYYY date
@@ -1747,7 +1758,59 @@ viewDiagnosisTreatement language date measurements diagnosis =
             referredToHospitalMessage
 
         DiagnosisSevereAnemiaWithComplications ->
-            referredToHospitalMessage
+            let
+                complication =
+                    " - ["
+                        ++ (complicationsByExamination
+                                ++ complicationsByDangerSigns
+                                ++ elevatedRespiratoryRate
+                                |> String.join ", "
+                           )
+                        ++ "]"
+
+                elevatedRespiratoryRate =
+                    if respiratoryRateElevated measurements then
+                        [ translate language Translate.ElevatedRespiratoryRate ]
+
+                    else
+                        []
+
+                complicationsByDangerSigns =
+                    getMeasurementValueFunc measurements.dangerSigns
+                        |> Maybe.map
+                            (\value ->
+                                if EverySet.member DifficultyBreathing value.signs then
+                                    [ translate language <| Translate.DangerSign DifficultyBreathing ]
+
+                                else
+                                    []
+                            )
+                        |> Maybe.withDefault []
+
+                complicationsByExamination =
+                    getMeasurementValueFunc measurements.corePhysicalExam
+                        |> Maybe.map
+                            (\exam ->
+                                let
+                                    pallorHands =
+                                        if EverySet.member PallorHands exam.hands then
+                                            [ translate language Translate.HandPallor ]
+
+                                        else
+                                            []
+
+                                    paleConjuctiva =
+                                        if EverySet.member PaleConjuctiva exam.eyes then
+                                            [ translate language Translate.PaleConjuctiva ]
+
+                                        else
+                                            []
+                                in
+                                pallorHands ++ paleConjuctiva
+                            )
+                        |> Maybe.withDefault []
+            in
+            referredToHospitalMessageWithComplications complication
 
         DiagnosisMalaria ->
             malariaTreatmentMessage
