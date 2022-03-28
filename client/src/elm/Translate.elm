@@ -7758,7 +7758,7 @@ translationSet trans =
                     }
 
                 DiagnosisDiscordantPartnership ->
-                    { english = "Patient is part of a discordant partnership"
+                    { english = "HIV Negative with a discordant partner"
                     , kinyarwanda = Nothing
                     }
 

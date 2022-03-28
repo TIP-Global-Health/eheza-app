@@ -1427,7 +1427,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                             |> Maybe.withDefault False
                 in
                 if sentToHospital then
-                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                    diagnosisForProgressReport
                         ++ complications
                         ++ " - "
                         ++ (String.toLower <| translate language <| Translate.ReferredToFacility FacilityHospital)
@@ -1455,7 +1455,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                 reason
                                 |> Maybe.withDefault ""
                     in
-                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                    diagnosisForProgressReport
                         ++ complications
                         ++ " - "
                         ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot FacilityHospital)
@@ -1480,7 +1480,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                     noTreatmentAdministeredMessage
 
                                 else
-                                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                                    diagnosisForProgressReport
                                         ++ " - "
                                         ++ translate language Translate.TreatedWithMethyldopa
                                         ++ " "
@@ -1518,7 +1518,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                                     )
                                                 |> Maybe.withDefault ""
                                     in
-                                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                                    diagnosisForProgressReport
                                         ++ complications
                                         ++ treatedWithMessage
                                         ++ " "
@@ -1569,7 +1569,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                                     )
                                                 |> Maybe.withDefault ""
                                     in
-                                    (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+                                    diagnosisForProgressReport
                                         ++ treatedWithMessage
                                         ++ " "
                                         ++ (String.toLower <| translate language Translate.On)
@@ -1584,7 +1584,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
             noTreatmentRecordedMessageWithComplications ""
 
         noTreatmentRecordedMessageWithComplications complication =
-            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+            diagnosisForProgressReport
                 ++ complication
                 ++ (String.toLower <| translate language Translate.On)
                 ++ " "
@@ -1594,7 +1594,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                 |> intoLIs
 
         noTreatmentAdministeredMessage =
-            (translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis)
+            diagnosisForProgressReport
                 ++ " "
                 ++ (String.toLower <| translate language Translate.On)
                 ++ " "
@@ -1602,6 +1602,29 @@ viewDiagnosisTreatement language date measurements diagnosis =
                 ++ " - "
                 ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
                 |> intoLIs
+
+        treatmentMessageForMedication distributionSigns nonAdministrationReasons medication =
+            if EverySet.member medication distributionSigns then
+                translate language Translate.TreatedWith
+                    ++ " "
+                    ++ (translate language <| Translate.MedicationDistributionSign medication)
+                    |> Just
+
+            else
+                Dict.get medication nonAdministrationReasons
+                    |> Maybe.map
+                        (\nonAdministrationReason ->
+                            translate language Translate.TreatedWithNot
+                                ++ " "
+                                ++ (translate language <| Translate.MedicationDistributionSign medication)
+                                ++ " "
+                                ++ (String.toLower <| translate language Translate.DueTo)
+                                ++ " "
+                                ++ (translate language <| Translate.AdministrationNote nonAdministrationReason)
+                        )
+
+        diagnosisForProgressReport =
+            translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis
 
         intoLIs =
             intoLI >> List.singleton
@@ -1614,7 +1637,32 @@ viewDiagnosisTreatement language date measurements diagnosis =
             []
 
         DiagnosisDiscordantPartnership ->
-            []
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC
+                            |> Maybe.map
+                                (\tdf3TCTreatmentmessage ->
+                                    let
+                                        diagnosisMessage =
+                                            diagnosisForProgressReport
+                                                ++ " "
+                                                ++ (String.toLower <| translate language Translate.On)
+                                                ++ " "
+                                                ++ formatDDMMYYYY date
+                                    in
+                                    [ li []
+                                        [ p [] [ text diagnosisMessage ]
+                                        , p [] [ text tdf3TCTreatmentmessage ]
+                                        ]
+                                    ]
+                                )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisSyphilis ->
             syphilisTreatmentMessage ""
@@ -1711,32 +1759,12 @@ viewDiagnosisTreatement language date measurements diagnosis =
                         let
                             nonAdministrationReasons =
                                 Pages.Utils.resolveMedicationsNonAdministrationReasons value
-
-                            treatmentMessageForMedication medication =
-                                if EverySet.member medication value.distributionSigns then
-                                    translate language Translate.TreatedWith
-                                        ++ " "
-                                        ++ (translate language <| Translate.MedicationDistributionSign medication)
-                                        |> Just
-
-                                else
-                                    Dict.get medication nonAdministrationReasons
-                                        |> Maybe.map
-                                            (\nonAdministrationReason ->
-                                                translate language Translate.TreatedWithNot
-                                                    ++ " "
-                                                    ++ (translate language <| Translate.MedicationDistributionSign medication)
-                                                    ++ " "
-                                                    ++ (String.toLower <| translate language Translate.DueTo)
-                                                    ++ " "
-                                                    ++ (translate language <| Translate.AdministrationNote nonAdministrationReason)
-                                            )
                         in
                         Maybe.map2
                             (\ironTreatmentMessage folicAcidTreatmentMessage ->
                                 let
                                     diagnosisMessage =
-                                        (translate language <| Translate.PrenatalDiagnosisForProgressReport DiagnosisModerateAnemia)
+                                        diagnosisForProgressReport
                                             ++ " "
                                             ++ (String.toLower <| translate language Translate.On)
                                             ++ " "
@@ -1749,8 +1777,8 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                     ]
                                 ]
                             )
-                            (treatmentMessageForMedication Iron)
-                            (treatmentMessageForMedication FolicAcid)
+                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Iron)
+                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons FolicAcid)
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
