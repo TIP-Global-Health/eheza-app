@@ -1,10 +1,12 @@
 module Pages.Prenatal.ProgressReport.View exposing (view)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
         ( IllnessSymptom(..)
+        , MedicationDistributionSign(..)
         , PrenatalMeasurements
         , PrenatalTestExecutionNote(..)
         , PrenatalTestVariant(..)
@@ -1502,7 +1504,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                                 |> Maybe.map
                                                     (\medication ->
                                                         " - "
-                                                            ++ translate language Translate.TreatedWith
+                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
                                                             ++ " "
                                                             ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
                                                     )
@@ -1553,7 +1555,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
                                                 |> Maybe.map
                                                     (\medication ->
                                                         " - "
-                                                            ++ translate language Translate.TreatedWith
+                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
                                                             ++ " "
                                                             ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
                                                     )
@@ -1692,7 +1694,54 @@ viewDiagnosisTreatement language date measurements diagnosis =
             referredToHospitalMessage
 
         DiagnosisModerateAnemia ->
-            []
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+
+                            treatmentMessageForMedication medication =
+                                if EverySet.member medication value.distributionSigns then
+                                    translate language Translate.TreatedWith
+                                        ++ " "
+                                        ++ (translate language <| Translate.MedicationDistributionSign medication)
+                                        |> Just
+
+                                else
+                                    Dict.get medication nonAdministrationReasons
+                                        |> Maybe.map
+                                            (\nonAdministrationReason ->
+                                                translate language Translate.TreatedWithNot
+                                                    ++ " "
+                                                    ++ (translate language <| Translate.MedicationDistributionSign medication)
+                                                    ++ " "
+                                                    ++ (String.toLower <| translate language Translate.DueTo)
+                                                    ++ " "
+                                                    ++ (translate language <| Translate.AdministrationNote nonAdministrationReason)
+                                            )
+                        in
+                        Maybe.map2
+                            (\ironTreatmentMessage folicAcidTreatmentMessage ->
+                                let
+                                    diagnosisMessage =
+                                        (translate language <| Translate.PrenatalDiagnosisForProgressReport DiagnosisModerateAnemia)
+                                            ++ " "
+                                            ++ (String.toLower <| translate language Translate.On)
+                                            ++ " "
+                                            ++ formatDDMMYYYY date
+                                in
+                                [ li []
+                                    [ p [] [ text diagnosisMessage ]
+                                    , p [] [ text ironTreatmentMessage ]
+                                    , p [] [ text folicAcidTreatmentMessage ]
+                                    ]
+                                ]
+                            )
+                            (treatmentMessageForMedication Iron)
+                            (treatmentMessageForMedication FolicAcid)
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisSevereAnemia ->
             referredToHospitalMessage

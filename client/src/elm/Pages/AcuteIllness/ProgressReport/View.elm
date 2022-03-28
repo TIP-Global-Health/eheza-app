@@ -948,22 +948,14 @@ viewActionsTakenMedicationDistribution : Language -> NominalDate -> Person -> Ac
 viewActionsTakenMedicationDistribution language date person diagnosis measurements =
     let
         distributionSigns =
-            Maybe.map (Tuple.second >> .value >> .distributionSigns) measurements.medicationDistribution
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.map .distributionSigns
 
         nonAdministrationReasons =
             resolveMedicationsNonAdministrationReasons measurements
 
         resolveNonAdministrationReason medicine_ =
-            nonAdministrationReasons
-                |> List.filterMap
-                    (\( medicine, reason ) ->
-                        if medicine == medicine_ then
-                            Just reason
-
-                        else
-                            Nothing
-                    )
-                |> List.head
+            Dict.get medicine_ nonAdministrationReasons
 
         uncomplicatedPneumoniaActions =
             let

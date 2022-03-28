@@ -515,6 +515,7 @@ type TranslationId
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
+    | DueTo
     | EarlyChildhoodDevelopment
     | ECDSignQuestion ECDSign
     | ECDStatus ECDStatus
@@ -1157,6 +1158,7 @@ type TranslationId
     | TravelHistory
     | TreatedWith
     | TreatedWithMethyldopa
+    | TreatedWithNot
     | Treatment
     | TrySyncing
     | TuberculosisPast
@@ -3457,6 +3459,11 @@ translationSet trans =
         DueDate ->
             { english = "Due Date"
             , kinyarwanda = Just "Itariki azabyariraho"
+            }
+
+        DueTo ->
+            { english = "Due to"
+            , kinyarwanda = Nothing
             }
 
         EarlyChildhoodDevelopment ->
@@ -10576,7 +10583,12 @@ translationSet trans =
             }
 
         TreatedWith ->
-            { english = "treated with"
+            { english = "Treated with"
+            , kinyarwanda = Nothing
+            }
+
+        TreatedWithNot ->
+            { english = "Not treated with"
             , kinyarwanda = Nothing
             }
 

@@ -3,7 +3,7 @@ module Pages.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (PersonId)
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model exposing (AdministrationNote, MedicationDistributionSign(..), MedicationDistributionValue, MedicationNonAdministrationSign(..), PhotoUrl(..))
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
@@ -848,3 +848,51 @@ emptySelectOption isSelected =
         , selected isSelected
         ]
         [ text "" ]
+
+
+resolveMedicationsNonAdministrationReasons : MedicationDistributionValue -> Dict MedicationDistributionSign AdministrationNote
+resolveMedicationsNonAdministrationReasons value =
+    EverySet.toList value.nonAdministrationSigns
+        |> List.filterMap
+            (\sign ->
+                case sign of
+                    MedicationAmoxicillin reason ->
+                        Just ( Amoxicillin, reason )
+
+                    MedicationCoartem reason ->
+                        Just ( Coartem, reason )
+
+                    MedicationORS reason ->
+                        Just ( ORS, reason )
+
+                    MedicationZinc reason ->
+                        Just ( Zinc, reason )
+
+                    MedicationParacetamol reason ->
+                        Just ( Paracetamol, reason )
+
+                    MedicationMebendezole reason ->
+                        Just ( Mebendezole, reason )
+
+                    MedicationTenofovir reason ->
+                        Just ( Tenofovir, reason )
+
+                    MedicationLamivudine reason ->
+                        Just ( Lamivudine, reason )
+
+                    MedicationDolutegravir reason ->
+                        Just ( Dolutegravir, reason )
+
+                    MedicationTDF3TC reason ->
+                        Just ( TDF3TC, reason )
+
+                    MedicationIron reason ->
+                        Just ( Iron, reason )
+
+                    MedicationFolicAcid reason ->
+                        Just ( FolicAcid, reason )
+
+                    NoMedicationNonAdministrationSigns ->
+                        Nothing
+            )
+        |> Dict.fromList
