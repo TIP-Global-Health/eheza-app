@@ -20,7 +20,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
@@ -187,7 +187,7 @@ viewContent language currentDate isChw initiator model assembled =
                                     emptyNode
                     in
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
-                    , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembled
+                    , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
                     , viewPatientProgressPane language currentDate isChw assembled
                     , viewLabsPane language currentDate assembled
@@ -297,13 +297,31 @@ viewRiskFactorsPane language currentDate measurements =
         ]
 
 
-viewMedicalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembled =
+viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
+        allMeasurementsWithDates =
+            assembled.nursePreviousMeasurementsWithDates
+                ++ (if isChw then
+                        []
+
+                    else
+                        [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
+                   )
+                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled.measurements assembled.encounter.diagnoses)
-                medicalDiagnoses
+                (\( date, diagnoses, measurements ) ->
+                    let
+                        filteredDiagnoses =
+                            EverySet.toList diagnoses
+                                |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
+                    in
+                    List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                        |> List.concat
+                )
+                allMeasurementsWithDates
                 |> List.concat
                 |> ul []
 
@@ -323,10 +341,28 @@ viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembl
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
 viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
+        allMeasurementsWithDates =
+            assembled.nursePreviousMeasurementsWithDates
+                ++ (if isChw then
+                        []
+
+                    else
+                        [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
+                   )
+                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled.measurements assembled.encounter.diagnoses)
-                obstetricalDiagnoses
+                (\( date, diagnoses, measurements ) ->
+                    let
+                        filteredDiagnoses =
+                            EverySet.toList diagnoses
+                                |> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
+                    in
+                    List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                        |> List.concat
+                )
+                allMeasurementsWithDates
                 |> List.concat
                 |> ul []
 
@@ -1410,14 +1446,14 @@ viewProgressPhotosPane language currentDate isChw assembled =
         ]
 
 
-viewDiagnosisTreatement :
+viewTreatementForDiagnosis :
     Language
     -> NominalDate
     -> PrenatalMeasurements
     -> EverySet PrenatalDiagnosis
     -> PrenatalDiagnosis
     -> List (Html any)
-viewDiagnosisTreatement language date measurements allDiagnoses diagnosis =
+viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
     let
         referredToHospitalMessage =
             referredToHospitalMessageWithComplications ""
