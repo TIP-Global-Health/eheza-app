@@ -311,8 +311,8 @@ viewCheckBoxSelectInputWithRecommendation language leftOptions rightOptions reco
     let
         viewOptionFunc option =
             if option == recommendedOption then
-                div [ class "recommendation" ]
-                    [ label [] [ translateFunc option |> translate language |> text ]
+                label [ class "recommendation" ]
+                    [ div [] [ translateFunc option |> translate language |> text ]
                     , div [ class "marker" ] [ text <| "(" ++ translate language Translate.Recommended ++ ")" ]
                     ]
 
