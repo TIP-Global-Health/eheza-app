@@ -302,7 +302,7 @@ viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembl
     let
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled)
+                (viewDiagnosisTreatement language currentDate assembled.measurements assembled.encounter.diagnoses)
                 medicalDiagnoses
                 |> List.concat
                 |> ul []
@@ -325,7 +325,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
     let
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled)
+                (viewDiagnosisTreatement language currentDate assembled.measurements assembled.encounter.diagnoses)
                 obstetricalDiagnoses
                 |> List.concat
                 |> ul []
@@ -1413,17 +1413,12 @@ viewProgressPhotosPane language currentDate isChw assembled =
 viewDiagnosisTreatement :
     Language
     -> NominalDate
-    -> AssembledData
+    -> PrenatalMeasurements
+    -> EverySet PrenatalDiagnosis
     -> PrenatalDiagnosis
     -> List (Html any)
-viewDiagnosisTreatement language date assembled diagnosis =
+viewDiagnosisTreatement language date measurements allDiagnoses diagnosis =
     let
-        measurements =
-            assembled.measurements
-
-        allDiagnoses =
-            assembled.encounter.diagnoses
-
         referredToHospitalMessage =
             referredToHospitalMessageWithComplications ""
 
@@ -1688,7 +1683,10 @@ viewDiagnosisTreatement language date assembled diagnosis =
                         -- Here, even if there's and HIV program at HC, patient
                         -- is not reffered to it. HIV treatement will be given
                         -- at the hospital.
-                        if diagnosedMalaria assembled then
+                        if
+                            List.any (\diagnosis_ -> EverySet.member diagnosis_ allDiagnoses)
+                                [ DiagnosisMalaria, DiagnosisMalariaWithAnemia ]
+                        then
                             let
                                 malariaTreatmentReferToHospital =
                                     getMeasurementValueFunc measurements.recommendedTreatment
