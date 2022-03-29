@@ -8,6 +8,7 @@ type alias Model =
     { selectedTab : Tab
     , showAlertsDialog : Bool
     , showWarningForChw : Bool
+    , showEndEncounterDialog : Bool
     }
 
 
@@ -16,6 +17,7 @@ emptyModel =
     { selectedTab = Pending
     , showAlertsDialog = False
     , showWarningForChw = False
+    , showEndEncounterDialog = False
     }
 
 
@@ -24,6 +26,7 @@ type Msg
     | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetChwWarningVisible Bool
+    | SetEndEncounterDialogState Bool
     | SetSelectedTab Tab
 
 

@@ -51,19 +51,27 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (ReferralFacility(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils exposing (diagnosedMalaria, recommendedTreatmentSignsForMalaria, respiratoryRateElevated)
+import Pages.Prenatal.Activity.Utils
+    exposing
+        ( activityCompleted
+        , diagnosedMalaria
+        , expectActivity
+        , recommendedTreatmentSignsForMalaria
+        , respiratoryRateElevated
+        )
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
+import Pages.Prenatal.Encounter.View exposing (allowEndingEcounter)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (recommendedTreatmentSignsForSyphilis)
 import Pages.Prenatal.Utils exposing (recommendedTreatmentSignsForHypertension)
-import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (thumbnailImage)
+import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -85,10 +93,23 @@ view language currentDate id isChw initiator db model =
 
         content =
             viewWebData language (viewContent language currentDate isChw initiator model) identity assembled
+
+        endEncounterDialog =
+            if model.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-report clinical" ] <|
         [ header
         , content
+        , viewModal endEncounterDialog
         ]
 
 
@@ -172,7 +193,16 @@ viewContent language currentDate isChw initiator model assembled =
                         actions =
                             case initiator of
                                 InitiatorEncounterPage _ ->
-                                    emptyNode
+                                    let
+                                        ( completedActivities, pendingActivities ) =
+                                            getAllActivities assembled
+                                                |> List.filter (expectActivity currentDate assembled)
+                                                |> List.partition (activityCompleted currentDate assembled)
+
+                                        allowEndEcounter =
+                                            allowEndingEcounter assembled pendingActivities completedActivities
+                                    in
+                                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
 
                                 InitiatorNewEncounter encounterId ->
                                     div [ class "actions" ]

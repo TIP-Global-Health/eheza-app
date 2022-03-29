@@ -9,12 +9,14 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { labResultsMode : Maybe LabResultsMode
+    , showEndEncounterDialog : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
     { labResultsMode = Nothing
+    , showEndEncounterDialog = False
     }
 
 
@@ -91,5 +93,7 @@ medicalDiagnoses =
 
 
 type Msg
-    = SetActivePage Page
+    = CloseEncounter PrenatalEncounterId
+    | SetActivePage Page
     | SetLabResultsMode (Maybe LabResultsMode)
+    | SetEndEncounterDialogState Bool
