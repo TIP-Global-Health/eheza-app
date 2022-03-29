@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , MedicationDistributionSign(..)
+        , PrenatalHIVSign(..)
         , PrenatalMeasurements
         , PrenatalTestExecutionNote(..)
         , PrenatalTestVariant(..)
@@ -50,7 +51,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (ReferralFacility(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils exposing (recommendedTreatmentSignsForMalaria, respiratoryRateElevated)
+import Pages.Prenatal.Activity.Utils exposing (diagnosedMalaria, recommendedTreatmentSignsForMalaria, respiratoryRateElevated)
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
@@ -301,7 +302,7 @@ viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements assembl
     let
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled.measurements)
+                (viewDiagnosisTreatement language currentDate assembled)
                 medicalDiagnoses
                 |> List.concat
                 |> ul []
@@ -324,7 +325,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
     let
         dignoses =
             List.map
-                (viewDiagnosisTreatement language currentDate assembled.measurements)
+                (viewDiagnosisTreatement language currentDate assembled)
                 obstetricalDiagnoses
                 |> List.concat
                 |> ul []
@@ -1409,9 +1410,20 @@ viewProgressPhotosPane language currentDate isChw assembled =
         ]
 
 
-viewDiagnosisTreatement : Language -> NominalDate -> PrenatalMeasurements -> PrenatalDiagnosis -> List (Html any)
-viewDiagnosisTreatement language date measurements diagnosis =
+viewDiagnosisTreatement :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> PrenatalDiagnosis
+    -> List (Html any)
+viewDiagnosisTreatement language date assembled diagnosis =
     let
+        measurements =
+            assembled.measurements
+
+        allDiagnoses =
+            assembled.encounter.diagnoses
+
         referredToHospitalMessage =
             referredToHospitalMessageWithComplications ""
 
@@ -1586,6 +1598,7 @@ viewDiagnosisTreatement language date measurements diagnosis =
         noTreatmentRecordedMessageWithComplications complication =
             diagnosisForProgressReport
                 ++ complication
+                ++ " "
                 ++ (String.toLower <| translate language Translate.On)
                 ++ " "
                 ++ formatDDMMYYYY date
@@ -1634,7 +1647,76 @@ viewDiagnosisTreatement language date measurements diagnosis =
     in
     case diagnosis of
         DiagnosisHIV ->
-            []
+            let
+                hivTreatmentMessage =
+                    getMeasurementValueFunc measurements.medicationDistribution
+                        |> Maybe.andThen
+                            (\value ->
+                                let
+                                    nonAdministrationReasons =
+                                        Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                                in
+                                Maybe.map3
+                                    (\tenofovirTreatmentmessage lamivudineTreatmentmessage dolutegravirTreatmentmessage ->
+                                        let
+                                            diagnosisMessage =
+                                                diagnosisForProgressReport
+                                                    ++ " "
+                                                    ++ (String.toLower <| translate language Translate.On)
+                                                    ++ " "
+                                                    ++ formatDDMMYYYY date
+                                        in
+                                        [ li []
+                                            [ p [] [ text diagnosisMessage ]
+                                            , p [] [ text tenofovirTreatmentmessage ]
+                                            , p [] [ text lamivudineTreatmentmessage ]
+                                            , p [] [ text dolutegravirTreatmentmessage ]
+                                            ]
+                                        ]
+                                    )
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Tenofovir)
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Lamivudine)
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Dolutegravir)
+                            )
+                        |> Maybe.withDefault noTreatmentRecordedMessage
+            in
+            getMeasurementValueFunc measurements.hivTest
+                |> Maybe.map
+                    (\value ->
+                        -- First we need to treat a scenario where patient also got
+                        -- Malaria, and was referred to hospital for treatment.
+                        -- Here, even if there's and HIV program at HC, patient
+                        -- is not reffered to it. HIV treatement will be given
+                        -- at the hospital.
+                        if diagnosedMalaria assembled then
+                            let
+                                malariaTreatmentReferToHospital =
+                                    getMeasurementValueFunc measurements.recommendedTreatment
+                                        |> Maybe.andThen .signs
+                                        |> Maybe.map
+                                            (EverySet.toList
+                                                >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+                                                >> (\treatment ->
+                                                        List.member NoTreatmentForMalaria treatment
+                                                   )
+                                            )
+                                        |> Maybe.withDefault False
+
+                                hivProgramAtHC =
+                                    Maybe.map (EverySet.member HIVProgramHC)
+                                        value.hivSigns
+                                        |> Maybe.withDefault False
+                            in
+                            if hivProgramAtHC && malariaTreatmentReferToHospital then
+                                noTreatmentAdministeredMessage
+
+                            else
+                                hivTreatmentMessage
+
+                        else
+                            hivTreatmentMessage
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisDiscordantPartnership ->
             getMeasurementValueFunc measurements.medicationDistribution
