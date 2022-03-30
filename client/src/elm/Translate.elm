@@ -372,7 +372,7 @@ type TranslationId
     | BoughtClothesQuestion
     | BowedLegs
     | BpmUnit Int
-    | BpmUnitLabel
+    | BreathsPerMinuteUnitLabel
     | BreastExam
     | BreastExamSign BreastExamSign
     | BreastExamQuestion
@@ -593,7 +593,7 @@ type TranslationId
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
-    | HeartBpmUnitLabel
+    | BeatsPerMinuteUnitLabel
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
@@ -2282,7 +2282,7 @@ translationSet trans =
             , kinyarwanda = Just <| "Inshuro ahumeka ku munota " ++ String.fromInt respiratoryRate
             }
 
-        BpmUnitLabel ->
+        BreathsPerMinuteUnitLabel ->
             { english = "bpm"
             , kinyarwanda = Just "Inshuro ahumeka ku munota"
             }
@@ -4247,7 +4247,7 @@ translationSet trans =
             , kinyarwanda = Just "Umutima"
             }
 
-        HeartBpmUnitLabel ->
+        BeatsPerMinuteUnitLabel ->
             { english = "bpm"
             , kinyarwanda = Just "Inshuro umutima utera ku munota"
             }
