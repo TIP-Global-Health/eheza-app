@@ -119,13 +119,13 @@ encodePhotoUrlWithType type_ (PhotoUrl url) =
     ]
 
 
-encodePregnancyTesting : PregnancyTest -> List ( String, Value )
-encodePregnancyTesting =
-    encodePrenatalMeasurement encodePregnancyTestingValue
+encodePregnancyTest : PregnancyTest -> List ( String, Value )
+encodePregnancyTest =
+    encodePrenatalMeasurement encodePregnancyTestValue
 
 
-encodePregnancyTestingValue : PregnancyTestResult -> List ( String, Value )
-encodePregnancyTestingValue value =
+encodePregnancyTestValue : PregnancyTestResult -> List ( String, Value )
+encodePregnancyTestValue value =
     [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
     , ( "deleted", bool False )
     , ( "type", string "pregnancy_testing" )
@@ -205,11 +205,18 @@ encodePrenatalFollowUp =
 
 encodePrenatalFollowUpValue : PrenatalFollowUpValue -> List ( String, Value )
 encodePrenatalFollowUpValue value =
+    let
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
+    in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "prenatal_assesment", encodePrenatalAssesment value.assesment )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_follow_up" )
     ]
+        ++ resolutionDate
 
 
 encodePrenatalAssesment : PrenatalAssesment -> Value
@@ -239,6 +246,410 @@ encodeAppointmentConfirmationValue value =
     , ( "deleted", bool False )
     , ( "type", string "appointment_confirmation" )
     ]
+
+
+encodePrenatalBloodGpRsTest : PrenatalBloodGpRsTest -> List ( String, Value )
+encodePrenatalBloodGpRsTest =
+    encodePrenatalMeasurement encodePrenatalBloodGpRsTestValue
+
+
+encodePrenatalBloodGpRsTestValue : PrenatalBloodGpRsTestValue -> List ( String, Value )
+encodePrenatalBloodGpRsTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        results =
+            Maybe.map2
+                (\bloodGroup rhesus ->
+                    [ ( "blood_group", encodeBloodGroup bloodGroup )
+                    , ( "rhesus", encodeRhesus rhesus )
+                    ]
+                )
+                value.bloodGroup
+                value.rhesus
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ results
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_blood_gprs_test" )
+           ]
+
+
+encodeBloodGroup : BloodGroup -> Value
+encodeBloodGroup =
+    bloodGroupToString >> string
+
+
+encodeRhesus : Rhesus -> Value
+encodeRhesus =
+    rhesusToString >> string
+
+
+encodePrenatalHemoglobinTest : PrenatalHemoglobinTest -> List ( String, Value )
+encodePrenatalHemoglobinTest =
+    encodePrenatalMeasurement encodePrenatalHemoglobinTestValue
+
+
+encodePrenatalHemoglobinTestValue : PrenatalHemoglobinTestValue -> List ( String, Value )
+encodePrenatalHemoglobinTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\hemoglobinCount ->
+                    [ ( "hemoglobin_count", float hemoglobinCount ) ]
+                )
+                value.hemoglobinCount
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hemoglobin_test" )
+           ]
+
+
+encodePrenatalHepatitisBTest : PrenatalHepatitisBTest -> List ( String, Value )
+encodePrenatalHepatitisBTest =
+    encodePrenatalMeasurement encodePrenatalHepatitisBTestValue
+
+
+encodePrenatalHepatitisBTestValue : PrenatalHepatitisBTestValue -> List ( String, Value )
+encodePrenatalHepatitisBTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult ->
+                    [ ( "test_result", encodePrenatalTestResult testResult ) ]
+                )
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hepatitis_b_test" )
+           ]
+
+
+encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
+encodePrenatalHIVTest =
+    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_hiv_test")
+
+
+encodePrenatalRapidTestValueWithType : String -> PrenatalRapidTestValue -> List ( String, Value )
+encodePrenatalRapidTestValueWithType type_ value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string type_ )
+           ]
+
+
+encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
+encodePrenatalMalariaTest =
+    encodePrenatalMeasurement (encodePrenatalRapidTestValueWithType "prenatal_malaria_test")
+
+
+encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
+encodePrenatalRandomBloodSugarTest =
+    encodePrenatalMeasurement encodePrenatalRandomBloodSugarTestValue
+
+
+encodePrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarTestValue -> List ( String, Value )
+encodePrenatalRandomBloodSugarTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\sugarCount ->
+                    [ ( "sugar_count", int <| truncate sugarCount ) ]
+                )
+                value.sugarCount
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_random_blood_sugar_test" )
+           ]
+
+
+encodePrenatalSyphilisTest : PrenatalSyphilisTest -> List ( String, Value )
+encodePrenatalSyphilisTest =
+    encodePrenatalMeasurement encodePrenatalSyphilisTestValue
+
+
+encodePrenatalSyphilisTestValue : PrenatalSyphilisTestValue -> List ( String, Value )
+encodePrenatalSyphilisTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_syphilis_test" )
+           ]
+
+
+encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
+encodePrenatalUrineDipstickTest =
+    encodePrenatalMeasurement encodePrenatalUrineDipstickTestValue
+
+
+encodePrenatalUrineDipstickTestValue : PrenatalUrineDipstickTestValue -> List ( String, Value )
+encodePrenatalUrineDipstickTestValue value =
+    let
+        testVariant =
+            Maybe.map
+                (\variant -> [ ( "test_variant", encodePrenatalTestVariant variant ) ])
+                value.testVariant
+                |> Maybe.withDefault []
+
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        encodeField encoder fieldName fieldValue =
+            Maybe.map
+                (\value_ ->
+                    [ ( fieldName, encoder value_ ) ]
+                )
+                fieldValue
+                |> Maybe.withDefault []
+
+        protein =
+            encodeField encodeProteinValue "protein" value.protein
+
+        ph =
+            encodeField encodePHValue "ph" value.ph
+
+        glucose =
+            encodeField encodeGlucoseValue "glucose" value.glucose
+
+        leukocytes =
+            encodeField encodeLeukocytesValue "leukocytes" value.leukocytes
+
+        nitrite =
+            encodeField encodeNitriteValue "nitrite" value.nitrite
+
+        urobilinogen =
+            encodeField encodeUrobilinogenValue "urobilinogen" value.urobilinogen
+
+        haemoglobin =
+            encodeField encodeHaemoglobinValue "haemoglobin" value.haemoglobin
+
+        specificGravity =
+            encodeField encodeSpecificGravityValue "specific_gravity" value.specificGravity
+
+        ketone =
+            encodeField encodeKetoneValue "ketone" value.ketone
+
+        bilirubin =
+            encodeField encodeBilirubinValue "bilirubin" value.bilirubin
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: testVariant
+        ++ executionDate
+        ++ protein
+        ++ ph
+        ++ glucose
+        ++ leukocytes
+        ++ nitrite
+        ++ urobilinogen
+        ++ haemoglobin
+        ++ specificGravity
+        ++ ketone
+        ++ bilirubin
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_urine_dipstick_test" )
+           ]
+
+
+encodePrenatalTestVariant : PrenatalTestVariant -> Value
+encodePrenatalTestVariant value =
+    string <|
+        case value of
+            VariantShortTest ->
+                "short"
+
+            VariantLongTest ->
+                "long"
+
+
+encodeProteinValue : ProteinValue -> Value
+encodeProteinValue =
+    proteinValueToString >> string
+
+
+encodePHValue : PHValue -> Value
+encodePHValue =
+    phValueToString >> string
+
+
+encodeGlucoseValue : GlucoseValue -> Value
+encodeGlucoseValue =
+    glucoseValueToString >> string
+
+
+encodeLeukocytesValue : LeukocytesValue -> Value
+encodeLeukocytesValue =
+    leukocytesValueToString >> string
+
+
+encodeNitriteValue : NitriteValue -> Value
+encodeNitriteValue =
+    nitriteValueToString >> string
+
+
+encodeUrobilinogenValue : UrobilinogenValue -> Value
+encodeUrobilinogenValue =
+    urobilinogenValueToString >> string
+
+
+encodeHaemoglobinValue : HaemoglobinValue -> Value
+encodeHaemoglobinValue =
+    haemoglobinValueToString >> string
+
+
+encodeSpecificGravityValue : SpecificGravityValue -> Value
+encodeSpecificGravityValue =
+    specificGravityValueToString >> string
+
+
+encodeKetoneValue : KetoneValue -> Value
+encodeKetoneValue =
+    ketoneValueToString >> string
+
+
+encodeBilirubinValue : BilirubinValue -> Value
+encodeBilirubinValue =
+    bilirubinValueToString >> string
+
+
+encodePrenatalTestExecutionNote : PrenatalTestExecutionNote -> Value
+encodePrenatalTestExecutionNote value =
+    string <|
+        case value of
+            TestNoteRunToday ->
+                "run-today"
+
+            TestNoteRunPreviously ->
+                "run-previously"
+
+            TestNoteLackOfReagents ->
+                "lack-of-reagents"
+
+            TestNoteLackOfOtherSupplies ->
+                "lack-of-other-supplies"
+
+            TestNoteNoEquipment ->
+                "no-equipment"
+
+            TestNoteBrokenEquipment ->
+                "broken-equipment"
+
+            TestNoteNotIndicated ->
+                "not-indicated"
+
+            TestNoteKnownAsPositive ->
+                "known-as-positive"
+
+
+encodePrenatalTestResult : PrenatalTestResult -> Value
+encodePrenatalTestResult =
+    prenatalTestResultToString >> string
+
+
+encodePrenatalLabsResults : PrenatalLabsResults -> List ( String, Value )
+encodePrenatalLabsResults =
+    encodePrenatalMeasurement encodePrenatalLabsResultsValue
+
+
+encodePrenatalLabsResultsValue : PrenatalLabsResultsValue -> List ( String, Value )
+encodePrenatalLabsResultsValue value =
+    [ ( "performed_tests", encodeEverySet encodePrenatalLaboratoryTest value.performedTests )
+    , ( "completed_tests", encodeEverySet encodePrenatalLaboratoryTest value.completedTests )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
+    ]
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_labs_results" )
+           ]
+
+
+encodePrenatalLaboratoryTest : PrenatalLaboratoryTest -> Value
+encodePrenatalLaboratoryTest value =
+    string <|
+        case value of
+            TestSyphilis ->
+                "syphilis"
+
+            TestHepatitisB ->
+                "hepatitis-b"
+
+            TestBloodGpRs ->
+                "blood-group"
+
+            TestUrineDipstick ->
+                "urine-dipstick"
+
+            TestHemoglobin ->
+                "hemoglobin"
+
+            TestRandomBloodSugar ->
+                "random-blood-sugar"
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
@@ -1070,25 +1481,25 @@ encodePrenatalNutritionValue value =
     ]
 
 
-encodeResourceSign : ResourceSign -> Value
-encodeResourceSign sign =
+encodeMalariaPreventionSign : MalariaPreventionSign -> Value
+encodeMalariaPreventionSign sign =
     string <|
         case sign of
             MosquitoNet ->
                 "mosquito-net"
 
-            NoResource ->
+            NoMalariaPreventionSigns ->
                 "none"
 
 
-encodeResource : Resource -> List ( String, Value )
-encodeResource =
-    encodePrenatalMeasurement encodeResourceValue
+encodeMalariaPrevention : MalariaPrevention -> List ( String, Value )
+encodeMalariaPrevention =
+    encodePrenatalMeasurement encodeMalariaPreventionValue
 
 
-encodeResourceValue : EverySet ResourceSign -> List ( String, Value )
-encodeResourceValue value =
-    [ ( "resources", encodeEverySet encodeResourceSign value )
+encodeMalariaPreventionValue : EverySet MalariaPreventionSign -> List ( String, Value )
+encodeMalariaPreventionValue value =
+    [ ( "resources", encodeEverySet encodeMalariaPreventionSign value )
     , ( "deleted", bool False )
     , ( "type", string "resource" )
     ]
@@ -1609,6 +2020,11 @@ encodeFollowUpValueWithType type_ value =
 
                 _ ->
                     EverySet.singleton NormalChildNutrition
+
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
     in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
@@ -1616,6 +2032,7 @@ encodeFollowUpValueWithType type_ value =
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
+        ++ resolutionDate
 
 
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
@@ -1623,12 +2040,19 @@ encodeAcuteIllnessFollowUp =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
 
 
-encodeAcuteIllnessFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodeAcuteIllnessFollowUpValue : AcuteIllnessFollowUpValue -> List ( String, Value )
 encodeAcuteIllnessFollowUpValue value =
-    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    let
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
+    in
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_follow_up" )
     ]
+        ++ resolutionDate
 
 
 encodeNutritionAssessment : NutritionAssessment -> Value

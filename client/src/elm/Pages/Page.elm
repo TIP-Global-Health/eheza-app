@@ -155,6 +155,7 @@ type UserPage
     | RelationshipPage PersonId PersonId Initiator
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
+    | PrenatalLabResultsPage PrenatalEncounterId -- record prenatal lab results
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage PersonId

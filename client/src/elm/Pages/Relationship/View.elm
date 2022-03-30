@@ -18,6 +18,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
+import Pages.Utils exposing (emptySelectOption)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
@@ -236,11 +237,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                                         emptyNode
 
                                     _ ->
-                                        option
-                                            [ value ""
-                                            , selected (model.assignToGroup == Nothing)
-                                            ]
-                                            [ text "" ]
+                                        emptySelectOption (model.assignToGroup == Nothing)
 
                             initiatorCondition clinicId =
                                 case initiator of

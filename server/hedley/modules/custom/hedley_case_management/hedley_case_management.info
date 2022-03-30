@@ -1,0 +1,5 @@
+name = Hedley Case Management
+description = Case Management related code
+core = 7.x
+package = Hedley
+features[features_api][] = api:2

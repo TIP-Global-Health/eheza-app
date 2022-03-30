@@ -751,6 +751,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             , close = SetDateSelectorState Nothing
             , dateFrom = originBasedSettings.birthDateSelectorFrom
             , dateTo = originBasedSettings.birthDateSelectorTo
+            , dateDefault = Nothing
             }
 
         birthDateInput =

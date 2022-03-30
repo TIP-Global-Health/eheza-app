@@ -410,6 +410,7 @@ fromFollowUpValue : Maybe FollowUpValue -> FollowUpForm
 fromFollowUpValue saved =
     { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
     , assesment = Maybe.map .assesment saved
+    , resolutionDate = Maybe.andThen .resolutionDate saved
     }
 
 
@@ -421,6 +422,7 @@ followUpFormWithDefault form saved =
             (\value ->
                 { option = or form.option (EverySet.toList value.options |> List.head)
                 , assesment = or form.assesment (Just value.assesment)
+                , resolutionDate = or form.resolutionDate value.resolutionDate
                 }
             )
 
@@ -433,13 +435,12 @@ toFollowUpValueWithDefault saved form =
 
 toFollowUpValue : FollowUpForm -> Maybe FollowUpValue
 toFollowUpValue form =
-    let
-        options =
-            form.option
-                |> Maybe.map (List.singleton >> EverySet.fromList)
-    in
-    Maybe.map FollowUpValue options
-        |> andMap form.assesment
+    Maybe.map2
+        (\options assesment ->
+            FollowUpValue options assesment form.resolutionDate
+        )
+        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
+        form.assesment
 
 
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm

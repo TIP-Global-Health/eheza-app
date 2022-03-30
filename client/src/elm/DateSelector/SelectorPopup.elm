@@ -13,6 +13,7 @@ type alias DateSelectorConfig msg =
     , close : msg
     , dateFrom : Date
     , dateTo : Date
+    , dateDefault : Maybe Date
     }
 
 

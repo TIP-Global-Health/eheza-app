@@ -555,11 +555,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
-            BackendAuthorityPregnancyTesting identifier ->
+            BackendAuthorityPregnancyTest identifier ->
                 viewMeasurement identifier "Pregnancy Testing"
 
-            BackendAuthorityPrenatalPhoto identifier ->
-                viewMeasurement identifier "Prenatal Photo"
+            BackendAuthorityPrenatalEncounter identifier ->
+                text <| "Prenatal Encounter for person ID " ++ fromEntityUuid identifier.entity.participant
+
+            BackendAuthorityPrenatalBloodGpRsTest identifier ->
+                viewMeasurement identifier "Prenatal Blood GpRs Test"
 
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
@@ -570,20 +573,44 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalFollowUp identifier ->
                 viewMeasurement identifier "Prenatal Follow Up"
 
-            BackendAuthorityPrenatalSendToHC identifier ->
-                viewMeasurement identifier "Prenatal Send to HC"
+            BackendAuthorityPrenatalHemoglobinTest identifier ->
+                viewMeasurement identifier "Prenatal Hemoglobin Test"
+
+            BackendAuthorityPrenatalHepatitisBTest identifier ->
+                viewMeasurement identifier "Prenatal Hepatitis B Test"
+
+            BackendAuthorityPrenatalHIVTest identifier ->
+                viewMeasurement identifier "Prenatal HIV Test"
+
+            BackendAuthorityPrenatalLabsResults identifier ->
+                viewMeasurement identifier "Prenatal Labs Results"
+
+            BackendAuthorityPrenatalMalariaTest identifier ->
+                viewMeasurement identifier "Prenatal Malaria Test"
 
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"
 
-            BackendAuthorityPrenatalEncounter identifier ->
-                text <| "Prenatal Encounter for person ID " ++ fromEntityUuid identifier.entity.participant
+            BackendAuthorityPrenatalPhoto identifier ->
+                viewMeasurement identifier "Prenatal Photo"
+
+            BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
+                viewMeasurement identifier "Prenatal Random Blood Sugar Test"
+
+            BackendAuthorityPrenatalSendToHC identifier ->
+                viewMeasurement identifier "Prenatal Send to HC"
+
+            BackendAuthorityPrenatalSyphilisTest identifier ->
+                viewMeasurement identifier "Prenatal Syphilis Test"
+
+            BackendAuthorityPrenatalUrineDipstickTest identifier ->
+                viewMeasurement identifier "Prenatal Urine Dipstick Test"
 
             BackendAuthorityRelationship identifier ->
                 text <| "Relationship for person ID " ++ fromEntityUuid identifier.entity.person
 
-            BackendAuthorityResource identifier ->
-                viewMeasurement identifier "Resource"
+            BackendAuthorityMalariaPrevention identifier ->
+                viewMeasurement identifier "Malaria Prevention"
 
             BackendAuthoritySendToHC identifier ->
                 viewMeasurement identifier "Send to HC"

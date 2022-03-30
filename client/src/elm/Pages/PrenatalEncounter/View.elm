@@ -12,7 +12,6 @@ import Backend.PrenatalActivity.Utils
     exposing
         ( generateHighRiskAlertData
         , generateHighSeverityAlertData
-        , generateRecurringHighSeverityAlertData
         , getActivityIcon
         )
 import Backend.PrenatalEncounter.Model
@@ -30,6 +29,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalActivity.Utils exposing (activityCompleted, expectActivity, noDangerSigns)
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)

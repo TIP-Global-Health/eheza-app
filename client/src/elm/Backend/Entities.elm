@@ -183,12 +183,12 @@ type PrenatalNutritionUuidType
     = PrenatalNutritionUuidType
 
 
-type alias ResourceId =
-    EntityUuid ResourceUuidType
+type alias MalariaPreventionId =
+    EntityUuid MalariaPreventionUuidType
 
 
-type ResourceUuidType
-    = ResourceUuidType
+type MalariaPreventionUuidType
+    = MalariaPreventionUuidType
 
 
 type alias SocialHistoryId =
@@ -1029,3 +1029,75 @@ type alias AcuteIllnessTraceContactId =
 
 type AcuteIllnessTraceContactUuidType
     = AcuteIllnessTraceContactUuidType
+
+
+type alias PrenatalBloodGpRsTestId =
+    EntityUuid PrenatalBloodGpRsTestUuidType
+
+
+type PrenatalBloodGpRsTestUuidType
+    = PrenatalBloodGpRsTestUuidType
+
+
+type alias PrenatalHemoglobinTestId =
+    EntityUuid PrenatalHemoglobinTestUuidType
+
+
+type PrenatalHemoglobinTestUuidType
+    = PrenatalHemoglobinTestUuidType
+
+
+type alias PrenatalHepatitisBTestId =
+    EntityUuid PrenatalHepatitisBTestUuidType
+
+
+type PrenatalHepatitisBTestUuidType
+    = PrenatalHepatitisBTestUuidType
+
+
+type alias PrenatalHIVTestId =
+    EntityUuid PrenatalHIVTestUuidType
+
+
+type PrenatalHIVTestUuidType
+    = PrenatalHIVTestUuidType
+
+
+type alias PrenatalMalariaTestId =
+    EntityUuid PrenatalMalariaTestUuidType
+
+
+type PrenatalMalariaTestUuidType
+    = PrenatalMalariaTestUuidType
+
+
+type alias PrenatalRandomBloodSugarTestId =
+    EntityUuid PrenatalRandomBloodSugarTestUuidType
+
+
+type PrenatalRandomBloodSugarTestUuidType
+    = PrenatalRandomBloodSugarTestUuidType
+
+
+type alias PrenatalSyphilisTestId =
+    EntityUuid PrenatalSyphilisTestUuidType
+
+
+type PrenatalSyphilisTestUuidType
+    = PrenatalSyphilisTestUuidType
+
+
+type alias PrenatalUrineDipstickTestId =
+    EntityUuid PrenatalUrineDipstickTestUuidType
+
+
+type PrenatalUrineDipstickTestUuidType
+    = PrenatalUrineDipstickTestUuidType
+
+
+type alias PrenatalLabsResultsId =
+    EntityUuid PrenatalLabsResultsUuidType
+
+
+type PrenatalLabsResultsUuidType
+    = PrenatalLabsResultsUuidType

@@ -5,13 +5,13 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalTestResultToString, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Date exposing (Unit(..))
-import DateSelector.SelectorPopup exposing (viewCalendarPopup)
+import DateSelector.SelectorPopup exposing (DateSelectorConfig, viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -33,7 +33,8 @@ import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
+        ( emptySelectOption
+        , isTaskCompleted
         , taskAllCompleted
         , taskCompleted
         , tasksBarId
@@ -50,6 +51,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
+        , viewSaveAction
         , viewYellowAlertForSelect
         )
 import RemoteData exposing (RemoteData(..), WebData)
@@ -62,27 +64,27 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id isChw activity db model =
     let
-        data =
+        assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw activity model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw activity model data =
+viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw activity db model assembled =
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language id activity data
-        , viewContent language currentDate isChw activity model data
+        [ viewHeader language id activity assembled
+        , viewContent language currentDate isChw activity db model assembled
         , viewModal <|
             warningPopup language currentDate model.warningPopupState
         ]
 
 
 viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> AssembledData -> Html Msg
-viewHeader language id activity data =
+viewHeader language id activity assembled =
     let
         ( label_, icon ) =
-            generateActivityData activity data
+            generateActivityData activity assembled
 
         label =
             if icon == "appointment-confirmation" then
@@ -106,11 +108,11 @@ viewHeader language id activity data =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate isChw activity model data =
+viewContent : Language -> NominalDate -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate isChw data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate activity data model
+        viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewActivity language currentDate activity assembled db model
 
 
 warningPopup : Language -> NominalDate -> Maybe String -> Maybe (Html Msg)
@@ -141,41 +143,44 @@ warningPopup language currentDate dangerSigns =
             )
 
 
-viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate activity data model =
+viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate activity assembled db model =
     case activity of
         PregnancyDating ->
-            viewPregnancyDatingContent language currentDate data model.pregnancyDatingData
+            viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
 
         History ->
-            viewHistoryContent language currentDate data model.historyData
+            viewHistoryContent language currentDate assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate data model.examinationData
+            viewExaminationContent language currentDate assembled model.examinationData
 
         FamilyPlanning ->
-            viewFamilyPlanningContent language currentDate data model.familyPlanningData
-
-        PatientProvisions ->
-            viewPatientProvisionsContent language currentDate data model.patientProvisionsData
+            viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
 
         DangerSigns ->
-            viewDangerSignsContent language currentDate data model.dangerSignsData
+            viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
         PrenatalPhoto ->
-            viewPrenatalPhotoContent language currentDate data model.prenatalPhotoData
+            viewPrenatalPhotoContent language currentDate assembled model.prenatalPhotoData
 
         Laboratory ->
-            viewLaboratoryContent language currentDate data model.laboratoryData
+            viewLaboratoryContent language currentDate assembled model.laboratoryData
 
         Backend.PrenatalActivity.Model.HealthEducation ->
-            viewHealthEducationContent language currentDate data model.healthEducationData
+            viewHealthEducationContent language currentDate assembled model.healthEducationData
 
         BirthPlan ->
-            viewBirthPlanContent language currentDate data model.birthPlanData
+            viewBirthPlanContent language currentDate assembled model.birthPlanData
 
         NextSteps ->
-            viewNextStepsContent language currentDate data model.nextStepsData
+            viewNextStepsContent language currentDate assembled model.nextStepsData
+
+        Backend.PrenatalActivity.Model.MalariaPrevention ->
+            viewMalariaPreventionContent language currentDate assembled model.malariaPreventionData
+
+        Backend.PrenatalActivity.Model.Medication ->
+            viewMedicationContent language currentDate assembled model.medicationData
 
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
@@ -253,6 +258,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                             , close = SetLmpDateSelectorState Nothing
                             , dateFrom = dateFrom
                             , dateTo = currentDate
+                            , dateDefault = Just dateFrom
                             }
                     in
                     [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
@@ -836,11 +842,13 @@ viewFamilyPlanningContent language currentDate assembled data =
     ]
 
 
-viewPatientProvisionsContent : Language -> NominalDate -> AssembledData -> PatientProvisionsData -> List (Html Msg)
-viewPatientProvisionsContent language currentDate assembled data =
+viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
+viewMedicationContent language currentDate assembled data =
     let
-        showResourcesTask =
-            shouldShowPatientProvisionsResourcesTask assembled
+        form =
+            assembled.measurements.medication
+                |> getMeasurementValueFunc
+                |> medicationFormWithDefault data.form
 
         -- We show the question starting EGA week 20, and
         -- as long as all preivious answers were 'No'.
@@ -867,133 +875,107 @@ viewPatientProvisionsContent language currentDate assembled data =
                     )
                 |> Maybe.withDefault False
 
-        tasks =
-            if showResourcesTask then
-                [ Medication, Resources ]
-
-            else
-                [ Medication ]
-
-        tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task )
-                    )
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
-                |> Maybe.withDefault ( 0, 0 )
-
-        viewTask task =
             let
-                ( iconClass, isCompleted ) =
-                    case task of
-                        Medication ->
-                            ( "medication", isJust assembled.measurements.medication )
+                tasks =
+                    if showDewormingPillQuestion then
+                        [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
 
-                        Resources ->
-                            ( "resources", isJust assembled.measurements.resource )
-
-                isActive =
-                    task == data.activeTask
-
-                attributes =
-                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
-                        :: (if isActive then
-                                []
-
-                            else
-                                [ onClick <| SetActivePatientProvisionsTask task ]
-                           )
+                    else
+                        [ form.receivedIronFolicAcid ]
             in
-            div [ class "column" ]
-                [ div attributes
-                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.PatientProvisionsTask task)
-                    ]
-                ]
+            ( List.map taskCompleted tasks
+                |> List.sum
+            , List.length tasks
+            )
 
-        viewForm =
-            case data.activeTask of
-                Medication ->
-                    let
-                        form =
-                            assembled.measurements.medication
-                                |> getMeasurementValueFunc
-                                |> medicationFormWithDefault data.medicationForm
+        receivedIronFolicAcidUpdateFunc value form_ =
+            { form_ | receivedIronFolicAcid = Just value }
 
-                        questions =
-                            if showDewormingPillQuestion then
-                                [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
-
-                            else
-                                [ form.receivedIronFolicAcid ]
-                    in
-                    viewMedicationForm language currentDate assembled showDewormingPillQuestion form
-
-                Resources ->
-                    let
-                        form =
-                            assembled.measurements.resource
-                                |> getMeasurementValueFunc
-                                |> resourceFormWithDefault data.resourcesForm
-                    in
-                    viewResourcesForm language currentDate assembled form
-
-        getNextTask currentTask =
-            if not showResourcesTask then
+        receivedIronFolicAcidQuestion =
+            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
+            , viewBoolInput
+                language
+                form.receivedIronFolicAcid
+                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
+                "iron-folic-acid"
                 Nothing
+            ]
+
+        receivedDewormingPillQuestion =
+            if showDewormingPillQuestion then
+                let
+                    receivedDewormingPillUpdateFunc value form_ =
+                        { form_ | receivedDewormingPill = Just value }
+                in
+                [ viewQuestionLabel language Translate.ReceivedDewormingPill
+                , viewBoolInput
+                    language
+                    form.receivedDewormingPill
+                    (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
+                    "deworming-pill"
+                    Nothing
+                ]
 
             else
-                case currentTask of
-                    Medication ->
-                        [ Resources ]
-                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                            |> List.head
+                []
 
-                    Resources ->
-                        [ Medication ]
-                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                            |> List.head
-
-        actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
-
-                saveAction =
-                    case data.activeTask of
-                        Medication ->
-                            SaveMedication
-                                assembled.participant.person
-                                assembled.measurements.medication
-                                nextTask
-
-                        Resources ->
-                            SaveResources
-                                assembled.participant.person
-                                assembled.measurements.resource
-                                nextTask
-            in
-            div [ class "actions examination" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveAction
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+        questions =
+            receivedIronFolicAcidQuestion ++ receivedDewormingPillQuestion
     in
-    [ div [ class "ui task segment blue" ]
-        [ div [ class "ui five column grid" ] <|
-            List.map viewTask tasks
-        ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ viewForm
-            , actions
+            [ div [ class "ui form medication" ]
+                questions
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveMedication assembled.participant.person assembled.measurements.medication
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewMalariaPreventionContent : Language -> NominalDate -> AssembledData -> MalariaPreventionData -> List (Html Msg)
+viewMalariaPreventionContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.malariaPrevention
+                |> getMeasurementValueFunc
+                |> malariaPreventionFormWithDefault data.form
+
+        tasksCompleted =
+            taskCompleted form.receivedMosquitoNet
+
+        totalTasks =
+            1
+
+        receivedMosquitoNetUpdateFunc value form_ =
+            { form_ | receivedMosquitoNet = Just value }
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form malaria-prevention" ]
+                [ viewQuestionLabel language Translate.ReceivedMosquitoNet
+                , viewBoolInput
+                    language
+                    form.receivedMosquitoNet
+                    (SetMalariaPreventionBoolInput receivedMosquitoNetUpdateFunc)
+                    "mosquito-net"
+                    Nothing
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveMalariaPrevention assembled.participant.person assembled.measurements.malariaPrevention
+                ]
+                [ text <| translate language Translate.Save ]
             ]
         ]
     ]
@@ -1237,11 +1219,188 @@ viewBirthPlanContent language currentDate assembled data =
 
 viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
 viewLaboratoryContent language currentDate assembled data =
+    if assembled.encounter.encounterType == NurseEncounter then
+        viewLaboratoryContentForNurse language currentDate assembled data
+
+    else
+        viewLaboratoryContentForChw language currentDate assembled data
+
+
+viewLaboratoryContentForNurse : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContentForNurse language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectLaboratoryTask currentDate assembled) laboratoryTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    laboratoryTaskIconClass task
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    laboratoryTaskCompleted currentDate assembled task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveLaboratoryTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalLaboratoryTask task)
+                    ]
+                ]
+
+        formHtmlAndTasks =
+            List.map
+                (\task ->
+                    ( task
+                    , case task of
+                        TaskHIVTest ->
+                            measurements.hivTest
+                                |> getMeasurementValueFunc
+                                |> prenatalRDTFormWithDefault data.hivTestForm
+                                |> viewPrenatalRDTFormCheckKnownAsPositive language currentDate TaskHIVTest
+
+                        TaskSyphilisTest ->
+                            measurements.syphilisTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.syphilisTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskSyphilisTest
+
+                        TaskHepatitisBTest ->
+                            measurements.hepatitisBTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
+                                |> viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate TaskHepatitisBTest
+
+                        TaskMalariaTest ->
+                            measurements.malariaTest
+                                |> getMeasurementValueFunc
+                                |> prenatalRDTFormWithDefault data.malariaTestForm
+                                |> viewPrenatalRDTForm language currentDate TaskMalariaTest
+
+                        TaskBloodGpRsTest ->
+                            measurements.bloodGpRsTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskBloodGpRsTest
+
+                        TaskUrineDipstickTest ->
+                            measurements.urineDipstickTest
+                                |> getMeasurementValueFunc
+                                |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
+                                |> viewPrenatalUrineDipstickForm language currentDate
+
+                        TaskHemoglobinTest ->
+                            measurements.hemoglobinTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
+
+                        TaskRandomBloodSugarTest ->
+                            measurements.randomBloodSugarTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
+                    )
+                )
+                tasks
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                formHtmlAndTasks
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.andThen
+                (\task -> Dict.get task formHtmlAndTasks)
+                activeTask
+                |> Maybe.withDefault ( emptyNode, 0, 0 )
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                TaskHIVTest ->
+                                    SaveHIVTest personId measurements.hivTest nextTask
+
+                                TaskSyphilisTest ->
+                                    SaveSyphilisTest personId measurements.syphilisTest nextTask
+
+                                TaskHepatitisBTest ->
+                                    SaveHepatitisBTest personId measurements.hepatitisBTest nextTask
+
+                                TaskMalariaTest ->
+                                    SaveMalariaTest personId measurements.malariaTest nextTask
+
+                                TaskBloodGpRsTest ->
+                                    SaveBloodGpRsTest personId measurements.bloodGpRsTest nextTask
+
+                                TaskUrineDipstickTest ->
+                                    SaveUrineDipstickTest personId measurements.urineDipstickTest nextTask
+
+                                TaskHemoglobinTest ->
+                                    SaveHemoglobinTest personId measurements.hemoglobinTest nextTask
+
+                                TaskRandomBloodSugarTest ->
+                                    SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+                    in
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm, actions ]
+        ]
+    ]
+
+
+viewLaboratoryContentForChw : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContentForChw language currentDate assembled data =
     let
         form =
             assembled.measurements.pregnancyTest
                 |> getMeasurementValueFunc
-                |> pregnancyTestingFormWithDefault data.form
+                |> pregnancyTestFormWithDefault data.pregnancyTestForm
 
         totalTasks =
             1
@@ -1251,11 +1410,7 @@ viewLaboratoryContent language currentDate assembled data =
 
         emptyOption =
             if isNothing form.pregnancyTestResult then
-                option
-                    [ value ""
-                    , selected (form.pregnancyTestResult == Nothing)
-                    ]
-                    [ text "" ]
+                emptySelectOption True
 
             else
                 emptyNode
@@ -1269,7 +1424,7 @@ viewLaboratoryContent language currentDate assembled data =
                                     [ value (pregnancyTestResultAsString result)
                                     , selected (form.pregnancyTestResult == Just result)
                                     ]
-                                    [ text <| translate language <| Translate.PregnancyTestingResult result ]
+                                    [ text <| translate language <| Translate.PregnancyTestResult result ]
                             )
                    )
                 |> select [ onInput SetPregnancyTestResult, class "form-input select" ]
@@ -1285,7 +1440,7 @@ viewLaboratoryContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyTesting assembled.participant.person assembled.measurements.pregnancyTest
+                , onClick <| SavePregnancyTest assembled.participant.person assembled.measurements.pregnancyTest
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -2579,64 +2734,6 @@ viewBreastExamForm language currentDate assembled form =
         ]
 
 
-viewMedicationForm : Language -> NominalDate -> AssembledData -> Bool -> MedicationForm -> Html Msg
-viewMedicationForm language currentDate assembled showDewormingPillQuestion form =
-    let
-        receivedIronFolicAcidUpdateFunc value form_ =
-            { form_ | receivedIronFolicAcid = Just value }
-
-        receivedIronFolicAcidQuestion =
-            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
-            , viewBoolInput
-                language
-                form.receivedIronFolicAcid
-                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
-                "iron-folic-acid"
-                Nothing
-            ]
-
-        receivedDewormingPillQuestion =
-            if showDewormingPillQuestion then
-                let
-                    receivedDewormingPillUpdateFunc value form_ =
-                        { form_ | receivedDewormingPill = Just value }
-                in
-                [ viewQuestionLabel language Translate.ReceivedDewormingPill
-                , viewBoolInput
-                    language
-                    form.receivedDewormingPill
-                    (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
-                    "deworming-pill"
-                    Nothing
-                ]
-
-            else
-                []
-
-        questions =
-            receivedIronFolicAcidQuestion ++ receivedDewormingPillQuestion
-    in
-    div [ class "ui form patient-provisions medication" ]
-        questions
-
-
-viewResourcesForm : Language -> NominalDate -> AssembledData -> ResourcesForm -> Html Msg
-viewResourcesForm language currentDate assembled form =
-    let
-        receivedMosquitoNetUpdateFunc value form_ =
-            { form_ | receivedMosquitoNet = Just value }
-    in
-    div [ class "ui form patient-provisions resources" ]
-        [ viewQuestionLabel language Translate.ReceivedMosquitoNet
-        , viewBoolInput
-            language
-            form.receivedMosquitoNet
-            (SetResourcesBoolInput receivedMosquitoNetUpdateFunc)
-            "mosquito-net"
-            Nothing
-        ]
-
-
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate assembled form =
     let
@@ -2672,6 +2769,7 @@ viewAppointmentConfirmationForm language currentDate assembled form =
             , close = SetAppointmentDateSelectorState Nothing
             , dateFrom = currentDate
             , dateTo = Date.add Months 9 currentDate
+            , dateDefault = Nothing
             }
     in
     div [ class "form appointment-confirmation" ]
@@ -2699,6 +2797,572 @@ viewNewbornEnrolmentForm language currentDate assembled =
             ]
             [ text <| translate language Translate.EnrolNewborn ]
         ]
+
+
+viewPrenatalRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
+viewPrenatalRDTFormCheckKnownAsPositive language currentDate task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.knownAsPositive /= Just False then
+                ( [], 0, 0 )
+
+            else
+                prenatalRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+viewPrenatalRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( Html Msg, Int, Int )
+viewPrenatalRDTForm language currentDate task form =
+    let
+        ( inputs, tasksCompleted, tasksTotal ) =
+            prenatalRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ inputs
+    , tasksCompleted
+    , tasksTotal
+    )
+
+
+prenatalRDTFormInputsAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsRDTForm -> ( List (Html Msg), Int, Int )
+prenatalRDTFormInputsAndTasks language currentDate task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial language currentDate task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.testPerformed == Just True then
+                let
+                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
+                        contentAndTasksForPerformedLaboratoryTest language currentDate task form
+
+                    setTestResultMsg =
+                        case task of
+                            TaskHIVTest ->
+                                Just SetHIVTestResult
+
+                            TaskMalariaTest ->
+                                Just SetMalariaTestResult
+
+                            _ ->
+                                Nothing
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            ( [], 0, 0 )
+
+                        else
+                            Maybe.map
+                                (\setResultMsg ->
+                                    let
+                                        emptyOption =
+                                            if isNothing form.testResult then
+                                                emptySelectOption True
+
+                                            else
+                                                emptyNode
+                                    in
+                                    ( [ viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
+                                      , emptyOption
+                                            :: List.map
+                                                (\result ->
+                                                    option
+                                                        [ value (prenatalTestResultToString result)
+                                                        , selected (form.testResult == Just result)
+                                                        ]
+                                                        [ text <| translate language <| Translate.PrenatalTestResult result ]
+                                                )
+                                                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                                            |> select
+                                                [ onInput setResultMsg
+                                                , class "form-input select"
+                                                ]
+                                      ]
+                                    , taskCompleted form.testResult
+                                    , 1
+                                    )
+                                )
+                                setTestResultMsg
+                                |> Maybe.withDefault ( [], 0, 0 )
+                in
+                ( performedTestSection ++ testResultSection
+                , performedTestTasksCompleted + testResultTasksCompleted
+                , performedTestTasksTotal + testResultTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( initialSection ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+viewPrenatalUrineDipstickForm : Language -> NominalDate -> PrenatalUrineDipstickForm -> ( Html Msg, Int, Int )
+viewPrenatalUrineDipstickForm language currentDate form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial language currentDate TaskUrineDipstickTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.testPerformed == Just True then
+                let
+                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
+                        contentAndTasksForPerformedLaboratoryTest language currentDate TaskUrineDipstickTest form
+
+                    ( testVariantSection, testVariantTasksCompleted, testVariantTasksTotal ) =
+                        ( [ viewQuestionLabel language Translate.TestVariantUrineDipstickQuestion
+                          , viewCheckBoxSelectInput language
+                                [ VariantShortTest ]
+                                [ VariantLongTest ]
+                                form.testVariant
+                                SetUrineDipstickTestVariant
+                                Translate.PrenatalUrineDipstickTestVariant
+                          ]
+                        , taskCompleted form.testVariant
+                        , 1
+                        )
+
+                    testResultSection =
+                        if isNothing form.executionDate then
+                            []
+
+                        else
+                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                in
+                ( testVariantSection ++ performedTestSection ++ testResultSection
+                , performedTestTasksCompleted + testVariantTasksCompleted
+                , performedTestTasksTotal + testVariantTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
+        ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+viewPrenatalNonRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
+viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.knownAsPositive /= Just False then
+                ( [], 0, 0 )
+
+            else
+                prenatalNonRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory non-rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+viewPrenatalNonRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
+viewPrenatalNonRDTForm language currentDate task form =
+    let
+        ( inputs, tasksCompleted, tasksTotal ) =
+            prenatalNonRDTFormInputsAndTasks language currentDate task form
+    in
+    ( div [ class "ui form laboratory non-rdt" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        ]
+            ++ inputs
+    , tasksCompleted
+    , tasksTotal
+    )
+
+
+prenatalNonRDTFormInputsAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( List (Html Msg), Int, Int )
+prenatalNonRDTFormInputsAndTasks language currentDate task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial language currentDate task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.testPerformed == Just True then
+                let
+                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
+                        contentAndTasksForPerformedLaboratoryTest language currentDate task form
+
+                    testResultSection =
+                        if isNothing form.executionDate then
+                            []
+
+                        else
+                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                in
+                ( performedTestSection ++ testResultSection
+                , performedTestTasksCompleted
+                , performedTestTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( initialSection ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+contentAndTasksLaboratoryTestKnownAsPositive :
+    Language
+    -> NominalDate
+    -> LaboratoryTask
+    -> { f | knownAsPositive : Maybe Bool }
+    -> ( List (Html Msg), Int, Int )
+contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
+    let
+        updateFunc =
+            \knownAsPositive form_ ->
+                let
+                    executionNote =
+                        if knownAsPositive then
+                            Just TestNoteKnownAsPositive
+
+                        else
+                            Nothing
+                in
+                { form_
+                    | knownAsPositive = Just knownAsPositive
+                    , testPerformed = Nothing
+                    , testPerformedDirty = True
+                    , testPerformedToday = Nothing
+                    , testPerformedTodayDirty = True
+                    , executionNote = executionNote
+                    , executionNoteDirty = True
+                    , executionDate = Nothing
+                    , executionDateDirty = True
+                }
+
+        setMsg =
+            case task of
+                TaskHIVTest ->
+                    SetHIVTestFormBoolInput updateFunc
+
+                TaskSyphilisTest ->
+                    SetSyphilisTestFormBoolInput updateFunc
+
+                TaskHepatitisBTest ->
+                    SetHepatitisBTestFormBoolInput updateFunc
+
+                TaskMalariaTest ->
+                    SetMalariaTestFormBoolInput updateFunc
+
+                TaskBloodGpRsTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskUrineDipstickTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskHemoglobinTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskRandomBloodSugarTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+    in
+    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
+      , viewBoolInput
+            language
+            form.knownAsPositive
+            setMsg
+            "known-as-positive"
+            Nothing
+      ]
+    , taskCompleted form.knownAsPositive
+    , 1
+    )
+
+
+contentAndTasksLaboratoryTestInitial :
+    Language
+    -> NominalDate
+    -> LaboratoryTask
+    ->
+        { f
+            | testPerformed : Maybe Bool
+            , executionNote : Maybe PrenatalTestExecutionNote
+        }
+    -> ( List (Html Msg), Int, Int )
+contentAndTasksLaboratoryTestInitial language currentDate task form =
+    let
+        boolInputUpdateFunc =
+            \value form_ ->
+                { form_
+                    | testPerformed = Just value
+                    , testPerformedDirty = True
+                    , testPerformedToday = Nothing
+                    , testPerformedTodayDirty = True
+                    , executionNote = Nothing
+                    , executionNoteDirty = True
+                    , executionDate = Nothing
+                    , executionDateDirty = True
+                }
+
+        msgs =
+            case task of
+                TaskHIVTest ->
+                    { setBoolInputMsg = SetHIVTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetHIVTestExecutionNote
+                    }
+
+                TaskSyphilisTest ->
+                    { setBoolInputMsg = SetSyphilisTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetSyphilisTestExecutionNote
+                    }
+
+                TaskHepatitisBTest ->
+                    { setBoolInputMsg = SetHepatitisBTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetHepatitisBTestExecutionNote
+                    }
+
+                TaskMalariaTest ->
+                    { setBoolInputMsg = SetMalariaTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetMalariaTestExecutionNote
+                    }
+
+                TaskBloodGpRsTest ->
+                    { setBoolInputMsg = SetBloodGpRsTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetBloodGpRsTestExecutionNote
+                    }
+
+                TaskUrineDipstickTest ->
+                    { setBoolInputMsg = SetUrineDipstickTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetUrineDipstickTestExecutionNote
+                    }
+
+                TaskHemoglobinTest ->
+                    { setBoolInputMsg = SetHemoglobinTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetHemoglobinTestExecutionNote
+                    }
+
+                TaskRandomBloodSugarTest ->
+                    { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    }
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            Maybe.map
+                (\testPerformed ->
+                    if testPerformed then
+                        ( [], 0, 0 )
+
+                    else
+                        ( [ div [ class "why-not" ]
+                                [ viewQuestionLabel language Translate.WhyNot
+                                , viewCheckBoxSelectInput language
+                                    [ TestNoteLackOfReagents
+                                    , TestNoteLackOfOtherSupplies
+                                    , TestNoteBrokenEquipment
+                                    ]
+                                    [ TestNoteNoEquipment
+                                    , TestNoteNotIndicated
+                                    ]
+                                    form.executionNote
+                                    msgs.setExecutionNoteMsg
+                                    Translate.PrenatalTestExecutionNote
+                                ]
+                          ]
+                        , taskCompleted form.executionNote
+                        , 1
+                        )
+                )
+                form.testPerformed
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( [ viewQuestionLabel language Translate.TestPerformedQuestion
+      , viewBoolInput
+            language
+            form.testPerformed
+            msgs.setBoolInputMsg
+            "test-performed"
+            Nothing
+      ]
+        ++ derivedSection
+    , taskCompleted form.testPerformed + derivedTasksCompleted
+    , 1 + derivedTasksTotal
+    )
+
+
+contentAndTasksForPerformedLaboratoryTest :
+    Language
+    -> NominalDate
+    -> LaboratoryTask
+    ->
+        { f
+            | testPerformed : Maybe Bool
+            , testPerformedToday : Maybe Bool
+            , executionNote : Maybe PrenatalTestExecutionNote
+            , executionDate : Maybe NominalDate
+            , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+        }
+    -> ( List (Html Msg), Int, Int )
+contentAndTasksForPerformedLaboratoryTest language currentDate task form =
+    if form.testPerformed /= Just True then
+        ( [], 0, 0 )
+
+    else
+        let
+            boolInputUpdateFunc =
+                \value form_ ->
+                    let
+                        ( executionNote, executionDate ) =
+                            if value == True then
+                                ( Just TestNoteRunToday, Just currentDate )
+
+                            else
+                                ( Just TestNoteRunPreviously, Nothing )
+                    in
+                    { form_
+                        | testPerformedToday = Just value
+                        , testPerformedTodayDirty = True
+                        , executionNote = executionNote
+                        , executionNoteDirty = True
+                        , executionDate = executionDate
+                        , executionDateDirty = True
+                    }
+
+            msgs =
+                case task of
+                    TaskHIVTest ->
+                        { setBoolInputMsg = SetHIVTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetHIVTestExecutionDate
+                        , setDateSelectorStateMsg = SetHIVTestDateSelectorState
+                        }
+
+                    TaskSyphilisTest ->
+                        { setBoolInputMsg = SetSyphilisTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetSyphilisTestExecutionDate
+                        , setDateSelectorStateMsg = SetSyphilisTestDateSelectorState
+                        }
+
+                    TaskHepatitisBTest ->
+                        { setBoolInputMsg = SetHepatitisBTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetHepatitisBTestExecutionDate
+                        , setDateSelectorStateMsg = SetHepatitisBTestDateSelectorState
+                        }
+
+                    TaskMalariaTest ->
+                        { setBoolInputMsg = SetMalariaTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetMalariaTestExecutionDate
+                        , setDateSelectorStateMsg = SetMalariaTestDateSelectorState
+                        }
+
+                    TaskBloodGpRsTest ->
+                        { setBoolInputMsg = SetBloodGpRsTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetBloodGpRsTestExecutionDate
+                        , setDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
+                        }
+
+                    TaskUrineDipstickTest ->
+                        { setBoolInputMsg = SetUrineDipstickTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetUrineDipstickTestExecutionDate
+                        , setDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
+                        }
+
+                    TaskHemoglobinTest ->
+                        { setBoolInputMsg = SetHemoglobinTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetHemoglobinTestExecutionDate
+                        , setDateSelectorStateMsg = SetHemoglobinTestDateSelectorState
+                        }
+
+                    TaskRandomBloodSugarTest ->
+                        { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
+                        , setDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                        }
+
+            ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+                Maybe.map
+                    (\testPerformedToday ->
+                        let
+                            ( executionDateContent, executionDateTasksCompleted, executionDateTasksTotal ) =
+                                if testPerformedToday then
+                                    ( [ p [ class "test-date" ] [ text <| formatDDMMYYYY currentDate ] ], 0, 0 )
+
+                                else
+                                    let
+                                        executionDateForView =
+                                            Maybe.map formatDDMMYYYY form.executionDate
+                                                |> Maybe.withDefault ""
+
+                                        dateSelectorConfig =
+                                            let
+                                                dateTo =
+                                                    Date.add Days -1 currentDate
+                                            in
+                                            { select = msgs.setExecutionDateMsg
+                                            , close = msgs.setDateSelectorStateMsg Nothing
+                                            , dateFrom = Date.add Days -30 currentDate
+                                            , dateTo = dateTo
+                                            , dateDefault = Just dateTo
+                                            }
+                                    in
+                                    ( [ div
+                                            [ class "form-input date"
+                                            , onClick <| msgs.setDateSelectorStateMsg (Just dateSelectorConfig)
+                                            ]
+                                            [ text executionDateForView
+                                            ]
+                                      , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
+                                      ]
+                                    , taskCompleted form.executionDate
+                                    , 1
+                                    )
+                        in
+                        ( (viewLabel language <| Translate.PrenatalLaboratoryTaskDate task)
+                            :: executionDateContent
+                        , executionDateTasksCompleted
+                        , executionDateTasksTotal
+                        )
+                    )
+                    form.testPerformedToday
+                    |> Maybe.withDefault ( [], 0, 0 )
+        in
+        ( [ viewQuestionLabel language Translate.TestPerformedTodayQuestion
+          , viewBoolInput
+                language
+                form.testPerformedToday
+                msgs.setBoolInputMsg
+                "test-performed-today"
+                Nothing
+          ]
+            ++ derivedSection
+        , taskCompleted form.testPerformedToday + derivedTasksCompleted
+        , 1 + derivedTasksTotal
+        )
 
 
 

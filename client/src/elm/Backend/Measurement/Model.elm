@@ -222,6 +222,7 @@ type alias FollowUp =
 type alias FollowUpValue =
     { options : EverySet FollowUpOption
     , assesment : EverySet NutritionAssessment
+    , resolutionDate : Maybe NominalDate
     }
 
 
@@ -689,17 +690,17 @@ type alias PrenatalNutrition =
     PrenatalMeasurement PrenatalNutritionValue
 
 
-type ResourceSign
+type MalariaPreventionSign
     = MosquitoNet
-    | NoResource
+    | NoMalariaPreventionSigns
 
 
 type alias PrenatalPhoto =
     PrenatalMeasurement PhotoUrl
 
 
-type alias Resource =
-    PrenatalMeasurement (EverySet ResourceSign)
+type alias MalariaPrevention =
+    PrenatalMeasurement (EverySet MalariaPreventionSign)
 
 
 type SocialHistorySign
@@ -791,6 +792,7 @@ type alias PrenatalFollowUp =
 type alias PrenatalFollowUpValue =
     { options : EverySet FollowUpOption
     , assesment : PrenatalAssesment
+    , resolutionDate : Maybe NominalDate
     }
 
 
@@ -810,6 +812,236 @@ type alias PrenatalAppointmentConfirmationValue =
 
 type alias PrenatalAppointmentConfirmation =
     PrenatalMeasurement PrenatalAppointmentConfirmationValue
+
+
+type alias PrenatalMalariaTest =
+    PrenatalMeasurement PrenatalRapidTestValue
+
+
+type PrenatalTestExecutionNote
+    = TestNoteRunToday
+    | TestNoteRunPreviously
+    | TestNoteLackOfReagents
+    | TestNoteLackOfOtherSupplies
+    | TestNoteNoEquipment
+    | TestNoteBrokenEquipment
+    | TestNoteNotIndicated
+    | TestNoteKnownAsPositive
+
+
+type PrenatalTestResult
+    = PrenatalTestPositive
+    | PrenatalTestNegative
+    | PrenatalTestIndeterminate
+
+
+type alias PrenatalHIVTest =
+    PrenatalMeasurement PrenatalRapidTestValue
+
+
+type alias PrenatalRapidTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
+type alias PrenatalHepatitisBTest =
+    PrenatalMeasurement PrenatalHepatitisBTestValue
+
+
+type alias PrenatalHepatitisBTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
+type alias PrenatalSyphilisTest =
+    PrenatalMeasurement PrenatalSyphilisTestValue
+
+
+type alias PrenatalSyphilisTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
+
+
+type alias PrenatalHemoglobinTest =
+    PrenatalMeasurement PrenatalHemoglobinTestValue
+
+
+type alias PrenatalHemoglobinTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hemoglobinCount : Maybe Float
+    }
+
+
+type alias PrenatalRandomBloodSugarTest =
+    PrenatalMeasurement PrenatalRandomBloodSugarTestValue
+
+
+type alias PrenatalRandomBloodSugarTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , sugarCount : Maybe Float
+    }
+
+
+type alias PrenatalBloodGpRsTest =
+    PrenatalMeasurement PrenatalBloodGpRsTestValue
+
+
+type alias PrenatalBloodGpRsTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , bloodGroup : Maybe BloodGroup
+    , rhesus : Maybe Rhesus
+    }
+
+
+type BloodGroup
+    = BloodGroupA
+    | BloodGroupB
+    | BloodGroupAB
+    | BloodGroupO
+
+
+type Rhesus
+    = RhesusPositive
+    | RhesusNegative
+
+
+type alias PrenatalUrineDipstickTest =
+    PrenatalMeasurement PrenatalUrineDipstickTestValue
+
+
+type alias PrenatalUrineDipstickTestValue =
+    { testVariant : Maybe PrenatalTestVariant
+    , executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , protein : Maybe ProteinValue
+    , ph : Maybe PHValue
+    , glucose : Maybe GlucoseValue
+    , leukocytes : Maybe LeukocytesValue
+    , nitrite : Maybe NitriteValue
+    , urobilinogen : Maybe UrobilinogenValue
+    , haemoglobin : Maybe HaemoglobinValue
+    , specificGravity : Maybe SpecificGravityValue
+    , ketone : Maybe KetoneValue
+    , bilirubin : Maybe BilirubinValue
+    }
+
+
+type PrenatalTestVariant
+    = VariantShortTest
+    | VariantLongTest
+
+
+type ProteinValue
+    = ProteinNegative
+    | Protein30
+    | Protein100
+    | Protein300
+    | Protein2000
+
+
+type PHValue
+    = Ph50
+    | Ph60
+    | Ph65
+    | Ph70
+    | Ph75
+    | Ph80
+    | Ph85
+
+
+type GlucoseValue
+    = Glucose0
+    | GlucosePlus1
+    | GlucosePlus2
+    | GlucosePlus3
+    | GlucosePlus4
+
+
+type LeukocytesValue
+    = LeukocytesNegative
+    | LeukocytesSmall
+    | LeukocytesMedium
+    | LeukocytesLarge
+
+
+type NitriteValue
+    = NitriteNegative
+    | NitritePlus
+    | NitritePlusPlus
+
+
+type UrobilinogenValue
+    = Urobilinogen02
+    | Urobilinogen10
+    | Urobilinogen20
+    | Urobilinogen40
+    | Urobilinogen80
+
+
+type HaemoglobinValue
+    = HaemoglobinNegative
+    | HaemoglobinNonHemolyzedTrace
+    | HaemoglobinNonHemolyzedModerate
+    | HaemoglobinHemolyzedTrace
+    | HaemoglobinSmall
+    | HaemoglobinModerate
+    | HaemoglobinLarge
+
+
+type SpecificGravityValue
+    = SpecificGravity1000
+    | SpecificGravity1005
+    | SpecificGravity1010
+    | SpecificGravity1015
+    | SpecificGravity1020
+    | SpecificGravity1025
+    | SpecificGravity1030
+
+
+type KetoneValue
+    = KetoneNegative
+    | Ketone5
+    | Ketone10
+    | Ketone15
+    | Ketone40
+    | Ketone80
+    | Ketone100
+
+
+type BilirubinValue
+    = BilirubinNegative
+    | BilirubinSmall
+    | BilirubinMedium
+    | BilirubinLarge
+
+
+type alias PrenatalLabsResults =
+    PrenatalMeasurement PrenatalLabsResultsValue
+
+
+type alias PrenatalLabsResultsValue =
+    { performedTests : EverySet PrenatalLaboratoryTest
+    , completedTests : EverySet PrenatalLaboratoryTest
+    , resolutionDate : NominalDate
+    }
+
+
+type PrenatalLaboratoryTest
+    = TestBloodGpRs
+    | TestHemoglobin
+    | TestHepatitisB
+    | TestRandomBloodSugar
+    | TestSyphilis
+    | TestUrineDipstick
 
 
 
@@ -1239,7 +1471,13 @@ type HealthEducationSign
 
 
 type alias AcuteIllnessFollowUp =
-    AcuteIllnessMeasurement (EverySet FollowUpOption)
+    AcuteIllnessMeasurement AcuteIllnessFollowUpValue
+
+
+type alias AcuteIllnessFollowUpValue =
+    { options : EverySet FollowUpOption
+    , resolutionDate : Maybe NominalDate
+    }
 
 
 type alias CovidTesting =
@@ -1628,7 +1866,7 @@ type alias PrenatalMeasurements =
     , obstetricHistoryStep2 : Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )
     , familyPlanning : Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning )
     , nutrition : Maybe ( PrenatalNutritionId, PrenatalNutrition )
-    , resource : Maybe ( ResourceId, Resource )
+    , malariaPrevention : Maybe ( MalariaPreventionId, MalariaPrevention )
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
@@ -1638,6 +1876,15 @@ type alias PrenatalMeasurements =
     , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
     , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
     , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
+    , bloodGpRsTest : Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )
+    , hemoglobinTest : Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )
+    , hepatitisBTest : Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )
+    , hivTest : Maybe ( PrenatalHIVTestId, PrenatalHIVTest )
+    , malariaTest : Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )
+    , randomBloodSugarTest : Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )
+    , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
+    , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
+    , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
     }
 
 
@@ -1654,7 +1901,7 @@ emptyPrenatalMeasurements =
     , obstetricHistoryStep2 = Nothing
     , familyPlanning = Nothing
     , nutrition = Nothing
-    , resource = Nothing
+    , malariaPrevention = Nothing
     , socialHistory = Nothing
     , vitals = Nothing
     , prenatalPhoto = Nothing
@@ -1664,6 +1911,15 @@ emptyPrenatalMeasurements =
     , followUp = Nothing
     , sendToHC = Nothing
     , appointmentConfirmation = Nothing
+    , bloodGpRsTest = Nothing
+    , hemoglobinTest = Nothing
+    , hepatitisBTest = Nothing
+    , hivTest = Nothing
+    , malariaTest = Nothing
+    , randomBloodSugarTest = Nothing
+    , syphilisTest = Nothing
+    , urineDipstickTest = Nothing
+    , labsResults = Nothing
     }
 
 
@@ -1720,6 +1976,7 @@ type alias FollowUpMeasurements =
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
+    , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     }
 
 

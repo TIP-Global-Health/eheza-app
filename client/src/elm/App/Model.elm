@@ -22,6 +22,7 @@ import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessOutcome.Model
 import Pages.AcuteIllnessParticipant.Model
 import Pages.AcuteIllnessProgressReport.Model
+import Pages.ClinicalProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
@@ -39,6 +40,7 @@ import Pages.PinCode.Model
 import Pages.PregnancyOutcome.Model
 import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model
+import Pages.PrenatalLabResults.Model
 import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
@@ -247,6 +249,7 @@ type alias LoggedInModel =
     , prenatalParticipantPages : Dict PersonId Pages.PrenatalParticipant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
+    , prenatalLabResultsPages : Dict PrenatalEncounterId Pages.PrenatalLabResults.Model.Model
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
@@ -263,6 +266,7 @@ type alias LoggedInModel =
     , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChildActivity.Model.Model
     , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChildProgressReport.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
+    , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.ClinicalProgressReport.Model.Model
     }
 
 
@@ -280,6 +284,7 @@ emptyLoggedInModel villageId nurse =
     , prenatalParticipantPages = Dict.empty
     , prenatalEncounterPages = Dict.empty
     , prenatalActivityPages = Dict.empty
+    , prenatalLabResultsPages = Dict.empty
     , pregnancyOutcomePages = Dict.empty
     , sessionPages = Dict.empty
     , nutritionEncounterPages = Dict.empty
@@ -296,6 +301,7 @@ emptyLoggedInModel villageId nurse =
     , wellChildActivityPages = Dict.empty
     , wellChildProgressReportPages = Dict.empty
     , traceContactPages = Dict.empty
+    , clinicalProgressReportPages = Dict.empty
     }
 
 
@@ -361,6 +367,8 @@ type MsgLoggedIn
     | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChildProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllnessOutcome.Model.Msg
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
+    | MsgPagePrenatalLabResults PrenatalEncounterId Pages.PrenatalLabResults.Model.Msg
+    | MsgPageClinicalProgressReport PrenatalEncounterId Pages.ClinicalProgressReport.Model.Msg
 
 
 type alias Flags =

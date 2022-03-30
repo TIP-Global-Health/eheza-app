@@ -57,7 +57,8 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
     exposing
-        ( isTaskCompleted
+        ( emptySelectOption
+        , isTaskCompleted
         , taskAllCompleted
         , taskCompleted
         , tasksBarId
@@ -68,7 +69,6 @@ import Pages.Utils
         , viewCheckBoxValueInput
         , viewCustomLabel
         , viewLabel
-        , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
@@ -979,6 +979,11 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        covidTestingForm =
+            assembled.measurements.covidTesting
+                |> getMeasurementValueFunc
+                |> covidTestingFormWithDefault data.covidTestingForm
+
         viewForm =
             case activeTask of
                 Just LaboratoryMalariaTesting ->
@@ -988,10 +993,7 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
                         |> viewMalariaTestingForm language currentDate assembled.person
 
                 Just LaboratoryCovidTesting ->
-                    assembled.measurements.covidTesting
-                        |> getMeasurementValueFunc
-                        |> covidTestingFormWithDefault data.covidTestingForm
-                        |> viewCovidTestingForm language currentDate assembled.person
+                    viewCovidTestingForm language currentDate assembled.person covidTestingForm
 
                 Nothing ->
                     emptyNode
@@ -1015,7 +1017,27 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
                                     SaveMalariaTesting assembled.participant.person assembled.measurements.malariaTesting nextTask
 
                                 LaboratoryCovidTesting ->
-                                    SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask
+                                    let
+                                        nextTask_ =
+                                            case nextTask of
+                                                Nothing ->
+                                                    if covidTestingForm.testPerformed == Just False && feverRecorded assembled.measurements then
+                                                        Just LaboratoryMalariaTesting
+
+                                                    else
+                                                        Nothing
+
+                                                Just LaboratoryMalariaTesting ->
+                                                    if covidTestingForm.testPerformed == Just True then
+                                                        Nothing
+
+                                                    else
+                                                        Just LaboratoryMalariaTesting
+
+                                                _ ->
+                                                    Nothing
+                                    in
+                                    SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask_
                     in
                     div [ class "actions malaria-testing" ]
                         [ button
@@ -1047,11 +1069,7 @@ viewMalariaTestingForm language currentDate person form =
     let
         emptyOption =
             if isNothing form.rapidTestResult then
-                option
-                    [ value ""
-                    , selected (form.rapidTestResult == Nothing)
-                    ]
-                    [ text "" ]
+                emptySelectOption True
 
             else
                 emptyNode
@@ -3250,6 +3268,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         , close = SetContactsTracingDateSelectorState Nothing
                         , dateFrom = Date.add Days (-1 * covidIsolationPeriod) currentDate
                         , dateTo = currentDate
+                        , dateDefault = Nothing
                         }
 
                     phoneNumberInput =

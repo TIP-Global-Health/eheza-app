@@ -234,6 +234,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
             , close = SetExpectedDateConcludedSelectorState Nothing
             , dateFrom = Date.add Months -3 currentDate
             , dateTo = Date.add Months 4 currentDate
+            , dateDefault = Nothing
             }
 
         viewDatesDiff =
@@ -1455,6 +1456,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                     , close = SetVaccinationUpdateDateSelectorState vaccineType Nothing
                                     , dateFrom = dateFrom
                                     , dateTo = Date.add Days -1 currentDate
+                                    , dateDefault = Just dateFrom
                                     }
                             in
                             ( [ viewLabel language Translate.SelectDate
