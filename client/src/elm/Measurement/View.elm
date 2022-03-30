@@ -1425,8 +1425,8 @@ viewVitalsForm language currentDate config form =
                 (Maybe.map toFloat form.heartRate)
                 (config.setIntInputMsg heartRateUpdateFunc)
                 "heart-rate"
-                Translate.BpmUnitLabel
-            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BpmUnitLabel
+                Translate.BeatsPerMinuteUnitLabel
+            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
             , separator
             ]
 
@@ -1472,8 +1472,8 @@ viewVitalsForm language currentDate config form =
                 (Maybe.map toFloat form.respiratoryRate)
                 (config.setIntInputMsg respiratoryRateUpdateFunc)
                 "respiratory-rate"
-                Translate.BpmUnitLabel
-            , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BpmUnitLabel
+                Translate.BreathsPerMinuteUnitLabel
+            , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
             , separator
             ]
 

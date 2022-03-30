@@ -360,6 +360,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -372,7 +373,7 @@ type TranslationId
     | BoughtClothesQuestion
     | BowedLegs
     | BpmUnit Int
-    | BpmUnitLabel
+    | BreathsPerMinuteUnitLabel
     | BreastExam
     | BreastExamSign BreastExamSign
     | BreastExamQuestion
@@ -2285,6 +2286,11 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        BeatsPerMinuteUnitLabel ->
+            { english = "bpm"
+            , kinyarwanda = Just "Inshuro umutima utera ku munota"
+            }
+
         BeginNewEncounter ->
             { english = "Begin a New Encounter"
             , kinyarwanda = Just "Tangira igikorwa gishya"
@@ -2345,7 +2351,7 @@ translationSet trans =
             , kinyarwanda = Just <| "Inshuro ahumeka ku munota " ++ String.fromInt respiratoryRate
             }
 
-        BpmUnitLabel ->
+        BreathsPerMinuteUnitLabel ->
             { english = "bpm"
             , kinyarwanda = Just "Inshuro ahumeka ku munota"
             }
@@ -2447,7 +2453,7 @@ translationSet trans =
 
         CaseManagement ->
             { english = "Case Management"
-            , kinyarwanda = Just "Kuvura Uburwayi"
+            , kinyarwanda = Just "Gukurikirana Umurwayi"
             }
 
         CaseManagementFilterLabel filter ->
@@ -2920,7 +2926,7 @@ translationSet trans =
 
         DeliveryComplicationsPresentQuestion ->
             { english = "Were there any complications with the delivery"
-            , kinyarwanda = Just "Ni iyihe taliki yari iteganyijwe ko umubyeyi azabyariraho"
+            , kinyarwanda = Just "Haba hari ibibazo umubyeyi yagize abyara"
             }
 
         DeliveryComplicationsSelectionLabel ->
@@ -4843,17 +4849,17 @@ translationSet trans =
 
         LabelOnePregnancyEpisodeOpen ->
             { english = "There is one pregnancy episode that is open"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hari isuzuma rigifunguye ku mugore utwite"
             }
 
         LabelSeenHealthcareProviderForPregnancy ->
             { english = "Have you seen a healthcare provider for current pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba warigeze usuzumwa n'umuganga kuri iyinda utwite"
             }
 
         LabelDocumentPregnancyOutcome ->
             { english = "No - document pregnancy outcome"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntabwo iherezo ry'inda ryanditswe"
             }
 
         LaboratoryTask task ->
@@ -6815,7 +6821,7 @@ translationSet trans =
 
         PostpartumEncounter ->
             { english = "Postpartum Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa cya nyuma yo kubyara"
             }
 
         PostpartumChildDangerSign sign ->
@@ -8994,7 +9000,7 @@ translationSet trans =
 
         SubsequentEncounter ->
             { english = "Subsequent Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa gikurikiyeho"
             }
 
         SubsequentAntenatalVisit ->
@@ -10385,7 +10391,7 @@ translateActivePage page =
 
                 GlobalCaseManagementPage ->
                     { english = "Case Management"
-                    , kinyarwanda = Just "Kuvura Uburwayi"
+                    , kinyarwanda = Just "Gukurikirana Umurwayi"
                     }
 
                 DemographicsReportPage _ ->
@@ -10864,7 +10870,7 @@ translateDashboard trans =
 
         CaseManagementLabel ->
             { english = "Case Management"
-            , kinyarwanda = Just "Kuvura Uburwayi"
+            , kinyarwanda = Just "Gukurikirana Umurwayi"
             }
 
         ChildrenWhoDied ->
@@ -11633,7 +11639,7 @@ translateFormError error =
     case error of
         Empty ->
             { english = "should not be empty"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "igomba kuzuzwa"
             }
 
         InvalidString ->
