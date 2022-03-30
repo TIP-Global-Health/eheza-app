@@ -360,6 +360,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -593,7 +594,6 @@ type TranslationId
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
-    | BeatsPerMinuteUnitLabel
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
@@ -2220,6 +2220,11 @@ translationSet trans =
         BackendError ->
             { english = "Error contacting backend"
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
+            }
+
+        BeatsPerMinuteUnitLabel ->
+            { english = "bpm"
+            , kinyarwanda = Just "Inshuro umutima utera ku munota"
             }
 
         BeginNewEncounter ->
@@ -4245,11 +4250,6 @@ translationSet trans =
         Heart ->
             { english = "Heart"
             , kinyarwanda = Just "Umutima"
-            }
-
-        BeatsPerMinuteUnitLabel ->
-            { english = "bpm"
-            , kinyarwanda = Just "Inshuro umutima utera ku munota"
             }
 
         HeartMurmur ->
