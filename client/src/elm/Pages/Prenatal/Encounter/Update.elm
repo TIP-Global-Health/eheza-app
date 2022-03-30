@@ -47,5 +47,8 @@ update id msg model =
         SetChwWarningVisible value ->
             ( { model | showWarningForChw = value }, Cmd.none, [] )
 
+        SetEndEncounterDialogState value ->
+            ( { model | showEndEncounterDialog = value }, Cmd.none, [] )
+
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )

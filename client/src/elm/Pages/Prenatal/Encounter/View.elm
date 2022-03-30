@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.View exposing (generateActivityData, view, viewMotherAndMeasurements)
+module Pages.Prenatal.Encounter.View exposing (allowEndingEcounter, generateActivityData, view, viewMotherAndMeasurements)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
@@ -34,7 +34,7 @@ import Pages.Prenatal.Activity.Utils exposing (activityCompleted, emergencyRefer
 import Pages.Prenatal.Encounter.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Utils exposing (viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -59,12 +59,25 @@ viewHeaderAndContent language currentDate id isChw model assembled =
 
         content =
             viewContent language currentDate isChw assembled model
+
+        endEncounterDialog =
+            if model.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        CloseEncounter
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-encounter prenatal" ]
         [ header
         , content
         , viewModal <|
             viewChwWarningPopup language assembled model
+        , viewModal endEncounterDialog
         ]
 
 
@@ -404,39 +417,12 @@ viewMainPageContent language currentDate assembled model =
                     ]
 
         allowEndEcounter =
-            if emergencyReferalRequired assembled then
-                List.member NextSteps completedActivities
-
-            else
-                case pendingActivities of
-                    -- Either all activities are completed
-                    [] ->
-                        True
-
-                    -- Or only one none mandatory activity remains
-                    [ PrenatalPhoto ] ->
-                        True
-
-                    _ ->
-                        False
-
-        endEcounterButtonAttributes =
-            if allowEndEcounter then
-                [ class "ui fluid primary button"
-                , onClick CloseEncounter
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
+            allowEndingEcounter assembled pendingActivities completedActivities
 
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
+                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
                 ]
     in
     [ tabs
@@ -469,3 +455,22 @@ generateActivityData activity assembled =
 
         _ ->
             default
+
+
+allowEndingEcounter : AssembledData -> List PrenatalActivity -> List PrenatalActivity -> Bool
+allowEndingEcounter assembled pendingActivities completedActivities =
+    if emergencyReferalRequired assembled then
+        List.member NextSteps completedActivities
+
+    else
+        case pendingActivities of
+            -- Either all activities are completed
+            [] ->
+                True
+
+            -- Or only one none mandatory activity remains
+            [ PrenatalPhoto ] ->
+                True
+
+            _ ->
+                False

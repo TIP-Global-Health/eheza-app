@@ -2,18 +2,21 @@ module Pages.Prenatal.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { labResultsMode : Maybe LabResultsMode
+    , showEndEncounterDialog : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
     { labResultsMode = Nothing
+    , showEndEncounterDialog = False
     }
 
 
@@ -43,6 +46,54 @@ type LabResultsHistoryMode
     | LabResultsHistoryRhesus (List ( NominalDate, Maybe Rhesus ))
 
 
+obstetricalDiagnoses : List PrenatalDiagnosis
+obstetricalDiagnoses =
+    [ DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisModeratePreeclampsiaAfterRecheck
+    , DiagnosisSeverePreeclampsiaImmediate
+    , DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisEclampsia
+    , DiagnosisMiscarriage
+    , DiagnosisMolarPregnancy
+    , DiagnosisPlacentaPrevia
+    , DiagnosisPlacentalAbruption
+    , DiagnosisUterineRupture
+    , DiagnosisObstructedLabor
+    , DiagnosisPostAbortionSepsis
+    , DiagnosisEctopicPregnancy
+    , DiagnosisPROM
+    , DiagnosisPPROM
+    , DiagnosisHyperemesisGravidum
+    , DiagnosisMaternalComplications
+    , DiagnosisInfection
+    , DiagnosisImminentDelivery
+    , DiagnosisLaborAndDelivery
+    ]
+
+
+medicalDiagnoses : List PrenatalDiagnosis
+medicalDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisSyphilis
+    , DiagnosisSyphilisWithComplications
+    , DiagnosisNeurosyphilis
+    , DiagnosisModerateAnemia
+    , DiagnosisSevereAnemia
+    , DiagnosisSevereAnemiaWithComplications
+    , DiagnosisHIV
+    , DiagnosisDiscordantPartnership
+    , DiagnosisHepatitisB
+    , DiagnosisMalaria
+    , DiagnosisMalariaWithAnemia
+    , DiagnosisMalariaWithSevereAnemia
+    ]
+
+
 type Msg
-    = SetActivePage Page
+    = CloseEncounter PrenatalEncounterId
+    | SetActivePage Page
     | SetLabResultsMode (Maybe LabResultsMode)
+    | SetEndEncounterDialogState Bool

@@ -61,6 +61,7 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html, text)
 import Http
 import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
@@ -514,6 +515,7 @@ type TranslationId
     | Downloading
     | DropzoneDefaultMessage
     | DueDate
+    | DueTo
     | EarlyChildhoodDevelopment
     | ECDSignQuestion ECDSign
     | ECDStatus ECDStatus
@@ -524,6 +526,7 @@ type TranslationId
     | Ega
     | EgaHeader
     | EgaWeeks
+    | ElevatedRespiratoryRate
     | EmergencyReferralHelperReferToHC
     | EmergencyReferralHelperReferToHospital
     | EmergencyReferralHelperReferToMaternityWard
@@ -598,6 +601,7 @@ type TranslationId
     | Growth
     | HalfOfDosage String
     | HandedReferralFormQuestion
+    | HandPallor
     | Hands
     | HandsCPESign HandsCPESign
     | HCRecommendation HCRecommendation
@@ -694,6 +698,7 @@ type TranslationId
     | MalariaRapidDiagnosticTest
     | MalariaRecommendedTreatmentHeader
     | MalariaRecommendedTreatmentHelper
+    | MalariaWithGIComplications
     | RapidTestResult RapidTestResult
     | MalnutritionWithComplications
     | MaritalStatusLabel
@@ -765,6 +770,8 @@ type TranslationId
     | NoContactReason NoContactReason
     | NoGroupsFound
     | NoMatchesFound
+    | NoTreatmentAdministered
+    | NoTreatmentRecorded
     | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
@@ -871,6 +878,7 @@ type TranslationId
     | PrenatalRecurrentActivitiesTitle PrenatalRecurrentActivity
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
+    | PrenatalDiagnosisForProgressReport PrenatalDiagnosis
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
@@ -976,6 +984,8 @@ type TranslationId
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToFacilityQuestion ReferralFacility
+    | ReferredToFacility ReferralFacility
+    | ReferredToFacilityNot ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -1148,6 +1158,9 @@ type TranslationId
     | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
+    | TreatedWith
+    | TreatedWithMethyldopa
+    | TreatedWithNot
     | Treatment
     | TrySyncing
     | TuberculosisPast
@@ -1202,6 +1215,7 @@ type TranslationId
     | WhoCaresForTheChildDuringTheDay
     | WhyNot
     | WhyDifferentFbfAmount Activity
+    | WrittenProtocolsFollowed
     | Year
     | YearsOld Int
     | Yes
@@ -3449,6 +3463,11 @@ translationSet trans =
             , kinyarwanda = Just "Itariki azabyariraho"
             }
 
+        DueTo ->
+            { english = "Due to"
+            , kinyarwanda = Nothing
+            }
+
         EarlyChildhoodDevelopment ->
             { english = "Early Childhood Development"
             , kinyarwanda = Just "Gahunda ikomatanije y'imikurire"
@@ -3721,6 +3740,11 @@ translationSet trans =
         EgaWeeks ->
             { english = "EGA (Weeks)"
             , kinyarwanda = Just "EGA (Ibyumweru)"
+            }
+
+        ElevatedRespiratoryRate ->
+            { english = "Elevated respiratory rate"
+            , kinyarwanda = Nothing
             }
 
         EmergencyReferralHelperReferToHC ->
@@ -4396,6 +4420,11 @@ translationSet trans =
         HandedReferralFormQuestion ->
             { english = "Did you hand the referral form to the patient"
             , kinyarwanda = Just "Wahaye umurwayi urupapuro rumwohereza"
+            }
+
+        HandPallor ->
+            { english = "Hand Pallor"
+            , kinyarwanda = Nothing
             }
 
         Hands ->
@@ -5452,6 +5481,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MalariaWithGIComplications ->
+            { english = "Malaria with GI complications"
+            , kinyarwanda = Nothing
+            }
+
         RapidTestResult result ->
             case result of
                 RapidTestNegative ->
@@ -6103,6 +6137,16 @@ translationSet trans =
         NoMatchesFound ->
             { english = "No matches found"
             , kinyarwanda = Just "Ibyo wifuza ntibiboneste"
+            }
+
+        NoTreatmentAdministered ->
+            { english = "No treatment administered"
+            , kinyarwanda = Nothing
+            }
+
+        NoTreatmentRecorded ->
+            { english = "No treatment recorded"
+            , kinyarwanda = Nothing
             }
 
         NutritionSigns ->
@@ -7514,6 +7558,198 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabyo"
                     }
 
+        PrenatalDiagnosisForProgressReport diagnosis ->
+            case diagnosis of
+                DiagnosisPrescribeMebendezole ->
+                    { english = "Prescribe Mebendezole"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionImmediate ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisChronicHypertensionAfterRecheck ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionImmediate ->
+                    { english = "Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGestationalHypertensionAfterRecheck ->
+                    { english = "Gestational Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaImmediate ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaImmediate ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEclampsia ->
+                    { english = "Eclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiscordantPartnership ->
+                    { english = "Discordant Partnership"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSyphilisWithComplications ->
+                    { english = "Syphilis with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisNeurosyphilis ->
+                    { english = "Suspected Neurosyphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithAnemia ->
+                    { english = "Malaria with Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithSevereAnemia ->
+                    { english = "Malaria with Severe Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModerateAnemia ->
+                    { english = "Anemia (Mild to Mederate)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereAnemia ->
+                    { english = "Anemia (Severe)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereAnemiaWithComplications ->
+                    { english = "Anemia (Severe with Complications)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMiscarriage ->
+                    { english = "Possible Miscarriage"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMolarPregnancy ->
+                    { english = "Possible Molar Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentaPrevia ->
+                    { english = "Possible Placenta Previa"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPlacentalAbruption ->
+                    { english = "Possible Placental Abruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUterineRupture ->
+                    { english = "Possible Uterine Rupture"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisObstructedLabor ->
+                    { english = "Possible Obstructed Labor"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostAbortionSepsis ->
+                    { english = "Possible Post Abortion Sepsis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisEctopicPregnancy ->
+                    { english = "Possible Ectopic Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPROM ->
+                    { english = "PROM"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPPROM ->
+                    { english = "PPROM"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHyperemesisGravidum ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMaternalComplications ->
+                    { english = "Maternal Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisImminentDelivery ->
+                    { english = "Imminent Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisLaborAndDelivery ->
+                    { english = "Labor + Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalDiagnosis ->
+                    { english = "None"
+                    , kinyarwanda = Just "Ntabyo"
+                    }
+
         PrenatalDiagnosisLabResultsMessage diagnosis ->
             case diagnosis of
                 DiagnosisHIV ->
@@ -7522,7 +7758,7 @@ translationSet trans =
                     }
 
                 DiagnosisDiscordantPartnership ->
-                    { english = "Patient is part of a discordant partnership"
+                    { english = "HIV Negative with a discordant partner"
                     , kinyarwanda = Nothing
                     }
 
@@ -9005,6 +9241,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoTreatmentForMalaria ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Nothing
+                    }
+
                 TreatementPenecilin1 ->
                     { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
@@ -9030,6 +9271,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoTreatmentForSyphilis ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Nothing
+                    }
+
                 TreatmentMethyldopa2 ->
                     { english = "Methyldopa 250mg by mouth two times a day"
                     , kinyarwanda = Nothing
@@ -9042,6 +9288,11 @@ translationSet trans =
 
                 TreatmentMethyldopa4 ->
                     { english = "Methyldopa 250mg by mouth four times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTreatmentForHypertension ->
+                    { english = "No Treatment Administered"
                     , kinyarwanda = Nothing
                     }
 
@@ -9076,6 +9327,40 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Have you referred the patient to the Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReferredToFacility facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Referred to health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHospital ->
+                    { english = "Referred to hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Referred to HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReferredToFacilityNot facility ->
+            case facility of
+                FacilityHealthCenter ->
+                    { english = "Not referred to health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHospital ->
+                    { english = "Not referred to hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityHIVProgram ->
+                    { english = "Not referred to HIV/PMTCT"
                     , kinyarwanda = Nothing
                     }
 
@@ -10309,6 +10594,21 @@ translationSet trans =
             , kinyarwanda = Just "Amukuru ku ngendo"
             }
 
+        TreatedWith ->
+            { english = "Treated with"
+            , kinyarwanda = Nothing
+            }
+
+        TreatedWithNot ->
+            { english = "Not treated with"
+            , kinyarwanda = Nothing
+            }
+
+        TreatedWithMethyldopa ->
+            { english = "treated with Methyldopa"
+            , kinyarwanda = Nothing
+            }
+
         Treatment ->
             { english = "Treatment"
             , kinyarwanda = Just "Ubuvuzi"
@@ -11109,6 +11409,11 @@ translationSet trans =
                     { english = "Select why mother received a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
+
+        WrittenProtocolsFollowed ->
+            { english = "Written protocols followed"
+            , kinyarwanda = Nothing
+            }
 
         Year ->
             { english = "Year"

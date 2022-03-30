@@ -1107,16 +1107,19 @@ type RecommendedTreatmentSign
     | TreatmentCoartem
     | TreatmentWrittenProtocols
     | TreatementReferToHospital
+    | NoTreatmentForMalaria
       -- For Syphilis:
     | TreatementPenecilin1
     | TreatementPenecilin3
     | TreatementErythromycin
     | TreatementAzithromycin
     | TreatementCeftriaxon
+    | NoTreatmentForSyphilis
       -- For Hypertension:
     | TreatmentMethyldopa2
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
+    | NoTreatmentForHypertension
 
 
 

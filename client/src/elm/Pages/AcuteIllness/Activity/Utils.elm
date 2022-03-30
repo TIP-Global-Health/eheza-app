@@ -2179,6 +2179,7 @@ or, if any of prescribed medications is out of stock.
 sendToHCDueToMedicationNonAdministration : AcuteIllnessMeasurements -> Bool
 sendToHCDueToMedicationNonAdministration measurements =
     resolveMedicationsNonAdministrationReasons measurements
+        |> Dict.toList
         |> List.filter
             (\( _, reason ) ->
                 reason == NonAdministrationLackOfStock || reason == NonAdministrationKnownAllergy
@@ -2187,64 +2188,11 @@ sendToHCDueToMedicationNonAdministration measurements =
         |> not
 
 
-resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> List ( MedicationDistributionSign, AdministrationNote )
+resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> Dict MedicationDistributionSign AdministrationNote
 resolveMedicationsNonAdministrationReasons measurements =
-    let
-        nonAdministrationSigns =
-            Maybe.map
-                (Tuple.second
-                    >> .value
-                    >> .nonAdministrationSigns
-                    >> EverySet.toList
-                )
-                measurements.medicationDistribution
-    in
-    nonAdministrationSigns
-        |> Maybe.map
-            (List.filterMap
-                (\sign ->
-                    case sign of
-                        MedicationAmoxicillin reason ->
-                            Just ( Amoxicillin, reason )
-
-                        MedicationCoartem reason ->
-                            Just ( Coartem, reason )
-
-                        MedicationORS reason ->
-                            Just ( ORS, reason )
-
-                        MedicationZinc reason ->
-                            Just ( Zinc, reason )
-
-                        MedicationParacetamol reason ->
-                            Just ( Paracetamol, reason )
-
-                        MedicationMebendezole reason ->
-                            Just ( Mebendezole, reason )
-
-                        MedicationTenofovir reason ->
-                            Just ( Tenofovir, reason )
-
-                        MedicationLamivudine reason ->
-                            Just ( Lamivudine, reason )
-
-                        MedicationDolutegravir reason ->
-                            Just ( Dolutegravir, reason )
-
-                        MedicationTDF3TC reason ->
-                            Just ( TDF3TC, reason )
-
-                        MedicationIron reason ->
-                            Just ( Iron, reason )
-
-                        MedicationFolicAcid reason ->
-                            Just ( FolicAcid, reason )
-
-                        NoMedicationNonAdministrationSigns ->
-                            Nothing
-                )
-            )
-        |> Maybe.withDefault []
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.map Pages.Utils.resolveMedicationsNonAdministrationReasons
+        |> Maybe.withDefault Dict.empty
 
 
 talkedTo114 : AcuteIllnessMeasurements -> Bool

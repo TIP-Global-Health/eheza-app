@@ -245,7 +245,10 @@ generatePreviousMeasurements :
     PrenatalEncounterId
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
-    -> ( List ( NominalDate, PrenatalMeasurements ), List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements ) )
+    ->
+        ( List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
+        , List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
+        )
 generatePreviousMeasurements currentEncounterId participantId db =
     getPrenatalEncountersForParticipant db participantId
         |> List.filter
@@ -259,7 +262,15 @@ generatePreviousMeasurements currentEncounterId participantId db =
                     ( nurseEncounters, chwEncounters ) =
                         List.partition (Tuple.second >> .encounterType >> (==) NurseEncounter) previousEncounters
 
-                    getEncounterMeasurements ( encounterId, encounter ) =
+                    getEncounterDataForNurse ( encounterId, encounter ) =
+                        case Dict.get encounterId db.prenatalMeasurements of
+                            Just (Success measurements) ->
+                                Just ( encounter.startDate, encounter.diagnoses, measurements )
+
+                            _ ->
+                                Nothing
+
+                    getEncounterDataForChw ( encounterId, encounter ) =
                         case Dict.get encounterId db.prenatalMeasurements of
                             Just (Success measurements) ->
                                 Just ( encounter.startDate, encounter.encounterType, measurements )
@@ -267,9 +278,8 @@ generatePreviousMeasurements currentEncounterId participantId db =
                             _ ->
                                 Nothing
                 in
-                ( List.filterMap getEncounterMeasurements nurseEncounters
-                    |> List.map (\( date, _, measurements ) -> ( date, measurements ))
-                , List.filterMap getEncounterMeasurements chwEncounters
+                ( List.filterMap getEncounterDataForNurse nurseEncounters
+                , List.filterMap getEncounterDataForChw chwEncounters
                 )
            )
 
@@ -311,7 +321,7 @@ generateAssembledData id db =
                 |> Maybe.withDefault ( [], [] )
 
         nursePreviousMeasurements =
-            List.map Tuple.second nursePreviousMeasurementsWithDates
+            List.map (\( _, _, previousMeasurements ) -> previousMeasurements) nursePreviousMeasurementsWithDates
 
         chwPreviousMeasurements =
             List.map (\( _, _, previousMeasurements ) -> previousMeasurements) chwPreviousMeasurementsWithDates
@@ -347,8 +357,8 @@ getFirstEncounterMeasurements isChw assembled =
             else
                 assembled.measurements
 
-        first :: others ->
-            Tuple.second first
+        ( _, _, measurements ) :: others ->
+            measurements
 
 
 getLastEncounterMeasurementsWithDate : NominalDate -> Bool -> AssembledData -> ( NominalDate, PrenatalMeasurements )
@@ -361,8 +371,8 @@ getLastEncounterMeasurementsWithDate currentDate isChw assembled =
             else
                 ( currentDate, assembled.measurements )
 
-        first :: others ->
-            first
+        ( date, _, measurements ) :: others ->
+            ( date, measurements )
 
 
 getLastEncounterMeasurements : NominalDate -> Bool -> AssembledData -> PrenatalMeasurements
@@ -370,7 +380,7 @@ getLastEncounterMeasurements currentDate isChw assembled =
     getLastEncounterMeasurementsWithDate currentDate isChw assembled |> Tuple.second
 
 
-getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List ( NominalDate, PrenatalMeasurements )
+getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
 getAllNurseMeasurements currentDate isChw assembled =
     let
         currentEncounterData =
@@ -378,7 +388,7 @@ getAllNurseMeasurements currentDate isChw assembled =
                 []
 
             else
-                [ ( currentDate, assembled.measurements ) ]
+                [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
     in
     currentEncounterData
         ++ assembled.nursePreviousMeasurementsWithDates
@@ -396,7 +406,7 @@ generateRecurringHighSeverityAlertData language currentDate isChw assembled aler
     case alert of
         BloodPressure ->
             let
-                resolveAlert ( date, measurements ) =
+                resolveAlert ( date, _, measurements ) =
                     getMeasurementValueFunc measurements.vitals
                         |> Maybe.andThen
                             (\value ->
@@ -750,7 +760,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                 lowBloodPressureOccasions =
                     getAllNurseMeasurements currentDate isChw assembled
                         |> List.filterMap
-                            (\( _, measurements ) ->
+                            (\( _, _, measurements ) ->
                                 getMeasurementValueFunc measurements.vitals
                                     |> Maybe.andThen
                                         (\value ->
@@ -783,7 +793,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                     highBloodPressureOccasions =
                         getAllNurseMeasurements currentDate isChw assembled
                             |> List.filterMap
-                                (\( _, measurements ) ->
+                                (\( _, _, measurements ) ->
                                     getMeasurementValueFunc measurements.vitals
                                         |> Maybe.andThen
                                             (\value ->
@@ -856,162 +866,53 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
 generateMedicalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
 generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
     let
-        transAlert diagnosis_ =
-            translate language (Translate.MedicalDiagnosisAlert diagnosis_)
+        generateAlertForDiagnosis triggeringSigns =
+            getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.andThen
+                    (\value ->
+                        if
+                            List.any (\sign -> EverySet.member sign value)
+                                triggeringSigns
+                        then
+                            Just <| translate language (Translate.MedicalDiagnosisAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
     in
     case diagnosis of
         DiagnosisUterineMyoma ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.UterineMyoma value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.UterineMyoma ]
 
         DiagnosisDiabetes ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.Diabetes value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.Diabetes ]
 
         DiagnosisCardiacDisease ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.CardiacDisease value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.CardiacDisease ]
 
         DiagnosisRenalDisease ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.RenalDisease value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.RenalDisease ]
 
         DiagnosisHypertensionBeforePregnancy ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.HypertensionBeforePregnancy value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.HypertensionBeforePregnancy ]
 
         DiagnosisTuberculosis ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if
-                            EverySet.member Backend.Measurement.Model.TuberculosisPast value
-                                || EverySet.member Backend.Measurement.Model.TuberculosisPresent value
-                        then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis
+                [ Backend.Measurement.Model.TuberculosisPast
+                , Backend.Measurement.Model.TuberculosisPresent
+                ]
 
         DiagnosisAsthma ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.Asthma value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.Asthma ]
 
         DiagnosisBowedLegs ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.BowedLegs value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.BowedLegs ]
 
         DiagnosisKnownHIV ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.HIV value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.HIV ]
 
         DiagnosisMentalHealthHistory ->
-            measurements.medicalHistory
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value
-                        in
-                        if EverySet.member Backend.Measurement.Model.MentalHealthHistory value then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
+            generateAlertForDiagnosis [ Backend.Measurement.Model.MentalHealthHistory ]
 
 
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float

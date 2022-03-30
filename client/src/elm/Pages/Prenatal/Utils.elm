@@ -909,7 +909,7 @@ recommendTreatmentForHypertension assembled =
         numberOfTimesMethyldopaWasPerscribed =
             assembled.nursePreviousMeasurementsWithDates
                 |> List.filter
-                    (\( _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         getMeasurementValueFunc measurements.recommendedTreatment
                             |> Maybe.andThen .signs
                             |> Maybe.map
@@ -936,6 +936,7 @@ recommendedTreatmentSignsForHypertension =
     [ TreatmentMethyldopa2
     , TreatmentMethyldopa3
     , TreatmentMethyldopa4
+    , NoTreatmentForHypertension
     ]
 
 

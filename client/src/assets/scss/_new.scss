@@ -1455,7 +1455,6 @@ div.page-activity.home-visit {
           color: $color-primary;
           font-size: 22px;
           margin-top: 5px;
-          padding-left: 70px;
         }
       }
     }
@@ -2183,6 +2182,12 @@ div.page-report.clinical .ui.unstackable.items {
     .pane-content p {
       line-height: 32px;
       margin-bottom: 5px;
+    }
+
+    .pane-content ul {
+      font-size: 24px;
+      line-height: 35px;
+      padding: 0 20px;
     }
   }
 
