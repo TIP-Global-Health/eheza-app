@@ -6,8 +6,11 @@
 #
 # ---------------------------------------------------------------------------- #
 
+<<<<<<< HEAD
 source "$CIRCLE_WORKING_DIRECTORY"/server/travis.config.sh
 
+=======
+>>>>>>> origin/main
 HAS_ERRORS=0
 
 SCRIPTS=$(find client/src -name '*.elm')

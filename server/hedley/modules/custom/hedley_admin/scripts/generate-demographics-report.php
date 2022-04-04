@@ -351,8 +351,13 @@ $encounters = [
   ],
   [
     '   CHW',
+<<<<<<< HEAD
     encounter_all_count('prenatal', 'all', $limit_date) - encounter_all_count('prenatal', 'hc', $limit_date),
     encounter_unique_count('prenatal', 'all', $limit_date) - encounter_unique_count('prenatal', 'hc', $limit_date),
+=======
+    encounter_all_count('prenatal', 'all', $limit_date) - encounter_all_count('prenatal', 'chw', $limit_date),
+    encounter_unique_count('prenatal', 'all', $limit_date) - encounter_unique_count('prenatal', 'chw', $limit_date),
+>>>>>>> origin/main
   ],
   [
     'Acute Illness',

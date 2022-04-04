@@ -41,14 +41,23 @@ getVillageHealthCenterId villageId db =
 
 personLivesInVillage : Person -> ModelIndexedDb -> VillageId -> Bool
 personLivesInVillage person db villageId =
+    let
+        valuesMatch villageValue personValue =
+            case personValue of
+                Just value ->
+                    String.toLower value == String.toLower villageValue
+
+                Nothing ->
+                    False
+    in
     getVillageById db villageId
         |> Maybe.map
             (\village ->
-                (Just village.province == person.province)
-                    && (Just village.district == person.district)
-                    && (Just village.sector == person.sector)
-                    && (Just village.cell == person.cell)
-                    && (Just village.village == person.village)
+                valuesMatch village.province person.province
+                    && valuesMatch village.district person.district
+                    && valuesMatch village.sector person.sector
+                    && valuesMatch village.cell person.cell
+                    && valuesMatch village.village person.village
             )
         |> Maybe.withDefault False
 
@@ -60,11 +69,11 @@ getVillageIdByGeoFields db province district sector cell village_ =
             (Dict.toList
                 >> List.filter
                     (\( _, village ) ->
-                        (village.province == province)
-                            && (village.district == district)
-                            && (village.sector == sector)
-                            && (village.cell == cell)
-                            && (village.village == village_)
+                        (String.toLower village.province == String.toLower province)
+                            && (String.toLower village.district == String.toLower district)
+                            && (String.toLower village.sector == String.toLower sector)
+                            && (String.toLower village.cell == String.toLower cell)
+                            && (String.toLower village.village == String.toLower village_)
                     )
                 >> List.head
                 >> Maybe.map Tuple.first
