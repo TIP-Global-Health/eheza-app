@@ -2,504 +2,404 @@
 
 /**
  * @file
- * Generate 'Demographics' report.
- *
- * Data for each individual encounter type:
- *   - Number of completed encounters.
- *   - Number of unique patients.
- *
- * Data for each group encounter type:
- *   - Number of completed encounters.
- *
- * Patients data:
- *
- * - Registered patients by age and gender.
- * - Impacted patients by age and gender.
- *
- * Note: Patient is considered impacted if attended at least 2 encounters.
+ * Generates 'Demographics' report.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php.
  */
 
-if (!drupal_is_cli()) {
-  // Prevent execution from browser.
-  return;
-}
+require_once __DIR__ . '/report_common.inc';
 
-// Get the last node id.
-$nid = drush_get_option('nid', 0);
-
-// Get the number of nodes to be processed.
-$batch = drush_get_option('batch', 50);
-
-// Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
-
-generate_individual_encounter_report('prenatal', $batch, $memory_limit);
-generate_individual_encounter_report('nutrition', $batch, $memory_limit);
-generate_individual_encounter_report('acute_illness', $batch, $memory_limit);
-
-$base_query = base_query_for_bundle('person');
-$count_query = clone $base_query;
-$count_query->propertyCondition('nid', $nid, '>');
-$total = $count_query->count()->execute();
-
-if ($total == 0) {
-  wlog("There are no patients in DB.");
+$limit_date = drush_get_option('limit_date', FALSE);
+if (!$limit_date) {
+  drush_print('Please specify --limit_date option');
   exit;
 }
 
-wlog("$total patients located.");
-
-$all_patients = $impacted_patients = [
-  'lt1m' => [
-    'male' => 0,
-    'female' => 0,
-  ],
-  'lt2y' => [
-    'male' => 0,
-    'female' => 0,
-  ],
-  'lt5y' => [
-    'male' => 0,
-    'female' => 0,
-  ],
-  'lt10y' => [
-    'male' => 0,
-    'female' => 0,
-  ],
-  'lt20y' => [
-    'male' => 0,
-    'female' => 0,
-  ],
-  'lt50y' => [
-    'male' => 0,
-    'female' => 0,
-  ],
-  'mt50y' => [
-    'male' => 0,
-    'female' => 0,
-  ],
-];
-$skipped = $skipped_with_measurements = [
-  'age' => [],
-  'gender' => [],
-];
-$total_encounters = [
-  'all' => 0,
-  'pmtct' => 0,
-  'fbf' => 0,
-  'sorwathe' => 0,
-  'chw' => 0,
-  'achi' => 0,
-];
-$processed = 0;
-
-while ($processed < $total) {
-  // Free up memory.
-  drupal_static_reset();
-
-  $query = clone $base_query;
-  if ($nid) {
-    $query->propertyCondition('nid', $nid, '>');
-  }
-
-  $result = $query
-    ->range(0, $batch)
-    ->execute();
-
-  if (empty($result['node'])) {
-    // No more items left.
-    break;
-  }
-
-  $ids = array_keys($result['node']);
-  foreach ($ids as $id) {
-    list($age, $gender, $deleted) = classify_by_age_and_gender($id);
-    $measurements_ids = hedley_general_get_person_measurements($id);
-
-    if ($deleted) {
-      // Skip deleted patient.
-      continue;
-    }
-
-    if (!$age) {
-      if (count($measurements_ids) > 0) {
-        $skipped_with_measurements['age'][] = $id;
-      }
-      else {
-        $skipped['age'][] = $id;
-      }
-      // Person classification failed. Skipping.
-      continue;
-    }
-
-    if (!$gender) {
-      if (count($measurements_ids) > 0) {
-        $skipped_with_measurements['gender'][] = $id;
-      }
-      else {
-        $skipped['gender'][] = $id;
-      }
-      // Person classification failed. Skipping.
-      continue;
-    }
-
-    $all_patients[$age][$gender]++;
-
-    // If patient got no measurements, move on to next patient.
-    if (empty($measurements_ids)) {
-      continue;
-    }
-
-    $measurements = node_load_multiple($measurements_ids);
-    list($pmtct, $fbf, $sorwathe, $chw, $achi, $nutrition, $prenatal, $acute_illness) = get_encounters_count($measurements);
-    $person_total_encounters = $pmtct + $fbf + $sorwathe + $chw + $nutrition + $prenatal + $acute_illness;
-
-    if ($person_total_encounters > 1) {
-      $impacted_patients[$age][$gender]++;
-    }
-
-    $total_encounters['all'] += $person_total_encounters;
-    $total_encounters['pmtct'] += $pmtct;
-    $total_encounters['fbf'] += $fbf;
-    $total_encounters['sorwathe'] += $sorwathe;
-    $total_encounters['chw'] += $chw;
-    $total_encounters['achi'] += $achi;
-  }
-
-  $nid = end($ids);
-
-  if (round(memory_get_usage() / 1048576) >= $memory_limit) {
-    drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
-    return;
-  }
-
-  $count = count($ids);
-  $processed += $count;
-  wlog("$processed persons processed.");
-}
-
-wlog('Done!');
-
-drush_print('');
-drush_print('Groups report:');
-drush_print('PMTCT encounters:    ' . $total_encounters['pmtct']);
-drush_print('FBF encounters:      ' . $total_encounters['fbf']);
-drush_print('SORWATHE encounters: ' . $total_encounters['sorwathe']);
-drush_print('CHW encounters:      ' . $total_encounters['chw']);
-drush_print('ACHI encounters:     ' . $total_encounters['achi']);
-drush_print('');
-drush_print('Total encounters:    ' . $total_encounters['all']);
-drush_print('');
-
-drush_print('Registered patients report:');
-$male = $all_patients['lt1m']['male'];
-$female = $all_patients['lt1m']['female'];
-drush_print("* 0 - 1 month: Male - $male, Female - $female");
-$male = $all_patients['lt2y']['male'];
-$female = $all_patients['lt2y']['female'];
-drush_print("* 1 month - 2 years: Male - $male, Female - $female");
-$male = $all_patients['lt5y']['male'];
-$female = $all_patients['lt5y']['female'];
-drush_print("* 2 years - 5 years: Male - $male, Female - $female");
-$male = $all_patients['lt10y']['male'];
-$female = $all_patients['lt10y']['female'];
-drush_print("* 5 years - 10 years: Male - $male, Female - $female");
-$male = $all_patients['lt20y']['male'];
-$female = $all_patients['lt20y']['female'];
-drush_print("* 10 years - 20 years: Male - $male, Female - $female");
-$male = $all_patients['lt50y']['male'];
-$female = $all_patients['lt50y']['female'];
-drush_print("* 20 years - 50 years: Male - $male, Female - $female");
-$male = $all_patients['mt50y']['male'];
-$female = $all_patients['mt50y']['female'];
-drush_print("* Older than 50 years: Male - $male, Female - $female");
-
-drush_print('');
-
-drush_print('Impacted patients report:');
-$male = $impacted_patients['lt1m']['male'];
-$female = $impacted_patients['lt1m']['female'];
-drush_print("* 0 - 1 month: Male - $male, Female - $female");
-$male = $impacted_patients['lt2y']['male'];
-$female = $impacted_patients['lt2y']['female'];
-drush_print("* 1 month - 2 years: Male - $male, Female - $female");
-$male = $impacted_patients['lt5y']['male'];
-$female = $impacted_patients['lt5y']['female'];
-drush_print("* 2 years - 5 years: Male - $male, Female - $female");
-$male = $impacted_patients['lt10y']['male'];
-$female = $impacted_patients['lt10y']['female'];
-drush_print("* 5 years - 10 years: Male - $male, Female - $female");
-$male = $impacted_patients['lt20y']['male'];
-$female = $impacted_patients['lt20y']['female'];
-drush_print("* 10 years - 20 years: Male - $male, Female - $female");
-$male = $impacted_patients['lt50y']['male'];
-$female = $impacted_patients['lt50y']['female'];
-drush_print("* 20 years - 50 years: Male - $male, Female - $female");
-$male = $impacted_patients['mt50y']['male'];
-$female = $impacted_patients['mt50y']['female'];
-drush_print("* Older than 50 years: Male - $male, Female - $female");
-
-drush_print('');
-$count = count($skipped['age']);
-drush_print("Skipped due to missing AGE: $count");
-$count = count($skipped_with_measurements['age']);
-drush_print("Skipped due to missing AGE with measurements: $count");
-$count = count($skipped['gender']);
-drush_print("Skipped due to missing GENDER: $count");
-$count = count($skipped_with_measurements['gender']);
-drush_print("Skipped due to missing GENDER with measurements: $count");
+// We need to filter for all the measurements at several places,
+// but it's a bad idea to hardcode the list, so we generate a piece of SQL
+// here in advance.
+$types = hedley_general_get_measurement_types();
+array_walk($types, function (&$val) {
+  $val = "'$val'";
+});
+$measurement_types_sql_list = implode(', ', $types);
 
 /**
- * Resolve age indication, according to person's birth date.
+ * Fetches registered / classified count from the temporary helper table.
+ *
+ * @param string $age
+ *   Age classifier string.
+ * @param string $gender
+ *   Male or female.
+ *
+ * @return int
+ *   Amount of patients.
  */
-function classify_by_age_and_gender($person_id) {
-  $wrapper = entity_metadata_wrapper('node', $person_id);
-
-  $deleted = $wrapper->field_deleted->value();
-  if (!empty($deleted) && $deleted === TRUE) {
-    return [FALSE, FALSE, TRUE];
-  }
-
-  $gender = $wrapper->field_gender->value();
-  if (empty($gender)) {
-    $gender = FALSE;
-  }
-
-  $birth_date = $wrapper->field_birth_date->value();
-  if (empty($birth_date)) {
-    $age = FALSE;
-  }
-  elseif ($birth_date > strtotime('-1 month')) {
-    $age = 'lt1m';
-  }
-  elseif ($birth_date > strtotime('-2 year')) {
-    $age = 'lt2y';
-  }
-  elseif ($birth_date > strtotime('-5 year')) {
-    $age = 'lt5y';
-  }
-  elseif ($birth_date > strtotime('-10 year')) {
-    $age = 'lt10y';
-  }
-  elseif ($birth_date > strtotime('-20 year')) {
-    $age = 'lt20y';
-  }
-  elseif ($birth_date > strtotime('-50 year')) {
-    $age = 'lt50y';
+function classified_count($age, $gender) {
+  if ($age === 'all' && $gender === 'all') {
+    return db_query("SELECT COUNT(*) FROM person_classified")->fetchField();
   }
   else {
-    $age = 'mt50y';
+    return db_query("SELECT
+    COUNT(*)
+    FROM
+    person_classified
+    WHERE
+    age = :age AND
+    gender = :gender
+    ", [
+      ':age' => $age,
+      ':gender' => $gender,
+    ])->fetchField();
   }
-
-  return [$age, $gender, FALSE];
 }
 
 /**
- * Counts the encounters (groups and individual) for given measurements.
- */
-function get_encounters_count($measurements) {
-  $group_encounters = $nutrition_encounters = $prenatal_encounters = $acute_illness_encounters = [];
-
-  foreach ($measurements as $measurement) {
-    $wrapper = entity_metadata_wrapper('node', $measurement);
-
-    if ($wrapper->__isset('field_session')) {
-      $encounter = $wrapper->field_session->getIdentifier();
-      if (!empty($encounter) && !in_array($encounter, $group_encounters)) {
-        $group_encounters[] = $encounter;
-      }
-      continue;
-    }
-
-    if ($wrapper->__isset('field_nutrition_encounter')) {
-      $encounter = $wrapper->field_nutrition_encounter->getIdentifier();
-      if (!empty($encounter) && !in_array($encounter, $nutrition_encounters)) {
-        $nutrition_encounters[] = $encounter;
-      }
-      continue;
-    }
-
-    if ($wrapper->__isset('field_prenatal_encounter')) {
-      $encounter = $wrapper->field_prenatal_encounter->getIdentifier();
-      if (!empty($encounter) && !in_array($encounter, $prenatal_encounters)) {
-        $prenatal_encounters[] = $encounter;
-      }
-      continue;
-    }
-
-    if ($wrapper->__isset('field_acute_illness_encounter')) {
-      $encounter = $wrapper->field_acute_illness_encounter->getIdentifier();
-      if (!empty($encounter) && !in_array($encounter, $acute_illness_encounters)) {
-        $acute_illness_encounters[] = $encounter;
-      }
-    }
-  }
-
-  $pmtct_encounters = $fbf_encounters = $sorwathe_encounters = $chw_encounters = $achi_encounters = 0;
-  foreach ($group_encounters as $encounter) {
-    $wrapper = entity_metadata_wrapper('node', $encounter);
-    $clinic = $wrapper->field_clinic->getIdentifier();
-
-    if (empty($clinic)) {
-      continue;
-    }
-
-    $wrapper = entity_metadata_wrapper('node', $clinic);
-    $clinic_type = $wrapper->field_group_type->value();
-
-    switch ($clinic_type) {
-      case 'pmtct':
-        $pmtct_encounters++;
-        break;
-
-      case 'fbf':
-        $fbf_encounters++;
-        break;
-
-      case 'sorwathe':
-        $sorwathe_encounters++;
-        break;
-
-      case 'chw':
-        $chw_encounters++;
-        break;
-
-      case 'achi':
-        $achi_encounters++;
-    }
-  }
-
-  return [
-    $pmtct_encounters,
-    $fbf_encounters,
-    $sorwathe_encounters,
-    $chw_encounters,
-    $achi_encounters,
-    count($nutrition_encounters),
-    count($prenatal_encounters),
-    count($acute_illness_encounters),
-  ];
-}
-
-/**
- * Generates a report for certain type of individual encounter.
+ * Fetches impacted count from the temporary helper table.
  *
- * Reported info:
- *   - Number of completed encounters.
- *   - Number of unique patients.
+ * @param string $age
+ *   Age classifier string.
+ * @param string $gender
+ *   Male or female.
+ *
+ * @return int
+ *   Amount of patients.
  */
-function generate_individual_encounter_report($encounter_type, $batch, $memory_limit) {
-  $types = [
-    'acute_illness',
-    'nutrition',
-    'prenatal',
-  ];
-
-  if (!in_array($encounter_type, $types)) {
-    drush_print("Invalid encounter type - $encounter_type");
-    return;
+function impacted_count($age, $gender) {
+  if ($age === 'all' && $gender === 'all') {
+    return (int) db_query("SELECT COUNT(*)
+      FROM person_classified cl
+      INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id")->fetchField();
   }
-
-  $encounter_bundle = "{$encounter_type}_encounter";
-  $nid = 0;
-
-  $base_query = base_query_for_bundle($encounter_bundle);
-  $count_query = clone $base_query;
-  $count_query->propertyCondition('nid', $nid, '>');
-  $total = $count_query->count()->execute();
-
-  if ($total == 0) {
-    wlog("There are no encounters of type $encounter_type in DB.");
-    return;
+  else {
+    return (int) db_query("
+    SELECT
+        COUNT(*)
+      FROM
+        person_classified cl INNER JOIN
+        person_impacted pi ON cl.entity_id = pi.entity_id
+      WHERE
+          age = :age AND
+          gender = :gender
+      ", [
+        ':age' => $age,
+        ':gender' => $gender,
+      ])->fetchField();
   }
-
-  wlog("$total encounters of type $encounter_type located.");
-
-  $processed = 0;
-  $encounters_with_measurements = 0;
-  $encounter_participants = [];
-  while ($processed < $total) {
-    // Free up memory.
-    drupal_static_reset();
-
-    $query = clone $base_query;
-    if ($nid) {
-      $query->propertyCondition('nid', $nid, '>');
-    }
-
-    $result = $query
-      ->range(0, $batch)
-      ->execute();
-
-    if (empty($result['node'])) {
-      // No more items left.
-      break;
-    }
-
-    $ids = array_keys($result['node']);
-    foreach ($ids as $id) {
-      $encounter_measurements = hedley_general_get_individual_encounter_measurements($id, $encounter_type);
-      if (count($encounter_measurements) == 0) {
-        // No measurements were taken - disregard the encounter.
-        continue;
-      }
-      $encounters_with_measurements++;
-
-      // Get patient ID from first measurement.
-      $wrapper = entity_metadata_wrapper('node', array_shift($encounter_measurements));
-      $patient_id = $wrapper->field_person->getIdentifier();
-
-      if (!in_array($patient_id, $encounter_participants)) {
-        $encounter_participants[] = $patient_id;
-      }
-    }
-
-    $nid = end($ids);
-
-    if (round(memory_get_usage() / 1048576) >= $memory_limit) {
-      drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
-      return;
-    }
-
-    $count = count($ids);
-    $processed += $count;
-    wlog("$processed encounters processed.");
-  }
-
-  $encounter_type = ucfirst($encounter_type);
-  $unique_patients = count($encounter_participants);
-
-  drush_print('');
-  drush_print("$encounter_type report:");
-  drush_print("Completed encounters: $encounters_with_measurements.");
-  drush_print("Unique patients:      $unique_patients.");
-  drush_print('');
 }
 
 /**
- * Generate base query.
+ * Counts encounter types.
+ *
+ * @param string $type
+ *   Encounter type.
+ * @param mixed $filter
+ *   Filter type 'hc' or NULL.
+ *
+ * @return int
+ *   Amount of encounters.
  */
-function base_query_for_bundle($bundle) {
-  $query = new EntityFieldQuery();
-  $query
-    ->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', $bundle)
-    ->propertyCondition('status', NODE_PUBLISHED);
-
-  return $query;
+function encounter_all_count($type, $filter = NULL, $limit = NULL) {
+  if ($filter === 'hc' && $type == 'prenatal') {
+    // Health center ANC.
+    return db_query("SELECT COUNT(DISTINCT field_prenatal_encounter_target_id)
+      FROM field_data_field_prenatal_encounter e
+      LEFT JOIN node ON e.entity_id = node.nid
+      LEFT JOIN field_data_field_prenatal_encounter_type t ON e.field_prenatal_encounter_target_id=t.entity_id
+      WHERE (field_prenatal_encounter_type_value='nurse'
+        OR field_prenatal_encounter_type_value is NULL)
+        AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+  }
+  else {
+    return db_query("SELECT COUNT(DISTINCT field_{$type}_encounter_target_id)
+      FROM field_data_field_{$type}_encounter e
+      LEFT JOIN node ON e.entity_id = node.nid
+      WHERE FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+  }
 }
 
 /**
- * Prints log based on verbosity option.
+ * Counts encounter types among unique patients.
+ *
+ * @param string $type
+ *   Encounter type.
+ * @param mixed $filter
+ *   Filter type 'hc' or NULL.
+ *
+ * @return int
+ *   Amount of encounters.
  */
-function wlog($message) {
-  // Get the option that will determine if output should be verbose or not.
-  $verbose = drush_get_option('verbose', FALSE);
-
-  if ($verbose !== FALSE) {
-    drush_print($message);
+function encounter_unique_count($type, $filter = NULL, $limit = NULL) {
+  if ($filter === 'hc' && $type == 'prenatal') {
+    // Health center ANC.
+    return db_query("SELECT COUNT(DISTINCT field_person_target_id)
+      FROM field_data_field_prenatal_encounter e
+      LEFT JOIN node ON e.entity_id = node.nid
+      LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id
+      LEFT JOIN field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id
+        WHERE (field_prenatal_encounter_type_value='nurse'
+          OR field_prenatal_encounter_type_value is NULL)
+          AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
+  return db_query("SELECT COUNT(DISTINCT field_person_target_id)
+    FROM field_data_field_{$type}_encounter e
+    LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id
+    LEFT JOIN node ON e.entity_id = node.nid
+    WHERE FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
 }
+
+$bootstrap_data_structures = file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL');
+$commands = explode(';', $bootstrap_data_structures);
+$k = 0;
+foreach ($commands as $command) {
+  if (empty($command)) {
+    continue;
+  }
+  $command = str_replace('__MEASUREMENT_TYPES_LIST__', $measurement_types_sql_list, $command);
+  db_query($command, [':limit' => $limit_date]);
+}
+$group_encounter_all = group_encounter_all($measurement_types_sql_list, $limit_date);
+$group_encounter_unique = group_encounter_unique($measurement_types_sql_list, $limit_date);
+
+drush_print("# Demographics report - " . $limit_date);
+
+drush_print("## REGISTERED PATIENTS");
+
+$registered = [
+  [
+    '0 - 1M',
+    classified_count('lt1m', 'male'),
+    classified_count('lt1m', 'female'),
+  ],
+  [
+    '1M - 2Y',
+    classified_count('lt2y', 'male'),
+    classified_count('lt2y', 'female'),
+  ],
+  [
+    '2Y - 5Y',
+    classified_count('lt5y', 'male'),
+    classified_count('lt5y', 'female'),
+  ],
+  [
+    '5Y - 10Y',
+    classified_count('lt10y', 'male'),
+    classified_count('lt10y', 'female'),
+  ],
+  [
+    '10Y - 20Y',
+    classified_count('lt20y', 'male'),
+    classified_count('lt20y', 'female'),
+  ],
+  [
+    '20Y - 50Y',
+    classified_count('lt50y', 'male'),
+    classified_count('lt50y', 'female'),
+  ],
+  [
+    '50Y +',
+    classified_count('mt50y', 'male'),
+    classified_count('mt50y', 'female'),
+  ],
+  [
+    'TOTAL',
+    '',
+    classified_count('all', 'all'),
+  ],
+];
+$text_table = new HedleyAdminTextTable(['Registered', 'Male', 'Female']);
+$text_table->addData($registered);
+
+drush_print($text_table->render());
+
+$impacted = [
+  [
+    '0 - 1M',
+    impacted_count('lt1m', 'male'),
+    impacted_count('lt1m', 'female'),
+  ],
+  [
+    '1M - 2Y',
+    impacted_count('lt2y', 'male'),
+    impacted_count('lt2y', 'female'),
+  ],
+  [
+    '2Y - 5Y',
+    impacted_count('lt5y', 'male'),
+    impacted_count('lt5y', 'female'),
+  ],
+  [
+    '5Y - 10Y',
+    impacted_count('lt10y', 'male'),
+    impacted_count('lt10y', 'female'),
+  ],
+  [
+    '10Y - 20Y',
+    impacted_count('lt20y', 'male'),
+    impacted_count('lt20y', 'female'),
+  ],
+  [
+    '20Y - 50Y',
+    impacted_count('lt50y', 'male'),
+    impacted_count('lt50y', 'female'),
+  ],
+  [
+    '50Y +',
+    impacted_count('mt50y', 'male'),
+    impacted_count('mt50y', 'female'),
+  ],
+  [
+    'TOTAL',
+    '',
+    impacted_count('all', 'all'),
+  ],
+];
+$text_table = new HedleyAdminTextTable([
+  'Impacted (2+ visits)',
+  'Male',
+  'Female',
+]);
+$text_table->addData($impacted);
+
+drush_print($text_table->render());
+
+drush_print("## ENCOUNTERS");
+
+/**
+ * Gathers group encounter visits by type.
+ *
+ * @return array
+ *   Associative array, keyed by type.
+ */
+function group_encounter_all($measurement_types_list, $limit = NULL) {
+  return db_query("
+  SELECT
+  field_group_type_value as type, COUNT(*) as counter
+FROM
+  (
+    SELECT
+      field_group_type_value,
+      p.field_person_target_id,
+      sess_rel.field_session_target_id
+    FROM
+      field_data_field_session sess_rel
+        LEFT JOIN field_data_field_clinic c ON sess_rel.field_session_target_id = c.entity_id
+        LEFT JOIN field_data_field_group_type gt ON field_clinic_target_id = gt.entity_id
+        LEFT JOIN field_data_field_person p ON p.entity_id = sess_rel.entity_id
+        LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
+        LEFT JOIN node ON sess_rel.entity_id = node.nid
+    WHERE
+        sess_rel.bundle IN ($measurement_types_list)
+        AND field_group_type_value IS NOT NULL
+        AND class.entity_id IS NOT NULL
+        AND FROM_UNIXTIME(node.created) < '$limit'
+    GROUP BY
+      field_group_type_value, field_person_target_id, field_session_target_id
+  ) b
+GROUP BY
+  field_group_type_value;
+  ")->fetchAllAssoc('type');
+}
+
+/**
+ * Gathers group encounter patients by type.
+ *
+ * @return array
+ *   Amount of patients by type.
+ */
+function group_encounter_unique($measurement_types_list, $limit = NULL) {
+  return db_query("
+  SELECT
+  field_group_type_value as type, COUNT(*) as counter
+FROM
+(
+  SELECT
+      field_group_type_value,
+      p.field_person_target_id,
+      sess_rel.field_session_target_id
+    FROM
+      field_data_field_session sess_rel
+        LEFT JOIN field_data_field_clinic c ON sess_rel.field_session_target_id = c.entity_id
+        LEFT JOIN field_data_field_group_type gt ON field_clinic_target_id = gt.entity_id
+        LEFT JOIN field_data_field_person p ON p.entity_id = sess_rel.entity_id
+        LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
+        LEFT JOIN node ON sess_rel.entity_id = node.nid
+    WHERE
+        sess_rel.bundle IN ($measurement_types_list)
+        AND field_group_type_value IS NOT NULL
+        AND class.entity_id IS NOT NULL
+        AND FROM_UNIXTIME(node.created) < '$limit'
+    GROUP BY
+      field_group_type_value, field_person_target_id
+  ) b
+GROUP BY
+  field_group_type_value;
+  ")->fetchAllAssoc('type');
+}
+
+$encounters = [
+  [
+    'ANC (total)',
+    encounter_all_count('prenatal', 'all', $limit_date),
+    encounter_unique_count('prenatal', 'all', $limit_date),
+  ],
+  [
+    '   Health Center',
+    encounter_all_count('prenatal', 'hc', $limit_date),
+    encounter_unique_count('prenatal', 'hc', $limit_date),
+  ],
+  [
+    '   CHW',
+    encounter_all_count('prenatal', 'all', $limit_date) - encounter_all_count('prenatal', 'hc', $limit_date),
+    encounter_unique_count('prenatal', 'all', $limit_date) - encounter_unique_count('prenatal', 'hc', $limit_date),
+  ],
+  [
+    'Acute Illness',
+    encounter_all_count('acute_illness', 'chw', $limit_date),
+    encounter_unique_count('acute_illness', 'chw', $limit_date),
+  ],
+  [
+    'Nutrition (total)',
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date),
+    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date),
+  ],
+  [
+    '  PMTCT',
+    $group_encounter_all['pmtct']->counter,
+    $group_encounter_unique['pmtct']->counter,
+  ],
+  [
+    '  FBF',
+    $group_encounter_all['fbf']->counter,
+    $group_encounter_unique['fbf']->counter,
+  ],
+  [
+    '  Sorwhate',
+    $group_encounter_all['sorwathe']->counter,
+    $group_encounter_unique['sorwathe']->counter,
+  ],
+  [
+    '  CBNP',
+    $group_encounter_all['chw']->counter,
+    $group_encounter_unique['chw']->counter,
+  ],
+  [
+    '  ACHI',
+    $group_encounter_all['achi']->counter,
+    $group_encounter_unique['achi']->counter,
+  ],
+  [
+    '  Individual',
+    encounter_all_count('nutrition', 'chw', $limit_date),
+    encounter_unique_count('nutrition', 'chw', $limit_date),
+  ],
+  [
+    'TOTAL',
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date) + encounter_all_count('prenatal', 'all', $limit_date) + encounter_all_count('acute_illness', 'chw', $limit_date),
+    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date) + encounter_unique_count('prenatal', 'all', $limit_date) + encounter_unique_count('acute_illness', 'chw', $limit_date),
+  ],
+];
+
+$text_table = new HedleyAdminTextTable(['Encounter type', 'All', 'Unique']);
+drush_print($text_table->render($encounters));
