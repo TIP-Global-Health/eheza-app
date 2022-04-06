@@ -1607,9 +1607,17 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
         NextStepsWait ->
-            -- There're no real tasks here.
-            -- Just notification message is displayed.
-            ( 0, 0 )
+            let
+                completed =
+                    if nextStepsMeasurementTaken assembled NextStepsWait then
+                        1
+
+                    else
+                        0
+            in
+            ( completed
+            , 1
+            )
 
 
 {-| This is a convenience for cases where the form values ought to be redefined

@@ -1712,10 +1712,20 @@ viewNextStepsContent language currentDate isChw assembled data =
                                             )
                                             measurements.labsResults
                                             |> Maybe.withDefault NoOp
+
+                            disabled =
+                                case task of
+                                    NextStepsWait ->
+                                        -- Always allowing to save Wait, because
+                                        -- there are no actual tasks there.
+                                        False
+
+                                    _ ->
+                                        tasksCompleted /= totalTasks
                         in
                         div [ class "actions next-steps" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                                 , onClick saveMsg
                                 ]
                                 [ text <| translate language Translate.Save ]
