@@ -37,7 +37,7 @@ Primary ports:
 
 ### Requirements
 
-- https://ddev.readthedocs.io/en/latest/#installation
+- https://ddev.readthedocs.io/en/latest/#installation . Minimum version: [v1.19.1](https://github.com/drud/ddev/releases/tag/v1.19.1)
 
 ### Backend
 
