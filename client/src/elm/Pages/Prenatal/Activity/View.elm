@@ -1716,7 +1716,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             disabled =
                                 case task of
                                     NextStepsWait ->
-                                        -- Always allowing to save Wait, because
+                                        -- Allways allowing to save Wait, because
                                         -- there are no actual tasks there.
                                         False
 

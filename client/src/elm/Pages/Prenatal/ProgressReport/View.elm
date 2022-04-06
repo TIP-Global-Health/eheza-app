@@ -53,9 +53,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Activity.Utils
     exposing
-        ( activityCompleted
-        , diagnosedMalaria
-        , expectActivity
+        ( diagnosedMalaria
         , recommendedTreatmentSignsForMalaria
         , respiratoryRateElevated
         )
@@ -66,6 +64,7 @@ import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (recommendedTreatmentSignsForSyphilis)
+import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils exposing (recommendedTreatmentSignsForHypertension)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -158,6 +157,9 @@ viewHeader language id initiator model =
                 InitiatorEncounterPage prenatalEncounterId ->
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage id)
 
+                InitiatorRecurrentEncounterPage prenatalEncounterId ->
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id)
+
                 InitiatorNewEncounter _ ->
                     emptyNode
 
@@ -196,11 +198,23 @@ viewContent language currentDate isChw initiator model assembled =
                                     let
                                         ( completedActivities, pendingActivities ) =
                                             getAllActivities assembled
-                                                |> List.filter (expectActivity currentDate assembled)
-                                                |> List.partition (activityCompleted currentDate assembled)
+                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
+                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
 
                                         allowEndEcounter =
                                             allowEndingEcounter assembled pendingActivities completedActivities
+                                    in
+                                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+
+                                InitiatorRecurrentEncounterPage _ ->
+                                    let
+                                        ( completedActivities, pendingActivities ) =
+                                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
+                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
+                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+
+                                        allowEndEcounter =
+                                            List.isEmpty pendingActivities
                                     in
                                     viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
 

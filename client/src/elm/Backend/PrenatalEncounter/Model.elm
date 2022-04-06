@@ -87,6 +87,7 @@ type RecordPreganancyInitiator
 
 type PrenatalProgressReportInitiator
     = InitiatorEncounterPage PrenatalEncounterId
+    | InitiatorRecurrentEncounterPage PrenatalEncounterId
     | InitiatorNewEncounter PrenatalEncounterId
     | InitiatorPatientRecord PersonId
 
