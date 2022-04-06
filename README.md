@@ -133,9 +133,7 @@ Make sure the following is installed:
 
 #### Installation
 
-* ddev nvm install 8.0
-* ddev nvm use 8.0
-* ddev client-install
+* Install backend first.
 * `cp src/elm/LocalConfig.Example.elm src/elm/LocalConfig.elm`
 
 You may need to update `src/elm/LocalConfig.elm` if your local URLs are different from the default setting.
