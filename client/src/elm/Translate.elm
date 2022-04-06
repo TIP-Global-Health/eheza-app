@@ -1190,6 +1190,7 @@ type TranslationId
     | Village
     | WaitForVitalsRecheckHelper
     | WaitForLabsResultsHelper
+    | WaitInstructions
     | Warning
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
@@ -10819,6 +10820,11 @@ translationSet trans =
 
         WaitForLabsResultsHelper ->
             { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and futher diagnoses."
+            , kinyarwanda = Nothing
+            }
+
+        WaitInstructions ->
+            { english = "To proceed with more encounters while you wait for test results or a vitals recheck, touch \"Pause Encounter\" below to leave this encounter. You can return to it from the case management screen."
             , kinyarwanda = Nothing
             }
 

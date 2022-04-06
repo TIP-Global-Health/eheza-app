@@ -3704,6 +3704,8 @@ viewWaitForm language currentDate assembled =
             [ labsResultsInstructions
             , vitalsInstructions
             ]
+        , div [ class "instructions" ]
+            [ text <| translate language Translate.WaitInstructions ]
         ]
 
 
