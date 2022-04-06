@@ -845,6 +845,7 @@ type TranslationId
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientRecordFilter PatientRecordFilter
+    | PauseEncounter
     | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
@@ -6958,6 +6959,11 @@ translationSet trans =
                     { english = "Demographics"
                     , kinyarwanda = Nothing
                     }
+
+        PauseEncounter ->
+            { english = "Pause Encounter"
+            , kinyarwanda = Nothing
+            }
 
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"

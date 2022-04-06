@@ -1674,32 +1674,35 @@ viewNextStepsContent language currentDate isChw assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            secondPhase =
+                                secondPhaseRequired assembled
+
                             saveMsg =
                                 case task of
                                     NextStepsAppointmentConfirmation ->
-                                        SaveAppointmentConfirmation personId measurements.appointmentConfirmation nextTask
+                                        SaveAppointmentConfirmation personId measurements.appointmentConfirmation secondPhase nextTask
 
                                     NextStepsFollowUp ->
                                         let
                                             assesment =
                                                 generatePrenatalAssesmentForChw assembled
                                         in
-                                        SaveFollowUp personId assesment measurements.followUp nextTask
+                                        SaveFollowUp personId assesment measurements.followUp secondPhase nextTask
 
                                     NextStepsSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                                        SaveSendToHC personId measurements.sendToHC secondPhase nextTask
 
                                     NextStepsHealthEducation ->
-                                        SaveHealthEducationSubActivity personId measurements.healthEducation nextTask
+                                        SaveHealthEducationSubActivity personId measurements.healthEducation secondPhase nextTask
 
                                     NextStepsNewbornEnrolment ->
-                                        SaveNewbornEnrollment nextTask
+                                        SaveNewbornEnrollment secondPhase nextTask
 
                                     NextStepsMedicationDistribution ->
-                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+                                        SaveMedicationDistribution personId measurements.medicationDistribution secondPhase nextTask
 
                                     NextStepsRecommendedTreatment ->
-                                        SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
+                                        SaveRecommendedTreatment personId measurements.recommendedTreatment secondPhase nextTask
 
                                     NextStepsWait ->
                                         Maybe.map
@@ -1708,7 +1711,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                                                     value =
                                                         measurement.value
                                                 in
-                                                SaveWait personId (Just measurementId) { value | patientNotified = True } nextTask
+                                                SaveWait personId (Just measurementId) { value | patientNotified = True } secondPhase nextTask
                                             )
                                             measurements.labsResults
                                             |> Maybe.withDefault NoOp

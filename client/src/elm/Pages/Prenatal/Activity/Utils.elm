@@ -21,7 +21,7 @@ import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedication
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (isFirstEncounter)
+import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, isFirstEncounter)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -349,14 +349,6 @@ diagnosedHypertension =
         [ DiagnosisChronicHypertensionImmediate
         , DiagnosisGestationalHypertensionImmediate
         ]
-
-
-emergencyReferalRequired : AssembledData -> Bool
-emergencyReferalRequired assembled =
-    EverySet.toList assembled.encounter.diagnoses
-        |> List.filter diagnosisRequiresEmergencyReferal
-        |> List.isEmpty
-        |> not
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -1128,11 +1120,6 @@ respiratoryRateElevated measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.map (\value -> value.respiratoryRate > 30)
         |> Maybe.withDefault False
-
-
-diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
-diagnosisRequiresEmergencyReferal diagnosis =
-    List.member diagnosis emergencyReferralDiagnosesInitial
 
 
 maternityWardDiagnoses : List PrenatalDiagnosis

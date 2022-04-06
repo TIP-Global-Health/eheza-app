@@ -64,9 +64,17 @@ update language currentDate id db msg model =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
 
-        generateNextStepsMsgs nextTask =
+        generateNextStepsMsgs secondPhaseRequired nextTask =
+            let
+                destinationPage =
+                    if secondPhaseRequired then
+                        UserPage <| PrenatalEncounterPage id
+
+                    else
+                        UserPage <| ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorEncounterPage id) id
+            in
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage <| ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorEncounterPage id) id ]
+                |> Maybe.withDefault [ SetActivePage destinationPage ]
     in
     case msg of
         NoOp ->
@@ -2484,7 +2492,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveHealthEducationSubActivity personId saved nextTask ->
+        SaveHealthEducationSubActivity personId saved secondPhaseRequired nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2493,7 +2501,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
@@ -2529,7 +2537,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveFollowUp personId assesment saved nextTask ->
+        SaveFollowUp personId assesment saved secondPhaseRequired nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2538,7 +2546,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
                     model.nextStepsData.followUpForm
@@ -2557,10 +2565,10 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SaveNewbornEnrollment nextTask ->
+        SaveNewbornEnrollment secondPhaseRequired nextTask ->
             let
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
             in
             ( model
             , Cmd.none
@@ -2636,7 +2644,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveSendToHC personId saved nextTask ->
+        SaveSendToHC personId saved secondPhaseRequired nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2645,7 +2653,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
                     model.nextStepsData.sendToHCForm
@@ -2694,7 +2702,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveAppointmentConfirmation personId saved nextTask ->
+        SaveAppointmentConfirmation personId saved secondPhaseRequired nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2703,7 +2711,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
                     model.nextStepsData.appointmentConfirmationForm
@@ -2777,7 +2785,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveMedicationDistribution personId saved nextTask ->
+        SaveMedicationDistribution personId saved secondPhaseRequired nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2786,7 +2794,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
                     model.nextStepsData.medicationDistributionForm
@@ -2840,7 +2848,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveRecommendedTreatment personId saved nextTask ->
+        SaveRecommendedTreatment personId saved secondPhaseRequired nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2849,7 +2857,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
                     model.nextStepsData.recommendedTreatmentForm
@@ -2868,10 +2876,10 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SaveWait personId measurementId updatedValue nextTask ->
+        SaveWait personId measurementId updatedValue secondPhaseRequired nextTask ->
             let
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
                     [ Backend.PrenatalEncounter.Model.SaveLabsResults personId measurementId updatedValue

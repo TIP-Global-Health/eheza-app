@@ -34,9 +34,10 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
+import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, emergencyReferalRequired, expectActivity)
 import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 import Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -53,24 +54,37 @@ thumbnailDimensions =
 view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
-        data =
+        assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id model) identity assembled
 
 
 viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id model data =
+viewHeaderAndContent language currentDate id model assembled =
     let
         header =
             viewHeader language
 
         content =
-            viewContent language currentDate data model
+            viewContent language currentDate assembled model
+
+        endEncounterDialog =
+            if model.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        CloseEncounter
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-encounter prenatal" ]
         [ header
         , content
+        , viewModal endEncounterDialog
         ]
 
 
@@ -92,18 +106,18 @@ viewHeader language =
 
 
 viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
-viewContent language currentDate data model =
+viewContent language currentDate assembled model =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate False data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewMainPageContent language currentDate data model
+        viewMotherAndMeasurements language currentDate False assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
+            ++ viewMainPageContent language currentDate assembled model
 
 
 viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate data model =
+viewMainPageContent language currentDate assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate data) allActivities
-                |> List.partition (activityCompleted currentDate data)
+            List.filter (expectActivity currentDate assembled) allActivities
+                |> List.partition (activityCompleted currentDate assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -132,7 +146,7 @@ viewMainPageContent language currentDate data model =
                     , onClick <|
                         SetActivePage <|
                             UserPage <|
-                                PrenatalRecurrentActivityPage data.id activity
+                                PrenatalRecurrentActivityPage assembled.id activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
                 , div [ class "content" ]
@@ -165,8 +179,8 @@ viewMainPageContent language currentDate data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorRecurrentEncounterPage data.id) data.id)
-                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorRecurrentEncounterPage data.id) data.participant.person)
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.id)
+                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.participant.person)
                     ]
 
             else
@@ -181,9 +195,18 @@ viewMainPageContent language currentDate data model =
                         ]
                     ]
 
+        endEncounterButtonEnabled =
+            if emergencyReferalRequired assembled then
+                List.member RecurrentNextSteps completedActivities
+
+            else
+                List.isEmpty pendingActivities
+
         content =
             div [ class "ui full segment" ]
-                [ innerContent ]
+                [ innerContent
+                , viewEndEncounterButton language endEncounterButtonEnabled SetEndEncounterDialogState
+                ]
     in
     [ tabs
     , content

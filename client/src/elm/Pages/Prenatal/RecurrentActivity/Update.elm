@@ -34,7 +34,11 @@ update language currentDate id db msg model =
 
         generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
+                |> Maybe.withDefault
+                    [ SetActivePage <|
+                        UserPage <|
+                            ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id) id
+                    ]
     in
     case msg of
         NoOp ->

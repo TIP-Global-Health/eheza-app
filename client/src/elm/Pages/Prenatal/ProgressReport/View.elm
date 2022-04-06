@@ -59,7 +59,7 @@ import Pages.Prenatal.Activity.Utils
         )
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
-import Pages.Prenatal.Encounter.View exposing (allowEndingEcounter)
+import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
@@ -200,11 +200,13 @@ viewContent language currentDate isChw initiator model assembled =
                                             getAllActivities assembled
                                                 |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
-
-                                        allowEndEcounter =
-                                            allowEndingEcounter assembled pendingActivities completedActivities
                                     in
-                                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                                    viewActionButton language
+                                        pendingActivities
+                                        completedActivities
+                                        (SetActivePage PinCodePage)
+                                        SetEndEncounterDialogState
+                                        assembled
 
                                 InitiatorRecurrentEncounterPage _ ->
                                     let
