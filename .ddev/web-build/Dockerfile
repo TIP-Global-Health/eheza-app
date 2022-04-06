@@ -1,4 +1,4 @@
-FROM drud/ddev-webserver:v1.19.1
+FROM drud/ddev-webserver:v1.19.0
 # Elm - directly downloading the binary.
 RUN wget https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
 RUN gunzip binary-for-linux-64-bit.gz

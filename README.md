@@ -133,6 +133,8 @@ Make sure the following is installed:
 
 #### Installation
 
+* ddev nvm install 8.0
+* ddev nvm use 8.0
 * ddev client-install
 * `cp src/elm/LocalConfig.Example.elm src/elm/LocalConfig.elm`
 
