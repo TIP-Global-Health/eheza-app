@@ -311,7 +311,7 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && (resolveMedicationsByDiagnoses assembled medicationsInitialPhase
+                && (resolveMedicationsByDiagnoses currentDate assembled medicationsInitialPhase
                         |> List.isEmpty
                         |> not
                    )
@@ -410,48 +410,6 @@ recommendedTreatmentSignsForMalaria =
     , TreatementReferToHospital
     , NoTreatmentForMalaria
     ]
-
-
-showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
-showMebendazoleQuestion currentDate assembled =
-    assembled.globalLmpDate
-        |> Maybe.map
-            (\lmpDate ->
-                let
-                    egaInWeeks =
-                        calculateEGAWeeks currentDate lmpDate
-
-                    dewormingPillNotGiven =
-                        List.filter
-                            (\( _, _, measurements ) ->
-                                measurements.medication
-                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
-                                    |> Maybe.withDefault False
-                            )
-                            assembled.nursePreviousMeasurementsWithDates
-                            |> List.isEmpty
-
-                    mebenadazoleNotPrescribed =
-                        List.filter
-                            (\( _, _, measurements ) ->
-                                measurements.medicationDistribution
-                                    |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
-                                    |> Maybe.withDefault False
-                            )
-                            assembled.nursePreviousMeasurementsWithDates
-                            |> List.isEmpty
-                in
-                -- Starting EGA week 24.
-                (egaInWeeks >= 24)
-                    && -- Previous variation had a question about deworming pill,
-                       -- which is actually Menendazole, or something similar.
-                       -- If somewhere during previous encounters patient stated that
-                       -- deworming pill was given, we do not ask about Mebendazole.
-                       dewormingPillNotGiven
-                    && -- Mebendazole was not prescribed during the current pregnancy.
-                       mebenadazoleNotPrescribed
-            )
-        |> Maybe.withDefault False
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
@@ -675,14 +633,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 (calculateEGAWeeks currentDate)
                 assembled.globalLmpDate
 
-        diagnosesByMedication =
-            if showMebendazoleQuestion currentDate assembled then
-                EverySet.singleton DiagnosisPrescribeMebendezole
-
-            else
-                EverySet.empty
-
-        diagnisisByLabResults =
+        diagnosesByLabResults =
             List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) labResultsDiagnoses
                 |> EverySet.fromList
 
@@ -693,7 +644,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnosesInitial
                 |> EverySet.fromList
 
-        diagnisisByExamination =
+        diagnosesByExamination =
             Maybe.map
                 (\egaWeeks ->
                     List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements) examinationDiagnoses
@@ -702,9 +653,8 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 egaInWeeks
                 |> Maybe.withDefault EverySet.empty
     in
-    EverySet.union diagnosesByMedication diagnisisByLabResults
-        |> EverySet.union diagnosesByDangerSigns
-        |> EverySet.union diagnisisByExamination
+    EverySet.union diagnosesByLabResults diagnosesByDangerSigns
+        |> EverySet.union diagnosesByExamination
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool

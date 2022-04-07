@@ -519,7 +519,6 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'prescribe-mebendezole' => 'Prescribe Mebendazole',
         'chronic-hypertension-immediate' => 'Chronic Hypertension Immediate',
         'chronic-hypertension-recheck' => 'Chronic Hypertension After Recheck',
         'gestational-hypertension-immediate' => 'Gestational Hypertension Immediate',

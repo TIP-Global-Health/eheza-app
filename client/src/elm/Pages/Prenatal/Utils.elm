@@ -60,8 +60,8 @@ listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
 listNonUrgentDiagnoses diagnoses =
     let
         exclusions =
-            [ NoPrenatalDiagnosis, DiagnosisPrescribeMebendezole ]
-                ++ emergencyReferralDiagnosesInitial
+            NoPrenatalDiagnosis
+                :: emergencyReferralDiagnosesInitial
                 ++ emergencyReferralDiagnosesRecurrent
     in
     List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
@@ -277,7 +277,7 @@ resolveMedicationDistributionInputsAndTasks :
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
 resolveMedicationDistributionInputsAndTasks language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
-    resolveMedicationsByDiagnoses assembled allowedMedications
+    resolveMedicationsByDiagnoses currentDate assembled allowedMedications
         |> List.map
             (resolveMedicationDistributionInputsAndTasksForMedication language
                 currentDate
@@ -311,8 +311,8 @@ medicationDistributionMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
-resolveMedicationsByDiagnoses assembled allowedMedications =
+resolveMedicationsByDiagnoses : NominalDate -> AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
+resolveMedicationsByDiagnoses currentDate assembled allowedMedications =
     List.filter
         (\medication ->
             let
@@ -324,19 +324,28 @@ resolveMedicationsByDiagnoses assembled allowedMedications =
             in
             case medication of
                 Mebendezole ->
-                    diagnosed DiagnosisPrescribeMebendezole assembled
+                    showMebendazoleQuestion currentDate assembled
+                        && (getMeasurementValueFunc assembled.measurements.medication
+                                |> Maybe.map (EverySet.member Mebendazole >> not)
+                                |> Maybe.withDefault False
+                           )
 
                 Tenofovir ->
-                    hivDiagnosed && not hivProgramHC
+                    -- Requirements were changed, so this medication
+                    -- is not in use for the time being.
+                    False
 
                 Lamivudine ->
-                    hivDiagnosed && not hivProgramHC
+                    -- Requirements were changed, so this medication
+                    -- is not in use for the time being.
+                    False
 
                 Dolutegravir ->
                     hivDiagnosed && not hivProgramHC
 
                 TDF3TC ->
-                    diagnosed DiagnosisDiscordantPartnership assembled
+                    (hivDiagnosed && not hivProgramHC)
+                        || diagnosed DiagnosisDiscordantPartnership assembled
 
                 Iron ->
                     diagnosed DiagnosisModerateAnemia assembled
@@ -348,6 +357,48 @@ resolveMedicationsByDiagnoses assembled allowedMedications =
                     False
         )
         allowedMedications
+
+
+showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
+showMebendazoleQuestion currentDate assembled =
+    assembled.globalLmpDate
+        |> Maybe.map
+            (\lmpDate ->
+                let
+                    egaInWeeks =
+                        calculateEGAWeeks currentDate lmpDate
+
+                    dewormingPillNotGiven =
+                        List.filter
+                            (\( _, _, measurements ) ->
+                                measurements.medication
+                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+
+                    mebenadazoleNotPrescribed =
+                        List.filter
+                            (\( _, _, measurements ) ->
+                                measurements.medicationDistribution
+                                    |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+                in
+                -- Starting EGA week 24.
+                (egaInWeeks >= 24)
+                    && -- Previous variation had a question about deworming pill,
+                       -- which is actually Menendazole, or something similar.
+                       -- If somewhere during previous encounters patient stated that
+                       -- deworming pill was given, we do not ask about Mebendazole.
+                       dewormingPillNotGiven
+                    && -- Mebendazole was not prescribed during the current pregnancy.
+                       mebenadazoleNotPrescribed
+            )
+        |> Maybe.withDefault False
 
 
 resolveMedicationDistributionInputsAndTasksForMedication :
@@ -813,10 +864,8 @@ resolveFolicAcidDosageAndIcon currentDate person =
 medicationsInitialPhase : List MedicationDistributionSign
 medicationsInitialPhase =
     [ Mebendezole
-    , Tenofovir
-    , Lamivudine
-    , Dolutegravir
     , TDF3TC
+    , Dolutegravir
     ]
 
 

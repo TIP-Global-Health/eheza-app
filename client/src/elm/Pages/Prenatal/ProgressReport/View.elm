@@ -2029,8 +2029,5 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisSeverePreeclampsiaAfterRecheck ->
             referredToHospitalMessage
 
-        DiagnosisPrescribeMebendezole ->
-            []
-
         NoPrenatalDiagnosis ->
             []

@@ -7381,11 +7381,6 @@ translationSet trans =
 
         PrenatalDiagnosis diagnosis ->
             case diagnosis of
-                DiagnosisPrescribeMebendezole ->
-                    { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Nothing
-                    }
-
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
                     , kinyarwanda = Nothing
@@ -7573,11 +7568,6 @@ translationSet trans =
 
         PrenatalDiagnosisForProgressReport diagnosis ->
             case diagnosis of
-                DiagnosisPrescribeMebendezole ->
-                    { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Nothing
-                    }
-
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
                     , kinyarwanda = Nothing
