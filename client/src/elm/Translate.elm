@@ -10110,16 +10110,15 @@ translationSet trans =
             }
 
         SubsequentEncounterReferral encounterType ->
-            case encounterType of
-                AcuteIllnessEncounterNurse ->
-                    { english = "Health Center Referral"
-                    , kinyarwanda = Nothing
-                    }
+            if encounterType == AcuteIllnessEncounterCHW then
+                { english = "CHW Referral"
+                , kinyarwanda = Nothing
+                }
 
-                AcuteIllnessEncounterCHW ->
-                    { english = "CHW Referral"
-                    , kinyarwanda = Nothing
-                    }
+            else
+                { english = "Health Center Referral"
+                , kinyarwanda = Nothing
+                }
 
         SuccessiveAbortions ->
             { english = "Successive Abortions"
