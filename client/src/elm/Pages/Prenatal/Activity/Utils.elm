@@ -84,10 +84,12 @@ expectActivity currentDate assembled activity =
                     expectPrenatalPhoto currentDate assembled
 
                 NextSteps ->
-                    resolveNextStepsTasks currentDate assembled
-                        |> List.filter (expectNextStepsTask currentDate assembled)
-                        |> List.isEmpty
-                        |> not
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                        && (resolveNextStepsTasks currentDate assembled
+                                |> List.filter (expectNextStepsTask currentDate assembled)
+                                |> List.isEmpty
+                                |> not
+                           )
 
                 -- Unique Chw activities.
                 _ ->

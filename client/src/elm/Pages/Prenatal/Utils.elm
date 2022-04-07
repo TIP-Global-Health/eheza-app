@@ -60,8 +60,8 @@ listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
 listNonUrgentDiagnoses diagnoses =
     let
         exclusions =
-            DiagnosisPrescribeMebendezole
-                :: emergencyReferralDiagnosesInitial
+            [ NoPrenatalDiagnosis, DiagnosisPrescribeMebendezole ]
+                ++ emergencyReferralDiagnosesInitial
                 ++ emergencyReferralDiagnosesRecurrent
     in
     List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
