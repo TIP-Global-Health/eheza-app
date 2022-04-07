@@ -1112,7 +1112,7 @@ viewActionsTakenSendToHC language date encounterType measurements =
             getMeasurementValueFunc measurements.sendToHC
 
         facility =
-            if encounterType == AcuteIllnessEncounterChw then
+            if encounterType == AcuteIllnessEncounterCHW then
                 FacilityHealthCenter
 
             else
