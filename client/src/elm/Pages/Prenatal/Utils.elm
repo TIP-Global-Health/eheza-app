@@ -453,7 +453,7 @@ resolveMebendezoleDistributionInputsAndTasks language currentDate person setMedi
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Mebendezole) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Mebendezole) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerPrenatalMebendezoleHelper ++ "." ]
                             ]
                     )
@@ -503,7 +503,7 @@ resolveTenofovirDistributionInputsAndTasks language currentDate person setMedica
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Tenofovir) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Tenofovir) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                             ]
                     )
@@ -553,7 +553,7 @@ resolveLamivudineDistributionInputsAndTasks language currentDate person setMedic
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Lamivudine) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Lamivudine) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                             ]
                     )
@@ -603,7 +603,7 @@ resolveDolutegravirDistributionInputsAndTasks language currentDate person setMed
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Dolutegravir) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Dolutegravir) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                             ]
                     )
@@ -650,7 +650,7 @@ resolveTDF3TCDistributionInputsAndTasks language currentDate person setMedicatio
     let
         instructions =
             div [ class "instructions" ]
-                [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign TDF3TC) "icon-pills" Nothing
+                [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign TDF3TC) "" "icon-pills" "" Nothing
                 , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                 ]
 
@@ -698,7 +698,7 @@ resolveIronDistributionInputsAndTasks language currentDate person setMedicationD
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Iron) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Iron) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerIronHelper ++ "." ]
                             ]
                     )
@@ -748,7 +748,7 @@ resolveFolicAcidDistributionInputsAndTasks language currentDate person setMedica
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign FolicAcid) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign FolicAcid) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerFolicAcidHelper ++ "." ]
                             ]
                     )
