@@ -16,7 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.AcuteIllness.Encounter.Utils exposing (compareAcuteIllnessEncounterDataDesc, getAcuteIllnessDiagnosisForParticipant)
+import Pages.AcuteIllness.Encounter.Utils exposing (compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllness.Participant.Model exposing (..)
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -146,7 +146,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter personId is
                                         |> Maybe.withDefault []
                                         |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
 
-                                maybeActiveEncounterId =
+                                mActiveEncounterId =
                                     List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
                                         |> List.head
                                         |> Maybe.map Tuple.first
@@ -160,7 +160,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter personId is
                                         |> List.isEmpty
                                         |> not
                             in
-                            ( maybeActiveEncounterId
+                            ( mActiveEncounterId
                                 |> Maybe.map navigateToEncounterAction
                                 |> Maybe.withDefault startIllnessAction
                             , -- We do not allow to create multiple illnesses on the same day.
@@ -240,7 +240,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter personId
                                         |> Maybe.withDefault []
                                         |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
 
-                                maybeActiveEncounterId =
+                                mActiveEncounterId =
                                     List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
                                         |> List.head
                                         |> Maybe.map Tuple.first
@@ -254,7 +254,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter personId
                                         |> List.isEmpty
                                         |> not
                             in
-                            ( maybeActiveEncounterId
+                            ( mActiveEncounterId
                                 |> Maybe.map navigateToEncounterAction
                                 |> Maybe.withDefault startIllnessAction
                             , -- We do not allow to create multiple encounters for same illness on the same day.
@@ -344,13 +344,15 @@ viewActiveIllness language currentDate selectedHealthCenter isChw db viewMode se
             Dict.get sessionId db.acuteIllnessEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
-                |> Maybe.map Dict.toList
+                |> Maybe.map
+                    (Dict.toList
+                        >> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
+                    )
 
         mDiagnosis =
             sessionEncounters
                 |> Maybe.andThen
                     (List.map Tuple.second
-                        >> List.sortWith compareAcuteIllnessEncounterDataDesc
                         >> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
                         >> List.head
                         >> Maybe.map .diagnosis
@@ -395,18 +397,23 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
     let
         -- Variable encounters  holds data for all encounters of the illness,
         -- performed by both Nurse and CHW.
-        maybeActiveEncounterId =
+        ( activeEncounters, completedEncounters ) =
+            List.partition (Tuple.second >> isDailyEncounterActive currentDate)
+                encounters
+
+        mActiveEncounter =
             List.filter
                 (\( _, encounter ) ->
                     -- To determine active encounter we filter to get only Nurse
                     -- or CHW encounters, as nurse should not be able to enter
                     -- encounter started by CHW, and vice versa.
                     filterByEncounterTypeCondition isChw encounter
-                        && isDailyEncounterActive currentDate encounter
                 )
-                encounters
+                activeEncounters
                 |> List.head
-                |> Maybe.map Tuple.first
+
+        mActiveEncounterId =
+            Maybe.map Tuple.first mActiveEncounter
 
         encounterSequenceNumberForToday =
             List.filter (Tuple.second >> .startDate >> (==) currentDate) encounters
@@ -417,8 +424,7 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
                 |> Maybe.withDefault 1
 
         action =
-            maybeActiveEncounterId
-                |> Maybe.map navigateToEncounterAction
+            Maybe.map navigateToEncounterAction mActiveEncounterId
                 |> Maybe.withDefault
                     (emptyAcuteIllnessEncounter sessionId currentDate encounterSequenceNumberForToday encounterType (Just selectedHealthCenter)
                         |> Backend.Model.PostAcuteIllnessEncounter
@@ -436,7 +442,7 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
                 |> not
 
         actionDisabled =
-            isNothing maybeActiveEncounterId && not isChw && nurseEncounterPerformed
+            isNothing mActiveEncounterId && not isChw && nurseEncounterPerformed
 
         encounterType =
             if isChw then
@@ -445,12 +451,39 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
             else
                 AcuteIllnessEncounterNurse
 
-        encounterLabel =
-            if List.length encounters == 1 && isJust maybeActiveEncounterId then
-                Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+        encounterLabelTransId =
+            if List.length encounters == 1 && isJust mActiveEncounterId then
+                Translate.IndividualEncounterFirstVisit
+                    Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
 
             else
-                Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                Translate.IndividualEncounterSubsequentVisit
+                    Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+
+        mReferringEncounter =
+            case mActiveEncounter of
+                Just ( _, activeEncounter ) ->
+                    -- When we have active encounter, we search for the one
+                    -- that was completed just before the active one.
+                    List.filter
+                        (\( _, encounter ) ->
+                            compareAcuteIllnessEncounters encounter activeEncounter == LT
+                        )
+                        completedEncounters
+                        |> List.head
+
+                Nothing ->
+                    -- When we don't have active encounter, we take
+                    -- last encounter that was completed.
+                    List.head completedEncounters
+
+        referringLabel =
+            Maybe.map
+                (\( _, encounter ) ->
+                    div [] [ text <| translate language <| Translate.SubsequentEncounterReferral encounter.encounterType ]
+                )
+                mReferringEncounter
+                |> Maybe.withDefault emptyNode
     in
     Just <|
         div
@@ -462,7 +495,9 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
             ]
             [ div [ class "button-label" ]
                 [ div [ class "encounter-label" ]
-                    [ text <| translate language encounterLabel ]
+                    [ div [] [ text <| translate language encounterLabelTransId ]
+                    , referringLabel
+                    ]
                 , div [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                 ]
             , div [ class "icon-back" ] []

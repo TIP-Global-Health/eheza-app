@@ -162,7 +162,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         _ ->
                             Nothing
             )
-        >> List.sortWith compareAcuteIllnessEncounterDataAsc
+        >> List.sortWith compareAcuteIllnessEncounters
 
 
 getAcuteIllnessEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
@@ -171,22 +171,22 @@ getAcuteIllnessEncountersForParticipant db participantId =
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map Dict.toList
         |> Maybe.withDefault []
-        |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncounterDataDesc e1 e2)
+        |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
 
 
-compareAcuteIllnessEncounterDataDesc :
+compareAcuteIllnessEncountersDesc :
     { a | startDate : NominalDate, sequenceNumber : Int }
     -> { a | startDate : NominalDate, sequenceNumber : Int }
     -> Order
-compareAcuteIllnessEncounterDataDesc data1 data2 =
-    compareAcuteIllnessEncounterDataAsc data2 data1
+compareAcuteIllnessEncountersDesc data1 data2 =
+    compareAcuteIllnessEncounters data2 data1
 
 
-compareAcuteIllnessEncounterDataAsc :
+compareAcuteIllnessEncounters :
     { a | startDate : NominalDate, sequenceNumber : Int }
     -> { a | startDate : NominalDate, sequenceNumber : Int }
     -> Order
-compareAcuteIllnessEncounterDataAsc data1 data2 =
+compareAcuteIllnessEncounters data1 data2 =
     case Date.compare data1.startDate data2.startDate of
         LT ->
             LT
