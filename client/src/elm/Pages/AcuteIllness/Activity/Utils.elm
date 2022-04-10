@@ -1925,7 +1925,8 @@ expectLaboratoryTask currentDate isChw assembled task =
                 -- If fever is recorded on current encounter, and patient did not
                 -- test positive to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
-                feverRecorded assembled.measurements
+                covidNotDiagnosed
+                    && feverRecorded assembled.measurements
                     && (List.filter
                             (.measurements
                                 >> .malariaTesting
