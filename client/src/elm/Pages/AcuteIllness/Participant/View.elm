@@ -298,7 +298,7 @@ startIllnessActionMsg : NominalDate -> HealthCenterId -> PersonId -> Bool -> Msg
 startIllnessActionMsg currentDate selectedHealthCenter personId isChw =
     let
         encounterType =
-            -- We know it's going to be first encounter, therefore
+            -- We know it's going to be first encounter, therefore,
             -- it's clear it can't be AcuteIllnessEncounterNurseSubsequent.
             if isChw then
                 AcuteIllnessEncounterCHW
