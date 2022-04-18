@@ -1922,8 +1922,9 @@ expectLaboratoryTask currentDate isChw assembled task =
                         else
                             assembled.secondInitialWithSubsequent
                 in
-                -- If fever is recorded on current encounter, and patient did not
-                -- test positive to Malaria during one of previous encounters,
+                -- If aptient was not diagnosed with Covid, and fever is recorded
+                -- on current encounter, and patient did not test positive
+                -- to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
                 covidNotDiagnosed
                     && feverRecorded assembled.measurements
