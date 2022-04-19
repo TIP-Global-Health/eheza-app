@@ -1739,9 +1739,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                                     -- Button is enabled becausethere are
                                     -- no actual tasks to be performed.
                                     True
-                                    -- When pausing, we don't close the encounter,
-                                    -- as it should happend on second phase.
-                                    (SetActivePage PinCodePage)
+                                    -- When saving, we'll also 'pause' the encounter
+                                    -- which actualy navigates to main menu page.
+                                    -- The encountre is closed on second phase.
+                                    saveMsg
 
                             _ ->
                                 div [ class "actions next-steps" ]
