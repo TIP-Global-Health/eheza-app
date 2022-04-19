@@ -149,7 +149,7 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL) {
     WHERE FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
 }
 
-$bootstrap_data_structures = file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL');
+$bootstrap_data_structures = rtrim(file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL'));
 $commands = explode(';', $bootstrap_data_structures);
 $k = 0;
 foreach ($commands as $command) {
