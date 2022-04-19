@@ -1645,7 +1645,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                             )
 
                         NextStepsSymptomsReliefGuidance ->
-                            -- We call it Medication Distribution, but
+                            -- We call it Relief Guidance, but
                             -- make use of Health Education form.
                             ( "next-steps-medication-distribution"
                             , isJust measurements.healthEducation

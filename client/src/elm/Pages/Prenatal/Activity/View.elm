@@ -32,7 +32,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForHypertension)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewPauseEncounterButton, viewRecommendedTreatmentForHypertension)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -46,6 +46,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
+        , viewEndEncounterDialog
         , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
@@ -1484,9 +1485,6 @@ viewNextStepsContent language currentDate isChw assembled data =
         tasks =
             resolveNextStepsTasks currentDate assembled
 
-        activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
-
         viewTask task =
             let
                 iconClass =
@@ -1551,9 +1549,28 @@ viewNextStepsContent language currentDate isChw assembled data =
                     )
                 |> Dict.fromList
 
+        showWaitTask =
+            -- Wait task is expected.
+            List.member NextStepsWait tasks
+                && -- There's one or less uncompleted task,
+                   -- which is the Wait task.
+                   (List.filter (nextStepsMeasurementTaken assembled >> not) tasks
+                        |> List.length
+                        |> (\length -> length < 2)
+                   )
+
+        tasksConsideringShowWaitTask =
+            if showWaitTask then
+                tasks
+
+            else
+                List.filter ((/=) NextStepsWait) tasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasksConsideringShowWaitTask)
+
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         recommendedTreatmentForm =
@@ -1715,30 +1732,31 @@ viewNextStepsContent language currentDate isChw assembled data =
                                             )
                                             measurements.labsResults
                                             |> Maybe.withDefault NoOp
-
-                            disabled =
-                                case task of
-                                    NextStepsWait ->
-                                        -- Allways allowing to save Wait, because
-                                        -- there are no actual tasks there.
-                                        False
-
-                                    _ ->
-                                        tasksCompleted /= totalTasks
                         in
-                        div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
-                            ]
+                        case task of
+                            NextStepsWait ->
+                                viewPauseEncounterButton language
+                                    -- Button is enabled becausethere are
+                                    -- no actual tasks to be performed.
+                                    True
+                                    -- When pausing, we don't close the encounter,
+                                    -- as it should happend on second phase.
+                                    (SetActivePage PinCodePage)
+
+                            _ ->
+                                div [ class "actions next-steps" ]
+                                    [ button
+                                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                        , onClick saveMsg
+                                        ]
+                                        [ text <| translate language Translate.Save ]
+                                    ]
                     )
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui four column grid" ] <|
-            List.map viewTask tasks
+            List.map viewTask tasksConsideringShowWaitTask
         ]
     , div
         [ classList

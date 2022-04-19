@@ -36,6 +36,7 @@ import Pages.Prenatal.Activity.Utils exposing (activityCompleted, expectActivity
 import Pages.Prenatal.Encounter.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.View exposing (viewPauseEncounterButton)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -488,21 +489,3 @@ viewActionButton language pendingActivities completedActivities pauseMsg setDial
 
     else
         viewEndEncounterButton language enabled setDialogStateMsg
-
-
-viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
-viewPauseEncounterButton language enabled pauseAction =
-    let
-        attributes =
-            if enabled then
-                [ class "ui fluid primary button"
-                , onClick pauseAction
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-    in
-    div [ class "actions" ]
-        [ button attributes
-            [ text <| translate language Translate.PauseEncounter ]
-        ]

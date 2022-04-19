@@ -2879,7 +2879,9 @@ update language currentDate id db msg model =
         SaveWait personId measurementId updatedValue secondPhaseRequired nextTask ->
             let
                 extraMsgs =
-                    generateNextStepsMsgs secondPhaseRequired nextTask
+                    -- When saving Wait activity, we pause the encounter, and
+                    -- navigate to main page.
+                    [ SetActivePage PinCodePage ]
 
                 appMsgs =
                     [ Backend.PrenatalEncounter.Model.SaveLabsResults personId measurementId updatedValue
