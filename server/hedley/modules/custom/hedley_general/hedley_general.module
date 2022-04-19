@@ -74,9 +74,6 @@ function hedley_general_advanced_queue_task_exists($queue_machine_name, $title, 
         // which is set to 20 minutes, by default.
         return TRUE;
       }
-      else {
-        watchdog('hedley_aq', "AQ task suspected as stuck: $task->item_id");
-      }
     }
   }
 
