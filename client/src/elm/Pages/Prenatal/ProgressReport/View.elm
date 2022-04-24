@@ -1556,118 +1556,124 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                         |> intoLIs
 
         hypertensionTreatmentMessage =
-            getMeasurementValueFunc measurements.recommendedTreatment
-                |> Maybe.andThen .signs
-                |> Maybe.map
-                    (EverySet.toList
-                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
-                        >> (\treatment ->
-                                if List.isEmpty treatment then
-                                    noTreatmentRecordedMessage
-
-                                else if List.member NoTreatmentForHypertension treatment then
-                                    noTreatmentAdministeredMessage
-
-                                else
-                                    diagnosisForProgressReport
-                                        ++ " - "
-                                        ++ translate language Translate.TreatedWithMethyldopa
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        |> intoLIs
-                           )
-                    )
-                |> Maybe.withDefault noTreatmentRecordedMessage
+            --@todo:
+            -- getMeasurementValueFunc measurements.recommendedTreatment
+            --     |> Maybe.andThen .signs
+            --     |> Maybe.map
+            --         (EverySet.toList
+            --             >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
+            --             >> (\treatment ->
+            --                     if List.isEmpty treatment then
+            --                         noTreatmentRecordedMessage
+            --
+            --                     else if List.member NoTreatmentForHypertension treatment then
+            --                         noTreatmentAdministeredMessage
+            --
+            --                     else
+            --                         diagnosisForProgressReport
+            --                             ++ " - "
+            --                             ++ translate language Translate.TreatedWithMethyldopa
+            --                             ++ " "
+            --                             ++ (String.toLower <| translate language Translate.On)
+            --                             ++ " "
+            --                             ++ formatDDMMYYYY date
+            --                             |> intoLIs
+            --                )
+            --         )
+            --     |> Maybe.withDefault noTreatmentRecordedMessage
+            noTreatmentRecordedMessage
 
         syphilisTreatmentMessage complications =
-            getMeasurementValueFunc measurements.recommendedTreatment
-                |> Maybe.andThen .signs
-                |> Maybe.map
-                    (EverySet.toList
-                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
-                        >> (\treatment ->
-                                if List.isEmpty treatment then
-                                    noTreatmentRecordedMessage
-
-                                else if List.member NoTreatmentForSyphilis treatment then
-                                    noTreatmentAdministeredMessage
-
-                                else
-                                    let
-                                        treatedWithMessage =
-                                            List.head treatment
-                                                |> Maybe.map
-                                                    (\medication ->
-                                                        " - "
-                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
-                                                            ++ " "
-                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
-                                                    )
-                                                |> Maybe.withDefault ""
-                                    in
-                                    diagnosisForProgressReport
-                                        ++ complications
-                                        ++ treatedWithMessage
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        |> intoLIs
-                           )
-                    )
-                |> Maybe.withDefault noTreatmentRecordedMessage
+            -- @todo:
+            -- getMeasurementValueFunc measurements.recommendedTreatment
+            --     |> Maybe.andThen .signs
+            --     |> Maybe.map
+            --         (EverySet.toList
+            --             >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
+            --             >> (\treatment ->
+            --                     if List.isEmpty treatment then
+            --                         noTreatmentRecordedMessage
+            --
+            --                     else if List.member NoTreatmentForSyphilis treatment then
+            --                         noTreatmentAdministeredMessage
+            --
+            --                     else
+            --                         let
+            --                             treatedWithMessage =
+            --                                 List.head treatment
+            --                                     |> Maybe.map
+            --                                         (\medication ->
+            --                                             " - "
+            --                                                 ++ (String.toLower <| translate language Translate.TreatedWith)
+            --                                                 ++ " "
+            --                                                 ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+            --                                         )
+            --                                     |> Maybe.withDefault ""
+            --                         in
+            --                         diagnosisForProgressReport
+            --                             ++ complications
+            --                             ++ treatedWithMessage
+            --                             ++ " "
+            --                             ++ (String.toLower <| translate language Translate.On)
+            --                             ++ " "
+            --                             ++ formatDDMMYYYY date
+            --                             |> intoLIs
+            --                )
+            --         )
+            --     |> Maybe.withDefault noTreatmentRecordedMessage
+            noTreatmentRecordedMessage
 
         malariaTreatmentMessage =
-            getMeasurementValueFunc measurements.recommendedTreatment
-                |> Maybe.andThen .signs
-                |> Maybe.map
-                    (EverySet.toList
-                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
-                        >> (\treatment ->
-                                if List.isEmpty treatment then
-                                    noTreatmentRecordedMessage
-
-                                else if List.member NoTreatmentForMalaria treatment then
-                                    noTreatmentAdministeredMessage
-
-                                else if List.member TreatementReferToHospital treatment then
-                                    referredToHospitalMessage
-
-                                else if List.member TreatmentWrittenProtocols treatment then
-                                    translate language Translate.MalariaWithGIComplications
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        ++ " - "
-                                        ++ translate language Translate.WrittenProtocolsFollowed
-                                        |> intoLIs
-
-                                else
-                                    let
-                                        treatedWithMessage =
-                                            List.head treatment
-                                                |> Maybe.map
-                                                    (\medication ->
-                                                        " - "
-                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
-                                                            ++ " "
-                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
-                                                    )
-                                                |> Maybe.withDefault ""
-                                    in
-                                    diagnosisForProgressReport
-                                        ++ treatedWithMessage
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        |> intoLIs
-                           )
-                    )
-                |> Maybe.withDefault noTreatmentRecordedMessage
+            --@todo:
+            -- getMeasurementValueFunc measurements.recommendedTreatment
+            --     |> Maybe.andThen .signs
+            --     |> Maybe.map
+            --         (EverySet.toList
+            --             >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+            --             >> (\treatment ->
+            --                     if List.isEmpty treatment then
+            --                         noTreatmentRecordedMessage
+            --
+            --                     else if List.member NoTreatmentForMalaria treatment then
+            --                         noTreatmentAdministeredMessage
+            --
+            --                     else if List.member TreatementReferToHospital treatment then
+            --                         referredToHospitalMessage
+            --
+            --                     else if List.member TreatmentWrittenProtocols treatment then
+            --                         translate language Translate.MalariaWithGIComplications
+            --                             ++ " "
+            --                             ++ (String.toLower <| translate language Translate.On)
+            --                             ++ " "
+            --                             ++ formatDDMMYYYY date
+            --                             ++ " - "
+            --                             ++ translate language Translate.WrittenProtocolsFollowed
+            --                             |> intoLIs
+            --
+            --                     else
+            --                         let
+            --                             treatedWithMessage =
+            --                                 List.head treatment
+            --                                     |> Maybe.map
+            --                                         (\medication ->
+            --                                             " - "
+            --                                                 ++ (String.toLower <| translate language Translate.TreatedWith)
+            --                                                 ++ " "
+            --                                                 ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+            --                                         )
+            --                                     |> Maybe.withDefault ""
+            --                         in
+            --                         diagnosisForProgressReport
+            --                             ++ treatedWithMessage
+            --                             ++ " "
+            --                             ++ (String.toLower <| translate language Translate.On)
+            --                             ++ " "
+            --                             ++ formatDDMMYYYY date
+            --                             |> intoLIs
+            --                )
+            --         )
+            --     |> Maybe.withDefault noTreatmentRecordedMessage
+            noTreatmentRecordedMessage
 
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
@@ -1771,16 +1777,18 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                         then
                             let
                                 malariaTreatmentReferToHospital =
-                                    getMeasurementValueFunc measurements.recommendedTreatment
-                                        |> Maybe.andThen .signs
-                                        |> Maybe.map
-                                            (EverySet.toList
-                                                >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
-                                                >> (\treatment ->
-                                                        List.member NoTreatmentForMalaria treatment
-                                                   )
-                                            )
-                                        |> Maybe.withDefault False
+                                    -- @todo:
+                                    -- getMeasurementValueFunc measurements.recommendedTreatment
+                                    --     |> Maybe.andThen .signs
+                                    --     |> Maybe.map
+                                    --         (EverySet.toList
+                                    --             >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+                                    --             >> (\treatment ->
+                                    --                     List.member NoTreatmentForMalaria treatment
+                                    --                )
+                                    --         )
+                                    --     |> Maybe.withDefault False
+                                    False
 
                                 hivProgramAtHC =
                                     Maybe.map (EverySet.member HIVProgramHC)

@@ -163,8 +163,8 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
-    | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
-    | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) Bool (Maybe NextStepsTask)
+      -- @todo:
+      -- | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue Bool (Maybe NextStepsTask)
 
 
@@ -393,7 +393,6 @@ type alias NextStepsData =
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
-    , recommendedTreatmentForm : RecommendedTreatmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -406,7 +405,6 @@ emptyNextStepsData =
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm
-    , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
 

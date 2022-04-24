@@ -2813,69 +2813,41 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetRecommendedTreatmentSign allowedSigns sign ->
-            let
-                form =
-                    Dict.get id db.prenatalMeasurements
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
-                            (.recommendedTreatment
-                                >> getMeasurementValueFunc
-                                >> recommendedTreatmentFormWithDefault model.nextStepsData.recommendedTreatmentForm
-                            )
-                        |> Maybe.withDefault model.nextStepsData.recommendedTreatmentForm
-
-                updatedSigns =
-                    -- Since we may have values from recurrent phase of encounter, we make
-                    -- sure to preserve them, before setting new value at inital phase.
-                    Maybe.map
-                        (\signs ->
-                            List.filter (\sign_ -> not <| List.member sign_ allowedSigns) signs
-                                |> List.append [ sign ]
-                        )
-                        form.signs
-                        |> Maybe.withDefault [ sign ]
-
-                updatedForm =
-                    { form | signs = Just updatedSigns }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | recommendedTreatmentForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveRecommendedTreatment personId saved secondPhaseRequired nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs secondPhaseRequired nextTask
-
-                appMsgs =
-                    model.nextStepsData.recommendedTreatmentForm
-                        |> toRecommendedTreatmentValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveRecommendedTreatment personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update language currentDate id db) extraMsgs
-
+        -- @todo:
+        -- SetRecommendedTreatmentSign allowedSigns sign ->
+        --     let
+        --         form =
+        --             Dict.get id db.prenatalMeasurements
+        --                 |> Maybe.andThen RemoteData.toMaybe
+        --                 |> Maybe.map
+        --                     (.recommendedTreatment
+        --                         >> getMeasurementValueFunc
+        --                         >> recommendedTreatmentFormWithDefault model.nextStepsData.recommendedTreatmentForm
+        --                     )
+        --                 |> Maybe.withDefault model.nextStepsData.recommendedTreatmentForm
+        --
+        --         updatedSigns =
+        --             -- Since we may have values from recurrent phase of encounter, we make
+        --             -- sure to preserve them, before setting new value at inital phase.
+        --             Maybe.map
+        --                 (\signs ->
+        --                     List.filter (\sign_ -> not <| List.member sign_ allowedSigns) signs
+        --                         |> List.append [ sign ]
+        --                 )
+        --                 form.signs
+        --                 |> Maybe.withDefault [ sign ]
+        --
+        --         updatedForm =
+        --             { form | signs = Just updatedSigns }
+        --
+        --         updatedData =
+        --             model.nextStepsData
+        --                 |> (\data -> { data | recommendedTreatmentForm = updatedForm })
+        --     in
+        --     ( { model | nextStepsData = updatedData }
+        --     , Cmd.none
+        --     , []
+        --     )
         SaveWait personId measurementId updatedValue secondPhaseRequired nextTask ->
             let
                 extraMsgs =

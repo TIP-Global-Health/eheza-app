@@ -884,30 +884,32 @@ hivProgramAtHC assembled =
         |> Maybe.withDefault False
 
 
-recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
-recommendedTreatmentFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (Maybe.map EverySet.toList value.signs) }
-            )
 
-
-toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValueWithDefault saved form =
-    recommendedTreatmentFormWithDefault form saved
-        |> toRecommendedTreatmentValue
-
-
-toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValue form =
-    Maybe.map
-        (\signs ->
-            { signs = EverySet.fromList signs |> Just
-            }
-        )
-        form.signs
+-- @todo:
+-- recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
+-- recommendedTreatmentFormWithDefault form saved =
+--     saved
+--         |> unwrap
+--             form
+--             (\value ->
+--                 { signs = or form.signs (Maybe.map EverySet.toList value.signs) }
+--             )
+--
+--
+-- toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+-- toRecommendedTreatmentValueWithDefault saved form =
+--     recommendedTreatmentFormWithDefault form saved
+--         |> toRecommendedTreatmentValue
+--
+--
+-- toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
+-- toRecommendedTreatmentValue form =
+--     Maybe.map
+--         (\signs ->
+--             { signs = EverySet.fromList signs |> Just
+--             }
+--         )
+--         form.signs
 
 
 {-| Recommended Treatment activity appears on both initial and recurrent encounters.
@@ -916,16 +918,20 @@ them must be set.
 In order to know if activity was completed or not, we check if at least one
 of those signs was set.
 -}
-recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> PrenatalMeasurements -> Bool
-recommendedTreatmentMeasurementTaken allowedSigns measurements =
-    getMeasurementValueFunc measurements.recommendedTreatment
-        |> Maybe.andThen .signs
-        |> Maybe.map
-            (\signs ->
-                List.any (\sign -> EverySet.member sign signs)
-                    allowedSigns
-            )
-        |> Maybe.withDefault False
+
+
+
+--@todo:
+-- recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> PrenatalMeasurements -> Bool
+-- recommendedTreatmentMeasurementTaken allowedSigns measurements =
+--     getMeasurementValueFunc measurements.recommendedTreatment
+--         |> Maybe.andThen .signs
+--         |> Maybe.map
+--             (\signs ->
+--                 List.any (\sign -> EverySet.member sign signs)
+--                     allowedSigns
+--             )
+--         |> Maybe.withDefault False
 
 
 resolveRecommendedTreatmentSectionState : Bool -> List RecommendedTreatmentSign -> Maybe (List RecommendedTreatmentSign) -> ( Int, Int )
@@ -952,32 +958,34 @@ resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
         ( 0, 0 )
 
 
-recommendTreatmentForHypertension : AssembledData -> RecommendedTreatmentSign
-recommendTreatmentForHypertension assembled =
-    let
-        numberOfTimesMethyldopaWasPerscribed =
-            assembled.nursePreviousMeasurementsWithDates
-                |> List.filter
-                    (\( _, _, measurements ) ->
-                        getMeasurementValueFunc measurements.recommendedTreatment
-                            |> Maybe.andThen .signs
-                            |> Maybe.map
-                                (\signs ->
-                                    List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
-                                )
-                            |> Maybe.withDefault False
-                    )
-                |> List.length
-    in
-    case numberOfTimesMethyldopaWasPerscribed of
-        0 ->
-            TreatmentMethyldopa2
 
-        1 ->
-            TreatmentMethyldopa3
-
-        _ ->
-            TreatmentMethyldopa4
+-- @todo:
+-- recommendTreatmentForHypertension : AssembledData -> RecommendedTreatmentSign
+-- recommendTreatmentForHypertension assembled =
+--     let
+--         numberOfTimesMethyldopaWasPerscribed =
+--             assembled.nursePreviousMeasurementsWithDates
+--                 |> List.filter
+--                     (\( _, _, measurements ) ->
+--                         getMeasurementValueFunc measurements.recommendedTreatment
+--                             |> Maybe.andThen .signs
+--                             |> Maybe.map
+--                                 (\signs ->
+--                                     List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
+--                                 )
+--                             |> Maybe.withDefault False
+--                     )
+--                 |> List.length
+--     in
+--     case numberOfTimesMethyldopaWasPerscribed of
+--         0 ->
+--             TreatmentMethyldopa2
+--
+--         1 ->
+--             TreatmentMethyldopa3
+--
+--         _ ->
+--             TreatmentMethyldopa4
 
 
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign

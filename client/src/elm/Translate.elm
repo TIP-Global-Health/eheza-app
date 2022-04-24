@@ -7994,11 +7994,6 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.Prenatal.Activity.Types.NextStepsRecommendedTreatment ->
-                    { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Nothing
-                    }
-
                 Pages.Prenatal.Activity.Types.NextStepsWait ->
                     { english = "Wait"
                     , kinyarwanda = Nothing
@@ -8014,11 +8009,6 @@ translationSet trans =
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
-                    }
-
-                Pages.Prenatal.RecurrentActivity.Types.NextStepsRecommendedTreatment ->
-                    { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Nothing
                     }
 
         PrenatalHIVProgramHelper ->

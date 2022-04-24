@@ -28,12 +28,12 @@ import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
-import Pages.Prenatal.Model exposing (AssembledData, RecommendedTreatmentForm)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewRecommendedTreatmentForHypertension)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -643,9 +643,6 @@ viewNextStepsContent language currentDate assembled data =
                         NextStepsMedicationDistribution ->
                             "next-steps-medication-distribution"
 
-                        NextStepsRecommendedTreatment ->
-                            "next-steps-treatment"
-
                 isActive =
                     activeTask == Just task
 
@@ -711,12 +708,6 @@ viewNextStepsContent language currentDate assembled data =
                             SetMedicationDistributionAdministrationNote
                             medicationsRecurrentPhase
 
-                Just NextStepsRecommendedTreatment ->
-                    measurements.recommendedTreatment
-                        |> getMeasurementValueFunc
-                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-                        |> viewRecommendedTreatmentForm language currentDate assembled
-
                 Nothing ->
                     emptyNode
 
@@ -741,9 +732,6 @@ viewNextStepsContent language currentDate assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution nextTask
-
-                                    NextStepsRecommendedTreatment ->
-                                        SaveRecommendedTreatment personId measurements.recommendedTreatment nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -769,88 +757,90 @@ viewNextStepsContent language currentDate assembled data =
     ]
 
 
-viewRecommendedTreatmentForm :
-    Language
-    -> NominalDate
-    -> AssembledData
-    -> RecommendedTreatmentForm
-    -> Html Msg
-viewRecommendedTreatmentForm language currentDate assembled form =
-    let
-        hypertensionSection =
-            if diagnosedHypertension assembled then
-                viewRecommendedTreatmentForHypertension language
-                    currentDate
-                    (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension)
-                    assembled
-                    form
 
-            else
-                []
-
-        syphilisSection =
-            if diagnosedSyphilis assembled then
-                viewRecommendedTreatmentForSyphilis language currentDate recommendedTreatmentSignsForSyphilis assembled form
-
-            else
-                []
-    in
-    div [ class "ui form recommended-treatment" ] <|
-        hypertensionSection
-            ++ syphilisSection
-
-
-viewRecommendedTreatmentForSyphilis :
-    Language
-    -> NominalDate
-    -> List RecommendedTreatmentSign
-    -> AssembledData
-    -> RecommendedTreatmentForm
-    -> List (Html Msg)
-viewRecommendedTreatmentForSyphilis language currentDate allowedSigns assembled form =
-    let
-        -- Since we may have values set for another diagnosis, or from
-        -- inital phase of encounter, we need to filter them out,
-        -- to be able to determine current value.
-        currentValue =
-            Maybe.andThen
-                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
-                    >> List.head
-                )
-                form.signs
-
-        warning =
-            Maybe.map
-                (\signs ->
-                    if
-                        List.any (\sign -> List.member sign signs)
-                            [ TreatementErythromycin, TreatementAzithromycin ]
-                    then
-                        div [ class "warning" ]
-                            [ img [ src "assets/images/exclamation-red.png" ] []
-                            , text <| translate language Translate.SyphilisRecommendedTreatmentWarning
-                            ]
-
-                    else
-                        emptyNode
-                )
-                form.signs
-                |> Maybe.withDefault emptyNode
-    in
-    [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
-    , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-    , div [ class "instructions" ]
-        [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
-        , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
-        ]
-    , viewCheckBoxSelectCustomInput language
-        recommendedTreatmentSignsForSyphilis
-        []
-        currentValue
-        (SetRecommendedTreatmentSign allowedSigns)
-        (viewTreatmentOptionForSyphilis language)
-    , warning
-    ]
+-- @todo:
+-- viewRecommendedTreatmentForm :
+--     Language
+--     -> NominalDate
+--     -> AssembledData
+--     -> RecommendedTreatmentForm
+--     -> Html Msg
+-- viewRecommendedTreatmentForm language currentDate assembled form =
+--     let
+--         hypertensionSection =
+--             if diagnosedHypertension assembled then
+--                 viewRecommendedTreatmentForHypertension language
+--                     currentDate
+--                     (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension)
+--                     assembled
+--                     form
+--
+--             else
+--                 []
+--
+--         syphilisSection =
+--             if diagnosedSyphilis assembled then
+--                 viewRecommendedTreatmentForSyphilis language currentDate recommendedTreatmentSignsForSyphilis assembled form
+--
+--             else
+--                 []
+--     in
+--     div [ class "ui form recommended-treatment" ] <|
+--         hypertensionSection
+--             ++ syphilisSection
+--
+--
+-- viewRecommendedTreatmentForSyphilis :
+--     Language
+--     -> NominalDate
+--     -> List RecommendedTreatmentSign
+--     -> AssembledData
+--     -> RecommendedTreatmentForm
+--     -> List (Html Msg)
+-- viewRecommendedTreatmentForSyphilis language currentDate allowedSigns assembled form =
+--     let
+--         -- Since we may have values set for another diagnosis, or from
+--         -- inital phase of encounter, we need to filter them out,
+--         -- to be able to determine current value.
+--         currentValue =
+--             Maybe.andThen
+--                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
+--                     >> List.head
+--                 )
+--                 form.signs
+--
+--         warning =
+--             Maybe.map
+--                 (\signs ->
+--                     if
+--                         List.any (\sign -> List.member sign signs)
+--                             [ TreatementErythromycin, TreatementAzithromycin ]
+--                     then
+--                         div [ class "warning" ]
+--                             [ img [ src "assets/images/exclamation-red.png" ] []
+--                             , text <| translate language Translate.SyphilisRecommendedTreatmentWarning
+--                             ]
+--
+--                     else
+--                         emptyNode
+--                 )
+--                 form.signs
+--                 |> Maybe.withDefault emptyNode
+--     in
+--     [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+--     , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+--     , div [ class "instructions" ]
+--         [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+--         , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
+--         ]
+--     , viewCheckBoxSelectCustomInput language
+--         recommendedTreatmentSignsForSyphilis
+--         []
+--         currentValue
+--         (SetRecommendedTreatmentSign allowedSigns)
+--         (viewTreatmentOptionForSyphilis language)
+--     , warning
+--     ]
 
 
 viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any

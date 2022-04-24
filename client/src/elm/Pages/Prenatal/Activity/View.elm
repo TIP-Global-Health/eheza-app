@@ -32,7 +32,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewPauseEncounterButton, viewRecommendedTreatmentForHypertension)
+import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewPauseEncounterButton)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -1507,9 +1507,6 @@ viewNextStepsContent language currentDate isChw assembled data =
                         NextStepsMedicationDistribution ->
                             "next-steps-treatment"
 
-                        NextStepsRecommendedTreatment ->
-                            "next-steps-treatment"
-
                         NextStepsWait ->
                             "next-steps-wait"
 
@@ -1573,11 +1570,6 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        recommendedTreatmentForm =
-            measurements.recommendedTreatment
-                |> getMeasurementValueFunc
-                |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
@@ -1634,9 +1626,6 @@ viewNextStepsContent language currentDate isChw assembled data =
                             SetMedicationDistributionAdministrationNote
                             medicationsInitialPhase
 
-                Just NextStepsRecommendedTreatment ->
-                    viewRecommendedTreatmentForm language currentDate assembled recommendedTreatmentForm
-
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled
 
@@ -1645,35 +1634,35 @@ viewNextStepsContent language currentDate isChw assembled data =
 
         tasksAfterSave =
             case activeTask of
-                Just NextStepsRecommendedTreatment ->
-                    let
-                        -- We know if patient was referred to hospital
-                        -- due to Malaria, based on saved measurement.
-                        referredToHospitalBeforeSave =
-                            getMeasurementValueFunc measurements.recommendedTreatment
-                                |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
-                                |> Maybe.withDefault False
-
-                        -- We know if patient will be referred to hospital
-                        -- due to Malaria, based on edited form.
-                        referredToHospitalAfterSave =
-                            Maybe.map (List.member TreatementReferToHospital)
-                                recommendedTreatmentForm.signs
-                                |> Maybe.withDefault False
-                    in
-                    if referredToHospitalAfterSave then
-                        EverySet.fromList tasks
-                            |> EverySet.insert NextStepsSendToHC
-                            |> EverySet.toList
-
-                    else if referredToHospitalBeforeSave then
-                        EverySet.fromList tasks
-                            |> EverySet.remove NextStepsSendToHC
-                            |> EverySet.toList
-
-                    else
-                        tasks
-
+                -- @todo:
+                -- Just NextStepsRecommendedTreatment ->
+                --     let
+                --         -- We know if patient was referred to hospital
+                --         -- due to Malaria, based on saved measurement.
+                --         referredToHospitalBeforeSave =
+                --             getMeasurementValueFunc measurements.recommendedTreatment
+                --                 |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
+                --                 |> Maybe.withDefault False
+                --
+                --         -- We know if patient will be referred to hospital
+                --         -- due to Malaria, based on edited form.
+                --         referredToHospitalAfterSave =
+                --             Maybe.map (List.member TreatementReferToHospital)
+                --                 recommendedTreatmentForm.signs
+                --                 |> Maybe.withDefault False
+                --     in
+                --     if referredToHospitalAfterSave then
+                --         EverySet.fromList tasks
+                --             |> EverySet.insert NextStepsSendToHC
+                --             |> EverySet.toList
+                --
+                --     else if referredToHospitalBeforeSave then
+                --         EverySet.fromList tasks
+                --             |> EverySet.remove NextStepsSendToHC
+                --             |> EverySet.toList
+                --
+                --     else
+                --         tasks
                 _ ->
                     tasks
 
@@ -1717,9 +1706,6 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution secondPhase nextTask
-
-                                    NextStepsRecommendedTreatment ->
-                                        SaveRecommendedTreatment personId measurements.recommendedTreatment secondPhase nextTask
 
                                     NextStepsWait ->
                                         Maybe.map
@@ -3608,89 +3594,89 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
         )
 
 
-viewRecommendedTreatmentForm :
-    Language
-    -> NominalDate
-    -> AssembledData
-    -> RecommendedTreatmentForm
-    -> Html Msg
-viewRecommendedTreatmentForm language currentDate assembled form =
-    let
-        hypertensionSection =
-            if diagnosedHypertension assembled then
-                viewRecommendedTreatmentForHypertension language
-                    currentDate
-                    (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension)
-                    assembled
-                    form
 
-            else
-                []
-
-        malariaSection =
-            if diagnosedMalaria assembled then
-                viewRecommendedTreatmentForMalaria language currentDate recommendedTreatmentSignsForMalaria assembled form
-
-            else
-                []
-    in
-    div [ class "ui form recommended-treatment" ] <|
-        hypertensionSection
-            ++ malariaSection
-
-
-viewRecommendedTreatmentForMalaria :
-    Language
-    -> NominalDate
-    -> List RecommendedTreatmentSign
-    -> AssembledData
-    -> RecommendedTreatmentForm
-    -> List (Html Msg)
-viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled form =
-    let
-        egaInWeeks =
-            Maybe.map
-                (calculateEGAWeeks currentDate)
-                assembled.globalLmpDate
-
-        medicationTreatment =
-            Maybe.map
-                (\egaWeeks ->
-                    if egaWeeks <= 14 then
-                        TreatmentQuinineSulphate
-
-                    else
-                        TreatmentCoartem
-                )
-                egaInWeeks
-                |> Maybe.withDefault TreatmentQuinineSulphate
-
-        -- Since we may have values set for another diagnosis, or from
-        -- recurrent phase of encounter, we need to filter them out,
-        -- to be able to determine current value.
-        currentValue =
-            Maybe.andThen
-                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
-                    >> List.head
-                )
-                form.signs
-    in
-    [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
-    , h2 []
-        [ text <| translate language Translate.ActionsToTake ++ ":" ]
-    , div [ class "instructions" ]
-        [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
-    , viewCheckBoxSelectInput language
-        [ medicationTreatment
-        , TreatmentWrittenProtocols
-        , TreatementReferToHospital
-        , NoTreatmentForMalaria
-        ]
-        []
-        currentValue
-        (SetRecommendedTreatmentSign allowedSigns)
-        Translate.RecommendedTreatmentSignLabel
-    ]
+-- @todo:
+-- viewRecommendedTreatmentForm :
+--     Language
+--     -> NominalDate
+--     -> AssembledData
+--     -> RecommendedTreatmentForm
+--     -> Html Msg
+-- viewRecommendedTreatmentForm language currentDate assembled form =
+--     let
+--         hypertensionSection =
+--             if diagnosedHypertension assembled then
+--                 viewRecommendedTreatmentForHypertension language
+--                     currentDate
+--                     (SetRecommendedTreatmentSign recommendedTreatmentSignsForHypertension)
+--                     assembled
+--                     form
+--
+--             else
+--                 []
+--
+--         malariaSection =
+--             if diagnosedMalaria assembled then
+--                 viewRecommendedTreatmentForMalaria language currentDate recommendedTreatmentSignsForMalaria assembled form
+--
+--             else
+--                 []
+--     in
+--     div [ class "ui form recommended-treatment" ] <|
+--         hypertensionSection
+--             ++ malariaSection
+-- viewRecommendedTreatmentForMalaria :
+--     Language
+--     -> NominalDate
+--     -> List RecommendedTreatmentSign
+--     -> AssembledData
+--     -> RecommendedTreatmentForm
+--     -> List (Html Msg)
+-- viewRecommendedTreatmentForMalaria language currentDate allowedSigns assembled form =
+--     let
+--         egaInWeeks =
+--             Maybe.map
+--                 (calculateEGAWeeks currentDate)
+--                 assembled.globalLmpDate
+--
+--         medicationTreatment =
+--             Maybe.map
+--                 (\egaWeeks ->
+--                     if egaWeeks <= 14 then
+--                         TreatmentQuinineSulphate
+--
+--                     else
+--                         TreatmentCoartem
+--                 )
+--                 egaInWeeks
+--                 |> Maybe.withDefault TreatmentQuinineSulphate
+--
+--         -- Since we may have values set for another diagnosis, or from
+--         -- recurrent phase of encounter, we need to filter them out,
+--         -- to be able to determine current value.
+--         currentValue =
+--             Maybe.andThen
+--                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+--                     >> List.head
+--                 )
+--                 form.signs
+--     in
+--     [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+--     , h2 []
+--         [ text <| translate language Translate.ActionsToTake ++ ":" ]
+--     , div [ class "instructions" ]
+--         [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+--     , viewCheckBoxSelectInput language
+--         [ medicationTreatment
+--         , TreatmentWrittenProtocols
+--         , TreatementReferToHospital
+--         , NoTreatmentForMalaria
+--         ]
+--         []
+--         currentValue
+--         (SetRecommendedTreatmentSign allowedSigns)
+--         Translate.RecommendedTreatmentSignLabel
+--     ]
 
 
 viewWaitForm : Language -> NominalDate -> AssembledData -> Html Msg

@@ -2545,30 +2545,27 @@ encodeMedicationNonAdministrationSign sign =
                 "none"
 
 
-encodePrenatalRecommendedTreatment : PrenatalRecommendedTreatment -> List ( String, Value )
-encodePrenatalRecommendedTreatment =
-    encodePrenatalMeasurement encodeRecommendedTreatmentValue
 
-
-encodeRecommendedTreatmentValue : RecommendedTreatmentValue -> List ( String, Value )
-encodeRecommendedTreatmentValue value =
-    let
-        treatment =
-            Maybe.map
-                (\signs ->
-                    if EverySet.isEmpty signs then
-                        []
-
-                    else
-                        [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
-                )
-                value.signs
-                |> Maybe.withDefault []
-    in
-    treatment
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_recommended_treatment" )
-           ]
+-- @todo:
+-- encodeRecommendedTreatmentValue : RecommendedTreatmentValue -> List ( String, Value )
+-- encodeRecommendedTreatmentValue value =
+--     let
+--         treatment =
+--             Maybe.map
+--                 (\signs ->
+--                     if EverySet.isEmpty signs then
+--                         []
+--
+--                     else
+--                         [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
+--                 )
+--                 value.signs
+--                 |> Maybe.withDefault []
+--     in
+--     treatment
+--         ++ [ ( "deleted", bool False )
+--            , ( "type", string "prenatal_recommended_treatment" )
+--            ]
 
 
 encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value

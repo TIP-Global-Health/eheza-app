@@ -55,8 +55,11 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
-    | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
-    | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
+
+
+
+-- @todo:
+-- | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
 
 
 type alias Model =
@@ -117,7 +120,6 @@ emptyLabResultsData =
 type alias NextStepsData =
     { sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
-    , recommendedTreatmentForm : RecommendedTreatmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -126,7 +128,6 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = emptyMedicationDistributionForm
-    , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
 

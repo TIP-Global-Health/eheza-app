@@ -378,7 +378,7 @@ toPrenatalUrineDipstickResultsValue form =
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
     -- The order is important. Do not change.
-    [ NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC ]
+    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter (expectNextStepsTask currentDate assembled)
 
 
@@ -404,13 +404,15 @@ expectNextStepsTask currentDate assembled task =
                         |> not
                    )
 
-        -- Exclusive Nurse task.
-        NextStepsRecommendedTreatment ->
-            -- Emergency refferal is not required.
-            (not <| emergencyReferalRequired assembled)
-                && (diagnosedSyphilis assembled
-                        || diagnosedHypertension assembled
-                   )
+
+
+-- todo:
+-- NextStepsRecommendedTreatment ->
+--     -- Emergency refferal is not required.
+--     (not <| emergencyReferalRequired assembled)
+--         && (diagnosedSyphilis assembled
+--                 || diagnosedHypertension assembled
+--            )
 
 
 diagnosedSyphilis : AssembledData -> Bool
@@ -442,23 +444,26 @@ nextStepsMeasurementTaken assembled task =
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
-        NextStepsRecommendedTreatment ->
-            let
-                syphilisTreatmentCompleted =
-                    if diagnosedSyphilis assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForSyphilis assembled.measurements
 
-                    else
-                        True
 
-                hypertensionTreatmentCompleted =
-                    if diagnosedHypertension assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
-
-                    else
-                        True
-            in
-            syphilisTreatmentCompleted && hypertensionTreatmentCompleted
+--@todo:
+-- NextStepsRecommendedTreatment ->
+--     let
+--         syphilisTreatmentCompleted =
+--             if diagnosedSyphilis assembled then
+--                 recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForSyphilis assembled.measurements
+--
+--             else
+--                 True
+--
+--         hypertensionTreatmentCompleted =
+--             if diagnosedHypertension assembled then
+--                 recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+--
+--             else
+--                 True
+--     in
+--     syphilisTreatmentCompleted && hypertensionTreatmentCompleted
 
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
@@ -519,22 +524,25 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             in
             ( completed, total )
 
-        NextStepsRecommendedTreatment ->
-            let
-                form =
-                    assembled.measurements.recommendedTreatment
-                        |> getMeasurementValueFunc
-                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
 
-                ( syphilisSectionCompleted, syphilisSectionActive ) =
-                    resolveRecommendedTreatmentSectionState (diagnosedSyphilis assembled) recommendedTreatmentSignsForSyphilis form.signs
 
-                ( hypertensionSectionCompleted, hypertensionSectionActive ) =
-                    resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
-            in
-            ( syphilisSectionCompleted + hypertensionSectionCompleted
-            , syphilisSectionActive + hypertensionSectionActive
-            )
+-- @todo:
+-- NextStepsRecommendedTreatment ->
+--     let
+--         form =
+--             assembled.measurements.recommendedTreatment
+--                 |> getMeasurementValueFunc
+--                 |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
+--
+--         ( syphilisSectionCompleted, syphilisSectionActive ) =
+--             resolveRecommendedTreatmentSectionState (diagnosedSyphilis assembled) recommendedTreatmentSignsForSyphilis form.signs
+--
+--         ( hypertensionSectionCompleted, hypertensionSectionActive ) =
+--             resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
+--     in
+--     ( syphilisSectionCompleted + hypertensionSectionCompleted
+--     , syphilisSectionActive + hypertensionSectionActive
+--     )
 
 
 emergencyReferalRequired : AssembledData -> Bool

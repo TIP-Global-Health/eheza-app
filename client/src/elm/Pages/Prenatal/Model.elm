@@ -39,11 +39,8 @@ emptyMedicationDistributionForm =
     MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
-type alias RecommendedTreatmentForm =
-    { signs : Maybe (List RecommendedTreatmentSign)
-    }
 
-
-emptyRecommendedTreatmentForm : RecommendedTreatmentForm
-emptyRecommendedTreatmentForm =
-    RecommendedTreatmentForm Nothing
+-- @todo:
+-- type alias RecommendedTreatmentForm =
+--     { signs : Maybe (List RecommendedTreatmentSign)
+--     }

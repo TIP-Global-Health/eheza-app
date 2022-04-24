@@ -600,9 +600,6 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
                 viewMeasurement identifier "Prenatal Random Blood Sugar Test"
 
-            BackendAuthorityPrenatalRecommendedTreatment identifier ->
-                viewMeasurement identifier "Prenatal Recommended Treatment"
-
             BackendAuthorityPrenatalSendToHC identifier ->
                 viewMeasurement identifier "Prenatal Send to HC"
 

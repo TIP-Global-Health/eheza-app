@@ -715,11 +715,6 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalRandomBloodSugarTest
                             BackendAuthorityPrenatalRandomBloodSugarTest
 
-                    "prenatal_recommended_treatment" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalRecommendedTreatment
-                            BackendAuthorityPrenatalRecommendedTreatment
-
                     "prenatal_send_to_hc" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalSendToHc

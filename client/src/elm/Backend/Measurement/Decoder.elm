@@ -126,7 +126,6 @@ decodePrenatalMeasurements =
         |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
         |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
         |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
-        |> optional "prenatal_recommended_treatment" (decodeHead decodePrenatalRecommendedTreatment) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -752,15 +751,12 @@ decodePrenatalMedicationDistribution =
     decodePrenatalMeasurement decodeMedicationDistributionValue
 
 
-decodePrenatalRecommendedTreatment : Decoder PrenatalRecommendedTreatment
-decodePrenatalRecommendedTreatment =
-    decodePrenatalMeasurement decodeRecommendedTreatmentValue
 
-
-decodeRecommendedTreatmentValue : Decoder RecommendedTreatmentValue
-decodeRecommendedTreatmentValue =
-    succeed RecommendedTreatmentValue
-        |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
+-- @todo:
+-- decodeRecommendedTreatmentValue : Decoder RecommendedTreatmentValue
+-- decodeRecommendedTreatmentValue =
+--     succeed RecommendedTreatmentValue
+--         |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
 
 
 decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign

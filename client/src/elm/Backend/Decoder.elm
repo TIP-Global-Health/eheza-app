@@ -283,9 +283,6 @@ decodeRevision =
                     "prenatal_random_blood_sugar_test" ->
                         decodeWithUuid PrenatalRandomBloodSugarTestRevision decodePrenatalRandomBloodSugarTest
 
-                    "prenatal_recommended_treatment" ->
-                        decodeWithUuid PrenatalRecommendedTreatmentRevision decodePrenatalRecommendedTreatment
-
                     "prenatal_send_to_hc" ->
                         decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
 
