@@ -16,6 +16,7 @@ class HedleyRestfulPrenatalMedicationDistribution extends HedleyRestfulPrenatalA
   protected $multiFields = [
     'field_prescribed_medication',
     'field_non_administration_reason',
+    'field_recommended_treatment',
   ];
 
 }
