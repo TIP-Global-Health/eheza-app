@@ -111,16 +111,6 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create prenatal_recommended_treatment content'.
-  $permissions['create prenatal_recommended_treatment content'] = array(
-    'name' => 'create prenatal_recommended_treatment content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'create prenatal_send_to_hc content'.
   $permissions['create prenatal_send_to_hc content'] = array(
     'name' => 'create prenatal_send_to_hc content',
@@ -241,15 +231,6 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any prenatal_recommended_treatment content'.
-  $permissions['delete any prenatal_recommended_treatment content'] = array(
-    'name' => 'delete any prenatal_recommended_treatment content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete any prenatal_send_to_hc content'.
   $permissions['delete any prenatal_send_to_hc content'] = array(
     'name' => 'delete any prenatal_send_to_hc content',
@@ -361,15 +342,6 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_random_blood_sugar_test content'.
   $permissions['delete own prenatal_random_blood_sugar_test content'] = array(
     'name' => 'delete own prenatal_random_blood_sugar_test content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own prenatal_recommended_treatment content'.
-  $permissions['delete own prenatal_recommended_treatment content'] = array(
-    'name' => 'delete own prenatal_recommended_treatment content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -503,16 +475,6 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any prenatal_recommended_treatment content'.
-  $permissions['edit any prenatal_recommended_treatment content'] = array(
-    'name' => 'edit any prenatal_recommended_treatment content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'edit any prenatal_send_to_hc content'.
   $permissions['edit any prenatal_send_to_hc content'] = array(
     'name' => 'edit any prenatal_send_to_hc content',
@@ -636,16 +598,6 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_random_blood_sugar_test content'.
   $permissions['edit own prenatal_random_blood_sugar_test content'] = array(
     'name' => 'edit own prenatal_random_blood_sugar_test content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own prenatal_recommended_treatment content'.
-  $permissions['edit own prenatal_recommended_treatment content'] = array(
-    'name' => 'edit own prenatal_recommended_treatment content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
