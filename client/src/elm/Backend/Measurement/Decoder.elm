@@ -748,15 +748,15 @@ decodePrenatalLaboratoryTest =
 
 decodePrenatalMedicationDistribution : Decoder PrenatalMedicationDistribution
 decodePrenatalMedicationDistribution =
-    decodePrenatalMeasurement decodeMedicationDistributionValue
+    decodePrenatalMeasurement decodePrenatalMedicationDistributionValue
 
 
-
--- @todo:
--- decodeRecommendedTreatmentValue : Decoder RecommendedTreatmentValue
--- decodeRecommendedTreatmentValue =
---     succeed RecommendedTreatmentValue
---         |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
+decodePrenatalMedicationDistributionValue : Decoder PrenatalMedicationDistributionValue
+decodePrenatalMedicationDistributionValue =
+    succeed PrenatalMedicationDistributionValue
+        |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
+        |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
+        |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
 
 
 decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign

@@ -850,7 +850,9 @@ emptySelectOption isSelected =
         [ text "" ]
 
 
-resolveMedicationsNonAdministrationReasons : MedicationDistributionValue -> Dict MedicationDistributionSign AdministrationNote
+resolveMedicationsNonAdministrationReasons :
+    { v | nonAdministrationSigns : EverySet MedicationNonAdministrationSign }
+    -> Dict MedicationDistributionSign AdministrationNote
 resolveMedicationsNonAdministrationReasons value =
     EverySet.toList value.nonAdministrationSigns
         |> List.filterMap

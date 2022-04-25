@@ -98,7 +98,7 @@ emergencyReferralDiagnosesRecurrent =
     ]
 
 
-medicationDistributionFormWithDefaultInitialPhase : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefaultInitialPhase : MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefaultInitialPhase form saved =
     saved
         |> unwrap
@@ -119,11 +119,12 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , iron = EverySet.member Iron value.distributionSigns |> Just
                 , folicAcid = EverySet.member FolicAcid value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
+                , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 }
             )
 
 
-medicationDistributionFormWithDefaultRecurrentPhase : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefaultRecurrentPhase : MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefaultRecurrentPhase form saved =
     saved
         |> unwrap
@@ -144,11 +145,12 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 , dolutegravir = EverySet.member Dolutegravir value.distributionSigns |> Just
                 , tdf3tc = EverySet.member TDF3TC value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
+                , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 }
             )
 
 
-medicationDistributionResolveFromValue : List MedicationDistributionSign -> MedicationDistributionValue -> MedicationDistributionSign -> Maybe Bool
+medicationDistributionResolveFromValue : List MedicationDistributionSign -> PrenatalMedicationDistributionValue -> MedicationDistributionSign -> Maybe Bool
 medicationDistributionResolveFromValue allowedSigns value sign =
     let
         valueSetForSign =
@@ -212,7 +214,7 @@ medicationDistributionResolveFromValue allowedSigns value sign =
         Nothing
 
 
-medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefault valueForNone form saved =
     case valueForNone of
         NoMedicationDistributionSignsInitialPhase ->
@@ -226,23 +228,23 @@ medicationDistributionFormWithDefault valueForNone form saved =
             form
 
 
-toMedicationDistributionValueWithDefaultInitialPhase : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefaultInitialPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultInitialPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsInitialPhase
 
 
-toMedicationDistributionValueWithDefaultRecurrentPhase : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefaultRecurrentPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultRecurrentPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsRecurrentPhase
 
 
-toMedicationDistributionValueWithDefault : MedicationDistributionSign -> Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefault : MedicationDistributionSign -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefault valueForNone saved form =
     medicationDistributionFormWithDefault valueForNone form saved
         |> toMedicationDistributionValue valueForNone
 
 
-toMedicationDistributionValue : MedicationDistributionSign -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValue : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValue valueForNone form =
     let
         distributionSigns =
@@ -262,9 +264,14 @@ toMedicationDistributionValue valueForNone form =
                 |> Maybe.withDefault EverySet.empty
                 |> ifEverySetEmpty NoMedicationNonAdministrationSigns
                 |> Just
+
+        recommendedTreatmentSigns =
+            Maybe.map EverySet.fromList form.recommendedTreatmentSigns
+                |> Just
     in
-    Maybe.map MedicationDistributionValue distributionSigns
+    Maybe.map PrenatalMedicationDistributionValue distributionSigns
         |> andMap nonAdministrationSigns
+        |> andMap recommendedTreatmentSigns
 
 
 resolveMedicationDistributionInputsAndTasks :
@@ -884,54 +891,22 @@ hivProgramAtHC assembled =
         |> Maybe.withDefault False
 
 
-
--- @todo:
--- recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
--- recommendedTreatmentFormWithDefault form saved =
---     saved
---         |> unwrap
---             form
---             (\value ->
---                 { signs = or form.signs (Maybe.map EverySet.toList value.signs) }
---             )
---
---
--- toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
--- toRecommendedTreatmentValueWithDefault saved form =
---     recommendedTreatmentFormWithDefault form saved
---         |> toRecommendedTreatmentValue
---
---
--- toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
--- toRecommendedTreatmentValue form =
---     Maybe.map
---         (\signs ->
---             { signs = EverySet.fromList signs |> Just
---             }
---         )
---         form.signs
-
-
 {-| Recommended Treatment activity appears on both initial and recurrent encounters.
 Each one of them got unique set of signs that can be used, and at least one of
 them must be set.
 In order to know if activity was completed or not, we check if at least one
 of those signs was set.
 -}
-
-
-
---@todo:
--- recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> PrenatalMeasurements -> Bool
--- recommendedTreatmentMeasurementTaken allowedSigns measurements =
---     getMeasurementValueFunc measurements.recommendedTreatment
---         |> Maybe.andThen .signs
---         |> Maybe.map
---             (\signs ->
---                 List.any (\sign -> EverySet.member sign signs)
---                     allowedSigns
---             )
---         |> Maybe.withDefault False
+recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> PrenatalMeasurements -> Bool
+recommendedTreatmentMeasurementTaken allowedSigns measurements =
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.andThen .recommendedTreatmentSigns
+        |> Maybe.map
+            (\signs ->
+                List.any (\sign -> EverySet.member sign signs)
+                    allowedSigns
+            )
+        |> Maybe.withDefault False
 
 
 resolveRecommendedTreatmentSectionState : Bool -> List RecommendedTreatmentSign -> Maybe (List RecommendedTreatmentSign) -> ( Int, Int )
@@ -958,34 +933,32 @@ resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
         ( 0, 0 )
 
 
+recommendTreatmentForHypertension : AssembledData -> RecommendedTreatmentSign
+recommendTreatmentForHypertension assembled =
+    let
+        numberOfTimesMethyldopaWasPerscribed =
+            assembled.nursePreviousMeasurementsWithDates
+                |> List.filter
+                    (\( _, _, measurements ) ->
+                        getMeasurementValueFunc measurements.medicationDistribution
+                            |> Maybe.andThen .recommendedTreatmentSigns
+                            |> Maybe.map
+                                (\signs ->
+                                    List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
+                                )
+                            |> Maybe.withDefault False
+                    )
+                |> List.length
+    in
+    case numberOfTimesMethyldopaWasPerscribed of
+        0 ->
+            TreatmentMethyldopa2
 
--- @todo:
--- recommendTreatmentForHypertension : AssembledData -> RecommendedTreatmentSign
--- recommendTreatmentForHypertension assembled =
---     let
---         numberOfTimesMethyldopaWasPerscribed =
---             assembled.nursePreviousMeasurementsWithDates
---                 |> List.filter
---                     (\( _, _, measurements ) ->
---                         getMeasurementValueFunc measurements.recommendedTreatment
---                             |> Maybe.andThen .signs
---                             |> Maybe.map
---                                 (\signs ->
---                                     List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
---                                 )
---                             |> Maybe.withDefault False
---                     )
---                 |> List.length
---     in
---     case numberOfTimesMethyldopaWasPerscribed of
---         0 ->
---             TreatmentMethyldopa2
---
---         1 ->
---             TreatmentMethyldopa3
---
---         _ ->
---             TreatmentMethyldopa4
+        1 ->
+            TreatmentMethyldopa3
+
+        _ ->
+            TreatmentMethyldopa4
 
 
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign

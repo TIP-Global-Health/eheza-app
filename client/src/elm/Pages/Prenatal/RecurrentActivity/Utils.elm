@@ -441,29 +441,24 @@ nextStepsMeasurementTaken assembled task =
             let
                 allowedSigns =
                     NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+
+                syphilisTreatmentCompleted =
+                    if diagnosedSyphilis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForSyphilis assembled.measurements
+
+                    else
+                        True
+
+                hypertensionTreatmentCompleted =
+                    if diagnosedHypertension assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
-
-
-
---@todo:
--- NextStepsRecommendedTreatment ->
---     let
---         syphilisTreatmentCompleted =
---             if diagnosedSyphilis assembled then
---                 recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForSyphilis assembled.measurements
---
---             else
---                 True
---
---         hypertensionTreatmentCompleted =
---             if diagnosedHypertension assembled then
---                 recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
---
---             else
---                 True
---     in
---     syphilisTreatmentCompleted && hypertensionTreatmentCompleted
+                && syphilisTreatmentCompleted
+                && hypertensionTreatmentCompleted
 
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign

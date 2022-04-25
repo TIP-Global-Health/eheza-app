@@ -1632,37 +1632,42 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Nothing ->
                     emptyNode
 
+        medicationDistributionForm =
+            measurements.medicationDistribution
+                |> getMeasurementValueFunc
+                |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
+
         tasksAfterSave =
             case activeTask of
-                -- @todo:
-                -- Just NextStepsRecommendedTreatment ->
-                --     let
-                --         -- We know if patient was referred to hospital
-                --         -- due to Malaria, based on saved measurement.
-                --         referredToHospitalBeforeSave =
-                --             getMeasurementValueFunc measurements.recommendedTreatment
-                --                 |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
-                --                 |> Maybe.withDefault False
-                --
-                --         -- We know if patient will be referred to hospital
-                --         -- due to Malaria, based on edited form.
-                --         referredToHospitalAfterSave =
-                --             Maybe.map (List.member TreatementReferToHospital)
-                --                 recommendedTreatmentForm.signs
-                --                 |> Maybe.withDefault False
-                --     in
-                --     if referredToHospitalAfterSave then
-                --         EverySet.fromList tasks
-                --             |> EverySet.insert NextStepsSendToHC
-                --             |> EverySet.toList
-                --
-                --     else if referredToHospitalBeforeSave then
-                --         EverySet.fromList tasks
-                --             |> EverySet.remove NextStepsSendToHC
-                --             |> EverySet.toList
-                --
-                --     else
-                --         tasks
+                Just NextStepsMedicationDistribution ->
+                    let
+                        -- We know if patient was referred to hospital
+                        -- due to Malaria, based on saved measurement.
+                        referredToHospitalBeforeSave =
+                            getMeasurementValueFunc measurements.medicationDistribution
+                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
+                                |> Maybe.withDefault False
+
+                        -- We know if patient will be referred to hospital
+                        -- due to Malaria, based on edited form.
+                        referredToHospitalAfterSave =
+                            Maybe.map (List.member TreatementReferToHospital)
+                                medicationDistributionForm.recommendedTreatmentSigns
+                                |> Maybe.withDefault False
+                    in
+                    if referredToHospitalAfterSave then
+                        EverySet.fromList tasks
+                            |> EverySet.insert NextStepsSendToHC
+                            |> EverySet.toList
+
+                    else if referredToHospitalBeforeSave then
+                        EverySet.fromList tasks
+                            |> EverySet.remove NextStepsSendToHC
+                            |> EverySet.toList
+
+                    else
+                        tasks
+
                 _ ->
                     tasks
 

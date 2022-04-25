@@ -1089,14 +1089,14 @@ type PrenatalLaboratoryTest
 
 
 type alias PrenatalMedicationDistribution =
-    PrenatalMeasurement MedicationDistributionValue
+    PrenatalMeasurement PrenatalMedicationDistributionValue
 
 
-
--- @todo:
--- type alias RecommendedTreatmentValue =
---     { signs : Maybe (EverySet RecommendedTreatmentSign)
---     }
+type alias PrenatalMedicationDistributionValue =
+    { distributionSigns : EverySet MedicationDistributionSign
+    , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
+    , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
+    }
 
 
 type RecommendedTreatmentSign

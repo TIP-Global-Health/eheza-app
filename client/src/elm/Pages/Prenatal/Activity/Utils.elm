@@ -276,11 +276,9 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     let
                         severeMalariaTreatment =
-                            --@todo
-                            -- getMeasurementValueFunc assembled.measurements.recommendedTreatment
-                            --     |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
-                            --     |> Maybe.withDefault False
-                            True
+                            getMeasurementValueFunc assembled.measurements.medicationDistribution
+                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
+                                |> Maybe.withDefault False
                     in
                     emergencyReferalRequired assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
@@ -313,18 +311,14 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && (resolveMedicationsByDiagnoses currentDate assembled medicationsInitialPhase
+                && ((resolveMedicationsByDiagnoses currentDate assembled medicationsInitialPhase
                         |> List.isEmpty
                         |> not
+                    )
+                        || diagnosedMalaria assembled
+                        || diagnosedHypertension assembled
                    )
 
-        -- @todo:
-        -- NextStepsRecommendedTreatment ->
-        --     -- Emergency refferal is not required.
-        --     (not <| emergencyReferalRequired assembled)
-        --         && (diagnosedMalaria assembled
-        --                 || diagnosedHypertension assembled
-        --            )
         NextStepsWait ->
             -- If we refer patients somewhere, there's no need to wait.
             (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
@@ -376,27 +370,25 @@ nextStepsMeasurementTaken assembled task =
             let
                 allowedSigns =
                     NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+
+                malariaTreatmentCompleted =
+                    if diagnosedMalaria assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
+
+                    else
+                        True
+
+                hypertensionTreatmentCompleted =
+                    if diagnosedHypertension assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+                && malariaTreatmentCompleted
+                && hypertensionTreatmentCompleted
 
-        -- @todo:
-        -- NextStepsRecommendedTreatment ->
-        --     let
-        --         malariaTreatmentCompleted =
-        --             if diagnosedMalaria assembled then
-        --                 recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
-        --
-        --             else
-        --                 True
-        --
-        --         hypertensionTreatmentCompleted =
-        --             if diagnosedHypertension assembled then
-        --                 recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
-        --
-        --             else
-        --                 True
-        --     in
-        --     malariaTreatmentCompleted && hypertensionTreatmentCompleted
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
                 |> Maybe.map .patientNotified
@@ -1529,23 +1521,6 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             in
             ( completed, total )
 
-        -- @todo:
-        -- NextStepsRecommendedTreatment ->
-        --     let
-        --         form =
-        --             assembled.measurements.recommendedTreatment
-        --                 |> getMeasurementValueFunc
-        --                 |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-        --
-        --         ( malariaSectionCompleted, malariaSectionActive ) =
-        --             resolveRecommendedTreatmentSectionState (diagnosedMalaria assembled) recommendedTreatmentSignsForMalaria form.signs
-        --
-        --         ( hypertensionSectionCompleted, hypertensionSectionActive ) =
-        --             resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
-        --     in
-        --     ( malariaSectionCompleted + hypertensionSectionCompleted
-        --     , malariaSectionActive + hypertensionSectionActive
-        --     )
         NextStepsWait ->
             let
                 completed =

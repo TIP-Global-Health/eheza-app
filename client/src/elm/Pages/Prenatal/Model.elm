@@ -31,16 +31,10 @@ type alias MedicationDistributionForm =
     , iron : Maybe Bool
     , folicAcid : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     }
 
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
-    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
-
-
-
--- @todo:
--- type alias RecommendedTreatmentForm =
---     { signs : Maybe (List RecommendedTreatmentSign)
---     }
+    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing

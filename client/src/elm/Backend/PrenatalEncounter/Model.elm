@@ -235,5 +235,5 @@ type Msg
     | HandleSavedRandomBloodSugarTest (WebData ())
     | SaveLabsResults PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue
     | HandleSavedLabsResults (WebData ())
-    | SaveMedicationDistribution PersonId (Maybe PrenatalMedicationDistributionId) MedicationDistributionValue
+    | SaveMedicationDistribution PersonId (Maybe PrenatalMedicationDistributionId) PrenatalMedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())

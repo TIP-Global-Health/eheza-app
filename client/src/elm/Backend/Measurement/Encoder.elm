@@ -2425,21 +2425,44 @@ encodeNutritionCaringOption option =
 
 encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
 encodeMedicationDistribution =
-    encodeAcuteIllnessMeasurement (encodeMedicationDistributionValueWithType "medication_distribution")
+    encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
+
+
+encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
+encodeMedicationDistributionValue value =
+    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
+    , ( "deleted", bool False )
+    , ( "type", string "medication_distribution" )
+    ]
 
 
 encodePrenatalMedicationDistribution : PrenatalMedicationDistribution -> List ( String, Value )
 encodePrenatalMedicationDistribution =
-    encodePrenatalMeasurement (encodeMedicationDistributionValueWithType "prenatal_medication_distribution")
+    encodePrenatalMeasurement encodePrenatalMedicationDistributionValue
 
 
-encodeMedicationDistributionValueWithType : String -> MedicationDistributionValue -> List ( String, Value )
-encodeMedicationDistributionValueWithType type_ value =
+encodePrenatalMedicationDistributionValue : PrenatalMedicationDistributionValue -> List ( String, Value )
+encodePrenatalMedicationDistributionValue value =
+    let
+        treatment =
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
+                )
+                value.recommendedTreatmentSigns
+                |> Maybe.withDefault []
+    in
     [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
-    , ( "type", string type_ )
+    , ( "type", string "prenatal_medication_distribution" )
     ]
+        ++ treatment
 
 
 encondeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -2543,29 +2566,6 @@ encodeMedicationNonAdministrationSign sign =
 
             NoMedicationNonAdministrationSigns ->
                 "none"
-
-
-
--- @todo:
--- encodeRecommendedTreatmentValue : RecommendedTreatmentValue -> List ( String, Value )
--- encodeRecommendedTreatmentValue value =
---     let
---         treatment =
---             Maybe.map
---                 (\signs ->
---                     if EverySet.isEmpty signs then
---                         []
---
---                     else
---                         [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
---                 )
---                 value.signs
---                 |> Maybe.withDefault []
---     in
---     treatment
---         ++ [ ( "deleted", bool False )
---            , ( "type", string "prenatal_recommended_treatment" )
---            ]
 
 
 encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value
