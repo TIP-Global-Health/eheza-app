@@ -37,7 +37,7 @@ Primary ports:
 
 ### Requirements
 
-- https://ddev.readthedocs.io/en/latest/#installation
+- https://ddev.readthedocs.io/en/latest/#installation . Minimum version: [v1.19.1](https://github.com/drud/ddev/releases/tag/v1.19.1)
 
 ### Backend
 
@@ -133,7 +133,7 @@ Make sure the following is installed:
 
 #### Installation
 
-* ddev client-install
+* Install backend first.
 * `cp src/elm/LocalConfig.Example.elm src/elm/LocalConfig.elm`
 
 You may need to update `src/elm/LocalConfig.elm` if your local URLs are different from the default setting.
