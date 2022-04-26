@@ -1775,6 +1775,22 @@ div.page-activity.home-visit {
   }
 }
 
+div.page-activity.prenatal {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      .form.medication-distribution {
+
+        .separator:last-of-type {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
 div.page-activity.well-child {
 
   .ui.full.segment {

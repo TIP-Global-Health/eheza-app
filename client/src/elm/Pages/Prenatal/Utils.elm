@@ -35,7 +35,7 @@ import Pages.Utils
         , viewInstructionsLabel
         , viewQuestionLabel
         )
-import Translate exposing (Language, translate)
+import Translate exposing (Language, TranslationId, translate)
 
 
 calculateEGAWeeks : NominalDate -> NominalDate -> Int
@@ -290,29 +290,40 @@ resolveMedicationDistributionInputsAndTasks :
     -> ( List (Html msg), Int, Int )
 resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg form =
     let
-        allowedMedications =
-            case phase of
-                PrenatalEncounterPhaseInitial ->
-                    medicationsInitialPhase
-
-                PrenatalEncounterPhaseRecurrent ->
-                    medicationsRecurrentPhase
+        foldResults =
+            List.foldr
+                (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
+                    ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
+                )
+                ( [], 0, 0 )
 
         ( inputsByMedications, completedByMedications, activeByMedications ) =
-            resolveMedicationsByDiagnoses currentDate assembled allowedMedications
+            resolveMedicationsSetByDiagnoses currentDate phase assembled
                 |> List.map
-                    (resolveMedicationDistributionInputsAndTasksForMedication language
-                        currentDate
-                        assembled.person
-                        setMedicationDistributionBoolInputMsg
-                        setMedicationDistributionAdministrationNoteMsg
-                        form
+                    (\( helper, medications ) ->
+                        let
+                            ( inputs, completed, active ) =
+                                List.map
+                                    (resolveMedicationDistributionInputsAndTasksForMedication language
+                                        currentDate
+                                        assembled.person
+                                        setMedicationDistributionBoolInputMsg
+                                        setMedicationDistributionAdministrationNoteMsg
+                                        form
+                                    )
+                                    medications
+                                    |> foldResults
+                        in
+                        ( [ viewCustomLabel language helper "." "instructions"
+                          , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                          ]
+                            ++ inputs
+                            ++ [ div [ class "separator" ] [] ]
+                        , completed
+                        , active
+                        )
                     )
-                |> List.foldr
-                    (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
-                        ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
-                    )
-                    ( [], 0, 0 )
+                |> foldResults
 
         ( inputsByDiagnoses, completedByDiagnoses, activeByDiagnoses ) =
             let
@@ -408,6 +419,7 @@ resolveRecommendedTreatmentForHypertensionInputsAndTasks language currentDate se
             currentValue
             setRecommendedTreatmentSignMsg
             Translate.RecommendedTreatmentSignLabel
+      , div [ class "separator" ] []
       ]
     , taskCompleted currentValue
     , 1
@@ -466,6 +478,7 @@ resolveRecommendedTreatmentForMalariaInputsAndTasks language currentDate setReco
             currentValue
             (setRecommendedTreatmentSignMsg allowedSigns)
             Translate.RecommendedTreatmentSignLabel
+      , div [ class "separator" ] []
       ]
     , taskCompleted currentValue
     , 1
@@ -533,6 +546,7 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
             (setRecommendedTreatmentSignMsg allowedSigns)
             (viewTreatmentOptionForSyphilis language)
       , warning
+      , div [ class "separator" ] []
       ]
     , taskCompleted currentValue
     , 1
@@ -576,52 +590,69 @@ medicationDistributionMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-resolveMedicationsByDiagnoses : NominalDate -> AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
-resolveMedicationsByDiagnoses currentDate assembled allowedMedications =
-    List.filter
-        (\medication ->
+resolveMedicationsSetByDiagnoses : NominalDate -> PrenatalEncounterPhase -> AssembledData -> List ( TranslationId, List MedicationDistributionSign )
+resolveMedicationsSetByDiagnoses currentDate phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
             let
-                hivDiagnosed =
-                    diagnosed DiagnosisHIV assembled
+                mebendazoleSet =
+                    let
+                        prescribeMebendazole =
+                            showMebendazoleQuestion currentDate assembled
+                                && (getMeasurementValueFunc assembled.measurements.medication
+                                        |> Maybe.map (EverySet.member Mebendazole >> not)
+                                        |> Maybe.withDefault False
+                                   )
+                    in
+                    if prescribeMebendazole then
+                        Just ( Translate.MedicationDistributionHelperMebendazole, [ Mebendezole ] )
 
-                hivProgramHC =
-                    hivProgramAtHC assembled
+                    else
+                        Nothing
+
+                hivPositiveSet =
+                    let
+                        hivDiagnosed =
+                            diagnosed DiagnosisHIV assembled
+
+                        hivProgramHC =
+                            hivProgramAtHC assembled
+                    in
+                    if hivDiagnosed && not hivProgramHC then
+                        Just ( Translate.MedicationDistributionHelperHIV, [ TDF3TC, Dolutegravir ] )
+
+                    else
+                        Nothing
+
+                discordantPartnershipSet =
+                    if diagnosed DiagnosisDiscordantPartnership assembled then
+                        let
+                            partnerTakingARVs =
+                                getMeasurementValueFunc assembled.measurements.hivTest
+                                    |> Maybe.andThen .hivSigns
+                                    |> Maybe.map (EverySet.member PartnerTakingARV)
+                                    |> Maybe.withDefault False
+
+                            helper =
+                                if partnerTakingARVs then
+                                    Translate.MedicationDistributionHelperDiscordantPartnership
+
+                                else
+                                    Translate.MedicationDistributionHelperDiscordantPartnershipNoARVs
+                        in
+                        Just ( helper, [ TDF3TC ] )
+
+                    else
+                        Nothing
             in
-            case medication of
-                Mebendezole ->
-                    showMebendazoleQuestion currentDate assembled
-                        && (getMeasurementValueFunc assembled.measurements.medication
-                                |> Maybe.map (EverySet.member Mebendazole >> not)
-                                |> Maybe.withDefault False
-                           )
+            Maybe.Extra.values [ mebendazoleSet, hivPositiveSet, discordantPartnershipSet ]
 
-                Tenofovir ->
-                    -- Requirements were changed, so this medication
-                    -- is not in use for the time being.
-                    False
+        PrenatalEncounterPhaseRecurrent ->
+            if diagnosed DiagnosisModerateAnemia assembled then
+                [ ( Translate.MedicationDistributionHelperAnemia, [ Iron, FolicAcid ] ) ]
 
-                Lamivudine ->
-                    -- Requirements were changed, so this medication
-                    -- is not in use for the time being.
-                    False
-
-                Dolutegravir ->
-                    hivDiagnosed && not hivProgramHC
-
-                TDF3TC ->
-                    (hivDiagnosed && not hivProgramHC)
-                        || diagnosed DiagnosisDiscordantPartnership assembled
-
-                Iron ->
-                    diagnosed DiagnosisModerateAnemia assembled
-
-                FolicAcid ->
-                    diagnosed DiagnosisModerateAnemia assembled
-
-                _ ->
-                    False
-        )
-        allowedMedications
+            else
+                []
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool

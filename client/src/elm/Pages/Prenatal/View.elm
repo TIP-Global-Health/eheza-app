@@ -36,9 +36,8 @@ viewMedicationDistributionForm language currentDate phase assembled setMedicatio
                 setRecommendedTreatmentSignMsg
                 form
     in
-    div [ class "ui form medication-distribution" ] <|
-        h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-            :: content
+    div [ class "ui form medication-distribution" ]
+        content
 
 
 viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
