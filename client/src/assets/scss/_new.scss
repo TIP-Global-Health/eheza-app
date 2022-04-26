@@ -1593,42 +1593,6 @@ div.page-activity.home-visit {
     .form.patient-provisions {
       min-height: 335px;
     }
-
-    .form.recommended-treatment {
-
-      .instructions-warning {
-        margin-left: 50px;
-        margin-top: 15px;
-      }
-
-      label {
-
-        .treatment {
-          color: $color-primary;
-          font-size: 23px;
-          font-weight: 500;
-          margin-right: 10px;
-        }
-
-        .dosage {
-          font-size: 22px;
-        }
-      }
-
-      .warning {
-        display: flex;
-        font-size: 20px;
-        line-height: 25px;
-        padding: 20px;
-
-        img {
-          height: 30px;
-          margin-left: 5px;
-          margin-right: 10px;
-        }
-      }
-    }
-
   }
 }
 
@@ -1786,6 +1750,38 @@ div.page-activity.prenatal {
         .separator:last-of-type {
           display: none;
         }
+
+        .instructions-warning {
+          margin-left: 50px;
+          margin-top: 15px;
+        }
+
+        label {
+
+          .treatment {
+            color: $color-primary;
+            font-size: 23px;
+            font-weight: 500;
+            margin-right: 10px;
+          }
+
+          .dosage {
+            font-size: 22px;
+          }
+        }
+
+        .warning {
+          display: flex;
+          font-size: 20px;
+          line-height: 25px;
+          padding: 20px;
+
+          img {
+            height: 30px;
+            margin-left: 5px;
+            margin-right: 10px;
+          }
+        }        
       }
     }
   }

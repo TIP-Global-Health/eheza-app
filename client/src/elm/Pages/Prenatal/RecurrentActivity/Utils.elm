@@ -399,9 +399,12 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && (resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseRecurrent assembled
+                && ((resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseRecurrent assembled
                         |> List.isEmpty
                         |> not
+                    )
+                        || diagnosedSyphilis assembled
+                        || diagnosedHypertension PrenatalEncounterPhaseRecurrent assembled
                    )
 
 
