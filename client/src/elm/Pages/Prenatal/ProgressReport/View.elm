@@ -1787,40 +1787,40 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
     in
     case diagnosis of
         DiagnosisHIV ->
-            let
-                hivTreatmentMessage =
-                    getMeasurementValueFunc measurements.medicationDistribution
-                        |> Maybe.andThen
-                            (\value ->
-                                let
-                                    nonAdministrationReasons =
-                                        Pages.Utils.resolveMedicationsNonAdministrationReasons value
-                                in
-                                Maybe.map2
-                                    (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
-                                        let
-                                            diagnosisMessage =
-                                                diagnosisForProgressReport
-                                                    ++ " "
-                                                    ++ (String.toLower <| translate language Translate.On)
-                                                    ++ " "
-                                                    ++ formatDDMMYYYY date
-                                        in
-                                        [ li []
-                                            [ p [] [ text diagnosisMessage ]
-                                            , p [] [ text tdf3TCTreatmentMessage ]
-                                            , p [] [ text dolutegravirTreatmentmessage ]
-                                            ]
-                                        ]
-                                    )
-                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC)
-                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Dolutegravir)
-                            )
-                        |> Maybe.withDefault noTreatmentRecordedMessage
-            in
             getMeasurementValueFunc measurements.hivTest
                 |> Maybe.map
                     (\value ->
+                        let
+                            hivTreatmentMessage =
+                                getMeasurementValueFunc measurements.medicationDistribution
+                                    |> Maybe.andThen
+                                        (\value_ ->
+                                            let
+                                                nonAdministrationReasons =
+                                                    Pages.Utils.resolveMedicationsNonAdministrationReasons value_
+                                            in
+                                            Maybe.map2
+                                                (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
+                                                    let
+                                                        diagnosisMessage =
+                                                            diagnosisForProgressReport
+                                                                ++ " "
+                                                                ++ (String.toLower <| translate language Translate.On)
+                                                                ++ " "
+                                                                ++ formatDDMMYYYY date
+                                                    in
+                                                    [ li []
+                                                        [ p [] [ text diagnosisMessage ]
+                                                        , p [] [ text tdf3TCTreatmentMessage ]
+                                                        , p [] [ text dolutegravirTreatmentmessage ]
+                                                        ]
+                                                    ]
+                                                )
+                                                (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons TDF3TC)
+                                                (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons Dolutegravir)
+                                        )
+                                    |> Maybe.withDefault noTreatmentRecordedMessage
+                        in
                         -- First we need to treat a scenario where patient also got
                         -- Malaria, and was referred to hospital for treatment.
                         -- Here, even if there's and HIV program at HC, patient
