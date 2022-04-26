@@ -1796,8 +1796,8 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                                     nonAdministrationReasons =
                                         Pages.Utils.resolveMedicationsNonAdministrationReasons value
                                 in
-                                Maybe.map3
-                                    (\tenofovirTreatmentmessage lamivudineTreatmentmessage dolutegravirTreatmentmessage ->
+                                Maybe.map2
+                                    (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
                                         let
                                             diagnosisMessage =
                                                 diagnosisForProgressReport
@@ -1808,14 +1808,12 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                                         in
                                         [ li []
                                             [ p [] [ text diagnosisMessage ]
-                                            , p [] [ text tenofovirTreatmentmessage ]
-                                            , p [] [ text lamivudineTreatmentmessage ]
+                                            , p [] [ text tdf3TCTreatmentMessage ]
                                             , p [] [ text dolutegravirTreatmentmessage ]
                                             ]
                                         ]
                                     )
-                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Tenofovir)
-                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Lamivudine)
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC)
                                     (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Dolutegravir)
                             )
                         |> Maybe.withDefault noTreatmentRecordedMessage
@@ -1871,7 +1869,7 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                         in
                         treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC
                             |> Maybe.map
-                                (\tdf3TCTreatmentmessage ->
+                                (\tdf3TCTreatmentMessage ->
                                     let
                                         diagnosisMessage =
                                             diagnosisForProgressReport
@@ -1882,7 +1880,7 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                                     in
                                     [ li []
                                         [ p [] [ text diagnosisMessage ]
-                                        , p [] [ text tdf3TCTreatmentmessage ]
+                                        , p [] [ text tdf3TCTreatmentMessage ]
                                         ]
                                     ]
                                 )
