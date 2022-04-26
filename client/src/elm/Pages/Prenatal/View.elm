@@ -41,43 +41,6 @@ viewMedicationDistributionForm language currentDate phase assembled setMedicatio
             :: content
 
 
-
--- @todo:
--- viewRecommendedTreatmentForHypertension :
---     Language
---     -> NominalDate
---     -> (RecommendedTreatmentSign -> msg)
---     -> AssembledData
---     -> RecommendedTreatmentForm
---     -> List (Html msg)
--- viewRecommendedTreatmentForHypertension language currentDate setRecommendedTreatmentSignMsg assembled form =
---     let
---         -- Since we may have values set for other diagnoses, we need
---         -- to filter them out, to be able to determine current value.
---         currentValue =
---             Maybe.andThen
---                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
---                     >> List.head
---                 )
---                 form.signs
---
---         recommendedSign =
---             recommendTreatmentForHypertension assembled
---     in
---     [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
---     , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
---     , div [ class "instructions" ]
---         [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":") ]
---     , viewCheckBoxSelectInputWithRecommendation language
---         recommendedTreatmentSignsForHypertension
---         []
---         recommendedSign
---         currentValue
---         setRecommendedTreatmentSignMsg
---         Translate.RecommendedTreatmentSignLabel
---     ]
-
-
 viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
 viewPauseEncounterButton language enabled pauseAction =
     let

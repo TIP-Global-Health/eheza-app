@@ -484,26 +484,6 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             ( completed, total )
 
 
-
--- @todo:
--- NextStepsRecommendedTreatment ->
---     let
---         form =
---             assembled.measurements.recommendedTreatment
---                 |> getMeasurementValueFunc
---                 |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
---
---         ( syphilisSectionCompleted, syphilisSectionActive ) =
---             resolveRecommendedTreatmentSectionState (diagnosedSyphilis assembled) recommendedTreatmentSignsForSyphilis form.signs
---
---         ( hypertensionSectionCompleted, hypertensionSectionActive ) =
---             resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
---     in
---     ( syphilisSectionCompleted + hypertensionSectionCompleted
---     , syphilisSectionActive + hypertensionSectionActive
---     )
-
-
 emergencyReferalRequired : AssembledData -> Bool
 emergencyReferalRequired assembled =
     EverySet.toList assembled.encounter.diagnoses
