@@ -1781,7 +1781,7 @@ div.page-activity.prenatal {
             margin-left: 5px;
             margin-right: 10px;
           }
-        }        
+        }
       }
     }
   }
@@ -2427,6 +2427,15 @@ div.page-report.clinical .ui.unstackable.items {
 
       .result .uncompleted {
         background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+
+      .result .known-positive {
+        background: $color-orange-light;
         border-radius: 6px;
         color: $color-white;
         font-size: 15px;

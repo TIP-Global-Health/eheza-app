@@ -660,6 +660,7 @@ type TranslationId
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion Pages.Prenatal.Activity.Types.LaboratoryTask
+    | KnownPositive
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
@@ -5080,6 +5081,11 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        KnownPositive ->
+            { english = "Known Positive"
+            , kinyarwanda = Nothing
+            }
 
         LabelOnePregnancyEpisodeOpen ->
             { english = "There is one pregnancy episode that is open"

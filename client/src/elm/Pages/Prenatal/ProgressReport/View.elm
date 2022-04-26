@@ -1045,20 +1045,34 @@ viewLabResultsPane language currentDate assembled =
                     )
                 |> List.sortWith sortTuplesByDateDesc
 
-        getStandardTestResults getMeasurementFunc =
-            getTestResults getMeasurementFunc .testResult
+        getTestResultsKnownAsPositive getMeasurementFunc getResultFunc =
+            List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
+                measurementsWithLabResults
+                |> List.filterMap
+                    (\value ->
+                        if value.executionNote == TestNoteKnownAsPositive then
+                            Just ( currentDate, Just TestNotPerformedKnownAsPositive )
+
+                        else if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                            Maybe.map (\executionDate -> ( executionDate, getResultFunc value |> Maybe.map TestPerformed ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
 
         hivTestResults =
-            getStandardTestResults .hivTest
+            getTestResultsKnownAsPositive .hivTest .testResult
 
         syphilisTestResults =
-            getStandardTestResults .syphilisTest
+            getTestResults .syphilisTest .testResult
 
         hepatitisBTestResults =
-            getStandardTestResults .hepatitisBTest
+            getTestResultsKnownAsPositive .hepatitisBTest .testResult
 
         malariaTestResults =
-            getStandardTestResults .malariaTest
+            getTestResults .malariaTest .testResult
 
         groupOneContent =
             [ viewLabResultsEntry language currentDate (LabResultsHistoryHIV hivTestResults)
@@ -1194,8 +1208,13 @@ viewLabResultsEntry language currentDate results =
         config =
             case results of
                 LabResultsHistoryHIV assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHIVTest
-                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResult = Maybe.map (translatePrenatalTestReport language) recentResultValue
+                    , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1203,13 +1222,19 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistorySyphilis assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
 
                 LabResultsHistoryHepatitisB assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest
-                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResult = Maybe.map (translatePrenatalTestReport language) recentResultValue
+                    , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1217,6 +1242,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryMalaria assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1224,6 +1250,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryProtein assembled ->
                     { label = Translate.PrenatalLaboratoryProteinLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryProteinValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1231,6 +1258,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryPH assembled ->
                     { label = Translate.PrenatalLaboratoryPHLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryPHValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1238,6 +1266,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryGlucose assembled ->
                     { label = Translate.PrenatalLaboratoryGlucoseLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1245,6 +1274,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryLeukocytes assembled ->
                     { label = Translate.PrenatalLaboratoryGlucoseLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1252,6 +1282,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryNitrite assembled ->
                     { label = Translate.PrenatalLaboratoryNitriteLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryNitriteValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1259,6 +1290,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryUrobilinogen assembled ->
                     { label = Translate.PrenatalLaboratoryUrobilinogenLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1266,6 +1298,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryHaemoglobin assembled ->
                     { label = Translate.PrenatalLaboratoryHaemoglobinLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1273,6 +1306,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistorySpecificGravity assembled ->
                     { label = Translate.PrenatalLaboratorySpecificGravityLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1280,6 +1314,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryKetone assembled ->
                     { label = Translate.PrenatalLaboratoryKetoneLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryKetoneValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1287,6 +1322,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryBilirubin assembled ->
                     { label = Translate.PrenatalLaboratoryBilirubinLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBilirubinValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1294,6 +1330,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryRandomBloodSugar assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1301,6 +1338,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryHemoglobin assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHemoglobinTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1309,12 +1347,14 @@ viewLabResultsEntry language currentDate results =
                     { label = Translate.PrenatalLaboratoryBloodGroupLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBloodGroup >> translate language)
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , knownAsPositive = False
                     , totalResults = List.length assembled
                     }
 
                 LabResultsHistoryRhesus assembled ->
                     { label = Translate.PrenatalLaboratoryRhesusLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1326,6 +1366,9 @@ viewLabResultsEntry language currentDate results =
         resultCell =
             if config.totalResults == 0 then
                 text ""
+
+            else if config.knownAsPositive then
+                viewKnownAsPositiveResult language
 
             else
                 Maybe.map text config.recentResult
@@ -1348,6 +1391,25 @@ viewLabResultsEntry language currentDate results =
         , div [ class "result" ] [ resultCell ]
         , historyResultsIcon
         ]
+
+
+translatePrenatalTestReport : Language -> PrenatalTestReport -> String
+translatePrenatalTestReport language report =
+    case report of
+        TestPerformed result ->
+            Translate.PrenatalTestResult result
+                |> translate language
+
+        TestNotPerformedKnownAsPositive ->
+            -- We don't need this, since this result is displayed
+            -- using viewKnownAsPositiveResult funciton.
+            ""
+
+
+viewKnownAsPositiveResult : Language -> Html any
+viewKnownAsPositiveResult language =
+    span [ class "known-positive" ]
+        [ text <| translate language Translate.KnownPositive ]
 
 
 viewUncompetedResult : Language -> NominalDate -> Maybe NominalDate -> Html any
@@ -1380,13 +1442,13 @@ viewLabResultsHistoryPane language currentDate mode =
         entries =
             case mode of
                 LabResultsHistoryHIV assembled ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
+                    List.map (viewEntry (translatePrenatalTestReport language)) assembled
 
                 LabResultsHistorySyphilis assembled ->
                     List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
 
                 LabResultsHistoryHepatitisB assembled ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
+                    List.map (viewEntry (translatePrenatalTestReport language)) assembled
 
                 LabResultsHistoryMalaria assembled ->
                     List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
