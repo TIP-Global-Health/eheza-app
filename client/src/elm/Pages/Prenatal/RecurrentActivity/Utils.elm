@@ -12,7 +12,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.Utils exposing (..)
@@ -405,32 +405,6 @@ expectNextStepsTask currentDate assembled task =
                    )
 
 
-
--- todo:
--- NextStepsRecommendedTreatment ->
---     -- Emergency refferal is not required.
---     (not <| emergencyReferalRequired assembled)
---         && (diagnosedSyphilis assembled
---                 || diagnosedHypertension assembled
---            )
-
-
-diagnosedSyphilis : AssembledData -> Bool
-diagnosedSyphilis =
-    diagnosedAnyOf
-        [ DiagnosisSyphilis
-        , DiagnosisSyphilisWithComplications
-        ]
-
-
-diagnosedHypertension : AssembledData -> Bool
-diagnosedHypertension =
-    diagnosedAnyOf
-        [ DiagnosisChronicHypertensionAfterRecheck
-        , DiagnosisGestationalHypertensionAfterRecheck
-        ]
-
-
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
 nextStepsMeasurementTaken assembled task =
     case task of
@@ -450,7 +424,7 @@ nextStepsMeasurementTaken assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertension assembled then
+                    if diagnosedHypertension PrenatalEncounterPhaseRecurrent assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
@@ -459,17 +433,6 @@ nextStepsMeasurementTaken assembled task =
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
-
-
-recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
-recommendedTreatmentSignsForSyphilis =
-    [ TreatementPenecilin1
-    , TreatementPenecilin3
-    , TreatementErythromycin
-    , TreatementAzithromycin
-    , TreatementCeftriaxon
-    , NoTreatmentForSyphilis
-    ]
 
 
 nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
@@ -511,10 +474,11 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
                         currentDate
+                        PrenatalEncounterPhaseRecurrent
                         assembled
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
-                        medicationsRecurrentPhase
+                        SetRecommendedTreatmentSign
                         form
             in
             ( completed, total )

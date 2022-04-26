@@ -17,21 +17,23 @@ import Translate exposing (Language, translate)
 viewMedicationDistributionForm :
     Language
     -> NominalDate
+    -> PrenatalEncounterPhase
     -> AssembledData
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
-    -> List MedicationDistributionSign
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
+viewMedicationDistributionForm language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg form =
     let
         ( content, _, _ ) =
             resolveMedicationDistributionInputsAndTasks language
                 currentDate
+                phase
                 assembled
                 setMedicationDistributionBoolInputMsg
                 setMedicationDistributionAdministrationNoteMsg
-                allowedMedications
+                setRecommendedTreatmentSignMsg
                 form
     in
     div [ class "ui form medication-distribution" ] <|

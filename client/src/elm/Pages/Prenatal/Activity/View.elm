@@ -1621,10 +1621,11 @@ viewNextStepsContent language currentDate isChw assembled data =
                         |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
+                            PrenatalEncounterPhaseInitial
                             assembled
                             SetMedicationDistributionBoolInput
                             SetMedicationDistributionAdministrationNote
-                            medicationsInitialPhase
+                            SetRecommendedTreatmentSign
 
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled

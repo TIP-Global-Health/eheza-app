@@ -28,7 +28,11 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
+        , viewCheckBoxSelectInputWithRecommendation
+        , viewCustomLabel
+        , viewInstructionsLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
@@ -277,27 +281,281 @@ toMedicationDistributionValue valueForNone form =
 resolveMedicationDistributionInputsAndTasks :
     Language
     -> NominalDate
+    -> PrenatalEncounterPhase
     -> AssembledData
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
-    -> List MedicationDistributionSign
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveMedicationDistributionInputsAndTasks language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
-    resolveMedicationsByDiagnoses currentDate assembled allowedMedications
-        |> List.map
-            (resolveMedicationDistributionInputsAndTasksForMedication language
-                currentDate
-                assembled.person
-                setMedicationDistributionBoolInputMsg
-                setMedicationDistributionAdministrationNoteMsg
-                form
-            )
-        |> List.foldr
-            (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
-                ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
-            )
-            ( [], 0, 0 )
+resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg form =
+    let
+        allowedMedications =
+            case phase of
+                PrenatalEncounterPhaseInitial ->
+                    medicationsInitialPhase
+
+                PrenatalEncounterPhaseRecurrent ->
+                    medicationsRecurrentPhase
+
+        ( inputsByMedications, completedByMedications, activeByMedications ) =
+            resolveMedicationsByDiagnoses currentDate assembled allowedMedications
+                |> List.map
+                    (resolveMedicationDistributionInputsAndTasksForMedication language
+                        currentDate
+                        assembled.person
+                        setMedicationDistributionBoolInputMsg
+                        setMedicationDistributionAdministrationNoteMsg
+                        form
+                    )
+                |> List.foldr
+                    (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
+                        ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
+                    )
+                    ( [], 0, 0 )
+
+        ( inputsByDiagnoses, completedByDiagnoses, activeByDiagnoses ) =
+            let
+                ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
+                    if diagnosedHypertension phase assembled then
+                        resolveRecommendedTreatmentForHypertensionInputsAndTasks language
+                            currentDate
+                            (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
+                            assembled
+                            form
+
+                    else
+                        ( [], 0, 0 )
+            in
+            case phase of
+                PrenatalEncounterPhaseInitial ->
+                    let
+                        ( malariaInputs, malariaCompleted, malariaActive ) =
+                            if diagnosedMalaria assembled then
+                                resolveRecommendedTreatmentForMalariaInputsAndTasks language
+                                    currentDate
+                                    setRecommendedTreatmentSignMsg
+                                    recommendedTreatmentSignsForMalaria
+                                    assembled
+                                    form
+
+                            else
+                                ( [], 0, 0 )
+                    in
+                    ( malariaInputs ++ hypertensionInputs
+                    , malariaCompleted + hypertensionCompleted
+                    , malariaActive + hypertensionActive
+                    )
+
+                PrenatalEncounterPhaseRecurrent ->
+                    let
+                        ( syphilisInputs, syphilisCompleted, syphilisActive ) =
+                            if diagnosedSyphilis assembled then
+                                resolveRecommendedTreatmentForSyphilisInputsAndTasks language
+                                    currentDate
+                                    setRecommendedTreatmentSignMsg
+                                    recommendedTreatmentSignsForSyphilis
+                                    assembled
+                                    form
+
+                            else
+                                ( [], 0, 0 )
+                    in
+                    ( syphilisInputs ++ hypertensionInputs
+                    , syphilisCompleted + hypertensionCompleted
+                    , syphilisActive + hypertensionActive
+                    )
+    in
+    ( inputsByMedications ++ inputsByDiagnoses
+    , completedByMedications + completedByDiagnoses
+    , activeByMedications + activeByDiagnoses
+    )
+
+
+resolveRecommendedTreatmentForHypertensionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (RecommendedTreatmentSign -> msg)
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- the other phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+
+        recommendedSign =
+            recommendTreatmentForHypertension assembled
+    in
+    ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel
+                "icon-pills"
+                (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
+            ]
+      , viewCheckBoxSelectInputWithRecommendation language
+            recommendedTreatmentSignsForHypertension
+            []
+            recommendedSign
+            currentValue
+            setRecommendedTreatmentSignMsg
+            Translate.RecommendedTreatmentSignLabel
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+resolveRecommendedTreatmentForMalariaInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForMalariaInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
+    let
+        egaInWeeks =
+            Maybe.map
+                (calculateEGAWeeks currentDate)
+                assembled.globalLmpDate
+
+        medicationTreatment =
+            Maybe.map
+                (\egaWeeks ->
+                    if egaWeeks <= 14 then
+                        TreatmentQuinineSulphate
+
+                    else
+                        TreatmentCoartem
+                )
+                egaInWeeks
+                |> Maybe.withDefault TreatmentQuinineSulphate
+
+        -- Since we may have values set for another diagnosis, or from
+        -- the other phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+    in
+    ( [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+      , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+      , viewCheckBoxSelectInput language
+            [ medicationTreatment
+            , TreatmentWrittenProtocols
+            , TreatementReferToHospital
+            , NoTreatmentForMalaria
+            ]
+            []
+            currentValue
+            (setRecommendedTreatmentSignMsg allowedSigns)
+            Translate.RecommendedTreatmentSignLabel
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
+recommendedTreatmentSignsForMalaria =
+    [ TreatmentQuinineSulphate
+    , TreatmentCoartem
+    , TreatmentWrittenProtocols
+    , TreatementReferToHospital
+    , NoTreatmentForMalaria
+    ]
+
+
+resolveRecommendedTreatmentForSyphilisInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- inital phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+
+        warning =
+            Maybe.map
+                (\signs ->
+                    if
+                        List.any (\sign -> List.member sign signs)
+                            [ TreatementErythromycin, TreatementAzithromycin ]
+                    then
+                        div [ class "warning" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , text <| translate language Translate.SyphilisRecommendedTreatmentWarning
+                            ]
+
+                    else
+                        emptyNode
+                )
+                form.recommendedTreatmentSigns
+                |> Maybe.withDefault emptyNode
+    in
+    ( [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+            , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
+            ]
+      , viewCheckBoxSelectCustomInput language
+            recommendedTreatmentSignsForSyphilis
+            []
+            currentValue
+            (setRecommendedTreatmentSignMsg allowedSigns)
+            (viewTreatmentOptionForSyphilis language)
+      , warning
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForSyphilis language sign =
+    label []
+        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+        , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+        ]
+
+
+recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
+recommendedTreatmentSignsForSyphilis =
+    [ TreatementPenecilin1
+    , TreatementPenecilin3
+    , TreatementErythromycin
+    , TreatementAzithromycin
+    , TreatementCeftriaxon
+    , NoTreatmentForSyphilis
+    ]
 
 
 {-| Medication Distribution activity appears on both initial and recurrent encounters.
@@ -973,3 +1231,36 @@ recommendedTreatmentSignsForHypertension =
 marginalBloodPressureCondition : Float -> Float -> Bool
 marginalBloodPressureCondition dia sys =
     (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)
+
+
+diagnosedHypertension : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedHypertension phase =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosedAnyOf
+                [ DiagnosisChronicHypertensionImmediate
+                , DiagnosisGestationalHypertensionImmediate
+                ]
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosedAnyOf
+                [ DiagnosisChronicHypertensionAfterRecheck
+                , DiagnosisGestationalHypertensionAfterRecheck
+                ]
+
+
+diagnosedMalaria : AssembledData -> Bool
+diagnosedMalaria =
+    diagnosedAnyOf
+        [ DiagnosisMalaria
+        , DiagnosisMalariaWithAnemia
+        , DiagnosisMalariaWithSevereAnemia
+        ]
+
+
+diagnosedSyphilis : AssembledData -> Bool
+diagnosedSyphilis =
+    diagnosedAnyOf
+        [ DiagnosisSyphilis
+        , DiagnosisSyphilisWithComplications
+        ]

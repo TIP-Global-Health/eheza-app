@@ -22,7 +22,7 @@ import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCust
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, isFirstEncounter)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
     exposing
@@ -316,7 +316,7 @@ expectNextStepsTask currentDate assembled task =
                         |> not
                     )
                         || diagnosedMalaria assembled
-                        || diagnosedHypertension assembled
+                        || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
                    )
 
         NextStepsWait ->
@@ -329,23 +329,6 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
                    )
-
-
-diagnosedMalaria : AssembledData -> Bool
-diagnosedMalaria =
-    diagnosedAnyOf
-        [ DiagnosisMalaria
-        , DiagnosisMalariaWithAnemia
-        , DiagnosisMalariaWithSevereAnemia
-        ]
-
-
-diagnosedHypertension : AssembledData -> Bool
-diagnosedHypertension =
-    diagnosedAnyOf
-        [ DiagnosisChronicHypertensionImmediate
-        , DiagnosisGestationalHypertensionImmediate
-        ]
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -379,7 +362,7 @@ nextStepsMeasurementTaken assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertension assembled then
+                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
@@ -393,16 +376,6 @@ nextStepsMeasurementTaken assembled task =
             getMeasurementValueFunc assembled.measurements.labsResults
                 |> Maybe.map .patientNotified
                 |> Maybe.withDefault False
-
-
-recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
-recommendedTreatmentSignsForMalaria =
-    [ TreatmentQuinineSulphate
-    , TreatmentCoartem
-    , TreatmentWrittenProtocols
-    , TreatementReferToHospital
-    , NoTreatmentForMalaria
-    ]
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
@@ -1513,10 +1486,11 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
                         currentDate
+                        PrenatalEncounterPhaseInitial
                         assembled
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
-                        medicationsInitialPhase
+                        SetRecommendedTreatmentSign
                         form
             in
             ( completed, total )

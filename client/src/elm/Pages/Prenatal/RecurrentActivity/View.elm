@@ -28,7 +28,7 @@ import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
@@ -703,10 +703,11 @@ viewNextStepsContent language currentDate assembled data =
                         |> medicationDistributionFormWithDefaultRecurrentPhase data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
+                            PrenatalEncounterPhaseRecurrent
                             assembled
                             SetMedicationDistributionBoolInput
                             SetMedicationDistributionAdministrationNote
-                            medicationsRecurrentPhase
+                            SetRecommendedTreatmentSign
 
                 Nothing ->
                     emptyNode
@@ -841,14 +842,6 @@ viewNextStepsContent language currentDate assembled data =
 --         (viewTreatmentOptionForSyphilis language)
 --     , warning
 --     ]
-
-
-viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
-viewTreatmentOptionForSyphilis language sign =
-    label []
-        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
-        , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
-        ]
 
 
 viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)

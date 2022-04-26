@@ -24,7 +24,11 @@ type alias AssembledData =
 
 type alias MedicationDistributionForm =
     { mebendezole : Maybe Bool
+
+    -- Tenofovir is not in use, for now.
     , tenofovir : Maybe Bool
+
+    -- Lamivudine is not in use, for now.
     , lamivudine : Maybe Bool
     , dolutegravir : Maybe Bool
     , tdf3tc : Maybe Bool
@@ -38,3 +42,8 @@ type alias MedicationDistributionForm =
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
     MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+
+
+type PrenatalEncounterPhase
+    = PrenatalEncounterPhaseInitial
+    | PrenatalEncounterPhaseRecurrent
