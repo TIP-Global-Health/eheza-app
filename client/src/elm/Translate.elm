@@ -5028,22 +5028,22 @@ translationSet trans =
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "Is this patient known to be HIV positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite ubwandu bwa virusi itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Is this patient known to be yphilis - RPR positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite uburwayi bwa Mburugu"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Is this patient known to be Hepatitis B positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite indwara y'umwijima yo mu bwoko bwa B"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Is this patient known to be Malaria positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite indwara ya Malariya"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
@@ -8556,131 +8556,131 @@ translationSet trans =
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV RDT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cyihuse Gipima Virusi Itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cyihuse gipima Mburugu"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini gipima umwijima wo mu bwoko bwa B"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria RDT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cyihuse cya Malariya"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cyubwoko bw'amaraso na ReZisi"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cy'inkari"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini gipima ingano y'amaraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini gipima ingano y' isukari mu maraso"
                     }
 
         PrenatalLaboratoryTaskDate task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV Antibody Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakorereweho ikizamini cya Virus itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakorereweho ikizamini cya Mburugu  "
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakoreweho ikizamini cy'umwijima wo mu bwoko bwa B"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria RDT Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakoreweho ikizamini cya Malariya"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakoreweho ikizamini cy'ubwoka bw'amaraso na Rezisi yayo"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakoreweho ikizamini cy'inkari"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakoreweho ikizamini gipima ingano y'amaraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakoreweho ikizamini gipima ingano y'isukari mu maraso"
                     }
 
         PrenatalLaboratoryTaskResult task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV Antibody Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo cya Virusi itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku ikizamini cya Mburugu"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku kizamini cy'umwijima wo mu bwoko bwa B"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria RDT Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku kizamini cya Malariya"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku kizamini cy'ubwoko bw'amaraso na Rezisi yayo"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku kizamini cy'inkari"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'amaraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'isukari mu maraso"
                     }
 
         PrenatalLaboratoryTaskResultsHelper ->
             { english = "When ready, update test results via case management"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo nibiboneka,byandike unyuze ku Gukurikirana umurwayi"
             }
 
         PrenatalLabsCaseManagementEntryTypeResults ->
@@ -8724,27 +8724,27 @@ translationSet trans =
 
                 TestNoteLackOfReagents ->
                     { english = "Lack of Reagents"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubura kw'ibikoresho byo gupima"
                     }
 
                 TestNoteLackOfOtherSupplies ->
                     { english = "Lack of Other Supplies"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubura kw'ibindi bikoresho bicyenerwa mu gupima"
                     }
 
                 TestNoteNoEquipment ->
                     { english = "No Equipment"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta gikoresho gihari"
                     }
 
                 TestNoteBrokenEquipment ->
                     { english = "Broken Equipment"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igikoresho gipima cyarangiritse"
                     }
 
                 TestNoteNotIndicated ->
                     { english = "Not Indicated"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Singombwa gukora iki kizamini"
                     }
 
                 TestNoteKnownAsPositive ->
@@ -8756,17 +8756,17 @@ translationSet trans =
             case result of
                 PrenatalTestPositive ->
                     { english = "Positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ubwandu"
                     }
 
                 PrenatalTestNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bwandu afite"
                     }
 
                 PrenatalTestIndeterminate ->
                     { english = "Indeterminate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibisobanutse"
                     }
 
         PrenatalUrineDipstickTestVariant variant ->
@@ -8939,7 +8939,7 @@ translationSet trans =
 
         TestPerformedTodayQuestion ->
             { english = "Did you perform this test today"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Iki kizamini cyaba cyakozwe uyu munsi"
             }
 
         TestVariantUrineDipstickQuestion ->
@@ -10078,22 +10078,22 @@ translationSet trans =
             case result of
                 ResultHivPositive ->
                     { english = "Positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite Ubwandu"
                     }
 
                 ResultHivNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bwandu afite"
                     }
 
                 ResultHivIndeterminate ->
                     { english = "Indeterminate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibisobanutse"
                     }
 
                 NoHivTesting ->
-                    { english = "Ntibiboneste"
-                    , kinyarwanda = Nothing
+                    { english = "No HIV Testing"
+                    , kinyarwanda = Just "Ntibibonetse"
                     }
 
         StillbornPreviousDelivery ->
