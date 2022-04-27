@@ -5164,7 +5164,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryHaemoglobin _ ->
-                    { english = "Haemoglobin Test History"
+                    { english = "Hemoglobin Test History"
                     , kinyarwanda = Nothing
                     }
 
@@ -8328,12 +8328,12 @@ translationSet trans =
                     }
 
         PrenatalLaboratoryHaemoglobinLabel ->
-            { english = "Haemoglobin"
+            { english = "Hemoglobin"
             , kinyarwanda = Nothing
             }
 
         PrenatalLaboratoryHaemoglobinTestResult ->
-            { english = "Haemoglobin Test Result"
+            { english = "Hemoglobin Test Result"
             , kinyarwanda = Nothing
             }
 
