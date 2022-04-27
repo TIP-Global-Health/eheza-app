@@ -661,6 +661,8 @@ type TranslationId
     | KilogramsPerMonth
     | KnownAsPositiveQuestion Pages.Prenatal.Activity.Types.LaboratoryTask
     | KnownPositive
+    | KnownPositiveHepatitisB
+    | KnownPositiveHIV
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
@@ -5084,6 +5086,16 @@ translationSet trans =
 
         KnownPositive ->
             { english = "Known Positive"
+            , kinyarwanda = Nothing
+            }
+
+        KnownPositiveHepatitisB ->
+            { english = "Known Hepatitis B positive"
+            , kinyarwanda = Nothing
+            }
+
+        KnownPositiveHIV ->
+            { english = "Known HIV positive"
             , kinyarwanda = Nothing
             }
 

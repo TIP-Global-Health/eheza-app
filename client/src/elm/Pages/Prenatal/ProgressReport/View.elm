@@ -364,9 +364,15 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                         filteredDiagnoses =
                             EverySet.toList diagnoses
                                 |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
+
+                        diagnosisEntries =
+                            List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                                |> List.concat
+
+                        knownAsPositiveEntries =
+                            viewKnownPositives language date measurements
                     in
-                    List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
-                        |> List.concat
+                    knownAsPositiveEntries ++ diagnosisEntries
                 )
                 allMeasurementsWithDates
                 |> List.concat
@@ -1553,6 +1559,38 @@ viewProgressPhotosPane language currentDate isChw assembled =
         [ viewItemHeading language Translate.ProgressPhotos "blue"
         , div [ class "pane-content" ] content
         ]
+
+
+viewKnownPositives :
+    Language
+    -> NominalDate
+    -> PrenatalMeasurements
+    -> List (Html any)
+viewKnownPositives language date measurements =
+    let
+        resolveKnownPositive getMeasurementFunc knownPositiveTransId =
+            getMeasurementFunc measurements
+                |> getMeasurementValueFunc
+                |> Maybe.map
+                    (\value ->
+                        if value.executionNote == TestNoteKnownAsPositive then
+                            li []
+                                [ text <|
+                                    translate language knownPositiveTransId
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                ]
+
+                        else
+                            emptyNode
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ resolveKnownPositive .hivTest Translate.KnownPositiveHIV
+    , resolveKnownPositive .hepatitisBTest Translate.KnownPositiveHepatitisB
+    ]
 
 
 viewTreatementForDiagnosis :
