@@ -2603,7 +2603,7 @@ translationSet trans =
 
                 FilterPrenatalLabs ->
                     { english = "Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     }
 
         CentimeterShorthand ->
@@ -5108,7 +5108,7 @@ translationSet trans =
 
         LabResults ->
             { english = "Lab Results"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
             }
 
         LabResultsHistoryModeLabel mode ->
@@ -7347,7 +7347,7 @@ translationSet trans =
             case activity of
                 Backend.PrenatalActivity.Model.LabResults ->
                     { english = "Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     }
 
                 RecurrentNextSteps ->
@@ -8070,27 +8070,27 @@ translationSet trans =
             case value of
                 BloodGroupA ->
                     { english = "A"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubwoko bwa A"
                     }
 
                 BloodGroupB ->
                     { english = "B"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubwoko bwa B"
                     }
 
                 BloodGroupAB ->
                     { english = "AB"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubwoko bwa AB"
                     }
 
                 BloodGroupO ->
                     { english = "O"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubwoko bwa O"
                     }
 
         PrenatalLaboratoryRhesusLabel ->
             { english = "Rhesus"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Rezisi"
             }
 
         PrenatalLaboratoryRhesusTestResult ->
@@ -8245,22 +8245,22 @@ translationSet trans =
             case value of
                 LeukocytesNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta Kibazo afite"
                     }
 
                 LeukocytesSmall ->
                     { english = "Small (+)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Duto (+)"
                     }
 
                 LeukocytesMedium ->
                     { english = "Medium (++)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Turinganiye (++)"
                     }
 
                 LeukocytesLarge ->
                     { english = "Large (+++)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tunini (+++)"
                     }
 
         PrenatalLaboratoryNitriteLabel ->
@@ -8277,7 +8277,7 @@ translationSet trans =
             case value of
                 NitriteNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 NitritePlus ->
@@ -8292,12 +8292,12 @@ translationSet trans =
 
         PrenatalLaboratoryUrobilinogenLabel ->
             { english = "Urobilinogen"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "urobilinogene (mu nkari)"
             }
 
         PrenatalLaboratoryUrobilinogenTestResult ->
             { english = "Urobilinogen Test Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisubizo cya urobilinogene (mu nkari)"
             }
 
         PrenatalLaboratoryUrobilinogenValue value ->
@@ -8514,42 +8514,42 @@ translationSet trans =
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Virusi itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwijima wo mu Bwoko bwa B"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubwoko bw'Amaraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini k'Inkari"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingano y'Amaraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingano y'isukari mu Maraso"
                     }
 
         PrenatalLaboratoryTaskLabel task ->
@@ -8685,7 +8685,7 @@ translationSet trans =
 
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'Ibizamini byafashwe ku mugore utwite"
             }
 
         PrenatalLabsCaseManagementEntryTypeVitals ->
@@ -8697,12 +8697,12 @@ translationSet trans =
             case state of
                 PrenatalLabsEntryPending ->
                     { english = "Pending"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just ""
                     }
 
                 PrenatalLabsEntryClosingSoon ->
                     { english = "Closing Soon"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birafunga vuba"
                     }
 
         PrenatalPhotoHelper ->
@@ -9856,7 +9856,7 @@ translationSet trans =
 
         SeeLabResults ->
             { english = "See Lab Results"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Reba Ibisubizo by'Ibizamini Byafashwe"
             }
 
         SeeMore ->
