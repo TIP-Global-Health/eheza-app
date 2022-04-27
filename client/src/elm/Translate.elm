@@ -1301,7 +1301,7 @@ translationSet trans =
 
                 FacilityHospital ->
                     { english = "Will you accompany the patient to the hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uraherekeza umubyeyi ku bitaro"
                     }
 
                 FacilityHIVProgram ->
@@ -1772,17 +1772,17 @@ translationSet trans =
 
         AdministerPrenatalMebendezoleHelper ->
             { english = "1 dose once a day for one day"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikinini kimwe inshuro imwe ku munsi mu munsi umwe"
             }
 
         AdministerFolicAcidHelper ->
             { english = "Take daily for 3 months"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Fata imiti buri munsi mu gihe cy'amexi 3"
             }
 
         AdministerHIVARVHelper ->
             { english = "Take 1x a day by mouth"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Fata ikinini 1 ku munsi mu kanwa"
             }
 
         AdministerIronHelper ->
@@ -3275,7 +3275,7 @@ translationSet trans =
 
         DangerSignsLabelForNurse ->
             { english = "Patient shows signs of"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi aragaragaza ibimenyetso bya"
             }
 
         DangerSignsTask task ->
@@ -3471,7 +3471,7 @@ translationSet trans =
 
         DueTo ->
             { english = "Due to"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kubera"
             }
 
         EarlyChildhoodDevelopment ->
@@ -3750,17 +3750,17 @@ translationSet trans =
 
         ElevatedRespiratoryRate ->
             { english = "Elevated respiratory rate"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inshuro ahumeka zazamutse"
             }
 
         EmergencyReferralHelperReferToHC ->
             { english = "Refer patient to health center immediately"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umurwayi ku kigonderabuzima byihuse"
             }
 
         EmergencyReferralHelperReferToHospital ->
             { english = "Refer patient to hospital immediately"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umurwayi ku bitaro byihuse"
             }
 
         EmergencyReferralHelperReferToMaternityWard ->
@@ -4723,12 +4723,12 @@ translationSet trans =
 
         HypertensionRecommendedTreatmentHeader ->
             { english = "This patient shows signs of hypertension"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso"
             }
 
         HypertensionRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient bellow"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             }
 
         IdleWaitingForSync ->
@@ -5032,7 +5032,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
-                    { english = "Is this patient known to be yphilis - RPR positive"
+                    { english = "Is this patient known to be Syphilis - RPR positive"
                     , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite uburwayi bwa Mburugu"
                     }
 
@@ -5115,92 +5115,92 @@ translationSet trans =
             case mode of
                 LabResultsHistoryHIV _ ->
                     { english = "HIV Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Vursi itera SIDA"
                     }
 
                 LabResultsHistorySyphilis _ ->
                     { english = "Syphilis Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Mburugu"
                     }
 
                 LabResultsHistoryHepatitisB _ ->
                     { english = "Hepatitis B Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Umwijima wo mu bwoko bwa B "
                     }
 
                 LabResultsHistoryMalaria _ ->
                     { english = "Malaria Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Malariya"
                     }
 
                 LabResultsHistoryProtein _ ->
                     { english = "Protein Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Proteyine"
                     }
 
                 LabResultsHistoryPH _ ->
                     { english = "pH Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya pH"
                     }
 
                 LabResultsHistoryGlucose _ ->
                     { english = "Glucose Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Isukari mu nkari"
                     }
 
                 LabResultsHistoryLeukocytes _ ->
                     { english = "Leukocytes Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizami cy' Uturemangingo twera"
                     }
 
                 LabResultsHistoryNitrite _ ->
                     { english = "Nitrite Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Umunyu wapimwe mu nkari"
                     }
 
                 LabResultsHistoryUrobilinogen _ ->
                     { english = "Urobilinogen Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya urobilinogene (mu nkari)"
                     }
 
                 LabResultsHistoryHaemoglobin _ ->
                     { english = "Hemoglobin Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'ingano y'amaraso"
                     }
 
                 LabResultsHistorySpecificGravity _ ->
-                    { english = "SpecificGravity Test History"
-                    , kinyarwanda = Nothing
+                    { english = "Specific Gravity Test History"
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Uburemere bw'inkari bwihariye"
                     }
 
                 LabResultsHistoryKetone _ ->
                     { english = "Ketone Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Ketone mu nkari"
                     }
 
                 LabResultsHistoryBilirubin _ ->
                     { english = "Bilirubin Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Bililibine (mu nkari)"
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
                     { english = "Random Blood Sugar Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'ingano y'isukari mu maraso"
                     }
 
                 LabResultsHistoryHemoglobin _ ->
                     { english = "Hemoglobin Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'ingano y'amaraso"
                     }
 
                 LabResultsHistoryBloodGroup _ ->
                     { english = "Blood Group Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'ubwoko bw'Amaraso"
                     }
 
                 LabResultsHistoryRhesus _ ->
                     { english = "Rhesus Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru kuri kizamini cya Rezisi"
                     }
 
         LastChecked ->
@@ -5479,7 +5479,7 @@ translationSet trans =
 
         MalariaRecommendedTreatmentHeader ->
             { english = "This patient has tested positive for Malaria"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi afite agakoko gateram Malariya"
             }
 
         MalariaRecommendedTreatmentHelper ->
@@ -5489,7 +5489,7 @@ translationSet trans =
 
         MalariaWithGIComplications ->
             { english = "Malaria with GI complications"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Malariya iherekejwe no guhitwa cyangwa kuruka"
             }
 
         RapidTestResult result ->
@@ -6147,12 +6147,12 @@ translationSet trans =
 
         NoTreatmentAdministered ->
             { english = "No treatment administered"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta muti watanzwe"
             }
 
         NoTreatmentRecorded ->
             { english = "No treatment recorded"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta muti yanditswe"
             }
 
         NutritionSigns ->
@@ -6179,7 +6179,7 @@ translationSet trans =
 
                 ClientAlreadyInCare ->
                     { english = "Client already in care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umukiriya ari kwitabwaho"
                     }
 
                 ReasonForNotSendingToHCOther ->
@@ -7376,47 +7376,47 @@ translationSet trans =
             case diagnosis of
                 DiagnosisPrescribeMebendezole ->
                     { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tanga umuti wa Mebendazole"
                     }
 
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
                     { english = "Chronic Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
                     }
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Gestational Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
                     { english = "Gestational Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
                 DiagnosisModeratePreeclampsiaImmediate ->
                     { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
                 DiagnosisModeratePreeclampsiaAfterRecheck ->
                     { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
                 DiagnosisSeverePreeclampsiaImmediate ->
                     { english = "Severe Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
                 DiagnosisSeverePreeclampsiaAfterRecheck ->
                     { english = "Severe Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
                 DiagnosisEclampsia ->
@@ -7426,7 +7426,7 @@ translationSet trans =
 
                 DiagnosisHIV ->
                     { english = "HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Virusi itera SIDA"
                     }
 
                 DiagnosisDiscordantPartnership ->
@@ -7436,52 +7436,52 @@ translationSet trans =
 
                 DiagnosisSyphilis ->
                     { english = "Syphilis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu"
                     }
 
                 DiagnosisSyphilisWithComplications ->
                     { english = "Syphilis with Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu n'ibibazo bishamikiyeho"
                     }
 
                 DiagnosisNeurosyphilis ->
                     { english = "Neurosyphilis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu yageze mu bwonko"
                     }
 
                 DiagnosisHepatitisB ->
                     { english = "Hepatitis B"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
                     }
 
                 DiagnosisMalaria ->
                     { english = "Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya"
                     }
 
                 DiagnosisMalariaWithAnemia ->
                     { english = "Malaria with Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye"
                     }
 
                 DiagnosisMalariaWithSevereAnemia ->
                     { english = "Malaria with Severe Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye Cyane"
                     }
 
                 DiagnosisModerateAnemia ->
                     { english = "Mild to Mederate Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amaraso Macye byoroheje"
                     }
 
                 DiagnosisSevereAnemia ->
                     { english = "Severe Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amaraso Macye Cyane"
                     }
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Severe Anemia with Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amaraso Macye Cyane n'Ibibazo Bishamikiyeho"
                     }
 
                 DiagnosisMiscarriage ->
@@ -7546,7 +7546,7 @@ translationSet trans =
 
                 DiagnosisInfection ->
                     { english = "Infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara iterwa n'udukoko tutabonwa n'amaso (Microbes)"
                     }
 
                 DiagnosisImminentDelivery ->
@@ -7568,47 +7568,47 @@ translationSet trans =
             case diagnosis of
                 DiagnosisPrescribeMebendezole ->
                     { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tanga Umuti wa Mebendazole"
                     }
 
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
                     { english = "Chronic Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
                     }
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Gestational Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
                     { english = "Gestational Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
                 DiagnosisModeratePreeclampsiaImmediate ->
                     { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
                 DiagnosisModeratePreeclampsiaAfterRecheck ->
                     { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
                 DiagnosisSeverePreeclampsiaImmediate ->
                     { english = "Severe Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
                 DiagnosisSeverePreeclampsiaAfterRecheck ->
                     { english = "Severe Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
                 DiagnosisEclampsia ->
@@ -7618,7 +7618,7 @@ translationSet trans =
 
                 DiagnosisHIV ->
                     { english = "HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Virusi Itera SIDA"
                     }
 
                 DiagnosisDiscordantPartnership ->
@@ -7628,52 +7628,52 @@ translationSet trans =
 
                 DiagnosisSyphilis ->
                     { english = "Syphilis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu"
                     }
 
                 DiagnosisSyphilisWithComplications ->
                     { english = "Syphilis with Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu n'ibibazo bishamikiyeho"
                     }
 
                 DiagnosisNeurosyphilis ->
                     { english = "Suspected Neurosyphilis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Arakekwaho Mburugu yageze mu bwonko"
                     }
 
                 DiagnosisHepatitisB ->
                     { english = "Hepatitis B"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
                     }
 
                 DiagnosisMalaria ->
                     { english = "Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya"
                     }
 
                 DiagnosisMalariaWithAnemia ->
                     { english = "Malaria with Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye"
                     }
 
                 DiagnosisMalariaWithSevereAnemia ->
                     { english = "Malaria with Severe Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye Cyane"
                     }
 
                 DiagnosisModerateAnemia ->
                     { english = "Anemia (Mild to Mederate)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amaraso Macye (byoroheje)"
                     }
 
                 DiagnosisSevereAnemia ->
                     { english = "Anemia (Severe)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amaraso Macye (bikabije)"
                     }
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Anemia (Severe with Complications)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amaraso Macye (Bikabije n'Ibibazo Bishamikiyeho)"
                     }
 
                 DiagnosisMiscarriage ->
@@ -7738,7 +7738,7 @@ translationSet trans =
 
                 DiagnosisInfection ->
                     { english = "Infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara iterwa n'udukoko tutabonwa n'amaso (Microbes)"
                     }
 
                 DiagnosisImminentDelivery ->
@@ -7979,7 +7979,7 @@ translationSet trans =
 
                     else
                         { english = "Referral"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Ohereza"
                         }
 
                 Pages.Prenatal.Activity.Types.NextStepsHealthEducation ->
@@ -7999,19 +7999,19 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.NextStepsRecommendedTreatment ->
                     { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi + Imiti"
                     }
 
                 Pages.Prenatal.Activity.Types.NextStepsWait ->
                     { english = "Wait"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tegereza"
                     }
 
         PrenatalRecurrentNextStepsTask task ->
             case task of
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsSendToHC ->
                     { english = "Referral"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza"
                     }
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
@@ -8021,7 +8021,7 @@ translationSet trans =
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsRecommendedTreatment ->
                     { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi + Imiti"
                     }
 
         PrenatalHIVProgramHelper ->
@@ -8033,7 +8033,7 @@ translationSet trans =
             case sign of
                 HIVProgramHC ->
                     { english = "Does the health center have a HIV/PMTCT program"
-                    , kinyarwanda = Just ""
+                    , kinyarwanda = Nothing
                     }
 
                 PartnerHIVPositive ->
@@ -8058,7 +8058,7 @@ translationSet trans =
 
         PrenatalLaboratoryBloodGroupLabel ->
             { english = "Blood Group"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ubwoko bw'Amaraso"
             }
 
         PrenatalLaboratoryBloodGroupTestResult ->
@@ -8265,12 +8265,12 @@ translationSet trans =
 
         PrenatalLaboratoryNitriteLabel ->
             { english = "Nitrite"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umunyu wapimwe mu nkari"
             }
 
         PrenatalLaboratoryNitriteTestResult ->
             { english = "Nitrite Test Result"
-            , kinyarwanda = Just "Ibisubizo kumunyu wapimwe mu nkali"
+            , kinyarwanda = Just "Ibisubizo kumunyu wapimwe mu nkari"
             }
 
         PrenatalLaboratoryNitriteValue value ->
@@ -8329,19 +8329,19 @@ translationSet trans =
 
         PrenatalLaboratoryHaemoglobinLabel ->
             { english = "Hemoglobin"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingano y'Amaraso"
             }
 
         PrenatalLaboratoryHaemoglobinTestResult ->
             { english = "Hemoglobin Test Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "IgisubiZo cy'ingano y'amaraso"
             }
 
         PrenatalLaboratoryHaemoglobinValue value ->
             case value of
                 HaemoglobinNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 HaemoglobinNonHemolyzedTrace ->
@@ -8376,12 +8376,12 @@ translationSet trans =
 
         PrenatalLaboratorySpecificGravityLabel ->
             { english = "Specific Gravity"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburemere bw'inkari bwihariye"
             }
 
         PrenatalLaboratorySpecificGravityTestResult ->
             { english = "Specific Gravity Test Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisubizo cy'uburemere bw'inkari bwihariye "
             }
 
         PrenatalLaboratorySpecificGravityValue value ->
@@ -8423,19 +8423,19 @@ translationSet trans =
 
         PrenatalLaboratoryKetoneLabel ->
             { english = "Ketone Test"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikizamini cya Ketone mu nkari"
             }
 
         PrenatalLaboratoryKetoneTestResult ->
             { english = "Ketone Test Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisubizo cya Ketone (mu nkari)"
             }
 
         PrenatalLaboratoryKetoneValue value ->
             case value of
                 KetoneNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta Kibazo afite"
                     }
 
                 Ketone5 ->
@@ -8470,34 +8470,34 @@ translationSet trans =
 
         PrenatalLaboratoryBilirubinLabel ->
             { english = "Bilirubin"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Bililibine (mu nkari)"
             }
 
         PrenatalLaboratoryBilirubinTestResult ->
             { english = "Bilirubin Test Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisubizo cya Bililibine (mu nkari)"
             }
 
         PrenatalLaboratoryBilirubinValue value ->
             case value of
                 BilirubinNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 BilirubinSmall ->
                     { english = "Small (+)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Byoroheje"
                     }
 
                 BilirubinMedium ->
                     { english = "Medium (++)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Bikabije"
                     }
 
                 BilirubinLarge ->
                     { english = "Large (+++)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Bikabije cyane"
                     }
 
         PrenatalLaboratoryHemoglobinTestResult ->
@@ -8690,7 +8690,7 @@ translationSet trans =
 
         PrenatalLabsCaseManagementEntryTypeVitals ->
             { english = "Vitals Recheck"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kongera gupima ibipimo by'ubuzima"
             }
 
         PrenatalLabsEntryState state ->
@@ -8749,7 +8749,7 @@ translationSet trans =
 
                 TestNoteKnownAsPositive ->
                     { english = "Known as Positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Asanzwe afite ubwandu"
                     }
 
         PrenatalTestResult result ->
@@ -9095,7 +9095,7 @@ translationSet trans =
 
         ReceivedMebendazole ->
             { english = "Has the mother received Mebendazole in the last 6 months"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ububyeyi yahawe umuti wa Mebendazole mu mezi 6 ashize"
             }
 
         ReceivedMosquitoNet ->
@@ -9179,7 +9179,7 @@ translationSet trans =
 
         Recommended ->
             { english = "Recommended"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imiti yemewe"
             }
 
         RecommendedButNotGivenDueTo ->
@@ -9206,7 +9206,7 @@ translationSet trans =
 
                 TreatementErythromycin ->
                     { english = "by mouth 4x a day for 14 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro enye ku munsi mu minsi 14"
                     }
 
                 TreatementAzithromycin ->
@@ -9234,7 +9234,7 @@ translationSet trans =
 
                 TreatmentCoartem ->
                     { english = "Give Coartem 4 tablets by mouth twice per day x 3 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tanga AL (Kowaritemu) ibibini bine (4) byo kunywa mu kanwa inshuri ebyiri ku munsi mu minsi itatu."
                     }
 
                 TreatmentWrittenProtocols ->
@@ -9279,27 +9279,27 @@ translationSet trans =
 
                 NoTreatmentForSyphilis ->
                     { english = "No Treatment Administered"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta muti watanzwe"
                     }
 
                 TreatmentMethyldopa2 ->
                     { english = "Methyldopa 250mg by mouth two times a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Metilidopa wo kunywa mu kanwa: 250 mg Inshuro ebyri ku munsi"
                     }
 
                 TreatmentMethyldopa3 ->
                     { english = "Methyldopa 250mg by mouth three times a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Metilidopa wo kunywa mu kanwa: 250 mg Inshuro eshatu ku munsi"
                     }
 
                 TreatmentMethyldopa4 ->
                     { english = "Methyldopa 250mg by mouth four times a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti wa Metilidopa wo kunywa mu kanwa: 250 mg Inshuro enye ku munsi"
                     }
 
                 NoTreatmentForHypertension ->
                     { english = "No Treatment Administered"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta muti watanzwe"
                     }
 
         RecordAcuteIllnessOutcome ->
@@ -9340,12 +9340,12 @@ translationSet trans =
             case facility of
                 FacilityHealthCenter ->
                     { english = "Referred to health center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe ku kigo nderabuzima"
                     }
 
                 FacilityHospital ->
                     { english = "Referred to hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe ku bitaro"
                     }
 
                 FacilityHIVProgram ->
@@ -9357,12 +9357,12 @@ translationSet trans =
             case facility of
                 FacilityHealthCenter ->
                     { english = "Not referred to health center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe ku kigo nderabuzima"
                     }
 
                 FacilityHospital ->
                     { english = "Not referred to hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe ku bitaro"
                     }
 
                 FacilityHIVProgram ->
@@ -10373,7 +10373,7 @@ translationSet trans =
 
         SyphilisRecommendedTreatmentHeader ->
             { english = "This patient has tested positive for Syphilis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi afite ubwandu bwa Mburugu"
             }
 
         SyphilisRecommendedTreatmentHelper ->
@@ -10602,17 +10602,17 @@ translationSet trans =
 
         TreatedWith ->
             { english = "Treated with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Bivurwa na"
             }
 
         TreatedWithNot ->
             { english = "Not treated with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntibivurwa na"
             }
 
         TreatedWithMethyldopa ->
             { english = "treated with Methyldopa"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Bivurwa na Metilidopa"
             }
 
         Treatment ->
@@ -11418,7 +11418,7 @@ translationSet trans =
 
         WrittenProtocolsFollowed ->
             { english = "Written protocols followed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amabwiriza yanditse arakurikira"
             }
 
         Year ->
