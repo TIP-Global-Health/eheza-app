@@ -44,7 +44,7 @@ getAllActivities assembled =
 
             else
                 [ DangerSigns
-                , PregnancyDating
+                , SymptomReview
                 , History
                 , Examination
                 , FamilyPlanning

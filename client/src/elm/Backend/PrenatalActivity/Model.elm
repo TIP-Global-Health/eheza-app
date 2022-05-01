@@ -19,6 +19,7 @@ type PrenatalActivity
     | PregnancyOutcome
     | MalariaPrevention
     | Medication
+    | SymptomReview
 
 
 type PrenatalRecurrentActivity

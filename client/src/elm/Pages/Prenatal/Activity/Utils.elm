@@ -47,8 +47,7 @@ expectActivity currentDate assembled activity =
         NurseEncounter ->
             case activity of
                 PregnancyDating ->
-                    -- Only show on first encounter
-                    isFirstEncounter assembled
+                    True
 
                 History ->
                     True
@@ -90,6 +89,9 @@ expectActivity currentDate assembled activity =
                                 |> List.isEmpty
                                 |> not
                            )
+
+                SymptomReview ->
+                    True
 
                 -- Unique Chw activities.
                 _ ->
@@ -232,6 +234,10 @@ activityCompleted currentDate assembled activity =
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
+
+        SymptomReview ->
+            -- @todo:
+            False
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
