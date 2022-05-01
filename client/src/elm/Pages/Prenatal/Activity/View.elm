@@ -1728,12 +1728,12 @@ viewNextStepsContent language currentDate isChw assembled data =
                         case task of
                             NextStepsWait ->
                                 viewPauseEncounterButton language
-                                    -- Button is enabled becausethere are
+                                    -- Button is enabled because there are
                                     -- no actual tasks to be performed.
                                     True
                                     -- When saving, we'll also 'pause' the encounter
                                     -- which actualy navigates to main menu page.
-                                    -- The encountre is closed on second phase.
+                                    -- The encounter is closed on second phase.
                                     saveMsg
 
                             _ ->
