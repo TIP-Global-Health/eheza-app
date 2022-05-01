@@ -845,6 +845,7 @@ type TranslationId
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientRecordFilter PatientRecordFilter
+    | PauseEncounter
     | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
@@ -1190,6 +1191,7 @@ type TranslationId
     | Village
     | WaitForVitalsRecheckHelper
     | WaitForLabsResultsHelper
+    | WaitInstructions
     | Warning
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
@@ -6958,6 +6960,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PauseEncounter ->
+            { english = "Pause Encounter"
+            , kinyarwanda = Nothing
+            }
+
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
             , kinyarwanda = Nothing
@@ -7374,11 +7381,6 @@ translationSet trans =
 
         PrenatalDiagnosis diagnosis ->
             case diagnosis of
-                DiagnosisPrescribeMebendezole ->
-                    { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Nothing
-                    }
-
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
                     , kinyarwanda = Nothing
@@ -7566,11 +7568,6 @@ translationSet trans =
 
         PrenatalDiagnosisForProgressReport diagnosis ->
             case diagnosis of
-                DiagnosisPrescribeMebendezole ->
-                    { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Nothing
-                    }
-
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
                     , kinyarwanda = Nothing
@@ -10819,6 +10816,11 @@ translationSet trans =
 
         WaitForLabsResultsHelper ->
             { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and futher diagnoses."
+            , kinyarwanda = Nothing
+            }
+
+        WaitInstructions ->
+            { english = "To proceed with more encounters while you wait for test results or a vitals recheck, touch \"Pause Encounter\" below to leave this encounter. You can return to it from the case management screen."
             , kinyarwanda = Nothing
             }
 

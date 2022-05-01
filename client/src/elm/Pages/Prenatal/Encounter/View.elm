@@ -1,9 +1,10 @@
-module Pages.Prenatal.Encounter.View exposing (allowEndingEcounter, generateActivityData, view, viewMotherAndMeasurements)
+module Pages.Prenatal.Encounter.View exposing (generateActivityData, view, viewActionButton, viewMotherAndMeasurements)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Person)
@@ -23,6 +24,7 @@ import Backend.PrenatalEncounter.Model
         , RecordPreganancyInitiator(..)
         )
 import Date exposing (Interval(..))
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -30,10 +32,11 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, emergencyReferalRequired, expectActivity, noDangerSigns)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, expectActivity, noDangerSigns)
 import Pages.Prenatal.Encounter.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.View exposing (viewPauseEncounterButton)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -416,13 +419,17 @@ viewMainPageContent language currentDate assembled model =
                         ]
                     ]
 
-        allowEndEcounter =
-            allowEndingEcounter assembled pendingActivities completedActivities
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                , viewActionButton language
+                    pendingActivities
+                    completedActivities
+                    -- When pausing, we don't close the encounter,
+                    -- as it should happend on second phase.
+                    (SetActivePage PinCodePage)
+                    SetEndEncounterDialogState
+                    assembled
                 ]
     in
     [ tabs
@@ -457,20 +464,28 @@ generateActivityData activity assembled =
             default
 
 
-allowEndingEcounter : AssembledData -> List PrenatalActivity -> List PrenatalActivity -> Bool
-allowEndingEcounter assembled pendingActivities completedActivities =
-    if emergencyReferalRequired assembled then
-        List.member NextSteps completedActivities
+viewActionButton : Language -> List PrenatalActivity -> List PrenatalActivity -> msg -> (Bool -> msg) -> AssembledData -> Html msg
+viewActionButton language pendingActivities completedActivities pauseMsg setDialogStateMsg assembled =
+    let
+        enabled =
+            if emergencyReferalRequired assembled then
+                List.member NextSteps completedActivities
+
+            else
+                case pendingActivities of
+                    -- Either all activities are completed
+                    [] ->
+                        True
+
+                    -- Or only one none mandatory activity remains
+                    [ PrenatalPhoto ] ->
+                        True
+
+                    _ ->
+                        False
+    in
+    if secondPhaseRequired assembled then
+        viewPauseEncounterButton language enabled pauseMsg
 
     else
-        case pendingActivities of
-            -- Either all activities are completed
-            [] ->
-                True
-
-            -- Or only one none mandatory activity remains
-            [ PrenatalPhoto ] ->
-                True
-
-            _ ->
-                False
+        viewEndEncounterButton language enabled setDialogStateMsg

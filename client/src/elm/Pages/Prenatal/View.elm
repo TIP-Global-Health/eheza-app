@@ -72,3 +72,21 @@ viewRecommendedTreatmentForHypertension language currentDate setRecommendedTreat
         setRecommendedTreatmentSignMsg
         Translate.RecommendedTreatmentSignLabel
     ]
+
+
+viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
+viewPauseEncounterButton language enabled pauseAction =
+    let
+        attributes =
+            if enabled then
+                [ class "ui fluid primary button"
+                , onClick pauseAction
+                ]
+
+            else
+                [ class "ui fluid primary button disabled" ]
+    in
+    div [ class "actions" ]
+        [ button attributes
+            [ text <| translate language Translate.PauseEncounter ]
+        ]

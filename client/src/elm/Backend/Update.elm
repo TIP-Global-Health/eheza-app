@@ -4074,7 +4074,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                         let
                             urgentDiagnoses =
                                 List.filter
-                                    Pages.Prenatal.Activity.Utils.diagnosisRequiresEmergencyReferal
+                                    Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
                                     addedDiagnoses
 
                             additionalMsgs =

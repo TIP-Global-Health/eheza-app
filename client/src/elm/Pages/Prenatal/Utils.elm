@@ -60,7 +60,7 @@ listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
 listNonUrgentDiagnoses diagnoses =
     let
         exclusions =
-            DiagnosisPrescribeMebendezole
+            NoPrenatalDiagnosis
                 :: emergencyReferralDiagnosesInitial
                 ++ emergencyReferralDiagnosesRecurrent
     in
@@ -277,7 +277,7 @@ resolveMedicationDistributionInputsAndTasks :
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
 resolveMedicationDistributionInputsAndTasks language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
-    resolveMedicationsByDiagnoses assembled allowedMedications
+    resolveMedicationsByDiagnoses currentDate assembled allowedMedications
         |> List.map
             (resolveMedicationDistributionInputsAndTasksForMedication language
                 currentDate
@@ -311,8 +311,8 @@ medicationDistributionMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-resolveMedicationsByDiagnoses : AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
-resolveMedicationsByDiagnoses assembled allowedMedications =
+resolveMedicationsByDiagnoses : NominalDate -> AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
+resolveMedicationsByDiagnoses currentDate assembled allowedMedications =
     List.filter
         (\medication ->
             let
@@ -324,19 +324,28 @@ resolveMedicationsByDiagnoses assembled allowedMedications =
             in
             case medication of
                 Mebendezole ->
-                    diagnosed DiagnosisPrescribeMebendezole assembled
+                    showMebendazoleQuestion currentDate assembled
+                        && (getMeasurementValueFunc assembled.measurements.medication
+                                |> Maybe.map (EverySet.member Mebendazole >> not)
+                                |> Maybe.withDefault False
+                           )
 
                 Tenofovir ->
-                    hivDiagnosed && not hivProgramHC
+                    -- Requirements were changed, so this medication
+                    -- is not in use for the time being.
+                    False
 
                 Lamivudine ->
-                    hivDiagnosed && not hivProgramHC
+                    -- Requirements were changed, so this medication
+                    -- is not in use for the time being.
+                    False
 
                 Dolutegravir ->
                     hivDiagnosed && not hivProgramHC
 
                 TDF3TC ->
-                    diagnosed DiagnosisDiscordantPartnership assembled
+                    (hivDiagnosed && not hivProgramHC)
+                        || diagnosed DiagnosisDiscordantPartnership assembled
 
                 Iron ->
                     diagnosed DiagnosisModerateAnemia assembled
@@ -348,6 +357,48 @@ resolveMedicationsByDiagnoses assembled allowedMedications =
                     False
         )
         allowedMedications
+
+
+showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
+showMebendazoleQuestion currentDate assembled =
+    assembled.globalLmpDate
+        |> Maybe.map
+            (\lmpDate ->
+                let
+                    egaInWeeks =
+                        calculateEGAWeeks currentDate lmpDate
+
+                    dewormingPillNotGiven =
+                        List.filter
+                            (\( _, _, measurements ) ->
+                                measurements.medication
+                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+
+                    mebenadazoleNotPrescribed =
+                        List.filter
+                            (\( _, _, measurements ) ->
+                                measurements.medicationDistribution
+                                    |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
+                                    |> Maybe.withDefault False
+                            )
+                            assembled.nursePreviousMeasurementsWithDates
+                            |> List.isEmpty
+                in
+                -- Starting EGA week 24.
+                (egaInWeeks >= 24)
+                    && -- Previous variation had a question about deworming pill,
+                       -- which is actually Menendazole, or something similar.
+                       -- If somewhere during previous encounters patient stated that
+                       -- deworming pill was given, we do not ask about Mebendazole.
+                       dewormingPillNotGiven
+                    && -- Mebendazole was not prescribed during the current pregnancy.
+                       mebenadazoleNotPrescribed
+            )
+        |> Maybe.withDefault False
 
 
 resolveMedicationDistributionInputsAndTasksForMedication :
@@ -402,7 +453,7 @@ resolveMebendezoleDistributionInputsAndTasks language currentDate person setMedi
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Mebendezole) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Mebendezole) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerPrenatalMebendezoleHelper ++ "." ]
                             ]
                     )
@@ -452,7 +503,7 @@ resolveTenofovirDistributionInputsAndTasks language currentDate person setMedica
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Tenofovir) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Tenofovir) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                             ]
                     )
@@ -502,7 +553,7 @@ resolveLamivudineDistributionInputsAndTasks language currentDate person setMedic
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Lamivudine) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Lamivudine) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                             ]
                     )
@@ -552,7 +603,7 @@ resolveDolutegravirDistributionInputsAndTasks language currentDate person setMed
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Dolutegravir) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Dolutegravir) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                             ]
                     )
@@ -599,7 +650,7 @@ resolveTDF3TCDistributionInputsAndTasks language currentDate person setMedicatio
     let
         instructions =
             div [ class "instructions" ]
-                [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign TDF3TC) "icon-pills" Nothing
+                [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign TDF3TC) "" "icon-pills" "" Nothing
                 , div [ class "prescription" ] [ text <| translate language Translate.AdministerHIVARVHelper ++ "." ]
                 ]
 
@@ -647,7 +698,7 @@ resolveIronDistributionInputsAndTasks language currentDate person setMedicationD
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Iron) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Iron) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerIronHelper ++ "." ]
                             ]
                     )
@@ -697,7 +748,7 @@ resolveFolicAcidDistributionInputsAndTasks language currentDate person setMedica
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign FolicAcid) ("(" ++ dosage ++ ")") icon ":" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign FolicAcid) ("(" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| translate language Translate.AdministerFolicAcidHelper ++ "." ]
                             ]
                     )
@@ -813,10 +864,8 @@ resolveFolicAcidDosageAndIcon currentDate person =
 medicationsInitialPhase : List MedicationDistributionSign
 medicationsInitialPhase =
     [ Mebendezole
-    , Tenofovir
-    , Lamivudine
-    , Dolutegravir
     , TDF3TC
+    , Dolutegravir
     ]
 
 

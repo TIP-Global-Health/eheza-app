@@ -37,10 +37,7 @@ type PrenatalEncounterType
 
 
 type PrenatalDiagnosis
-    = -- This diagnosis is used only as an indication for prescribing
-      -- Mebendezole at Medication distribution activity.
-      DiagnosisPrescribeMebendezole
-    | DiagnosisChronicHypertensionImmediate
+    = DiagnosisChronicHypertensionImmediate
     | DiagnosisChronicHypertensionAfterRecheck
     | DiagnosisGestationalHypertensionImmediate
     | DiagnosisGestationalHypertensionAfterRecheck
@@ -87,6 +84,7 @@ type RecordPreganancyInitiator
 
 type PrenatalProgressReportInitiator
     = InitiatorEncounterPage PrenatalEncounterId
+    | InitiatorRecurrentEncounterPage PrenatalEncounterId
     | InitiatorNewEncounter PrenatalEncounterId
     | InitiatorPatientRecord PersonId
 
