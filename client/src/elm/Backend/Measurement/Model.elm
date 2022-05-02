@@ -1126,7 +1126,7 @@ type alias PrenatalSymptomReview =
 
 type alias PrenatalSymptomReviewValue =
     { symptoms : EverySet PrenatalSymptom
-    , questions : EverySet PrenatalSymptomQuestion
+    , symptomQuestions : EverySet PrenatalSymptomQuestion
     }
 
 
