@@ -943,6 +943,8 @@ type TranslationId
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalPhotoHelper
     | PrenatalRecurrentNextStepsTask Pages.Prenatal.RecurrentActivity.Types.NextStepsTask
+    | PrenatalSymptom PrenatalSymptom
+    | PrenatalSymptomQuestion PrenatalSymptomQuestion
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
@@ -8749,6 +8751,165 @@ translationSet trans =
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
             , kinyarwanda = Just "Fata ifoto y'inda y'umubyeyi hanyuma uyimwereke arebe uko yakuze/yiyongereye."
             }
+
+        PrenatalSymptom value ->
+            case value of
+                BurningWithUrination ->
+                    { english = "Burning with Urination"
+                    , kinyarwanda = Nothing
+                    }
+
+                AbnormalVaginalDischarge ->
+                    { english = "Abnormal Vaginal Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                NauseaAndVomiting ->
+                    { english = "Nausea and Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Heartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                LegCramps ->
+                    { english = "Leg Cramps"
+                    , kinyarwanda = Nothing
+                    }
+
+                LowBackPain ->
+                    { english = "Low Back Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                CoughContinuous ->
+                    { english = "Cough for >3 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                PelvicPain ->
+                    { english = "Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                Constipation ->
+                    { english = "Constipation"
+                    , kinyarwanda = Nothing
+                    }
+
+                VaricoseVeins ->
+                    { english = "Varicose Veins"
+                    , kinyarwanda = Nothing
+                    }
+
+                LegPain ->
+                    { english = "Leg Pain (One Leg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                LegRedness ->
+                    { english = "Leg Redness (One Leg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPrenatalSymptoms ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalSymptomQuestion value ->
+            case value of
+                SymptomQuestionDizziness ->
+                    { english = "Are you experiencing dizziness"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLowUrineOutput ->
+                    { english = "Are you experiencing low urine output"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionDarkUrine ->
+                    { english = "Are you experiencing dark urine"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionPelvicPainHospitalization ->
+                    { english = "Is there severe pain that requires referral to hospital"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegPainLeft ->
+                    { english = "On which side are you experiencing leg pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegPainSwollen ->
+                    { english = "Is the leg swollen"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegPainRedOrWarm ->
+                    { english = "Is the leg red or warm to the touch"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegRednessLeft ->
+                    { english = "On which side are you experiencing leg redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegRednessPainful ->
+                    { english = "Is the leg painful"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegRednessSwollen ->
+                    { english = "Is the leg swollen"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegRednessWarm ->
+                    { english = "Is the leg warm to the touch"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionNightSweats ->
+                    { english = "Do you have night sweats"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionBloodInSputum ->
+                    { english = "Do you have blood in sputum"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionWeightLoss ->
+                    { english = "Do you have weight loss"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionSevereFatigue ->
+                    { english = "Do you have severe fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionVaginalItching ->
+                    { english = "Do you experience vaginal itching"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionPartnerUrethralDischarge ->
+                    { english = "Does your partner have urethral discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSymptomQuestions ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         PrenatalTestExecutionNote note ->
             case note of
