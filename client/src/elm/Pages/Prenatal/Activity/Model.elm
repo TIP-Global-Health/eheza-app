@@ -179,6 +179,7 @@ type alias Model =
     , birthPlanData : BirthPlanData
     , laboratoryData : LaboratoryData
     , healthEducationData : HealthEducationData
+    , symptomReviewData : SymptomReviewData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -198,6 +199,7 @@ emptyModel =
     , birthPlanData = emptyBirthPlanData
     , laboratoryData = emptyLaboratoryData
     , healthEducationData = emptyHealthEducationData
+    , symptomReviewData = emptySymptomReviewData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -383,6 +385,52 @@ type alias HealthEducationData =
 emptyHealthEducationData : HealthEducationData
 emptyHealthEducationData =
     HealthEducationData emptyHealthEducationForm
+
+
+type alias SymptomReviewData =
+    { form : SymptomReviewForm
+    }
+
+
+emptySymptomReviewData : SymptomReviewData
+emptySymptomReviewData =
+    { form = emptySymptomReviewForm
+    }
+
+
+type alias SymptomReviewForm =
+    { symptoms : Maybe (List PrenatalSymptom)
+    , dizziness : Maybe Bool
+    , lowUrineOutput : Maybe Bool
+    , darkUrine : Maybe Bool
+    , pelvicPainHospitalization : Maybe Bool
+    , legPainSigns : Maybe (List PrenatalSymptomQuestion)
+    , legRednessSigns : Maybe (List PrenatalSymptomQuestion)
+    , nightSweats : Maybe Bool
+    , bloodInSputum : Maybe Bool
+    , weightLoss : Maybe Bool
+    , severeFatigue : Maybe Bool
+    , vaginalItching : Maybe Bool
+    , partnerUrethralDischarge : Maybe Bool
+    }
+
+
+emptySymptomReviewForm : SymptomReviewForm
+emptySymptomReviewForm =
+    { symptoms = Nothing
+    , dizziness = Nothing
+    , lowUrineOutput = Nothing
+    , darkUrine = Nothing
+    , pelvicPainHospitalization = Nothing
+    , legPainSigns = Nothing
+    , legRednessSigns = Nothing
+    , nightSweats = Nothing
+    , bloodInSputum = Nothing
+    , weightLoss = Nothing
+    , severeFatigue = Nothing
+    , vaginalItching = Nothing
+    , partnerUrethralDischarge = Nothing
+    }
 
 
 type alias NextStepsData =
