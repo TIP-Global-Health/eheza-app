@@ -1120,6 +1120,53 @@ type RecommendedTreatmentSign
     | NoTreatmentForHypertension
 
 
+type alias PrenatalSymptomReview =
+    PrenatalMeasurement PrenatalSymptomReviewValue
+
+
+type alias PrenatalSymptomReviewValue =
+    { symptoms : EverySet PrenatalSymptom
+    , questions : EverySet PrenatalSymptomQuestion
+    }
+
+
+type PrenatalSymptom
+    = BurningWithUrination
+    | AbnormalVaginalDischarge
+    | NauseaAndVomiting
+    | Heartburn
+    | LegCramps
+    | LowBackPain
+    | CoughContinuous
+    | PelvicPain
+    | Constipation
+    | VaricoseVeins
+    | LegPain
+    | LegRedness
+    | NoPrenatalSymptoms
+
+
+type PrenatalSymptomQuestion
+    = SymptomQuestionDizziness
+    | SymptomQuestionLowUrineOutput
+    | SymptomQuestionDarkUrine
+    | SymptomQuestionPelvicPainHospitalization
+    | SymptomQuestionLegPainLeft
+    | SymptomQuestionLegPainSwollen
+    | SymptomQuestionLegPainRedOrWarm
+    | SymptomQuestionLegRednessLeft
+    | SymptomQuestionLegRednessPainful
+    | SymptomQuestionLegRednessSwollen
+    | SymptomQuestionLegRednessWarm
+    | SymptomQuestionNightSweats
+    | SymptomQuestionBloodInSputum
+    | SymptomQuestionWeightLoss
+    | SymptomQuestionSevereFatigue
+    | SymptomQuestionVaginalItching
+    | SymptomQuestionPartnerUrethralDischarge
+    | NoSymptomQuestions
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -1980,6 +2027,7 @@ type alias PrenatalMeasurements =
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
     , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
+    , symptomReview : Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview )
     }
 
 
@@ -2016,6 +2064,7 @@ emptyPrenatalMeasurements =
     , urineDipstickTest = Nothing
     , labsResults = Nothing
     , medicationDistribution = Nothing
+    , symptomReview = Nothing
     }
 
 
