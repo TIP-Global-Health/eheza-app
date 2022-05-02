@@ -126,6 +126,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
         |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
         |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
+        |> optional "prenatal_symptom_review" (decodeHead decodePrenatalSymptomReview) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -3948,6 +3949,18 @@ decodeVaccinationValue =
         |> required "administered_doses" (decodeEverySet decodeVaccineDose)
         |> required "administration_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "administration_note" decodeAdministrationNote
+
+
+decodePrenatalSymptomReview : Decoder PrenatalSymptomReview
+decodePrenatalSymptomReview =
+    decodePrenatalMeasurement decodePrenatalSymptomReviewValue
+
+
+decodePrenatalSymptomReviewValue : Decoder PrenatalSymptomReviewValue
+decodePrenatalSymptomReviewValue =
+    succeed PrenatalSymptomReviewValue
+        |> required "symptoms" (decodeEverySet decodePrenatalSymptom)
+        |> required "symptom_questions" (decodeEverySet decodePrenatalSymptomQuestion)
 
 
 decodePrenatalSymptom : Decoder PrenatalSymptom

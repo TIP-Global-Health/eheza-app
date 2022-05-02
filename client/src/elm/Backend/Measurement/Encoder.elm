@@ -3615,6 +3615,20 @@ encodeVaccinationDose dose =
     vaccineDoseToString dose |> string
 
 
+encodePrenatalSymptomReview : PrenatalSymptomReview -> List ( String, Value )
+encodePrenatalSymptomReview =
+    encodePrenatalMeasurement encodePrenatalSymptomReviewValue
+
+
+encodePrenatalSymptomReviewValue : PrenatalSymptomReviewValue -> List ( String, Value )
+encodePrenatalSymptomReviewValue value =
+    [ ( "symptoms", encodeEverySet encodePrenatalSymptom value.symptoms )
+    , ( "symptom_questions", encodeEverySet encodePrenatalSymptomQuestion value.symptomQuestions )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_symptom_review" )
+    ]
+
+
 encodePrenatalSymptom : PrenatalSymptom -> Value
 encodePrenatalSymptom sign =
     string <|
