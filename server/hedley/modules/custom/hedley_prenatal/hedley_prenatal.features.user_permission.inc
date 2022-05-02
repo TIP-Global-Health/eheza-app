@@ -121,6 +121,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_symptoms content'.
+  $permissions['create prenatal_symptoms content'] = array(
+    'name' => 'create prenatal_symptoms content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_syphilis_test content'.
   $permissions['create prenatal_syphilis_test content'] = array(
     'name' => 'create prenatal_syphilis_test content',
@@ -240,6 +250,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_symptoms content'.
+  $permissions['delete any prenatal_symptoms content'] = array(
+    'name' => 'delete any prenatal_symptoms content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_syphilis_test content'.
   $permissions['delete any prenatal_syphilis_test content'] = array(
     'name' => 'delete any prenatal_syphilis_test content',
@@ -351,6 +370,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_send_to_hc content'.
   $permissions['delete own prenatal_send_to_hc content'] = array(
     'name' => 'delete own prenatal_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_symptoms content'.
+  $permissions['delete own prenatal_symptoms content'] = array(
+    'name' => 'delete own prenatal_symptoms content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -485,6 +513,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_symptoms content'.
+  $permissions['edit any prenatal_symptoms content'] = array(
+    'name' => 'edit any prenatal_symptoms content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any prenatal_syphilis_test content'.
   $permissions['edit any prenatal_syphilis_test content'] = array(
     'name' => 'edit any prenatal_syphilis_test content',
@@ -608,6 +646,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_send_to_hc content'.
   $permissions['edit own prenatal_send_to_hc content'] = array(
     'name' => 'edit own prenatal_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_symptoms content'.
+  $permissions['edit own prenatal_symptoms content'] = array(
+    'name' => 'edit own prenatal_symptoms content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

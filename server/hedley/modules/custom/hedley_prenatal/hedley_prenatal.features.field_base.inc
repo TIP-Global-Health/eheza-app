@@ -194,7 +194,7 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        '0' => '0',
+        0 => 0,
         '+1' => '+1',
         '+2' => '+2',
         '+3' => '+3',
@@ -563,6 +563,83 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_prenatal_symptom_questions'.
+  $field_bases['field_prenatal_symptom_questions'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_symptom_questions',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'dizziness' => 'Dizziness',
+        'low-urine-output' => 'Low Urine Output',
+        'dark-urine' => 'Dark Urine',
+        'pelvic-pain-hospitalization' => 'Pelvic Pain Hospitalization',
+        'leg-pain-left' => 'Leg Pain Left',
+        'leg-pain-swollen' => 'Leg Pain Swollen',
+        'leg-pain-red-or-warm' => 'Leg Pain Red Or Warm',
+        'leg-redness-left' => 'Leg Redness Left',
+        'leg-redness-painful' => 'Leg Redness Painful',
+        'leg-redness-swollen' => 'Leg Redness Swollen',
+        'leg-redness-warm' => 'Leg Redness Warm',
+        'night-sweats' => 'Night Sweats',
+        'blood-in-sputum' => 'Blood In Sputum',
+        'weight-loss' => 'Weight Loss',
+        'severe-fatigue' => 'Severe Fatigue',
+        'vaginal-itching' => 'Vaginal Itching',
+        'partner-urethral-discharge' => 'Partner Urethral Discharge',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_prenatal_symptoms'.
+  $field_bases['field_prenatal_symptoms'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_symptoms',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'burning-with-urination' => 'Burning with Urination',
+        'abnormal-vaginal-discharge' => 'Abnormal Vaginal Discharge',
+        'nausea-and-vomiting' => 'Nausea and Vomiting',
+        'heartburn' => 'Heartburn',
+        'leg-cramps' => 'Leg Cramps',
+        'low-back-pain' => 'Low Back Pain',
+        'cough-continuous' => 'Cough for >3 weeks',
+        'pelvic-pain' => 'Pelvic Pain',
+        'constipation' => 'Constipation',
+        'varicose-veins' => 'Varicose Veins',
+        'leg-pain' => 'Leg Pain (One Leg)',
+        'leg-redness' => 'Leg Redness (One Leg)',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_protein'.
   $field_bases['field_protein'] = array(
     'active' => 1,
@@ -579,7 +656,7 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        '0' => '0',
+        0 => 0,
         '+1' => '+1',
         '+2' => '+2',
         '+3' => '+3',
