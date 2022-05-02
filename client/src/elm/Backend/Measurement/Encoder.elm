@@ -3613,3 +3613,15 @@ encodeVaccinationValueWithType type_ value =
 encodeVaccinationDose : VaccineDose -> Value
 encodeVaccinationDose dose =
     vaccineDoseToString dose |> string
+
+
+encodePrenatalSymptom : PrenatalSymptom -> Value
+encodePrenatalSymptom sign =
+    string <|
+        prenatalSymptomToString sign
+
+
+encodePrenatalSymptomQuestion : PrenatalSymptomQuestion -> Value
+encodePrenatalSymptomQuestion sign =
+    string <|
+        prenatalSymptomQuestionToString sign

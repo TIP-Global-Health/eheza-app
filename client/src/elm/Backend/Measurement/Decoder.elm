@@ -3948,3 +3948,25 @@ decodeVaccinationValue =
         |> required "administered_doses" (decodeEverySet decodeVaccineDose)
         |> required "administration_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> required "administration_note" decodeAdministrationNote
+
+
+decodePrenatalSymptom : Decoder PrenatalSymptom
+decodePrenatalSymptom =
+    string
+        |> andThen
+            (\s ->
+                prenatalSymptomFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalSymptom")
+            )
+
+
+decodePrenatalSymptomQuestion : Decoder PrenatalSymptomQuestion
+decodePrenatalSymptomQuestion =
+    string
+        |> andThen
+            (\s ->
+                prenatalSymptomQuestionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalSymptomQuestion")
+            )

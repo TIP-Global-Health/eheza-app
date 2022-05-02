@@ -1649,3 +1649,211 @@ illnessSymptomFromString symptom =
 
         _ ->
             Nothing
+
+
+prenatalSymptomToString : PrenatalSymptom -> String
+prenatalSymptomToString value =
+    case value of
+        BurningWithUrination ->
+            "burning-with-urination"
+
+        AbnormalVaginalDischarge ->
+            "abnormal-vaginal-discharge"
+
+        NauseaAndVomiting ->
+            "nausea-and-vomiting"
+
+        Heartburn ->
+            "heartburn"
+
+        LegCramps ->
+            "leg-cramps"
+
+        LowBackPain ->
+            "low-back-pain"
+
+        CoughContinuous ->
+            "cough-continuous"
+
+        PelvicPain ->
+            "pelvic-pain"
+
+        Constipation ->
+            "constipation"
+
+        VaricoseVeins ->
+            "varicose-veins"
+
+        LegPain ->
+            "leg-pain"
+
+        LegRedness ->
+            "leg-redness"
+
+        NoPrenatalSymptoms ->
+            "none"
+
+
+prenatalSymptomFromString : String -> Maybe PrenatalSymptom
+prenatalSymptomFromString value =
+    case value of
+        "burning-with-urination" ->
+            Just BurningWithUrination
+
+        "abnormal-vaginal-discharge" ->
+            Just AbnormalVaginalDischarge
+
+        "nausea-and-vomiting" ->
+            Just NauseaAndVomiting
+
+        "heartburn" ->
+            Just Heartburn
+
+        "leg-cramps" ->
+            Just LegCramps
+
+        "low-back-pain" ->
+            Just LowBackPain
+
+        "cough-continuous" ->
+            Just CoughContinuous
+
+        "pelvic-pain" ->
+            Just PelvicPain
+
+        "constipation" ->
+            Just Constipation
+
+        "varicose-veins" ->
+            Just VaricoseVeins
+
+        "leg-pain" ->
+            Just LegPain
+
+        "leg-redness" ->
+            Just LegRedness
+
+        "none" ->
+            Just NoPrenatalSymptoms
+
+        _ ->
+            Nothing
+
+
+prenatalSymptomQuestionToString : PrenatalSymptomQuestion -> String
+prenatalSymptomQuestionToString value =
+    case value of
+        SymptomQuestionDizziness ->
+            "dizziness"
+
+        SymptomQuestionLowUrineOutput ->
+            "low-urine-output"
+
+        SymptomQuestionDarkUrine ->
+            "dark-urine"
+
+        SymptomQuestionPelvicPainHospitalization ->
+            "pelvic-pain-hospitalization"
+
+        SymptomQuestionLegPainLeft ->
+            "leg-pain-left"
+
+        SymptomQuestionLegPainSwollen ->
+            "leg-pain-swollen"
+
+        SymptomQuestionLegPainRedOrWarm ->
+            "leg-pain-red-or-warm"
+
+        SymptomQuestionLegRednessLeft ->
+            "leg-redness-left"
+
+        SymptomQuestionLegRednessPainful ->
+            "leg-redness-painful"
+
+        SymptomQuestionLegRednessSwollen ->
+            "leg-redness-swollen"
+
+        SymptomQuestionLegRednessWarm ->
+            "leg-redness-warm"
+
+        SymptomQuestionNightSweats ->
+            "night-sweats"
+
+        SymptomQuestionBloodInSputum ->
+            "blood-in-sputum"
+
+        SymptomQuestionWeightLoss ->
+            "weight-loss"
+
+        SymptomQuestionSevereFatigue ->
+            "severe-fatigue"
+
+        SymptomQuestionVaginalItching ->
+            "vaginal-itching"
+
+        SymptomQuestionPartnerUrethralDischarge ->
+            "partner-urethral-discharge"
+
+        NoSymptomQuestions ->
+            "none"
+
+
+prenatalSymptomQuestionFromString : String -> Maybe PrenatalSymptomQuestion
+prenatalSymptomQuestionFromString value =
+    case value of
+        "dizziness" ->
+            Just SymptomQuestionDizziness
+
+        "low-urine-output" ->
+            Just SymptomQuestionLowUrineOutput
+
+        "dark-urine" ->
+            Just SymptomQuestionDarkUrine
+
+        "pelvic-pain-hospitalization" ->
+            Just SymptomQuestionPelvicPainHospitalization
+
+        "leg-pain-left" ->
+            Just SymptomQuestionLegPainLeft
+
+        "leg-pain-swollen" ->
+            Just SymptomQuestionLegPainSwollen
+
+        "leg-pain-red-or-warm" ->
+            Just SymptomQuestionLegPainRedOrWarm
+
+        "leg-redness-left" ->
+            Just SymptomQuestionLegRednessLeft
+
+        "leg-redness-painful" ->
+            Just SymptomQuestionLegRednessPainful
+
+        "leg-redness-swollen" ->
+            Just SymptomQuestionLegRednessSwollen
+
+        "leg-redness-warm" ->
+            Just SymptomQuestionLegRednessWarm
+
+        "night-sweats" ->
+            Just SymptomQuestionNightSweats
+
+        "blood-in-sputum" ->
+            Just SymptomQuestionBloodInSputum
+
+        "weight-loss" ->
+            Just SymptomQuestionWeightLoss
+
+        "severe-fatigue" ->
+            Just SymptomQuestionSevereFatigue
+
+        "vaginal-itching" ->
+            Just SymptomQuestionVaginalItching
+
+        "partner-urethral-discharge" ->
+            Just SymptomQuestionPartnerUrethralDischarge
+
+        "none" ->
+            Just NoSymptomQuestions
+
+        _ ->
+            Nothing
