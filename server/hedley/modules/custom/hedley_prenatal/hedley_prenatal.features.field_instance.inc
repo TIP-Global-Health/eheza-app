@@ -4496,9 +4496,9 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-prenatal_symptoms-field_date_measured'.
-  $field_instances['node-prenatal_symptoms-field_date_measured'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // Exported field_instance: 'node-prenatal_symptom_review-field_date_measured'.
+  $field_instances['node-prenatal_symptom_review-field_date_measured'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -4552,9 +4552,9 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-prenatal_symptoms-field_nurse'.
-  $field_instances['node-prenatal_symptoms-field_nurse'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // Exported field_instance: 'node-prenatal_symptom_review-field_nurse'.
+  $field_instances['node-prenatal_symptom_review-field_nurse'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -4596,9 +4596,9 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-prenatal_symptoms-field_person'.
-  $field_instances['node-prenatal_symptoms-field_person'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // Exported field_instance: 'node-prenatal_symptom_review-field_person'.
+  $field_instances['node-prenatal_symptom_review-field_person'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -4640,9 +4640,9 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-prenatal_symptoms-field_prenatal_encounter'.
-  $field_instances['node-prenatal_symptoms-field_prenatal_encounter'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // Exported field_instance: 'node-prenatal_symptom_review-field_prenatal_encounter'.
+  $field_instances['node-prenatal_symptom_review-field_prenatal_encounter'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -4685,9 +4685,9 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-prenatal_symptoms-field_prenatal_symptom_questions'.
-  $field_instances['node-prenatal_symptoms-field_prenatal_symptom_questions'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // 'node-prenatal_symptom_review-field_prenatal_symptom_questions'.
+  $field_instances['node-prenatal_symptom_review-field_prenatal_symptom_questions'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -4722,9 +4722,9 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-prenatal_symptoms-field_prenatal_symptoms'.
-  $field_instances['node-prenatal_symptoms-field_prenatal_symptoms'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // Exported field_instance: 'node-prenatal_symptom_review-field_prenatal_symptom_review'.
+  $field_instances['node-prenatal_symptom_review-field_prenatal_symptoms'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -4759,9 +4759,9 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-prenatal_symptoms-field_shards'.
-  $field_instances['node-prenatal_symptoms-field_shards'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // Exported field_instance: 'node-prenatal_symptom_review-field_shards'.
+  $field_instances['node-prenatal_symptom_review-field_shards'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -4803,9 +4803,9 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-prenatal_symptoms-field_uuid'.
-  $field_instances['node-prenatal_symptoms-field_uuid'] = array(
-    'bundle' => 'prenatal_symptoms',
+  // Exported field_instance: 'node-prenatal_symptom_review-field_uuid'.
+  $field_instances['node-prenatal_symptom_review-field_uuid'] = array(
+    'bundle' => 'prenatal_symptom_review',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',

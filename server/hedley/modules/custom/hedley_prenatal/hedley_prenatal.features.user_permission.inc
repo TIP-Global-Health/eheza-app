@@ -121,9 +121,9 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create prenatal_symptoms content'.
-  $permissions['create prenatal_symptoms content'] = array(
-    'name' => 'create prenatal_symptoms content',
+  // Exported permission: 'create prenatal_symptom_review content'.
+  $permissions['create prenatal_symptom_review content'] = array(
+    'name' => 'create prenatal_symptom_review content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -250,9 +250,9 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any prenatal_symptoms content'.
-  $permissions['delete any prenatal_symptoms content'] = array(
-    'name' => 'delete any prenatal_symptoms content',
+  // Exported permission: 'delete any prenatal_symptom_review content'.
+  $permissions['delete any prenatal_symptom_review content'] = array(
+    'name' => 'delete any prenatal_symptom_review content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -376,9 +376,9 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own prenatal_symptoms content'.
-  $permissions['delete own prenatal_symptoms content'] = array(
-    'name' => 'delete own prenatal_symptoms content',
+  // Exported permission: 'delete own prenatal_symptom_review content'.
+  $permissions['delete own prenatal_symptom_review content'] = array(
+    'name' => 'delete own prenatal_symptom_review content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -513,9 +513,9 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any prenatal_symptoms content'.
-  $permissions['edit any prenatal_symptoms content'] = array(
-    'name' => 'edit any prenatal_symptoms content',
+  // Exported permission: 'edit any prenatal_symptom_review content'.
+  $permissions['edit any prenatal_symptom_review content'] = array(
+    'name' => 'edit any prenatal_symptom_review content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -653,9 +653,9 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own prenatal_symptoms content'.
-  $permissions['edit own prenatal_symptoms content'] = array(
-    'name' => 'edit own prenatal_symptoms content',
+  // Exported permission: 'edit own prenatal_symptom_review content'.
+  $permissions['edit own prenatal_symptom_review content'] = array(
+    'name' => 'edit own prenatal_symptom_review content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

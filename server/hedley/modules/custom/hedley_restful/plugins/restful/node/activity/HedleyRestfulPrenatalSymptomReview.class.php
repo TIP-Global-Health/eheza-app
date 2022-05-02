@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulPrenatalSymptoms.
  */
-class HedleyRestfulPrenatalSymptoms extends HedleyRestfulPrenatalActivityBase {
+class HedleyRestfulPrenatalSymptomReview extends HedleyRestfulPrenatalActivityBase {
 
   /**
    * {@inheritdoc}

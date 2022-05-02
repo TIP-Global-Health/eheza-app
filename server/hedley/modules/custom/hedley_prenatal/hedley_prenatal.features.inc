@@ -107,8 +107,8 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
-    'prenatal_symptoms' => array(
-      'name' => t('Prenatal Symptoms'),
+    'prenatal_symptom_review' => array(
+      'name' => t('Prenatal Symptom Review'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

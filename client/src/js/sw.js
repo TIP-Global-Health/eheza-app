@@ -121,7 +121,7 @@ var tableForType = {
     prenatal_nutrition: 'shards',
     prenatal_random_blood_sugar_test: 'shards',
     prenatal_send_to_hc: 'shards',
-    prenatal_symptom: 'shards',
+    prenatal_symptom_review: 'shards',
     prenatal_syphilis_test: 'shards',
     prenatal_urine_dipstick_test: 'shards',
     relationship: 'shards',
