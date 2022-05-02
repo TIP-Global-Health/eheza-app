@@ -603,6 +603,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalSendToHC identifier ->
                 viewMeasurement identifier "Prenatal Send to HC"
 
+            BackendAuthorityPrenatalSymptomReview identifier ->
+                viewMeasurement identifier "Prenatal Symptom Review"
+
             BackendAuthorityPrenatalSyphilisTest identifier ->
                 viewMeasurement identifier "Prenatal Syphilis Test"
 

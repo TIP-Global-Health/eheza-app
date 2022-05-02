@@ -609,6 +609,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalSendToHC identifier ->
             getIdentifier identifier "prenatal_send_to_hc"
 
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            getIdentifier identifier "prenatal_symptom_review"
+
         BackendAuthorityPrenatalSyphilisTest identifier ->
             getIdentifier identifier "prenatal_syphilis_test"
 
@@ -1167,6 +1170,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
 
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSymptomReview identifier
+
         BackendAuthorityPrenatalSyphilisTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSyphilisTest identifier
 
@@ -1687,6 +1693,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalSendToHC identifier ->
             PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            PrenatalSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalSyphilisTest identifier ->
             PrenatalSyphilisTestRevision (toEntityUuid identifier.uuid) identifier.entity
