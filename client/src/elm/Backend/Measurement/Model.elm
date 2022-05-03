@@ -1141,8 +1141,7 @@ type PrenatalSymptom
     | PelvicPain
     | Constipation
     | VaricoseVeins
-    | LegPain
-    | LegRedness
+    | LegPainRedness
     | NoPrenatalSymptoms
 
 
@@ -1151,13 +1150,9 @@ type PrenatalSymptomQuestion
     | SymptomQuestionLowUrineOutput
     | SymptomQuestionDarkUrine
     | SymptomQuestionPelvicPainHospitalization
-    | SymptomQuestionLegPainLeft
-    | SymptomQuestionLegPainSwollen
-    | SymptomQuestionLegPainRedOrWarm
-    | SymptomQuestionLegRednessLeft
-    | SymptomQuestionLegRednessPainful
-    | SymptomQuestionLegRednessSwollen
-    | SymptomQuestionLegRednessWarm
+    | SymptomQuestionLegPainRednessLeft
+    | SymptomQuestionLegPainRednessSwollen
+    | SymptomQuestionLegPainRednessRedOrWarm
     | SymptomQuestionNightSweats
     | SymptomQuestionBloodInSputum
     | SymptomQuestionWeightLoss

@@ -8804,13 +8804,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                LegPain ->
-                    { english = "Leg Pain (One Leg)"
-                    , kinyarwanda = Nothing
-                    }
-
-                LegRedness ->
-                    { english = "Leg Redness (One Leg)"
+                LegPainRedness ->
+                    { english = "Leg Pain or Redness (One Leg)"
                     , kinyarwanda = Nothing
                     }
 
@@ -8841,38 +8836,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                SymptomQuestionLegPainLeft ->
-                    { english = "On which side are you experiencing leg pain"
+                SymptomQuestionLegPainRednessLeft ->
+                    { english = "On which side are you experiencing leg pain or redness"
                     , kinyarwanda = Nothing
                     }
 
-                SymptomQuestionLegPainSwollen ->
+                SymptomQuestionLegPainRednessSwollen ->
                     { english = "Is the leg swollen"
                     , kinyarwanda = Nothing
                     }
 
-                SymptomQuestionLegPainRedOrWarm ->
+                SymptomQuestionLegPainRednessRedOrWarm ->
                     { english = "Is the leg red or warm to the touch"
-                    , kinyarwanda = Nothing
-                    }
-
-                SymptomQuestionLegRednessLeft ->
-                    { english = "On which side are you experiencing leg redness"
-                    , kinyarwanda = Nothing
-                    }
-
-                SymptomQuestionLegRednessPainful ->
-                    { english = "Is the leg painful"
-                    , kinyarwanda = Nothing
-                    }
-
-                SymptomQuestionLegRednessSwollen ->
-                    { english = "Is the leg swollen"
-                    , kinyarwanda = Nothing
-                    }
-
-                SymptomQuestionLegRednessWarm ->
-                    { english = "Is the leg warm to the touch"
                     , kinyarwanda = Nothing
                     }
 

@@ -1684,11 +1684,8 @@ prenatalSymptomToString value =
         VaricoseVeins ->
             "varicose-veins"
 
-        LegPain ->
-            "leg-pain"
-
-        LegRedness ->
-            "leg-redness"
+        LegPainRedness ->
+            "leg-pain-redness"
 
         NoPrenatalSymptoms ->
             "none"
@@ -1727,11 +1724,8 @@ prenatalSymptomFromString value =
         "varicose-veins" ->
             Just VaricoseVeins
 
-        "leg-pain" ->
-            Just LegPain
-
-        "leg-redness" ->
-            Just LegRedness
+        "leg-pain-redness" ->
+            Just LegPainRedness
 
         "none" ->
             Just NoPrenatalSymptoms
@@ -1755,26 +1749,14 @@ prenatalSymptomQuestionToString value =
         SymptomQuestionPelvicPainHospitalization ->
             "pelvic-pain-hospitalization"
 
-        SymptomQuestionLegPainLeft ->
-            "leg-pain-left"
+        SymptomQuestionLegPainRednessLeft ->
+            "leg-pain-redness-left"
 
-        SymptomQuestionLegPainSwollen ->
-            "leg-pain-swollen"
+        SymptomQuestionLegPainRednessSwollen ->
+            "leg-pain-redness-swollen"
 
-        SymptomQuestionLegPainRedOrWarm ->
-            "leg-pain-red-or-warm"
-
-        SymptomQuestionLegRednessLeft ->
-            "leg-redness-left"
-
-        SymptomQuestionLegRednessPainful ->
-            "leg-redness-painful"
-
-        SymptomQuestionLegRednessSwollen ->
-            "leg-redness-swollen"
-
-        SymptomQuestionLegRednessWarm ->
-            "leg-redness-warm"
+        SymptomQuestionLegPainRednessRedOrWarm ->
+            "leg-pain-redness-red-or-warm"
 
         SymptomQuestionNightSweats ->
             "night-sweats"
@@ -1813,26 +1795,14 @@ prenatalSymptomQuestionFromString value =
         "pelvic-pain-hospitalization" ->
             Just SymptomQuestionPelvicPainHospitalization
 
-        "leg-pain-left" ->
-            Just SymptomQuestionLegPainLeft
+        "leg-pain-redness-left" ->
+            Just SymptomQuestionLegPainRednessLeft
 
-        "leg-pain-swollen" ->
-            Just SymptomQuestionLegPainSwollen
+        "leg-pain-redness-swollen" ->
+            Just SymptomQuestionLegPainRednessSwollen
 
-        "leg-pain-red-or-warm" ->
-            Just SymptomQuestionLegPainRedOrWarm
-
-        "leg-redness-left" ->
-            Just SymptomQuestionLegRednessLeft
-
-        "leg-redness-painful" ->
-            Just SymptomQuestionLegRednessPainful
-
-        "leg-redness-swollen" ->
-            Just SymptomQuestionLegRednessSwollen
-
-        "leg-redness-warm" ->
-            Just SymptomQuestionLegRednessWarm
+        "leg-pain-redness-red-or-warm" ->
+            Just SymptomQuestionLegPainRednessRedOrWarm
 
         "night-sweats" ->
             Just SymptomQuestionNightSweats
