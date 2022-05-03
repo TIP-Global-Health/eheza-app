@@ -5676,7 +5676,7 @@ translationSet trans =
             }
 
         MedicationDistributionHelperHIV ->
-            { english = "This patient is HIV postive"
+            { english = "This patient is HIV positive"
             , kinyarwanda = Nothing
             }
 
