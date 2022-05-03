@@ -24,26 +24,26 @@ type alias AssembledData =
 
 type alias MedicationDistributionForm =
     { mebendezole : Maybe Bool
+
+    -- Tenofovir is not in use, for now.
     , tenofovir : Maybe Bool
+
+    -- Lamivudine is not in use, for now.
     , lamivudine : Maybe Bool
     , dolutegravir : Maybe Bool
     , tdf3tc : Maybe Bool
     , iron : Maybe Bool
     , folicAcid : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
+    , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     }
 
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
-    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 
-type alias RecommendedTreatmentForm =
-    { signs : Maybe (List RecommendedTreatmentSign)
-    }
-
-
-emptyRecommendedTreatmentForm : RecommendedTreatmentForm
-emptyRecommendedTreatmentForm =
-    RecommendedTreatmentForm Nothing
+type PrenatalEncounterPhase
+    = PrenatalEncounterPhaseInitial
+    | PrenatalEncounterPhaseRecurrent

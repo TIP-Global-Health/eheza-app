@@ -28,10 +28,14 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
+        , viewCheckBoxSelectInputWithRecommendation
+        , viewCustomLabel
+        , viewInstructionsLabel
         , viewQuestionLabel
         )
-import Translate exposing (Language, translate)
+import Translate exposing (Language, TranslationId, translate)
 
 
 calculateEGAWeeks : NominalDate -> NominalDate -> Int
@@ -98,7 +102,7 @@ emergencyReferralDiagnosesRecurrent =
     ]
 
 
-medicationDistributionFormWithDefaultInitialPhase : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefaultInitialPhase : MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefaultInitialPhase form saved =
     saved
         |> unwrap
@@ -119,11 +123,12 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , iron = EverySet.member Iron value.distributionSigns |> Just
                 , folicAcid = EverySet.member FolicAcid value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
+                , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 }
             )
 
 
-medicationDistributionFormWithDefaultRecurrentPhase : MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefaultRecurrentPhase : MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefaultRecurrentPhase form saved =
     saved
         |> unwrap
@@ -144,11 +149,12 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 , dolutegravir = EverySet.member Dolutegravir value.distributionSigns |> Just
                 , tdf3tc = EverySet.member TDF3TC value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
+                , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 }
             )
 
 
-medicationDistributionResolveFromValue : List MedicationDistributionSign -> MedicationDistributionValue -> MedicationDistributionSign -> Maybe Bool
+medicationDistributionResolveFromValue : List MedicationDistributionSign -> PrenatalMedicationDistributionValue -> MedicationDistributionSign -> Maybe Bool
 medicationDistributionResolveFromValue allowedSigns value sign =
     let
         valueSetForSign =
@@ -212,7 +218,7 @@ medicationDistributionResolveFromValue allowedSigns value sign =
         Nothing
 
 
-medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe MedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefault valueForNone form saved =
     case valueForNone of
         NoMedicationDistributionSignsInitialPhase ->
@@ -226,23 +232,23 @@ medicationDistributionFormWithDefault valueForNone form saved =
             form
 
 
-toMedicationDistributionValueWithDefaultInitialPhase : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefaultInitialPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultInitialPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsInitialPhase
 
 
-toMedicationDistributionValueWithDefaultRecurrentPhase : Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefaultRecurrentPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultRecurrentPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsRecurrentPhase
 
 
-toMedicationDistributionValueWithDefault : MedicationDistributionSign -> Maybe MedicationDistributionValue -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValueWithDefault : MedicationDistributionSign -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefault valueForNone saved form =
     medicationDistributionFormWithDefault valueForNone form saved
         |> toMedicationDistributionValue valueForNone
 
 
-toMedicationDistributionValue : MedicationDistributionSign -> MedicationDistributionForm -> Maybe MedicationDistributionValue
+toMedicationDistributionValue : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValue valueForNone form =
     let
         distributionSigns =
@@ -262,35 +268,308 @@ toMedicationDistributionValue valueForNone form =
                 |> Maybe.withDefault EverySet.empty
                 |> ifEverySetEmpty NoMedicationNonAdministrationSigns
                 |> Just
+
+        recommendedTreatmentSigns =
+            Maybe.map EverySet.fromList form.recommendedTreatmentSigns
+                |> Just
     in
-    Maybe.map MedicationDistributionValue distributionSigns
+    Maybe.map PrenatalMedicationDistributionValue distributionSigns
         |> andMap nonAdministrationSigns
+        |> andMap recommendedTreatmentSigns
 
 
 resolveMedicationDistributionInputsAndTasks :
     Language
     -> NominalDate
+    -> PrenatalEncounterPhase
     -> AssembledData
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
-    -> List MedicationDistributionSign
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveMedicationDistributionInputsAndTasks language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
-    resolveMedicationsByDiagnoses currentDate assembled allowedMedications
-        |> List.map
-            (resolveMedicationDistributionInputsAndTasksForMedication language
-                currentDate
-                assembled.person
-                setMedicationDistributionBoolInputMsg
-                setMedicationDistributionAdministrationNoteMsg
-                form
-            )
-        |> List.foldr
-            (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
-                ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
-            )
-            ( [], 0, 0 )
+resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg form =
+    let
+        foldResults =
+            List.foldr
+                (\( inputs, completed, active ) ( accumInputs, accumCompleted, accumActive ) ->
+                    ( inputs ++ accumInputs, completed + accumCompleted, active + accumActive )
+                )
+                ( [], 0, 0 )
+
+        ( inputsByMedications, completedByMedications, activeByMedications ) =
+            resolveMedicationsSetByDiagnoses currentDate phase assembled
+                |> List.map
+                    (\( helper, medications ) ->
+                        let
+                            ( inputs, completed, active ) =
+                                List.map
+                                    (resolveMedicationDistributionInputsAndTasksForMedication language
+                                        currentDate
+                                        assembled.person
+                                        setMedicationDistributionBoolInputMsg
+                                        setMedicationDistributionAdministrationNoteMsg
+                                        form
+                                    )
+                                    medications
+                                    |> foldResults
+                        in
+                        ( [ viewCustomLabel language helper "." "instructions"
+                          , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                          ]
+                            ++ inputs
+                            ++ [ div [ class "separator" ] [] ]
+                        , completed
+                        , active
+                        )
+                    )
+                |> foldResults
+
+        ( inputsByDiagnoses, completedByDiagnoses, activeByDiagnoses ) =
+            let
+                ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
+                    if diagnosedHypertension phase assembled then
+                        resolveRecommendedTreatmentForHypertensionInputsAndTasks language
+                            currentDate
+                            (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
+                            assembled
+                            form
+
+                    else
+                        ( [], 0, 0 )
+            in
+            case phase of
+                PrenatalEncounterPhaseInitial ->
+                    let
+                        ( malariaInputs, malariaCompleted, malariaActive ) =
+                            if diagnosedMalaria assembled then
+                                resolveRecommendedTreatmentForMalariaInputsAndTasks language
+                                    currentDate
+                                    setRecommendedTreatmentSignMsg
+                                    recommendedTreatmentSignsForMalaria
+                                    assembled
+                                    form
+
+                            else
+                                ( [], 0, 0 )
+                    in
+                    ( malariaInputs ++ hypertensionInputs
+                    , malariaCompleted + hypertensionCompleted
+                    , malariaActive + hypertensionActive
+                    )
+
+                PrenatalEncounterPhaseRecurrent ->
+                    let
+                        ( syphilisInputs, syphilisCompleted, syphilisActive ) =
+                            if diagnosedSyphilis assembled then
+                                resolveRecommendedTreatmentForSyphilisInputsAndTasks language
+                                    currentDate
+                                    setRecommendedTreatmentSignMsg
+                                    recommendedTreatmentSignsForSyphilis
+                                    assembled
+                                    form
+
+                            else
+                                ( [], 0, 0 )
+                    in
+                    ( syphilisInputs ++ hypertensionInputs
+                    , syphilisCompleted + hypertensionCompleted
+                    , syphilisActive + hypertensionActive
+                    )
+    in
+    ( inputsByMedications ++ inputsByDiagnoses
+    , completedByMedications + completedByDiagnoses
+    , activeByMedications + activeByDiagnoses
+    )
+
+
+resolveRecommendedTreatmentForHypertensionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (RecommendedTreatmentSign -> msg)
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- the other phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+
+        recommendedSign =
+            recommendTreatmentForHypertension assembled
+    in
+    ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel
+                "icon-pills"
+                (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
+            ]
+      , viewCheckBoxSelectInputWithRecommendation language
+            recommendedTreatmentSignsForHypertension
+            []
+            recommendedSign
+            currentValue
+            setRecommendedTreatmentSignMsg
+            Translate.RecommendedTreatmentSignLabel
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+resolveRecommendedTreatmentForMalariaInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForMalariaInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
+    let
+        egaInWeeks =
+            Maybe.map
+                (calculateEGAWeeks currentDate)
+                assembled.globalLmpDate
+
+        medicationTreatment =
+            Maybe.map
+                (\egaWeeks ->
+                    if egaWeeks <= 14 then
+                        TreatmentQuinineSulphate
+
+                    else
+                        TreatmentCoartem
+                )
+                egaInWeeks
+                |> Maybe.withDefault TreatmentQuinineSulphate
+
+        -- Since we may have values set for another diagnosis, or from
+        -- the other phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+    in
+    ( [ viewCustomLabel language Translate.MalariaRecommendedTreatmentHeader "." "instructions"
+      , h2 []
+            [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MalariaRecommendedTreatmentHelper ++ ":") ]
+      , viewCheckBoxSelectInput language
+            [ medicationTreatment
+            , TreatmentWrittenProtocols
+            , TreatementReferToHospital
+            , NoTreatmentForMalaria
+            ]
+            []
+            currentValue
+            (setRecommendedTreatmentSignMsg allowedSigns)
+            Translate.RecommendedTreatmentSignLabel
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
+recommendedTreatmentSignsForMalaria =
+    [ TreatmentQuinineSulphate
+    , TreatmentCoartem
+    , TreatmentWrittenProtocols
+    , TreatementReferToHospital
+    , NoTreatmentForMalaria
+    ]
+
+
+resolveRecommendedTreatmentForSyphilisInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- inital phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+
+        warning =
+            Maybe.map
+                (\signs ->
+                    if
+                        List.any (\sign -> List.member sign signs)
+                            [ TreatementErythromycin, TreatementAzithromycin ]
+                    then
+                        div [ class "warning" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , text <| translate language Translate.SyphilisRecommendedTreatmentWarning
+                            ]
+
+                    else
+                        emptyNode
+                )
+                form.recommendedTreatmentSigns
+                |> Maybe.withDefault emptyNode
+    in
+    ( [ viewCustomLabel language Translate.SyphilisRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.SyphilisRecommendedTreatmentHelper ++ ".")
+            , p [ class "instructions-warning" ] [ text <| translate language Translate.SyphilisRecommendedTreatmentInstructions ++ "." ]
+            ]
+      , viewCheckBoxSelectCustomInput language
+            recommendedTreatmentSignsForSyphilis
+            []
+            currentValue
+            (setRecommendedTreatmentSignMsg allowedSigns)
+            (viewTreatmentOptionForSyphilis language)
+      , warning
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForSyphilis language sign =
+    label []
+        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+        , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+        ]
+
+
+recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
+recommendedTreatmentSignsForSyphilis =
+    [ TreatementPenecilin1
+    , TreatementPenecilin3
+    , TreatementErythromycin
+    , TreatementAzithromycin
+    , TreatementCeftriaxon
+    , NoTreatmentForSyphilis
+    ]
 
 
 {-| Medication Distribution activity appears on both initial and recurrent encounters.
@@ -311,52 +590,69 @@ medicationDistributionMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-resolveMedicationsByDiagnoses : NominalDate -> AssembledData -> List MedicationDistributionSign -> List MedicationDistributionSign
-resolveMedicationsByDiagnoses currentDate assembled allowedMedications =
-    List.filter
-        (\medication ->
+resolveMedicationsSetByDiagnoses : NominalDate -> PrenatalEncounterPhase -> AssembledData -> List ( TranslationId, List MedicationDistributionSign )
+resolveMedicationsSetByDiagnoses currentDate phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
             let
-                hivDiagnosed =
-                    diagnosed DiagnosisHIV assembled
+                mebendazoleSet =
+                    let
+                        prescribeMebendazole =
+                            showMebendazoleQuestion currentDate assembled
+                                && (getMeasurementValueFunc assembled.measurements.medication
+                                        |> Maybe.map (EverySet.member Mebendazole >> not)
+                                        |> Maybe.withDefault False
+                                   )
+                    in
+                    if prescribeMebendazole then
+                        Just ( Translate.MedicationDistributionHelperMebendazole, [ Mebendezole ] )
 
-                hivProgramHC =
-                    hivProgramAtHC assembled
+                    else
+                        Nothing
+
+                hivPositiveSet =
+                    let
+                        hivDiagnosed =
+                            diagnosed DiagnosisHIV assembled
+
+                        hivProgramHC =
+                            hivProgramAtHC assembled
+                    in
+                    if hivDiagnosed && not hivProgramHC then
+                        Just ( Translate.MedicationDistributionHelperHIV, [ TDF3TC, Dolutegravir ] )
+
+                    else
+                        Nothing
+
+                discordantPartnershipSet =
+                    if diagnosed DiagnosisDiscordantPartnership assembled then
+                        let
+                            partnerTakingARVs =
+                                getMeasurementValueFunc assembled.measurements.hivTest
+                                    |> Maybe.andThen .hivSigns
+                                    |> Maybe.map (EverySet.member PartnerTakingARV)
+                                    |> Maybe.withDefault False
+
+                            helper =
+                                if partnerTakingARVs then
+                                    Translate.MedicationDistributionHelperDiscordantPartnership
+
+                                else
+                                    Translate.MedicationDistributionHelperDiscordantPartnershipNoARVs
+                        in
+                        Just ( helper, [ TDF3TC ] )
+
+                    else
+                        Nothing
             in
-            case medication of
-                Mebendezole ->
-                    showMebendazoleQuestion currentDate assembled
-                        && (getMeasurementValueFunc assembled.measurements.medication
-                                |> Maybe.map (EverySet.member Mebendazole >> not)
-                                |> Maybe.withDefault False
-                           )
+            Maybe.Extra.values [ mebendazoleSet, hivPositiveSet, discordantPartnershipSet ]
 
-                Tenofovir ->
-                    -- Requirements were changed, so this medication
-                    -- is not in use for the time being.
-                    False
+        PrenatalEncounterPhaseRecurrent ->
+            if diagnosed DiagnosisModerateAnemia assembled then
+                [ ( Translate.MedicationDistributionHelperAnemia, [ Iron, FolicAcid ] ) ]
 
-                Lamivudine ->
-                    -- Requirements were changed, so this medication
-                    -- is not in use for the time being.
-                    False
-
-                Dolutegravir ->
-                    hivDiagnosed && not hivProgramHC
-
-                TDF3TC ->
-                    (hivDiagnosed && not hivProgramHC)
-                        || diagnosed DiagnosisDiscordantPartnership assembled
-
-                Iron ->
-                    diagnosed DiagnosisModerateAnemia assembled
-
-                FolicAcid ->
-                    diagnosed DiagnosisModerateAnemia assembled
-
-                _ ->
-                    False
-        )
-        allowedMedications
+            else
+                []
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
@@ -884,32 +1180,6 @@ hivProgramAtHC assembled =
         |> Maybe.withDefault False
 
 
-recommendedTreatmentFormWithDefault : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm
-recommendedTreatmentFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (Maybe.map EverySet.toList value.signs) }
-            )
-
-
-toRecommendedTreatmentValueWithDefault : Maybe RecommendedTreatmentValue -> RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValueWithDefault saved form =
-    recommendedTreatmentFormWithDefault form saved
-        |> toRecommendedTreatmentValue
-
-
-toRecommendedTreatmentValue : RecommendedTreatmentForm -> Maybe RecommendedTreatmentValue
-toRecommendedTreatmentValue form =
-    Maybe.map
-        (\signs ->
-            { signs = EverySet.fromList signs |> Just
-            }
-        )
-        form.signs
-
-
 {-| Recommended Treatment activity appears on both initial and recurrent encounters.
 Each one of them got unique set of signs that can be used, and at least one of
 them must be set.
@@ -918,8 +1188,8 @@ of those signs was set.
 -}
 recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> PrenatalMeasurements -> Bool
 recommendedTreatmentMeasurementTaken allowedSigns measurements =
-    getMeasurementValueFunc measurements.recommendedTreatment
-        |> Maybe.andThen .signs
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.andThen .recommendedTreatmentSigns
         |> Maybe.map
             (\signs ->
                 List.any (\sign -> EverySet.member sign signs)
@@ -959,8 +1229,8 @@ recommendTreatmentForHypertension assembled =
             assembled.nursePreviousMeasurementsWithDates
                 |> List.filter
                     (\( _, _, measurements ) ->
-                        getMeasurementValueFunc measurements.recommendedTreatment
-                            |> Maybe.andThen .signs
+                        getMeasurementValueFunc measurements.medicationDistribution
+                            |> Maybe.andThen .recommendedTreatmentSigns
                             |> Maybe.map
                                 (\signs ->
                                     List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
@@ -992,3 +1262,36 @@ recommendedTreatmentSignsForHypertension =
 marginalBloodPressureCondition : Float -> Float -> Bool
 marginalBloodPressureCondition dia sys =
     (dia >= 90 && dia < 110) || (sys >= 140 && sys < 160)
+
+
+diagnosedHypertension : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedHypertension phase =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosedAnyOf
+                [ DiagnosisChronicHypertensionImmediate
+                , DiagnosisGestationalHypertensionImmediate
+                ]
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosedAnyOf
+                [ DiagnosisChronicHypertensionAfterRecheck
+                , DiagnosisGestationalHypertensionAfterRecheck
+                ]
+
+
+diagnosedMalaria : AssembledData -> Bool
+diagnosedMalaria =
+    diagnosedAnyOf
+        [ DiagnosisMalaria
+        , DiagnosisMalariaWithAnemia
+        , DiagnosisMalariaWithSevereAnemia
+        ]
+
+
+diagnosedSyphilis : AssembledData -> Bool
+diagnosedSyphilis =
+    diagnosedAnyOf
+        [ DiagnosisSyphilis
+        , DiagnosisSyphilisWithComplications
+        ]

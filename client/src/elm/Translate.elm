@@ -660,6 +660,9 @@ type TranslationId
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion Pages.Prenatal.Activity.Types.LaboratoryTask
+    | KnownPositive
+    | KnownPositiveHepatitisB
+    | KnownPositiveHIV
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
@@ -710,6 +713,11 @@ type TranslationId
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
+    | MedicationDistributionHelperAnemia
+    | MedicationDistributionHelperDiscordantPartnership
+    | MedicationDistributionHelperDiscordantPartnershipNoARVs
+    | MedicationDistributionHelperHIV
+    | MedicationDistributionHelperMebendazole
     | MedicationDistributionSign MedicationDistributionSign
     | MedicationDoxycycline
     | MedicationDosesMissedQuestion
@@ -4724,7 +4732,7 @@ translationSet trans =
             }
 
         HypertensionRecommendedTreatmentHeader ->
-            { english = "This patient shows signs of hypertension"
+            { english = "This patient shows signs of cronic hypertension"
             , kinyarwanda = Nothing
             }
 
@@ -5075,6 +5083,21 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        KnownPositive ->
+            { english = "Known Positive"
+            , kinyarwanda = Nothing
+            }
+
+        KnownPositiveHepatitisB ->
+            { english = "Known Hepatitis B positive"
+            , kinyarwanda = Nothing
+            }
+
+        KnownPositiveHIV ->
+            { english = "Known HIV positive"
+            , kinyarwanda = Nothing
+            }
 
         LabelOnePregnancyEpisodeOpen ->
             { english = "There is one pregnancy episode that is open"
@@ -5633,6 +5656,31 @@ translationSet trans =
         MedicationCausesSideEffectsQuestion ->
             { english = "Did you experience adverse events of the medication"
             , kinyarwanda = Just "Waba hari ibintu wabonye bidasanzwe(bitewe n'imiti wafashe)"
+            }
+
+        MedicationDistributionHelperAnemia ->
+            { english = "Patient shows signs of Mild - Moderate Anemia"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperDiscordantPartnership ->
+            { english = "This patient is part of a discordant partnership"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperDiscordantPartnershipNoARVs ->
+            { english = "This patient is part of a discordant partnership in which the partner is not on ARVs"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperHIV ->
+            { english = "This patient is HIV positive"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperMebendazole ->
+            { english = "This patient is over 24 weeks EGA and has not had a dewormer in the last 6 months"
+            , kinyarwanda = Nothing
             }
 
         MedicationDistributionSign sign ->
@@ -7994,11 +8042,6 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.Prenatal.Activity.Types.NextStepsRecommendedTreatment ->
-                    { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Nothing
-                    }
-
                 Pages.Prenatal.Activity.Types.NextStepsWait ->
                     { english = "Wait"
                     , kinyarwanda = Nothing
@@ -8014,11 +8057,6 @@ translationSet trans =
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
-                    }
-
-                Pages.Prenatal.RecurrentActivity.Types.NextStepsRecommendedTreatment ->
-                    { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Nothing
                     }
 
         PrenatalHIVProgramHelper ->

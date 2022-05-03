@@ -22,7 +22,7 @@ import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCust
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, isFirstEncounter)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
     exposing
@@ -241,7 +241,7 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsRecommendedTreatment, NextStepsSendToHC, NextStepsWait ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsWait ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -276,8 +276,8 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     let
                         severeMalariaTreatment =
-                            getMeasurementValueFunc assembled.measurements.recommendedTreatment
-                                |> Maybe.andThen (.signs >> Maybe.map (EverySet.member TreatementReferToHospital))
+                            getMeasurementValueFunc assembled.measurements.medicationDistribution
+                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
                                 |> Maybe.withDefault False
                     in
                     emergencyReferalRequired assembled
@@ -311,17 +311,12 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency refferal is not required.
             (not <| emergencyReferalRequired assembled)
-                && (resolveMedicationsByDiagnoses currentDate assembled medicationsInitialPhase
+                && ((resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseInitial assembled
                         |> List.isEmpty
                         |> not
-                   )
-
-        -- Exclusive Nurse task.
-        NextStepsRecommendedTreatment ->
-            -- Emergency refferal is not required.
-            (not <| emergencyReferalRequired assembled)
-                && (diagnosedMalaria assembled
-                        || diagnosedHypertension assembled
+                    )
+                        || diagnosedMalaria assembled
+                        || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
                    )
 
         NextStepsWait ->
@@ -334,23 +329,6 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
                    )
-
-
-diagnosedMalaria : AssembledData -> Bool
-diagnosedMalaria =
-    diagnosedAnyOf
-        [ DiagnosisMalaria
-        , DiagnosisMalariaWithAnemia
-        , DiagnosisMalariaWithSevereAnemia
-        ]
-
-
-diagnosedHypertension : AssembledData -> Bool
-diagnosedHypertension =
-    diagnosedAnyOf
-        [ DiagnosisChronicHypertensionImmediate
-        , DiagnosisGestationalHypertensionImmediate
-        ]
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -375,11 +353,7 @@ nextStepsMeasurementTaken assembled task =
             let
                 allowedSigns =
                     NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
-            in
-            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
-        NextStepsRecommendedTreatment ->
-            let
                 malariaTreatmentCompleted =
                     if diagnosedMalaria assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
@@ -388,28 +362,20 @@ nextStepsMeasurementTaken assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertension assembled then
+                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
                         True
             in
-            malariaTreatmentCompleted && hypertensionTreatmentCompleted
+            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+                && malariaTreatmentCompleted
+                && hypertensionTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
                 |> Maybe.map .patientNotified
                 |> Maybe.withDefault False
-
-
-recommendedTreatmentSignsForMalaria : List RecommendedTreatmentSign
-recommendedTreatmentSignsForMalaria =
-    [ TreatmentQuinineSulphate
-    , TreatmentCoartem
-    , TreatmentWrittenProtocols
-    , TreatementReferToHospital
-    , NoTreatmentForMalaria
-    ]
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
@@ -1520,30 +1486,14 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
                         currentDate
+                        PrenatalEncounterPhaseInitial
                         assembled
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
-                        medicationsInitialPhase
+                        SetRecommendedTreatmentSign
                         form
             in
             ( completed, total )
-
-        NextStepsRecommendedTreatment ->
-            let
-                form =
-                    assembled.measurements.recommendedTreatment
-                        |> getMeasurementValueFunc
-                        |> recommendedTreatmentFormWithDefault data.recommendedTreatmentForm
-
-                ( malariaSectionCompleted, malariaSectionActive ) =
-                    resolveRecommendedTreatmentSectionState (diagnosedMalaria assembled) recommendedTreatmentSignsForMalaria form.signs
-
-                ( hypertensionSectionCompleted, hypertensionSectionActive ) =
-                    resolveRecommendedTreatmentSectionState (diagnosedHypertension assembled) recommendedTreatmentSignsForHypertension form.signs
-            in
-            ( malariaSectionCompleted + hypertensionSectionCompleted
-            , malariaSectionActive + hypertensionSectionActive
-            )
 
         NextStepsWait ->
             let

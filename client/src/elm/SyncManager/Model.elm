@@ -126,7 +126,6 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
     | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
     | BackendAuthorityPrenatalRandomBloodSugarTest (BackendEntity PrenatalRandomBloodSugarTest)
-    | BackendAuthorityPrenatalRecommendedTreatment (BackendEntity PrenatalRecommendedTreatment)
     | BackendAuthorityPrenatalSendToHC (BackendEntity PrenatalSendToHC)
     | BackendAuthorityPrenatalSyphilisTest (BackendEntity PrenatalSyphilisTest)
     | BackendAuthorityPrenatalUrineDipstickTest (BackendEntity PrenatalUrineDipstickTest)

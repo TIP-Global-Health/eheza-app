@@ -126,7 +126,6 @@ decodePrenatalMeasurements =
         |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
         |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
         |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
-        |> optional "prenatal_recommended_treatment" (decodeHead decodePrenatalRecommendedTreatment) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -749,17 +748,14 @@ decodePrenatalLaboratoryTest =
 
 decodePrenatalMedicationDistribution : Decoder PrenatalMedicationDistribution
 decodePrenatalMedicationDistribution =
-    decodePrenatalMeasurement decodeMedicationDistributionValue
+    decodePrenatalMeasurement decodePrenatalMedicationDistributionValue
 
 
-decodePrenatalRecommendedTreatment : Decoder PrenatalRecommendedTreatment
-decodePrenatalRecommendedTreatment =
-    decodePrenatalMeasurement decodeRecommendedTreatmentValue
-
-
-decodeRecommendedTreatmentValue : Decoder RecommendedTreatmentValue
-decodeRecommendedTreatmentValue =
-    succeed RecommendedTreatmentValue
+decodePrenatalMedicationDistributionValue : Decoder PrenatalMedicationDistributionValue
+decodePrenatalMedicationDistributionValue =
+    succeed PrenatalMedicationDistributionValue
+        |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
+        |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
         |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
 
 

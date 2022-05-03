@@ -25,10 +25,15 @@ type LabResultsMode
     | LabResultsHistory LabResultsHistoryMode
 
 
+type PrenatalTestReport
+    = TestPerformed PrenatalTestResult
+    | TestNotPerformedKnownAsPositive
+
+
 type LabResultsHistoryMode
-    = LabResultsHistoryHIV (List ( NominalDate, Maybe PrenatalTestResult ))
+    = LabResultsHistoryHIV (List ( NominalDate, Maybe PrenatalTestReport ))
     | LabResultsHistorySyphilis (List ( NominalDate, Maybe PrenatalTestResult ))
-    | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe PrenatalTestResult ))
+    | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe PrenatalTestReport ))
     | LabResultsHistoryMalaria (List ( NominalDate, Maybe PrenatalTestResult ))
     | LabResultsHistoryProtein (List ( NominalDate, Maybe ProteinValue ))
     | LabResultsHistoryPH (List ( NominalDate, Maybe PHValue ))
