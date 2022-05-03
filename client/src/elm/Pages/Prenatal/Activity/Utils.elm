@@ -3095,3 +3095,84 @@ laboratoryTaskIconClass task =
 
         TaskRandomBloodSugarTest ->
             "laboratory-blood-sugar"
+
+
+symptomReviewFormWithDefault : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue -> SymptomReviewForm
+symptomReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    symptoms =
+                        or form.symptoms (EverySet.toList value.symptoms |> Just)
+
+                    resolveFromValue question =
+                        EverySet.member question value.symptomQuestions |> Just
+
+                    legPainRednessSigns =
+                        Maybe.andThen
+                            (\symptoms_ ->
+                                if List.member LegPainRedness symptoms_ then
+                                    value.symptomQuestions
+                                        |> EverySet.toList
+                                        |> List.filter
+                                            (\question ->
+                                                List.member question
+                                                    [ SymptomQuestionLegPainRednessLeft
+                                                    , SymptomQuestionLegPainRednessSwollen
+                                                    , SymptomQuestionLegPainRednessRedOrWarm
+                                                    ]
+                                            )
+                                        |> Just
+
+                                else
+                                    Nothing
+                            )
+                            symptoms
+                in
+                { symptoms = symptoms
+                , dizziness = or form.dizziness (resolveFromValue SymptomQuestionDizziness)
+                , lowUrineOutput = or form.lowUrineOutput (resolveFromValue SymptomQuestionLowUrineOutput)
+                , darkUrine = or form.darkUrine (resolveFromValue SymptomQuestionDarkUrine)
+                , pelvicPainHospitalization = or form.pelvicPainHospitalization (resolveFromValue SymptomQuestionPelvicPainHospitalization)
+                , legPainRednessSigns = legPainRednessSigns
+                , nightSweats = or form.nightSweats (resolveFromValue SymptomQuestionNightSweats)
+                , bloodInSputum = or form.bloodInSputum (resolveFromValue SymptomQuestionBloodInSputum)
+                , weightLoss = or form.weightLoss (resolveFromValue SymptomQuestionWeightLoss)
+                , severeFatigue = or form.severeFatigue (resolveFromValue SymptomQuestionSevereFatigue)
+                , vaginalItching = or form.vaginalItching (resolveFromValue SymptomQuestionVaginalItching)
+                , partnerUrethralDischarge = or form.partnerUrethralDischarge (resolveFromValue SymptomQuestionPartnerUrethralDischarge)
+                }
+            )
+
+
+toSymptomReviewValueWithDefault : Maybe PrenatalSymptomReviewValue -> SymptomReviewForm -> Maybe PrenatalSymptomReviewValue
+toSymptomReviewValueWithDefault saved form =
+    symptomReviewFormWithDefault form saved
+        |> toSymptomReviewValue
+
+
+toSymptomReviewValue : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue
+toSymptomReviewValue form =
+    let
+        symptoms =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoPrenatalSymptoms) form.symptoms
+
+        symptomQuestions =
+            Maybe.map EverySet.fromList form.legPainRednessSigns
+                :: [ ifNullableTrue SymptomQuestionDizziness form.dizziness
+                   , ifNullableTrue SymptomQuestionLowUrineOutput form.lowUrineOutput
+                   , ifNullableTrue SymptomQuestionDarkUrine form.darkUrine
+                   , ifNullableTrue SymptomQuestionPelvicPainHospitalization form.pelvicPainHospitalization
+                   , ifNullableTrue SymptomQuestionNightSweats form.nightSweats
+                   , ifNullableTrue SymptomQuestionBloodInSputum form.bloodInSputum
+                   , ifNullableTrue SymptomQuestionWeightLoss form.weightLoss
+                   , ifNullableTrue SymptomQuestionSevereFatigue form.severeFatigue
+                   , ifNullableTrue SymptomQuestionVaginalItching form.vaginalItching
+                   , ifNullableTrue SymptomQuestionPartnerUrethralDischarge form.partnerUrethralDischarge
+                   ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSymptomQuestions)
+    in
+    Nothing

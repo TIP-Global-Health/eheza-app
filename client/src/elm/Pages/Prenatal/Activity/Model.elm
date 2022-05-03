@@ -404,8 +404,7 @@ type alias SymptomReviewForm =
     , lowUrineOutput : Maybe Bool
     , darkUrine : Maybe Bool
     , pelvicPainHospitalization : Maybe Bool
-    , legPainSigns : Maybe (List PrenatalSymptomQuestion)
-    , legRednessSigns : Maybe (List PrenatalSymptomQuestion)
+    , legPainRednessSigns : Maybe (List PrenatalSymptomQuestion)
     , nightSweats : Maybe Bool
     , bloodInSputum : Maybe Bool
     , weightLoss : Maybe Bool
@@ -422,8 +421,7 @@ emptySymptomReviewForm =
     , lowUrineOutput = Nothing
     , darkUrine = Nothing
     , pelvicPainHospitalization = Nothing
-    , legPainSigns = Nothing
-    , legRednessSigns = Nothing
+    , legPainRednessSigns = Nothing
     , nightSweats = Nothing
     , bloodInSputum = Nothing
     , weightLoss = Nothing
