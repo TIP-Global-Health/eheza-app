@@ -3639,3 +3639,9 @@ encodePrenatalSymptomQuestion : PrenatalSymptomQuestion -> Value
 encodePrenatalSymptomQuestion sign =
     string <|
         prenatalSymptomQuestionToString sign
+
+
+encodePrenatalFlankPainSide : PrenatalFlankPainSide -> Value
+encodePrenatalFlankPainSide sign =
+    string <|
+        prenatalFlankPainSideToString sign

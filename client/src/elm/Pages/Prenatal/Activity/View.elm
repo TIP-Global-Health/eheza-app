@@ -1773,22 +1773,54 @@ viewNextStepsContent language currentDate isChw assembled data =
 viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
 viewSymptomReviewContent language currentDate assembled data =
     let
+        form =
+            assembled.measurements.symptomReview
+                |> getMeasurementValueFunc
+                |> symptomReviewFormWithDefault data.form
+
         ( inputs, tasksCompleted, totalTasks ) =
-            symptomReviewFormInputsAndTasks language assembled data.step data.form
+            case data.step of
+                SymptomReviewStepSymptoms ->
+                    ( inputsStep1, tasksCompletedStep1, totalTasksStep1 )
+
+                SymptomReviewStepQuestions ->
+                    ( inputsStep2, tasksCompletedStep2, totalTasksStep2 )
+
+        ( inputsStep1, tasksCompletedStep1, totalTasksStep1 ) =
+            symptomReviewFormInputsAndTasks language assembled SymptomReviewStepSymptoms form
+
+        ( inputsStep2, tasksCompletedStep2, totalTasksStep2 ) =
+            symptomReviewFormInputsAndTasks language assembled SymptomReviewStepQuestions form
+
+        actions =
+            case data.step of
+                SymptomReviewStepSymptoms ->
+                    let
+                        ( label, actionMsg ) =
+                            if totalTasksStep2 == 0 then
+                                ( Translate.Save, SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview )
+
+                            else
+                                ( Translate.Save, SetSymptomReviewStep SymptomReviewStepQuestions )
+                    in
+                    div [ class "actions" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick actionMsg
+                            ]
+                            [ text <| translate language label ]
+                        ]
+
+                SymptomReviewStepQuestions ->
+                    emptyNode
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form health-education" ]
+            [ div [ class "ui form symptom-review" ]
                 inputs
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , actions
         ]
     ]
 

@@ -2858,6 +2858,17 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetSymptomReviewStep step ->
+            let
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | step = step })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetPrenatalSymptom symptom ->
             let
                 form =
@@ -2877,6 +2888,20 @@ update language currentDate id db msg model =
                         NoPrenatalSymptoms
                         symptom
                         form
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPrenatalSymptomQuestionBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.symptomReviewData.form
 
                 updatedData =
                     model.symptomReviewData

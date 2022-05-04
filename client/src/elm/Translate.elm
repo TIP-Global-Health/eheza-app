@@ -8876,6 +8876,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                SymptomQuestionVaginalDischarge ->
+                    { english = "Do you experience vaginal discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionFrequentUrination ->
+                    { english = "Do you experience urinating frequently"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionFlankPain ->
+                    { english = "Do you experience flank pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 SymptomQuestionPartnerUrethralDischarge ->
                     { english = "Does your partner have urethral discharge"
                     , kinyarwanda = Nothing

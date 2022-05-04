@@ -1776,6 +1776,15 @@ prenatalSymptomQuestionToString value =
         SymptomQuestionPartnerUrethralDischarge ->
             "partner-urethral-discharge"
 
+        SymptomQuestionVaginalDischarge ->
+            "vaginal-discharge"
+
+        SymptomQuestionFrequentUrination ->
+            "frequent-urination"
+
+        SymptomQuestionFlankPain ->
+            "flank-pain"
+
         NoSymptomQuestions ->
             "none"
 
@@ -1822,8 +1831,52 @@ prenatalSymptomQuestionFromString value =
         "partner-urethral-discharge" ->
             Just SymptomQuestionPartnerUrethralDischarge
 
+        "vaginal-discharge" ->
+            Just SymptomQuestionVaginalDischarge
+
+        "frequent-urination" ->
+            Just SymptomQuestionFrequentUrination
+
+        "flank-pain" ->
+            Just SymptomQuestionFlankPain
+
         "none" ->
             Just NoSymptomQuestions
+
+        _ ->
+            Nothing
+
+
+prenatalFlankPainSideToString : PrenatalFlankPainSide -> String
+prenatalFlankPainSideToString value =
+    case value of
+        FlankPainLeftSide ->
+            "left"
+
+        FlankPainRightSide ->
+            "right"
+
+        FlankPainBothSides ->
+            "both"
+
+        NoFlankPain ->
+            "none"
+
+
+prenatalFlankPainSideFromString : String -> Maybe PrenatalFlankPainSide
+prenatalFlankPainSideFromString value =
+    case value of
+        "left" ->
+            Just FlankPainLeftSide
+
+        "right" ->
+            Just FlankPainRightSide
+
+        "both" ->
+            Just FlankPainBothSides
+
+        "none" ->
+            Just NoFlankPain
 
         _ ->
             Nothing

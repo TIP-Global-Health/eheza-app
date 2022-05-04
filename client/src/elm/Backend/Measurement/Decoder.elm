@@ -3983,3 +3983,14 @@ decodePrenatalSymptomQuestion =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalSymptomQuestion")
             )
+
+
+decodePrenatalFlankPainSide : Decoder PrenatalFlankPainSide
+decodePrenatalFlankPainSide =
+    string
+        |> andThen
+            (\s ->
+                prenatalFlankPainSideFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalFlankPainSide")
+            )
