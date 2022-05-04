@@ -3961,6 +3961,7 @@ decodePrenatalSymptomReviewValue =
     succeed PrenatalSymptomReviewValue
         |> required "symptoms" (decodeEverySet decodePrenatalSymptom)
         |> required "symptom_questions" (decodeEverySet decodePrenatalSymptomQuestion)
+        |> optional "flank_pain_sign" (nullable decodePrenatalFlankPainSign) Nothing
 
 
 decodePrenatalSymptom : Decoder PrenatalSymptom
@@ -3985,12 +3986,12 @@ decodePrenatalSymptomQuestion =
             )
 
 
-decodePrenatalFlankPainSide : Decoder PrenatalFlankPainSide
-decodePrenatalFlankPainSide =
+decodePrenatalFlankPainSign : Decoder PrenatalFlankPainSign
+decodePrenatalFlankPainSign =
     string
         |> andThen
             (\s ->
-                prenatalFlankPainSideFromString s
+                prenatalFlankPainSignFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalFlankPainSide")
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalFlankPainSign")
             )

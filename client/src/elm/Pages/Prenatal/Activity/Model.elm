@@ -411,13 +411,19 @@ type alias SymptomReviewForm =
     , lowUrineOutput : Maybe Bool
     , darkUrine : Maybe Bool
     , pelvicPainHospitalization : Maybe Bool
-    , legPainRednessSigns : Maybe (List PrenatalSymptomQuestion)
+    , problemLeftLeg : Maybe Bool
+    , legPainful : Maybe Bool
+    , legWarm : Maybe Bool
+    , legSwollen : Maybe Bool
     , nightSweats : Maybe Bool
     , bloodInSputum : Maybe Bool
     , weightLoss : Maybe Bool
     , severeFatigue : Maybe Bool
+    , vaginalDischarge : Maybe Bool
+    , frequentUrination : Maybe Bool
     , vaginalItching : Maybe Bool
     , partnerUrethralDischarge : Maybe Bool
+    , flankPainSign : Maybe PrenatalFlankPainSign
     }
 
 
@@ -428,13 +434,19 @@ emptySymptomReviewForm =
     , lowUrineOutput = Nothing
     , darkUrine = Nothing
     , pelvicPainHospitalization = Nothing
-    , legPainRednessSigns = Nothing
+    , problemLeftLeg = Nothing
+    , legPainful = Nothing
+    , legWarm = Nothing
+    , legSwollen = Nothing
     , nightSweats = Nothing
     , bloodInSputum = Nothing
     , weightLoss = Nothing
     , severeFatigue = Nothing
+    , vaginalDischarge = Nothing
+    , frequentUrination = Nothing
     , vaginalItching = Nothing
     , partnerUrethralDischarge = Nothing
+    , flankPainSign = Nothing
     }
 
 

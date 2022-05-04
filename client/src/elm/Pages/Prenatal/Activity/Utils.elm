@@ -3110,40 +3110,25 @@ symptomReviewFormWithDefault form saved =
 
                     resolveFromValue question =
                         EverySet.member question value.symptomQuestions |> Just
-
-                    legPainRednessSigns =
-                        Maybe.andThen
-                            (\symptoms_ ->
-                                if List.member LegPainRedness symptoms_ then
-                                    value.symptomQuestions
-                                        |> EverySet.toList
-                                        |> List.filter
-                                            (\question ->
-                                                List.member question
-                                                    [ SymptomQuestionLegPainRednessLeft
-                                                    , SymptomQuestionLegPainRednessSwollen
-                                                    , SymptomQuestionLegPainRednessRedOrWarm
-                                                    ]
-                                            )
-                                        |> Just
-
-                                else
-                                    Nothing
-                            )
-                            symptoms
                 in
                 { symptoms = symptoms
                 , dizziness = or form.dizziness (resolveFromValue SymptomQuestionDizziness)
                 , lowUrineOutput = or form.lowUrineOutput (resolveFromValue SymptomQuestionLowUrineOutput)
                 , darkUrine = or form.darkUrine (resolveFromValue SymptomQuestionDarkUrine)
                 , pelvicPainHospitalization = or form.pelvicPainHospitalization (resolveFromValue SymptomQuestionPelvicPainHospitalization)
-                , legPainRednessSigns = legPainRednessSigns
+                , problemLeftLeg = or form.problemLeftLeg (resolveFromValue SymptomQuestionLegPainRednessLeft)
+                , legPainful = or form.legPainful (resolveFromValue SymptomQuestionLegPainful)
+                , legWarm = or form.legWarm (resolveFromValue SymptomQuestionLegWarm)
+                , legSwollen = or form.legSwollen (resolveFromValue SymptomQuestionLegSwollen)
                 , nightSweats = or form.nightSweats (resolveFromValue SymptomQuestionNightSweats)
                 , bloodInSputum = or form.bloodInSputum (resolveFromValue SymptomQuestionBloodInSputum)
                 , weightLoss = or form.weightLoss (resolveFromValue SymptomQuestionWeightLoss)
                 , severeFatigue = or form.severeFatigue (resolveFromValue SymptomQuestionSevereFatigue)
+                , vaginalDischarge = or form.vaginalDischarge (resolveFromValue SymptomQuestionVaginalDischarge)
+                , frequentUrination = or form.frequentUrination (resolveFromValue SymptomQuestionFrequentUrination)
                 , vaginalItching = or form.vaginalItching (resolveFromValue SymptomQuestionVaginalItching)
                 , partnerUrethralDischarge = or form.partnerUrethralDischarge (resolveFromValue SymptomQuestionPartnerUrethralDischarge)
+                , flankPainSign = or form.flankPainSign value.flankPainSign
                 }
             )
 
@@ -3161,22 +3146,29 @@ toSymptomReviewValue form =
             Maybe.map (EverySet.fromList >> ifEverySetEmpty NoPrenatalSymptoms) form.symptoms
 
         symptomQuestions =
-            Maybe.map EverySet.fromList form.legPainRednessSigns
-                :: [ ifNullableTrue SymptomQuestionDizziness form.dizziness
-                   , ifNullableTrue SymptomQuestionLowUrineOutput form.lowUrineOutput
-                   , ifNullableTrue SymptomQuestionDarkUrine form.darkUrine
-                   , ifNullableTrue SymptomQuestionPelvicPainHospitalization form.pelvicPainHospitalization
-                   , ifNullableTrue SymptomQuestionNightSweats form.nightSweats
-                   , ifNullableTrue SymptomQuestionBloodInSputum form.bloodInSputum
-                   , ifNullableTrue SymptomQuestionWeightLoss form.weightLoss
-                   , ifNullableTrue SymptomQuestionSevereFatigue form.severeFatigue
-                   , ifNullableTrue SymptomQuestionVaginalItching form.vaginalItching
-                   , ifNullableTrue SymptomQuestionPartnerUrethralDischarge form.partnerUrethralDischarge
-                   ]
+            [ ifNullableTrue SymptomQuestionDizziness form.dizziness
+            , ifNullableTrue SymptomQuestionLowUrineOutput form.lowUrineOutput
+            , ifNullableTrue SymptomQuestionDarkUrine form.darkUrine
+            , ifNullableTrue SymptomQuestionPelvicPainHospitalization form.pelvicPainHospitalization
+            , ifNullableTrue SymptomQuestionLegPainRednessLeft form.problemLeftLeg
+            , ifNullableTrue SymptomQuestionLegPainful form.legPainful
+            , ifNullableTrue SymptomQuestionLegSwollen form.legSwollen
+            , ifNullableTrue SymptomQuestionLegWarm form.legWarm
+            , ifNullableTrue SymptomQuestionNightSweats form.nightSweats
+            , ifNullableTrue SymptomQuestionBloodInSputum form.bloodInSputum
+            , ifNullableTrue SymptomQuestionWeightLoss form.weightLoss
+            , ifNullableTrue SymptomQuestionSevereFatigue form.severeFatigue
+            , ifNullableTrue SymptomQuestionVaginalDischarge form.vaginalDischarge
+            , ifNullableTrue SymptomQuestionFrequentUrination form.frequentUrination
+            , ifNullableTrue SymptomQuestionVaginalItching form.vaginalItching
+            , ifNullableTrue SymptomQuestionPartnerUrethralDischarge form.partnerUrethralDischarge
+            ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSymptomQuestions)
     in
-    Nothing
+    Maybe.map PrenatalSymptomReviewValue symptoms
+        |> andMap symptomQuestions
+        |> andMap (Just form.flankPainSign)
 
 
 symptomReviewFormInputsAndTasks : Language -> AssembledData -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
@@ -3239,8 +3231,8 @@ symptomReviewFormInputsAndTasksQuestions language assembled form =
         legPainRednessInputsAndTasks =
             -- @todo:
             --     | SymptomQuestionLegPainRednessLeft
-            --     | SymptomQuestionLegPainRednessSwollen
-            --     | SymptomQuestionLegPainRednessRedOrWarm
+            --     | SymptomQuestionLegSwollen
+            --     | SymptomQuestionLegWarm
             ( [], 0, 0 )
 
         coughContinuousInputsAndTasks =
@@ -3258,15 +3250,15 @@ symptomReviewFormInputsAndTasksQuestions language assembled form =
         burningWithUrinationAndTasks =
             -- @todo:
             --     | SymptomQuestionLegPainRednessLeft
-            --     | SymptomQuestionLegPainRednessSwollen
-            --     | SymptomQuestionLegPainRednessRedOrWarm
+            --     | SymptomQuestionLegSwollen
+            --     | SymptomQuestionLegWarm
             ( [], 0, 0 )
 
         flankPainInputsAndTasks =
             -- @todo:
             --     | SymptomQuestionLegPainRednessLeft
-            --     | SymptomQuestionLegPainRednessSwollen
-            --     | SymptomQuestionLegPainRednessRedOrWarm
+            --     | SymptomQuestionLegSwollen
+            --     | SymptomQuestionLegWarm
             ( [], 0, 0 )
 
         abnormalVaginalDischargeInputsAndTasks =
@@ -3286,7 +3278,7 @@ expectPrenatalSymptomQuestion symptoms question =
     case question of
         -- @todo
         _ ->
-            Fasle
+            False
 
 
 

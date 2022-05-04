@@ -1752,11 +1752,14 @@ prenatalSymptomQuestionToString value =
         SymptomQuestionLegPainRednessLeft ->
             "leg-pain-redness-left"
 
-        SymptomQuestionLegPainRednessSwollen ->
-            "leg-pain-redness-swollen"
+        SymptomQuestionLegSwollen ->
+            "leg-swollen"
 
-        SymptomQuestionLegPainRednessRedOrWarm ->
-            "leg-pain-redness-red-or-warm"
+        SymptomQuestionLegPainful ->
+            "leg-painful"
+
+        SymptomQuestionLegWarm ->
+            "leg-warm"
 
         SymptomQuestionNightSweats ->
             "night-sweats"
@@ -1807,11 +1810,14 @@ prenatalSymptomQuestionFromString value =
         "leg-pain-redness-left" ->
             Just SymptomQuestionLegPainRednessLeft
 
-        "leg-pain-redness-swollen" ->
-            Just SymptomQuestionLegPainRednessSwollen
+        "leg-painful" ->
+            Just SymptomQuestionLegPainful
 
-        "leg-pain-redness-red-or-warm" ->
-            Just SymptomQuestionLegPainRednessRedOrWarm
+        "leg-swollen" ->
+            Just SymptomQuestionLegSwollen
+
+        "leg-warm" ->
+            Just SymptomQuestionLegWarm
 
         "night-sweats" ->
             Just SymptomQuestionNightSweats
@@ -1847,8 +1853,8 @@ prenatalSymptomQuestionFromString value =
             Nothing
 
 
-prenatalFlankPainSideToString : PrenatalFlankPainSide -> String
-prenatalFlankPainSideToString value =
+prenatalFlankPainSignToString : PrenatalFlankPainSign -> String
+prenatalFlankPainSignToString value =
     case value of
         FlankPainLeftSide ->
             "left"
@@ -1863,8 +1869,8 @@ prenatalFlankPainSideToString value =
             "none"
 
 
-prenatalFlankPainSideFromString : String -> Maybe PrenatalFlankPainSide
-prenatalFlankPainSideFromString value =
+prenatalFlankPainSignFromString : String -> Maybe PrenatalFlankPainSign
+prenatalFlankPainSignFromString value =
     case value of
         "left" ->
             Just FlankPainLeftSide

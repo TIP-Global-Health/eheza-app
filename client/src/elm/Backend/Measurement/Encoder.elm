@@ -3622,11 +3622,19 @@ encodePrenatalSymptomReview =
 
 encodePrenatalSymptomReviewValue : PrenatalSymptomReviewValue -> List ( String, Value )
 encodePrenatalSymptomReviewValue value =
+    let
+        flankPainSign =
+            Maybe.map
+                (\sign -> [ ( "flank_pain_sign", encodePrenatalFlankPainSign sign ) ])
+                value.flankPainSign
+                |> Maybe.withDefault []
+    in
     [ ( "symptoms", encodeEverySet encodePrenatalSymptom value.symptoms )
     , ( "symptom_questions", encodeEverySet encodePrenatalSymptomQuestion value.symptomQuestions )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_symptom_review" )
     ]
+        ++ flankPainSign
 
 
 encodePrenatalSymptom : PrenatalSymptom -> Value
@@ -3641,7 +3649,7 @@ encodePrenatalSymptomQuestion sign =
         prenatalSymptomQuestionToString sign
 
 
-encodePrenatalFlankPainSide : PrenatalFlankPainSide -> Value
-encodePrenatalFlankPainSide sign =
+encodePrenatalFlankPainSign : PrenatalFlankPainSign -> Value
+encodePrenatalFlankPainSign sign =
     string <|
-        prenatalFlankPainSideToString sign
+        prenatalFlankPainSignToString sign

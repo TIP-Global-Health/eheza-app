@@ -1127,7 +1127,7 @@ type alias PrenatalSymptomReview =
 type alias PrenatalSymptomReviewValue =
     { symptoms : EverySet PrenatalSymptom
     , symptomQuestions : EverySet PrenatalSymptomQuestion
-    , flankPainSide : PrenatalFlankPainSide
+    , flankPainSign : Maybe PrenatalFlankPainSign
     }
 
 
@@ -1152,8 +1152,9 @@ type PrenatalSymptomQuestion
     | SymptomQuestionDarkUrine
     | SymptomQuestionPelvicPainHospitalization
     | SymptomQuestionLegPainRednessLeft
-    | SymptomQuestionLegPainRednessSwollen
-    | SymptomQuestionLegPainRednessRedOrWarm
+    | SymptomQuestionLegPainful
+    | SymptomQuestionLegSwollen
+    | SymptomQuestionLegWarm
     | SymptomQuestionNightSweats
     | SymptomQuestionBloodInSputum
     | SymptomQuestionWeightLoss
@@ -1166,7 +1167,7 @@ type PrenatalSymptomQuestion
     | NoSymptomQuestions
 
 
-type PrenatalFlankPainSide
+type PrenatalFlankPainSign
     = FlankPainLeftSide
     | FlankPainRightSide
     | FlankPainBothSides

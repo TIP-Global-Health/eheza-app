@@ -8841,12 +8841,17 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                SymptomQuestionLegPainRednessSwollen ->
+                SymptomQuestionLegPainful ->
+                    { english = "Is the leg painful"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomQuestionLegSwollen ->
                     { english = "Is the leg swollen"
                     , kinyarwanda = Nothing
                     }
 
-                SymptomQuestionLegPainRednessRedOrWarm ->
+                SymptomQuestionLegWarm ->
                     { english = "Is the leg red or warm to the touch"
                     , kinyarwanda = Nothing
                     }
