@@ -1520,6 +1520,16 @@ div.page-activity.home-visit {
       }
     }
 
+    .actions.two button {
+      width: 50%;
+      float: left;
+      margin: 0;
+
+      &.active {
+        border-left: 1px solid $color-white;
+      }
+    }
+
     .form.history {
 
       .ui.grid + .grid {

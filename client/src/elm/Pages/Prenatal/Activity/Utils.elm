@@ -3171,18 +3171,18 @@ toSymptomReviewValue form =
         |> andMap (Just form.flankPainSign)
 
 
-symptomReviewFormInputsAndTasks : Language -> AssembledData -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
-symptomReviewFormInputsAndTasks language assembled step form =
+symptomReviewFormInputsAndTasks : Language -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasks language step form =
     case step of
         SymptomReviewStepSymptoms ->
-            symptomReviewFormInputsAndTasksSymptoms language assembled form
+            symptomReviewFormInputsAndTasksSymptoms language form
 
         SymptomReviewStepQuestions ->
-            ( [], 0, 0 )
+            symptomReviewFormInputsAndTasksQuestions language form
 
 
-symptomReviewFormInputsAndTasksSymptoms : Language -> AssembledData -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
-symptomReviewFormInputsAndTasksSymptoms language assembled form =
+symptomReviewFormInputsAndTasksSymptoms : Language -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasksSymptoms language form =
     ( [ div [ class "ui form symptom-review" ]
             [ viewQuestionLabel language Translate.SelectIllnessSymptoms
             , viewCheckBoxMultipleSelectInput language
@@ -3199,86 +3199,229 @@ symptomReviewFormInputsAndTasksSymptoms language assembled form =
     )
 
 
-symptomReviewFormInputsAndTasksQuestions : Language -> AssembledData -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
-symptomReviewFormInputsAndTasksQuestions language assembled form =
+symptomReviewFormInputsAndTasksQuestions : Language -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasksQuestions language form =
+    Maybe.map
+        (\symptoms ->
+            let
+                inputsWithState =
+                    List.filter (expectPrenatalSymptomQuestion symptoms) prenatalSymptomQuestion
+                        |> List.map (prenatalSymptomQuestionInputAndState language form)
+
+                inputs =
+                    List.map Tuple.first inputsWithState
+            in
+            ( List.concat inputs
+            , List.map Tuple.second inputsWithState |> List.sum
+            , List.length inputs
+            )
+        )
+        form.symptoms
+        |> Maybe.withDefault ( [], 0, 0 )
+
+
+prenatalSymptomQuestion : List PrenatalSymptomQuestion
+prenatalSymptomQuestion =
+    [ SymptomQuestionDizziness
+    , SymptomQuestionLowUrineOutput
+    , SymptomQuestionDarkUrine
+    , SymptomQuestionPelvicPainHospitalization
+    , SymptomQuestionLegPainRednessLeft
+    , SymptomQuestionLegPainful
+    , SymptomQuestionLegSwollen
+    , SymptomQuestionLegWarm
+    , SymptomQuestionNightSweats
+    , SymptomQuestionBloodInSputum
+    , SymptomQuestionWeightLoss
+    , SymptomQuestionSevereFatigue
+    , SymptomQuestionVaginalItching
+    , SymptomQuestionVaginalDischarge
+    , SymptomQuestionFrequentUrination
+    , SymptomQuestionFlankPain
+    , SymptomQuestionPartnerUrethralDischarge
+    ]
+
+
+expectPrenatalSymptomQuestion : List PrenatalSymptom -> PrenatalSymptomQuestion -> Bool
+expectPrenatalSymptomQuestion symptoms question =
     let
-        viewQuestion field updateFunc question =
+        symptomReported symptom =
+            List.member symptom symptoms
+    in
+    case question of
+        SymptomQuestionDizziness ->
+            symptomReported NauseaAndVomiting
+
+        SymptomQuestionLowUrineOutput ->
+            symptomReported NauseaAndVomiting
+
+        SymptomQuestionDarkUrine ->
+            symptomReported NauseaAndVomiting
+
+        SymptomQuestionPelvicPainHospitalization ->
+            symptomReported PelvicPain
+
+        SymptomQuestionLegPainRednessLeft ->
+            symptomReported LegPainRedness
+
+        SymptomQuestionLegPainful ->
+            symptomReported LegPainRedness
+
+        SymptomQuestionLegSwollen ->
+            symptomReported LegPainRedness
+
+        SymptomQuestionLegWarm ->
+            symptomReported LegPainRedness
+
+        SymptomQuestionNightSweats ->
+            symptomReported CoughContinuous
+
+        SymptomQuestionBloodInSputum ->
+            symptomReported CoughContinuous
+
+        SymptomQuestionWeightLoss ->
+            symptomReported CoughContinuous
+
+        SymptomQuestionSevereFatigue ->
+            symptomReported CoughContinuous
+
+        SymptomQuestionVaginalDischarge ->
+            symptomReported BurningWithUrination
+
+        SymptomQuestionFrequentUrination ->
+            symptomReported BurningWithUrination
+
+        SymptomQuestionFlankPain ->
+            symptomReported BurningWithUrination
+
+        SymptomQuestionVaginalItching ->
+            symptomReported BurningWithUrination
+                || symptomReported AbnormalVaginalDischarge
+
+        SymptomQuestionPartnerUrethralDischarge ->
+            symptomReported AbnormalVaginalDischarge
+
+        NoSymptomQuestions ->
+            False
+
+
+prenatalSymptomQuestionInputAndState : Language -> SymptomReviewForm -> PrenatalSymptomQuestion -> ( List (Html Msg), Int )
+prenatalSymptomQuestionInputAndState language form question =
+    let
+        viewQuestion field updateFunc =
             [ viewQuestionLabel language (Translate.PrenatalSymptomQuestion question)
             , viewBoolInput
                 language
                 field
                 (SetPrenatalSymptomQuestionBoolInput updateFunc)
-                "self-guidance"
+                "symptom-question"
                 Nothing
             ]
-
-        nauseaVomitingInputsAndTasks =
-            ( viewQuestion form.dizziness (\value form_ -> { form_ | dizziness = Just value }) SymptomQuestionDizziness
-                ++ viewQuestion form.lowUrineOutput (\value form_ -> { form_ | lowUrineOutput = Just value }) SymptomQuestionLowUrineOutput
-                ++ viewQuestion form.darkUrine (\value form_ -> { form_ | darkUrine = Just value }) SymptomQuestionDarkUrine
-            , taskCompleted form.dizziness + taskCompleted form.lowUrineOutput + taskCompleted form.darkUrine
-            , 3
+    in
+    case question of
+        SymptomQuestionDizziness ->
+            ( viewQuestion form.dizziness (\value form_ -> { form_ | dizziness = Just value })
+            , taskCompleted form.dizziness
             )
 
-        pelvicPainInputsAndTasks =
+        SymptomQuestionLowUrineOutput ->
+            ( viewQuestion form.lowUrineOutput (\value form_ -> { form_ | lowUrineOutput = Just value })
+            , taskCompleted form.lowUrineOutput
+            )
+
+        SymptomQuestionDarkUrine ->
+            ( viewQuestion form.darkUrine (\value form_ -> { form_ | darkUrine = Just value })
+            , taskCompleted form.darkUrine
+            )
+
+        SymptomQuestionPelvicPainHospitalization ->
             ( viewQuestion form.pelvicPainHospitalization
                 (\value form_ -> { form_ | pelvicPainHospitalization = Just value })
-                SymptomQuestionPelvicPainHospitalization
             , taskCompleted form.pelvicPainHospitalization
-            , 1
             )
 
-        legPainRednessInputsAndTasks =
-            -- @todo:
-            --     | SymptomQuestionLegPainRednessLeft
-            --     | SymptomQuestionLegSwollen
-            --     | SymptomQuestionLegWarm
-            ( [], 0, 0 )
+        SymptomQuestionLegPainRednessLeft ->
+            ( [ viewQuestionLabel language (Translate.PrenatalSymptomQuestion SymptomQuestionLegPainRednessLeft)
+              , viewBoolInput
+                    language
+                    form.problemLeftLeg
+                    (SetPrenatalSymptomQuestionBoolInput (\value form_ -> { form_ | problemLeftLeg = Just value }))
+                    "symptom-question"
+                    (Just ( Translate.Left, Translate.Right ))
+              ]
+            , taskCompleted form.problemLeftLeg
+            )
 
-        coughContinuousInputsAndTasks =
-            ( viewQuestion form.nightSweats (\value form_ -> { form_ | nightSweats = Just value }) SymptomQuestionNightSweats
-                ++ viewQuestion form.bloodInSputum (\value form_ -> { form_ | bloodInSputum = Just value }) SymptomQuestionBloodInSputum
-                ++ viewQuestion form.weightLoss (\value form_ -> { form_ | weightLoss = Just value }) SymptomQuestionWeightLoss
-                ++ viewQuestion form.severeFatigue (\value form_ -> { form_ | severeFatigue = Just value }) SymptomQuestionSevereFatigue
+        SymptomQuestionLegPainful ->
+            ( viewQuestion form.legPainful (\value form_ -> { form_ | legPainful = Just value })
+            , taskCompleted form.legPainful
+            )
+
+        SymptomQuestionLegSwollen ->
+            ( viewQuestion form.legSwollen (\value form_ -> { form_ | legSwollen = Just value })
+            , taskCompleted form.legSwollen
+            )
+
+        SymptomQuestionLegWarm ->
+            ( viewQuestion form.legWarm (\value form_ -> { form_ | legWarm = Just value })
+            , taskCompleted form.legWarm
+            )
+
+        SymptomQuestionNightSweats ->
+            ( viewQuestion form.nightSweats (\value form_ -> { form_ | nightSweats = Just value })
             , taskCompleted form.nightSweats
-                + taskCompleted form.bloodInSputum
-                + taskCompleted form.weightLoss
-                + taskCompleted form.severeFatigue
-            , 4
             )
 
-        burningWithUrinationAndTasks =
-            -- @todo:
-            --     | SymptomQuestionLegPainRednessLeft
-            --     | SymptomQuestionLegSwollen
-            --     | SymptomQuestionLegWarm
-            ( [], 0, 0 )
+        SymptomQuestionBloodInSputum ->
+            ( viewQuestion form.bloodInSputum (\value form_ -> { form_ | bloodInSputum = Just value })
+            , taskCompleted form.bloodInSputum
+            )
 
-        flankPainInputsAndTasks =
-            -- @todo:
-            --     | SymptomQuestionLegPainRednessLeft
-            --     | SymptomQuestionLegSwollen
-            --     | SymptomQuestionLegWarm
-            ( [], 0, 0 )
+        SymptomQuestionWeightLoss ->
+            ( viewQuestion form.weightLoss (\value form_ -> { form_ | weightLoss = Just value })
+            , taskCompleted form.weightLoss
+            )
 
-        abnormalVaginalDischargeInputsAndTasks =
-            --@todo:
-            ( [], 0, 0 )
+        SymptomQuestionSevereFatigue ->
+            ( viewQuestion form.severeFatigue (\value form_ -> { form_ | severeFatigue = Just value })
+            , taskCompleted form.severeFatigue
+            )
 
-        -- ( viewQuestion form.XXX (\value form_ -> { form_ | XXX = Just value }) XXX
-        -- , taskCompleted XXX
-        -- , XXX
-        -- )
-    in
-    ( [], 0, 0 )
+        SymptomQuestionVaginalDischarge ->
+            ( viewQuestion form.vaginalDischarge (\value form_ -> { form_ | vaginalDischarge = Just value })
+            , taskCompleted form.vaginalDischarge
+            )
 
+        SymptomQuestionFrequentUrination ->
+            ( viewQuestion form.frequentUrination (\value form_ -> { form_ | frequentUrination = Just value })
+            , taskCompleted form.frequentUrination
+            )
 
-expectPrenatalSymptomQuestion : Maybe (List PrenatalSymptom) -> PrenatalSymptomQuestion -> Bool
-expectPrenatalSymptomQuestion symptoms question =
-    case question of
-        -- @todo
-        _ ->
-            False
+        SymptomQuestionFlankPain ->
+            ( [ viewQuestionLabel language (Translate.PrenatalSymptomQuestion SymptomQuestionFlankPain)
+              , viewCheckBoxSelectInput language
+                    [ NoFlankPain, FlankPainLeftSide ]
+                    [ FlankPainRightSide, FlankPainBothSides ]
+                    form.flankPainSign
+                    SetFlankPainSign
+                    Translate.PrenatalFlankPainSign
+              ]
+            , taskCompleted form.flankPainSign
+            )
+
+        SymptomQuestionVaginalItching ->
+            ( viewQuestion form.vaginalItching (\value form_ -> { form_ | vaginalItching = Just value })
+            , taskCompleted form.vaginalItching
+            )
+
+        SymptomQuestionPartnerUrethralDischarge ->
+            ( viewQuestion form.partnerUrethralDischarge (\value form_ -> { form_ | partnerUrethralDischarge = Just value })
+            , taskCompleted form.partnerUrethralDischarge
+            )
+
+        NoSymptomQuestions ->
+            -- We should never get here.
+            ( [], 0 )
 
 
 

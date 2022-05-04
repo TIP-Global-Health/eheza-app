@@ -2912,6 +2912,23 @@ update language currentDate id db msg model =
             , []
             )
 
+        SetFlankPainSign sign ->
+            let
+                form =
+                    model.symptomReviewData.form
+
+                updatedForm =
+                    { form | flankPainSign = Just sign }
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveSymptomReview personId saved ->
             let
                 measurementId =

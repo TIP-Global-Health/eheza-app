@@ -673,6 +673,7 @@ type TranslationId
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
+    | Left
     | Legs
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
@@ -891,6 +892,7 @@ type TranslationId
     | PrenatalDiagnosisForProgressReport PrenatalDiagnosis
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
+    | PrenatalFlankPainSign PrenatalFlankPainSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
@@ -945,6 +947,7 @@ type TranslationId
     | PrenatalRecurrentNextStepsTask Pages.Prenatal.RecurrentActivity.Types.NextStepsTask
     | PrenatalSymptom PrenatalSymptom
     | PrenatalSymptomQuestion PrenatalSymptomQuestion
+    | PrenatalSymptomQuestionsHeader
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
@@ -1040,6 +1043,7 @@ type TranslationId
     | Reviewed
     | ReviewPriorDiagnosis
     | RhNegative
+    | Right
     | RiskFactorAlert RiskFactor
     | RiskFactors
     | SachetsPerDayHelper Float Float
@@ -5245,6 +5249,11 @@ translationSet trans =
             , kinyarwanda = Just "Itariki n'isaha yanyuma igikoresho giheruka gukoresherezaho interineti bikagenda neza"
             }
 
+        Left ->
+            { english = "Left"
+            , kinyarwanda = Nothing
+            }
+
         Legs ->
             { english = "Legs"
             , kinyarwanda = Just "Amaguru"
@@ -7943,6 +7952,28 @@ translationSet trans =
                     , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
                     }
 
+        PrenatalFlankPainSign sign ->
+            case sign of
+                FlankPainLeftSide ->
+                    { english = "Left side"
+                    , kinyarwanda = Nothing
+                    }
+
+                FlankPainRightSide ->
+                    { english = "Right side"
+                    , kinyarwanda = Nothing
+                    }
+
+                FlankPainBothSides ->
+                    { english = "Both sides"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoFlankPain ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalHealthEducationQuestion isChw sign ->
             case sign of
                 EducationExpectations ->
@@ -8905,6 +8936,11 @@ translationSet trans =
                     { english = "None"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalSymptomQuestionsHeader ->
+            { english = "The patient has noted symptoms that require follow up questions"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalTestExecutionNote note ->
             case note of
@@ -9870,6 +9906,11 @@ translationSet trans =
         RhNegative ->
             { english = "RH Negative"
             , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
+            }
+
+        Right ->
+            { english = "Right"
+            , kinyarwanda = Nothing
             }
 
         RiskFactorAlert factor ->

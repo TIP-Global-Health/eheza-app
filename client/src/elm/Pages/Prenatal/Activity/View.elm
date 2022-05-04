@@ -1787,38 +1787,57 @@ viewSymptomReviewContent language currentDate assembled data =
                     ( inputsStep2, tasksCompletedStep2, totalTasksStep2 )
 
         ( inputsStep1, tasksCompletedStep1, totalTasksStep1 ) =
-            symptomReviewFormInputsAndTasks language assembled SymptomReviewStepSymptoms form
+            symptomReviewFormInputsAndTasks language SymptomReviewStepSymptoms form
 
         ( inputsStep2, tasksCompletedStep2, totalTasksStep2 ) =
-            symptomReviewFormInputsAndTasks language assembled SymptomReviewStepQuestions form
+            symptomReviewFormInputsAndTasks language SymptomReviewStepQuestions form
 
         actions =
+            let
+                saveButton msg =
+                    button
+                        [ classList
+                            [ ( "ui fluid primary button", True )
+                            , ( "active", tasksCompleted == totalTasks )
+                            , ( "disabled", tasksCompleted /= totalTasks )
+                            ]
+                        , onClick msg
+                        ]
+                        [ text <| translate language Translate.Save ]
+
+                saveAction =
+                    SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
+            in
             case data.step of
                 SymptomReviewStepSymptoms ->
                     let
-                        ( label, actionMsg ) =
+                        actionMsg =
                             if totalTasksStep2 == 0 then
-                                ( Translate.Save, SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview )
+                                saveAction
 
                             else
-                                ( Translate.Save, SetSymptomReviewStep SymptomReviewStepQuestions )
+                                SetSymptomReviewStep SymptomReviewStepQuestions
                     in
                     div [ class "actions" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick actionMsg
-                            ]
-                            [ text <| translate language label ]
-                        ]
+                        [ saveButton actionMsg ]
 
                 SymptomReviewStepQuestions ->
-                    emptyNode
+                    div [ class "actions two" ]
+                        [ button
+                            [ class "ui fluid primary button"
+                            , onClick <| SetSymptomReviewStep SymptomReviewStepSymptoms
+                            ]
+                            [ text <| ("< " ++ translate language Translate.Back) ]
+                        , saveButton saveAction
+                        ]
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form symptom-review" ]
-                inputs
+            [ div [ class "ui form symptom-review" ] <|
+                div [ class "instructions" ]
+                    [ viewLabel language Translate.PrenatalSymptomQuestionsHeader ]
+                    :: inputs
             ]
         , actions
         ]
