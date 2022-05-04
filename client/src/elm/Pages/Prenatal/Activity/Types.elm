@@ -45,3 +45,8 @@ type LaboratoryTask
     | TaskRandomBloodSugarTest
     | TaskSyphilisTest
     | TaskUrineDipstickTest
+
+
+type SymptomReviewStep
+    = SymptomReviewStepSymptoms
+    | SymptomReviewStepQuestions

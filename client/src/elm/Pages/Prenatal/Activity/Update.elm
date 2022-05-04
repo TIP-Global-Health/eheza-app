@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumMotherDangerSign(..)
+        , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
         )
@@ -2856,3 +2857,62 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetPrenatalSymptom symptom ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.symptomReview
+                                >> getMeasurementValueFunc
+                                >> symptomReviewFormWithDefault model.symptomReviewData.form
+                            )
+                        |> Maybe.withDefault model.symptomReviewData.form
+
+                updatedForm =
+                    setMultiSelectInputValue .symptoms
+                        (\symptoms -> { form | symptoms = symptoms })
+                        NoPrenatalSymptoms
+                        symptom
+                        form
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSymptomReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.symptomReviewData.form
+                        |> toSymptomReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveSymptomReview personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | step = SymptomReviewStepSymptoms })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )

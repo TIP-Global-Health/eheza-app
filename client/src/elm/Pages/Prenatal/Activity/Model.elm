@@ -165,6 +165,9 @@ type Msg
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
     | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue Bool (Maybe NextStepsTask)
+      -- SYMPTOMREVIEWMsgs
+    | SetPrenatalSymptom PrenatalSymptom
+    | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
 
 
 type alias Model =
@@ -389,12 +392,14 @@ emptyHealthEducationData =
 
 type alias SymptomReviewData =
     { form : SymptomReviewForm
+    , step : SymptomReviewStep
     }
 
 
 emptySymptomReviewData : SymptomReviewData
 emptySymptomReviewData =
     { form = emptySymptomReviewForm
+    , step = SymptomReviewStepSymptoms
     }
 
 

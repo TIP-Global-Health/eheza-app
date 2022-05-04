@@ -34,6 +34,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewInstructionsLabel
         , viewQuestionLabel
@@ -3176,3 +3177,113 @@ toSymptomReviewValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSymptomQuestions)
     in
     Nothing
+
+
+symptomReviewFormInputsAndTasks : Language -> AssembledData -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasks language assembled step symptomReviewForm =
+    let
+        form =
+            assembled.measurements.symptomReview
+                |> getMeasurementValueFunc
+                |> symptomReviewFormWithDefault symptomReviewForm
+    in
+    case step of
+        SymptomReviewStepSymptoms ->
+            symptomReviewFormInputsAndTasksSymptoms language assembled symptomReviewForm
+
+        SymptomReviewStepQuestions ->
+            ( [], 0, 0 )
+
+
+symptomReviewFormInputsAndTasksSymptoms : Language -> AssembledData -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasksSymptoms language assembled form =
+    ( [ div [ class "ui form symptom-review" ]
+            [ viewQuestionLabel language Translate.SelectIllnessSymptoms
+            , viewCheckBoxMultipleSelectInput language
+                [ BurningWithUrination, AbnormalVaginalDischarge, NauseaAndVomiting, Heartburn, LegCramps, LowBackPain ]
+                [ CoughContinuous, PelvicPain, Constipation, VaricoseVeins, LegPainRedness ]
+                (form.symptoms |> Maybe.withDefault [])
+                (Just NoPrenatalSymptoms)
+                SetPrenatalSymptom
+                Translate.PrenatalSymptom
+            ]
+      ]
+    , taskCompleted form.symptoms
+    , 1
+    )
+
+
+
+--     translatePrenatalHealthEducationQuestion =
+--         Translate.PrenatalHealthEducationQuestion False
+--
+--     positiveHIVUpdateFunc value form_ =
+--         { form_ | positiveHIV = Just value }
+--
+--     positiveHIVInput =
+--         [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
+--         , viewBoolInput
+--             language
+--             form.positiveHIV
+--             (SetHealthEducationSubActivityBoolInput positiveHIVUpdateFunc)
+--             "positive-hiv"
+--             Nothing
+--         ]
+--
+--     saferSexUpdateFunc value form_ =
+--         { form_ | saferSex = Just value }
+--
+--     saferSexInput =
+--         [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSex
+--         , viewBoolInput
+--             language
+--             form.saferSex
+--             (SetHealthEducationSubActivityBoolInput saferSexUpdateFunc)
+--             "safer-sex"
+--             Nothing
+--         ]
+--
+--     partnerTestingUpdateFunc value form_ =
+--         { form_ | partnerTesting = Just value }
+--
+--     partnerTestingInput =
+--         [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPartnerTesting
+--         , viewBoolInput
+--             language
+--             form.partnerTesting
+--             (SetHealthEducationSubActivityBoolInput partnerTestingUpdateFunc)
+--             "partner-testing"
+--             Nothing
+--         ]
+--
+--     familyPlanningInput =
+--         symptomReviewFormFamilyPlanningInput language False form
+--
+--     partnerSurpressedViralLoad =
+--         getMeasurementValueFunc assembled.measurements.hivTest
+--             |> Maybe.andThen .hivSigns
+--             |> Maybe.map
+--                 (\hivSigns ->
+--                     -- Partner is HIV positive.
+--                     EverySet.member PartnerHIVPositive hivSigns
+--                         -- Partner is taking ARVs.
+--                         && EverySet.member PartnerTakingARV hivSigns
+--                         -- Partner reached surpressed viral load.
+--                         && EverySet.member PartnerSurpressedViralLoad hivSigns
+--                 )
+--             |> Maybe.withDefault False
+-- in
+-- if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
+--     ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
+--     , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
+--     )
+--
+-- else if partnerSurpressedViralLoad then
+--     ( saferSexInput
+--     , [ form.saferSex ]
+--     )
+--
+-- else
+--     ( saferSexInput ++ partnerTestingInput
+--     , [ form.saferSex, form.partnerTesting ]
+--     )

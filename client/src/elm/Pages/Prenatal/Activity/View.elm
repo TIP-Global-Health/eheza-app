@@ -187,8 +187,7 @@ viewActivity language currentDate isChw activity assembled db model =
             viewMedicationContent language currentDate assembled model.medicationData
 
         SymptomReview ->
-            -- @todo:
-            [ text "viewSymptomReview" ]
+            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
@@ -1766,6 +1765,29 @@ viewNextStepsContent language currentDate isChw assembled data =
         [ div [ class "full content" ]
             [ viewForm
             , actions
+            ]
+        ]
+    ]
+
+
+viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language currentDate assembled data =
+    let
+        ( inputs, tasksCompleted, totalTasks ) =
+            symptomReviewFormInputsAndTasks language assembled data.step data.form
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form health-education" ]
+                inputs
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
+                ]
+                [ text <| translate language Translate.Save ]
             ]
         ]
     ]
