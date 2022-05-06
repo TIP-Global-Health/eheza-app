@@ -1306,7 +1306,7 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Will you accompany the patient to Integration HIV/PMTCT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi ikomatanije ya HIV/PMTCT"
                     }
 
         AccessDenied ->
@@ -2831,7 +2831,7 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Complete an Integration HIV/PMTCT referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzuza urupapuro rwohereza umubyeyi muri service ikomatanije ya HIV/PMTCT"
                     }
 
         Contacted114 ->
@@ -3215,7 +3215,7 @@ translationSet trans =
 
                 AbdominalPain ->
                     { english = "Severe Abdominal pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuribwa mu nda bikabije"
                     }
 
                 DifficultyBreathing ->
@@ -3235,27 +3235,27 @@ translationSet trans =
 
                 ImminentDelivery ->
                     { english = "Imminent delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyara biri hafi"
                     }
 
                 Labor ->
                     { english = "Labor"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kujya ku nda"
                     }
 
                 LooksVeryIll ->
                     { english = "Looks very ill"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ararembye cyane"
                     }
 
                 SevereVomiting ->
                     { english = "Severe vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Araruka bikabije"
                     }
 
                 Unconscious ->
                     { english = "Unconscious"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yataye ubwenge"
                     }
 
                 GushLeakingVaginalFluid ->
@@ -3765,12 +3765,12 @@ translationSet trans =
 
         EmergencyReferralHelperReferToMaternityWard ->
             { english = "Refer to Maternity Ward Immediately"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ihutire kohereza umubyeyi aho babyarira"
             }
 
         EmergencyReferralHelperReferToEmergencyObstetricCareServices ->
-            { english = "Stabalize and Refer to Emergency Obstetric Care Services"
-            , kinyarwanda = Nothing
+            { english = "Stabilize and Refer to Emergency Obstetric Care Services"
+            , kinyarwanda = Just "Tanga umuti w'ibanze uhite wohereza umubyeyi muri serivice zita ku babyeyi"
             }
 
         EmptyString ->
@@ -4430,7 +4430,7 @@ translationSet trans =
 
         HandPallor ->
             { english = "Hand Pallor"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikiganza cyerurutse"
             }
 
         Hands ->
@@ -5103,7 +5103,7 @@ translationSet trans =
 
         LabHistory ->
             { english = "Lab History"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru ku bizamini byakozwe"
             }
 
         LabResults ->
@@ -7486,62 +7486,62 @@ translationSet trans =
 
                 DiagnosisMiscarriage ->
                     { english = "Miscarriage"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inda yavuyemo"
                     }
 
                 DiagnosisMolarPregnancy ->
                     { english = "Molar Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Atwite amahuri"
                     }
 
                 DiagnosisPlacentaPrevia ->
                     { english = "Placenta Previa"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingobyi iri hasi ku nkondo y'umura"
                     }
 
                 DiagnosisPlacentalAbruption ->
                     { english = "Placental Abruption"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingobyi yomotse hakiri kare"
                     }
 
                 DiagnosisUterineRupture ->
                     { english = "Uterine Rupture"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nyababyeyi yaturitse"
                     }
 
                 DiagnosisObstructedLabor ->
                     { english = "Obstructed Labor"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inda yanze kuvuka "
                     }
 
                 DiagnosisPostAbortionSepsis ->
                     { english = "Post Abortion Sepsis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda"
                     }
 
                 DiagnosisEctopicPregnancy ->
                     { english = "Ectopic Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yasamiye hanze y'umura"
                     }
 
                 DiagnosisPROM ->
                     { english = "Premature Rupture of Membranes (PROM)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuha yamenetse hakiri kare"
                     }
 
                 DiagnosisPPROM ->
                     { english = "Preterm Premature Rupture of Membranes (PPROM)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuha yamenetse hakiri kare inda itarageza igihe"
                     }
 
                 DiagnosisHyperemesisGravidum ->
                     { english = "Hyperemesis Gravidum"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruka bikabije k'umugore utwite"
                     }
 
                 DiagnosisMaternalComplications ->
                     { english = "Maternal Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibibazo bishobora kwibasira umugore utwite"
                     }
 
                 DiagnosisInfection ->
@@ -7551,12 +7551,12 @@ translationSet trans =
 
                 DiagnosisImminentDelivery ->
                     { english = "Imminent Delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyara biri hafi"
                     }
 
                 DiagnosisLaborAndDelivery ->
                     { english = "Labor + Delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kujya ku nda + Kubyara"
                     }
 
                 NoPrenatalDiagnosis ->
@@ -7613,7 +7613,7 @@ translationSet trans =
 
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ekalampusi"
                     }
 
                 DiagnosisHIV ->
@@ -7678,62 +7678,62 @@ translationSet trans =
 
                 DiagnosisMiscarriage ->
                     { english = "Possible Miscarriage"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ashobora kuba yavanyemo inda"
                     }
 
                 DiagnosisMolarPregnancy ->
                     { english = "Possible Molar Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ashobora kuba atwite amahuri"
                     }
 
                 DiagnosisPlacentaPrevia ->
                     { english = "Possible Placenta Previa"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingobyi ishobora kuba iri hasi ku nkondo y'umura"
                     }
 
                 DiagnosisPlacentalAbruption ->
                     { english = "Possible Placental Abruption"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingobyi ishobora kuba yomotse hakiri kare"
                     }
 
                 DiagnosisUterineRupture ->
                     { english = "Possible Uterine Rupture"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nyababyeyi ishobora kuha yaturitse"
                     }
 
                 DiagnosisObstructedLabor ->
                     { english = "Possible Obstructed Labor"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inda ishobora kuba yanze kuvuka "
                     }
 
                 DiagnosisPostAbortionSepsis ->
                     { english = "Possible Post Abortion Sepsis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ashobora kuba afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda"
                     }
 
                 DiagnosisEctopicPregnancy ->
                     { english = "Possible Ectopic Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ashobora kuba yarasamiye hanze y'umura"
                     }
 
                 DiagnosisPROM ->
                     { english = "PROM"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuha yamenetse hakiri kare"
                     }
 
                 DiagnosisPPROM ->
                     { english = "PPROM"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuha yamenetse hakiri kare inda itarageza igihe"
                     }
 
                 DiagnosisHyperemesisGravidum ->
                     { english = "Hyperemesis Gravidum"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruka bikabije k'umugore utwite"
                     }
 
                 DiagnosisMaternalComplications ->
                     { english = "Maternal Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibibazo bishobora kwibasira umugore utwite"
                     }
 
                 DiagnosisInfection ->
@@ -7743,12 +7743,12 @@ translationSet trans =
 
                 DiagnosisImminentDelivery ->
                     { english = "Imminent Delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyara biri hafi"
                     }
 
                 DiagnosisLaborAndDelivery ->
                     { english = "Labor + Delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kujya ku nda + Kubyara"
                     }
 
                 NoPrenatalDiagnosis ->
@@ -8033,22 +8033,22 @@ translationSet trans =
             case sign of
                 HIVProgramHC ->
                     { english = "Does the health center have a HIV/PMTCT program"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigo Nderabuzima gifite porogaramu ya HIV/PMTCT"
                     }
 
                 PartnerHIVPositive ->
                     { english = "Is the patients partner HIV positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umugabo we yaba afite virusi itera SIDA"
                     }
 
                 PartnerTakingARV ->
                     { english = "Is the patients partner taking ARVs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umugabo we yaba fata imiti igabanya ubukana bwa virusi itera SIDA"
                     }
 
                 PartnerSurpressedViralLoad ->
                     { english = "Does the partner have a surpressed viral load"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umugabo we yaba atakigaragaza ingano ya virusi mu maraso"
                     }
 
                 NoPrenatalHIVSign ->
@@ -8102,12 +8102,12 @@ translationSet trans =
             case value of
                 RhesusPositive ->
                     { english = "Positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite Resisi pisitifu"
                     }
 
                 RhesusNegative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite Resisi negatifu"
                     }
 
         PrenatalLaboratoryProteinLabel ->
@@ -8250,17 +8250,17 @@ translationSet trans =
 
                 LeukocytesSmall ->
                     { english = "Small (+)"
-                    , kinyarwanda = Just "Duto (+)"
+                    , kinyarwanda = Just "Insoro zera nke zigaragara mu nkari (+)"
                     }
 
                 LeukocytesMedium ->
                     { english = "Medium (++)"
-                    , kinyarwanda = Just "Turinganiye (++)"
+                    , kinyarwanda = Just "Insoro zera ziringaniye zigaragara mu nkari (++)"
                     }
 
                 LeukocytesLarge ->
                     { english = "Large (+++)"
-                    , kinyarwanda = Just "Tunini (+++)"
+                    , kinyarwanda = Just "Insoro zera nyinshi zigaragara mu nkari (+++)"
                     }
 
         PrenatalLaboratoryNitriteLabel ->
@@ -8346,32 +8346,32 @@ translationSet trans =
 
                 HaemoglobinNonHemolyzedTrace ->
                     { english = "Non-Hemolyzed Trace"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Insoro zitukura nkeya zidashwanyutse"
                     }
 
                 HaemoglobinNonHemolyzedModerate ->
                     { english = "Non-Hemolyzed Moderate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Insoro  zitukura  ziri mu rugero zidashwanyutse"
                     }
 
                 HaemoglobinHemolyzedTrace ->
                     { english = "Hemolyzed Trace"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Insoro zitukura zashwanyutse"
                     }
 
                 HaemoglobinSmall ->
                     { english = "Small"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigero gito cy'amaraso agaragara mu nkari"
                     }
 
                 HaemoglobinModerate ->
                     { english = "Moderate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigero kiringaniye cy'amaraso agaragara mu nkari "
                     }
 
                 HaemoglobinLarge ->
                     { english = "Large"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigero kinini cy'amaraso (hemoglobini)  agaragara mu nkari "
                     }
 
         PrenatalLaboratorySpecificGravityLabel ->
@@ -8640,7 +8640,7 @@ translationSet trans =
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV Antibody Test Result"
-                    , kinyarwanda = Just "Igisubizo cya Virusi itera SIDA"
+                    , kinyarwanda = Just "Igisubizo ku kizamini cya Virusi itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
@@ -8697,12 +8697,12 @@ translationSet trans =
             case state of
                 PrenatalLabsEntryPending ->
                     { english = "Pending"
-                    , kinyarwanda = Just ""
+                    , kinyarwanda = Just "Ibisubizo ntikiraboneka"
                     }
 
                 PrenatalLabsEntryClosingSoon ->
                     { english = "Closing Soon"
-                    , kinyarwanda = Just "Birafunga vuba"
+                    , kinyarwanda = Just "Igikorwa kirenda kwifunga"
                     }
 
         PrenatalPhotoHelper ->
@@ -8714,12 +8714,12 @@ translationSet trans =
             case note of
                 TestNoteRunToday ->
                     { english = "Run Today"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cyakozwe uyu munsi"
                     }
 
                 TestNoteRunPreviously ->
                     { english = "Run Previously"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamimi cyakozwe ubushize"
                     }
 
                 TestNoteLackOfReagents ->
@@ -8744,7 +8744,7 @@ translationSet trans =
 
                 TestNoteNotIndicated ->
                     { english = "Not Indicated"
-                    , kinyarwanda = Just "Singombwa gukora iki kizamini"
+                    , kinyarwanda = Just "Ikizamini nticyasabwe"
                     }
 
                 TestNoteKnownAsPositive ->
@@ -8939,12 +8939,12 @@ translationSet trans =
 
         TestPerformedTodayQuestion ->
             { english = "Did you perform this test today"
-            , kinyarwanda = Just "Iki kizamini cyaba cyakozwe uyu munsi"
+            , kinyarwanda = Just "Waba wakoze iki kizamini uyu munsi"
             }
 
         TestVariantUrineDipstickQuestion ->
             { english = "Which type of urine dipstick test was run"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni ikihe kizamini cy'inkari cyakozwe"
             }
 
         TestResultQuestion ->
@@ -9085,7 +9085,7 @@ translationSet trans =
 
         ReceivedDewormingPill ->
             { english = "Has the mother received deworming pill"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi yahawe ikinini cy'inzoka"
             }
 
         ReceivedIronFolicAcid ->
@@ -9350,7 +9350,7 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Referred to HIV/PMTCT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe muri serivisi ya HIV/PMTCT"
                     }
 
         ReferredToFacilityNot facility ->
