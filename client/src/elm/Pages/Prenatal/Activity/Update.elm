@@ -2884,7 +2884,9 @@ update language currentDate id db msg model =
 
                 updatedForm =
                     setMultiSelectInputValue .symptoms
-                        (\symptoms -> { form | symptoms = symptoms })
+                        (Maybe.map (updateSymptomReviewFormWithSymptoms form)
+                            >> Maybe.withDefault form
+                        )
                         NoPrenatalSymptoms
                         symptom
                         form

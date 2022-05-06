@@ -3172,6 +3172,37 @@ toSymptomReviewValue form =
         |> andMap (Just form.flankPainSign)
 
 
+updateSymptomReviewFormWithSymptoms : SymptomReviewForm -> List PrenatalSymptom -> SymptomReviewForm
+updateSymptomReviewFormWithSymptoms form symptoms =
+    let
+        updateFromValue formValue question =
+            if expectPrenatalSymptomQuestion symptoms question then
+                formValue
+
+            else
+                Nothing
+    in
+    { symptoms = Just symptoms
+    , dizziness = updateFromValue form.dizziness SymptomQuestionDizziness
+    , lowUrineOutput = updateFromValue form.lowUrineOutput SymptomQuestionLowUrineOutput
+    , darkUrine = updateFromValue form.darkUrine SymptomQuestionDarkUrine
+    , pelvicPainHospitalization = updateFromValue form.pelvicPainHospitalization SymptomQuestionPelvicPainHospitalization
+    , problemLeftLeg = updateFromValue form.problemLeftLeg SymptomQuestionLegPainRednessLeft
+    , legPainful = updateFromValue form.legPainful SymptomQuestionLegPainful
+    , legWarm = updateFromValue form.legWarm SymptomQuestionLegWarm
+    , legSwollen = updateFromValue form.legSwollen SymptomQuestionLegSwollen
+    , nightSweats = updateFromValue form.nightSweats SymptomQuestionNightSweats
+    , bloodInSputum = updateFromValue form.bloodInSputum SymptomQuestionBloodInSputum
+    , weightLoss = updateFromValue form.weightLoss SymptomQuestionWeightLoss
+    , severeFatigue = updateFromValue form.severeFatigue SymptomQuestionSevereFatigue
+    , vaginalDischarge = updateFromValue form.vaginalDischarge SymptomQuestionVaginalDischarge
+    , frequentUrination = updateFromValue form.frequentUrination SymptomQuestionFrequentUrination
+    , vaginalItching = updateFromValue form.vaginalItching SymptomQuestionVaginalItching
+    , partnerUrethralDischarge = updateFromValue form.partnerUrethralDischarge SymptomQuestionPartnerUrethralDischarge
+    , flankPainSign = updateFromValue form.flankPainSign SymptomQuestionFlankPain
+    }
+
+
 symptomReviewFormInputsAndTasks : Language -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
 symptomReviewFormInputsAndTasks language step form =
     case step of
