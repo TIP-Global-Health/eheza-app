@@ -36,6 +36,7 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewCustomBoolInput
         , viewInstructionsLabel
         , viewQuestionLabel
         )
@@ -3342,12 +3343,13 @@ prenatalSymptomQuestionInputAndState language form question =
 
         SymptomQuestionLegPainRednessLeft ->
             ( [ viewQuestionLabel language (Translate.PrenatalSymptomQuestion SymptomQuestionLegPainRednessLeft)
-              , viewBoolInput
+              , viewCustomBoolInput
                     language
                     form.problemLeftLeg
                     (SetPrenatalSymptomQuestionBoolInput (\value form_ -> { form_ | problemLeftLeg = Just value }))
                     "symptom-question"
-                    (Just ( Translate.Left, Translate.Right ))
+                    ( Translate.Left, Translate.Right )
+                    "four"
               ]
             , taskCompleted form.problemLeftLeg
             )

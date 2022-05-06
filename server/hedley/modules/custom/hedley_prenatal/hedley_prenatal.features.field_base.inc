@@ -178,6 +178,33 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_flank_pain_sign'.
+  $field_bases['field_flank_pain_sign'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_flank_pain_sign',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'left' => 'Left side',
+        'right' => 'Right side',
+        'both' => 'Both sides',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_glucose'.
   $field_bases['field_glucose'] = array(
     'active' => 1,

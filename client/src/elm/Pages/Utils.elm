@@ -262,7 +262,20 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
 
             else
                 "four"
+    in
+    viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth
 
+
+viewCustomBoolInput :
+    Language
+    -> Maybe Bool
+    -> (Bool -> msg)
+    -> String
+    -> ( TranslationId, TranslationId )
+    -> String
+    -> Html msg
+viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth =
+    let
         viewInput value =
             let
                 isChecked =
