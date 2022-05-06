@@ -148,24 +148,23 @@ type Msg
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationSubActivityBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
-    | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
+    | SaveHealthEducationSubActivity PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) Bool (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) (Maybe NextStepsTask)
-    | SaveNewbornEnrollment (Maybe NextStepsTask)
+    | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) Bool (Maybe NextStepsTask)
+    | SaveNewbornEnrollment Bool (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetAccompanyToHC Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
-    | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) (Maybe NextStepsTask)
+    | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) Bool (Maybe NextStepsTask)
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
-    | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
-    | SaveRecommendedTreatment PersonId (Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )) (Maybe NextStepsTask)
-    | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue (Maybe NextStepsTask)
+    | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
+    | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue Bool (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -393,7 +392,6 @@ type alias NextStepsData =
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
-    , recommendedTreatmentForm : RecommendedTreatmentForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -406,7 +404,6 @@ emptyNextStepsData =
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm
-    , recommendedTreatmentForm = emptyRecommendedTreatmentForm
     , activeTask = Nothing
     }
 

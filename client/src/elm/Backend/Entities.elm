@@ -1109,11 +1109,3 @@ type alias PrenatalMedicationDistributionId =
 
 type PrenatalMedicationDistributionUuidType
     = PrenatalMedicationDistributionUuidType
-
-
-type alias PrenatalRecommendedTreatmentId =
-    EntityUuid PrenatalRecommendedTreatmentUuidType
-
-
-type PrenatalRecommendedTreatmentUuidType
-    = PrenatalRecommendedTreatmentUuidType

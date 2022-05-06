@@ -51,22 +51,22 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (ReferralFacility(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils
-    exposing
-        ( activityCompleted
-        , diagnosedMalaria
-        , expectActivity
-        , recommendedTreatmentSignsForMalaria
-        , respiratoryRateElevated
-        )
+import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
-import Pages.Prenatal.Encounter.View exposing (allowEndingEcounter)
+import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (recommendedTreatmentSignsForSyphilis)
-import Pages.Prenatal.Utils exposing (recommendedTreatmentSignsForHypertension)
+import Pages.Prenatal.RecurrentActivity.Utils
+import Pages.Prenatal.RecurrentEncounter.Utils
+import Pages.Prenatal.Utils
+    exposing
+        ( diagnosedMalaria
+        , recommendedTreatmentSignsForHypertension
+        , recommendedTreatmentSignsForMalaria
+        , recommendedTreatmentSignsForSyphilis
+        )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -158,6 +158,9 @@ viewHeader language id initiator model =
                 InitiatorEncounterPage prenatalEncounterId ->
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage id)
 
+                InitiatorRecurrentEncounterPage prenatalEncounterId ->
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id)
+
                 InitiatorNewEncounter _ ->
                     emptyNode
 
@@ -196,11 +199,25 @@ viewContent language currentDate isChw initiator model assembled =
                                     let
                                         ( completedActivities, pendingActivities ) =
                                             getAllActivities assembled
-                                                |> List.filter (expectActivity currentDate assembled)
-                                                |> List.partition (activityCompleted currentDate assembled)
+                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
+                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
+                                    in
+                                    viewActionButton language
+                                        pendingActivities
+                                        completedActivities
+                                        (SetActivePage PinCodePage)
+                                        SetEndEncounterDialogState
+                                        assembled
+
+                                InitiatorRecurrentEncounterPage _ ->
+                                    let
+                                        ( completedActivities, pendingActivities ) =
+                                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
+                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
+                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
 
                                         allowEndEcounter =
-                                            allowEndingEcounter assembled pendingActivities completedActivities
+                                            List.isEmpty pendingActivities
                                     in
                                     viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
 
@@ -347,9 +364,15 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                         filteredDiagnoses =
                             EverySet.toList diagnoses
                                 |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
+
+                        diagnosisEntries =
+                            List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                                |> List.concat
+
+                        knownAsPositiveEntries =
+                            viewKnownPositives language date measurements
                     in
-                    List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
-                        |> List.concat
+                    knownAsPositiveEntries ++ diagnosisEntries
                 )
                 allMeasurementsWithDates
                 |> List.concat
@@ -1028,20 +1051,34 @@ viewLabResultsPane language currentDate assembled =
                     )
                 |> List.sortWith sortTuplesByDateDesc
 
-        getStandardTestResults getMeasurementFunc =
-            getTestResults getMeasurementFunc .testResult
+        getTestResultsKnownAsPositive getMeasurementFunc getResultFunc =
+            List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
+                measurementsWithLabResults
+                |> List.filterMap
+                    (\value ->
+                        if value.executionNote == TestNoteKnownAsPositive then
+                            Just ( currentDate, Just TestNotPerformedKnownAsPositive )
+
+                        else if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                            Maybe.map (\executionDate -> ( executionDate, getResultFunc value |> Maybe.map TestPerformed ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
 
         hivTestResults =
-            getStandardTestResults .hivTest
+            getTestResultsKnownAsPositive .hivTest .testResult
 
         syphilisTestResults =
-            getStandardTestResults .syphilisTest
+            getTestResults .syphilisTest .testResult
 
         hepatitisBTestResults =
-            getStandardTestResults .hepatitisBTest
+            getTestResultsKnownAsPositive .hepatitisBTest .testResult
 
         malariaTestResults =
-            getStandardTestResults .malariaTest
+            getTestResults .malariaTest .testResult
 
         groupOneContent =
             [ viewLabResultsEntry language currentDate (LabResultsHistoryHIV hivTestResults)
@@ -1177,8 +1214,13 @@ viewLabResultsEntry language currentDate results =
         config =
             case results of
                 LabResultsHistoryHIV assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHIVTest
-                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResult = Maybe.map (translatePrenatalTestReport language) recentResultValue
+                    , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1186,13 +1228,19 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistorySyphilis assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskSyphilisTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
 
                 LabResultsHistoryHepatitisB assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHepatitisBTest
-                    , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , recentResult = Maybe.map (translatePrenatalTestReport language) recentResultValue
+                    , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1200,6 +1248,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryMalaria assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalTestResult >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1207,6 +1256,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryProtein assembled ->
                     { label = Translate.PrenatalLaboratoryProteinLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryProteinValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1214,6 +1264,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryPH assembled ->
                     { label = Translate.PrenatalLaboratoryPHLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryPHValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1221,6 +1272,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryGlucose assembled ->
                     { label = Translate.PrenatalLaboratoryGlucoseLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryGlucoseValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1228,6 +1280,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryLeukocytes assembled ->
                     { label = Translate.PrenatalLaboratoryGlucoseLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1235,6 +1288,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryNitrite assembled ->
                     { label = Translate.PrenatalLaboratoryNitriteLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryNitriteValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1242,6 +1296,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryUrobilinogen assembled ->
                     { label = Translate.PrenatalLaboratoryUrobilinogenLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryUrobilinogenValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1249,6 +1304,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryHaemoglobin assembled ->
                     { label = Translate.PrenatalLaboratoryHaemoglobinLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1256,6 +1312,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistorySpecificGravity assembled ->
                     { label = Translate.PrenatalLaboratorySpecificGravityLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratorySpecificGravityValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1263,6 +1320,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryKetone assembled ->
                     { label = Translate.PrenatalLaboratoryKetoneLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryKetoneValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1270,6 +1328,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryBilirubin assembled ->
                     { label = Translate.PrenatalLaboratoryBilirubinLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBilirubinValue >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1277,6 +1336,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryRandomBloodSugar assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1284,6 +1344,7 @@ viewLabResultsEntry language currentDate results =
                 LabResultsHistoryHemoglobin assembled ->
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHemoglobinTest
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map String.fromFloat
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1292,12 +1353,14 @@ viewLabResultsEntry language currentDate results =
                     { label = Translate.PrenatalLaboratoryBloodGroupLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryBloodGroup >> translate language)
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , knownAsPositive = False
                     , totalResults = List.length assembled
                     }
 
                 LabResultsHistoryRhesus assembled ->
                     { label = Translate.PrenatalLaboratoryRhesusLabel
                     , recentResult = List.head assembled |> Maybe.andThen Tuple.second |> Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language)
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1309,6 +1372,9 @@ viewLabResultsEntry language currentDate results =
         resultCell =
             if config.totalResults == 0 then
                 text ""
+
+            else if config.knownAsPositive then
+                viewKnownAsPositiveResult language
 
             else
                 Maybe.map text config.recentResult
@@ -1331,6 +1397,25 @@ viewLabResultsEntry language currentDate results =
         , div [ class "result" ] [ resultCell ]
         , historyResultsIcon
         ]
+
+
+translatePrenatalTestReport : Language -> PrenatalTestReport -> String
+translatePrenatalTestReport language report =
+    case report of
+        TestPerformed result ->
+            Translate.PrenatalTestResult result
+                |> translate language
+
+        TestNotPerformedKnownAsPositive ->
+            -- We don't need this, since this result is displayed
+            -- using viewKnownAsPositiveResult funciton.
+            ""
+
+
+viewKnownAsPositiveResult : Language -> Html any
+viewKnownAsPositiveResult language =
+    span [ class "known-positive" ]
+        [ text <| translate language Translate.KnownPositive ]
 
 
 viewUncompetedResult : Language -> NominalDate -> Maybe NominalDate -> Html any
@@ -1363,13 +1448,13 @@ viewLabResultsHistoryPane language currentDate mode =
         entries =
             case mode of
                 LabResultsHistoryHIV assembled ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
+                    List.map (viewEntry (translatePrenatalTestReport language)) assembled
 
                 LabResultsHistorySyphilis assembled ->
                     List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
 
                 LabResultsHistoryHepatitisB assembled ->
-                    List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
+                    List.map (viewEntry (translatePrenatalTestReport language)) assembled
 
                 LabResultsHistoryMalaria assembled ->
                     List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
@@ -1476,6 +1561,38 @@ viewProgressPhotosPane language currentDate isChw assembled =
         ]
 
 
+viewKnownPositives :
+    Language
+    -> NominalDate
+    -> PrenatalMeasurements
+    -> List (Html any)
+viewKnownPositives language date measurements =
+    let
+        resolveKnownPositive getMeasurementFunc knownPositiveTransId =
+            getMeasurementFunc measurements
+                |> getMeasurementValueFunc
+                |> Maybe.map
+                    (\value ->
+                        if value.executionNote == TestNoteKnownAsPositive then
+                            li []
+                                [ text <|
+                                    translate language knownPositiveTransId
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                ]
+
+                        else
+                            emptyNode
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ resolveKnownPositive .hivTest Translate.KnownPositiveHIV
+    , resolveKnownPositive .hepatitisBTest Translate.KnownPositiveHepatitisB
+    ]
+
+
 viewTreatementForDiagnosis :
     Language
     -> NominalDate
@@ -1540,8 +1657,8 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                         |> intoLIs
 
         hypertensionTreatmentMessage =
-            getMeasurementValueFunc measurements.recommendedTreatment
-                |> Maybe.andThen .signs
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
                 |> Maybe.map
                     (EverySet.toList
                         >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
@@ -1566,8 +1683,8 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
         syphilisTreatmentMessage complications =
-            getMeasurementValueFunc measurements.recommendedTreatment
-                |> Maybe.andThen .signs
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
                 |> Maybe.map
                     (EverySet.toList
                         >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
@@ -1604,8 +1721,8 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
         malariaTreatmentMessage =
-            getMeasurementValueFunc measurements.recommendedTreatment
-                |> Maybe.andThen .signs
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
                 |> Maybe.map
                     (EverySet.toList
                         >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
@@ -1708,42 +1825,40 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
     in
     case diagnosis of
         DiagnosisHIV ->
-            let
-                hivTreatmentMessage =
-                    getMeasurementValueFunc measurements.medicationDistribution
-                        |> Maybe.andThen
-                            (\value ->
-                                let
-                                    nonAdministrationReasons =
-                                        Pages.Utils.resolveMedicationsNonAdministrationReasons value
-                                in
-                                Maybe.map3
-                                    (\tenofovirTreatmentmessage lamivudineTreatmentmessage dolutegravirTreatmentmessage ->
-                                        let
-                                            diagnosisMessage =
-                                                diagnosisForProgressReport
-                                                    ++ " "
-                                                    ++ (String.toLower <| translate language Translate.On)
-                                                    ++ " "
-                                                    ++ formatDDMMYYYY date
-                                        in
-                                        [ li []
-                                            [ p [] [ text diagnosisMessage ]
-                                            , p [] [ text tenofovirTreatmentmessage ]
-                                            , p [] [ text lamivudineTreatmentmessage ]
-                                            , p [] [ text dolutegravirTreatmentmessage ]
-                                            ]
-                                        ]
-                                    )
-                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Tenofovir)
-                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Lamivudine)
-                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Dolutegravir)
-                            )
-                        |> Maybe.withDefault noTreatmentRecordedMessage
-            in
             getMeasurementValueFunc measurements.hivTest
                 |> Maybe.map
                     (\value ->
+                        let
+                            hivTreatmentMessage =
+                                getMeasurementValueFunc measurements.medicationDistribution
+                                    |> Maybe.andThen
+                                        (\value_ ->
+                                            let
+                                                nonAdministrationReasons =
+                                                    Pages.Utils.resolveMedicationsNonAdministrationReasons value_
+                                            in
+                                            Maybe.map2
+                                                (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
+                                                    let
+                                                        diagnosisMessage =
+                                                            diagnosisForProgressReport
+                                                                ++ " "
+                                                                ++ (String.toLower <| translate language Translate.On)
+                                                                ++ " "
+                                                                ++ formatDDMMYYYY date
+                                                    in
+                                                    [ li []
+                                                        [ p [] [ text diagnosisMessage ]
+                                                        , p [] [ text tdf3TCTreatmentMessage ]
+                                                        , p [] [ text dolutegravirTreatmentmessage ]
+                                                        ]
+                                                    ]
+                                                )
+                                                (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons TDF3TC)
+                                                (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons Dolutegravir)
+                                        )
+                                    |> Maybe.withDefault noTreatmentRecordedMessage
+                        in
                         -- First we need to treat a scenario where patient also got
                         -- Malaria, and was referred to hospital for treatment.
                         -- Here, even if there's and HIV program at HC, patient
@@ -1755,8 +1870,8 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                         then
                             let
                                 malariaTreatmentReferToHospital =
-                                    getMeasurementValueFunc measurements.recommendedTreatment
-                                        |> Maybe.andThen .signs
+                                    getMeasurementValueFunc measurements.medicationDistribution
+                                        |> Maybe.andThen .recommendedTreatmentSigns
                                         |> Maybe.map
                                             (EverySet.toList
                                                 >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
@@ -1792,7 +1907,7 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                         in
                         treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC
                             |> Maybe.map
-                                (\tdf3TCTreatmentmessage ->
+                                (\tdf3TCTreatmentMessage ->
                                     let
                                         diagnosisMessage =
                                             diagnosisForProgressReport
@@ -1803,7 +1918,7 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                                     in
                                     [ li []
                                         [ p [] [ text diagnosisMessage ]
-                                        , p [] [ text tdf3TCTreatmentmessage ]
+                                        , p [] [ text tdf3TCTreatmentMessage ]
                                         ]
                                     ]
                                 )
@@ -2012,9 +2127,6 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
 
         DiagnosisSeverePreeclampsiaAfterRecheck ->
             referredToHospitalMessage
-
-        DiagnosisPrescribeMebendezole ->
-            []
 
         NoPrenatalDiagnosis ->
             []

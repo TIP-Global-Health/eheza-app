@@ -3589,14 +3589,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        PrenatalRecommendedTreatmentRevision uuid data ->
-            ( mapPrenatalMeasurements
-                data.encounterId
-                (\measurements -> { measurements | recommendedTreatment = Just ( uuid, data ) })
-                model
-            , recalc
-            )
-
         PrenatalSendToHCRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -4074,7 +4066,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                         let
                             urgentDiagnoses =
                                 List.filter
-                                    Pages.Prenatal.Activity.Utils.diagnosisRequiresEmergencyReferal
+                                    Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
                                     addedDiagnoses
 
                             additionalMsgs =

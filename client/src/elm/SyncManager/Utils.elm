@@ -606,9 +606,6 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
             getIdentifier identifier "prenatal_random_blood_sugar_test"
 
-        BackendAuthorityPrenatalRecommendedTreatment identifier ->
-            getIdentifier identifier "prenatal_recommended_treatment"
-
         BackendAuthorityPrenatalSendToHC identifier ->
             getIdentifier identifier "prenatal_send_to_hc"
 
@@ -1167,9 +1164,6 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalRandomBloodSugarTest identifier
 
-        BackendAuthorityPrenatalRecommendedTreatment identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalRecommendedTreatment identifier
-
         BackendAuthorityPrenatalSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
 
@@ -1690,9 +1684,6 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
             PrenatalRandomBloodSugarTestRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityPrenatalRecommendedTreatment identifier ->
-            PrenatalRecommendedTreatmentRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalSendToHC identifier ->
             PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity

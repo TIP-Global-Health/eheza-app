@@ -28,7 +28,6 @@ type NextStepsTask
     | NextStepsHealthEducation
     | NextStepsNewbornEnrolment
     | NextStepsMedicationDistribution
-    | NextStepsRecommendedTreatment
     | NextStepsWait
 
 

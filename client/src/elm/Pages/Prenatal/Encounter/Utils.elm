@@ -918,3 +918,28 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
 calculateBmi maybeHeight maybeWeight =
     Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
+
+
+secondPhaseRequired : AssembledData -> Bool
+secondPhaseRequired assembled =
+    (not <| emergencyReferalRequired assembled)
+        && (getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map
+                    (\value ->
+                        EverySet.size value.completedTests < EverySet.size value.performedTests
+                    )
+                |> Maybe.withDefault False
+           )
+
+
+emergencyReferalRequired : AssembledData -> Bool
+emergencyReferalRequired assembled =
+    EverySet.toList assembled.encounter.diagnoses
+        |> List.filter diagnosisRequiresEmergencyReferal
+        |> List.isEmpty
+        |> not
+
+
+diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
+diagnosisRequiresEmergencyReferal diagnosis =
+    List.member diagnosis emergencyReferralDiagnosesInitial

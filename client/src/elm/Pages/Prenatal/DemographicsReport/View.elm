@@ -67,6 +67,9 @@ viewHeader language initiator =
                 InitiatorEncounterPage prenatalEncounterId ->
                     iconForView (PrenatalEncounterPage prenatalEncounterId)
 
+                InitiatorRecurrentEncounterPage prenatalEncounterId ->
+                    iconForView (PrenatalRecurrentEncounterPage prenatalEncounterId)
+
                 -- This option is not in use for Demographics report.
                 InitiatorNewEncounter _ ->
                     emptyNode

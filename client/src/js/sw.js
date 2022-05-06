@@ -120,7 +120,6 @@ var tableForType = {
     prenatal_medication_distribution: 'shards',
     prenatal_nutrition: 'shards',
     prenatal_random_blood_sugar_test: 'shards',
-    prenatal_recommended_treatment: 'shards',
     prenatal_send_to_hc: 'shards',
     prenatal_syphilis_test: 'shards',
     prenatal_urine_dipstick_test: 'shards',

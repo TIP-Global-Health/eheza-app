@@ -1089,15 +1089,13 @@ type PrenatalLaboratoryTest
 
 
 type alias PrenatalMedicationDistribution =
-    PrenatalMeasurement MedicationDistributionValue
+    PrenatalMeasurement PrenatalMedicationDistributionValue
 
 
-type alias PrenatalRecommendedTreatment =
-    PrenatalMeasurement RecommendedTreatmentValue
-
-
-type alias RecommendedTreatmentValue =
-    { signs : Maybe (EverySet RecommendedTreatmentSign)
+type alias PrenatalMedicationDistributionValue =
+    { distributionSigns : EverySet MedicationDistributionSign
+    , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
+    , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
     }
 
 
@@ -1982,7 +1980,6 @@ type alias PrenatalMeasurements =
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
     , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
-    , recommendedTreatment : Maybe ( PrenatalRecommendedTreatmentId, PrenatalRecommendedTreatment )
     }
 
 
@@ -2019,7 +2016,6 @@ emptyPrenatalMeasurements =
     , urineDipstickTest = Nothing
     , labsResults = Nothing
     , medicationDistribution = Nothing
-    , recommendedTreatment = Nothing
     }
 
 

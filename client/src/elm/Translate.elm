@@ -660,6 +660,9 @@ type TranslationId
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion Pages.Prenatal.Activity.Types.LaboratoryTask
+    | KnownPositive
+    | KnownPositiveHepatitisB
+    | KnownPositiveHIV
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
@@ -710,6 +713,11 @@ type TranslationId
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
+    | MedicationDistributionHelperAnemia
+    | MedicationDistributionHelperDiscordantPartnership
+    | MedicationDistributionHelperDiscordantPartnershipNoARVs
+    | MedicationDistributionHelperHIV
+    | MedicationDistributionHelperMebendazole
     | MedicationDistributionSign MedicationDistributionSign
     | MedicationDoxycycline
     | MedicationDosesMissedQuestion
@@ -845,6 +853,7 @@ type TranslationId
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientRecordFilter PatientRecordFilter
+    | PauseEncounter
     | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
@@ -1190,6 +1199,7 @@ type TranslationId
     | Village
     | WaitForVitalsRecheckHelper
     | WaitForLabsResultsHelper
+    | WaitInstructions
     | Warning
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
@@ -4722,8 +4732,8 @@ translationSet trans =
             }
 
         HypertensionRecommendedTreatmentHeader ->
-            { english = "This patient shows signs of hypertension"
-            , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso"
+            { english = "This patient shows signs of cronic hypertension"
+            , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
             }
 
         HypertensionRecommendedTreatmentHelper ->
@@ -4780,7 +4790,7 @@ translationSet trans =
 
         IncompleteCervixPreviousPregnancy ->
             { english = "Incomplete Cervix in previous pregnancy"
-            , kinyarwanda = Just "Ubushize inkondo y'umura ntiyashoboye kwifunga neza "
+            , kinyarwanda = Just "Ubushize inkondo y'umura ntiyashoboye kwifunga neza"
             }
 
         IndexPatient ->
@@ -5073,6 +5083,21 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        KnownPositive ->
+            { english = "Known Positive"
+            , kinyarwanda = Nothing
+            }
+
+        KnownPositiveHepatitisB ->
+            { english = "Known Hepatitis B positive"
+            , kinyarwanda = Nothing
+            }
+
+        KnownPositiveHIV ->
+            { english = "Known HIV positive"
+            , kinyarwanda = Nothing
+            }
 
         LabelOnePregnancyEpisodeOpen ->
             { english = "There is one pregnancy episode that is open"
@@ -5631,6 +5656,31 @@ translationSet trans =
         MedicationCausesSideEffectsQuestion ->
             { english = "Did you experience adverse events of the medication"
             , kinyarwanda = Just "Waba hari ibintu wabonye bidasanzwe(bitewe n'imiti wafashe)"
+            }
+
+        MedicationDistributionHelperAnemia ->
+            { english = "Patient shows signs of Mild - Moderate Anemia"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperDiscordantPartnership ->
+            { english = "This patient is part of a discordant partnership"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperDiscordantPartnershipNoARVs ->
+            { english = "This patient is part of a discordant partnership in which the partner is not on ARVs"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperHIV ->
+            { english = "This patient is HIV positive"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperMebendazole ->
+            { english = "This patient is over 24 weeks EGA and has not had a dewormer in the last 6 months"
+            , kinyarwanda = Nothing
             }
 
         MedicationDistributionSign sign ->
@@ -6958,6 +7008,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PauseEncounter ->
+            { english = "Pause Encounter"
+            , kinyarwanda = Nothing
+            }
+
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
             , kinyarwanda = Nothing
@@ -7374,11 +7429,6 @@ translationSet trans =
 
         PrenatalDiagnosis diagnosis ->
             case diagnosis of
-                DiagnosisPrescribeMebendezole ->
-                    { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Just "Tanga umuti wa Mebendazole"
-                    }
-
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
@@ -7566,11 +7616,6 @@ translationSet trans =
 
         PrenatalDiagnosisForProgressReport diagnosis ->
             case diagnosis of
-                DiagnosisPrescribeMebendezole ->
-                    { english = "Prescribe Mebendezole"
-                    , kinyarwanda = Just "Tanga Umuti wa Mebendazole"
-                    }
-
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Chronic Hypertension"
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
@@ -7997,11 +8042,6 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
-                Pages.Prenatal.Activity.Types.NextStepsRecommendedTreatment ->
-                    { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Just "Uburwayi + Imiti"
-                    }
-
                 Pages.Prenatal.Activity.Types.NextStepsWait ->
                     { english = "Wait"
                     , kinyarwanda = Just "Tegereza"
@@ -8017,11 +8057,6 @@ translationSet trans =
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
-                    }
-
-                Pages.Prenatal.RecurrentActivity.Types.NextStepsRecommendedTreatment ->
-                    { english = "Diagnosis + Medicine"
-                    , kinyarwanda = Just "Uburwayi + Imiti"
                     }
 
         PrenatalHIVProgramHelper ->
@@ -10819,6 +10854,11 @@ translationSet trans =
 
         WaitForLabsResultsHelper ->
             { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and futher diagnoses."
+            , kinyarwanda = Nothing
+            }
+
+        WaitInstructions ->
+            { english = "To proceed with more encounters while you wait for test results or a vitals recheck, touch \"Pause Encounter\" below to leave this encounter. You can return to it from the case management screen."
             , kinyarwanda = Nothing
             }
 

@@ -17,58 +17,42 @@ import Translate exposing (Language, translate)
 viewMedicationDistributionForm :
     Language
     -> NominalDate
+    -> PrenatalEncounterPhase
     -> AssembledData
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
-    -> List MedicationDistributionSign
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg allowedMedications form =
+viewMedicationDistributionForm language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg form =
     let
         ( content, _, _ ) =
             resolveMedicationDistributionInputsAndTasks language
                 currentDate
+                phase
                 assembled
                 setMedicationDistributionBoolInputMsg
                 setMedicationDistributionAdministrationNoteMsg
-                allowedMedications
+                setRecommendedTreatmentSignMsg
                 form
     in
-    div [ class "ui form medication-distribution" ] <|
-        h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-            :: content
+    div [ class "ui form medication-distribution" ]
+        content
 
 
-viewRecommendedTreatmentForHypertension :
-    Language
-    -> NominalDate
-    -> (RecommendedTreatmentSign -> msg)
-    -> AssembledData
-    -> RecommendedTreatmentForm
-    -> List (Html msg)
-viewRecommendedTreatmentForHypertension language currentDate setRecommendedTreatmentSignMsg assembled form =
+viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
+viewPauseEncounterButton language enabled pauseAction =
     let
-        -- Since we may have values set for other diagnoses, we need
-        -- to filter them out, to be able to determine current value.
-        currentValue =
-            Maybe.andThen
-                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
-                    >> List.head
-                )
-                form.signs
+        attributes =
+            if enabled then
+                [ class "ui fluid primary button"
+                , onClick pauseAction
+                ]
 
-        recommendedSign =
-            recommendTreatmentForHypertension assembled
+            else
+                [ class "ui fluid primary button disabled" ]
     in
-    [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
-    , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-    , div [ class "instructions" ]
-        [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":") ]
-    , viewCheckBoxSelectInputWithRecommendation language
-        recommendedTreatmentSignsForHypertension
-        []
-        recommendedSign
-        currentValue
-        setRecommendedTreatmentSignMsg
-        Translate.RecommendedTreatmentSignLabel
-    ]
+    div [ class "actions" ]
+        [ button attributes
+            [ text <| translate language Translate.PauseEncounter ]
+        ]
