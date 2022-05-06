@@ -3959,8 +3959,8 @@ decodePrenatalSymptomReview =
 decodePrenatalSymptomReviewValue : Decoder PrenatalSymptomReviewValue
 decodePrenatalSymptomReviewValue =
     succeed PrenatalSymptomReviewValue
-        |> required "symptoms" (decodeEverySet decodePrenatalSymptom)
-        |> required "symptom_questions" (decodeEverySet decodePrenatalSymptomQuestion)
+        |> required "prenatal_symptoms" (decodeEverySet decodePrenatalSymptom)
+        |> required "prenatal_symptom_questions" (decodeEverySet decodePrenatalSymptomQuestion)
         |> optional "flank_pain_sign" (nullable decodePrenatalFlankPainSign) Nothing
 
 

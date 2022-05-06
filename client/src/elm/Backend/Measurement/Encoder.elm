@@ -3629,8 +3629,8 @@ encodePrenatalSymptomReviewValue value =
                 value.flankPainSign
                 |> Maybe.withDefault []
     in
-    [ ( "symptoms", encodeEverySet encodePrenatalSymptom value.symptoms )
-    , ( "symptom_questions", encodeEverySet encodePrenatalSymptomQuestion value.symptomQuestions )
+    [ ( "prenatal_symptoms", encodeEverySet encodePrenatalSymptom value.symptoms )
+    , ( "prenatal_symptom_questions", encodeEverySet encodePrenatalSymptomQuestion value.symptomQuestions )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_symptom_review" )
     ]
