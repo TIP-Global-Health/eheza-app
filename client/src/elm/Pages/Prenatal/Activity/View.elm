@@ -353,7 +353,7 @@ viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> 
 viewHistoryContent language currentDate assembled data_ =
     let
         firstEnconter =
-            isFirstEncounter assembled
+            nurseEncounterNotPerformed assembled
 
         ( tasks, data ) =
             if firstEnconter then
@@ -595,7 +595,7 @@ viewExaminationContent language currentDate assembled data =
             [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
 
         firstEnconter =
-            isFirstEncounter assembled
+            nurseEncounterNotPerformed assembled
 
         tasksCompletedFromTotalDict =
             tasks
@@ -754,7 +754,7 @@ viewExaminationContent language currentDate assembled data =
                         NutritionAssessment ->
                             let
                                 passHeight =
-                                    isFirstEncounter assembled |> not
+                                    nurseEncounterNotPerformed assembled |> not
 
                                 maybeHeight =
                                     if passHeight then

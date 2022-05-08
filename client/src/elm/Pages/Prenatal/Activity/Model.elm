@@ -920,6 +920,7 @@ type alias HealthEducationForm =
     , positiveHIV : Maybe Bool
     , saferSex : Maybe Bool
     , partnerTesting : Maybe Bool
+    , nauseaVomiting : Maybe Bool
     }
 
 
@@ -936,6 +937,7 @@ emptyHealthEducationForm =
     , positiveHIV = Nothing
     , saferSex = Nothing
     , partnerTesting = Nothing
+    , nauseaVomiting = Nothing
     }
 
 

@@ -311,6 +311,9 @@ decodePrenatalHealthEducationSign =
                     "partner-testing" ->
                         succeed EducationPartnerTesting
 
+                    "nausia-vomiting" ->
+                        succeed EducationNausiaVomiting
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

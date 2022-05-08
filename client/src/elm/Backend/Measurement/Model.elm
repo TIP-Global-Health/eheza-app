@@ -798,6 +798,7 @@ type PrenatalHealthEducationSign
     | EducationPositiveHIV
     | EducationSaferSex
     | EducationPartnerTesting
+    | EducationNausiaVomiting
     | NoPrenatalHealthEducationSigns
 
 

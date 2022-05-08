@@ -38,6 +38,16 @@ import Pages.Utils
 import Translate exposing (Language, TranslationId, translate)
 
 
+nurseEncounterNotPerformed : AssembledData -> Bool
+nurseEncounterNotPerformed assembled =
+    List.isEmpty assembled.nursePreviousMeasurementsWithDates
+
+
+nurseEncounterPerformed : AssembledData -> Bool
+nurseEncounterPerformed =
+    nurseEncounterNotPerformed >> not
+
+
 calculateEGAWeeks : NominalDate -> NominalDate -> Int
 calculateEGAWeeks currentDate lmpDate =
     calculateEGADays currentDate lmpDate // 7

@@ -1745,6 +1745,20 @@ div.page-activity.home-visit {
           text-transform: uppercase;
         }
       }
+
+      .form.health-education {
+
+        .label.header {
+          font-size: 24px;
+          margin-bottom: 30px;
+          text-transform: uppercase;
+        }
+
+        .label.font-normal {
+          font-weight: normal;
+          margin-bottom: 20px;
+        }
+      }
     }
   }
 }

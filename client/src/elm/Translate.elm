@@ -893,7 +893,10 @@ type TranslationId
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalFlankPainSign PrenatalFlankPainSign
+    | PrenatalHealthEducationLabel PrenatalHealthEducationSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
+    | PrenatalHealthEducationNauseaAndVomitingAdvise
+    | PrenatalHealthEducationNauseaAndVomitingInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -7974,6 +7977,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalHealthEducationLabel sign ->
+            case sign of
+                EducationNausiaVomiting ->
+                    { english = "Nausia and Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalHealthEducationQuestion isChw sign ->
             case sign of
                 EducationExpectations ->
@@ -8037,10 +8052,25 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationNausiaVomiting ->
+                    { english = "Have you provided the appropriate health education to the patient"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalHealthEducationSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalHealthEducationNauseaAndVomitingAdvise ->
+            { english = "Advise the patient that small amounts of chamomile tea, ginger, and Vitamin B6 can help relieve these symptoms if these are available to the patient"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationNauseaAndVomitingInform ->
+            { english = "Inform the patient that the symptoms of nausea and vomiting usually resolve on their own in the second half of pregnancy"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalNextStepsTask isChw task ->
             case task of

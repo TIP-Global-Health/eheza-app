@@ -20,16 +20,18 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
 
-isFirstEncounter : AssembledData -> Bool
-isFirstEncounter assembled =
-    List.isEmpty assembled.nursePreviousMeasurementsWithDates
-
-
 getAllActivities : AssembledData -> List PrenatalActivity
 getAllActivities assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            if isFirstEncounter assembled then
+            let
+                _ =
+                    nurseEncounterPerformed assembled |> Debug.log "nurseEncounterPerformed"
+
+                _ =
+                    nurseEncounterNotPerformed assembled |> Debug.log "nurseEncounterNotPerformed"
+            in
+            if nurseEncounterNotPerformed assembled then
                 [ PregnancyDating
                 , History
                 , Examination

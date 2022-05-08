@@ -21,7 +21,7 @@ import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedication
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, isFirstEncounter)
+import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -37,6 +37,7 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomBoolInput
+        , viewCustomLabel
         , viewInstructionsLabel
         , viewQuestionLabel
         )
@@ -103,11 +104,11 @@ expectActivity currentDate assembled activity =
             case activity of
                 PregnancyDating ->
                     -- Do not show, if patient already visited health center.
-                    isFirstEncounter assembled
+                    nurseEncounterNotPerformed assembled
 
                 Laboratory ->
                     -- Do not show, if patient already visited health center.
-                    isFirstEncounter assembled
+                    nurseEncounterNotPerformed assembled
 
                 DangerSigns ->
                     True
@@ -182,7 +183,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.lastMenstrualPeriod
 
         History ->
-            if isFirstEncounter assembled then
+            if nurseEncounterNotPerformed assembled then
                 -- First antenatal encounter - all tasks should be completed
                 isJust assembled.measurements.obstetricHistory
                     && isJust assembled.measurements.obstetricHistoryStep2
@@ -302,8 +303,17 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     -- Emergency refferal is not required.
                     (not <| emergencyReferalRequired assembled)
-                        && -- Appear whenever HIV test was performed.
-                           isJust assembled.measurements.hivTest
+                        && (if nurseEncounterNotPerformed assembled then
+                                -- Appear whenever HIV test was performed.
+                                isJust assembled.measurements.hivTest
+
+                            else
+                                let
+                                    _ =
+                                        provideNauseaAndVomitingEducation assembled |> Debug.log "provideNauseaAndVomitingEducation"
+                                in
+                                provideNauseaAndVomitingEducation assembled
+                           )
 
                 ChwPostpartumEncounter ->
                     True
@@ -337,6 +347,41 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
                    )
+
+
+provideNauseaAndVomitingEducation : AssembledData -> Bool
+provideNauseaAndVomitingEducation assembled =
+    let
+        -- NauseaAndVomiting reported at current encounter, and
+        -- all follow up questions were answered No.
+        provideByCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member NauseaAndVomiting value.symptoms
+                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionDizziness, SymptomQuestionLowUrineOutput, SymptomQuestionDarkUrine ]
+                    )
+                |> Maybe.withDefault False
+
+        _ =
+            Debug.log "provideByPreviousEncounters" provideByPreviousEncounters
+
+        _ =
+            Debug.log "provideByCurrentEncounter" provideByCurrentEncounter
+
+        -- NauseaAndVomiting was not reported at any of previous encounters.
+        provideByPreviousEncounters =
+            assembled.nursePreviousMeasurementsWithDates
+                |> List.filter
+                    (\( _, _, measurements ) ->
+                        getMeasurementValueFunc measurements.symptomReview
+                            |> Maybe.map (.symptoms >> EverySet.member NauseaAndVomiting)
+                            |> Maybe.withDefault False
+                    )
+                |> List.isEmpty
+    in
+    provideByCurrentEncounter && provideByPreviousEncounters
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -1086,22 +1131,27 @@ examinationDiagnoses =
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
-    case assembled.encounter.encounterType of
-        NurseEncounter ->
-            healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
-
-        _ ->
-            healthEducationFormInputsAndTasksForChw language assembled healthEducationForm
-
-
-healthEducationFormInputsAndTasksForNurse : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm =
     let
         form =
             assembled.measurements.healthEducation
                 |> getMeasurementValueFunc
                 |> healthEducationFormWithDefault healthEducationForm
+    in
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            if nurseEncounterNotPerformed assembled then
+                healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form
 
+            else
+                healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled form
+
+        _ ->
+            healthEducationFormInputsAndTasksForChw language assembled form
+
+
+healthEducationFormInputsAndTasksForNurseFirstEncounter : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form =
+    let
         translatePrenatalHealthEducationQuestion =
             Translate.PrenatalHealthEducationQuestion False
 
@@ -1193,14 +1243,44 @@ healthEducationFormFamilyPlanningInput language isChw form =
     ]
 
 
-healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForChw language assembled healthEducationForm =
+healthEducationFormInputsAndTasksForNurseSubsequentEncounter : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled form =
     let
-        form =
-            assembled.measurements.healthEducation
-                |> getMeasurementValueFunc
-                |> healthEducationFormWithDefault healthEducationForm
+        translatePrenatalHealthEducationQuestion =
+            Translate.PrenatalHealthEducationQuestion False
 
+        nauseaVomiting =
+            if provideNauseaAndVomitingEducation assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNausiaVomiting) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label font-normal"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label font-normal"
+                  , viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationNausiaVomiting
+                  , viewBoolInput
+                        language
+                        form.nauseaVomiting
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | nauseaVomiting = Just value }))
+                        "nausea-vomiting"
+                        Nothing
+                  ]
+                , Just form.nauseaVomiting
+                )
+
+            else
+                ( [], Nothing )
+
+        inputsAndTasks =
+            [ nauseaVomiting ]
+    in
+    ( List.map Tuple.first inputsAndTasks
+        |> List.concat
+    , List.map Tuple.second inputsAndTasks
+        |> Maybe.Extra.values
+    )
+
+
+healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForChw language assembled form =
+    let
         healthEducationCompletedAtEncounter encounterType =
             assembled.chwPreviousMeasurementsWithDates
                 |> List.filterMap
@@ -2518,6 +2598,7 @@ healthEducationFormWithDefault form saved =
                 , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
                 , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
+                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNausiaVomiting signs |> Just)
                 }
             )
 
@@ -2541,6 +2622,7 @@ toHealthEducationValue form =
     , ifNullableTrue EducationPositiveHIV form.positiveHIV
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationNausiaVomiting form.nauseaVomiting
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

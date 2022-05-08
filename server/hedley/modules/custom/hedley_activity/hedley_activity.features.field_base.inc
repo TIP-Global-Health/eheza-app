@@ -1376,6 +1376,7 @@ function hedley_activity_field_default_field_bases() {
         'positive-hiv' => 'Positive HIV',
         'safer-sex' => 'Safer sex',
         'partner-testing' => 'Partner testing',
+        'nausia-vomiting' => 'Nausia and Vomiting',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

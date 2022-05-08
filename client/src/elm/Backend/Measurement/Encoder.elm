@@ -203,6 +203,9 @@ encodePrenatalHealthEducationSign sign =
             EducationPartnerTesting ->
                 "partner-testing"
 
+            EducationNausiaVomiting ->
+                "nausia-vomiting"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
