@@ -239,8 +239,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.participant.dateConcluded
 
         SymptomReview ->
-            -- @todo:
-            False
+            isJust assembled.measurements.symptomReview
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -301,7 +300,7 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    -- Emergency refferal is not required.
+                    -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && (if nurseEncounterNotPerformed assembled then
                                 -- Appear whenever HIV test was performed.
@@ -327,7 +326,7 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
-            -- Emergency refferal is not required.
+            -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
                 && ((resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseInitial assembled
                         |> List.isEmpty
