@@ -307,10 +307,6 @@ expectNextStepsTask currentDate assembled task =
                                 isJust assembled.measurements.hivTest
 
                             else
-                                let
-                                    _ =
-                                        provideNauseaAndVomitingEducation assembled |> Debug.log "provideNauseaAndVomitingEducation"
-                                in
                                 provideNauseaAndVomitingEducation assembled
                            )
 
@@ -353,7 +349,7 @@ provideNauseaAndVomitingEducation assembled =
     let
         -- NauseaAndVomiting reported at current encounter, and
         -- all follow up questions were answered No.
-        provideByCurrentEncounter =
+        byCurrentEncounter =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -363,14 +359,8 @@ provideNauseaAndVomitingEducation assembled =
                     )
                 |> Maybe.withDefault False
 
-        _ =
-            Debug.log "provideByPreviousEncounters" provideByPreviousEncounters
-
-        _ =
-            Debug.log "provideByCurrentEncounter" provideByCurrentEncounter
-
         -- NauseaAndVomiting was not reported at any of previous encounters.
-        provideByPreviousEncounters =
+        byPreviousEncounters =
             assembled.nursePreviousMeasurementsWithDates
                 |> List.filter
                     (\( _, _, measurements ) ->
@@ -380,7 +370,37 @@ provideNauseaAndVomitingEducation assembled =
                     )
                 |> List.isEmpty
     in
-    provideByCurrentEncounter && provideByPreviousEncounters
+    byCurrentEncounter && byPreviousEncounters
+
+
+hospitalizeDueToNauseaAndVomiting : AssembledData -> Bool
+hospitalizeDueToNauseaAndVomiting assembled =
+    let
+        -- NauseaAndVomiting reported at current encounter, and
+        -- any of follow up questions was answered Yes.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member NauseaAndVomiting value.symptoms
+                            && List.any (\question -> EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionDizziness, SymptomQuestionLowUrineOutput, SymptomQuestionDarkUrine ]
+                    )
+                |> Maybe.withDefault False
+
+        -- NauseaAndVomiting was reported at any of previous encounters.
+        byPreviousEncounters =
+            assembled.nursePreviousMeasurementsWithDates
+                |> List.filter
+                    (\( _, _, measurements ) ->
+                        getMeasurementValueFunc measurements.symptomReview
+                            |> Maybe.map (.symptoms >> EverySet.member NauseaAndVomiting)
+                            |> Maybe.withDefault False
+                    )
+                |> List.isEmpty
+                |> not
+    in
+    byCurrentEncounter || byPreviousEncounters
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -659,7 +679,13 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             generateDangerSignsListForNurse assembled
 
         diagnosesByDangerSigns =
-            List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnosesInitial
+            List.filter
+                (matchEmergencyReferalPrenatalDiagnosis
+                    egaInWeeks
+                    dangerSignsList
+                    assembled
+                )
+                emergencyReferralDiagnosesInitial
                 |> EverySet.fromList
 
         diagnosesByExamination =
@@ -675,8 +701,8 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         |> EverySet.union diagnosesByExamination
 
 
-matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
+matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
+matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
     case diagnosis of
         DiagnosisSeverePreeclampsiaImmediate ->
             List.member HeadacheBlurredVision signs
@@ -693,7 +719,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisMolarPregnancy ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
 
         DiagnosisPlacentaPrevia ->
             Maybe.map
@@ -704,12 +730,12 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisPlacentalAbruption ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisPlacentaPrevia
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisObstructedLabor
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
 
         DiagnosisUterineRupture ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisPlacentaPrevia
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisObstructedLabor
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
 
         DiagnosisObstructedLabor ->
             Maybe.map
@@ -721,10 +747,10 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
 
         DiagnosisPostAbortionSepsis ->
             List.member AbdominalPain signs
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
 
         DiagnosisEctopicPregnancy ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
                 || (Maybe.map
                         (\egaWeeks ->
                             (egaWeeks < 22) && List.member AbdominalPain signs
@@ -751,6 +777,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
 
         DiagnosisHyperemesisGravidum ->
             List.member SevereVomiting signs
+                || hospitalizeDueToNauseaAndVomiting assembled
 
         DiagnosisMaternalComplications ->
             List.member ExtremeWeakness signs
@@ -759,7 +786,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
 
         DiagnosisInfection ->
             List.member Fever signs
-                && (List.member ExtremeWeakness signs || respiratoryRateElevated measurements)
+                && (List.member ExtremeWeakness signs || respiratoryRateElevated assembled.measurements)
 
         DiagnosisImminentDelivery ->
             List.member ImminentDelivery signs
