@@ -299,7 +299,7 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    -- Emergency refferal is not required.
+                    -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && -- Appear whenever HIV test was performed.
                            isJust assembled.measurements.hivTest
@@ -316,7 +316,7 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
-            -- Emergency refferal is not required.
+            -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
                 && ((resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseInitial assembled
                         |> List.isEmpty
