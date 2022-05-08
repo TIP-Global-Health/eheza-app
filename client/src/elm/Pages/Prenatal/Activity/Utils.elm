@@ -238,8 +238,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.participant.dateConcluded
 
         SymptomReview ->
-            -- @todo:
-            False
+            isJust assembled.measurements.symptomReview
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
