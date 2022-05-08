@@ -96,6 +96,7 @@ import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
         , HistoryTask(..)
+        , LegCrampsReliefMethod(..)
         , LmpRange(..)
         )
 import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
@@ -674,6 +675,7 @@ type TranslationId
     | LastContacted
     | LastSuccesfulContactLabel
     | Left
+    | LegCrampsReliefMethod LegCrampsReliefMethod
     | Legs
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
@@ -893,10 +895,14 @@ type TranslationId
     | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalFlankPainSign PrenatalFlankPainSign
+    | PrenatalHealthEducationAppropriateProvided
     | PrenatalHealthEducationLabel PrenatalHealthEducationSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
     | PrenatalHealthEducationNauseaAndVomitingAdvise
     | PrenatalHealthEducationNauseaAndVomitingInform
+    | PrenatalHealthEducationLegCrampsInform
+    | PrenatalHealthEducationLowBackPainInform
+    | PrenatalHealthEducationConstipationInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -5257,6 +5263,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        LegCrampsReliefMethod method ->
+            case method of
+                ReliefMethodMuscleStretching ->
+                    { english = "Muscle stretching"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodDorsiflexion ->
+                    { english = "Dorsiflexion"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodRelaxation ->
+                    { english = "Relaxation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodSleepWithPillowBetweenLegs ->
+                    { english = "Sleep with a pillow between the legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodHeatTherapy ->
+                    { english = "Heat therapy"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodMassage ->
+                    { english = "Massage"
+                    , kinyarwanda = Nothing
+                    }
+
         Legs ->
             { english = "Legs"
             , kinyarwanda = Just "Amaguru"
@@ -7984,10 +8022,30 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationLegCramps ->
+                    { english = "Leg Cramps"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationLowBackPain ->
+                    { english = "Low Back Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationConstipation ->
+                    { english = "Constipation"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalHealthEducationAppropriateProvided ->
+            { english = "Have you provided the appropriate health education to the patient"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalHealthEducationQuestion isChw sign ->
             case sign of
@@ -8052,12 +8110,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                EducationNausiaVomiting ->
-                    { english = "Have you provided the appropriate health education to the patient"
-                    , kinyarwanda = Nothing
-                    }
-
-                NoPrenatalHealthEducationSigns ->
+                _ ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -8069,6 +8122,21 @@ translationSet trans =
 
         PrenatalHealthEducationNauseaAndVomitingInform ->
             { english = "Inform the patient that the symptoms of nausea and vomiting usually resolve on their own in the second half of pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationLegCrampsInform ->
+            { english = "Instruct the patient that the following may help relieve cramping in the legs"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationLowBackPainInform ->
+            { english = "Instruct the patient that regular exercise during pregnancy will help prevent lower back pain"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationConstipationInform ->
+            { english = "Instruct the patient that increasing the intake of fruits, vegetables, high fiber foods, and water can help relieve constipation symptoms"
             , kinyarwanda = Nothing
             }
 

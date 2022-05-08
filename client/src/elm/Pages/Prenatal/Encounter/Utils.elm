@@ -24,13 +24,6 @@ getAllActivities : AssembledData -> List PrenatalActivity
 getAllActivities assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            let
-                _ =
-                    nurseEncounterPerformed assembled |> Debug.log "nurseEncounterPerformed"
-
-                _ =
-                    nurseEncounterNotPerformed assembled |> Debug.log "nurseEncounterNotPerformed"
-            in
             if nurseEncounterNotPerformed assembled then
                 [ PregnancyDating
                 , History

@@ -799,6 +799,9 @@ type PrenatalHealthEducationSign
     | EducationSaferSex
     | EducationPartnerTesting
     | EducationNausiaVomiting
+    | EducationLegCramps
+    | EducationLowBackPain
+    | EducationConstipation
     | NoPrenatalHealthEducationSigns
 
 

@@ -206,6 +206,15 @@ encodePrenatalHealthEducationSign sign =
             EducationNausiaVomiting ->
                 "nausia-vomiting"
 
+            EducationLegCramps ->
+                "leg-cramps"
+
+            EducationLowBackPain ->
+                "low-back-pain"
+
+            EducationConstipation ->
+                "constipation"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

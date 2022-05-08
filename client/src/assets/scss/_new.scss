@@ -1748,14 +1748,18 @@ div.page-activity.home-visit {
 
       .form.health-education {
 
+        .label, li {
+          font-weight: 600;
+        }
+
         .label.header {
           font-size: 24px;
+          font-weight: 700;
           margin-bottom: 30px;
           text-transform: uppercase;
         }
 
-        .label.font-normal {
-          font-weight: normal;
+        .label.paragraph {
           margin-bottom: 20px;
         }
       }

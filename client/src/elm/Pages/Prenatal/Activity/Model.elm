@@ -921,6 +921,9 @@ type alias HealthEducationForm =
     , saferSex : Maybe Bool
     , partnerTesting : Maybe Bool
     , nauseaVomiting : Maybe Bool
+    , legCramps : Maybe Bool
+    , lowBackPain : Maybe Bool
+    , constipation : Maybe Bool
     }
 
 
@@ -938,6 +941,9 @@ emptyHealthEducationForm =
     , saferSex = Nothing
     , partnerTesting = Nothing
     , nauseaVomiting = Nothing
+    , legCramps = Nothing
+    , lowBackPain = Nothing
+    , constipation = Nothing
     }
 
 

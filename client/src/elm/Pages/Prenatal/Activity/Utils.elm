@@ -39,6 +39,7 @@ import Pages.Utils
         , viewCustomBoolInput
         , viewCustomLabel
         , viewInstructionsLabel
+        , viewLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
@@ -308,6 +309,8 @@ expectNextStepsTask currentDate assembled task =
 
                             else
                                 provideNauseaAndVomitingEducation assembled
+                                    || List.any (symptomRecorded assembled.measurements)
+                                        [ LegCramps, LowBackPain, Constipation ]
                            )
 
                 ChwPostpartumEncounter ->
@@ -364,9 +367,7 @@ provideNauseaAndVomitingEducation assembled =
             assembled.nursePreviousMeasurementsWithDates
                 |> List.filter
                     (\( _, _, measurements ) ->
-                        getMeasurementValueFunc measurements.symptomReview
-                            |> Maybe.map (.symptoms >> EverySet.member NauseaAndVomiting)
-                            |> Maybe.withDefault False
+                        symptomRecorded measurements NauseaAndVomiting
                     )
                 |> List.isEmpty
     in
@@ -393,14 +394,19 @@ hospitalizeDueToNauseaAndVomiting assembled =
             assembled.nursePreviousMeasurementsWithDates
                 |> List.filter
                     (\( _, _, measurements ) ->
-                        getMeasurementValueFunc measurements.symptomReview
-                            |> Maybe.map (.symptoms >> EverySet.member NauseaAndVomiting)
-                            |> Maybe.withDefault False
+                        symptomRecorded measurements NauseaAndVomiting
                     )
                 |> List.isEmpty
                 |> not
     in
     byCurrentEncounter || byPreviousEncounters
+
+
+symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
+symptomRecorded measurements symptom =
+    getMeasurementValueFunc measurements.symptomReview
+        |> Maybe.map (.symptoms >> EverySet.member symptom)
+        |> Maybe.withDefault False
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -1272,15 +1278,12 @@ healthEducationFormFamilyPlanningInput language isChw form =
 healthEducationFormInputsAndTasksForNurseSubsequentEncounter : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled form =
     let
-        translatePrenatalHealthEducationQuestion =
-            Translate.PrenatalHealthEducationQuestion False
-
         nauseaVomiting =
             if provideNauseaAndVomitingEducation assembled then
                 ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNausiaVomiting) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label font-normal"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label font-normal"
-                  , viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationNausiaVomiting
+                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label paragraph"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
                   , viewBoolInput
                         language
                         form.nauseaVomiting
@@ -1294,8 +1297,82 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             else
                 ( [], Nothing )
 
+        legCramps =
+            if symptomRecorded assembled.measurements LegCramps then
+                let
+                    reliefMethods =
+                        List.map
+                            (Translate.LegCrampsReliefMethod
+                                >> translate language
+                                >> String.toLower
+                                >> text
+                                >> List.singleton
+                                >> li []
+                            )
+                            [ ReliefMethodMuscleStretching
+                            , ReliefMethodDorsiflexion
+                            , ReliefMethodRelaxation
+                            , ReliefMethodSleepWithPillowBetweenLegs
+                            , ReliefMethodHeatTherapy
+                            , ReliefMethodMassage
+                            ]
+                            |> ul []
+                in
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegCramps) "" "label header"
+                  , viewLabel language Translate.PrenatalHealthEducationLegCrampsInform
+                  , reliefMethods
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.legCramps
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | legCramps = Just value }))
+                        "leg-cramps"
+                        Nothing
+                  ]
+                , Just form.legCramps
+                )
+
+            else
+                ( [], Nothing )
+
+        lowBackPain =
+            if symptomRecorded assembled.measurements LowBackPain then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLowBackPain) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationLowBackPainInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.lowBackPain
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | lowBackPain = Just value }))
+                        "low-back-pain"
+                        Nothing
+                  ]
+                , Just form.lowBackPain
+                )
+
+            else
+                ( [], Nothing )
+
+        constipation =
+            if symptomRecorded assembled.measurements Constipation then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationConstipation) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationConstipationInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.constipation
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | constipation = Just value }))
+                        "constipation"
+                        Nothing
+                  ]
+                , Just form.constipation
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
-            [ nauseaVomiting ]
+            [ nauseaVomiting, legCramps, lowBackPain, constipation ]
     in
     ( List.map Tuple.first inputsAndTasks
         |> List.concat
@@ -2625,6 +2702,9 @@ healthEducationFormWithDefault form saved =
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
                 , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
                 , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNausiaVomiting signs |> Just)
+                , legCramps = or form.legCramps (EverySet.member EducationLegCramps signs |> Just)
+                , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain signs |> Just)
+                , constipation = or form.constipation (EverySet.member EducationConstipation signs |> Just)
                 }
             )
 
@@ -2649,6 +2729,9 @@ toHealthEducationValue form =
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationPartnerTesting form.partnerTesting
     , ifNullableTrue EducationNausiaVomiting form.nauseaVomiting
+    , ifNullableTrue EducationLegCramps form.legCramps
+    , ifNullableTrue EducationLowBackPain form.lowBackPain
+    , ifNullableTrue EducationConstipation form.constipation
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

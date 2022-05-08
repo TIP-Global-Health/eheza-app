@@ -314,6 +314,15 @@ decodePrenatalHealthEducationSign =
                     "nausia-vomiting" ->
                         succeed EducationNausiaVomiting
 
+                    "leg-cramps" ->
+                        succeed EducationLegCramps
+
+                    "low-back-pain" ->
+                        succeed EducationLowBackPain
+
+                    "constipation" ->
+                        succeed EducationConstipation
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
