@@ -1922,10 +1922,12 @@ expectLaboratoryTask currentDate isChw assembled task =
                         else
                             assembled.secondInitialWithSubsequent
                 in
-                -- If fever is recorded on current encounter, and patient did not
-                -- test positive to Malaria during one of previous encounters,
+                -- If pשtient was not diagnosed with Covid, and fever is recorded
+                -- on current encounter, and patient did not test positive
+                -- to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
-                feverRecorded assembled.measurements
+                covidNotDiagnosed
+                    && feverRecorded assembled.measurements
                     && (List.filter
                             (.measurements
                                 >> .malariaTesting
@@ -2107,7 +2109,7 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
             else
                 -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
-                    || -- No improvement, with danger signs, and diagnosis is not Covid19.
+                    || -- No improvement, with danger signs, and diagnosis is not Covid19 suspect.
                        (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19Suspect)
                     || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
                        (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
