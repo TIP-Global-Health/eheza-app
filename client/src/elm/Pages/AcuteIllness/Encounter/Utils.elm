@@ -49,14 +49,6 @@ generateAssembledData currentDate id isChw db =
                 |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_.participant db)
                 |> Maybe.withDefault []
 
-        initialEncounter =
-            -- Intial encounter is the one where all measurements are taken and
-            -- initial diagnosis is made.
-            -- For CHW, it's only the first encounter at illness.
-            -- For nurse, it's always an initial encounter, since
-            -- nurse can do only single encouter throughout the illness.
-            not isChw || List.isEmpty previousEncountersData
-
         assembled =
             RemoteData.map AssembledData (Success id)
                 |> RemoteData.andMap encounter
@@ -66,32 +58,46 @@ generateAssembledData currentDate id isChw db =
                 |> RemoteData.andMap (Success previousEncountersData)
                 |> RemoteData.andMap (Success [])
                 |> RemoteData.andMap (Success [])
-                |> RemoteData.andMap (Success initialEncounter)
+                |> RemoteData.andMap (Success True)
                 |> RemoteData.andMap (Success Nothing)
-
-        currentDiagnosis =
-            if initialEncounter || isJust diagnosisByCurrentEncounterMeasurements then
-                diagnosisByCurrentEncounterMeasurements
-
-            else
-                diagnosisByPreviousEncounters
-
-        diagnosisByCurrentEncounterMeasurements =
-            RemoteData.toMaybe assembled
-                |> Maybe.andThen (resolveAcuteIllnessDiagnosis currentDate isChw)
-                |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
-
-        diagnosisByPreviousEncounters =
-            RemoteData.toMaybe encounter
-                |> Maybe.map
-                    (.participant
-                        >> getAcuteIllnessDiagnosisByPreviousEncounters id db
-                    )
-                |> Maybe.withDefault Nothing
     in
     RemoteData.map
         (\data ->
             let
+                -- Intial encounter is the one where all measurements are taken and
+                -- initial diagnosis is made.
+                initialEncounter =
+                    case data.encounter.encounterType of
+                        AcuteIllnessEncounterNurse ->
+                            -- This type of encounter is assigned to first encounter
+                            -- performed by nurse. By definition, it's considered
+                            -- initital.
+                            True
+
+                        AcuteIllnessEncounterNurseSubsequent ->
+                            -- This type of encounter is assigned when first nurse
+                            -- encounter was performed already. By definition,
+                            -- it's considered not an initital.
+                            False
+
+                        AcuteIllnessEncounterCHW ->
+                            -- For CHW, it's only the first encounter at illness.
+                            List.isEmpty previousEncountersData
+
+                currentDiagnosis =
+                    if initialEncounter || isJust diagnosisByCurrentEncounterMeasurements then
+                        diagnosisByCurrentEncounterMeasurements
+
+                    else
+                        diagnosisByPreviousEncounters
+
+                diagnosisByCurrentEncounterMeasurements =
+                    resolveAcuteIllnessDiagnosis currentDate isChw data
+                        |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
+
+                diagnosisByPreviousEncounters =
+                    getAcuteIllnessDiagnosisByPreviousEncounters id db data.encounter.participant
+
                 currentEncounterData =
                     AcuteIllnessEncounterData id
                         data.encounter.encounterType
@@ -127,7 +133,8 @@ generateAssembledData currentDate id isChw db =
                         |> Maybe.withDefault ( allEncountersData, [] )
             in
             { data
-                | diagnosis = currentDiagnosis
+                | initialEncounter = initialEncounter
+                , diagnosis = currentDiagnosis
                 , firstInitialWithSubsequent = firstInitialWithSubsequent
                 , secondInitialWithSubsequent = secondInitialWithSubsequent
             }

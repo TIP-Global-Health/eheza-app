@@ -298,6 +298,8 @@ startIllnessActionMsg : NominalDate -> HealthCenterId -> PersonId -> Bool -> Msg
 startIllnessActionMsg currentDate selectedHealthCenter personId isChw =
     let
         encounterType =
+            -- We know it's going to be first encounter, therefore,
+            -- it's clear it can't be AcuteIllnessEncounterNurseSubsequent.
             if isChw then
                 AcuteIllnessEncounterCHW
 
@@ -441,12 +443,12 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
                 |> List.isEmpty
                 |> not
 
-        actionDisabled =
-            isNothing mActiveEncounterId && not isChw && nurseEncounterPerformed
-
         encounterType =
             if isChw then
                 AcuteIllnessEncounterCHW
+
+            else if nurseEncounterPerformed then
+                AcuteIllnessEncounterNurseSubsequent
 
             else
                 AcuteIllnessEncounterNurse
@@ -487,10 +489,7 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
     in
     Just <|
         div
-            [ classList
-                [ ( "ui primary button active-illness", True )
-                , ( "disabled", actionDisabled )
-                ]
+            [ class "ui primary button active-illness"
             , onClick action
             ]
             [ div [ class "button-label" ]
@@ -523,7 +522,7 @@ filterByEncounterTypeCondition isChw encounter =
         encounter.encounterType == AcuteIllnessEncounterCHW
 
     else
-        encounter.encounterType == AcuteIllnessEncounterNurse
+        encounter.encounterType /= AcuteIllnessEncounterCHW
 
 
 viewLabel : Language -> String -> TranslationId -> Html Msg
