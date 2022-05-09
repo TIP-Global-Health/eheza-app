@@ -293,6 +293,7 @@ expectNextStepsTask currentDate assembled task =
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
                         || (diagnosedMalaria assembled && severeMalariaTreatment)
                         || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
+                        || diagnosed DiagnosisHeartburnPersistent assembled
 
                 _ ->
                     dangerSigns
@@ -833,10 +834,6 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         DiagnosisLaborAndDelivery ->
             List.member Labor signs
 
-        DiagnosisHeartburnPersistent ->
-            symptomRecorded assembled.measurements Heartburn
-                && symptomRecordedPreviously assembled Heartburn
-
         -- Non Emergency Referral diagnoses.
         _ ->
             False
@@ -1048,6 +1045,10 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
         DiagnosisHeartburn ->
             symptomRecorded assembled.measurements Heartburn
                 && (not <| symptomRecordedPreviously assembled Heartburn)
+
+        DiagnosisHeartburnPersistent ->
+            symptomRecorded assembled.measurements Heartburn
+                && symptomRecordedPreviously assembled Heartburn
 
         -- Non Symptoms diagnoses.
         _ ->

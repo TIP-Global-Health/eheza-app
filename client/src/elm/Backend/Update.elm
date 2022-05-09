@@ -4104,9 +4104,6 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             , if List.member DiagnosisSeverePreeclampsiaImmediate urgentDiagnoses then
                                                 translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
 
-                                              else if List.member DiagnosisHeartburnPersistent urgentDiagnoses then
-                                                translate language Translate.EmergencyReferralHelperReferToHospitalForEvaluation
-
                                               else if
                                                 List.any
                                                     (\maternityWardDiagnosis ->

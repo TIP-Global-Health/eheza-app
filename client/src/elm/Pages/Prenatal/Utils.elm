@@ -100,9 +100,6 @@ emergencyReferralDiagnosesInitial =
     , DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
 
-    -- Diagnosed from Symptoms.
-    , DiagnosisHeartburnPersistent
-
     -- Diagnosed from Danger Signs and Symptoms.
     , DiagnosisHyperemesisGravidum
 
