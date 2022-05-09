@@ -5660,27 +5660,27 @@ translationSet trans =
 
         MedicationDistributionHelperAnemia ->
             { english = "Patient shows signs of Mild - Moderate Anemia"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi afite amaraso make byoroheje"
             }
 
         MedicationDistributionHelperDiscordantPartnership ->
             { english = "This patient is part of a discordant partnership"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uwo babana afite ubwandu bwa Virusi itera SIDA ariko umubyeyi we ntabwo afite"
             }
 
         MedicationDistributionHelperDiscordantPartnershipNoARVs ->
             { english = "This patient is part of a discordant partnership in which the partner is not on ARVs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uwo babana afite ubwandu bwa Virusi itera SIDA ariko umubyeyi we ntabwo afite kandi ntago afata imiti igabanya ubukana"
             }
 
         MedicationDistributionHelperHIV ->
             { english = "This patient is HIV positive"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi afite ubwandu bute"
             }
 
         MedicationDistributionHelperMebendazole ->
             { english = "This patient is over 24 weeks EGA and has not had a dewormer in the last 6 months"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu mubyeyi atwite inda y'ibyumweru 24 kandi nta muti w'inzoka yafashe mu mezi 6 ashize"
             }
 
         MedicationDistributionSign sign ->
@@ -7010,7 +7010,7 @@ translationSet trans =
 
         PauseEncounter ->
             { english = "Pause Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa cyahagaritswe"
             }
 
         PatientShowsNoSignsOfCovid ->
@@ -7991,12 +7991,12 @@ translationSet trans =
 
                 EducationSaferSex ->
                     { english = "Have you counseled patient on safer sex practices"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Wagiriye inama umubyeyi ku bijyanye no gukora imibonano mpuzabitsina ikingiye"
                     }
 
                 EducationPartnerTesting ->
                     { english = "Have you encouraged the patient’s partner to get tested"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba washishikarije umubyueyi kubwira uwo babana kwipimisha"
                     }
 
                 NoPrenatalHealthEducationSigns ->
@@ -8024,7 +8024,7 @@ translationSet trans =
 
                     else
                         { english = "Referral"
-                        , kinyarwanda = Just "Ohereza"
+                        , kinyarwanda = Just "Kohereza"
                         }
 
                 Pages.Prenatal.Activity.Types.NextStepsHealthEducation ->
@@ -8051,7 +8051,7 @@ translationSet trans =
             case task of
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsSendToHC ->
                     { english = "Referral"
-                    , kinyarwanda = Just "Ohereza"
+                    , kinyarwanda = Just "Kohereza"
                     }
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
@@ -8061,7 +8061,7 @@ translationSet trans =
 
         PrenatalHIVProgramHelper ->
             { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umubyeyi muri serisi ikomatanije ya HIV/PMTCT kugira ngo hakorwe isuzuma ku bijyanye n' imiti igabanya ubukana bwa Virusi itera SIDA"
             }
 
         PrenatalHIVSignQuestion sign ->
@@ -9368,7 +9368,7 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Have you referred the patient to the Integration HIV/PMTCT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wohereje umurwayi (umubyeyi) muri serivisi ikomatanije ya HIV/PMTCT"
                     }
 
         ReferredToFacility facility ->
@@ -9402,7 +9402,7 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Not referred to HIV/PMTCT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe muri serivisi ya HIV/PMTCT"
                     }
 
         ReferToProgramAction ->
@@ -10413,17 +10413,17 @@ translationSet trans =
 
         SyphilisRecommendedTreatmentHelper ->
             { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
             }
 
         SyphilisRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
             }
 
         SyphilisRecommendedTreatmentWarning ->
             { english = "If Erythromycin or Azithromycin used, must treat newborn immediately after delivery (does not cross into placenta)"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Niba ari Erythromicine cg Azithromycine wakoresheje, ugomba kuvura uruhinja rukivuka (Uyu muti ntiwinjira mu ngobyi y'umwana)"
             }
 
         GroupEncounterClosed ->
@@ -10475,7 +10475,7 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Direct patient to the appropriate location"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
                     }
 
         ShowAll ->
@@ -10853,7 +10853,7 @@ translationSet trans =
             }
 
         WaitForLabsResultsHelper ->
-            { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and futher diagnoses."
+            { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and further diagnoses."
             , kinyarwanda = Nothing
             }
 
@@ -11458,7 +11458,7 @@ translationSet trans =
 
         WrittenProtocolsFollowed ->
             { english = "Written protocols followed"
-            , kinyarwanda = Just "Amabwiriza yanditse arakurikira"
+            , kinyarwanda = Just "Amabwiriza yanditse yakurikijwe"
             }
 
         Year ->
@@ -11740,12 +11740,12 @@ translateActivePage page =
 
                 PrenatalRecurrentEncounterPage _ ->
                     { english = "Antenatal Recurrent Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwipimisha inda bigaruka"
                     }
 
                 PrenatalRecurrentActivityPage _ _ ->
                     { english = "Antenatal Recurrent Activity"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igikorwa cyo kwipimisha inda bigaruka"
                     }
 
                 IndividualEncounterTypesPage ->
