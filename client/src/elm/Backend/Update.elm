@@ -4147,7 +4147,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                 else
                                     let
                                         signs =
-                                            List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) urgentDiagnoses
+                                            List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
                                                 |> String.join ", "
                                     in
                                     [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps

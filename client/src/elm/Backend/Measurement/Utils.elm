@@ -1548,6 +1548,12 @@ recommendedTreatmentSignToString sign =
         TreatmentMethyldopa4 ->
             "methyldopa-4"
 
+        TreatmentAluminiumHydroxide ->
+            "aluminium-hydroxide"
+
+        TreatmentHealthEducationForHeartburn ->
+            "education-heartburn"
+
         NoTreatmentForHypertension ->
             "no-treatment-hypertension"
 
@@ -1596,6 +1602,12 @@ recommendedTreatmentSignFromString sign =
 
         "methyldopa-4" ->
             Just TreatmentMethyldopa4
+
+        "aluminium-hydroxide" ->
+            Just TreatmentAluminiumHydroxide
+
+        "education-heartburn" ->
+            Just TreatmentHealthEducationForHeartburn
 
         "no-treatment-hypertension" ->
             Just NoTreatmentForHypertension

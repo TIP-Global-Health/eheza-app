@@ -129,7 +129,7 @@ update language currentDate id db msg model =
                     else
                         let
                             message =
-                                List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) nonUrgentDiagnoses
+                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
                                     |> String.join ", "
                         in
                         [ SetWarningPopupState <| Just ( message, "" ) ]

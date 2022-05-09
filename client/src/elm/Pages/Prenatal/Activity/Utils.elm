@@ -333,6 +333,7 @@ expectNextStepsTask currentDate assembled task =
                     )
                         || diagnosedMalaria assembled
                         || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                        || diagnosed DiagnosisHeartburn assembled
                    )
 
         NextStepsWait ->
@@ -439,6 +440,13 @@ nextStepsMeasurementTaken assembled task =
                     else
                         True
 
+                heartburnTreatmentCompleted =
+                    if diagnosed DiagnosisHeartburn assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHeartburn assembled.measurements
+
+                    else
+                        True
+
                 hypertensionTreatmentCompleted =
                     if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
@@ -448,6 +456,7 @@ nextStepsMeasurementTaken assembled task =
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && malariaTreatmentCompleted
+                && heartburnTreatmentCompleted
                 && hypertensionTreatmentCompleted
 
         NextStepsWait ->

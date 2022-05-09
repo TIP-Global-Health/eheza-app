@@ -368,10 +368,22 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
 
                             else
                                 ( [], 0, 0 )
+
+                        ( heartburnInputs, heartburnCompleted, heartburnActive ) =
+                            if diagnosed DiagnosisHeartburn assembled then
+                                resolveRecommendedTreatmentForHeartburnInputsAndTasks language
+                                    currentDate
+                                    setRecommendedTreatmentSignMsg
+                                    recommendedTreatmentSignsForHeartburn
+                                    assembled
+                                    form
+
+                            else
+                                ( [], 0, 0 )
                     in
-                    ( malariaInputs ++ hypertensionInputs
-                    , malariaCompleted + hypertensionCompleted
-                    , malariaActive + hypertensionActive
+                    ( malariaInputs ++ heartburnInputs ++ hypertensionInputs
+                    , malariaCompleted + heartburnCompleted + hypertensionCompleted
+                    , malariaActive + heartburnActive + hypertensionActive
                     )
 
                 PrenatalEncounterPhaseRecurrent ->
@@ -560,7 +572,7 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
             []
             currentValue
             (setRecommendedTreatmentSignMsg allowedSigns)
-            (viewTreatmentOptionForSyphilis language)
+            (viewTreatmentOptionWithDosage language)
       , warning
       , div [ class "separator" ] []
       ]
@@ -569,8 +581,8 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
     )
 
 
-viewTreatmentOptionForSyphilis : Language -> RecommendedTreatmentSign -> Html any
-viewTreatmentOptionForSyphilis language sign =
+viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionWithDosage language sign =
     label []
         [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
         , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
@@ -585,6 +597,60 @@ recommendedTreatmentSignsForSyphilis =
     , TreatementAzithromycin
     , TreatementCeftriaxon
     , NoTreatmentForSyphilis
+    ]
+
+
+resolveRecommendedTreatmentForHeartburnInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForHeartburnInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- inital phase of encounter, we need to filter them out,
+        -- to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHeartburn)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+    in
+    ( [ viewCustomLabel language Translate.HeartburnRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.HeartburnRecommendedTreatmentHelper ++ ".") ]
+      , viewCheckBoxSelectCustomInput language
+            recommendedTreatmentSignsForHeartburn
+            []
+            currentValue
+            (setRecommendedTreatmentSignMsg allowedSigns)
+            (viewTreatmentOptionForHeartburn language)
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+viewTreatmentOptionForHeartburn : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForHeartburn language sign =
+    case sign of
+        TreatmentAluminiumHydroxide ->
+            viewTreatmentOptionWithDosage language sign
+
+        _ ->
+            label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
+
+
+recommendedTreatmentSignsForHeartburn : List RecommendedTreatmentSign
+recommendedTreatmentSignsForHeartburn =
+    [ TreatmentAluminiumHydroxide
+    , TreatmentHealthEducationForHeartburn
     ]
 
 

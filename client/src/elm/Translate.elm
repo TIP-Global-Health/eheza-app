@@ -618,6 +618,8 @@ type TranslationId
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
+    | HeartburnRecommendedTreatmentHeader
+    | HeartburnRecommendedTreatmentHelper
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
@@ -893,7 +895,7 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
     | PrenatalDiagnosisForProgressReport PrenatalDiagnosis
-    | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
+    | PrenatalDiagnosisNonUrgentMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalFlankPainSign PrenatalFlankPainSign
     | PrenatalHealthEducationAppropriateProvided
@@ -4557,6 +4559,16 @@ translationSet trans =
             , kinyarwanda = Just "Umutima"
             }
 
+        HeartburnRecommendedTreatmentHeader ->
+            { english = "This patient has signs of persistent heartburn"
+            , kinyarwanda = Nothing
+            }
+
+        HeartburnRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient bellow"
+            , kinyarwanda = Nothing
+            }
+
         HeartMurmur ->
             { english = "Heart Murmur"
             , kinyarwanda = Just "Ijwi ry'umutima igihe utera"
@@ -7884,7 +7896,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabyo"
                     }
 
-        PrenatalDiagnosisLabResultsMessage diagnosis ->
+        PrenatalDiagnosisNonUrgentMessage diagnosis ->
             case diagnosis of
                 DiagnosisHIV ->
                     { english = "Patient has tested positive for HIV"
@@ -7983,6 +7995,11 @@ translationSet trans =
 
                 DiagnosisSeverePreeclampsiaAfterRecheck ->
                     { english = "Patient shows signs of Severe Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburn ->
+                    { english = "Patient shows signs of Persistent Heartburn"
                     , kinyarwanda = Nothing
                     }
 
@@ -9575,6 +9592,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentAluminiumHydroxide ->
+                    { english = "1 tablet by mouth 3x a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -9650,6 +9672,16 @@ translationSet trans =
 
                 TreatmentMethyldopa4 ->
                     { english = "Methyldopa 250mg by mouth four times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAluminiumHydroxide ->
+                    { english = "Aluminium Hydroxide"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHealthEducationForHeartburn ->
+                    { english = "Not dispencing medicine. Follow health education protocols."
                     , kinyarwanda = Nothing
                     }
 

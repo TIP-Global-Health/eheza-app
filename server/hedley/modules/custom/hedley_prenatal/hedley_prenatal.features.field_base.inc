@@ -726,6 +726,8 @@ function hedley_prenatal_field_default_field_bases() {
         'methyldopa-2' => 'Methyldopa twice a day',
         'methyldopa-3' => 'Methyldopa three times a day',
         'methyldopa-4' => 'Methyldopa four times a day',
+        'aluminium-hydroxide' => 'Aluminium Hydroxide',
+        'education-heartburn' => 'Health Education For Heartburn',
         'no-treatment-hypertension' => 'No Treatment for Hypertension',
       ),
       'allowed_values_function' => '',

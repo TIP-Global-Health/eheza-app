@@ -1121,6 +1121,9 @@ type RecommendedTreatmentSign
     | TreatmentMethyldopa2
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
+      -- For Heartburn:
+    | TreatmentAluminiumHydroxide
+    | TreatmentHealthEducationForHeartburn
     | NoTreatmentForHypertension
 
 
