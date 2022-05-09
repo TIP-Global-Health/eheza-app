@@ -323,6 +323,9 @@ decodePrenatalHealthEducationSign =
                     "constipation" ->
                         succeed EducationConstipation
 
+                    "heartburn" ->
+                        succeed EducationHeartburn
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

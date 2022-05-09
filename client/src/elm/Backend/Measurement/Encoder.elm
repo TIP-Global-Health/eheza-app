@@ -215,6 +215,9 @@ encodePrenatalHealthEducationSign sign =
             EducationConstipation ->
                 "constipation"
 
+            EducationHeartburn ->
+                "heartburn"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

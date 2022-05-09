@@ -311,6 +311,7 @@ expectNextStepsTask currentDate assembled task =
                                 provideNauseaAndVomitingEducation assembled
                                     || List.any (symptomRecorded assembled.measurements)
                                         [ LegCramps, LowBackPain, Constipation ]
+                                    || diagnosed DiagnosisHeartburn assembled
                            )
 
                 ChwPostpartumEncounter ->
@@ -1409,8 +1410,44 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             else
                 ( [], Nothing )
 
+        heartburn =
+            let
+                reliefMethods =
+                    List.map
+                        (Translate.HeartburnReliefMethod
+                            >> translate language
+                            >> String.toLower
+                            >> text
+                            >> List.singleton
+                            >> li []
+                        )
+                        [ ReliefMethodAvoidLargeMeals
+                        , ReliefMethodCeaseSmoking
+                        , ReliefMethodAvoidAlcohom
+                        , ReliefMethodSleepWithHeadRaised
+                        ]
+                        |> ul []
+            in
+            if symptomRecorded assembled.measurements Heartburn then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationHeartburn) "" "label header"
+                  , viewLabel language Translate.PrenatalHealthEducationHeartburnInform
+                  , reliefMethods
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.heartburn
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | heartburn = Just value }))
+                        "heartburn"
+                        Nothing
+                  ]
+                , Just form.heartburn
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
-            [ nauseaVomiting, legCramps, lowBackPain, constipation ]
+            [ nauseaVomiting, legCramps, lowBackPain, constipation, heartburn ]
     in
     ( List.map Tuple.first inputsAndTasks
         |> List.concat
@@ -2743,6 +2780,7 @@ healthEducationFormWithDefault form saved =
                 , legCramps = or form.legCramps (EverySet.member EducationLegCramps signs |> Just)
                 , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain signs |> Just)
                 , constipation = or form.constipation (EverySet.member EducationConstipation signs |> Just)
+                , heartburn = or form.heartburn (EverySet.member EducationHeartburn signs |> Just)
                 }
             )
 
@@ -2770,6 +2808,7 @@ toHealthEducationValue form =
     , ifNullableTrue EducationLegCramps form.legCramps
     , ifNullableTrue EducationLowBackPain form.lowBackPain
     , ifNullableTrue EducationConstipation form.constipation
+    , ifNullableTrue EducationHeartburn form.heartburn
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

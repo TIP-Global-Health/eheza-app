@@ -59,3 +59,10 @@ type LegCrampsReliefMethod
     | ReliefMethodSleepWithPillowBetweenLegs
     | ReliefMethodHeatTherapy
     | ReliefMethodMassage
+
+
+type HeartburnReliefMethod
+    = ReliefMethodAvoidLargeMeals
+    | ReliefMethodCeaseSmoking
+    | ReliefMethodAvoidAlcohom
+    | ReliefMethodSleepWithHeadRaised

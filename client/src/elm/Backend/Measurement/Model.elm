@@ -802,6 +802,7 @@ type PrenatalHealthEducationSign
     | EducationLegCramps
     | EducationLowBackPain
     | EducationConstipation
+    | EducationHeartburn
     | NoPrenatalHealthEducationSigns
 
 

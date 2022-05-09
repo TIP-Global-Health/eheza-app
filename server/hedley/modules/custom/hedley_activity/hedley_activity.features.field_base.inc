@@ -1380,6 +1380,7 @@ function hedley_activity_field_default_field_bases() {
         'leg-cramps' => 'Leg Cramps',
         'low-back-pain' => 'Low Back Pain',
         'constipation' => 'Constipation',
+        'heartburn' => 'Heartburn',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

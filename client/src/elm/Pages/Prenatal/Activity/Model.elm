@@ -924,6 +924,7 @@ type alias HealthEducationForm =
     , legCramps : Maybe Bool
     , lowBackPain : Maybe Bool
     , constipation : Maybe Bool
+    , heartburn : Maybe Bool
     }
 
 
@@ -944,6 +945,7 @@ emptyHealthEducationForm =
     , legCramps = Nothing
     , lowBackPain = Nothing
     , constipation = Nothing
+    , heartburn = Nothing
     }
 
 

@@ -95,6 +95,7 @@ import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
+        , HeartburnReliefMethod(..)
         , HistoryTask(..)
         , LegCrampsReliefMethod(..)
         , LmpRange(..)
@@ -618,6 +619,7 @@ type TranslationId
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
+    | HeartburnReliefMethod HeartburnReliefMethod
     | HeartburnRecommendedTreatmentHeader
     | HeartburnRecommendedTreatmentHelper
     | HeartMurmur
@@ -906,6 +908,7 @@ type TranslationId
     | PrenatalHealthEducationLegCrampsInform
     | PrenatalHealthEducationLowBackPainInform
     | PrenatalHealthEducationConstipationInform
+    | PrenatalHealthEducationHeartburnInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -4559,6 +4562,28 @@ translationSet trans =
             , kinyarwanda = Just "Umutima"
             }
 
+        HeartburnReliefMethod method ->
+            case method of
+                ReliefMethodAvoidLargeMeals ->
+                    { english = "Avoid large, fatty meals"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodCeaseSmoking ->
+                    { english = "Cease smoking "
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodAvoidAlcohom ->
+                    { english = "Avoid alcohol consumption "
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodSleepWithHeadRaised ->
+                    { english = "Sleep with their head raised in the bed"
+                    , kinyarwanda = Nothing
+                    }
+
         HeartburnRecommendedTreatmentHeader ->
             { english = "This patient has signs of persistent heartburn"
             , kinyarwanda = Nothing
@@ -8080,6 +8105,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationHeartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -8180,6 +8210,11 @@ translationSet trans =
 
         PrenatalHealthEducationConstipationInform ->
             { english = "Instruct the patient that increasing the intake of fruits, vegetables, high fiber foods, and water can help relieve constipation symptoms"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationHeartburnInform ->
+            { english = "Instruct the patient that the following may help relieve heartburn"
             , kinyarwanda = Nothing
             }
 
