@@ -364,12 +364,7 @@ provideNauseaAndVomitingEducation assembled =
 
         -- NauseaAndVomiting was not reported at any of previous encounters.
         byPreviousEncounters =
-            assembled.nursePreviousMeasurementsWithDates
-                |> List.filter
-                    (\( _, _, measurements ) ->
-                        symptomRecorded measurements NauseaAndVomiting
-                    )
-                |> List.isEmpty
+            not <| symptomRecordedPreviously assembled NauseaAndVomiting
     in
     byCurrentEncounter && byPreviousEncounters
 
@@ -391,13 +386,7 @@ hospitalizeDueToNauseaAndVomiting assembled =
 
         -- NauseaAndVomiting was reported at any of previous encounters.
         byPreviousEncounters =
-            assembled.nursePreviousMeasurementsWithDates
-                |> List.filter
-                    (\( _, _, measurements ) ->
-                        symptomRecorded measurements NauseaAndVomiting
-                    )
-                |> List.isEmpty
-                |> not
+            symptomRecordedPreviously assembled NauseaAndVomiting
     in
     byCurrentEncounter || byPreviousEncounters
 
@@ -407,6 +396,17 @@ symptomRecorded measurements symptom =
     getMeasurementValueFunc measurements.symptomReview
         |> Maybe.map (.symptoms >> EverySet.member symptom)
         |> Maybe.withDefault False
+
+
+symptomRecordedPreviously : AssembledData -> PrenatalSymptom -> Bool
+symptomRecordedPreviously assembled symptom =
+    assembled.nursePreviousMeasurementsWithDates
+        |> List.filter
+            (\( _, _, measurements ) ->
+                symptomRecorded measurements symptom
+            )
+        |> List.isEmpty
+        |> not
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -684,7 +684,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         dangerSignsList =
             generateDangerSignsListForNurse assembled
 
-        diagnosesByDangerSigns =
+        emergencyReferalDiagnoses =
             List.filter
                 (matchEmergencyReferalPrenatalDiagnosis
                     egaInWeeks
@@ -702,9 +702,14 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 )
                 egaInWeeks
                 |> Maybe.withDefault EverySet.empty
+
+        diagnosesBySymptoms =
+            List.filter (matchSymptomsPrenatalDiagnosis assembled) symptomsDiagnoses
+                |> EverySet.fromList
     in
-    EverySet.union diagnosesByLabResults diagnosesByDangerSigns
+    EverySet.union diagnosesByLabResults emergencyReferalDiagnoses
         |> EverySet.union diagnosesByExamination
+        |> EverySet.union diagnosesBySymptoms
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -799,6 +804,10 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
 
         DiagnosisLaborAndDelivery ->
             List.member Labor signs
+
+        DiagnosisHeartburnPersistent ->
+            symptomRecorded assembled.measurements Heartburn
+                && symptomRecordedPreviously assembled Heartburn
 
         -- Non Emergency Referral diagnoses.
         _ ->
@@ -1005,6 +1014,18 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
             False
 
 
+matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
+matchSymptomsPrenatalDiagnosis assembled diagnosis =
+    case diagnosis of
+        DiagnosisHeartburn ->
+            symptomRecorded assembled.measurements Heartburn
+                && (not <| symptomRecordedPreviously assembled Heartburn)
+
+        -- Non Symptoms diagnoses.
+        _ ->
+            False
+
+
 immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
 immediateHypertensionByMeasurements =
     highBloodPressure
@@ -1159,6 +1180,11 @@ examinationDiagnoses =
     , DiagnosisModeratePreeclampsiaImmediate
     , DiagnosisModeratePreeclampsiaAfterRecheck
     ]
+
+
+symptomsDiagnoses : List PrenatalDiagnosis
+symptomsDiagnoses =
+    [ DiagnosisHeartburn ]
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
