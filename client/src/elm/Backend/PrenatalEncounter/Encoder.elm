@@ -174,5 +174,8 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisHeartburnPersistent ->
                 "heartburn-persistent"
 
+            DiagnosisDeepVeinThrombosis ->
+                "dvt"
+
             NoPrenatalDiagnosis ->
                 "none"

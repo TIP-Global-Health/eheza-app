@@ -180,6 +180,9 @@ decodePrenatalDiagnosis =
                     "heartburn-persistent" ->
                         succeed DiagnosisHeartburnPersistent
 
+                    "dvt" ->
+                        succeed DiagnosisDeepVeinThrombosis
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

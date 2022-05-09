@@ -283,17 +283,8 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    let
-                        severeMalariaTreatment =
-                            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
-                                |> Maybe.withDefault False
-                    in
-                    emergencyReferalRequired assembled
+                    referToHospitalForNonHIVDiagnosis assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
-                        || (diagnosedMalaria assembled && severeMalariaTreatment)
-                        || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
-                        || diagnosed DiagnosisHeartburnPersistent assembled
 
                 _ ->
                     dangerSigns
@@ -313,7 +304,7 @@ expectNextStepsTask currentDate assembled task =
                                     || List.any (symptomRecorded assembled.measurements)
                                         [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
                                     || diagnosed DiagnosisHeartburn assembled
-                                    || provigeLegPainRednessEducation assembled
+                                    || provideLegPainRednessEducation assembled
                            )
 
                 ChwPostpartumEncounter ->
@@ -351,6 +342,21 @@ expectNextStepsTask currentDate assembled task =
                    )
 
 
+referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
+referToHospitalForNonHIVDiagnosis assembled =
+    let
+        severeMalariaTreatment =
+            getMeasurementValueFunc assembled.measurements.medicationDistribution
+                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
+                |> Maybe.withDefault False
+    in
+    emergencyReferalRequired assembled
+        || (diagnosedMalaria assembled && severeMalariaTreatment)
+        || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
+        || diagnosed DiagnosisHeartburnPersistent assembled
+        || diagnosed DiagnosisDeepVeinThrombosis assembled
+
+
 provideNauseaAndVomitingEducation : AssembledData -> Bool
 provideNauseaAndVomitingEducation assembled =
     let
@@ -373,20 +379,6 @@ provideNauseaAndVomitingEducation assembled =
     byCurrentEncounter && byPreviousEncounters
 
 
-provigeLegPainRednessEducation : AssembledData -> Bool
-provigeLegPainRednessEducation assembled =
-    -- LegPainRedness reported at current encounter, and
-    -- all follow up questions were answered No.
-    getMeasurementValueFunc assembled.measurements.symptomReview
-        |> Maybe.map
-            (\value ->
-                EverySet.member LegPainRedness value.symptoms
-                    && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
-                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
-            )
-        |> Maybe.withDefault False
-
-
 hospitalizeDueToNauseaAndVomiting : AssembledData -> Bool
 hospitalizeDueToNauseaAndVomiting assembled =
     let
@@ -407,6 +399,34 @@ hospitalizeDueToNauseaAndVomiting assembled =
             symptomRecordedPreviously assembled NauseaAndVomiting
     in
     byCurrentEncounter || byPreviousEncounters
+
+
+provideLegPainRednessEducation : AssembledData -> Bool
+provideLegPainRednessEducation assembled =
+    -- LegPainRedness reported at current encounter, and
+    -- all follow up questions were answered No.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member LegPainRedness value.symptoms
+                    && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
+            )
+        |> Maybe.withDefault False
+
+
+hospitalizeDueToLegPainRedness : AssembledData -> Bool
+hospitalizeDueToLegPainRedness assembled =
+    -- LegPainRedness reported at current encounter, and
+    -- all follow up questions were answered No.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member LegPainRedness value.symptoms
+                    && List.any (\question -> EverySet.member question value.symptomQuestions)
+                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
+            )
+        |> Maybe.withDefault False
 
 
 symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
@@ -1050,6 +1070,9 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
             symptomRecorded assembled.measurements Heartburn
                 && symptomRecordedPreviously assembled Heartburn
 
+        DiagnosisDeepVeinThrombosis ->
+            hospitalizeDueToLegPainRedness assembled
+
         -- Non Symptoms diagnoses.
         _ ->
             False
@@ -1213,7 +1236,10 @@ examinationDiagnoses =
 
 symptomsDiagnoses : List PrenatalDiagnosis
 symptomsDiagnoses =
-    [ DiagnosisHeartburn ]
+    [ DiagnosisHeartburn
+    , DiagnosisHeartburnPersistent
+    , DiagnosisDeepVeinThrombosis
+    ]
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -1481,7 +1507,7 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
                 ( [], Nothing )
 
         legPainRedness =
-            if provigeLegPainRednessEducation assembled then
+            if provideLegPainRednessEducation assembled then
                 ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegPainRedness) "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationLegPainRednessInform "." "label paragraph"
                   , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
@@ -1762,7 +1788,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     if isChw then
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
-                    else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
+                    else if referToHospitalForNonHIVDiagnosis assembled then
                         ( 0, 0 )
 
                     else

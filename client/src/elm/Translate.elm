@@ -7717,7 +7717,12 @@ translationSet trans =
                     }
 
                 DiagnosisHeartburnPersistent ->
-                    { english = "Persistent Heartburn that is not responding to treatment"
+                    { english = "Persistent Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDeepVeinThrombosis ->
+                    { english = "Deep Vein Thrombosis"
                     , kinyarwanda = Nothing
                     }
 
@@ -7918,6 +7923,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDeepVeinThrombosis ->
+                    { english = "Deep Vein Thrombosis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8026,11 +8036,21 @@ translationSet trans =
                     }
 
                 DiagnosisHeartburn ->
-                    { english = "Patient shows signs of Persistent Heartburn"
+                    { english = "Persistent Heartburn"
                     , kinyarwanda = Nothing
                     }
 
-                -- Non Lab Results diagnoses.
+                DiagnosisHeartburnPersistent ->
+                    { english = "Persistent Heartburn that is not responding to treatment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDeepVeinThrombosis ->
+                    { english = "Deep Vein Thrombosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Non Not Urgent diagnoses.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing

@@ -2136,5 +2136,9 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
             -- @todo
             []
 
+        DiagnosisDeepVeinThrombosis ->
+            -- @todo
+            []
+
         NoPrenatalDiagnosis ->
             []

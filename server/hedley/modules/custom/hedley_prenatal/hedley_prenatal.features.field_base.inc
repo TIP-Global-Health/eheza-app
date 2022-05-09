@@ -584,6 +584,7 @@ function hedley_prenatal_field_default_field_bases() {
         'labor' => 'Labor + Delivery',
         'heartburn' => 'Heartburn',
         'heartburn-persistent' => 'Persistent Heartburn',
+        'dvt' => 'Deep Vein Thrombosis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

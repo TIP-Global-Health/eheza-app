@@ -1567,7 +1567,16 @@ viewNextStepsContent language currentDate isChw assembled data =
                 List.filter ((/=) NextStepsWait) tasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasksConsideringShowWaitTask)
+            Maybe.map
+                (\task ->
+                    if List.member task tasksConsideringShowWaitTask then
+                        Just task
+
+                    else
+                        List.head tasksConsideringShowWaitTask
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasksConsideringShowWaitTask)
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -1593,7 +1602,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             if isChw then
                                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
-                            else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
+                            else if referToHospitalForNonHIVDiagnosis assembled then
                                 ( viewSendToHospitalForm, Nothing )
 
                             else

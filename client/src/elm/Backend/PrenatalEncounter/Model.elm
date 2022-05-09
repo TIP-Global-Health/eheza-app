@@ -75,6 +75,7 @@ type PrenatalDiagnosis
     | DiagnosisLaborAndDelivery
     | DiagnosisHeartburn
     | DiagnosisHeartburnPersistent
+    | DiagnosisDeepVeinThrombosis
     | NoPrenatalDiagnosis
 
 
