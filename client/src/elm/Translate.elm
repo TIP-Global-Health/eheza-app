@@ -530,7 +530,8 @@ type TranslationId
     | EgaWeeks
     | ElevatedRespiratoryRate
     | EmergencyReferralHelperReferToHC
-    | EmergencyReferralHelperReferToHospital
+    | EmergencyReferralHelperReferToHospitalForEvaluation
+    | EmergencyReferralHelperReferToHospitalImmediately
     | EmergencyReferralHelperReferToMaternityWard
     | EmergencyReferralHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
@@ -3783,7 +3784,12 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        EmergencyReferralHelperReferToHospital ->
+        EmergencyReferralHelperReferToHospitalForEvaluation ->
+            { english = "Refer patient to hospital for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
+        EmergencyReferralHelperReferToHospitalImmediately ->
             { english = "Refer patient to hospital immediately"
             , kinyarwanda = Nothing
             }
@@ -7672,7 +7678,7 @@ translationSet trans =
                     }
 
                 DiagnosisHeartburnPersistent ->
-                    { english = "Persistent Heartburn"
+                    { english = "Persistent Heartburn that is not responding to treatment"
                     , kinyarwanda = Nothing
                     }
 

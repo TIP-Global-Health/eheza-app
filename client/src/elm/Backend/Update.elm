@@ -4102,7 +4102,10 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             -- Instructions for Emergency Referral.
                                             ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
                                             , if List.member DiagnosisSeverePreeclampsiaImmediate urgentDiagnoses then
-                                                translate language Translate.EmergencyReferralHelperReferToHospital
+                                                translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
+
+                                              else if List.member DiagnosisHeartburnPersistent urgentDiagnoses then
+                                                translate language Translate.EmergencyReferralHelperReferToHospitalForEvaluation
 
                                               else if
                                                 List.any
@@ -4152,7 +4155,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                         |> App.Model.SetActivePage
                                     , recurrentEncounterWarningPopupMsg
                                         ( signs
-                                        , translate language Translate.EmergencyReferralHelperReferToHospital
+                                        , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
                                         )
                                     ]
                         in

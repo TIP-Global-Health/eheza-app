@@ -678,7 +678,8 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 assembled.globalLmpDate
 
         diagnosesByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) labResultsDiagnoses
+            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements)
+                labResultsDiagnoses
                 |> EverySet.fromList
 
         dangerSignsList =
@@ -697,14 +698,16 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         diagnosesByExamination =
             Maybe.map
                 (\egaWeeks ->
-                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements) examinationDiagnoses
+                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements)
+                        examinationDiagnoses
                         |> EverySet.fromList
                 )
                 egaInWeeks
                 |> Maybe.withDefault EverySet.empty
 
         diagnosesBySymptoms =
-            List.filter (matchSymptomsPrenatalDiagnosis assembled) symptomsDiagnoses
+            List.filter (matchSymptomsPrenatalDiagnosis assembled)
+                symptomsDiagnoses
                 |> EverySet.fromList
     in
     EverySet.union diagnosesByLabResults emergencyReferalDiagnoses
