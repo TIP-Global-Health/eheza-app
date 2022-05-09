@@ -7666,6 +7666,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHeartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburnPersistent ->
+                    { english = "Persistent Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -7850,6 +7860,16 @@ translationSet trans =
 
                 DiagnosisLaborAndDelivery ->
                     { english = "Labor + Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburnPersistent ->
+                    { english = "Persistent Heartburn"
                     , kinyarwanda = Nothing
                     }
 

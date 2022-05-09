@@ -168,5 +168,11 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisLaborAndDelivery ->
                 "labor"
 
+            DiagnosisHeartburn ->
+                "heartburn"
+
+            DiagnosisHeartburnPersistent ->
+                "heartburn-persistent"
+
             NoPrenatalDiagnosis ->
                 "none"

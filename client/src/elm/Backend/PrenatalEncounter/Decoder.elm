@@ -174,6 +174,12 @@ decodePrenatalDiagnosis =
                     "labor" ->
                         succeed DiagnosisLaborAndDelivery
 
+                    "heartburn" ->
+                        succeed DiagnosisHeartburn
+
+                    "heartburn-persistent" ->
+                        succeed DiagnosisHeartburnPersistent
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

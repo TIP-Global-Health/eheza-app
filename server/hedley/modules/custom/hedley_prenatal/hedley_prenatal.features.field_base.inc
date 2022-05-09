@@ -582,6 +582,8 @@ function hedley_prenatal_field_default_field_bases() {
         'infection' => 'Infection',
         'imminent-delivery' => 'Imminent delivery',
         'labor' => 'Labor + Delivery',
+        'heartburn' => 'Heartburn',
+        'heartburn-persistent' => 'Persistent Heartburn',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

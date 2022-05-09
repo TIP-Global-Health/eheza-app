@@ -83,7 +83,8 @@ listNonUrgentDiagnoses diagnoses =
 
 emergencyReferralDiagnosesInitial : List PrenatalDiagnosis
 emergencyReferralDiagnosesInitial =
-    [ DiagnosisSeverePreeclampsiaImmediate
+    [ -- Diagnosed from Danger Signs.
+      DiagnosisSeverePreeclampsiaImmediate
     , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy
@@ -95,13 +96,18 @@ emergencyReferralDiagnosesInitial =
     , DiagnosisEctopicPregnancy
     , DiagnosisPROM
     , DiagnosisPPROM
-    , DiagnosisHyperemesisGravidum
     , DiagnosisMaternalComplications
+    , DiagnosisImminentDelivery
+    , DiagnosisLaborAndDelivery
+
+    -- Diagnosed from Symptoms.
+    , DiagnosisHeartburnPersistent
+
+    -- Diagnosed from Danger Signs and Symptoms.
+    , DiagnosisHyperemesisGravidum
 
     -- Infection diagnosis will be available at latter phase.
     -- , DiagnosisInfection
-    , DiagnosisImminentDelivery
-    , DiagnosisLaborAndDelivery
     ]
 
 

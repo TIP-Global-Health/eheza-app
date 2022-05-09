@@ -73,6 +73,8 @@ type PrenatalDiagnosis
     | DiagnosisInfection
     | DiagnosisImminentDelivery
     | DiagnosisLaborAndDelivery
+    | DiagnosisHeartburn
+    | DiagnosisHeartburnPersistent
     | NoPrenatalDiagnosis
 
 
