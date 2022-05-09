@@ -326,6 +326,12 @@ decodePrenatalHealthEducationSign =
                     "heartburn" ->
                         succeed EducationHeartburn
 
+                    "varicose-veins" ->
+                        succeed EducationVaricoseVeins
+
+                    "leg-pain-redness" ->
+                        succeed EducationLegPainRedness
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

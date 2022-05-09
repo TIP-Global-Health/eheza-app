@@ -1381,6 +1381,8 @@ function hedley_activity_field_default_field_bases() {
         'low-back-pain' => 'Low Back Pain',
         'constipation' => 'Constipation',
         'heartburn' => 'Heartburn',
+        'varicose-veins' => 'Varicose Veins',
+        'leg-pain-redness' => 'Leg Pain Redness',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

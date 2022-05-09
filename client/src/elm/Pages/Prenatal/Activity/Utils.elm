@@ -310,8 +310,9 @@ expectNextStepsTask currentDate assembled task =
                             else
                                 provideNauseaAndVomitingEducation assembled
                                     || List.any (symptomRecorded assembled.measurements)
-                                        [ LegCramps, LowBackPain, Constipation ]
+                                        [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
                                     || diagnosed DiagnosisHeartburn assembled
+                                    || provigeLegPainRednessEducation assembled
                            )
 
                 ChwPostpartumEncounter ->
@@ -369,6 +370,20 @@ provideNauseaAndVomitingEducation assembled =
             not <| symptomRecordedPreviously assembled NauseaAndVomiting
     in
     byCurrentEncounter && byPreviousEncounters
+
+
+provigeLegPainRednessEducation : AssembledData -> Bool
+provigeLegPainRednessEducation assembled =
+    -- LegPainRedness reported at current encounter, and
+    -- all follow up questions were answered No.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member LegPainRedness value.symptoms
+                    && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
+            )
+        |> Maybe.withDefault False
 
 
 hospitalizeDueToNauseaAndVomiting : AssembledData -> Bool
@@ -1428,7 +1443,7 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
                         ]
                         |> ul []
             in
-            if symptomRecorded assembled.measurements Heartburn then
+            if diagnosed DiagnosisHeartburn assembled then
                 ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationHeartburn) "" "label header"
                   , viewLabel language Translate.PrenatalHealthEducationHeartburnInform
                   , reliefMethods
@@ -1446,8 +1461,44 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             else
                 ( [], Nothing )
 
+        varicoseVeins =
+            if symptomRecorded assembled.measurements VaricoseVeins then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationVaricoseVeins) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationVaricoseVeinsInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.varicoseVeins
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | varicoseVeins = Just value }))
+                        "varicose-veins"
+                        Nothing
+                  ]
+                , Just form.varicoseVeins
+                )
+
+            else
+                ( [], Nothing )
+
+        legPainRedness =
+            if provigeLegPainRednessEducation assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegPainRedness) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationLegPainRednessInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.legPainRedness
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | legPainRedness = Just value }))
+                        "leg-pain-redness"
+                        Nothing
+                  ]
+                , Just form.legPainRedness
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
-            [ nauseaVomiting, legCramps, lowBackPain, constipation, heartburn ]
+            [ nauseaVomiting, legCramps, lowBackPain, constipation, heartburn, varicoseVeins, legPainRedness ]
     in
     ( List.map Tuple.first inputsAndTasks
         |> List.concat
@@ -2781,6 +2832,8 @@ healthEducationFormWithDefault form saved =
                 , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain signs |> Just)
                 , constipation = or form.constipation (EverySet.member EducationConstipation signs |> Just)
                 , heartburn = or form.heartburn (EverySet.member EducationHeartburn signs |> Just)
+                , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins signs |> Just)
+                , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
                 }
             )
 
@@ -2809,6 +2862,8 @@ toHealthEducationValue form =
     , ifNullableTrue EducationLowBackPain form.lowBackPain
     , ifNullableTrue EducationConstipation form.constipation
     , ifNullableTrue EducationHeartburn form.heartburn
+    , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
+    , ifNullableTrue EducationLegPainRedness form.legPainRedness
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

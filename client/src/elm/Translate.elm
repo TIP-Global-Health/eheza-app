@@ -909,6 +909,8 @@ type TranslationId
     | PrenatalHealthEducationLowBackPainInform
     | PrenatalHealthEducationConstipationInform
     | PrenatalHealthEducationHeartburnInform
+    | PrenatalHealthEducationVaricoseVeinsInform
+    | PrenatalHealthEducationLegPainRednessInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -8110,6 +8112,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationVaricoseVeins ->
+                    { english = "Varicose Veins"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationLegPainRedness ->
+                    { english = "Leg Pain Redness"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -8215,6 +8227,16 @@ translationSet trans =
 
         PrenatalHealthEducationHeartburnInform ->
             { english = "Instruct the patient that the following may help relieve heartburn"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationVaricoseVeinsInform ->
+            { english = "Instruct the patient that compression stockings (tight socks or leggings) and elevating their legs will help reduce varicose veins"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationLegPainRednessInform ->
+            { english = "Instruct the patient that regular exercise and stretching can relieve leg pain or redness"
             , kinyarwanda = Nothing
             }
 

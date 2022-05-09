@@ -218,6 +218,12 @@ encodePrenatalHealthEducationSign sign =
             EducationHeartburn ->
                 "heartburn"
 
+            EducationVaricoseVeins ->
+                "varicose-veins"
+
+            EducationLegPainRedness ->
+                "leg-pain-redness"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

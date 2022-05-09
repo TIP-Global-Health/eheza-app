@@ -803,6 +803,8 @@ type PrenatalHealthEducationSign
     | EducationLowBackPain
     | EducationConstipation
     | EducationHeartburn
+    | EducationVaricoseVeins
+    | EducationLegPainRedness
     | NoPrenatalHealthEducationSigns
 
 
