@@ -332,6 +332,9 @@ decodePrenatalHealthEducationSign =
                     "leg-pain-redness" ->
                         succeed EducationLegPainRedness
 
+                    "pelvic-pain" ->
+                        succeed EducationPelvicPain
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

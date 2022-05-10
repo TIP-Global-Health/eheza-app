@@ -76,6 +76,7 @@ type PrenatalDiagnosis
     | DiagnosisHeartburn
     | DiagnosisHeartburnPersistent
     | DiagnosisDeepVeinThrombosis
+    | DiagnosisPelvicPainIntense
     | NoPrenatalDiagnosis
 
 

@@ -183,6 +183,9 @@ decodePrenatalDiagnosis =
                     "dvt" ->
                         succeed DiagnosisDeepVeinThrombosis
 
+                    "pelvic-pain-intense" ->
+                        succeed DiagnosisPelvicPainIntense
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

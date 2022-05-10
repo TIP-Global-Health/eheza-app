@@ -805,6 +805,7 @@ type PrenatalHealthEducationSign
     | EducationHeartburn
     | EducationVaricoseVeins
     | EducationLegPainRedness
+    | EducationPelvicPain
     | NoPrenatalHealthEducationSigns
 
 

@@ -224,6 +224,9 @@ encodePrenatalHealthEducationSign sign =
             EducationLegPainRedness ->
                 "leg-pain-redness"
 
+            EducationPelvicPain ->
+                "pelvic-pain"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

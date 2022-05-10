@@ -911,6 +911,7 @@ type TranslationId
     | PrenatalHealthEducationHeartburnInform
     | PrenatalHealthEducationVaricoseVeinsInform
     | PrenatalHealthEducationLegPainRednessInform
+    | PrenatalHealthEducationPelvicPainInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -7727,6 +7728,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPelvicPainIntense ->
+                    { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -7929,6 +7935,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPelvicPainIntense ->
+                    { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8051,6 +8062,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPelvicPainIntense ->
+                    { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Non Not Urgent diagnoses.
                 _ ->
                     { english = ""
@@ -8140,6 +8156,11 @@ translationSet trans =
 
                 EducationLegPainRedness ->
                     { english = "Leg Pain Redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationPelvicPain ->
+                    { english = "Pelvic Pain"
                     , kinyarwanda = Nothing
                     }
 
@@ -8258,6 +8279,11 @@ translationSet trans =
 
         PrenatalHealthEducationLegPainRednessInform ->
             { english = "Instruct the patient that regular exercise and stretching can relieve leg pain or redness"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationPelvicPainInform ->
+            { english = "Instruct the patient that regular exercise during pregnancy will help prevent pelvic pain"
             , kinyarwanda = Nothing
             }
 

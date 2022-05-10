@@ -305,6 +305,7 @@ expectNextStepsTask currentDate assembled task =
                                         [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
                                     || diagnosed DiagnosisHeartburn assembled
                                     || provideLegPainRednessEducation assembled
+                                    || providePelvicPainEducation assembled
                            )
 
                 ChwPostpartumEncounter ->
@@ -355,6 +356,7 @@ referToHospitalForNonHIVDiagnosis assembled =
         || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
         || diagnosed DiagnosisHeartburnPersistent assembled
         || diagnosed DiagnosisDeepVeinThrombosis assembled
+        || diagnosed DiagnosisPelvicPainIntense assembled
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -427,6 +429,48 @@ hospitalizeDueToLegPainRedness assembled =
                         [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
             )
         |> Maybe.withDefault False
+
+
+providePelvicPainEducation : AssembledData -> Bool
+providePelvicPainEducation assembled =
+    let
+        -- PelvicPain reported at current encounter, and
+        -- all follow up questions were answered No.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member PelvicPain value.symptoms
+                            && (not <| EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions)
+                    )
+                |> Maybe.withDefault False
+
+        -- PelvicPain was not reported at any of previous encounters.
+        byPreviousEncounters =
+            not <| symptomRecordedPreviously assembled PelvicPain
+    in
+    byCurrentEncounter && byPreviousEncounters
+
+
+hospitalizeDueToPelvicPain : AssembledData -> Bool
+hospitalizeDueToPelvicPain assembled =
+    let
+        -- PelvicPain reported at current encounter, and
+        -- any of follow up questions was answered Yes.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member PelvicPain value.symptoms
+                            && EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions
+                    )
+                |> Maybe.withDefault False
+
+        -- PelvicPain was reported at any of previous encounters.
+        byPreviousEncounters =
+            symptomRecordedPreviously assembled PelvicPain
+    in
+    byCurrentEncounter || byPreviousEncounters
 
 
 symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
@@ -1073,6 +1117,9 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
         DiagnosisDeepVeinThrombosis ->
             hospitalizeDueToLegPainRedness assembled
 
+        DiagnosisPelvicPainIntense ->
+            hospitalizeDueToPelvicPain assembled
+
         -- Non Symptoms diagnoses.
         _ ->
             False
@@ -1239,6 +1286,7 @@ symptomsDiagnoses =
     [ DiagnosisHeartburn
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
+    , DiagnosisPelvicPainIntense
     ]
 
 
@@ -1524,8 +1572,26 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             else
                 ( [], Nothing )
 
+        pelvicPain =
+            if providePelvicPainEducation assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationPelvicPain) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationPelvicPainInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.pelvicPain
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | pelvicPain = Just value }))
+                        "pelvic-pain"
+                        Nothing
+                  ]
+                , Just form.pelvicPain
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
-            [ nauseaVomiting, legCramps, lowBackPain, constipation, heartburn, varicoseVeins, legPainRedness ]
+            [ nauseaVomiting, legCramps, lowBackPain, constipation, heartburn, varicoseVeins, legPainRedness, pelvicPain ]
     in
     ( List.map Tuple.first inputsAndTasks
         |> List.concat
@@ -2861,6 +2927,7 @@ healthEducationFormWithDefault form saved =
                 , heartburn = or form.heartburn (EverySet.member EducationHeartburn signs |> Just)
                 , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins signs |> Just)
                 , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
+                , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain signs |> Just)
                 }
             )
 
@@ -2891,6 +2958,7 @@ toHealthEducationValue form =
     , ifNullableTrue EducationHeartburn form.heartburn
     , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
     , ifNullableTrue EducationLegPainRedness form.legPainRedness
+    , ifNullableTrue EducationPelvicPain form.pelvicPain
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

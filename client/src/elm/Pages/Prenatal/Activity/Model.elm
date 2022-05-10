@@ -927,6 +927,7 @@ type alias HealthEducationForm =
     , heartburn : Maybe Bool
     , varicoseVeins : Maybe Bool
     , legPainRedness : Maybe Bool
+    , pelvicPain : Maybe Bool
     }
 
 
@@ -950,6 +951,7 @@ emptyHealthEducationForm =
     , heartburn = Nothing
     , varicoseVeins = Nothing
     , legPainRedness = Nothing
+    , pelvicPain = Nothing
     }
 
 

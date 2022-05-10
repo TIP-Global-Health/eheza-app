@@ -585,6 +585,7 @@ function hedley_prenatal_field_default_field_bases() {
         'heartburn' => 'Heartburn',
         'heartburn-persistent' => 'Persistent Heartburn',
         'dvt' => 'Deep Vein Thrombosis',
+        'pelvic-pain-intense' => 'Intense Pelvic Pain',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

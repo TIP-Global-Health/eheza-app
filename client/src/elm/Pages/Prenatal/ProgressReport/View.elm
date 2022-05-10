@@ -2140,5 +2140,9 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
             -- @todo
             []
 
+        DiagnosisPelvicPainIntense ->
+            --@todo
+            []
+
         NoPrenatalDiagnosis ->
             []

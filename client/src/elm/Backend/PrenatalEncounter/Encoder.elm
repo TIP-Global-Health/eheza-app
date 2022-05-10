@@ -177,5 +177,8 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisDeepVeinThrombosis ->
                 "dvt"
 
+            DiagnosisPelvicPainIntense ->
+                "pelvic-pain-intense"
+
             NoPrenatalDiagnosis ->
                 "none"
