@@ -303,9 +303,9 @@ expectNextStepsTask currentDate assembled task =
                                 provideNauseaAndVomitingEducation assembled
                                     || List.any (symptomRecorded assembled.measurements)
                                         [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
-                                    || diagnosed DiagnosisHeartburn assembled
                                     || provideLegPainRednessEducation assembled
                                     || providePelvicPainEducation assembled
+                                    || diagnosedAnyOf [ DiagnosisHeartburn, DiagnosisCandidiasis ] assembled
                            )
 
                 ChwPostpartumEncounter ->
@@ -328,7 +328,12 @@ expectNextStepsTask currentDate assembled task =
                     )
                         || diagnosedMalaria assembled
                         || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
-                        || diagnosed DiagnosisHeartburn assembled
+                        || diagnosedAnyOf
+                            [ DiagnosisHeartburn
+                            , DiagnosisUrinaryTractInfection
+                            , DiagnosisCandidiasis
+                            ]
+                            assembled
                    )
 
         NextStepsWait ->
@@ -353,10 +358,14 @@ referToHospitalForNonHIVDiagnosis assembled =
     in
     emergencyReferalRequired assembled
         || (diagnosedMalaria assembled && severeMalariaTreatment)
-        || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
-        || diagnosed DiagnosisHeartburnPersistent assembled
-        || diagnosed DiagnosisDeepVeinThrombosis assembled
-        || diagnosed DiagnosisPelvicPainIntense assembled
+        || diagnosedAnyOf
+            [ DiagnosisModeratePreeclampsiaImmediate
+            , DiagnosisHeartburnPersistent
+            , DiagnosisDeepVeinThrombosis
+            , DiagnosisPelvicPainIntense
+            , DiagnosisPyelonephritis
+            ]
+            assembled
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -420,7 +429,7 @@ provideLegPainRednessEducation assembled =
 hospitalizeDueToLegPainRedness : AssembledData -> Bool
 hospitalizeDueToLegPainRedness assembled =
     -- LegPainRedness reported at current encounter, and
-    -- all follow up questions were answered No.
+    -- at least one follow up questions were answered Yes.
     getMeasurementValueFunc assembled.measurements.symptomReview
         |> Maybe.map
             (\value ->
@@ -1120,9 +1129,54 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
         DiagnosisPelvicPainIntense ->
             hospitalizeDueToPelvicPain assembled
 
+        DiagnosisUrinaryTractInfection ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member BurningWithUrination value.symptoms
+                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionVaginalItching, SymptomQuestionVaginalDischarge ]
+                            && (not <| flankPainPresent value.flankPainSign)
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisPyelonephritis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member BurningWithUrination value.symptoms
+                            && flankPainPresent value.flankPainSign
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisCandidiasis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member BurningWithUrination value.symptoms
+                            && List.any (\question -> EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionVaginalItching, SymptomQuestionVaginalDischarge ]
+                    )
+                |> Maybe.withDefault False
+
         -- Non Symptoms diagnoses.
         _ ->
             False
+
+
+{-| Flank pain on left, right or both sides.
+-}
+flankPainPresent : Maybe PrenatalFlankPainSign -> Bool
+flankPainPresent sign =
+    case sign of
+        Nothing ->
+            False
+
+        Just NoFlankPain ->
+            False
+
+        _ ->
+            True
 
 
 immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
@@ -1287,6 +1341,9 @@ symptomsDiagnoses =
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
+    , DiagnosisUrinaryTractInfection
+    , DiagnosisPyelonephritis
+    , DiagnosisCandidiasis
     ]
 
 
@@ -1590,8 +1647,35 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             else
                 ( [], Nothing )
 
+        candidiasis =
+            if diagnosed DiagnosisCandidiasis assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationCandidiasis) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationCandidiasisInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.candidiasis
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | candidiasis = Just value }))
+                        "candidiasis"
+                        Nothing
+                  ]
+                , Just form.candidiasis
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
-            [ nauseaVomiting, legCramps, lowBackPain, constipation, heartburn, varicoseVeins, legPainRedness, pelvicPain ]
+            [ nauseaVomiting
+            , legCramps
+            , lowBackPain
+            , constipation
+            , heartburn
+            , varicoseVeins
+            , legPainRedness
+            , pelvicPain
+            , candidiasis
+            ]
     in
     ( List.map Tuple.first inputsAndTasks
         |> List.concat
@@ -2928,6 +3012,7 @@ healthEducationFormWithDefault form saved =
                 , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins signs |> Just)
                 , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
                 , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain signs |> Just)
+                , candidiasis = or form.candidiasis (EverySet.member EducationCandidiasis signs |> Just)
                 }
             )
 
@@ -2959,6 +3044,7 @@ toHealthEducationValue form =
     , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
     , ifNullableTrue EducationLegPainRedness form.legPainRedness
     , ifNullableTrue EducationPelvicPain form.pelvicPain
+    , ifNullableTrue EducationCandidiasis form.candidiasis
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

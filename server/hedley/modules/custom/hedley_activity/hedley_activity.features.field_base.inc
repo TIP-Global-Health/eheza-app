@@ -1384,6 +1384,7 @@ function hedley_activity_field_default_field_bases() {
         'varicose-veins' => 'Varicose Veins',
         'leg-pain-redness' => 'Leg Pain Redness',
         'pelvic-pain' => 'Pelvic Pain',
+        'candidiasis' => 'Candidiasis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

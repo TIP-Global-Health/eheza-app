@@ -335,6 +335,9 @@ decodePrenatalHealthEducationSign =
                     "pelvic-pain" ->
                         succeed EducationPelvicPain
 
+                    "candidiasis" ->
+                        succeed EducationCandidiasis
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

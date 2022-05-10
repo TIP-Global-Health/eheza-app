@@ -2144,5 +2144,17 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
+        DiagnosisUrinaryTractInfection ->
+            --@todo
+            []
+
+        DiagnosisPyelonephritis ->
+            --@todo
+            []
+
+        DiagnosisCandidiasis ->
+            --@todo
+            []
+
         NoPrenatalDiagnosis ->
             []

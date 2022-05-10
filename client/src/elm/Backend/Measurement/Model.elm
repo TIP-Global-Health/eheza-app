@@ -806,6 +806,7 @@ type PrenatalHealthEducationSign
     | EducationVaricoseVeins
     | EducationLegPainRedness
     | EducationPelvicPain
+    | EducationCandidiasis
     | NoPrenatalHealthEducationSigns
 
 
@@ -1125,10 +1126,16 @@ type RecommendedTreatmentSign
     | TreatmentMethyldopa2
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
+    | NoTreatmentForHypertension
       -- For Heartburn:
     | TreatmentAluminiumHydroxide
     | TreatmentHealthEducationForHeartburn
-    | NoTreatmentForHypertension
+      -- For Urinary Tract Infection:
+    | TreatmentNitrfurantion
+    | TreatmentAmoxicilin
+      -- For Candidiasis:
+    | TreatmentClotrimaxazole200
+    | TreatmentClotrimaxazole500
 
 
 type alias PrenatalSymptomReview =

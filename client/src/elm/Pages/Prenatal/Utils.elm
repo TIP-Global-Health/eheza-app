@@ -377,10 +377,46 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
 
                             else
                                 ( [], 0, 0 )
+
+                        ( urinaryTractInfectionInputs, urinaryTractInfectionCompleted, urinaryTractInfectionActive ) =
+                            if diagnosed DiagnosisUrinaryTractInfection assembled then
+                                resolveRecommendedTreatmentForUrinaryTractInfectionInputsAndTasks language
+                                    currentDate
+                                    setRecommendedTreatmentSignMsg
+                                    recommendedTreatmentSignsForUrinaryTractInfection
+                                    assembled
+                                    form
+
+                            else
+                                ( [], 0, 0 )
+
+                        ( candidiasisInputs, candidiasisCompleted, candidiasisActive ) =
+                            if diagnosed DiagnosisCandidiasis assembled then
+                                resolveRecommendedTreatmentForCandidiasisInputsAndTasks language
+                                    currentDate
+                                    setRecommendedTreatmentSignMsg
+                                    recommendedTreatmentSignsForCandidiasis
+                                    assembled
+                                    form
+
+                            else
+                                ( [], 0, 0 )
                     in
-                    ( malariaInputs ++ heartburnInputs ++ hypertensionInputs
-                    , malariaCompleted + heartburnCompleted + hypertensionCompleted
-                    , malariaActive + heartburnActive + hypertensionActive
+                    ( malariaInputs
+                        ++ heartburnInputs
+                        ++ hypertensionInputs
+                        ++ urinaryTractInfectionInputs
+                        ++ candidiasisInputs
+                    , malariaCompleted
+                        + heartburnCompleted
+                        + hypertensionCompleted
+                        + urinaryTractInfectionCompleted
+                        + candidiasisCompleted
+                    , malariaActive
+                        + heartburnActive
+                        + hypertensionActive
+                        + urinaryTractInfectionActive
+                        + candidiasisActive
                     )
 
                 PrenatalEncounterPhaseRecurrent ->
@@ -607,9 +643,8 @@ resolveRecommendedTreatmentForHeartburnInputsAndTasks :
     -> ( List (Html msg), Int, Int )
 resolveRecommendedTreatmentForHeartburnInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
     let
-        -- Since we may have values set for another diagnosis, or from
-        -- inital phase of encounter, we need to filter them out,
-        -- to be able to determine current value.
+        -- Since we may have values set for another diagnosis,
+        -- we need to filter them out, to be able to determine current value.
         currentValue =
             Maybe.andThen
                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHeartburn)
@@ -648,6 +683,96 @@ recommendedTreatmentSignsForHeartburn : List RecommendedTreatmentSign
 recommendedTreatmentSignsForHeartburn =
     [ TreatmentAluminiumHydroxide
     , TreatmentHealthEducationForHeartburn
+    ]
+
+
+resolveRecommendedTreatmentForUrinaryTractInfectionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForUrinaryTractInfectionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
+    let
+        -- Since we may have values set for another diagnosis,
+        -- we need to filter them out, to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForUrinaryTractInfection)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+    in
+    ( [ viewCustomLabel language Translate.UrinaryTractInfectionRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.UrinaryTractInfectionRecommendedTreatmentHelper ++ ".")
+            , p [ class "instructions-warning" ] [ text <| translate language Translate.UrinaryTractInfectionRecommendedTreatmentInstructions ++ "." ]
+            ]
+      , viewCheckBoxSelectCustomInput language
+            recommendedTreatmentSignsForUrinaryTractInfection
+            []
+            currentValue
+            (setRecommendedTreatmentSignMsg allowedSigns)
+            (viewTreatmentOptionWithDosage language)
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+recommendedTreatmentSignsForUrinaryTractInfection : List RecommendedTreatmentSign
+recommendedTreatmentSignsForUrinaryTractInfection =
+    [ TreatmentNitrfurantion
+    , TreatmentAmoxicilin
+    ]
+
+
+resolveRecommendedTreatmentForCandidiasisInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> List RecommendedTreatmentSign
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForCandidiasisInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
+    let
+        -- Since we may have values set for another diagnosis,
+        -- we need to filter them out, to be able to determine current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForCandidiasis)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+    in
+    ( [ viewCustomLabel language Translate.CandidiasisRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.CandidiasisRecommendedTreatmentHelper ++ ".")
+            , p [ class "instructions-warning" ] [ text <| translate language Translate.CandidiasisRecommendedTreatmentInstructions ++ "." ]
+            ]
+      , viewCheckBoxSelectCustomInput language
+            recommendedTreatmentSignsForCandidiasis
+            []
+            currentValue
+            (setRecommendedTreatmentSignMsg allowedSigns)
+            (viewTreatmentOptionWithDosage language)
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+recommendedTreatmentSignsForCandidiasis : List RecommendedTreatmentSign
+recommendedTreatmentSignsForCandidiasis =
+    [ TreatmentClotrimaxazole200
+    , TreatmentClotrimaxazole500
     ]
 
 

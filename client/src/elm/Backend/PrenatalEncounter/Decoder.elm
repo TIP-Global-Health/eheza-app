@@ -186,6 +186,15 @@ decodePrenatalDiagnosis =
                     "pelvic-pain-intense" ->
                         succeed DiagnosisPelvicPainIntense
 
+                    "urinary-tract-infection" ->
+                        succeed DiagnosisUrinaryTractInfection
+
+                    "pyelonephritis" ->
+                        succeed DiagnosisPyelonephritis
+
+                    "candidiasis" ->
+                        succeed DiagnosisCandidiasis
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

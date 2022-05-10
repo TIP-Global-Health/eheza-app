@@ -227,6 +227,9 @@ encodePrenatalHealthEducationSign sign =
             EducationPelvicPain ->
                 "pelvic-pain"
 
+            EducationCandidiasis ->
+                "candidiasis"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

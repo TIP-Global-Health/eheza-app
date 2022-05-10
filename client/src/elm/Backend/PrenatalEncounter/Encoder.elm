@@ -180,5 +180,14 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisPelvicPainIntense ->
                 "pelvic-pain-intense"
 
+            DiagnosisUrinaryTractInfection ->
+                "urinary-tract-infection"
+
+            DiagnosisPyelonephritis ->
+                "pyelonephritis"
+
+            DiagnosisCandidiasis ->
+                "candidiasis"
+
             NoPrenatalDiagnosis ->
                 "none"

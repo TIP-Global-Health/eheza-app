@@ -1548,14 +1548,26 @@ recommendedTreatmentSignToString sign =
         TreatmentMethyldopa4 ->
             "methyldopa-4"
 
+        NoTreatmentForHypertension ->
+            "no-treatment-hypertension"
+
         TreatmentAluminiumHydroxide ->
             "aluminium-hydroxide"
 
         TreatmentHealthEducationForHeartburn ->
             "education-heartburn"
 
-        NoTreatmentForHypertension ->
-            "no-treatment-hypertension"
+        TreatmentNitrfurantion ->
+            "nitrfurantion"
+
+        TreatmentAmoxicilin ->
+            "amoxicilin"
+
+        TreatmentClotrimaxazole200 ->
+            "clotrimaxazole-200"
+
+        TreatmentClotrimaxazole500 ->
+            "clotrimaxazole-500"
 
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
@@ -1603,14 +1615,26 @@ recommendedTreatmentSignFromString sign =
         "methyldopa-4" ->
             Just TreatmentMethyldopa4
 
+        "no-treatment-hypertension" ->
+            Just NoTreatmentForHypertension
+
         "aluminium-hydroxide" ->
             Just TreatmentAluminiumHydroxide
 
         "education-heartburn" ->
             Just TreatmentHealthEducationForHeartburn
 
-        "no-treatment-hypertension" ->
-            Just NoTreatmentForHypertension
+        "nitrfurantion" ->
+            Just TreatmentNitrfurantion
+
+        "amoxicilin" ->
+            Just TreatmentAmoxicilin
+
+        "clotrimaxazole-200" ->
+            Just TreatmentClotrimaxazole200
+
+        "clotrimaxazole-500" ->
+            Just TreatmentClotrimaxazole500
 
         _ ->
             Nothing
