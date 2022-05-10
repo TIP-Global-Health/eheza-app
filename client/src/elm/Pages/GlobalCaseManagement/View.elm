@@ -29,11 +29,7 @@ import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.AcuteIllness.Encounter.Utils
-    exposing
-        ( compareAcuteIllnessEncounterDataDesc
-        , getAcuteIllnessEncountersForParticipant
-        )
+import Pages.AcuteIllness.Encounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))

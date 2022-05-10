@@ -26,7 +26,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
@@ -1109,8 +1109,9 @@ type TranslationId
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
-    | SubsequentEncounter
     | SubsequentAntenatalVisit
+    | SubsequentEncounter
+    | SubsequentEncounterReferral AcuteIllnessEncounterType
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
     | SuspectedCovid19CaseAlert
@@ -10347,6 +10348,17 @@ translationSet trans =
             { english = "Subsequent Antenatal Visit"
             , kinyarwanda = Just "Igihe cyo kongera kwipimisha inda"
             }
+
+        SubsequentEncounterReferral encounterType ->
+            if encounterType == AcuteIllnessEncounterCHW then
+                { english = "CHW Referral"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Health Center Referral"
+                , kinyarwanda = Nothing
+                }
 
         SuccessiveAbortions ->
             { english = "Successive Abortions"
