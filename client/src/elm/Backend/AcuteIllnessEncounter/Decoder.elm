@@ -31,6 +31,9 @@ decodeAcuteIllnessEncounterType =
                     "nurse-encounter" ->
                         succeed AcuteIllnessEncounterNurse
 
+                    "nurse-encounter-subsequent" ->
+                        succeed AcuteIllnessEncounterNurseSubsequent
+
                     "chw-encounter" ->
                         succeed AcuteIllnessEncounterCHW
 

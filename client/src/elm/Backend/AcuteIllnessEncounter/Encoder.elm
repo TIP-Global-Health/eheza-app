@@ -36,6 +36,9 @@ encodeAcuteIllnessEncounterType encounterType =
             AcuteIllnessEncounterNurse ->
                 "nurse-encounter"
 
+            AcuteIllnessEncounterNurseSubsequent ->
+                "nurse-encounter-subsequent"
+
             AcuteIllnessEncounterCHW ->
                 "chw-encounter"
 
