@@ -96,6 +96,7 @@ emptyModel =
 
 type AcuteIllnessEncounterType
     = AcuteIllnessEncounterNurse
+    | AcuteIllnessEncounterNurseSubsequent
     | AcuteIllnessEncounterCHW
 
 
