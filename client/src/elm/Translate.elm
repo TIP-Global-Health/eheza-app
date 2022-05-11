@@ -1212,6 +1212,8 @@ type TranslationId
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
+    | TuberculosisInstructions
+    | TuberculosisWarning
     | TwoVisits
     | Type
     | UbudeheLabel
@@ -11351,6 +11353,16 @@ translationSet trans =
         TuberculosisPresent ->
             { english = "Tuberculosis in the present"
             , kinyarwanda = Just "Arwaye igituntu"
+            }
+
+        TuberculosisInstructions ->
+            { english = "Follow TB protocols"
+            , kinyarwanda = Nothing
+            }
+
+        TuberculosisWarning ->
+            { english = "Patient is high risk for active Tuberculosis"
+            , kinyarwanda = Nothing
             }
 
         TwoVisits ->
