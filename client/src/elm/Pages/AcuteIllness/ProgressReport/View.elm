@@ -1112,11 +1112,11 @@ viewActionsTakenSendToHC language date encounterType measurements =
             getMeasurementValueFunc measurements.sendToHC
 
         facility =
-            if encounterType == AcuteIllnessEncounterNurse then
-                FacilityHospital
+            if encounterType == AcuteIllnessEncounterCHW then
+                FacilityHealthCenter
 
             else
-                FacilityHealthCenter
+                FacilityHospital
 
         completedForm =
             Maybe.map (.signs >> EverySet.member HandReferrerForm) sendToHCSigns

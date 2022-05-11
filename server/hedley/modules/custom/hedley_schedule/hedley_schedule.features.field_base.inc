@@ -126,6 +126,7 @@ function hedley_schedule_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'nurse-encounter' => 'Nurse Encounter',
+        'nurse-encounter-subsequent' => 'Nurse Encounter Subsequent',
         'chw-encounter' => 'CHW Encounter',
       ),
       'allowed_values_function' => '',
