@@ -807,6 +807,8 @@ type PrenatalHealthEducationSign
     | EducationLegPainRedness
     | EducationPelvicPain
     | EducationCandidiasis
+    | EducationGonorrhea
+    | EducationTrichomonasOrBacterialVaginosis
     | NoPrenatalHealthEducationSigns
 
 

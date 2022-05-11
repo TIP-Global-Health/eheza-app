@@ -338,6 +338,12 @@ decodePrenatalHealthEducationSign =
                     "candidiasis" ->
                         succeed EducationCandidiasis
 
+                    "gonorrhea" ->
+                        succeed EducationGonorrhea
+
+                    "trichomonas-or-bv" ->
+                        succeed EducationTrichomonasOrBacterialVaginosis
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

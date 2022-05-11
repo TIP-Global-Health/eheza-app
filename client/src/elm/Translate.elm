@@ -916,6 +916,8 @@ type TranslationId
     | PrenatalHealthEducationLegPainRednessInform
     | PrenatalHealthEducationPelvicPainInform
     | PrenatalHealthEducationCandidiasisInform
+    | PrenatalHealthEducationGonorrheaInform
+    | PrenatalHealthEducationTrichomonasOrBacterialVaginosisInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -8266,6 +8268,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -8390,6 +8402,16 @@ translationSet trans =
             }
 
         PrenatalHealthEducationCandidiasisInform ->
+            { english = "Council patient on safer sex parctices"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationGonorrheaInform ->
+            { english = "Council patient on safer sex parctices"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationTrichomonasOrBacterialVaginosisInform ->
             { english = "Council patient on safer sex parctices"
             , kinyarwanda = Nothing
             }

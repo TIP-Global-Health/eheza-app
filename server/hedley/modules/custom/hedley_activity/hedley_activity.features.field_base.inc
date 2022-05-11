@@ -1385,6 +1385,8 @@ function hedley_activity_field_default_field_bases() {
         'leg-pain-redness' => 'Leg Pain Redness',
         'pelvic-pain' => 'Pelvic Pain',
         'candidiasis' => 'Candidiasis',
+        'gonorrhea' => 'Gonorrhea',
+        'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

@@ -230,6 +230,12 @@ encodePrenatalHealthEducationSign sign =
             EducationCandidiasis ->
                 "candidiasis"
 
+            EducationGonorrhea ->
+                "gonorrhea"
+
+            EducationTrichomonasOrBacterialVaginosis ->
+                "trichomonas-or-bv"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
