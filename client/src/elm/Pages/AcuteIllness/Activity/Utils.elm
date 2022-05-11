@@ -1560,6 +1560,15 @@ nonAdministrationReasonToSign sign reason =
         FolicAcid ->
             MedicationFolicAcid reason
 
+        Ceftriaxone ->
+            MedicationCeftriaxone reason
+
+        Azithromycin ->
+            MedicationAzithromycin reason
+
+        Metronidazole ->
+            MedicationMetronidazole reason
+
         _ ->
             NoMedicationNonAdministrationSigns
 

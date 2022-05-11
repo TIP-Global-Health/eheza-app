@@ -325,7 +325,10 @@ type TranslationId
     | Admin
     | Administer
     | AdministerAlbendazoleHelper
+    | AdministerAzithromycinHelper
+    | AdministerCeftriaxoneHelper
     | AdministerMebendezoleHelper
+    | AdministerMetronidazoleHelper
     | AdministerPrenatalMebendezoleHelper
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
@@ -729,6 +732,11 @@ type TranslationId
     | MedicationDistributionHelperDiscordantPartnershipNoARVs
     | MedicationDistributionHelperHIV
     | MedicationDistributionHelperMebendazole
+    | MedicationDistributionHelperGonorrhea
+    | MedicationDistributionHelperTrichomonasOrBacterialVaginosis
+    | MedicationDistributionNoticeGonorrhea
+    | MedicationDistributionNoticeGonorrheaPartnerMed1
+    | MedicationDistributionNoticeGonorrheaPartnerMed2
     | MedicationDistributionSign MedicationDistributionSign
     | MedicationDoxycycline
     | MedicationDosesMissedQuestion
@@ -1802,9 +1810,24 @@ translationSet trans =
             , kinyarwanda = Just "Tanga umuti"
             }
 
+        AdministerAzithromycinHelper ->
+            { english = "By mouth 1x"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerCeftriaxoneHelper ->
+            { english = "IM once"
+            , kinyarwanda = Nothing
+            }
+
         AdministerMebendezoleHelper ->
             { english = "Give the child one tablet by mouth"
             , kinyarwanda = Just "Ha umwana ikinini kimwe akinywe"
+            }
+
+        AdministerMetronidazoleHelper ->
+            { english = "By mouth twice a day for 7 days"
+            , kinyarwanda = Nothing
             }
 
         AdministerAlbendazoleHelper ->
@@ -5801,6 +5824,31 @@ translationSet trans =
 
         MedicationDistributionHelperMebendazole ->
             { english = "This patient is over 24 weeks EGA and has not had a dewormer in the last 6 months"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperGonorrhea ->
+            { english = "This patient has signs of possible Gonorrhea"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperTrichomonasOrBacterialVaginosis ->
+            { english = "This patient has signs of possible Trichomonas or Bacterial Vaginosis"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionNoticeGonorrhea ->
+            { english = "Note: It is also recommend to prescribe the partner"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionNoticeGonorrheaPartnerMed1 ->
+            { english = "Ciproflaxcin (1000mg): by mouth as a single dose"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionNoticeGonorrheaPartnerMed2 ->
+            { english = "Doxycyline (100mg): by moth 2x a day for 7 days"
             , kinyarwanda = Nothing
             }
 

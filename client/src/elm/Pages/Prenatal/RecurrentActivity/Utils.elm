@@ -29,6 +29,7 @@ import Pages.Utils
         , viewQuestionLabel
         )
 import Translate exposing (Language, TranslationId, translate)
+import Translate.Model exposing (Language(..))
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
@@ -399,7 +400,7 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
-                && ((resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseRecurrent assembled
+                && ((resolveMedicationsSetByDiagnoses English currentDate PrenatalEncounterPhaseRecurrent assembled
                         |> List.isEmpty
                         |> not
                     )
