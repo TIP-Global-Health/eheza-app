@@ -10150,12 +10150,12 @@ translationSet trans =
         SubsequentEncounterReferral encounterType ->
             if encounterType == AcuteIllnessEncounterCHW then
                 { english = "CHW Referral"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Kohereza umurwayi ku mujyanama w'ubuzima"
                 }
 
             else
                 { english = "Health Center Referral"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Kohereza umurwayi ku kigo nderabuzima"
                 }
 
         SuccessiveAbortions ->
