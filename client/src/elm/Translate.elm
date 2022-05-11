@@ -5881,6 +5881,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Ceftriaxone ->
+                    { english = "Ceftriaxone"
+                    , kinyarwanda = Nothing
+                    }
+
+                Azithromycin ->
+                    { english = "Azithromycin"
+                    , kinyarwanda = Nothing
+                    }
+
+                Metronidazole ->
+                    { english = "Metronidazole"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing

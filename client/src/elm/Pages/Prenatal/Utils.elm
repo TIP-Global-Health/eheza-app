@@ -167,58 +167,20 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
             )
 
 
-medicationDistributionResolveFromValue : List MedicationDistributionSign -> PrenatalMedicationDistributionValue -> MedicationDistributionSign -> Maybe Bool
+medicationDistributionResolveFromValue :
+    List MedicationDistributionSign
+    -> PrenatalMedicationDistributionValue
+    -> MedicationDistributionSign
+    -> Maybe Bool
 medicationDistributionResolveFromValue allowedSigns value sign =
     let
         valueSetForSign =
             EverySet.member sign value.distributionSigns
 
         nonAdministrationNoteSetForSign =
-            EverySet.toList value.nonAdministrationSigns
-                |> List.filterMap
-                    (\sign_ ->
-                        case sign_ of
-                            MedicationAmoxicillin reason ->
-                                Just ( Amoxicillin, reason )
-
-                            MedicationCoartem reason ->
-                                Just ( Coartem, reason )
-
-                            MedicationORS reason ->
-                                Just ( ORS, reason )
-
-                            MedicationZinc reason ->
-                                Just ( Zinc, reason )
-
-                            MedicationParacetamol reason ->
-                                Just ( Paracetamol, reason )
-
-                            MedicationMebendezole reason ->
-                                Just ( Mebendezole, reason )
-
-                            MedicationTenofovir reason ->
-                                Just ( Tenofovir, reason )
-
-                            MedicationLamivudine reason ->
-                                Just ( Lamivudine, reason )
-
-                            MedicationDolutegravir reason ->
-                                Just ( Dolutegravir, reason )
-
-                            MedicationTDF3TC reason ->
-                                Just ( TDF3TC, reason )
-
-                            MedicationIron reason ->
-                                Just ( Iron, reason )
-
-                            MedicationFolicAcid reason ->
-                                Just ( FolicAcid, reason )
-
-                            NoMedicationNonAdministrationSigns ->
-                                Nothing
-                    )
-                |> List.filter (Tuple.first >> (==) sign)
-                |> List.isEmpty
+            Page.Utils.resolveMedicationsNonAdministrationReasons value
+                |> Dict.filter (\medicationDistributionSign _ -> medicationDistributionSign == sign)
+                |> Dict.isEmpty
                 |> not
     in
     if valueSetForSign then

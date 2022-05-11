@@ -1487,6 +1487,11 @@ type MedicationDistributionSign
       -- Anemia medication
     | Iron
     | FolicAcid
+      -- Gonorhea medication
+    | Ceftriaxone
+    | Azithromycin
+      -- Trichomonas / Bacterial Vaginosis medication
+    | Metronidazole
     | NoMedicationDistributionSigns
     | NoMedicationDistributionSignsInitialPhase
     | NoMedicationDistributionSignsRecurrentPhase
@@ -1517,6 +1522,9 @@ type MedicationNonAdministrationSign
     | MedicationTDF3TC AdministrationNote
     | MedicationIron AdministrationNote
     | MedicationFolicAcid AdministrationNote
+    | MedicationCeftriaxone AdministrationNote
+    | MedicationAzithromycin AdministrationNote
+    | MedicationMetronidazole AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
