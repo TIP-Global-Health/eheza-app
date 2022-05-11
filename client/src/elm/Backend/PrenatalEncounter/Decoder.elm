@@ -195,6 +195,12 @@ decodePrenatalDiagnosis =
                     "candidiasis" ->
                         succeed DiagnosisCandidiasis
 
+                    "gonorrhea" ->
+                        succeed DiagnosisGonorrhea
+
+                    "trichomonas-or-bv" ->
+                        succeed DiagnosisTrichomonasOrBacterialVaginosis
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

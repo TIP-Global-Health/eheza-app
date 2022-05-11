@@ -80,6 +80,8 @@ type PrenatalDiagnosis
     | DiagnosisUrinaryTractInfection
     | DiagnosisPyelonephritis
     | DiagnosisCandidiasis
+    | DiagnosisGonorrhea
+    | DiagnosisTrichomonasOrBacterialVaginosis
     | NoPrenatalDiagnosis
 
 

@@ -589,6 +589,8 @@ function hedley_prenatal_field_default_field_bases() {
         'urinary-tract-infection' => 'Urinary Tract Infection',
         'pyelonephritis' => 'Pyelonephritis',
         'candidiasis' => 'Candidiasis',
+        'gonorrhea' => 'Gonorrhea',
+        'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

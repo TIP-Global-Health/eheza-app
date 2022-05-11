@@ -7770,6 +7770,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -7992,6 +8002,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8131,6 +8151,16 @@ translationSet trans =
 
                 DiagnosisCandidiasis ->
                     { english = "Candidiasis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
                     , kinyarwanda = Nothing
                     }
 

@@ -305,7 +305,13 @@ expectNextStepsTask currentDate assembled task =
                                         [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
                                     || provideLegPainRednessEducation assembled
                                     || providePelvicPainEducation assembled
-                                    || diagnosedAnyOf [ DiagnosisHeartburn, DiagnosisCandidiasis ] assembled
+                                    || diagnosedAnyOf
+                                        [ DiagnosisHeartburn
+                                        , DiagnosisCandidiasis
+                                        , DiagnosisGonorrhea
+                                        , DiagnosisTrichomonasOrBacterialVaginosis
+                                        ]
+                                        assembled
                            )
 
                 ChwPostpartumEncounter ->
@@ -332,6 +338,8 @@ expectNextStepsTask currentDate assembled task =
                             [ DiagnosisHeartburn
                             , DiagnosisUrinaryTractInfection
                             , DiagnosisCandidiasis
+                            , DiagnosisGonorrhea
+                            , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
                    )
@@ -1159,6 +1167,25 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
+        DiagnosisGonorrhea ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member AbnormalVaginalDischarge value.symptoms
+                            && EverySet.member SymptomQuestionPartnerUrethralDischarge value.symptomQuestions
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member AbnormalVaginalDischarge value.symptoms
+                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionVaginalItching, SymptomQuestionPartnerUrethralDischarge ]
+                    )
+                |> Maybe.withDefault False
+
         -- Non Symptoms diagnoses.
         _ ->
             False
@@ -1344,6 +1371,8 @@ symptomsDiagnoses =
     , DiagnosisUrinaryTractInfection
     , DiagnosisPyelonephritis
     , DiagnosisCandidiasis
+    , DiagnosisGonorrhea
+    , DiagnosisTrichomonasOrBacterialVaginosis
     ]
 
 

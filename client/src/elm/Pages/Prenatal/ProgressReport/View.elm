@@ -2156,5 +2156,13 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
+        DiagnosisGonorrhea ->
+            --@todo
+            []
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            --@todo
+            []
+
         NoPrenatalDiagnosis ->
             []
