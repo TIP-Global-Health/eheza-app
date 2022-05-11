@@ -1694,13 +1694,13 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
                             |> String.join ", "
                 in
                 ( [ div [ class "label header" ] [ text label ]
-                  , viewCustomLabel language Translate.PrenatalHealthEducationCandidiasisInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationSaferSexInform
+                  , viewCustomLabel language Translate.PrenatalHealthEducationSaferSexInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
                   , viewBoolInput
                         language
                         form.saferSex
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | candidiasis = Just value }))
-                        "candidiasis"
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | saferSex = Just value }))
+                        "safer-sex"
                         Nothing
                   ]
                 , Just form.saferSex

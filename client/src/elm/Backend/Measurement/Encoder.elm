@@ -227,14 +227,8 @@ encodePrenatalHealthEducationSign sign =
             EducationPelvicPain ->
                 "pelvic-pain"
 
-            EducationCandidiasis ->
-                "candidiasis"
-
-            EducationGonorrhea ->
-                "gonorrhea"
-
-            EducationTrichomonasOrBacterialVaginosis ->
-                "trichomonas-or-bv"
+            EducationSaferSex ->
+                "safer-sex"
 
             NoPrenatalHealthEducationSigns ->
                 "none"

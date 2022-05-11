@@ -8261,18 +8261,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                EducationCandidiasis ->
-                    { english = "Burning on Urination"
-                    , kinyarwanda = Nothing
-                    }
-
-                EducationGonorrhea ->
-                    { english = "Gonorrhea"
-                    , kinyarwanda = Nothing
-                    }
-
-                EducationTrichomonasOrBacterialVaginosis ->
-                    { english = "Trichomonas or Bacterial Vaginosis"
+                EducationSaferSex ->
+                    { english = "Safer Sex Practices"
                     , kinyarwanda = Nothing
                     }
 

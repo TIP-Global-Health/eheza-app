@@ -335,14 +335,8 @@ decodePrenatalHealthEducationSign =
                     "pelvic-pain" ->
                         succeed EducationPelvicPain
 
-                    "candidiasis" ->
-                        succeed EducationCandidiasis
-
-                    "gonorrhea" ->
-                        succeed EducationGonorrhea
-
-                    "trichomonas-or-bv" ->
-                        succeed EducationTrichomonasOrBacterialVaginosis
+                    "safer-sex" ->
+                        succeed EducationSaferSex
 
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns

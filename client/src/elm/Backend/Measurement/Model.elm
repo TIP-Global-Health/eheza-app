@@ -806,9 +806,7 @@ type PrenatalHealthEducationSign
     | EducationVaricoseVeins
     | EducationLegPainRedness
     | EducationPelvicPain
-    | EducationCandidiasis
-    | EducationGonorrhea
-    | EducationTrichomonasOrBacterialVaginosis
+    | EducationSaferSex
     | NoPrenatalHealthEducationSigns
 
 
