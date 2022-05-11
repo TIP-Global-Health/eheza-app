@@ -1676,55 +1676,34 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             else
                 ( [], Nothing )
 
-        candidiasis =
-            if diagnosed DiagnosisCandidiasis assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationCandidiasis) "" "label header"
+        saferSex =
+            let
+                saferSexDiagnoses =
+                    List.filter
+                        (\diagnosis ->
+                            EverySet.member diagnosis assembled.encounter.diagnoses
+                        )
+                        [ DiagnosisCandidiasis, DiagnosisGonorrhea, DiagnosisTrichomonasOrBacterialVaginosis ]
+            in
+            if not <| List.isEmpty saferSexDiagnoses then
+                let
+                    label =
+                        List.map
+                            (Translate.PrenatalDiagnosis >> translate language)
+                            saferSexDiagnoses
+                            |> String.join ", "
+                in
+                ( [ div [ class "label header" ] [ text label ]
                   , viewCustomLabel language Translate.PrenatalHealthEducationCandidiasisInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationSaferSexInform
                   , viewBoolInput
                         language
-                        form.candidiasis
+                        form.saferSex
                         (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | candidiasis = Just value }))
                         "candidiasis"
                         Nothing
                   ]
-                , Just form.candidiasis
-                )
-
-            else
-                ( [], Nothing )
-
-        gonorrhea =
-            if diagnosed DiagnosisGonorrhea assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationGonorrhea) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationGonorrheaInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.gonorrhea
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | gonorrhea = Just value }))
-                        "gonorrhea"
-                        Nothing
-                  ]
-                , Just form.gonorrhea
-                )
-
-            else
-                ( [], Nothing )
-
-        trichomonasOrBV =
-            if diagnosed DiagnosisTrichomonasOrBacterialVaginosis assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationTrichomonasOrBacterialVaginosis) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationTrichomonasOrBacterialVaginosisInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.trichomonasOrBV
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | trichomonasOrBV = Just value }))
-                        "trichomonas-or-bv"
-                        Nothing
-                  ]
-                , Just form.trichomonasOrBV
+                , Just form.saferSex
                 )
 
             else
@@ -1739,9 +1718,7 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             , varicoseVeins
             , legPainRedness
             , pelvicPain
-            , candidiasis
-            , gonorrhea
-            , trichomonasOrBV
+            , saferSex
             ]
     in
     ( List.map Tuple.first inputsAndTasks
@@ -3079,9 +3056,7 @@ healthEducationFormWithDefault form saved =
                 , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins signs |> Just)
                 , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
                 , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain signs |> Just)
-                , candidiasis = or form.candidiasis (EverySet.member EducationCandidiasis signs |> Just)
-                , gonorrhea = or form.gonorrhea (EverySet.member EducationGonorrhea signs |> Just)
-                , trichomonasOrBV = or form.trichomonasOrBV (EverySet.member EducationTrichomonasOrBacterialVaginosis signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
                 }
             )
 
@@ -3113,9 +3088,7 @@ toHealthEducationValue form =
     , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
     , ifNullableTrue EducationLegPainRedness form.legPainRedness
     , ifNullableTrue EducationPelvicPain form.pelvicPain
-    , ifNullableTrue EducationCandidiasis form.candidiasis
-    , ifNullableTrue EducationGonorrhea form.gonorrhea
-    , ifNullableTrue EducationTrichomonasOrBacterialVaginosis form.trichomonasOrBV
+    , ifNullableTrue EducationSaferSex form.saferSex
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

@@ -928,9 +928,7 @@ type alias HealthEducationForm =
     , varicoseVeins : Maybe Bool
     , legPainRedness : Maybe Bool
     , pelvicPain : Maybe Bool
-    , candidiasis : Maybe Bool
-    , gonorrhea : Maybe Bool
-    , trichomonasOrBV : Maybe Bool
+    , saferSex : Maybe Bool
     }
 
 
@@ -955,9 +953,7 @@ emptyHealthEducationForm =
     , varicoseVeins = Nothing
     , legPainRedness = Nothing
     , pelvicPain = Nothing
-    , candidiasis = Nothing
-    , gonorrhea = Nothing
-    , trichomonasOrBV = Nothing
+    , saferSex = Nothing
     }
 
 

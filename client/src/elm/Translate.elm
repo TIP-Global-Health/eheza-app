@@ -915,9 +915,7 @@ type TranslationId
     | PrenatalHealthEducationVaricoseVeinsInform
     | PrenatalHealthEducationLegPainRednessInform
     | PrenatalHealthEducationPelvicPainInform
-    | PrenatalHealthEducationCandidiasisInform
-    | PrenatalHealthEducationGonorrheaInform
-    | PrenatalHealthEducationTrichomonasOrBacterialVaginosisInform
+    | PrenatalHealthEducationSaferSexInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -8401,17 +8399,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalHealthEducationCandidiasisInform ->
-            { english = "Council patient on safer sex parctices"
-            , kinyarwanda = Nothing
-            }
-
-        PrenatalHealthEducationGonorrheaInform ->
-            { english = "Council patient on safer sex parctices"
-            , kinyarwanda = Nothing
-            }
-
-        PrenatalHealthEducationTrichomonasOrBacterialVaginosisInform ->
+        PrenatalHealthEducationSaferSexInform ->
             { english = "Council patient on safer sex parctices"
             , kinyarwanda = Nothing
             }
