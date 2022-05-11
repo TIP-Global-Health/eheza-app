@@ -737,7 +737,7 @@ function hedley_prenatal_field_default_field_bases() {
         'nitrfurantion' => 'Nitrfurantion',
         'amoxicilin' => 'Amoxicilin',
         'clotrimaxazole-200' => 'Clotrimaxazole 200mg',
-        'clotrimaxazole-500' => 'Clotrimaxazole 500mg',        
+        'clotrimaxazole-500' => 'Clotrimaxazole 500mg',
       ),
       'allowed_values_function' => '',
     ),
