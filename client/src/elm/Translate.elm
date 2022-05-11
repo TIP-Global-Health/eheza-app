@@ -8206,7 +8206,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                EducationSaferSex ->
+                EducationSaferSexHIV ->
                     { english = "Have you counseled patient on safer sex practices"
                     , kinyarwanda = Nothing
                     }

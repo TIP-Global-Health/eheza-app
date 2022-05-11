@@ -197,8 +197,8 @@ encodePrenatalHealthEducationSign sign =
             EducationPositiveHIV ->
                 "positive-hiv"
 
-            EducationSaferSex ->
-                "safer-sex"
+            EducationSaferSexHIV ->
+                "safer-sex-hiv"
 
             EducationPartnerTesting ->
                 "partner-testing"
