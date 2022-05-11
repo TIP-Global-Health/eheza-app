@@ -1415,16 +1415,16 @@ healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form 
                 Nothing
             ]
 
-        saferSexUpdateFunc value form_ =
-            { form_ | saferSex = Just value }
+        saferSexHIVUpdateFunc value form_ =
+            { form_ | saferSexHIV = Just value }
 
-        saferSexInput =
-            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSex
+        saferSexHIVInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSexHIV
             , viewBoolInput
                 language
-                form.saferSex
-                (SetHealthEducationSubActivityBoolInput saferSexUpdateFunc)
-                "safer-sex"
+                form.saferSexHIV
+                (SetHealthEducationSubActivityBoolInput saferSexHIVUpdateFunc)
+                "safer-sex-hiv"
                 Nothing
             ]
 
@@ -1459,18 +1459,18 @@ healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form 
                 |> Maybe.withDefault False
     in
     if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
-        ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
-        , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
+        ( positiveHIVInput ++ saferSexHIVInput ++ partnerTestingInput ++ familyPlanningInput
+        , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
         )
 
     else if partnerSurpressedViralLoad then
-        ( saferSexInput
-        , [ form.saferSex ]
+        ( saferSexHIVInput
+        , [ form.saferSexHIV ]
         )
 
     else
-        ( saferSexInput ++ partnerTestingInput
-        , [ form.saferSex, form.partnerTesting ]
+        ( saferSexHIVInput ++ partnerTestingInput
+        , [ form.saferSexHIV, form.partnerTesting ]
         )
 
 
@@ -3046,7 +3046,7 @@ healthEducationFormWithDefault form saved =
                 , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
                 , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
                 , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
-                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
+                , saferSexHIV = or form.saferSexHIV (EverySet.member EducationSaferSexHIV signs |> Just)
                 , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
                 , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNausiaVomiting signs |> Just)
                 , legCramps = or form.legCramps (EverySet.member EducationLegCramps signs |> Just)
@@ -3078,7 +3078,7 @@ toHealthEducationValue form =
     , ifNullableTrue EducationImmunization form.immunization
     , ifNullableTrue EducationHygiene form.hygiene
     , ifNullableTrue EducationPositiveHIV form.positiveHIV
-    , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
     , ifNullableTrue EducationPartnerTesting form.partnerTesting
     , ifNullableTrue EducationNausiaVomiting form.nauseaVomiting
     , ifNullableTrue EducationLegCramps form.legCramps

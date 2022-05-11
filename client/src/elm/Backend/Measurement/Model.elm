@@ -796,7 +796,7 @@ type PrenatalHealthEducationSign
     | EducationImmunization
     | EducationHygiene
     | EducationPositiveHIV
-    | EducationSaferSex
+    | EducationSaferSexHIV
     | EducationPartnerTesting
     | EducationNausiaVomiting
     | EducationLegCramps

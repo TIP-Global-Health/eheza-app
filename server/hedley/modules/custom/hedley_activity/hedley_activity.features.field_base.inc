@@ -1374,7 +1374,7 @@ function hedley_activity_field_default_field_bases() {
         'immunization' => 'Immunization',
         'hygiene' => 'Hygiene',
         'positive-hiv' => 'Positive HIV',
-        'safer-sex' => 'Safer sex',
+        'safer-sex-hiv' => 'Safer sex HIV',
         'partner-testing' => 'Partner testing',
         'nausia-vomiting' => 'Nausia and Vomiting',
         'leg-cramps' => 'Leg Cramps',

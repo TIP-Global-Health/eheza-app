@@ -918,7 +918,7 @@ type alias HealthEducationForm =
     , immunization : Maybe Bool
     , hygiene : Maybe Bool
     , positiveHIV : Maybe Bool
-    , saferSex : Maybe Bool
+    , saferSexHIV : Maybe Bool
     , partnerTesting : Maybe Bool
     , nauseaVomiting : Maybe Bool
     , legCramps : Maybe Bool
@@ -943,7 +943,7 @@ emptyHealthEducationForm =
     , immunization = Nothing
     , hygiene = Nothing
     , positiveHIV = Nothing
-    , saferSex = Nothing
+    , saferSexHIV = Nothing
     , partnerTesting = Nothing
     , nauseaVomiting = Nothing
     , legCramps = Nothing
