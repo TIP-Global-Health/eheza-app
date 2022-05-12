@@ -99,6 +99,7 @@ import Pages.Prenatal.Activity.Types
         , HistoryTask(..)
         , LegCrampsReliefMethod(..)
         , LmpRange(..)
+        , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
@@ -1209,6 +1210,7 @@ type TranslationId
     | TreatedWithMethyldopa
     | TreatedWithNot
     | Treatment
+    | TreatmentReviewTask TreatmentReviewTask
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -11369,6 +11371,13 @@ translationSet trans =
             { english = "Treatment"
             , kinyarwanda = Just "Ubuvuzi"
             }
+
+        TreatmentReviewTask task ->
+            case task of
+                TreatmentReviewPrenatalMedication ->
+                    { english = "Prenatal Medication"
+                    , kinyarwanda = Nothing
+                    }
 
         TrySyncing ->
             { english = "Try syncing with backend"

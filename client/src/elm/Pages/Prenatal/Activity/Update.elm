@@ -2989,3 +2989,56 @@ update language currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveTreatmentReviewTask task ->
+            let
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationSubActivityBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.treatmentReviewData.medicationForm
+
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | medicationForm = updatedForm })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMedicationSubActivity personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.treatmentReviewData.medicationForm
+                        |> toMedicationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveMedication personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+
+                                -- @todo
+                                -- , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

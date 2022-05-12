@@ -177,9 +177,6 @@ viewActivity language currentDate isChw activity assembled db model =
         BirthPlan ->
             viewBirthPlanContent language currentDate assembled model.birthPlanData
 
-        NextSteps ->
-            viewNextStepsContent language currentDate isChw assembled model.nextStepsData
-
         Backend.PrenatalActivity.Model.MalariaPrevention ->
             viewMalariaPreventionContent language currentDate assembled model.malariaPreventionData
 
@@ -190,8 +187,10 @@ viewActivity language currentDate isChw activity assembled db model =
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         PrenatalTreatmentReview ->
-            -- @todo
-            [ text "viewTreatmentReview" ]
+            viewTreatmentReviewContent language currentDate assembled model.treatmentReviewData
+
+        NextSteps ->
+            viewNextStepsContent language currentDate isChw assembled model.nextStepsData
 
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
@@ -889,45 +888,11 @@ viewMedicationContent language currentDate assembled data =
                 |> List.sum
             , List.length tasks
             )
-
-        receivedIronFolicAcidUpdateFunc value form_ =
-            { form_ | receivedIronFolicAcid = Just value }
-
-        receivedIronFolicAcidQuestion =
-            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
-            , viewBoolInput
-                language
-                form.receivedIronFolicAcid
-                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
-                "iron-folic-acid"
-                Nothing
-            ]
-
-        receivedMebendazoleQuestion =
-            if displayMebendazoleQuestion then
-                let
-                    receivedMebendazoleUpdateFunc value form_ =
-                        { form_ | receivedMebendazole = Just value }
-                in
-                [ viewQuestionLabel language Translate.ReceivedMebendazole
-                , viewBoolInput
-                    language
-                    form.receivedMebendazole
-                    (SetMedicationBoolInput receivedMebendazoleUpdateFunc)
-                    "mebendezole"
-                    Nothing
-                ]
-
-            else
-                []
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form medication" ] <|
-                receivedIronFolicAcidQuestion
-                    ++ receivedMebendazoleQuestion
-            ]
+            [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
@@ -1853,6 +1818,130 @@ viewSymptomReviewContent language currentDate assembled data =
                     :: inputs
             ]
         , actions
+        ]
+    ]
+
+
+viewTreatmentReviewContent : Language -> NominalDate -> AssembledData -> TreatmentReviewData -> List (Html Msg)
+viewTreatmentReviewContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        viewTask task =
+            let
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    treatmentReviewTaskCompleted assembled task
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveTreatmentReviewTask task ]
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class "icon-activity-task icon-medication" ] []
+                    , text <| translate language (Translate.TreatmentReviewTask task)
+                    ]
+                ]
+
+        tasks =
+            resolveTreatmentReviewTasks assembled
+
+        tasksCompletedFromTotalDict =
+            List.map
+                (\task ->
+                    ( task, treatmentReviewTasksCompletedFromTotal language currentDate assembled data task )
+                )
+                tasks
+                |> Dict.fromList
+
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TreatmentReviewPrenatalMedication ->
+                    measurements.medication
+                        |> getMeasurementValueFunc
+                        |> medicationFormWithDefault data.medicationForm
+                        |> viewPrenatalMedicationForm language currentDate SetMedicationSubActivityBoolInput assembled
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TreatmentReviewPrenatalMedication ->
+                                        SaveMedicationSubActivity personId measurements.medication nextTask
+                        in
+                        div [ class "actions treatment-review" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick saveMsg
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
         ]
     ]
 
@@ -3726,6 +3815,21 @@ viewWaitForm language currentDate assembled =
         , div [ class "instructions" ]
             [ text <| translate language Translate.WaitInstructions ]
         ]
+
+
+viewPrenatalMedicationForm :
+    Language
+    -> NominalDate
+    -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
+    -> AssembledData
+    -> MedicationForm
+    -> Html Msg
+viewPrenatalMedicationForm language currentDate setBoolInputMsg assembled form =
+    let
+        ( inputs, _ ) =
+            resolvePrenatalMedicationFormInputsAndTasks language currentDate setBoolInputMsg assembled form
+    in
+    div [ class "ui form medication" ] inputs
 
 
 

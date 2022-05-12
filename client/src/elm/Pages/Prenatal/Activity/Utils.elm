@@ -49,6 +49,10 @@ import Translate.Model exposing (Language(..))
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
 expectActivity currentDate assembled activity =
     case assembled.encounter.encounterType of
+        -- Note that for nurse it's always ised after
+        -- Pages.Prenatal.Encounter.Utils.getAllActivities, which supplies
+        -- different activities, depending if nurse encounter was performed
+        -- previously, or not.
         NurseEncounter ->
             case activity of
                 PregnancyDating ->
@@ -99,7 +103,8 @@ expectActivity currentDate assembled activity =
                     True
 
                 PrenatalTreatmentReview ->
-                    -- @todo
+                    -- There will always be at least the Prenatal Medication
+                    -- task to complete.
                     True
 
                 -- Unique Chw activities.
@@ -248,8 +253,8 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.symptomReview
 
         PrenatalTreatmentReview ->
-            -- @todo
-            False
+            resolveTreatmentReviewTasks assembled
+                |> List.all (treatmentReviewTaskCompleted assembled)
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -363,6 +368,30 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
                    )
+
+
+resolveTreatmentReviewTasks : AssembledData -> List TreatmentReviewTask
+resolveTreatmentReviewTasks assembled =
+    let
+        tasks =
+            [ TreatmentReviewPrenatalMedication ]
+    in
+    List.filter (expectTreatmentReviewTask assembled) tasks
+
+
+expectTreatmentReviewTask : AssembledData -> TreatmentReviewTask -> Bool
+expectTreatmentReviewTask assembled task =
+    case task of
+        TreatmentReviewPrenatalMedication ->
+            True
+
+
+treatmentReviewTaskCompleted : AssembledData -> TreatmentReviewTask -> Bool
+treatmentReviewTaskCompleted assembled task =
+    case task of
+        TreatmentReviewPrenatalMedication ->
+            --@todo
+            False
 
 
 referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
@@ -2369,6 +2398,82 @@ toMedicationValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)
+
+
+treatmentReviewTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> TreatmentReviewData
+    -> TreatmentReviewTask
+    -> ( Int, Int )
+treatmentReviewTasksCompletedFromTotal language currentDate assembled data task =
+    case task of
+        TreatmentReviewPrenatalMedication ->
+            let
+                form =
+                    assembled.measurements.medication
+                        |> getMeasurementValueFunc
+                        |> medicationFormWithDefault data.medicationForm
+
+                ( _, tasks ) =
+                    resolvePrenatalMedicationFormInputsAndTasks language
+                        currentDate
+                        SetMedicationSubActivityBoolInput
+                        assembled
+                        form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
+
+
+resolvePrenatalMedicationFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
+    -> AssembledData
+    -> MedicationForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+resolvePrenatalMedicationFormInputsAndTasks language currentDate setBoolInputMsg assembled form =
+    let
+        receivedIronFolicAcidUpdateFunc value form_ =
+            { form_ | receivedIronFolicAcid = Just value }
+
+        receivedIronFolicAcidInput =
+            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
+            , viewBoolInput
+                language
+                form.receivedIronFolicAcid
+                (setBoolInputMsg receivedIronFolicAcidUpdateFunc)
+                "iron-folic-acid"
+                Nothing
+            ]
+
+        ( receivedMebendazoleInput, receivedMebendazoleTask ) =
+            if showMebendazoleQuestion currentDate assembled then
+                let
+                    receivedMebendazoleUpdateFunc value form_ =
+                        { form_ | receivedMebendazole = Just value }
+                in
+                ( [ viewQuestionLabel language Translate.ReceivedMebendazole
+                  , viewBoolInput
+                        language
+                        form.receivedMebendazole
+                        (setBoolInputMsg receivedMebendazoleUpdateFunc)
+                        "mebendezole"
+                        Nothing
+                  ]
+                , [ form.receivedMebendazole ]
+                )
+
+            else
+                ( [], [] )
+    in
+    ( receivedIronFolicAcidInput ++ receivedMebendazoleInput
+    , form.receivedIronFolicAcid :: receivedMebendazoleTask
+    )
 
 
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm

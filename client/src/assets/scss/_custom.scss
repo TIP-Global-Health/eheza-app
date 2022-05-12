@@ -2501,20 +2501,7 @@ input::placeholder {
   }
 }
 
-.icon-albendazole {
-  .active &:after {
-    background-image: url(#{$img-path}icon-pills-box-white.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-pills-box-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-pills-box-gray.svg);
-  }
-}
-
+.icon-albendazole,
 .icon-mebendezole {
   .active &:after {
     background-image: url(#{$img-path}icon-pills-box-white.svg);

@@ -66,3 +66,7 @@ type HeartburnReliefMethod
     | ReliefMethodCeaseSmoking
     | ReliefMethodAvoidAlcohom
     | ReliefMethodSleepWithHeadRaised
+
+
+type TreatmentReviewTask
+    = TreatmentReviewPrenatalMedication

@@ -171,6 +171,10 @@ type Msg
     | SetPrenatalSymptomQuestionBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SetFlankPainSign PrenatalFlankPainSign
     | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
+      -- TREATMENT REVIEW msgs
+    | SetActiveTreatmentReviewTask TreatmentReviewTask
+    | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
 
 
 type alias Model =
@@ -186,6 +190,7 @@ type alias Model =
     , laboratoryData : LaboratoryData
     , healthEducationData : HealthEducationData
     , symptomReviewData : SymptomReviewData
+    , treatmentReviewData : TreatmentReviewData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -206,6 +211,7 @@ emptyModel =
     , laboratoryData = emptyLaboratoryData
     , healthEducationData = emptyHealthEducationData
     , symptomReviewData = emptySymptomReviewData
+    , treatmentReviewData = emptyTreatmentReviewData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -448,6 +454,19 @@ emptySymptomReviewForm =
     , vaginalItching = Nothing
     , partnerUrethralDischarge = Nothing
     , flankPainSign = Nothing
+    }
+
+
+type alias TreatmentReviewData =
+    { medicationForm : MedicationForm
+    , activeTask : Maybe TreatmentReviewTask
+    }
+
+
+emptyTreatmentReviewData : TreatmentReviewData
+emptyTreatmentReviewData =
+    { medicationForm = emptyMedicationForm
+    , activeTask = Nothing
     }
 
 
