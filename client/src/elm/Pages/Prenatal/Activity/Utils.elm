@@ -21,7 +21,7 @@ import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedication
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, isFirstEncounter)
+import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -37,10 +37,13 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomBoolInput
+        , viewCustomLabel
         , viewInstructionsLabel
+        , viewLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
+import Translate.Model exposing (Language(..))
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
@@ -103,11 +106,11 @@ expectActivity currentDate assembled activity =
             case activity of
                 PregnancyDating ->
                     -- Do not show, if patient already visited health center.
-                    isFirstEncounter assembled
+                    nurseEncounterNotPerformed assembled
 
                 Laboratory ->
                     -- Do not show, if patient already visited health center.
-                    isFirstEncounter assembled
+                    nurseEncounterNotPerformed assembled
 
                 DangerSigns ->
                     True
@@ -182,7 +185,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.lastMenstrualPeriod
 
         History ->
-            if isFirstEncounter assembled then
+            if nurseEncounterNotPerformed assembled then
                 -- First antenatal encounter - all tasks should be completed
                 isJust assembled.measurements.obstetricHistory
                     && isJust assembled.measurements.obstetricHistoryStep2
@@ -281,16 +284,8 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    let
-                        severeMalariaTreatment =
-                            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
-                                |> Maybe.withDefault False
-                    in
-                    emergencyReferalRequired assembled
+                    referToHospitalForNonHIVDiagnosis assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
-                        || (diagnosedMalaria assembled && severeMalariaTreatment)
-                        || diagnosed DiagnosisModeratePreeclampsiaImmediate assembled
 
                 _ ->
                     dangerSigns
@@ -301,8 +296,24 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
-                        && -- Appear whenever HIV test was performed.
-                           isJust assembled.measurements.hivTest
+                        && (if nurseEncounterNotPerformed assembled then
+                                -- Appear whenever HIV test was performed.
+                                isJust assembled.measurements.hivTest
+
+                            else
+                                provideNauseaAndVomitingEducation assembled
+                                    || List.any (symptomRecorded assembled.measurements)
+                                        [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
+                                    || provideLegPainRednessEducation assembled
+                                    || providePelvicPainEducation assembled
+                                    || diagnosedAnyOf
+                                        [ DiagnosisHeartburn
+                                        , DiagnosisCandidiasis
+                                        , DiagnosisGonorrhea
+                                        , DiagnosisTrichomonasOrBacterialVaginosis
+                                        ]
+                                        assembled
+                           )
 
                 ChwPostpartumEncounter ->
                     True
@@ -318,12 +329,20 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
-                && ((resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseInitial assembled
+                && ((resolveMedicationsSetByDiagnoses English currentDate PrenatalEncounterPhaseInitial assembled
                         |> List.isEmpty
                         |> not
                     )
                         || diagnosedMalaria assembled
                         || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                        || diagnosedAnyOf
+                            [ DiagnosisHeartburn
+                            , DiagnosisUrinaryTractInfection
+                            , DiagnosisCandidiasis
+                            , DiagnosisGonorrhea
+                            , DiagnosisTrichomonasOrBacterialVaginosis
+                            ]
+                            assembled
                    )
 
         NextStepsWait ->
@@ -336,6 +355,158 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
                    )
+
+
+referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
+referToHospitalForNonHIVDiagnosis assembled =
+    let
+        severeMalariaTreatment =
+            getMeasurementValueFunc assembled.measurements.medicationDistribution
+                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
+                |> Maybe.withDefault False
+    in
+    emergencyReferalRequired assembled
+        || (diagnosedMalaria assembled && severeMalariaTreatment)
+        || diagnosedAnyOf
+            [ DiagnosisModeratePreeclampsiaImmediate
+            , DiagnosisHeartburnPersistent
+            , DiagnosisDeepVeinThrombosis
+            , DiagnosisPelvicPainIntense
+            , DiagnosisPyelonephritis
+            ]
+            assembled
+
+
+provideNauseaAndVomitingEducation : AssembledData -> Bool
+provideNauseaAndVomitingEducation assembled =
+    let
+        -- NauseaAndVomiting reported at current encounter, and
+        -- all follow up questions were answered No.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member NauseaAndVomiting value.symptoms
+                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionDizziness, SymptomQuestionLowUrineOutput, SymptomQuestionDarkUrine ]
+                    )
+                |> Maybe.withDefault False
+
+        -- NauseaAndVomiting was not reported at any of previous encounters.
+        byPreviousEncounters =
+            not <| symptomRecordedPreviously assembled NauseaAndVomiting
+    in
+    byCurrentEncounter && byPreviousEncounters
+
+
+hospitalizeDueToNauseaAndVomiting : AssembledData -> Bool
+hospitalizeDueToNauseaAndVomiting assembled =
+    let
+        -- NauseaAndVomiting reported at current encounter, and
+        -- any of follow up questions was answered Yes.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member NauseaAndVomiting value.symptoms
+                            && List.any (\question -> EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionDizziness, SymptomQuestionLowUrineOutput, SymptomQuestionDarkUrine ]
+                    )
+                |> Maybe.withDefault False
+
+        -- NauseaAndVomiting was reported at any of previous encounters.
+        byPreviousEncounters =
+            symptomRecordedPreviously assembled NauseaAndVomiting
+    in
+    byCurrentEncounter || byPreviousEncounters
+
+
+provideLegPainRednessEducation : AssembledData -> Bool
+provideLegPainRednessEducation assembled =
+    -- LegPainRedness reported at current encounter, and
+    -- all follow up questions were answered No.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member LegPainRedness value.symptoms
+                    && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
+            )
+        |> Maybe.withDefault False
+
+
+hospitalizeDueToLegPainRedness : AssembledData -> Bool
+hospitalizeDueToLegPainRedness assembled =
+    -- LegPainRedness reported at current encounter, and
+    -- at least one follow up questions were answered Yes.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member LegPainRedness value.symptoms
+                    && List.any (\question -> EverySet.member question value.symptomQuestions)
+                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
+            )
+        |> Maybe.withDefault False
+
+
+providePelvicPainEducation : AssembledData -> Bool
+providePelvicPainEducation assembled =
+    let
+        -- PelvicPain reported at current encounter, and
+        -- all follow up questions were answered No.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member PelvicPain value.symptoms
+                            && (not <| EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions)
+                    )
+                |> Maybe.withDefault False
+
+        -- PelvicPain was not reported at any of previous encounters.
+        byPreviousEncounters =
+            not <| symptomRecordedPreviously assembled PelvicPain
+    in
+    byCurrentEncounter && byPreviousEncounters
+
+
+hospitalizeDueToPelvicPain : AssembledData -> Bool
+hospitalizeDueToPelvicPain assembled =
+    let
+        -- PelvicPain reported at current encounter, and
+        -- any of follow up questions was answered Yes.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member PelvicPain value.symptoms
+                            && EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions
+                    )
+                |> Maybe.withDefault False
+
+        -- PelvicPain was reported at any of previous encounters.
+        byPreviousEncounters =
+            symptomRecordedPreviously assembled PelvicPain
+    in
+    byCurrentEncounter || byPreviousEncounters
+
+
+symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
+symptomRecorded measurements symptom =
+    getMeasurementValueFunc measurements.symptomReview
+        |> Maybe.map (.symptoms >> EverySet.member symptom)
+        |> Maybe.withDefault False
+
+
+symptomRecordedPreviously : AssembledData -> PrenatalSymptom -> Bool
+symptomRecordedPreviously assembled symptom =
+    assembled.nursePreviousMeasurementsWithDates
+        |> List.filter
+            (\( _, _, measurements ) ->
+                symptomRecorded measurements symptom
+            )
+        |> List.isEmpty
+        |> not
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -368,6 +539,13 @@ nextStepsMeasurementTaken assembled task =
                     else
                         True
 
+                heartburnTreatmentCompleted =
+                    if diagnosed DiagnosisHeartburn assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHeartburn assembled.measurements
+
+                    else
+                        True
+
                 hypertensionTreatmentCompleted =
                     if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
@@ -377,6 +555,7 @@ nextStepsMeasurementTaken assembled task =
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && malariaTreatmentCompleted
+                && heartburnTreatmentCompleted
                 && hypertensionTreatmentCompleted
 
         NextStepsWait ->
@@ -607,31 +786,45 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 assembled.globalLmpDate
 
         diagnosesByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) labResultsDiagnoses
+            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements)
+                labResultsDiagnoses
                 |> EverySet.fromList
 
         dangerSignsList =
             generateDangerSignsListForNurse assembled
 
-        diagnosesByDangerSigns =
-            List.filter (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements) emergencyReferralDiagnosesInitial
+        emergencyReferalDiagnoses =
+            List.filter
+                (matchEmergencyReferalPrenatalDiagnosis
+                    egaInWeeks
+                    dangerSignsList
+                    assembled
+                )
+                emergencyReferralDiagnosesInitial
                 |> EverySet.fromList
 
         diagnosesByExamination =
             Maybe.map
                 (\egaWeeks ->
-                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements) examinationDiagnoses
+                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements)
+                        examinationDiagnoses
                         |> EverySet.fromList
                 )
                 egaInWeeks
                 |> Maybe.withDefault EverySet.empty
+
+        diagnosesBySymptoms =
+            List.filter (matchSymptomsPrenatalDiagnosis assembled)
+                symptomsDiagnoses
+                |> EverySet.fromList
     in
-    EverySet.union diagnosesByLabResults diagnosesByDangerSigns
+    EverySet.union diagnosesByLabResults emergencyReferalDiagnoses
         |> EverySet.union diagnosesByExamination
+        |> EverySet.union diagnosesBySymptoms
 
 
-matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
+matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
+matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
     case diagnosis of
         DiagnosisSeverePreeclampsiaImmediate ->
             List.member HeadacheBlurredVision signs
@@ -648,7 +841,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisMolarPregnancy ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
 
         DiagnosisPlacentaPrevia ->
             Maybe.map
@@ -659,12 +852,12 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisPlacentalAbruption ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisPlacentaPrevia
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisObstructedLabor
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
 
         DiagnosisUterineRupture ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisPlacentaPrevia
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisObstructedLabor
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
 
         DiagnosisObstructedLabor ->
             Maybe.map
@@ -676,10 +869,10 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
 
         DiagnosisPostAbortionSepsis ->
             List.member AbdominalPain signs
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
 
         DiagnosisEctopicPregnancy ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements DiagnosisMiscarriage
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
                 || (Maybe.map
                         (\egaWeeks ->
                             (egaWeeks < 22) && List.member AbdominalPain signs
@@ -714,7 +907,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs measurements diagnosis =
 
         DiagnosisInfection ->
             List.member Fever signs
-                && (List.member ExtremeWeakness signs || respiratoryRateElevated measurements)
+                && (List.member ExtremeWeakness signs || respiratoryRateElevated assembled.measurements)
 
         DiagnosisImminentDelivery ->
             List.member ImminentDelivery signs
@@ -927,6 +1120,104 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
             False
 
 
+matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
+matchSymptomsPrenatalDiagnosis assembled diagnosis =
+    case diagnosis of
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            hospitalizeDueToNauseaAndVomiting assembled
+
+        DiagnosisHeartburn ->
+            symptomRecorded assembled.measurements Heartburn
+                && (not <| symptomRecordedPreviously assembled Heartburn)
+
+        DiagnosisHeartburnPersistent ->
+            symptomRecorded assembled.measurements Heartburn
+                && symptomRecordedPreviously assembled Heartburn
+
+        DiagnosisDeepVeinThrombosis ->
+            hospitalizeDueToLegPainRedness assembled
+
+        DiagnosisPelvicPainIntense ->
+            hospitalizeDueToPelvicPain assembled
+
+        DiagnosisUrinaryTractInfection ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member BurningWithUrination value.symptoms
+                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionVaginalItching, SymptomQuestionVaginalDischarge ]
+                            && (not <| flankPainPresent value.flankPainSign)
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisPyelonephritis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member BurningWithUrination value.symptoms
+                            && flankPainPresent value.flankPainSign
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisCandidiasis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        -- Burning with Urination + vaginal itching or discharge.
+                        (EverySet.member BurningWithUrination value.symptoms
+                            && List.any (\question -> EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionVaginalItching, SymptomQuestionVaginalDischarge ]
+                        )
+                            || -- Abnormal discharge +  vaginal itching.
+                               (EverySet.member AbnormalVaginalDischarge value.symptoms
+                                    && EverySet.member SymptomQuestionVaginalItching value.symptomQuestions
+                               )
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisGonorrhea ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member AbnormalVaginalDischarge value.symptoms
+                            && EverySet.member SymptomQuestionPartnerUrethralDischarge value.symptomQuestions
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member AbnormalVaginalDischarge value.symptoms
+                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionVaginalItching, SymptomQuestionPartnerUrethralDischarge ]
+                    )
+                |> Maybe.withDefault False
+
+        Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+            symptomRecorded assembled.measurements CoughContinuous
+
+        -- Non Symptoms diagnoses.
+        _ ->
+            False
+
+
+{-| Flank pain on left, right or both sides.
+-}
+flankPainPresent : Maybe PrenatalFlankPainSign -> Bool
+flankPainPresent sign =
+    case sign of
+        Nothing ->
+            False
+
+        Just NoFlankPain ->
+            False
+
+        _ ->
+            True
+
+
 immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
 immediateHypertensionByMeasurements =
     highBloodPressure
@@ -1083,24 +1374,45 @@ examinationDiagnoses =
     ]
 
 
+symptomsDiagnoses : List PrenatalDiagnosis
+symptomsDiagnoses =
+    [ DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisHeartburn
+    , DiagnosisHeartburnPersistent
+    , DiagnosisDeepVeinThrombosis
+    , DiagnosisPelvicPainIntense
+    , DiagnosisUrinaryTractInfection
+    , DiagnosisPyelonephritis
+    , DiagnosisCandidiasis
+    , DiagnosisGonorrhea
+    , DiagnosisTrichomonasOrBacterialVaginosis
+    , Backend.PrenatalEncounter.Model.DiagnosisTuberculosis
+    ]
+
+
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
-    case assembled.encounter.encounterType of
-        NurseEncounter ->
-            healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
-
-        _ ->
-            healthEducationFormInputsAndTasksForChw language assembled healthEducationForm
-
-
-healthEducationFormInputsAndTasksForNurse : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm =
     let
         form =
             assembled.measurements.healthEducation
                 |> getMeasurementValueFunc
                 |> healthEducationFormWithDefault healthEducationForm
+    in
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            if nurseEncounterNotPerformed assembled then
+                healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form
 
+            else
+                healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled form
+
+        _ ->
+            healthEducationFormInputsAndTasksForChw language assembled form
+
+
+healthEducationFormInputsAndTasksForNurseFirstEncounter : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form =
+    let
         translatePrenatalHealthEducationQuestion =
             Translate.PrenatalHealthEducationQuestion False
 
@@ -1117,16 +1429,16 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
                 Nothing
             ]
 
-        saferSexUpdateFunc value form_ =
-            { form_ | saferSex = Just value }
+        saferSexHIVUpdateFunc value form_ =
+            { form_ | saferSexHIV = Just value }
 
-        saferSexInput =
-            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSex
+        saferSexHIVInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSexHIV
             , viewBoolInput
                 language
-                form.saferSex
-                (SetHealthEducationSubActivityBoolInput saferSexUpdateFunc)
-                "safer-sex"
+                form.saferSexHIV
+                (SetHealthEducationSubActivityBoolInput saferSexHIVUpdateFunc)
+                "safer-sex-hiv"
                 Nothing
             ]
 
@@ -1161,18 +1473,18 @@ healthEducationFormInputsAndTasksForNurse language assembled healthEducationForm
                 |> Maybe.withDefault False
     in
     if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
-        ( positiveHIVInput ++ saferSexInput ++ partnerTestingInput ++ familyPlanningInput
-        , [ form.positiveHIV, form.saferSex, form.partnerTesting, form.familyPlanning ]
+        ( positiveHIVInput ++ saferSexHIVInput ++ partnerTestingInput ++ familyPlanningInput
+        , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
         )
 
     else if partnerSurpressedViralLoad then
-        ( saferSexInput
-        , [ form.saferSex ]
+        ( saferSexHIVInput
+        , [ form.saferSexHIV ]
         )
 
     else
-        ( saferSexInput ++ partnerTestingInput
-        , [ form.saferSex, form.partnerTesting ]
+        ( saferSexHIVInput ++ partnerTestingInput
+        , [ form.saferSexHIV, form.partnerTesting ]
         )
 
 
@@ -1192,14 +1504,249 @@ healthEducationFormFamilyPlanningInput language isChw form =
     ]
 
 
-healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForChw language assembled healthEducationForm =
+healthEducationFormInputsAndTasksForNurseSubsequentEncounter : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled form =
     let
-        form =
-            assembled.measurements.healthEducation
-                |> getMeasurementValueFunc
-                |> healthEducationFormWithDefault healthEducationForm
+        nauseaVomiting =
+            if provideNauseaAndVomitingEducation assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNausiaVomiting) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label paragraph"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.nauseaVomiting
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | nauseaVomiting = Just value }))
+                        "nausea-vomiting"
+                        Nothing
+                  ]
+                , Just form.nauseaVomiting
+                )
 
+            else
+                ( [], Nothing )
+
+        legCramps =
+            if symptomRecorded assembled.measurements LegCramps then
+                let
+                    reliefMethods =
+                        List.map
+                            (Translate.LegCrampsReliefMethod
+                                >> translate language
+                                >> String.toLower
+                                >> text
+                                >> List.singleton
+                                >> li []
+                            )
+                            [ ReliefMethodMuscleStretching
+                            , ReliefMethodDorsiflexion
+                            , ReliefMethodRelaxation
+                            , ReliefMethodSleepWithPillowBetweenLegs
+                            , ReliefMethodHeatTherapy
+                            , ReliefMethodMassage
+                            ]
+                            |> ul []
+                in
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegCramps) "" "label header"
+                  , viewLabel language Translate.PrenatalHealthEducationLegCrampsInform
+                  , reliefMethods
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.legCramps
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | legCramps = Just value }))
+                        "leg-cramps"
+                        Nothing
+                  ]
+                , Just form.legCramps
+                )
+
+            else
+                ( [], Nothing )
+
+        lowBackPain =
+            if symptomRecorded assembled.measurements LowBackPain then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLowBackPain) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationLowBackPainInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.lowBackPain
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | lowBackPain = Just value }))
+                        "low-back-pain"
+                        Nothing
+                  ]
+                , Just form.lowBackPain
+                )
+
+            else
+                ( [], Nothing )
+
+        constipation =
+            if symptomRecorded assembled.measurements Constipation then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationConstipation) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationConstipationInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.constipation
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | constipation = Just value }))
+                        "constipation"
+                        Nothing
+                  ]
+                , Just form.constipation
+                )
+
+            else
+                ( [], Nothing )
+
+        heartburn =
+            let
+                reliefMethods =
+                    List.map
+                        (Translate.HeartburnReliefMethod
+                            >> translate language
+                            >> String.toLower
+                            >> text
+                            >> List.singleton
+                            >> li []
+                        )
+                        [ ReliefMethodAvoidLargeMeals
+                        , ReliefMethodCeaseSmoking
+                        , ReliefMethodAvoidAlcohom
+                        , ReliefMethodSleepWithHeadRaised
+                        ]
+                        |> ul []
+            in
+            if diagnosed DiagnosisHeartburn assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationHeartburn) "" "label header"
+                  , viewLabel language Translate.PrenatalHealthEducationHeartburnInform
+                  , reliefMethods
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.heartburn
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | heartburn = Just value }))
+                        "heartburn"
+                        Nothing
+                  ]
+                , Just form.heartburn
+                )
+
+            else
+                ( [], Nothing )
+
+        varicoseVeins =
+            if symptomRecorded assembled.measurements VaricoseVeins then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationVaricoseVeins) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationVaricoseVeinsInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.varicoseVeins
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | varicoseVeins = Just value }))
+                        "varicose-veins"
+                        Nothing
+                  ]
+                , Just form.varicoseVeins
+                )
+
+            else
+                ( [], Nothing )
+
+        legPainRedness =
+            if provideLegPainRednessEducation assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegPainRedness) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationLegPainRednessInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.legPainRedness
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | legPainRedness = Just value }))
+                        "leg-pain-redness"
+                        Nothing
+                  ]
+                , Just form.legPainRedness
+                )
+
+            else
+                ( [], Nothing )
+
+        pelvicPain =
+            if providePelvicPainEducation assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationPelvicPain) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationPelvicPainInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.pelvicPain
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | pelvicPain = Just value }))
+                        "pelvic-pain"
+                        Nothing
+                  ]
+                , Just form.pelvicPain
+                )
+
+            else
+                ( [], Nothing )
+
+        saferSex =
+            let
+                saferSexDiagnoses =
+                    List.filter
+                        (\diagnosis ->
+                            EverySet.member diagnosis assembled.encounter.diagnoses
+                        )
+                        -- Diagnoses that require safer sex practices education.
+                        [ DiagnosisCandidiasis, DiagnosisGonorrhea, DiagnosisTrichomonasOrBacterialVaginosis ]
+            in
+            if not <| List.isEmpty saferSexDiagnoses then
+                let
+                    label =
+                        List.filter (symptomRecorded assembled.measurements)
+                            -- Symptoms that may  require safer sex practices education.
+                            [ BurningWithUrination, AbnormalVaginalDischarge ]
+                            |> List.map (Translate.PrenatalSymptom >> translate language)
+                            |> String.join ", "
+                in
+                ( [ div [ class "label header" ] [ text label ]
+                  , viewCustomLabel language Translate.PrenatalHealthEducationSaferSexInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.saferSex
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | saferSex = Just value }))
+                        "safer-sex"
+                        Nothing
+                  ]
+                , Just form.saferSex
+                )
+
+            else
+                ( [], Nothing )
+
+        inputsAndTasks =
+            [ nauseaVomiting
+            , legCramps
+            , lowBackPain
+            , constipation
+            , heartburn
+            , varicoseVeins
+            , legPainRedness
+            , pelvicPain
+            , saferSex
+            ]
+    in
+    ( List.map Tuple.first inputsAndTasks
+        |> List.concat
+    , List.map Tuple.second inputsAndTasks
+        |> Maybe.Extra.values
+    )
+
+
+healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForChw language assembled form =
+    let
         healthEducationCompletedAtEncounter encounterType =
             assembled.chwPreviousMeasurementsWithDates
                 |> List.filterMap
@@ -1451,7 +1998,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     if isChw then
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
-                    else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
+                    else if referToHospitalForNonHIVDiagnosis assembled then
                         ( 0, 0 )
 
                     else
@@ -2515,8 +3062,17 @@ healthEducationFormWithDefault form saved =
                 , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
                 , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
                 , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
-                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
+                , saferSexHIV = or form.saferSexHIV (EverySet.member EducationSaferSexHIV signs |> Just)
                 , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
+                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNausiaVomiting signs |> Just)
+                , legCramps = or form.legCramps (EverySet.member EducationLegCramps signs |> Just)
+                , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain signs |> Just)
+                , constipation = or form.constipation (EverySet.member EducationConstipation signs |> Just)
+                , heartburn = or form.heartburn (EverySet.member EducationHeartburn signs |> Just)
+                , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins signs |> Just)
+                , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
+                , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
                 }
             )
 
@@ -2538,8 +3094,17 @@ toHealthEducationValue form =
     , ifNullableTrue EducationImmunization form.immunization
     , ifNullableTrue EducationHygiene form.hygiene
     , ifNullableTrue EducationPositiveHIV form.positiveHIV
-    , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
     , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationNausiaVomiting form.nauseaVomiting
+    , ifNullableTrue EducationLegCramps form.legCramps
+    , ifNullableTrue EducationLowBackPain form.lowBackPain
+    , ifNullableTrue EducationConstipation form.constipation
+    , ifNullableTrue EducationHeartburn form.heartburn
+    , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
+    , ifNullableTrue EducationLegPainRedness form.legPainRedness
+    , ifNullableTrue EducationPelvicPain form.pelvicPain
+    , ifNullableTrue EducationSaferSex form.saferSex
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

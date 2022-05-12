@@ -68,11 +68,24 @@ type PrenatalDiagnosis
     | DiagnosisEctopicPregnancy
     | DiagnosisPROM
     | DiagnosisPPROM
+      --  Diagnosed by dangher signs and is an emergency referral diagnosis.
     | DiagnosisHyperemesisGravidum
+      --  Diagnosed by symptoms and is not an emergency referral diagnosis.
+    | DiagnosisHyperemesisGravidumBySymptoms
     | DiagnosisMaternalComplications
     | DiagnosisInfection
     | DiagnosisImminentDelivery
     | DiagnosisLaborAndDelivery
+    | DiagnosisHeartburn
+    | DiagnosisHeartburnPersistent
+    | DiagnosisDeepVeinThrombosis
+    | DiagnosisPelvicPainIntense
+    | DiagnosisUrinaryTractInfection
+    | DiagnosisPyelonephritis
+    | DiagnosisCandidiasis
+    | DiagnosisGonorrhea
+    | DiagnosisTrichomonasOrBacterialVaginosis
+    | DiagnosisTuberculosis
     | NoPrenatalDiagnosis
 
 

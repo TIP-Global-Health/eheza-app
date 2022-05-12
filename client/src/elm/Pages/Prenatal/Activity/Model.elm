@@ -918,8 +918,17 @@ type alias HealthEducationForm =
     , immunization : Maybe Bool
     , hygiene : Maybe Bool
     , positiveHIV : Maybe Bool
-    , saferSex : Maybe Bool
+    , saferSexHIV : Maybe Bool
     , partnerTesting : Maybe Bool
+    , nauseaVomiting : Maybe Bool
+    , legCramps : Maybe Bool
+    , lowBackPain : Maybe Bool
+    , constipation : Maybe Bool
+    , heartburn : Maybe Bool
+    , varicoseVeins : Maybe Bool
+    , legPainRedness : Maybe Bool
+    , pelvicPain : Maybe Bool
+    , saferSex : Maybe Bool
     }
 
 
@@ -934,8 +943,17 @@ emptyHealthEducationForm =
     , immunization = Nothing
     , hygiene = Nothing
     , positiveHIV = Nothing
-    , saferSex = Nothing
+    , saferSexHIV = Nothing
     , partnerTesting = Nothing
+    , nauseaVomiting = Nothing
+    , legCramps = Nothing
+    , lowBackPain = Nothing
+    , constipation = Nothing
+    , heartburn = Nothing
+    , varicoseVeins = Nothing
+    , legPainRedness = Nothing
+    , pelvicPain = Nothing
+    , saferSex = Nothing
     }
 
 

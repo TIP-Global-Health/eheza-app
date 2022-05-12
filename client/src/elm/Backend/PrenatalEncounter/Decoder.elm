@@ -162,6 +162,9 @@ decodePrenatalDiagnosis =
                     "hyperemesis-gravidum" ->
                         succeed DiagnosisHyperemesisGravidum
 
+                    "hyperemesis-gravidum-by-symptoms" ->
+                        succeed DiagnosisHyperemesisGravidumBySymptoms
+
                     "maternal-complications" ->
                         succeed DiagnosisMaternalComplications
 
@@ -173,6 +176,36 @@ decodePrenatalDiagnosis =
 
                     "labor" ->
                         succeed DiagnosisLaborAndDelivery
+
+                    "heartburn" ->
+                        succeed DiagnosisHeartburn
+
+                    "heartburn-persistent" ->
+                        succeed DiagnosisHeartburnPersistent
+
+                    "dvt" ->
+                        succeed DiagnosisDeepVeinThrombosis
+
+                    "pelvic-pain-intense" ->
+                        succeed DiagnosisPelvicPainIntense
+
+                    "urinary-tract-infection" ->
+                        succeed DiagnosisUrinaryTractInfection
+
+                    "pyelonephritis" ->
+                        succeed DiagnosisPyelonephritis
+
+                    "candidiasis" ->
+                        succeed DiagnosisCandidiasis
+
+                    "gonorrhea" ->
+                        succeed DiagnosisGonorrhea
+
+                    "trichomonas-or-bv" ->
+                        succeed DiagnosisTrichomonasOrBacterialVaginosis
+
+                    "tuberculosis" ->
+                        succeed DiagnosisTuberculosis
 
                     "none" ->
                         succeed NoPrenatalDiagnosis

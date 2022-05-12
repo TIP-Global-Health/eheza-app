@@ -796,8 +796,17 @@ type PrenatalHealthEducationSign
     | EducationImmunization
     | EducationHygiene
     | EducationPositiveHIV
-    | EducationSaferSex
+    | EducationSaferSexHIV
     | EducationPartnerTesting
+    | EducationNausiaVomiting
+    | EducationLegCramps
+    | EducationLowBackPain
+    | EducationConstipation
+    | EducationHeartburn
+    | EducationVaricoseVeins
+    | EducationLegPainRedness
+    | EducationPelvicPain
+    | EducationSaferSex
     | NoPrenatalHealthEducationSigns
 
 
@@ -1118,6 +1127,15 @@ type RecommendedTreatmentSign
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
     | NoTreatmentForHypertension
+      -- For Heartburn:
+    | TreatmentAluminiumHydroxide
+    | TreatmentHealthEducationForHeartburn
+      -- For Urinary Tract Infection:
+    | TreatmentNitrfurantion
+    | TreatmentAmoxicilin
+      -- For Candidiasis:
+    | TreatmentClotrimaxazole200
+    | TreatmentClotrimaxazole500
 
 
 type alias PrenatalSymptomReview =
@@ -1469,6 +1487,11 @@ type MedicationDistributionSign
       -- Anemia medication
     | Iron
     | FolicAcid
+      -- Gonorhea medication
+    | Ceftriaxone
+    | Azithromycin
+      -- Trichomonas / Bacterial Vaginosis medication
+    | Metronidazole
     | NoMedicationDistributionSigns
     | NoMedicationDistributionSignsInitialPhase
     | NoMedicationDistributionSignsRecurrentPhase
@@ -1499,6 +1522,9 @@ type MedicationNonAdministrationSign
     | MedicationTDF3TC AdministrationNote
     | MedicationIron AdministrationNote
     | MedicationFolicAcid AdministrationNote
+    | MedicationCeftriaxone AdministrationNote
+    | MedicationAzithromycin AdministrationNote
+    | MedicationMetronidazole AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 

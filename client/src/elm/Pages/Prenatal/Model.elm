@@ -34,6 +34,9 @@ type alias MedicationDistributionForm =
     , tdf3tc : Maybe Bool
     , iron : Maybe Bool
     , folicAcid : Maybe Bool
+    , ceftriaxone : Maybe Bool
+    , azithromycin : Maybe Bool
+    , metronidazole : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     }
@@ -41,7 +44,19 @@ type alias MedicationDistributionForm =
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
-    MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
+    { mebendezole = Nothing
+    , tenofovir = Nothing
+    , lamivudine = Nothing
+    , dolutegravir = Nothing
+    , tdf3tc = Nothing
+    , iron = Nothing
+    , folicAcid = Nothing
+    , ceftriaxone = Nothing
+    , azithromycin = Nothing
+    , metronidazole = Nothing
+    , nonAdministrationSigns = Nothing
+    , recommendedTreatmentSigns = Nothing
+    }
 
 
 type PrenatalEncounterPhase

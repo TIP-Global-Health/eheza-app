@@ -95,7 +95,9 @@ import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
+        , HeartburnReliefMethod(..)
         , HistoryTask(..)
+        , LegCrampsReliefMethod(..)
         , LmpRange(..)
         )
 import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
@@ -323,7 +325,10 @@ type TranslationId
     | Admin
     | Administer
     | AdministerAlbendazoleHelper
+    | AdministerAzithromycinHelper
+    | AdministerCeftriaxoneHelper
     | AdministerMebendezoleHelper
+    | AdministerMetronidazoleHelper
     | AdministerPrenatalMebendezoleHelper
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
@@ -394,6 +399,9 @@ type TranslationId
     | Call114
     | Called114Question
     | Cancel
+    | CandidiasisRecommendedTreatmentHeader
+    | CandidiasisRecommendedTreatmentHelper
+    | CandidiasisRecommendedTreatmentInstructions
     | CannotStartEncounterLabel
     | CardiacDisease
     | CaregiverAccompanyQuestion
@@ -529,7 +537,8 @@ type TranslationId
     | EgaWeeks
     | ElevatedRespiratoryRate
     | EmergencyReferralHelperReferToHC
-    | EmergencyReferralHelperReferToHospital
+    | EmergencyReferralHelperReferToHospitalForEvaluation
+    | EmergencyReferralHelperReferToHospitalImmediately
     | EmergencyReferralHelperReferToMaternityWard
     | EmergencyReferralHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
@@ -616,6 +625,9 @@ type TranslationId
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
+    | HeartburnReliefMethod HeartburnReliefMethod
+    | HeartburnRecommendedTreatmentHeader
+    | HeartburnRecommendedTreatmentHelper
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
@@ -674,6 +686,7 @@ type TranslationId
     | LastContacted
     | LastSuccesfulContactLabel
     | Left
+    | LegCrampsReliefMethod LegCrampsReliefMethod
     | Legs
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
@@ -719,6 +732,11 @@ type TranslationId
     | MedicationDistributionHelperDiscordantPartnershipNoARVs
     | MedicationDistributionHelperHIV
     | MedicationDistributionHelperMebendazole
+    | MedicationDistributionHelperGonorrhea
+    | MedicationDistributionHelperTrichomonasOrBacterialVaginosis
+    | MedicationDistributionNoticeGonorrhea
+    | MedicationDistributionNoticeGonorrheaPartnerMed1
+    | MedicationDistributionNoticeGonorrheaPartnerMed2
     | MedicationDistributionSign MedicationDistributionSign
     | MedicationDoxycycline
     | MedicationDosesMissedQuestion
@@ -890,10 +908,22 @@ type TranslationId
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
     | PrenatalDiagnosisForProgressReport PrenatalDiagnosis
-    | PrenatalDiagnosisLabResultsMessage PrenatalDiagnosis
+    | PrenatalDiagnosisNonUrgentMessage PrenatalDiagnosis
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalFlankPainSign PrenatalFlankPainSign
+    | PrenatalHealthEducationAppropriateProvided
+    | PrenatalHealthEducationLabel PrenatalHealthEducationSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
+    | PrenatalHealthEducationNauseaAndVomitingAdvise
+    | PrenatalHealthEducationNauseaAndVomitingInform
+    | PrenatalHealthEducationLegCrampsInform
+    | PrenatalHealthEducationLowBackPainInform
+    | PrenatalHealthEducationConstipationInform
+    | PrenatalHealthEducationHeartburnInform
+    | PrenatalHealthEducationVaricoseVeinsInform
+    | PrenatalHealthEducationLegPainRednessInform
+    | PrenatalHealthEducationPelvicPainInform
+    | PrenatalHealthEducationSaferSexInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -1182,6 +1212,8 @@ type TranslationId
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
+    | TuberculosisInstructions
+    | TuberculosisWarning
     | TwoVisits
     | Type
     | UbudeheLabel
@@ -1192,6 +1224,9 @@ type TranslationId
     | Update
     | UpdateError
     | Uploading
+    | UrinaryTractInfectionRecommendedTreatmentHeader
+    | UrinaryTractInfectionRecommendedTreatmentHelper
+    | UrinaryTractInfectionRecommendedTreatmentInstructions
     | UterineMyoma
     | VaccinationCatchUpRequiredQuestion
     | VaccinationStatus VaccinationStatus
@@ -1777,9 +1812,24 @@ translationSet trans =
             , kinyarwanda = Just "Tanga umuti"
             }
 
+        AdministerAzithromycinHelper ->
+            { english = "By mouth 1x"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerCeftriaxoneHelper ->
+            { english = "IM once"
+            , kinyarwanda = Nothing
+            }
+
         AdministerMebendezoleHelper ->
             { english = "Give the child one tablet by mouth"
             , kinyarwanda = Just "Ha umwana ikinini kimwe akinywe"
+            }
+
+        AdministerMetronidazoleHelper ->
+            { english = "By mouth twice a day for 7 days"
+            , kinyarwanda = Nothing
             }
 
         AdministerAlbendazoleHelper ->
@@ -2532,6 +2582,21 @@ translationSet trans =
         Cancel ->
             { english = "Cancel"
             , kinyarwanda = Just "Guhagarika"
+            }
+
+        CandidiasisRecommendedTreatmentHeader ->
+            { english = "This patient shows signs of Candidiasis"
+            , kinyarwanda = Nothing
+            }
+
+        CandidiasisRecommendedTreatmentHelper ->
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Nothing
+            }
+
+        CandidiasisRecommendedTreatmentInstructions ->
+            { english = "Ensure the patient is not allergic to the medication before prescribing"
+            , kinyarwanda = Nothing
             }
 
         CannotStartEncounterLabel ->
@@ -3775,7 +3840,12 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        EmergencyReferralHelperReferToHospital ->
+        EmergencyReferralHelperReferToHospitalForEvaluation ->
+            { english = "Refer patient to hospital for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
+        EmergencyReferralHelperReferToHospitalImmediately ->
             { english = "Refer patient to hospital immediately"
             , kinyarwanda = Nothing
             }
@@ -4543,6 +4613,38 @@ translationSet trans =
             , kinyarwanda = Just "Umutima"
             }
 
+        HeartburnReliefMethod method ->
+            case method of
+                ReliefMethodAvoidLargeMeals ->
+                    { english = "Avoid large, fatty meals"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodCeaseSmoking ->
+                    { english = "Cease smoking "
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodAvoidAlcohom ->
+                    { english = "Avoid alcohol consumption "
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodSleepWithHeadRaised ->
+                    { english = "Sleep with their head raised in the bed"
+                    , kinyarwanda = Nothing
+                    }
+
+        HeartburnRecommendedTreatmentHeader ->
+            { english = "This patient has signs of persistent heartburn"
+            , kinyarwanda = Nothing
+            }
+
+        HeartburnRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient bellow"
+            , kinyarwanda = Nothing
+            }
+
         HeartMurmur ->
             { english = "Heart Murmur"
             , kinyarwanda = Just "Ijwi ry'umutima igihe utera"
@@ -5255,6 +5357,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        LegCrampsReliefMethod method ->
+            case method of
+                ReliefMethodMuscleStretching ->
+                    { english = "Muscle stretching"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodDorsiflexion ->
+                    { english = "Dorsiflexion"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodRelaxation ->
+                    { english = "Relaxation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodSleepWithPillowBetweenLegs ->
+                    { english = "Sleep with a pillow between the legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodHeatTherapy ->
+                    { english = "Heat therapy"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodMassage ->
+                    { english = "Massage"
+                    , kinyarwanda = Nothing
+                    }
+
         Legs ->
             { english = "Legs"
             , kinyarwanda = Just "Amaguru"
@@ -5640,7 +5774,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisTuberculosis ->
+                Backend.PrenatalActivity.Model.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Just "Igituntu"
                     }
@@ -5692,6 +5826,31 @@ translationSet trans =
 
         MedicationDistributionHelperMebendazole ->
             { english = "This patient is over 24 weeks EGA and has not had a dewormer in the last 6 months"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperGonorrhea ->
+            { english = "This patient has signs of possible Gonorrhea"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperTrichomonasOrBacterialVaginosis ->
+            { english = "This patient has signs of possible Trichomonas or Bacterial Vaginosis"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionNoticeGonorrhea ->
+            { english = "Note: It is also recommend to prescribe the partner"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionNoticeGonorrheaPartnerMed1 ->
+            { english = "Ciproflaxcin (1000mg): by mouth as a single dose"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionNoticeGonorrheaPartnerMed2 ->
+            { english = "Doxycyline (100mg): by moth 2x a day for 7 days"
             , kinyarwanda = Nothing
             }
 
@@ -5769,6 +5928,21 @@ translationSet trans =
 
                 FolicAcid ->
                     { english = "Folic Acid"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ceftriaxone ->
+                    { english = "Ceftriaxone"
+                    , kinyarwanda = Nothing
+                    }
+
+                Azithromycin ->
+                    { english = "Azithromycin"
+                    , kinyarwanda = Nothing
+                    }
+
+                Metronidazole ->
+                    { english = "Metronidazole"
                     , kinyarwanda = Nothing
                     }
 
@@ -7606,6 +7780,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHyperemesisGravidumBySymptoms ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisMaternalComplications ->
                     { english = "Maternal Complications"
                     , kinyarwanda = Nothing
@@ -7623,6 +7802,56 @@ translationSet trans =
 
                 DiagnosisLaborAndDelivery ->
                     { english = "Labor + Delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburnPersistent ->
+                    { english = "Persistent Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDeepVeinThrombosis ->
+                    { english = "Deep Vein Thrombosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPelvicPainIntense ->
+                    { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUrinaryTractInfection ->
+                    { english = "Urinary Tract Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPyelonephritis ->
+                    { english = "Pyelonephritis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisCandidiasis ->
+                    { english = "Candidiasis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }
 
@@ -7793,6 +8022,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHyperemesisGravidumBySymptoms ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisMaternalComplications ->
                     { english = "Maternal Complications"
                     , kinyarwanda = Nothing
@@ -7813,12 +8047,62 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHeartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburnPersistent ->
+                    { english = "Persistent Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDeepVeinThrombosis ->
+                    { english = "Deep Vein Thrombosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPelvicPainIntense ->
+                    { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUrinaryTractInfection ->
+                    { english = "Urinary Tract Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPyelonephritis ->
+                    { english = "Pyelonephritis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisCandidiasis ->
+                    { english = "Candidiasis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
                     }
 
-        PrenatalDiagnosisLabResultsMessage diagnosis ->
+        PrenatalDiagnosisNonUrgentMessage diagnosis ->
             case diagnosis of
                 DiagnosisHIV ->
                     { english = "Patient has tested positive for HIV"
@@ -7920,7 +8204,57 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- Non Lab Results diagnoses.
+                DiagnosisHeartburn ->
+                    { english = "Persistent Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHeartburnPersistent ->
+                    { english = "Persistent Heartburn that is not responding to treatment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDeepVeinThrombosis ->
+                    { english = "Deep Vein Thrombosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPelvicPainIntense ->
+                    { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisUrinaryTractInfection ->
+                    { english = "Urinary Tract Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPyelonephritis ->
+                    { english = "Pyelonephritis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisCandidiasis ->
+                    { english = "Candidiasis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Non Not Urgent diagnoses.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -7975,6 +8309,63 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalHealthEducationLabel sign ->
+            case sign of
+                EducationNausiaVomiting ->
+                    { english = "Nausia and Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationLegCramps ->
+                    { english = "Leg Cramps"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationLowBackPain ->
+                    { english = "Low Back Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationConstipation ->
+                    { english = "Constipation"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationHeartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationVaricoseVeins ->
+                    { english = "Varicose Veins"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationLegPainRedness ->
+                    { english = "Leg Pain Redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationPelvicPain ->
+                    { english = "Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationSaferSex ->
+                    { english = "Safer Sex Practices"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalHealthEducationAppropriateProvided ->
+            { english = "Have you provided the appropriate health education to the patient"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalHealthEducationQuestion isChw sign ->
             case sign of
                 EducationExpectations ->
@@ -8028,7 +8419,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                EducationSaferSex ->
+                EducationSaferSexHIV ->
                     { english = "Have you counseled patient on safer sex practices"
                     , kinyarwanda = Nothing
                     }
@@ -8038,10 +8429,60 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoPrenatalHealthEducationSigns ->
+                _ ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalHealthEducationNauseaAndVomitingAdvise ->
+            { english = "Advise the patient that small amounts of chamomile tea, ginger, and Vitamin B6 can help relieve these symptoms if these are available to the patient"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationNauseaAndVomitingInform ->
+            { english = "Inform the patient that the symptoms of nausea and vomiting usually resolve on their own in the second half of pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationLegCrampsInform ->
+            { english = "Instruct the patient that the following may help relieve cramping in the legs"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationLowBackPainInform ->
+            { english = "Instruct the patient that regular exercise during pregnancy will help prevent lower back pain"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationConstipationInform ->
+            { english = "Instruct the patient that increasing the intake of fruits, vegetables, high fiber foods, and water can help relieve constipation symptoms"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationHeartburnInform ->
+            { english = "Instruct the patient that the following may help relieve heartburn"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationVaricoseVeinsInform ->
+            { english = "Instruct the patient that compression stockings (tight socks or leggings) and elevating their legs will help reduce varicose veins"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationLegPainRednessInform ->
+            { english = "Instruct the patient that regular exercise and stretching can relieve leg pain or redness"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationPelvicPainInform ->
+            { english = "Instruct the patient that regular exercise during pregnancy will help prevent pelvic pain"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationSaferSexInform ->
+            { english = "Council patient on safer sex parctices"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalNextStepsTask isChw task ->
             case task of
@@ -9452,6 +9893,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentAluminiumHydroxide ->
+                    { english = "1 tablet by mouth 3x a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentNitrfurantion ->
+                    { english = "by mouth 2x a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAmoxicilin ->
+                    { english = "by mouth 3x a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentClotrimaxazole200 ->
+                    { english = "vaginally every night x 3 night"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentClotrimaxazole500 ->
+                    { english = "vaginally one time"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -9527,6 +9993,36 @@ translationSet trans =
 
                 TreatmentMethyldopa4 ->
                     { english = "Methyldopa 250mg by mouth four times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAluminiumHydroxide ->
+                    { english = "Aluminium Hydroxide"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHealthEducationForHeartburn ->
+                    { english = "Not dispencing medicine. Follow health education protocols."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentNitrfurantion ->
+                    { english = "Nitrfurantion (100mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAmoxicilin ->
+                    { english = "Amoxicilin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentClotrimaxazole200 ->
+                    { english = "Clotrimaxazole (200mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentClotrimaxazole500 ->
+                    { english = "Clotrimaxazole (500mg)"
                     , kinyarwanda = Nothing
                     }
 
@@ -10884,6 +11380,16 @@ translationSet trans =
             , kinyarwanda = Just "Arwaye igituntu"
             }
 
+        TuberculosisInstructions ->
+            { english = "Follow TB protocols"
+            , kinyarwanda = Nothing
+            }
+
+        TuberculosisWarning ->
+            { english = "Patient is high risk for active Tuberculosis"
+            , kinyarwanda = Nothing
+            }
+
         TwoVisits ->
             { english = "Two visits"
             , kinyarwanda = Just "Inshuro ebyiri"
@@ -10948,6 +11454,21 @@ translationSet trans =
 
         Uploading ->
             { english = "Uploading"
+            , kinyarwanda = Nothing
+            }
+
+        UrinaryTractInfectionRecommendedTreatmentHeader ->
+            { english = "This patient shows signs of Urinary Tract Infection"
+            , kinyarwanda = Nothing
+            }
+
+        UrinaryTractInfectionRecommendedTreatmentHelper ->
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Nothing
+            }
+
+        UrinaryTractInfectionRecommendedTreatmentInstructions ->
+            { english = "Ensure the patient is not allergic to the medication before prescribing"
             , kinyarwanda = Nothing
             }
 

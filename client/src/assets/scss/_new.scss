@@ -1745,6 +1745,24 @@ div.page-activity.home-visit {
           text-transform: uppercase;
         }
       }
+
+      .form.health-education {
+
+        .label, li {
+          font-weight: 600;
+        }
+
+        .label.header {
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 30px;
+          text-transform: uppercase;
+        }
+
+        .label.paragraph {
+          margin-bottom: 20px;
+        }
+      }
     }
   }
 }
@@ -1791,6 +1809,15 @@ div.page-activity.prenatal {
             margin-left: 5px;
             margin-right: 10px;
           }
+        }
+
+        .label.footer {
+          font-weight: normal;
+          margin-bottom: 0;
+        }
+
+        ul {
+          margin-top: 0;
         }
       }
     }

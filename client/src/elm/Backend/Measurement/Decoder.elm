@@ -305,11 +305,38 @@ decodePrenatalHealthEducationSign =
                     "positive-hiv" ->
                         succeed EducationPositiveHIV
 
-                    "safer-sex" ->
-                        succeed EducationSaferSex
+                    "safer-sex-hiv" ->
+                        succeed EducationSaferSexHIV
 
                     "partner-testing" ->
                         succeed EducationPartnerTesting
+
+                    "nausia-vomiting" ->
+                        succeed EducationNausiaVomiting
+
+                    "leg-cramps" ->
+                        succeed EducationLegCramps
+
+                    "low-back-pain" ->
+                        succeed EducationLowBackPain
+
+                    "constipation" ->
+                        succeed EducationConstipation
+
+                    "heartburn" ->
+                        succeed EducationHeartburn
+
+                    "varicose-veins" ->
+                        succeed EducationVaricoseVeins
+
+                    "leg-pain-redness" ->
+                        succeed EducationLegPainRedness
+
+                    "pelvic-pain" ->
+                        succeed EducationPelvicPain
+
+                    "safer-sex" ->
+                        succeed EducationSaferSex
 
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
@@ -2670,6 +2697,15 @@ decodeMedicationDistributionSign =
                     "folicacid" ->
                         succeed FolicAcid
 
+                    "ceftriaxone" ->
+                        succeed Ceftriaxone
+
+                    "azithromycin" ->
+                        succeed Azithromycin
+
+                    "metronidazole" ->
+                        succeed Metronidazole
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2768,6 +2804,21 @@ decodeMedicationNonAdministrationSign =
                                     "folicacid" ->
                                         administrationNote
                                             |> Maybe.map (MedicationFolicAcid >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "ceftriaxone" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationCeftriaxone >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "azithromycin" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationAzithromycin >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "metronidazole" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationMetronidazole >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

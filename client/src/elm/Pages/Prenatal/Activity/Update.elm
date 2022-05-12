@@ -71,6 +71,16 @@ update language currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
 
+        symptomReviewForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.symptomReview
+                        >> getMeasurementValueFunc
+                        >> symptomReviewFormWithDefault model.symptomReviewData.form
+                    )
+                |> Maybe.withDefault model.symptomReviewData.form
+
         generateLaboratoryMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
@@ -129,7 +139,7 @@ update language currentDate id db msg model =
                     else
                         let
                             message =
-                                List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) nonUrgentDiagnoses
+                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
                                     |> String.join ", "
                         in
                         [ SetWarningPopupState <| Just ( message, "" ) ]
@@ -2863,8 +2873,27 @@ update language currentDate id db msg model =
                 updatedData =
                     model.symptomReviewData
                         |> (\data -> { data | step = step })
+
+                warningPopupState =
+                    if step == SymptomReviewStepQuestions then
+                        Maybe.map
+                            (\symptoms ->
+                                if List.member CoughContinuous symptoms then
+                                    Just
+                                        ( translate language Translate.TuberculosisWarning
+                                        , translate language Translate.TuberculosisInstructions
+                                        )
+
+                                else
+                                    model.warningPopupState
+                            )
+                            symptomReviewForm.symptoms
+                            |> Maybe.withDefault model.warningPopupState
+
+                    else
+                        model.warningPopupState
             in
-            ( { model | symptomReviewData = updatedData }
+            ( { model | symptomReviewData = updatedData, warningPopupState = warningPopupState }
             , Cmd.none
             , []
             )

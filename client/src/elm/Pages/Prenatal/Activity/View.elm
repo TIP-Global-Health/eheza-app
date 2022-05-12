@@ -353,7 +353,7 @@ viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> 
 viewHistoryContent language currentDate assembled data_ =
     let
         firstEnconter =
-            isFirstEncounter assembled
+            nurseEncounterNotPerformed assembled
 
         ( tasks, data ) =
             if firstEnconter then
@@ -595,7 +595,7 @@ viewExaminationContent language currentDate assembled data =
             [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
 
         firstEnconter =
-            isFirstEncounter assembled
+            nurseEncounterNotPerformed assembled
 
         tasksCompletedFromTotalDict =
             tasks
@@ -754,7 +754,7 @@ viewExaminationContent language currentDate assembled data =
                         NutritionAssessment ->
                             let
                                 passHeight =
-                                    isFirstEncounter assembled |> not
+                                    nurseEncounterNotPerformed assembled |> not
 
                                 maybeHeight =
                                     if passHeight then
@@ -1567,7 +1567,16 @@ viewNextStepsContent language currentDate isChw assembled data =
                 List.filter ((/=) NextStepsWait) tasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasksConsideringShowWaitTask)
+            Maybe.map
+                (\task ->
+                    if List.member task tasksConsideringShowWaitTask then
+                        Just task
+
+                    else
+                        List.head tasksConsideringShowWaitTask
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasksConsideringShowWaitTask)
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -1593,7 +1602,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             if isChw then
                                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
-                            else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
+                            else if referToHospitalForNonHIVDiagnosis assembled then
                                 ( viewSendToHospitalForm, Nothing )
 
                             else

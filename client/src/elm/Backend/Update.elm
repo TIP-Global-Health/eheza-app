@@ -1708,6 +1708,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ PrenatalSymptomReviewRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ CorePhysicalExamRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -4092,7 +4102,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             -- Instructions for Emergency Referral.
                                             ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
                                             , if List.member DiagnosisSeverePreeclampsiaImmediate urgentDiagnoses then
-                                                translate language Translate.EmergencyReferralHelperReferToHospital
+                                                translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
 
                                               else if
                                                 List.any
@@ -4134,7 +4144,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                 else
                                     let
                                         signs =
-                                            List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) urgentDiagnoses
+                                            List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
                                                 |> String.join ", "
                                     in
                                     [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
@@ -4142,7 +4152,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                         |> App.Model.SetActivePage
                                     , recurrentEncounterWarningPopupMsg
                                         ( signs
-                                        , translate language Translate.EmergencyReferralHelperReferToHospital
+                                        , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
                                         )
                                     ]
                         in

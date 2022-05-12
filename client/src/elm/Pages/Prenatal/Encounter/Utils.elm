@@ -20,16 +20,11 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
 
-isFirstEncounter : AssembledData -> Bool
-isFirstEncounter assembled =
-    List.isEmpty assembled.nursePreviousMeasurementsWithDates
-
-
 getAllActivities : AssembledData -> List PrenatalActivity
 getAllActivities assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            if isFirstEncounter assembled then
+            if nurseEncounterNotPerformed assembled then
                 [ PregnancyDating
                 , History
                 , Examination
@@ -896,7 +891,7 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
         DiagnosisHypertensionBeforePregnancy ->
             generateAlertForDiagnosis [ Backend.Measurement.Model.HypertensionBeforePregnancy ]
 
-        DiagnosisTuberculosis ->
+        Backend.PrenatalActivity.Model.DiagnosisTuberculosis ->
             generateAlertForDiagnosis
                 [ Backend.Measurement.Model.TuberculosisPast
                 , Backend.Measurement.Model.TuberculosisPresent

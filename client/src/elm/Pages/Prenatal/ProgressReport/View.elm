@@ -1862,7 +1862,7 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                         -- First we need to treat a scenario where patient also got
                         -- Malaria, and was referred to hospital for treatment.
                         -- Here, even if there's and HIV program at HC, patient
-                        -- is not reffered to it. HIV treatement will be given
+                        -- is not referred to it. HIV treatement will be given
                         -- at the hospital.
                         if
                             List.any (\diagnosis_ -> EverySet.member diagnosis_ allDiagnoses)
@@ -2127,6 +2127,50 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
 
         DiagnosisSeverePreeclampsiaAfterRecheck ->
             referredToHospitalMessage
+
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            -- @todo
+            []
+
+        DiagnosisHeartburn ->
+            -- @todo
+            []
+
+        DiagnosisHeartburnPersistent ->
+            -- @todo
+            []
+
+        DiagnosisDeepVeinThrombosis ->
+            -- @todo
+            []
+
+        DiagnosisPelvicPainIntense ->
+            --@todo
+            []
+
+        DiagnosisUrinaryTractInfection ->
+            --@todo
+            []
+
+        DiagnosisPyelonephritis ->
+            --@todo
+            []
+
+        DiagnosisCandidiasis ->
+            --@todo
+            []
+
+        DiagnosisGonorrhea ->
+            --@todo
+            []
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            --@todo
+            []
+
+        DiagnosisTuberculosis ->
+            --@todo
+            []
 
         NoPrenatalDiagnosis ->
             []

@@ -156,6 +156,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisHyperemesisGravidum ->
                 "hyperemesis-gravidum"
 
+            DiagnosisHyperemesisGravidumBySymptoms ->
+                "hyperemesis-gravidum-by-symptoms"
+
             DiagnosisMaternalComplications ->
                 "maternal-complications"
 
@@ -167,6 +170,36 @@ encodePrenatalDiagnosis diagnosis =
 
             DiagnosisLaborAndDelivery ->
                 "labor"
+
+            DiagnosisHeartburn ->
+                "heartburn"
+
+            DiagnosisHeartburnPersistent ->
+                "heartburn-persistent"
+
+            DiagnosisDeepVeinThrombosis ->
+                "dvt"
+
+            DiagnosisPelvicPainIntense ->
+                "pelvic-pain-intense"
+
+            DiagnosisUrinaryTractInfection ->
+                "urinary-tract-infection"
+
+            DiagnosisPyelonephritis ->
+                "pyelonephritis"
+
+            DiagnosisCandidiasis ->
+                "candidiasis"
+
+            DiagnosisGonorrhea ->
+                "gonorrhea"
+
+            DiagnosisTrichomonasOrBacterialVaginosis ->
+                "trichomonas-or-bv"
+
+            DiagnosisTuberculosis ->
+                "Tuberculosis"
 
             NoPrenatalDiagnosis ->
                 "none"
