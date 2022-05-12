@@ -1688,14 +1688,16 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
                         (\diagnosis ->
                             EverySet.member diagnosis assembled.encounter.diagnoses
                         )
+                        -- Diagnoses that require safer sex practices education.
                         [ DiagnosisCandidiasis, DiagnosisGonorrhea, DiagnosisTrichomonasOrBacterialVaginosis ]
             in
             if not <| List.isEmpty saferSexDiagnoses then
                 let
                     label =
-                        List.map
-                            (Translate.PrenatalDiagnosis >> translate language)
-                            saferSexDiagnoses
+                        List.filter (symptomRecorded assembled.measurements)
+                            -- Symptoms that may  require safer sex practices education.
+                            [ BurningWithUrination, AbnormalVaginalDischarge ]
+                            |> List.map (Translate.PrenatalSymptom >> translate language)
                             |> String.join ", "
                 in
                 ( [ div [ class "label header" ] [ text label ]
