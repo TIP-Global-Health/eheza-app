@@ -591,6 +591,7 @@ function hedley_prenatal_field_default_field_bases() {
         'candidiasis' => 'Candidiasis',
         'gonorrhea' => 'Gonorrhea',
         'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
+        'tuberculosis' => 'Tuberculosis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

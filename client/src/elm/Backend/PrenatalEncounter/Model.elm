@@ -82,6 +82,7 @@ type PrenatalDiagnosis
     | DiagnosisCandidiasis
     | DiagnosisGonorrhea
     | DiagnosisTrichomonasOrBacterialVaginosis
+    | DiagnosisTuberculosis
     | NoPrenatalDiagnosis
 
 

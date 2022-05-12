@@ -2164,5 +2164,9 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
+        DiagnosisTuberculosis ->
+            --@todo
+            []
+
         NoPrenatalDiagnosis ->
             []

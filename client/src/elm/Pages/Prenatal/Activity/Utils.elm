@@ -1187,6 +1187,9 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
+        Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+            symptomRecorded assembled.measurements CoughContinuous
+
         -- Non Symptoms diagnoses.
         _ ->
             False
@@ -1374,6 +1377,7 @@ symptomsDiagnoses =
     , DiagnosisCandidiasis
     , DiagnosisGonorrhea
     , DiagnosisTrichomonasOrBacterialVaginosis
+    , Backend.PrenatalEncounter.Model.DiagnosisTuberculosis
     ]
 
 

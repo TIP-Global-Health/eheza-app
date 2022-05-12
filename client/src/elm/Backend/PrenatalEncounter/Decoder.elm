@@ -201,6 +201,9 @@ decodePrenatalDiagnosis =
                     "trichomonas-or-bv" ->
                         succeed DiagnosisTrichomonasOrBacterialVaginosis
 
+                    "tuberculosis" ->
+                        succeed DiagnosisTuberculosis
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

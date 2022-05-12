@@ -180,12 +180,6 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisPelvicPainIntense ->
                 "pelvic-pain-intense"
 
-            DiagnosisGonorrhea ->
-                "gonorrhea"
-
-            DiagnosisTrichomonasOrBacterialVaginosis ->
-                "trichomonas-or-bv"
-
             DiagnosisUrinaryTractInfection ->
                 "urinary-tract-infection"
 
@@ -194,6 +188,15 @@ encodePrenatalDiagnosis diagnosis =
 
             DiagnosisCandidiasis ->
                 "candidiasis"
+
+            DiagnosisGonorrhea ->
+                "gonorrhea"
+
+            DiagnosisTrichomonasOrBacterialVaginosis ->
+                "trichomonas-or-bv"
+
+            DiagnosisTuberculosis ->
+                "Tuberculosis"
 
             NoPrenatalDiagnosis ->
                 "none"

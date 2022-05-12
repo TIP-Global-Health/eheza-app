@@ -5774,7 +5774,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisTuberculosis ->
+                Backend.PrenatalActivity.Model.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Just "Igituntu"
                     }
@@ -7845,6 +7845,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8077,6 +8082,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8226,6 +8236,11 @@ translationSet trans =
 
                 DiagnosisTrichomonasOrBacterialVaginosis ->
                     { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }
 
