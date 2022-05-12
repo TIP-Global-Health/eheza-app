@@ -43,7 +43,7 @@ getAllActivities assembled =
                 , History
                 , Examination
                 , FamilyPlanning
-                , Medication
+                , PrenatalTreatmentReview
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , Laboratory
                 , PrenatalPhoto

@@ -69,6 +69,9 @@ activityToString activity =
         SymptomReview ->
             "symptoms"
 
+        PrenatalTreatmentReview ->
+            "treatment-review"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -114,8 +117,11 @@ activityFromString s =
         "medication" ->
             Just Medication
 
-        "symptoms" ->
+        "symptom" ->
             Just SymptomReview
+
+        "treatment-review" ->
+            Just PrenatalTreatmentReview
 
         _ ->
             Nothing

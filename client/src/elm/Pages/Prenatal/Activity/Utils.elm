@@ -98,6 +98,10 @@ expectActivity currentDate assembled activity =
                 SymptomReview ->
                     True
 
+                PrenatalTreatmentReview ->
+                    -- @todo
+                    True
+
                 -- Unique Chw activities.
                 _ ->
                     False
@@ -242,6 +246,10 @@ activityCompleted currentDate assembled activity =
 
         SymptomReview ->
             isJust assembled.measurements.symptomReview
+
+        PrenatalTreatmentReview ->
+            -- @todo
+            False
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask

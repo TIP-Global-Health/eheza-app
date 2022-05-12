@@ -189,6 +189,10 @@ viewActivity language currentDate isChw activity assembled db model =
         SymptomReview ->
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
+        PrenatalTreatmentReview ->
+            -- @todo
+            [ text "viewTreatmentReview" ]
+
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
             []
