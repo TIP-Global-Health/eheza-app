@@ -180,5 +180,26 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisDeepVeinThrombosis ->
                 "dvt"
 
+            DiagnosisPelvicPainIntense ->
+                "pelvic-pain-intense"
+
+            DiagnosisUrinaryTractInfection ->
+                "urinary-tract-infection"
+
+            DiagnosisPyelonephritis ->
+                "pyelonephritis"
+
+            DiagnosisCandidiasis ->
+                "candidiasis"
+
+            DiagnosisGonorrhea ->
+                "gonorrhea"
+
+            DiagnosisTrichomonasOrBacterialVaginosis ->
+                "trichomonas-or-bv"
+
+            DiagnosisTuberculosis ->
+                "Tuberculosis"
+
             NoPrenatalDiagnosis ->
                 "none"

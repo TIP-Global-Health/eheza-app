@@ -2144,5 +2144,33 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
             -- @todo
             []
 
+        DiagnosisPelvicPainIntense ->
+            --@todo
+            []
+
+        DiagnosisUrinaryTractInfection ->
+            --@todo
+            []
+
+        DiagnosisPyelonephritis ->
+            --@todo
+            []
+
+        DiagnosisCandidiasis ->
+            --@todo
+            []
+
+        DiagnosisGonorrhea ->
+            --@todo
+            []
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            --@todo
+            []
+
+        DiagnosisTuberculosis ->
+            --@todo
+            []
+
         NoPrenatalDiagnosis ->
             []

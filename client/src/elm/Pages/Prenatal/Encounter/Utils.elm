@@ -891,7 +891,7 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
         DiagnosisHypertensionBeforePregnancy ->
             generateAlertForDiagnosis [ Backend.Measurement.Model.HypertensionBeforePregnancy ]
 
-        DiagnosisTuberculosis ->
+        Backend.PrenatalActivity.Model.DiagnosisTuberculosis ->
             generateAlertForDiagnosis
                 [ Backend.Measurement.Model.TuberculosisPast
                 , Backend.Measurement.Model.TuberculosisPresent

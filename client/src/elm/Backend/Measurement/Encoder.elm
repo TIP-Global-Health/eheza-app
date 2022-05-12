@@ -224,6 +224,12 @@ encodePrenatalHealthEducationSign sign =
             EducationLegPainRedness ->
                 "leg-pain-redness"
 
+            EducationPelvicPain ->
+                "pelvic-pain"
+
+            EducationSaferSex ->
+                "safer-sex"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -2535,6 +2541,15 @@ encondeMedicationDistributionSign sign =
             FolicAcid ->
                 "folicacid"
 
+            Ceftriaxone ->
+                "ceftriaxone"
+
+            Azithromycin ->
+                "azithromycin"
+
+            Metronidazole ->
+                "metronidazole"
+
             NoMedicationDistributionSigns ->
                 "none"
 
@@ -2584,6 +2599,15 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationFolicAcid reason ->
                 "folicacid-" ++ administrationNoteToString reason
+
+            MedicationCeftriaxone reason ->
+                "ceftriaxone-" ++ administrationNoteToString reason
+
+            MedicationAzithromycin reason ->
+                "azithromycin-" ++ administrationNoteToString reason
+
+            MedicationMetronidazole reason ->
+                "metronidazole-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

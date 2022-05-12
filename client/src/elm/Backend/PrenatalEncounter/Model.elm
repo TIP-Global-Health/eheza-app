@@ -79,6 +79,13 @@ type PrenatalDiagnosis
     | DiagnosisHeartburn
     | DiagnosisHeartburnPersistent
     | DiagnosisDeepVeinThrombosis
+    | DiagnosisPelvicPainIntense
+    | DiagnosisUrinaryTractInfection
+    | DiagnosisPyelonephritis
+    | DiagnosisCandidiasis
+    | DiagnosisGonorrhea
+    | DiagnosisTrichomonasOrBacterialVaginosis
+    | DiagnosisTuberculosis
     | NoPrenatalDiagnosis
 
 

@@ -332,6 +332,12 @@ decodePrenatalHealthEducationSign =
                     "leg-pain-redness" ->
                         succeed EducationLegPainRedness
 
+                    "pelvic-pain" ->
+                        succeed EducationPelvicPain
+
+                    "safer-sex" ->
+                        succeed EducationSaferSex
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
@@ -2691,6 +2697,15 @@ decodeMedicationDistributionSign =
                     "folicacid" ->
                         succeed FolicAcid
 
+                    "ceftriaxone" ->
+                        succeed Ceftriaxone
+
+                    "azithromycin" ->
+                        succeed Azithromycin
+
+                    "metronidazole" ->
+                        succeed Metronidazole
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -2789,6 +2804,21 @@ decodeMedicationNonAdministrationSign =
                                     "folicacid" ->
                                         administrationNote
                                             |> Maybe.map (MedicationFolicAcid >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "ceftriaxone" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationCeftriaxone >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "azithromycin" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationAzithromycin >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "metronidazole" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationMetronidazole >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

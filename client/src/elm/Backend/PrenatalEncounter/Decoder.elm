@@ -186,6 +186,27 @@ decodePrenatalDiagnosis =
                     "dvt" ->
                         succeed DiagnosisDeepVeinThrombosis
 
+                    "pelvic-pain-intense" ->
+                        succeed DiagnosisPelvicPainIntense
+
+                    "urinary-tract-infection" ->
+                        succeed DiagnosisUrinaryTractInfection
+
+                    "pyelonephritis" ->
+                        succeed DiagnosisPyelonephritis
+
+                    "candidiasis" ->
+                        succeed DiagnosisCandidiasis
+
+                    "gonorrhea" ->
+                        succeed DiagnosisGonorrhea
+
+                    "trichomonas-or-bv" ->
+                        succeed DiagnosisTrichomonasOrBacterialVaginosis
+
+                    "tuberculosis" ->
+                        succeed DiagnosisTuberculosis
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

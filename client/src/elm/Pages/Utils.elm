@@ -907,6 +907,15 @@ resolveMedicationsNonAdministrationReasons value =
                     MedicationFolicAcid reason ->
                         Just ( FolicAcid, reason )
 
+                    MedicationCeftriaxone reason ->
+                        Just ( Ceftriaxone, reason )
+
+                    MedicationAzithromycin reason ->
+                        Just ( Azithromycin, reason )
+
+                    MedicationMetronidazole reason ->
+                        Just ( Metronidazole, reason )
+
                     NoMedicationNonAdministrationSigns ->
                         Nothing
             )
