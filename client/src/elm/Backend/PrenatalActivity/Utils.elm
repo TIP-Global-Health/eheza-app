@@ -117,7 +117,7 @@ activityFromString s =
         "medication" ->
             Just Medication
 
-        "symptom" ->
+        "symptoms" ->
             Just SymptomReview
 
         "prior-treatment" ->
