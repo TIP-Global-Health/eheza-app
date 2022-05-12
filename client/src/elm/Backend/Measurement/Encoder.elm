@@ -1286,9 +1286,65 @@ encodeMedicationSign sign =
                 "none"
 
 
+encodeMedicationTreatmentSign : MedicationTreatmentSign -> Value
+encodeMedicationTreatmentSign sign =
+    string <|
+        case sign of
+            MedicationTreatmentStillTaking ->
+                "still-taking"
+
+            MedicationTreatmentMissedDoses ->
+                "missed-doses"
+
+            MedicationTreatmentAdverseEvents ->
+                "adverse-events"
+
+            NoMedicationTreatment ->
+                "none"
+
+
+encodeHIVTreatmentSign : HIVTreatmentSign -> Value
+encodeHIVTreatmentSign sign =
+    string <|
+        case sign of
+            HIVTreatmentStillTaking ->
+                "still-taking"
+
+            HIVTreatmentMissedDoses ->
+                "missed-doses"
+
+            HIVTreatmentAdverseEvents ->
+                "adverse-events"
+
+            NoHIVTreatment ->
+                "none"
+
+
 encodeMedication : Medication -> List ( String, Value )
 encodeMedication =
     encodePrenatalMeasurement encodeMedicationValue
+
+
+encodeMedicationValue : MedicationValue -> List ( String, Value )
+encodeMedicationValue value =
+    let
+        encodeEverySetNullable name encoder maybeValue =
+            Maybe.map
+                (\value_ ->
+                    [ ( name, encodeEverySet encoder value_ ) ]
+                )
+                maybeValue
+                |> Maybe.withDefault []
+    in
+    [ ( "medication", encodeEverySet encodeMedicationSign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string "medication" )
+    ]
+        ++ encodeEverySetNullable "hiv_treatment" encodeHIVTreatmentSign value.hivTreatment
+        ++ encodeEverySetNullable "hypertension_treatment" encodeMedicationTreatmentSign value.hypertensionTreatment
+        ++ encodeEverySetNullable "malaria_treatment" encodeMedicationTreatmentSign value.malariaTreatment
+        ++ encodeEverySetNullable "anemia_treatment" encodeMedicationTreatmentSign value.anemiaTreatment
+        ++ encodeEverySetNullable "syphilis_treatment" encodeMedicationTreatmentSign value.syphilisTreatment
 
 
 encodeChildFbf : Fbf -> List ( String, Value )
@@ -1328,14 +1384,6 @@ encodeDistributionNoticeAsString notice =
 
         DistributedPartiallyOther ->
             "other"
-
-
-encodeMedicationValue : EverySet MedicationSign -> List ( String, Value )
-encodeMedicationValue value =
-    [ ( "medication", encodeEverySet encodeMedicationSign value )
-    , ( "deleted", bool False )
-    , ( "type", string "medication" )
-    ]
 
 
 encodeFetalPresentation : FetalPresentation -> Value

@@ -592,8 +592,33 @@ type MedicationSign
     | NoMedication
 
 
+type MedicationTreatmentSign
+    = MedicationTreatmentStillTaking
+    | MedicationTreatmentMissedDoses
+    | MedicationTreatmentAdverseEvents
+    | NoMedicationTreatment
+
+
+type HIVTreatmentSign
+    = HIVTreatmentStillTaking
+    | HIVTreatmentMissedDoses
+    | HIVTreatmentAdverseEvents
+      -- @todo: extend
+    | NoHIVTreatment
+
+
 type alias Medication =
-    PrenatalMeasurement (EverySet MedicationSign)
+    PrenatalMeasurement MedicationValue
+
+
+type alias MedicationValue =
+    { signs : EverySet MedicationSign
+    , hivTreatment : Maybe (EverySet HIVTreatmentSign)
+    , hypertensionTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , malariaTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , anemiaTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , syphilisTreatment : Maybe (EverySet MedicationTreatmentSign)
+    }
 
 
 type alias ObstetricalExamValue =

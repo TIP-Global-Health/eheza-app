@@ -1499,10 +1499,66 @@ decodeMedicationSign =
             )
 
 
+decodeMedicationTreatmentSign : Decoder MedicationTreatmentSign
+decodeMedicationTreatmentSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "still-taking" ->
+                        succeed MedicationTreatmentStillTaking
+
+                    "missed-doses" ->
+                        succeed MedicationTreatmentMissedDoses
+
+                    "adverse-events" ->
+                        succeed MedicationTreatmentAdverseEvents
+
+                    "none" ->
+                        succeed NoMedicationTreatment
+
+                    _ ->
+                        fail <| s ++ " is not a recognized MedicationTreatmentSign"
+            )
+
+
+decodeHIVTreatmentSign : Decoder HIVTreatmentSign
+decodeHIVTreatmentSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "still-taking" ->
+                        succeed HIVTreatmentStillTaking
+
+                    "missed-doses" ->
+                        succeed HIVTreatmentMissedDoses
+
+                    "adverse-events" ->
+                        succeed HIVTreatmentAdverseEvents
+
+                    "none" ->
+                        succeed NoHIVTreatment
+
+                    _ ->
+                        fail <| s ++ " is not a recognized HIVTreatmentSign"
+            )
+
+
 decodeMedication : Decoder Medication
 decodeMedication =
-    field "medication" (decodeEverySet decodeMedicationSign)
-        |> decodePrenatalMeasurement
+    decodePrenatalMeasurement decodeMedicationValue
+
+
+decodeMedicationValue : Decoder MedicationValue
+decodeMedicationValue =
+    succeed MedicationValue
+        |> required "medication" (decodeEverySet decodeMedicationSign)
+        |> optional "hiv_treatment" (nullable (decodeEverySet decodeHIVTreatmentSign)) Nothing
+        |> optional "hypertension_treatment" (nullable (decodeEverySet decodeMedicationTreatmentSign)) Nothing
+        |> optional "malaria_treatment" (nullable (decodeEverySet decodeMedicationTreatmentSign)) Nothing
+        |> optional "anemia_treatment" (nullable (decodeEverySet decodeMedicationTreatmentSign)) Nothing
+        |> optional "syphilis_treatment" (nullable (decodeEverySet decodeMedicationTreatmentSign)) Nothing
 
 
 decodeFetalPresentation : Decoder FetalPresentation
