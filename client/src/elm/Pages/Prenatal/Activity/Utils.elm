@@ -370,7 +370,7 @@ referToHospitalForNonHIVDiagnosis assembled =
     let
         severeMalariaTreatment =
             getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
+                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
                 |> Maybe.withDefault False
     in
     emergencyReferalRequired assembled

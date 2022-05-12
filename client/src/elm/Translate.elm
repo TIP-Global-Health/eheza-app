@@ -9873,27 +9873,27 @@ translationSet trans =
 
         RecommendedTreatmentSignDosage sign ->
             case sign of
-                TreatementPenecilin1 ->
+                TreatmentPenecilin1 ->
                     { english = "IM x 1"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementPenecilin3 ->
+                TreatmentPenecilin3 ->
                     { english = "IM 1x a week for 3 weeks"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementErythromycin ->
+                TreatmentErythromycin ->
                     { english = "by mouth 4x a day for 14 days"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementAzithromycin ->
+                TreatmentAzithromycin ->
                     { english = "4 tabs by mouth x one day"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementCeftriaxon ->
+                TreatmentCeftriaxon ->
                     { english = "IM daily x 10 days"
                     , kinyarwanda = Nothing
                     }
@@ -9946,7 +9946,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TreatementReferToHospital ->
+                TreatmentReferToHospital ->
                     { english = "Severe Malaria: Stabilize and Refer to Hospital"
                     , kinyarwanda = Nothing
                     }
@@ -9956,27 +9956,27 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TreatementPenecilin1 ->
+                TreatmentPenecilin1 ->
                     { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementPenecilin3 ->
+                TreatmentPenecilin3 ->
                     { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementErythromycin ->
+                TreatmentErythromycin ->
                     { english = "Erythromycin (500mg)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementAzithromycin ->
+                TreatmentAzithromycin ->
                     { english = "Azithromycin (2g)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementCeftriaxon ->
+                TreatmentCeftriaxon ->
                     { english = "Ceftriaxone (1g)"
                     , kinyarwanda = Nothing
                     }

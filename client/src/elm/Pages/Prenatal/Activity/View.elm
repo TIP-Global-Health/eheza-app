@@ -1662,13 +1662,13 @@ viewNextStepsContent language currentDate isChw assembled data =
                         -- due to Malaria, based on saved measurement.
                         referredToHospitalBeforeSave =
                             getMeasurementValueFunc measurements.medicationDistribution
-                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
+                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
                                 |> Maybe.withDefault False
 
                         -- We know if patient will be referred to hospital
                         -- due to Malaria, based on edited form.
                         referredToHospitalAfterSave =
-                            Maybe.map (List.member TreatementReferToHospital)
+                            Maybe.map (List.member TreatmentReferToHospital)
                                 medicationDistributionForm.recommendedTreatmentSigns
                                 |> Maybe.withDefault False
                     in

@@ -502,7 +502,7 @@ resolveRecommendedTreatmentForMalariaInputsAndTasks language currentDate setReco
       , viewCheckBoxSelectInput language
             [ medicationTreatment
             , TreatmentWrittenProtocols
-            , TreatementReferToHospital
+            , TreatmentReferToHospital
             , NoTreatmentForMalaria
             ]
             []
@@ -521,7 +521,7 @@ recommendedTreatmentSignsForMalaria =
     [ TreatmentQuinineSulphate
     , TreatmentCoartem
     , TreatmentWrittenProtocols
-    , TreatementReferToHospital
+    , TreatmentReferToHospital
     , NoTreatmentForMalaria
     ]
 
@@ -551,7 +551,7 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
                 (\signs ->
                     if
                         List.any (\sign -> List.member sign signs)
-                            [ TreatementErythromycin, TreatementAzithromycin ]
+                            [ TreatmentErythromycin, TreatmentAzithromycin ]
                     then
                         div [ class "warning" ]
                             [ img [ src "assets/images/exclamation-red.png" ] []
@@ -594,11 +594,11 @@ viewTreatmentOptionWithDosage language sign =
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
 recommendedTreatmentSignsForSyphilis =
-    [ TreatementPenecilin1
-    , TreatementPenecilin3
-    , TreatementErythromycin
-    , TreatementAzithromycin
-    , TreatementCeftriaxon
+    [ TreatmentPenecilin1
+    , TreatmentPenecilin3
+    , TreatmentErythromycin
+    , TreatmentAzithromycin
+    , TreatmentCeftriaxon
     , NoTreatmentForSyphilis
     ]
 

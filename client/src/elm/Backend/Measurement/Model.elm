@@ -1113,14 +1113,14 @@ type RecommendedTreatmentSign
       TreatmentQuinineSulphate
     | TreatmentCoartem
     | TreatmentWrittenProtocols
-    | TreatementReferToHospital
+    | TreatmentReferToHospital
     | NoTreatmentForMalaria
       -- For Syphilis:
-    | TreatementPenecilin1
-    | TreatementPenecilin3
-    | TreatementErythromycin
-    | TreatementAzithromycin
-    | TreatementCeftriaxon
+    | TreatmentPenecilin1
+    | TreatmentPenecilin3
+    | TreatmentErythromycin
+    | TreatmentAzithromycin
+    | TreatmentCeftriaxon
     | NoTreatmentForSyphilis
       -- For Hypertension:
     | TreatmentMethyldopa2

@@ -366,7 +366,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                 |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
 
                         diagnosisEntries =
-                            List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
                                 |> List.concat
 
                         knownAsPositiveEntries =
@@ -412,7 +412,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                             EverySet.toList diagnoses
                                 |> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
                     in
-                    List.map (viewTreatementForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                    List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
                         |> List.concat
                 )
                 allMeasurementsWithDates
@@ -1593,14 +1593,14 @@ viewKnownPositives language date measurements =
     ]
 
 
-viewTreatementForDiagnosis :
+viewTreatmentForDiagnosis :
     Language
     -> NominalDate
     -> PrenatalMeasurements
     -> EverySet PrenatalDiagnosis
     -> PrenatalDiagnosis
     -> List (Html any)
-viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
+viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
     let
         referredToHospitalMessage =
             referredToHospitalMessageWithComplications ""
@@ -1733,7 +1733,7 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
                                 else if List.member NoTreatmentForMalaria treatment then
                                     noTreatmentAdministeredMessage
 
-                                else if List.member TreatementReferToHospital treatment then
+                                else if List.member TreatmentReferToHospital treatment then
                                     referredToHospitalMessage
 
                                 else if List.member TreatmentWrittenProtocols treatment then
