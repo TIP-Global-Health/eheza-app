@@ -7780,6 +7780,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHyperemesisGravidumBySymptoms ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisMaternalComplications ->
                     { english = "Maternal Complications"
                     , kinyarwanda = Nothing
@@ -8013,6 +8018,11 @@ translationSet trans =
                     }
 
                 DiagnosisHyperemesisGravidum ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHyperemesisGravidumBySymptoms ->
                     { english = "Hyperemesis Gravidum"
                     , kinyarwanda = Nothing
                     }

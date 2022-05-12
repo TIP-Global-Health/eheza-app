@@ -156,6 +156,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisHyperemesisGravidum ->
                 "hyperemesis-gravidum"
 
+            DiagnosisHyperemesisGravidumBySymptoms ->
+                "hyperemesis-gravidum-by-symptoms"
+
             DiagnosisMaternalComplications ->
                 "maternal-complications"
 

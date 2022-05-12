@@ -162,6 +162,9 @@ decodePrenatalDiagnosis =
                     "hyperemesis-gravidum" ->
                         succeed DiagnosisHyperemesisGravidum
 
+                    "hyperemesis-gravidum-by-symptoms" ->
+                        succeed DiagnosisHyperemesisGravidumBySymptoms
+
                     "maternal-complications" ->
                         succeed DiagnosisMaternalComplications
 

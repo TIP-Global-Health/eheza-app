@@ -899,7 +899,6 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
 
         DiagnosisHyperemesisGravidum ->
             List.member SevereVomiting signs
-                || hospitalizeDueToNauseaAndVomiting assembled
 
         DiagnosisMaternalComplications ->
             List.member ExtremeWeakness signs
@@ -1124,6 +1123,9 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
 matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
 matchSymptomsPrenatalDiagnosis assembled diagnosis =
     case diagnosis of
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            hospitalizeDueToNauseaAndVomiting assembled
+
         DiagnosisHeartburn ->
             symptomRecorded assembled.measurements Heartburn
                 && (not <| symptomRecordedPreviously assembled Heartburn)
@@ -1374,7 +1376,8 @@ examinationDiagnoses =
 
 symptomsDiagnoses : List PrenatalDiagnosis
 symptomsDiagnoses =
-    [ DiagnosisHeartburn
+    [ DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisHeartburn
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense

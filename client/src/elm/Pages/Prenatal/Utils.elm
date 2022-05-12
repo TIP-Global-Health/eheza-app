@@ -99,8 +99,6 @@ emergencyReferralDiagnosesInitial =
     , DiagnosisMaternalComplications
     , DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
-
-    -- Diagnosed from Danger Signs and Symptoms.
     , DiagnosisHyperemesisGravidum
 
     -- Infection diagnosis will be available at latter phase.
