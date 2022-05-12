@@ -2128,6 +2128,10 @@ viewTreatementForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisSeverePreeclampsiaAfterRecheck ->
             referredToHospitalMessage
 
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            -- @todo
+            []
+
         DiagnosisHeartburn ->
             -- @todo
             []

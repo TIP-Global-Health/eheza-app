@@ -578,6 +578,7 @@ function hedley_prenatal_field_default_field_bases() {
         'prom' => 'PROM',
         'pprom' => 'PPROM',
         'hyperemesis-gravidum' => 'Hyperemesis Gravidum',
+        'hyperemesis-gravidum-by-symptoms' => 'Hyperemesis Gravidum by Symptoms',
         'maternal-complications' => 'Maternal Complications',
         'infection' => 'Infection',
         'imminent-delivery' => 'Imminent delivery',
