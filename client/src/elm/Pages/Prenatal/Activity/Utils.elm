@@ -1162,9 +1162,15 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
-                        EverySet.member BurningWithUrination value.symptoms
+                        -- Burning with Urination + vaginal itching or discharge.
+                        (EverySet.member BurningWithUrination value.symptoms
                             && List.any (\question -> EverySet.member question value.symptomQuestions)
                                 [ SymptomQuestionVaginalItching, SymptomQuestionVaginalDischarge ]
+                        )
+                            || -- Abnormal discharge +  vaginal itching.
+                               (EverySet.member AbnormalVaginalDischarge value.symptoms
+                                    && EverySet.member SymptomQuestionVaginalItching value.symptomQuestions
+                               )
                     )
                 |> Maybe.withDefault False
 
