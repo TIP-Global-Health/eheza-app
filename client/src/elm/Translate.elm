@@ -5151,7 +5151,7 @@ translationSet trans =
 
                 LabResultsHistoryHepatitisB _ ->
                     { english = "Hepatitis B Test History"
-                    , kinyarwanda = Just "Amakuru ku kizamini cy'Umwijima wo mu bwoko bwa B "
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Umwijima wo mu bwoko bwa B"
                     }
 
                 LabResultsHistoryMalaria _ ->
@@ -8402,12 +8402,12 @@ translationSet trans =
 
                 HaemoglobinModerate ->
                     { english = "Moderate"
-                    , kinyarwanda = Just "Ikigero kiringaniye cy'amaraso agaragara mu nkari "
+                    , kinyarwanda = Just "Ikigero kiringaniye cy'amaraso agaragara mu nkari"
                     }
 
                 HaemoglobinLarge ->
                     { english = "Large"
-                    , kinyarwanda = Just "Ikigero kinini cy'amaraso (hemoglobini)  agaragara mu nkari "
+                    , kinyarwanda = Just "Ikigero kinini cy'amaraso (hemoglobini)  agaragara mu nkari"
                     }
 
         PrenatalLaboratorySpecificGravityLabel ->
@@ -8417,7 +8417,7 @@ translationSet trans =
 
         PrenatalLaboratorySpecificGravityTestResult ->
             { english = "Specific Gravity Test Result"
-            , kinyarwanda = Just "Igisubizo cy'uburemere bw'inkari bwihariye "
+            , kinyarwanda = Just "Igisubizo cy'uburemere bw'inkari bwihariye"
             }
 
         PrenatalLaboratorySpecificGravityValue value ->
@@ -8639,7 +8639,7 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR Test Date"
-                    , kinyarwanda = Just "Itariki yakorereweho ikizamini cya Mburugu  "
+                    , kinyarwanda = Just "Itariki yakorereweho ikizamini cya Mburugu"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
@@ -10861,17 +10861,17 @@ translationSet trans =
 
         WaitForVitalsRecheckHelper ->
             { english = "Patient needs to return in 2 hours to confirm blood pressure. Instruct the patient to wait until called for further testing."
-            , kinyarwanda = Just "Umurwayi agomba kugaruka mu masaha 2 kugira ngo twemeze neza umuvuduko w'amaraso. Saba umurwayi kwihangana kugeza umuhamagaye kugira ngo yongere asuzumwe"
+            , kinyarwanda = Just "Umurwayi agomba kugaruka mu masaha 2 kugira ngo twemeze neza umuvuduko w'amaraso. Saba umurwayi kwihangana kugeza umuhamagaye kugira ngo yongere asuzumwe."
             }
 
         WaitForLabsResultsHelper ->
             { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and further diagnoses."
-            , kinyarwanda = Just "Umurwayi afite ibisubizo ategereje bya Laboratwari. Musabe gutegereza kugeza umuhamagaye ngo afate ibisubizo anamenye indwara afite"
+            , kinyarwanda = Just "Umurwayi afite ibisubizo ategereje bya Laboratwari. Musabe gutegereza kugeza umuhamagaye ngo afate ibisubizo anamenye indwara afite."
             }
 
         WaitInstructions ->
             { english = "To proceed with more encounters while you wait for test results or a vitals recheck, touch \"Pause Encounter\" below to leave this encounter. You can return to it from the case management screen."
-            , kinyarwanda = Just "Kugira ngo ukomeze ufate andi masuzuma menshi mu gihe utegereje ibisubizo cyangwa se gusubiramo ibipimo by'ubuzima, kanda mu nsi hano ahanditse ngo \" Ba uhagaritse igikorwa\" kugira ngo usohoke kuri iri suzuma. Ushobora kurigarukaho unyuze ku kibaho cyo Kuvura uburwayi"
+            , kinyarwanda = Just "Kugira ngo ukomeze ufate andi masuzuma menshi mu gihe utegereje ibisubizo cyangwa se gusubiramo ibipimo by'ubuzima, kanda mu nsi hano ahanditse ngo \" Ba uhagaritse igikorwa\" kugira ngo usohoke kuri iri suzuma. Ushobora kurigarukaho unyuze ku kibaho cyo Kuvura uburwayi."
             }
 
         Warning ->
