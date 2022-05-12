@@ -606,7 +606,7 @@ resolveRecommendedTreatmentForHeartburnInputsAndTasks :
 resolveRecommendedTreatmentForHeartburnInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
     let
         -- Since we may have values set for another diagnosis, or from
-        -- inital phase of encounter, we need to filter them out,
+        -- initial phase of the encounter, we need to filter them out,
         -- to be able to determine current value.
         currentValue =
             Maybe.andThen
