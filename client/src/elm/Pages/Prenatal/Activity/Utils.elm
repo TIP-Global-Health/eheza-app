@@ -2371,33 +2371,123 @@ toMedicalHistoryValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicalHistorySigns)
 
 
-medicationFormWithDefault : MedicationForm -> Maybe (EverySet MedicationSign) -> MedicationForm
+medicationFormWithDefault : MedicationForm -> Maybe MedicationValue -> MedicationForm
 medicationFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { receivedIronFolicAcid = or form.receivedIronFolicAcid (EverySet.member IronAndFolicAcidSupplement value |> Just)
-                , receivedDewormingPill = or form.receivedDewormingPill (EverySet.member DewormingPill value |> Just)
-                , receivedMebendazole = or form.receivedMebendazole (EverySet.member Mebendazole value |> Just)
+                { receivedIronFolicAcid = or form.receivedIronFolicAcid (EverySet.member IronAndFolicAcidSupplement value.signs |> Just)
+                , receivedDewormingPill = or form.receivedDewormingPill (EverySet.member DewormingPill value.signs |> Just)
+                , receivedMebendazole = or form.receivedMebendazole (EverySet.member Mebendazole value.signs |> Just)
+                , hivStillTaking = or form.hivStillTaking (Maybe.map (EverySet.member HIVTreatmentStillTaking) value.hivTreatment)
+                , hivMissedDoses = or form.hivMissedDoses (Maybe.map (EverySet.member HIVTreatmentMissedDoses) value.hivTreatment)
+                , hivAdverseEvents = or form.hivAdverseEvents (Maybe.map (EverySet.member HIVTreatmentAdverseEvents) value.hivTreatment)
+                , hypertensionStillTaking = or form.hypertensionStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.hypertensionTreatment)
+                , hypertensionMissedDoses = or form.hypertensionMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.hypertensionTreatment)
+                , hypertensionAdverseEvents = or form.hypertensionAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.hypertensionTreatment)
+                , malariaStillTaking = or form.malariaStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.malariaTreatment)
+                , malariaMissedDoses = or form.malariaMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.malariaTreatment)
+                , malariaAdverseEvents = or form.malariaAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.malariaTreatment)
+                , anemiaStillTaking = or form.anemiaStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.anemiaTreatment)
+                , anemiaMissedDoses = or form.anemiaMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.anemiaTreatment)
+                , anemiaAdverseEvents = or form.anemiaAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.anemiaTreatment)
+                , syphilisStillTaking = or form.syphilisStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.syphilisTreatment)
+                , syphilisMissedDoses = or form.syphilisMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.syphilisTreatment)
+                , syphilisAdverseEvents = or form.syphilisAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.syphilisTreatment)
                 }
             )
 
 
-toMedicationValueWithDefault : Maybe (EverySet MedicationSign) -> MedicationForm -> Maybe (EverySet MedicationSign)
+toMedicationValueWithDefault : Maybe MedicationValue -> MedicationForm -> Maybe MedicationValue
 toMedicationValueWithDefault saved form =
     medicationFormWithDefault form saved
         |> toMedicationValue
 
 
-toMedicationValue : MedicationForm -> Maybe (EverySet MedicationSign)
+toMedicationValue : MedicationForm -> Maybe MedicationValue
 toMedicationValue form =
-    [ Maybe.map (ifTrue IronAndFolicAcidSupplement) form.receivedIronFolicAcid
-    , ifNullableTrue DewormingPill form.receivedDewormingPill
-    , ifNullableTrue Mebendazole form.receivedMebendazole
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)
+    let
+        signs =
+            [ Maybe.map (ifTrue IronAndFolicAcidSupplement) form.receivedIronFolicAcid
+            , ifNullableTrue DewormingPill form.receivedDewormingPill
+            , ifNullableTrue Mebendazole form.receivedMebendazole
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)
+    in
+    Maybe.map
+        (\signs_ ->
+            let
+                hivTreatment =
+                    if List.any isNothing [ form.hivStillTaking, form.hivMissedDoses, form.hivAdverseEvents ] then
+                        Nothing
+
+                    else
+                        [ ifNullableTrue HIVTreatmentStillTaking form.hivStillTaking
+                        , ifNullableTrue HIVTreatmentMissedDoses form.hivMissedDoses
+                        , ifNullableTrue HIVTreatmentAdverseEvents form.hivAdverseEvents
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVTreatment)
+
+                hypertensionTreatment =
+                    if List.any isNothing [ form.hypertensionStillTaking, form.hypertensionMissedDoses, form.hypertensionAdverseEvents ] then
+                        Nothing
+
+                    else
+                        [ ifNullableTrue MedicationTreatmentStillTaking form.hypertensionStillTaking
+                        , ifNullableTrue MedicationTreatmentMissedDoses form.hypertensionMissedDoses
+                        , ifNullableTrue MedicationTreatmentAdverseEvents form.hypertensionAdverseEvents
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+
+                malariaTreatment =
+                    if List.any isNothing [ form.malariaStillTaking, form.malariaMissedDoses, form.malariaAdverseEvents ] then
+                        Nothing
+
+                    else
+                        [ ifNullableTrue MedicationTreatmentStillTaking form.malariaStillTaking
+                        , ifNullableTrue MedicationTreatmentMissedDoses form.malariaMissedDoses
+                        , ifNullableTrue MedicationTreatmentAdverseEvents form.malariaAdverseEvents
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+
+                anemiaTreatment =
+                    if List.any isNothing [ form.anemiaStillTaking, form.anemiaMissedDoses, form.anemiaAdverseEvents ] then
+                        Nothing
+
+                    else
+                        [ ifNullableTrue MedicationTreatmentStillTaking form.anemiaStillTaking
+                        , ifNullableTrue MedicationTreatmentMissedDoses form.anemiaMissedDoses
+                        , ifNullableTrue MedicationTreatmentAdverseEvents form.anemiaAdverseEvents
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+
+                syphilisTreatment =
+                    if List.any isNothing [ form.syphilisStillTaking, form.syphilisMissedDoses, form.syphilisAdverseEvents ] then
+                        Nothing
+
+                    else
+                        [ ifNullableTrue MedicationTreatmentStillTaking form.syphilisStillTaking
+                        , ifNullableTrue MedicationTreatmentMissedDoses form.syphilisMissedDoses
+                        , ifNullableTrue MedicationTreatmentAdverseEvents form.syphilisAdverseEvents
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+            in
+            { signs = signs_
+            , hivTreatment = hivTreatment
+            , hypertensionTreatment = hypertensionTreatment
+            , malariaTreatment = malariaTreatment
+            , anemiaTreatment = anemiaTreatment
+            , syphilisTreatment = syphilisTreatment
+            }
+        )
+        signs
 
 
 treatmentReviewTasksCompletedFromTotal :

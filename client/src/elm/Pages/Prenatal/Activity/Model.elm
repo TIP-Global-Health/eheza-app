@@ -322,12 +322,45 @@ type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
     , receivedMebendazole : Maybe Bool
+    , hivStillTaking : Maybe Bool
+    , hivMissedDoses : Maybe Bool
+    , hivAdverseEvents : Maybe Bool
+    , hypertensionStillTaking : Maybe Bool
+    , hypertensionMissedDoses : Maybe Bool
+    , hypertensionAdverseEvents : Maybe Bool
+    , malariaStillTaking : Maybe Bool
+    , malariaMissedDoses : Maybe Bool
+    , malariaAdverseEvents : Maybe Bool
+    , anemiaStillTaking : Maybe Bool
+    , anemiaMissedDoses : Maybe Bool
+    , anemiaAdverseEvents : Maybe Bool
+    , syphilisStillTaking : Maybe Bool
+    , syphilisMissedDoses : Maybe Bool
+    , syphilisAdverseEvents : Maybe Bool
     }
 
 
 emptyMedicationForm : MedicationForm
 emptyMedicationForm =
-    MedicationForm Nothing Nothing Nothing
+    { receivedIronFolicAcid = Nothing
+    , receivedDewormingPill = Nothing
+    , receivedMebendazole = Nothing
+    , hivStillTaking = Nothing
+    , hivMissedDoses = Nothing
+    , hivAdverseEvents = Nothing
+    , hypertensionStillTaking = Nothing
+    , hypertensionMissedDoses = Nothing
+    , hypertensionAdverseEvents = Nothing
+    , malariaStillTaking = Nothing
+    , malariaMissedDoses = Nothing
+    , malariaAdverseEvents = Nothing
+    , anemiaStillTaking = Nothing
+    , anemiaMissedDoses = Nothing
+    , anemiaAdverseEvents = Nothing
+    , syphilisStillTaking = Nothing
+    , syphilisMissedDoses = Nothing
+    , syphilisAdverseEvents = Nothing
+    }
 
 
 type alias DangerSignsData =

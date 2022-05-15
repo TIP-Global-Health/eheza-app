@@ -779,7 +779,7 @@ resolveMedicationsSetByDiagnoses language currentDate phase assembled =
                         prescribeMebendazole =
                             showMebendazoleQuestion currentDate assembled
                                 && (getMeasurementValueFunc assembled.measurements.medication
-                                        |> Maybe.map (EverySet.member Mebendazole >> not)
+                                        |> Maybe.map (.signs >> EverySet.member Mebendazole >> not)
                                         |> Maybe.withDefault False
                                    )
                     in
@@ -890,7 +890,7 @@ showMebendazoleQuestion currentDate assembled =
                         List.filter
                             (\( _, _, measurements ) ->
                                 measurements.medication
-                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                    |> Maybe.map (Tuple.second >> .value >> .signs >> EverySet.member DewormingPill)
                                     |> Maybe.withDefault False
                             )
                             assembled.nursePreviousMeasurementsWithDates
