@@ -70,3 +70,8 @@ type HeartburnReliefMethod
 
 type TreatmentReviewTask
     = TreatmentReviewPrenatalMedication
+    | TreatmentReviewHIV
+    | TreatmentReviewHypertension
+    | TreatmentReviewMalaria
+    | TreatmentReviewAnemia
+    | TreatmentReviewSyphilis

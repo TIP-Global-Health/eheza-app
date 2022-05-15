@@ -1892,12 +1892,18 @@ viewTreatmentReviewContent language currentDate assembled data =
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case activeTask of
-                Just TreatmentReviewPrenatalMedication ->
+            let
+                form =
                     measurements.medication
                         |> getMeasurementValueFunc
                         |> medicationFormWithDefault data.medicationForm
-                        |> viewPrenatalMedicationForm language currentDate SetMedicationSubActivityBoolInput assembled
+            in
+            case activeTask of
+                Just TreatmentReviewPrenatalMedication ->
+                    viewPrenatalMedicationForm language currentDate SetMedicationSubActivityBoolInput assembled form
+
+                Just task ->
+                    viewMedicationTreatmentForm language currentDate SetMedicationSubActivityBoolInput assembled form task
 
                 Nothing ->
                     emptyNode
@@ -1915,16 +1921,10 @@ viewTreatmentReviewContent language currentDate assembled data =
             activeTask
                 |> Maybe.map
                     (\task ->
-                        let
-                            saveMsg =
-                                case task of
-                                    TreatmentReviewPrenatalMedication ->
-                                        SaveMedicationSubActivity personId measurements.medication nextTask
-                        in
                         div [ class "actions treatment-review" ]
                             [ button
                                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveMsg
+                                , onClick <| SaveMedicationSubActivity personId measurements.medication nextTask
                                 ]
                                 [ text <| translate language Translate.Save ]
                             ]
@@ -3828,6 +3828,22 @@ viewPrenatalMedicationForm language currentDate setBoolInputMsg assembled form =
     let
         ( inputs, _ ) =
             resolvePrenatalMedicationFormInputsAndTasks language currentDate setBoolInputMsg assembled form
+    in
+    div [ class "ui form medication" ] inputs
+
+
+viewMedicationTreatmentForm :
+    Language
+    -> NominalDate
+    -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
+    -> AssembledData
+    -> MedicationForm
+    -> TreatmentReviewTask
+    -> Html Msg
+viewMedicationTreatmentForm language currentDate setBoolInputMsg assembled form task =
+    let
+        ( inputs, _ ) =
+            resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
     in
     div [ class "ui form medication" ] inputs
 

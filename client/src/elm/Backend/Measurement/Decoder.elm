@@ -1553,7 +1553,7 @@ decodeMedication =
 decodeMedicationValue : Decoder MedicationValue
 decodeMedicationValue =
     succeed MedicationValue
-        |> required "medication" (decodeEverySet decodeMedicationSign)
+        |> optional "medication" (nullable (decodeEverySet decodeMedicationSign)) Nothing
         |> optional "hiv_treatment" (nullable (decodeEverySet decodeHIVTreatmentSign)) Nothing
         |> optional "hypertension_treatment" (nullable (decodeEverySet decodeMedicationTreatmentSign)) Nothing
         |> optional "malaria_treatment" (nullable (decodeEverySet decodeMedicationTreatmentSign)) Nothing

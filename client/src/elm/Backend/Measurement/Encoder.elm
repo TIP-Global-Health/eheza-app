@@ -1336,15 +1336,15 @@ encodeMedicationValue value =
                 maybeValue
                 |> Maybe.withDefault []
     in
-    [ ( "medication", encodeEverySet encodeMedicationSign value.signs )
-    , ( "deleted", bool False )
-    , ( "type", string "medication" )
-    ]
+    encodeEverySetNullable "medication" encodeMedicationSign value.signs
         ++ encodeEverySetNullable "hiv_treatment" encodeHIVTreatmentSign value.hivTreatment
         ++ encodeEverySetNullable "hypertension_treatment" encodeMedicationTreatmentSign value.hypertensionTreatment
         ++ encodeEverySetNullable "malaria_treatment" encodeMedicationTreatmentSign value.malariaTreatment
         ++ encodeEverySetNullable "anemia_treatment" encodeMedicationTreatmentSign value.anemiaTreatment
         ++ encodeEverySetNullable "syphilis_treatment" encodeMedicationTreatmentSign value.syphilisTreatment
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "medication" )
+           ]
 
 
 encodeChildFbf : Fbf -> List ( String, Value )

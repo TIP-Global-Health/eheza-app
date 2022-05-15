@@ -612,7 +612,7 @@ type alias Medication =
 
 
 type alias MedicationValue =
-    { signs : EverySet MedicationSign
+    { signs : Maybe (EverySet MedicationSign)
     , hivTreatment : Maybe (EverySet HIVTreatmentSign)
     , hypertensionTreatment : Maybe (EverySet MedicationTreatmentSign)
     , malariaTreatment : Maybe (EverySet MedicationTreatmentSign)

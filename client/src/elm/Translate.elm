@@ -1210,6 +1210,9 @@ type TranslationId
     | TreatedWithMethyldopa
     | TreatedWithNot
     | Treatment
+    | TreatmentReviewQuestionAdverseEvents
+    | TreatmentReviewQuestionMissedDoses
+    | TreatmentReviewQuestionStillTaking TreatmentReviewTask
     | TreatmentReviewTask TreatmentReviewTask
     | TrySyncing
     | TuberculosisPast
@@ -11372,10 +11375,57 @@ translationSet trans =
             , kinyarwanda = Just "Ubuvuzi"
             }
 
+        TreatmentReviewQuestionAdverseEvents ->
+            { english = "Have you experienced any adverse events?"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewQuestionMissedDoses ->
+            { english = "Have you missed any doses"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewQuestionStillTaking task ->
+            case task of
+                TreatmentReviewHIV ->
+                    { english = "Are you still taking ARVs"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "Syphilis Medication"
+                    , kinyarwanda = Nothing
+                    }
+
         TreatmentReviewTask task ->
             case task of
                 TreatmentReviewPrenatalMedication ->
                     { english = "Prenatal Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewHIV ->
+                    { english = "HIV Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewHypertension ->
+                    { english = "Hypertension Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewMalaria ->
+                    { english = "Malaria Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewAnemia ->
+                    { english = "Anemia Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewSyphilis ->
+                    { english = "Syphilis Medication"
                     , kinyarwanda = Nothing
                     }
 
