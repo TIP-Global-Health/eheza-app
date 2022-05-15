@@ -11376,7 +11376,7 @@ translationSet trans =
             }
 
         TreatmentReviewQuestionAdverseEvents ->
-            { english = "Have you experienced any adverse events?"
+            { english = "Have you experienced any adverse events"
             , kinyarwanda = Nothing
             }
 
@@ -11388,7 +11388,7 @@ translationSet trans =
         TreatmentReviewQuestionStillTaking task ->
             case task of
                 TreatmentReviewHIV ->
-                    { english = "Are you still taking ARVs"
+                    { english = "Are you still taking this medication"
                     , kinyarwanda = Nothing
                     }
 
