@@ -2619,7 +2619,9 @@ toMedicationValue form =
                 , ifNullableTrue HIVTreatmentMissedDoses form.hivMissedDoses
                 , ifNullableTrue HIVTreatmentAdverseEvents form.hivAdverseEvents
                 ]
-                    ++ [ Maybe.map EverySet.singleton form.hivMedicationNotGivenReason ]
+                    ++ [ Maybe.map (EverySet.singleton >> Just) form.hivMedicationNotGivenReason
+                            |> Maybe.withDefault (Just EverySet.empty)
+                       ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVTreatment)
 
