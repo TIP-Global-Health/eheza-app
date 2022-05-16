@@ -2831,7 +2831,7 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
                 header =
                     Maybe.map
                         (\transId ->
-                            viewCustomLabel language transId "" ""
+                            viewCustomLabel language transId "" "label header"
                         )
                         config.latestMedicationTreatment
                         |> Maybe.withDefault emptyNode

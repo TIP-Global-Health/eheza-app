@@ -11433,27 +11433,27 @@ translationSet trans =
         TreatmentDetailsSyphilis sign ->
             case sign of
                 TreatmentPenecilin1 ->
-                    { english = "Penicillin (2.4 million units) IM x 1."
+                    { english = "At the previous visit you were given Penicillin (2.4 million units) IM x 1."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentPenecilin3 ->
-                    { english = "Penicillin (2.4 million units) IM 1x a week for 3 weeks."
+                    { english = "At the previous visit you were given Penicillin (2.4 million units) IM 1x a week for 3 weeks."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentErythromycin ->
-                    { english = "Erythromycin (500mg) by mouth 4x a day for 14 days."
+                    { english = "At the previous visit you were given Erythromycin (500mg) by mouth 4x a day for 14 days."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentAzithromycin ->
-                    { english = "Azithromycin (2g) 4 tabs by mouth x one day."
+                    { english = "At the previous visit you were given Azithromycin (2g) 4 tabs by mouth x one day."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentCeftriaxon ->
-                    { english = "Ceftriaxone (1g) IM daily x 10 days."
+                    { english = "At the previous visit you were given Ceftriaxone (1g) IM daily x 10 days."
                     , kinyarwanda = Nothing
                     }
 
