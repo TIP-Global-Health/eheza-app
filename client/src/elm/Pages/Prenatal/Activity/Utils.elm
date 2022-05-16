@@ -392,24 +392,137 @@ expectTreatmentReviewTask assembled task =
             True
 
         TreatmentReviewHIV ->
-            -- @todo
-            True
+            -- Show, if HIV diagnosis was made at one of previous encounters.
+            latestMedicationTreatmentForHIV assembled
+                |> isJust
 
         TreatmentReviewHypertension ->
-            -- @todo
-            True
+            -- Show, if there was medication treatment.
+            latestMedicationTreatmentForHypertension assembled
+                |> isJust
 
         TreatmentReviewMalaria ->
-            -- @todo
-            True
+            -- Show, if there was medication treatment.
+            latestMedicationTreatmentForMalaria assembled
+                |> isJust
 
         TreatmentReviewAnemia ->
-            -- @todo
-            True
+            -- Show, if there was medication treatment.
+            latestMedicationTreatmentForAnemia assembled
+                |> isJust
 
         TreatmentReviewSyphilis ->
-            -- @todo
-            True
+            -- Show, if there was medication treatment.
+            latestMedicationTreatmentForSyphilis assembled
+                |> isJust
+
+
+latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
+latestMedicationTreatmentForHIV assembled =
+    let
+        hivDiagnosed =
+            List.filter
+                (\( _, diagnoses, _ ) ->
+                    EverySet.member DiagnosisHIV diagnoses
+                )
+                assembled.nursePreviousMeasurementsWithDates
+                |> List.isEmpty
+                |> not
+    in
+    if hivDiagnosed then
+        Just Translate.TreatmentDetailsHIV
+
+    else
+        Nothing
+
+
+latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
+latestMedicationTreatmentForHypertension assembled =
+    let
+        treatmentOptions =
+            [ TreatmentMethyldopa2
+            , TreatmentMethyldopa3
+            , TreatmentMethyldopa4
+
+            -- @todo: extend with additional signs?
+            ]
+    in
+    getLatestTreatmentByTreatmentOptions treatmentOptions assembled
+        |> Maybe.map Translate.TreatmentDetailsHypertension
+
+
+latestMedicationTreatmentForMalaria : AssembledData -> Maybe Translate.TranslationId
+latestMedicationTreatmentForMalaria assembled =
+    let
+        treatmentOptions =
+            [ TreatmentQuinineSulphate
+            , TreatmentCoartem
+            ]
+    in
+    getLatestTreatmentByTreatmentOptions treatmentOptions assembled
+        |> Maybe.map Translate.TreatmentDetailsMalaria
+
+
+latestMedicationTreatmentForAnemia : AssembledData -> Maybe Translate.TranslationId
+latestMedicationTreatmentForAnemia assembled =
+    let
+        medicationPrescribed =
+            List.reverse assembled.nursePreviousMeasurementsWithDates
+                |> List.filter
+                    (\( _, _, measurements ) ->
+                        getMeasurementValueFunc measurements.medicationDistribution
+                            |> Maybe.map
+                                (\value ->
+                                    List.any (\sign -> EverySet.member sign value.distributionSigns)
+                                        [ Iron
+                                        , FolicAcid
+                                        ]
+                                )
+                            |> Maybe.withDefault False
+                    )
+                |> List.isEmpty
+                |> not
+    in
+    if medicationPrescribed then
+        Just Translate.TreatmentDetailsAnemia
+
+    else
+        Nothing
+
+
+latestMedicationTreatmentForSyphilis : AssembledData -> Maybe Translate.TranslationId
+latestMedicationTreatmentForSyphilis assembled =
+    let
+        treatmentOptions =
+            [ TreatmentPenecilin1
+            , TreatmentPenecilin3
+            , TreatmentErythromycin
+            , TreatmentAzithromycin
+            , TreatmentCeftriaxon
+            ]
+    in
+    getLatestTreatmentByTreatmentOptions treatmentOptions assembled
+        |> Maybe.map Translate.TreatmentDetailsSyphilis
+
+
+getLatestTreatmentByTreatmentOptions : List RecommendedTreatmentSign -> AssembledData -> Maybe RecommendedTreatmentSign
+getLatestTreatmentByTreatmentOptions treatmentOptions assembled =
+    List.reverse assembled.nursePreviousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, _, measurements ) ->
+                getMeasurementValueFunc measurements.medicationDistribution
+                    |> Maybe.andThen
+                        (\value ->
+                            Maybe.map
+                                (EverySet.toList
+                                    >> List.filter (\sign -> List.member sign treatmentOptions)
+                                    >> List.head
+                                )
+                                value.recommendedTreatmentSigns
+                        )
+            )
+        |> Maybe.Extra.values
+        |> List.head
 
 
 treatmentReviewTaskCompleted : AssembledData -> TreatmentReviewTask -> Bool
@@ -2659,7 +2772,8 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
                 TreatmentReviewHIV ->
                     Just
-                        { stillTakingFormValue = form.hivStillTaking
+                        { latestMedicationTreatment = latestMedicationTreatmentForHIV assembled
+                        , stillTakingFormValue = form.hivStillTaking
                         , missedDosesFormValue = form.hivMissedDoses
                         , adverseEventsFormValue = form.hivAdverseEvents
                         , stillTakingUpdateFunc = \value form_ -> { form_ | hivStillTaking = Just value }
@@ -2669,7 +2783,8 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
                 TreatmentReviewHypertension ->
                     Just
-                        { stillTakingFormValue = form.hypertensionStillTaking
+                        { latestMedicationTreatment = latestMedicationTreatmentForHypertension assembled
+                        , stillTakingFormValue = form.hypertensionStillTaking
                         , missedDosesFormValue = form.hypertensionMissedDoses
                         , adverseEventsFormValue = form.hypertensionAdverseEvents
                         , stillTakingUpdateFunc = \value form_ -> { form_ | hypertensionStillTaking = Just value }
@@ -2679,7 +2794,8 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
                 TreatmentReviewMalaria ->
                     Just
-                        { stillTakingFormValue = form.malariaStillTaking
+                        { latestMedicationTreatment = latestMedicationTreatmentForMalaria assembled
+                        , stillTakingFormValue = form.malariaStillTaking
                         , missedDosesFormValue = form.malariaMissedDoses
                         , adverseEventsFormValue = form.malariaAdverseEvents
                         , stillTakingUpdateFunc = \value form_ -> { form_ | malariaStillTaking = Just value }
@@ -2689,7 +2805,8 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
                 TreatmentReviewAnemia ->
                     Just
-                        { stillTakingFormValue = form.anemiaStillTaking
+                        { latestMedicationTreatment = latestMedicationTreatmentForAnemia assembled
+                        , stillTakingFormValue = form.anemiaStillTaking
                         , missedDosesFormValue = form.anemiaMissedDoses
                         , adverseEventsFormValue = form.anemiaAdverseEvents
                         , stillTakingUpdateFunc = \value form_ -> { form_ | anemiaStillTaking = Just value }
@@ -2699,7 +2816,8 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
                 TreatmentReviewSyphilis ->
                     Just
-                        { stillTakingFormValue = form.syphilisStillTaking
+                        { latestMedicationTreatment = latestMedicationTreatmentForSyphilis assembled
+                        , stillTakingFormValue = form.syphilisStillTaking
                         , missedDosesFormValue = form.syphilisMissedDoses
                         , adverseEventsFormValue = form.syphilisAdverseEvents
                         , stillTakingUpdateFunc = \value form_ -> { form_ | syphilisStillTaking = Just value }
@@ -2709,7 +2827,17 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
     in
     Maybe.map
         (\config ->
-            ( [ viewQuestionLabel language <| Translate.TreatmentReviewQuestionStillTaking task
+            let
+                header =
+                    Maybe.map
+                        (\transId ->
+                            viewCustomLabel language transId "" ""
+                        )
+                        config.latestMedicationTreatment
+                        |> Maybe.withDefault emptyNode
+            in
+            ( [ header
+              , viewQuestionLabel language <| Translate.TreatmentReviewQuestionStillTaking task
               , viewBoolInput
                     language
                     config.stillTakingFormValue

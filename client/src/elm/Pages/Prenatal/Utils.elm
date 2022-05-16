@@ -586,8 +586,16 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
 
 viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionWithDosage language sign =
+    let
+        suffix =
+            if sign == NoTreatmentForSyphilis then
+                ""
+
+            else
+                ":"
+    in
     label []
-        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ suffix ]
         , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
         ]
 
