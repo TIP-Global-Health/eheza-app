@@ -3019,6 +3019,21 @@ update language currentDate id db msg model =
             , []
             )
 
+        SetHIVMedicationNotGivenReason value ->
+            let
+                updatedForm =
+                    model.treatmentReviewData.medicationForm
+                        |> (\form -> { form | hivMedicationNotGivenReason = Just value, hivMedicationNotGivenReasonDirty = True })
+
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | medicationForm = updatedForm })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveMedicationSubActivity personId saved nextTask ->
             let
                 measurementId =

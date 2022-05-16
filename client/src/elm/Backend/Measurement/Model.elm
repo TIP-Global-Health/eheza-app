@@ -603,7 +603,6 @@ type HIVTreatmentSign
     = HIVTreatmentStillTaking
     | HIVTreatmentMissedDoses
     | HIVTreatmentAdverseEvents
-      -- @todo: extend
     | HIVTreatmentMedicineByPMTCT
     | HIVTreatmentNoMedicineNotSeenAtPMTCT
     | HIVTreatmentNoMedicineOutOfStock

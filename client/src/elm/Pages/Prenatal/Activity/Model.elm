@@ -174,6 +174,7 @@ type Msg
       -- TREATMENT REVIEW msgs
     | SetActiveTreatmentReviewTask TreatmentReviewTask
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SetHIVMedicationNotGivenReason HIVTreatmentSign
     | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
 
 
@@ -322,6 +323,9 @@ type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
     , receivedMebendazole : Maybe Bool
+    , hivMedicationByPMTCT : Maybe Bool
+    , hivMedicationNotGivenReason : Maybe HIVTreatmentSign
+    , hivMedicationNotGivenReasonDirty : Bool
     , hivStillTaking : Maybe Bool
     , hivMissedDoses : Maybe Bool
     , hivAdverseEvents : Maybe Bool
@@ -345,6 +349,9 @@ emptyMedicationForm =
     { receivedIronFolicAcid = Nothing
     , receivedDewormingPill = Nothing
     , receivedMebendazole = Nothing
+    , hivMedicationByPMTCT = Nothing
+    , hivMedicationNotGivenReason = Nothing
+    , hivMedicationNotGivenReasonDirty = False
     , hivStillTaking = Nothing
     , hivMissedDoses = Nothing
     , hivAdverseEvents = Nothing

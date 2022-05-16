@@ -643,6 +643,7 @@ type TranslationId
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | HIVTreatmentSign HIVTreatmentSign
     | Home
     | HomeVisitActivityTitle HomeVisitActivity
     | HouseholdSize
@@ -1216,6 +1217,7 @@ type TranslationId
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
     | TreatmentReviewQuestionAdverseEvents
+    | TreatmentReviewQuestionMedicationByPMTCT
     | TreatmentReviewQuestionMissedDoses
     | TreatmentReviewQuestionStillTaking TreatmentReviewTask
     | TreatmentReviewTask TreatmentReviewTask
@@ -4799,6 +4801,34 @@ translationSet trans =
             { english = "HIV Status"
             , kinyarwanda = Just "Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA"
             }
+
+        HIVTreatmentSign sign ->
+            case sign of
+                HIVTreatmentNoMedicineNotSeenAtPMTCT ->
+                    { english = "Never seen at PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                HIVTreatmentNoMedicineOutOfStock ->
+                    { english = "Stock Out"
+                    , kinyarwanda = Nothing
+                    }
+
+                HIVTreatmentNoMedicinePatientRefused ->
+                    { english = "Patient Refused"
+                    , kinyarwanda = Nothing
+                    }
+
+                HIVTreatmentNoMedicineOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- We do not require translation for reother signs.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         Home ->
             { english = "Home"
@@ -11464,6 +11494,11 @@ translationSet trans =
 
         TreatmentReviewQuestionAdverseEvents ->
             { english = "Have you experienced any adverse events"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewQuestionMedicationByPMTCT ->
+            { english = "Did you receive medicine from PMTCT"
             , kinyarwanda = Nothing
             }
 

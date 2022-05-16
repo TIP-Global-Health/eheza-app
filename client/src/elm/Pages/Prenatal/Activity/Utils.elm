@@ -298,7 +298,7 @@ expectNextStepsTask currentDate assembled task =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
-                        || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled)
+                        || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
 
                 _ ->
                     dangerSigns
@@ -2542,9 +2542,25 @@ medicationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    hivMedicationNotGivenReason =
+                        if form.hivMedicationNotGivenReasonDirty then
+                            form.hivMedicationNotGivenReason
+
+                        else
+                            Maybe.andThen
+                                (EverySet.toList
+                                    >> List.filter (\sign -> List.member sign reasonsForNoMedicationByPMTCT)
+                                    >> List.head
+                                )
+                                value.hivTreatment
+                in
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (Maybe.map (EverySet.member IronAndFolicAcidSupplement) value.signs)
                 , receivedDewormingPill = or form.receivedDewormingPill (Maybe.map (EverySet.member DewormingPill) value.signs)
                 , receivedMebendazole = or form.receivedMebendazole (Maybe.map (EverySet.member Mebendazole) value.signs)
+                , hivMedicationByPMTCT = or form.hivMedicationByPMTCT (Maybe.map (EverySet.member HIVTreatmentMedicineByPMTCT) value.hivTreatment)
+                , hivMedicationNotGivenReason = or form.hivMedicationNotGivenReason hivMedicationNotGivenReason
+                , hivMedicationNotGivenReasonDirty = form.hivMedicationNotGivenReasonDirty
                 , hivStillTaking = or form.hivStillTaking (Maybe.map (EverySet.member HIVTreatmentStillTaking) value.hivTreatment)
                 , hivMissedDoses = or form.hivMissedDoses (Maybe.map (EverySet.member HIVTreatmentMissedDoses) value.hivTreatment)
                 , hivAdverseEvents = or form.hivAdverseEvents (Maybe.map (EverySet.member HIVTreatmentAdverseEvents) value.hivTreatment)
@@ -2586,14 +2602,24 @@ toMedicationValue form =
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)
 
         hivTreatment =
-            if List.all isNothing [ form.hivStillTaking, form.hivMissedDoses, form.hivAdverseEvents ] then
+            if
+                isNothing form.hivMedicationNotGivenReason
+                    && List.all isNothing
+                        [ form.hivMedicationByPMTCT
+                        , form.hivStillTaking
+                        , form.hivMissedDoses
+                        , form.hivAdverseEvents
+                        ]
+            then
                 Nothing
 
             else
-                [ ifNullableTrue HIVTreatmentStillTaking form.hivStillTaking
+                [ ifNullableTrue HIVTreatmentMedicineByPMTCT form.hivMedicationByPMTCT
+                , ifNullableTrue HIVTreatmentStillTaking form.hivStillTaking
                 , ifNullableTrue HIVTreatmentMissedDoses form.hivMissedDoses
                 , ifNullableTrue HIVTreatmentAdverseEvents form.hivAdverseEvents
                 ]
+                    ++ [ Maybe.map EverySet.singleton form.hivMedicationNotGivenReason ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVTreatment)
 
@@ -2764,6 +2790,99 @@ resolveMedicationTreatmentFormInputsAndTasks :
     -> TreatmentReviewTask
     -> ( List (Html Msg), List (Maybe Bool) )
 resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task =
+    case task of
+        TreatmentReviewHIV ->
+            let
+                referredToHIVProgram =
+                    List.filterMap
+                        (\( _, diagnoses, measurements ) ->
+                            if EverySet.member DiagnosisHIV diagnoses then
+                                Just measurements
+
+                            else
+                                Nothing
+                        )
+                        assembled.nursePreviousMeasurementsWithDates
+                        |> List.head
+                        |> Maybe.map hivProgramAtHC
+                        |> Maybe.withDefault False
+            in
+            if referredToHIVProgram then
+                let
+                    updateFunc =
+                        \value form_ ->
+                            { form_
+                                | hivMedicationByPMTCT = Just value
+                                , hivMedicationNotGivenReason = Nothing
+                                , hivMedicationNotGivenReasonDirty = True
+                            }
+
+                    ( derivedSection, derivedTasks ) =
+                        Maybe.map
+                            (\gotMedicine ->
+                                if gotMedicine then
+                                    ( [], [] )
+
+                                else
+                                    ( [ div [ class "why-not" ]
+                                            [ viewQuestionLabel language Translate.WhyNot
+                                            , viewCheckBoxSelectInput language
+                                                reasonsForNoMedicationByPMTCT
+                                                []
+                                                form.hivMedicationNotGivenReason
+                                                SetHIVMedicationNotGivenReason
+                                                Translate.HIVTreatmentSign
+                                            ]
+                                      ]
+                                    , [ if isJust form.hivMedicationNotGivenReason then
+                                            Just True
+
+                                        else
+                                            Nothing
+                                      ]
+                                    )
+                            )
+                            form.hivMedicationByPMTCT
+                            |> Maybe.withDefault ( [], [] )
+                in
+                ( [ viewQuestionLabel language Translate.TreatmentReviewQuestionMedicationByPMTCT
+                  , viewBoolInput
+                        language
+                        form.hivMedicationByPMTCT
+                        (setBoolInputMsg updateFunc)
+                        "hiv-medication-by-pmtct"
+                        Nothing
+                  ]
+                    ++ derivedSection
+                , form.hivMedicationByPMTCT :: derivedTasks
+                )
+
+            else
+                -- No HIV program at heath center => patient was supposed to get medication.
+                resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task
+
+        _ ->
+            resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task
+
+
+reasonsForNoMedicationByPMTCT : List HIVTreatmentSign
+reasonsForNoMedicationByPMTCT =
+    [ HIVTreatmentNoMedicineNotSeenAtPMTCT
+    , HIVTreatmentNoMedicineOutOfStock
+    , HIVTreatmentNoMedicinePatientRefused
+    , HIVTreatmentNoMedicineOther
+    ]
+
+
+resolveMedicationTreatmentFormInputsAndTasksStandard :
+    Language
+    -> NominalDate
+    -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
+    -> AssembledData
+    -> MedicationForm
+    -> TreatmentReviewTask
+    -> ( List (Html Msg), List (Maybe Bool) )
+resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task =
     let
         configForTask =
             case task of

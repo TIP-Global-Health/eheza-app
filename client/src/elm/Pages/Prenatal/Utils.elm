@@ -808,7 +808,7 @@ resolveMedicationsSetByDiagnoses language currentDate phase assembled =
                             diagnosed DiagnosisHIV assembled
 
                         hivProgramHC =
-                            hivProgramAtHC assembled
+                            hivProgramAtHC assembled.measurements
                     in
                     if hivDiagnosed && not hivProgramHC then
                         Just
@@ -1578,9 +1578,9 @@ medicationsRecurrentPhase =
     ]
 
 
-hivProgramAtHC : AssembledData -> Bool
-hivProgramAtHC assembled =
-    getMeasurementValueFunc assembled.measurements.hivTest
+hivProgramAtHC : PrenatalMeasurements -> Bool
+hivProgramAtHC measurements =
+    getMeasurementValueFunc measurements.hivTest
         |> Maybe.andThen .hivSigns
         |> Maybe.map (EverySet.member HIVProgramHC)
         |> Maybe.withDefault False
