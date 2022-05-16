@@ -1537,6 +1537,21 @@ decodeHIVTreatmentSign =
                     "adverse-events" ->
                         succeed HIVTreatmentAdverseEvents
 
+                    "medicine-pmtct" ->
+                        succeed HIVTreatmentMedicineByPMTCT
+
+                    "no-medicine-not-seen" ->
+                        succeed HIVTreatmentNoMedicineNotSeenAtPMTCT
+
+                    "no-medicine-out-of-stock" ->
+                        succeed HIVTreatmentNoMedicineOutOfStock
+
+                    "no-medicine-patient-refused" ->
+                        succeed HIVTreatmentNoMedicinePatientRefused
+
+                    "no-medicine-other" ->
+                        succeed HIVTreatmentNoMedicineOther
+
                     "none" ->
                         succeed NoHIVTreatment
 

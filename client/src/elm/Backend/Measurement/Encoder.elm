@@ -1316,6 +1316,21 @@ encodeHIVTreatmentSign sign =
             HIVTreatmentAdverseEvents ->
                 "adverse-events"
 
+            HIVTreatmentMedicineByPMTCT ->
+                "medicine-pmtct"
+
+            HIVTreatmentNoMedicineNotSeenAtPMTCT ->
+                "no-medicine-not-seen"
+
+            HIVTreatmentNoMedicineOutOfStock ->
+                "no-medicine-out-of-stock"
+
+            HIVTreatmentNoMedicinePatientRefused ->
+                "no-medicine-patient-refused"
+
+            HIVTreatmentNoMedicineOther ->
+                "no-medicine-other"
+
             NoHIVTreatment ->
                 "none"
 

@@ -604,6 +604,11 @@ type HIVTreatmentSign
     | HIVTreatmentMissedDoses
     | HIVTreatmentAdverseEvents
       -- @todo: extend
+    | HIVTreatmentMedicineByPMTCT
+    | HIVTreatmentNoMedicineNotSeenAtPMTCT
+    | HIVTreatmentNoMedicineOutOfStock
+    | HIVTreatmentNoMedicinePatientRefused
+    | HIVTreatmentNoMedicineOther
     | NoHIVTreatment
 
 
