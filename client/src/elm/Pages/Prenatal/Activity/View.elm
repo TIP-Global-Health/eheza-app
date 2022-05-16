@@ -121,30 +121,35 @@ viewContent language currentDate isChw activity db model assembled =
 
 warningPopup : Language -> NominalDate -> Bool -> (Maybe ( String, String ) -> msg) -> Maybe ( String, String ) -> Maybe (Html msg)
 warningPopup language currentDate isChw setStateMsg state =
-    state
-        |> Maybe.map
-            (\( message, instructions ) ->
-                div [ class "ui active modal diagnosis-popup" ]
-                    [ div [ class "content" ] <|
-                        [ div [ class "popup-heading-wrapper" ]
-                            [ img [ src "assets/images/exclamation-red.png" ] []
-                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                            ]
-                        , div [ class "popup-title" ]
-                            [ p [] [ text message ]
-                            , p [] [ text instructions ]
-                            ]
+    customWarningPopup language (setStateMsg Nothing) state
+
+
+customWarningPopup : Language -> msg -> Maybe ( String, String ) -> Maybe (Html msg)
+customWarningPopup language action state =
+    Maybe.map
+        (\( message, instructions ) ->
+            div [ class "ui active modal diagnosis-popup" ]
+                [ div [ class "content" ] <|
+                    [ div [ class "popup-heading-wrapper" ]
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
-                    , div
-                        [ class "actions" ]
-                        [ button
-                            [ class "ui primary fluid button"
-                            , onClick <| setStateMsg Nothing
-                            ]
-                            [ text <| translate language Translate.Continue ]
+                    , div [ class "popup-title" ]
+                        [ p [] [ text message ]
+                        , p [] [ text instructions ]
                         ]
                     ]
-            )
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick action
+                        ]
+                        [ text <| translate language Translate.Continue ]
+                    ]
+                ]
+        )
+        state
 
 
 viewActivity : Language -> NominalDate -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -1891,13 +1896,12 @@ viewTreatmentReviewContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        form =
+            measurements.medication
+                |> getMeasurementValueFunc
+                |> medicationFormWithDefault data.medicationForm
+
         viewForm =
-            let
-                form =
-                    measurements.medication
-                        |> getMeasurementValueFunc
-                        |> medicationFormWithDefault data.medicationForm
-            in
             case activeTask of
                 Just TreatmentReviewPrenatalMedication ->
                     viewPrenatalMedicationForm language currentDate SetMedicationSubActivityBoolInput assembled form
@@ -1921,10 +1925,26 @@ viewTreatmentReviewContent language currentDate assembled data =
             activeTask
                 |> Maybe.map
                     (\task ->
+                        let
+                            saveMsg =
+                                SaveMedicationSubActivity personId measurements.medication nextTask
+
+                            action =
+                                case task of
+                                    TreatmentReviewSyphilis ->
+                                        if form.syphilisMissedDoses == Just True then
+                                            SetTreatmentReviewWarningPopupState (Just saveMsg)
+
+                                        else
+                                            saveMsg
+
+                                    _ ->
+                                        saveMsg
+                        in
                         div [ class "actions treatment-review" ]
                             [ button
                                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick <| SaveMedicationSubActivity personId measurements.medication nextTask
+                                , onClick action
                                 ]
                                 [ text <| translate language Translate.Save ]
                             ]
@@ -1943,7 +1963,22 @@ viewTreatmentReviewContent language currentDate assembled data =
             , actions
             ]
         ]
+    , viewModal <|
+        treatmentReviewWarningPopup language data.warningPopupState
     ]
+
+
+treatmentReviewWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
+treatmentReviewWarningPopup language actionMsg =
+    let
+        state =
+            Just
+                ( translate language Translate.TreatmentReviewWarningPopupMessage
+                , translate language Translate.TreatmentReviewWarningPopupInstructions
+                )
+    in
+    Maybe.andThen (\action -> customWarningPopup language action state)
+        actionMsg
 
 
 

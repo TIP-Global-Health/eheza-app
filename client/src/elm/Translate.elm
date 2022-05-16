@@ -1221,6 +1221,8 @@ type TranslationId
     | TreatmentReviewQuestionMissedDoses
     | TreatmentReviewQuestionStillTaking TreatmentReviewTask
     | TreatmentReviewTask TreatmentReviewTask
+    | TreatmentReviewWarningPopupMessage
+    | TreatmentReviewWarningPopupInstructions
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -11550,6 +11552,16 @@ translationSet trans =
                     { english = "Syphilis Medication"
                     , kinyarwanda = Nothing
                     }
+
+        TreatmentReviewWarningPopupMessage ->
+            { english = "Patient non-adherent"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewWarningPopupInstructions ->
+            { english = "Further evaluation necessary"
+            , kinyarwanda = Nothing
+            }
 
         TrySyncing ->
             { english = "Try syncing with backend"

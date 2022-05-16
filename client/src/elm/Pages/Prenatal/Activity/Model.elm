@@ -173,6 +173,7 @@ type Msg
     | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
       -- TREATMENT REVIEW msgs
     | SetActiveTreatmentReviewTask TreatmentReviewTask
+    | SetTreatmentReviewWarningPopupState (Maybe Msg)
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SetHIVMedicationNotGivenReason HIVTreatmentSign
     | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
@@ -500,6 +501,7 @@ emptySymptomReviewForm =
 type alias TreatmentReviewData =
     { medicationForm : MedicationForm
     , activeTask : Maybe TreatmentReviewTask
+    , warningPopupState : Maybe Msg
     }
 
 
@@ -507,6 +509,7 @@ emptyTreatmentReviewData : TreatmentReviewData
 emptyTreatmentReviewData =
     { medicationForm = emptyMedicationForm
     , activeTask = Nothing
+    , warningPopupState = Nothing
     }
 
 
