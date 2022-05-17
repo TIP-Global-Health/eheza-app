@@ -594,6 +594,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"
 
+            BackendAuthorityPrenatalOutsideCare identifier ->
+                viewMeasurement identifier "Prenatal Outside Care"
+
             BackendAuthorityPrenatalPhoto identifier ->
                 viewMeasurement identifier "Prenatal Photo"
 

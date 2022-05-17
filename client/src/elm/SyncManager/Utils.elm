@@ -600,6 +600,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalNutrition identifier ->
             getIdentifier identifier "prenatal_nutrition"
 
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            getIdentifier identifier "prenatal_outside_care"
+
         BackendAuthorityPrenatalPhoto identifier ->
             getIdentifier identifier "prenatal_photo"
 
@@ -1161,6 +1164,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalNutrition identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
 
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalOutsideCare identifier
+
         BackendAuthorityPrenatalPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
 
@@ -1684,6 +1690,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalNutrition identifier ->
             PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            PrenatalOutsideCareRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalPhoto identifier ->
             PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
