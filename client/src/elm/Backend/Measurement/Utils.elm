@@ -2013,7 +2013,7 @@ prenatalOutsideCareMedicationToString value =
         OutsideCareMedicationAnemia ->
             "anemia"
 
-        NoOutsideCareMedications ->
+        NoPrenatalOutsideCareMedications ->
             "none"
 
 
@@ -2072,7 +2072,7 @@ prenatalOutsideCareMedicationFromString value =
             Just OutsideCareMedicationAnemia
 
         "none" ->
-            Just NoOutsideCareMedications
+            Just NoPrenatalOutsideCareMedications
 
         _ ->
             Nothing

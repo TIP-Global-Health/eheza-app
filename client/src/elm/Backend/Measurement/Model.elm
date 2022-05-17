@@ -1263,7 +1263,7 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationHIV
       -- For Anemia:
     | OutsideCareMedicationAnemia
-    | NoOutsideCareMedications
+    | NoPrenatalOutsideCareMedications
 
 
 

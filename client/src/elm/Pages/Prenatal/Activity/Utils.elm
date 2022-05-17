@@ -2545,22 +2545,18 @@ medicationFormWithDefault form saved =
             (\value ->
                 let
                     hivMedicationNotGivenReason =
-                        if form.hivMedicationNotGivenReasonDirty then
-                            form.hivMedicationNotGivenReason
-
-                        else
-                            Maybe.andThen
-                                (EverySet.toList
-                                    >> List.filter (\sign -> List.member sign reasonsForNoMedicationByPMTCT)
-                                    >> List.head
-                                )
-                                value.hivTreatment
+                        Maybe.andThen
+                            (EverySet.toList
+                                >> List.filter (\sign -> List.member sign reasonsForNoMedicationByPMTCT)
+                                >> List.head
+                            )
+                            value.hivTreatment
                 in
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (Maybe.map (EverySet.member IronAndFolicAcidSupplement) value.signs)
                 , receivedDewormingPill = or form.receivedDewormingPill (Maybe.map (EverySet.member DewormingPill) value.signs)
                 , receivedMebendazole = or form.receivedMebendazole (Maybe.map (EverySet.member Mebendazole) value.signs)
                 , hivMedicationByPMTCT = or form.hivMedicationByPMTCT (Maybe.map (EverySet.member HIVTreatmentMedicineByPMTCT) value.hivTreatment)
-                , hivMedicationNotGivenReason = or form.hivMedicationNotGivenReason hivMedicationNotGivenReason
+                , hivMedicationNotGivenReason = maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty form.hivMedicationNotGivenReason hivMedicationNotGivenReason
                 , hivMedicationNotGivenReasonDirty = form.hivMedicationNotGivenReasonDirty
                 , hivStillTaking = or form.hivStillTaking (Maybe.map (EverySet.member HIVTreatmentStillTaking) value.hivTreatment)
                 , hivMissedDoses = or form.hivMissedDoses (Maybe.map (EverySet.member HIVTreatmentMissedDoses) value.hivTreatment)
@@ -4647,3 +4643,123 @@ prenatalSymptomQuestionInputAndState language form question =
         NoSymptomQuestions ->
             -- We should never get here.
             ( [], 0 )
+
+
+outsideCareFormWithDefault : OutsideCareForm -> Maybe PrenatalOutsideCareValue -> OutsideCareForm
+outsideCareFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    malariaMedication =
+                        Maybe.andThen
+                            (EverySet.toList
+                                >> List.filter
+                                    (\medication ->
+                                        List.member medication
+                                            [ OutsideCareMedicationQuinineSulphate
+                                            , OutsideCareMedicationCoartem
+                                            ]
+                                    )
+                                >> List.head
+                            )
+                            value.medications
+
+                    hypertensionMedication =
+                        Maybe.andThen
+                            (EverySet.toList
+                                >> List.filter
+                                    (\medication ->
+                                        List.member medication
+                                            [ OutsideCareMedicationMethyldopa2
+                                            , OutsideCareMedicationMethyldopa3
+                                            , OutsideCareMedicationMethyldopa4
+                                            , OutsideCareMedicationCarvedilol
+                                            , OutsideCareMedicationAmlodipine
+                                            ]
+                                    )
+                                >> List.head
+                            )
+                            value.medications
+
+                    syphilisMedication =
+                        Maybe.andThen
+                            (EverySet.toList
+                                >> List.filter
+                                    (\medication ->
+                                        List.member medication
+                                            [ OutsideCareMedicationPenecilin1
+                                            , OutsideCareMedicationPenecilin3
+                                            , OutsideCareMedicationErythromycin
+                                            , OutsideCareMedicationAzithromycin
+                                            , OutsideCareMedicationCeftriaxon
+                                            , NoOutsideCareMedicationForSyphilis
+                                            ]
+                                    )
+                                >> List.head
+                            )
+                            value.medications
+                in
+                { seenAtAnotherFacility = or form.seenAtAnotherFacility (EverySet.member SeenAtAnotherFacility value.signs |> Just)
+                , givenNewDiagnosis = or form.givenNewDiagnosis (EverySet.member GivenNewDiagnoses value.signs |> Just)
+                , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
+                , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
+                , diagnosesDirty = form.diagnosesDirty
+                , malariaMedication = maybeValueConsideringIsDirtyField form.malariaMedicationDirty form.malariaMedication malariaMedication
+                , malariaMedicationDirty = form.malariaMedicationDirty
+                , hypertensionMedication = maybeValueConsideringIsDirtyField form.hypertensionMedicationDirty form.hypertensionMedication hypertensionMedication
+                , hypertensionMedicationDirty = form.hypertensionMedicationDirty
+                , syphilisMedication = maybeValueConsideringIsDirtyField form.syphilisMedicationDirty form.syphilisMedication syphilisMedication
+                , syphilisMedicationDirty = form.syphilisMedicationDirty
+                , hivMedication = or form.hivMedication (Maybe.map (EverySet.member OutsideCareMedicationHIV) value.medications)
+                , anemiaMedication = or form.anemiaMedication (Maybe.map (EverySet.member OutsideCareMedicationAnemia) value.medications)
+                }
+            )
+
+
+toPrenatalOutsideCareValueWithDefault : Maybe PrenatalOutsideCareValue -> OutsideCareForm -> Maybe PrenatalOutsideCareValue
+toPrenatalOutsideCareValueWithDefault saved form =
+    outsideCareFormWithDefault form saved
+        |> toPrenatalOutsideCareValue
+
+
+toPrenatalOutsideCareValue : OutsideCareForm -> Maybe PrenatalOutsideCareValue
+toPrenatalOutsideCareValue form =
+    let
+        maybeSigns =
+            [ Maybe.map (ifTrue SeenAtAnotherFacility) form.seenAtAnotherFacility
+            , ifNullableTrue GivenNewDiagnoses form.givenNewDiagnosis
+            , ifNullableTrue GivenMedicine form.givenMedicine
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareSigns)
+    in
+    Maybe.map
+        (\signs ->
+            let
+                diagnoses =
+                    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoPrenatalDiagnosis) form.diagnoses
+
+                medications =
+                    [ ifNullableTrue OutsideCareMedicationHIV form.hivMedication
+                    , ifNullableTrue OutsideCareMedicationAnemia form.anemiaMedication
+                    ]
+                        ++ [ Maybe.map (EverySet.singleton >> Just) form.malariaMedication
+                                |> Maybe.withDefault (Just EverySet.empty)
+                           ]
+                        ++ [ Maybe.map (EverySet.singleton >> Just) form.hypertensionMedication
+                                |> Maybe.withDefault (Just EverySet.empty)
+                           ]
+                        ++ [ Maybe.map (EverySet.singleton >> Just) form.syphilisMedication
+                                |> Maybe.withDefault (Just EverySet.empty)
+                           ]
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareMedications)
+            in
+            { signs = signs
+            , diagnoses = diagnoses
+            , medications = medications
+            }
+        )
+        maybeSigns
