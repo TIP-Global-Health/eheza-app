@@ -76,3 +76,8 @@ type TreatmentReviewTask
     | TreatmentReviewMalaria
     | TreatmentReviewAnemia
     | TreatmentReviewSyphilis
+
+
+type OutsideCareStep
+    = OutsideCareStepDiagnoses
+    | OutsideCareStepMedication
