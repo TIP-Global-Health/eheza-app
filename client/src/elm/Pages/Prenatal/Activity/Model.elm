@@ -2,6 +2,7 @@ module Pages.Prenatal.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -241,6 +242,7 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
+    , outsideCareForm : OutsideCareForm
     , activeTask : HistoryTask
     }
 
@@ -252,6 +254,7 @@ emptyHistoryData =
     , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
+    , outsideCareForm = emptyOutsideCareForm
     , activeTask = Obstetric
     }
 
@@ -679,6 +682,41 @@ type alias SocialHistoryForm =
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
+
+
+type alias OutsideCareForm =
+    { seenAtAnotherFacility : Maybe Bool
+    , givenNewDiagnosis : Maybe Bool
+    , givenMedicine : Maybe Bool
+    , diagnoses : Maybe (List PrenatalDiagnosis)
+    , diagnosesDirty : Bool
+    , malariaMedication : Maybe PrenatalOutsideCareMedication
+    , malariaMedicationDirty : Bool
+    , hypertensionMedication : Maybe PrenatalOutsideCareMedication
+    , hypertensionMedicationDirty : Bool
+    , syphilisMedication : Maybe PrenatalOutsideCareMedication
+    , syphilisMedicationDirty : Bool
+    , hivMedication : Maybe Bool
+    , anemiaMedication : Maybe Bool
+    }
+
+
+emptyOutsideCareForm : OutsideCareForm
+emptyOutsideCareForm =
+    { seenAtAnotherFacility = Nothing
+    , givenNewDiagnosis = Nothing
+    , givenMedicine = Nothing
+    , diagnoses = Nothing
+    , diagnosesDirty = False
+    , malariaMedication = Nothing
+    , malariaMedicationDirty = False
+    , hypertensionMedication = Nothing
+    , hypertensionMedicationDirty = False
+    , syphilisMedication = Nothing
+    , syphilisMedicationDirty = False
+    , hivMedication = Nothing
+    , anemiaMedication = Nothing
+    }
 
 
 encodeLmpRange : LmpRange -> String
