@@ -3271,7 +3271,7 @@ translationSet trans =
 
                 GushLeakingVaginalFluid ->
                     { english = "Gush or leaking of vaginal fluid"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibintu biva mu gitsina by'uruzi"
                     }
 
                 NoDangerSign ->
