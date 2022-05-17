@@ -13,6 +13,7 @@ type HistoryTask
     = Obstetric
     | Medical
     | Social
+    | OutsideCare
 
 
 type LmpRange

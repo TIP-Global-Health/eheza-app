@@ -243,7 +243,7 @@ type alias HistoryData =
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
     , outsideCareForm : OutsideCareForm
-    , activeTask : HistoryTask
+    , activeTask : Maybe HistoryTask
     }
 
 
@@ -255,7 +255,7 @@ emptyHistoryData =
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , outsideCareForm = emptyOutsideCareForm
-    , activeTask = Obstetric
+    , activeTask = Nothing
     }
 
 

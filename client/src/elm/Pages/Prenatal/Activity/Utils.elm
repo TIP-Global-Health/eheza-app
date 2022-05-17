@@ -418,6 +418,35 @@ expectTreatmentReviewTask assembled task =
                 |> isJust
 
 
+resolveHistoryTasks : AssembledData -> List HistoryTask
+resolveHistoryTasks assembled =
+    let
+        tasks =
+            [ Obstetric, Medical, Social, OutsideCare ]
+    in
+    List.filter (expectHistoryTask assembled) tasks
+
+
+expectHistoryTask : AssembledData -> HistoryTask -> Bool
+expectHistoryTask assembled task =
+    let
+        firstEnconter =
+            nurseEncounterNotPerformed assembled
+    in
+    case task of
+        Obstetric ->
+            firstEnconter
+
+        Medical ->
+            firstEnconter
+
+        Social ->
+            True
+
+        OutsideCare ->
+            not firstEnconter
+
+
 latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHIV assembled =
     let
@@ -558,6 +587,24 @@ treatmentReviewTaskCompleted assembled task =
             getMeasurementValueFunc assembled.measurements.medication
                 |> Maybe.map (.syphilisTreatment >> isJust)
                 |> Maybe.withDefault False
+
+
+historyTaskCompleted : AssembledData -> HistoryTask -> Bool
+historyTaskCompleted assembled task =
+    case task of
+        Obstetric ->
+            isJust assembled.measurements.obstetricHistory
+                && isJust assembled.measurements.obstetricHistoryStep2
+
+        Medical ->
+            isJust assembled.measurements.medicalHistory
+
+        Social ->
+            isJust assembled.measurements.socialHistory
+
+        OutsideCare ->
+            --@todo
+            False
 
 
 referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
@@ -3480,6 +3527,10 @@ historyTasksCompletedFromTotal assembled data task =
                 + (listInputs |> List.map taskCompleted |> List.sum)
             , List.length boolInputs + List.length listInputs
             )
+
+        OutsideCare ->
+            -- @todo
+            ( 0, 0 )
 
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )

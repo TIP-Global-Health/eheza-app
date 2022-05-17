@@ -4768,6 +4768,11 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru y'uwo bashakanye (umugabo)"
                     }
 
+                OutsideCare ->
+                    { english = "Outside Care"
+                    , kinyarwanda = Nothing
+                    }
+
         HIV ->
             { english = "HIV"
             , kinyarwanda = Just "Amaguru atameze neza(yagize imitego)"
