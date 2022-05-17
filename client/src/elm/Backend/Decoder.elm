@@ -277,6 +277,9 @@ decodeRevision =
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
+                    "prenatal_outside_care" ->
+                        decodeWithUuid PrenatalOutsideCareRevision decodePrenatalOutsideCare
+
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
 

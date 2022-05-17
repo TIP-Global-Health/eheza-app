@@ -451,6 +451,7 @@ type Revision
     | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
+    | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
     | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
