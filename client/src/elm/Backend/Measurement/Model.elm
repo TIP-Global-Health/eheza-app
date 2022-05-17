@@ -1221,6 +1221,49 @@ type PrenatalFlankPainSign
     | NoFlankPain
 
 
+type alias PrenatalOutsideCare =
+    PrenatalMeasurement PrenatalOutsideCareValue
+
+
+type alias PrenatalOutsideCareValue =
+    { signs : EverySet PrenatalOutsideCareSign
+    , diagnoses : Maybe (EverySet PrenatalDiagnosis)
+    , medications : Maybe (EverySet PrenatalOutsideCareMedication)
+    }
+
+
+type PrenatalOutsideCareSign
+    = SeenAtAnotherFacility
+    | GivenNewDiagnoses
+    | GivenMedication
+    | NoPrenatalOutsideCareSigns
+
+
+type PrenatalOutsideCareMedication
+    = -- For Malaria:
+      OutsideCareMedicationQuinineSulphate
+    | OutsideCareMedicationCoartem
+    | NoOutsideCareMedicationForMalaria
+      -- For Syphilis:
+    | OutsideCareMedicationPenecilin1
+    | OutsideCareMedicationPenecilin3
+    | OutsideCareMedicationErythromycin
+    | OutsideCareMedicationAzithromycin
+    | OutsideCareMedicationCeftriaxon
+    | NoOutsideCareMedicationForSyphilis
+      -- For Hypertension:
+    | OutsideCareMedicationMethyldopa2
+    | OutsideCareMedicationMethyldopa3
+    | OutsideCareMedicationMethyldopa4
+    | OutsideCareMedicationCarvedilol
+    | OutsideCareMedicationAmlodipine
+      -- For HIV:
+    | OutsideCareMedicationHIV
+      -- For Anemia:
+    | OutsideCareMedicationAnemia
+    | NoOutsideCareMedicationForHypertension
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2090,6 +2133,7 @@ type alias PrenatalMeasurements =
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
     , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
     , symptomReview : Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview )
+    , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
     }
 
 
@@ -2127,6 +2171,7 @@ emptyPrenatalMeasurements =
     , labsResults = Nothing
     , medicationDistribution = Nothing
     , symptomReview = Nothing
+    , outsideCare = Nothing
     }
 
 
