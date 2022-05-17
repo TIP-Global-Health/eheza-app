@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Contains HedleyRestfulPrenatalSymptoms.
+ * Contains HedleyRestfulPrenatalSymptomReview.
  */
 
 /**
- * Class HedleyRestfulPrenatalSymptoms.
+ * Class HedleyRestfulPrenatalSymptomReview.
  */
 class HedleyRestfulPrenatalSymptomReview extends HedleyRestfulPrenatalActivityBase {
 
