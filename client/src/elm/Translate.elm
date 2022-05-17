@@ -4824,7 +4824,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- We do not require translation for reother signs.
+                -- We do not require translation for other signs.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
