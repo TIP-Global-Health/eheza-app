@@ -55,7 +55,8 @@ import Backend.PrenatalActivity.Model
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
@@ -7897,7 +7898,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }
@@ -8139,7 +8140,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }
@@ -8296,7 +8297,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }

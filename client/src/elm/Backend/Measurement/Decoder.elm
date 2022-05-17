@@ -7,6 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.Person.Utils exposing (genderFromString)
+import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntAsFloat, decodeIntDict, decodeStringWithDefault)
@@ -127,6 +128,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
         |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
         |> optional "prenatal_symptom_review" (decodeHead decodePrenatalSymptomReview) Nothing
+        |> optional "prenatal_outside_care" (decodeHead decodePrenatalOutsideCare) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -4116,4 +4118,39 @@ decodePrenatalFlankPainSign =
                 prenatalFlankPainSignFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalFlankPainSign")
+            )
+
+
+decodePrenatalOutsideCare : Decoder PrenatalOutsideCare
+decodePrenatalOutsideCare =
+    decodePrenatalMeasurement decodePrenatalOutsideCareValue
+
+
+decodePrenatalOutsideCareValue : Decoder PrenatalOutsideCareValue
+decodePrenatalOutsideCareValue =
+    succeed PrenatalOutsideCareValue
+        |> required "outside_care_signs" (decodeEverySet decodePrenatalOutsideCareSign)
+        |> optional "prenatal_diagnoses" (nullable (decodeEverySet decodePrenatalDiagnosis)) Nothing
+        |> optional "outside_care_medications" (nullable (decodeEverySet decodePrenatalOutsideCareMedication)) Nothing
+
+
+decodePrenatalOutsideCareSign : Decoder PrenatalOutsideCareSign
+decodePrenatalOutsideCareSign =
+    string
+        |> andThen
+            (\s ->
+                prenatalOutsideCareSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalOutsideCareSign")
+            )
+
+
+decodePrenatalOutsideCareMedication : Decoder PrenatalOutsideCareMedication
+decodePrenatalOutsideCareMedication =
+    string
+        |> andThen
+            (\s ->
+                prenatalOutsideCareMedicationFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalOutsideCareMedication")
             )

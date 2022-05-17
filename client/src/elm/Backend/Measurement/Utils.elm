@@ -1922,3 +1922,157 @@ prenatalFlankPainSignFromString value =
 
         _ ->
             Nothing
+
+
+prenatalOutsideCareSignToString : PrenatalOutsideCareSign -> String
+prenatalOutsideCareSignToString value =
+    case value of
+        SeenAtAnotherFacility ->
+            "seen-at-another-facility"
+
+        GivenNewDiagnoses ->
+            "given-new-diagnoses"
+
+        GivenMedicine ->
+            "given-medicine"
+
+        NoPrenatalOutsideCareSigns ->
+            "none"
+
+
+prenatalOutsideCareSignFromString : String -> Maybe PrenatalOutsideCareSign
+prenatalOutsideCareSignFromString value =
+    case value of
+        "seen-at-another-facility" ->
+            Just SeenAtAnotherFacility
+
+        "given-new-diagnoses" ->
+            Just GivenNewDiagnoses
+
+        "given-medicine" ->
+            Just GivenMedicine
+
+        "none" ->
+            Just NoPrenatalOutsideCareSigns
+
+        _ ->
+            Nothing
+
+
+prenatalOutsideCareMedicationToString : PrenatalOutsideCareMedication -> String
+prenatalOutsideCareMedicationToString value =
+    case value of
+        OutsideCareMedicationQuinineSulphate ->
+            "quinine-sulphate"
+
+        OutsideCareMedicationCoartem ->
+            "coartem"
+
+        NoOutsideCareMedicationForMalaria ->
+            "no-treatment-malaria"
+
+        OutsideCareMedicationPenecilin1 ->
+            "penecilin-1"
+
+        OutsideCareMedicationPenecilin3 ->
+            "penecilin-3"
+
+        OutsideCareMedicationErythromycin ->
+            "erythromycin"
+
+        OutsideCareMedicationAzithromycin ->
+            "azithromycin"
+
+        OutsideCareMedicationCeftriaxon ->
+            "ceftriaxon"
+
+        NoOutsideCareMedicationForSyphilis ->
+            "no-treatment-syphilis"
+
+        OutsideCareMedicationMethyldopa2 ->
+            "methyldopa-2"
+
+        OutsideCareMedicationMethyldopa3 ->
+            "methyldopa-3"
+
+        OutsideCareMedicationMethyldopa4 ->
+            "methyldopa-4"
+
+        NoOutsideCareMedicationForHypertension ->
+            "no-treatment-hypertension"
+
+        OutsideCareMedicationCarvedilol ->
+            "carvedilol"
+
+        OutsideCareMedicationAmlodipine ->
+            "amlodipine"
+
+        OutsideCareMedicationHIV ->
+            "hiv"
+
+        OutsideCareMedicationAnemia ->
+            "anemia"
+
+        NoOutsideCareMedications ->
+            "none"
+
+
+prenatalOutsideCareMedicationFromString : String -> Maybe PrenatalOutsideCareMedication
+prenatalOutsideCareMedicationFromString value =
+    case value of
+        "quinine-sulphate" ->
+            Just OutsideCareMedicationQuinineSulphate
+
+        "coartem" ->
+            Just OutsideCareMedicationCoartem
+
+        "no-treatment-malaria" ->
+            Just NoOutsideCareMedicationForMalaria
+
+        "penecilin-1" ->
+            Just OutsideCareMedicationPenecilin1
+
+        "penecilin-3" ->
+            Just OutsideCareMedicationPenecilin3
+
+        "erythromycin" ->
+            Just OutsideCareMedicationErythromycin
+
+        "azithromycin" ->
+            Just OutsideCareMedicationAzithromycin
+
+        "ceftriaxon" ->
+            Just OutsideCareMedicationCeftriaxon
+
+        "no-treatment-syphilis" ->
+            Just NoOutsideCareMedicationForSyphilis
+
+        "methyldopa-2" ->
+            Just OutsideCareMedicationMethyldopa2
+
+        "methyldopa-3" ->
+            Just OutsideCareMedicationMethyldopa3
+
+        "methyldopa-4" ->
+            Just OutsideCareMedicationMethyldopa4
+
+        "carvedilol" ->
+            Just OutsideCareMedicationCarvedilol
+
+        "amlodipine" ->
+            Just OutsideCareMedicationAmlodipine
+
+        "no-treatment-hypertension" ->
+            Just NoOutsideCareMedicationForHypertension
+
+        "hiv" ->
+            Just OutsideCareMedicationHIV
+
+        "anemia" ->
+            Just OutsideCareMedicationAnemia
+
+        "none" ->
+            Just NoOutsideCareMedications
+
+        _ ->
+            Nothing

@@ -2,7 +2,7 @@ module Pages.Prenatal.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 

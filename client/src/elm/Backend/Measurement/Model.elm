@@ -7,6 +7,7 @@ and cached in local storage.
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -1235,7 +1236,7 @@ type alias PrenatalOutsideCareValue =
 type PrenatalOutsideCareSign
     = SeenAtAnotherFacility
     | GivenNewDiagnoses
-    | GivenMedication
+    | GivenMedicine
     | NoPrenatalOutsideCareSigns
 
 
@@ -1257,11 +1258,12 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationMethyldopa4
     | OutsideCareMedicationCarvedilol
     | OutsideCareMedicationAmlodipine
+    | NoOutsideCareMedicationForHypertension
       -- For HIV:
     | OutsideCareMedicationHIV
       -- For Anemia:
     | OutsideCareMedicationAnemia
-    | NoOutsideCareMedicationForHypertension
+    | NoOutsideCareMedications
 
 
 

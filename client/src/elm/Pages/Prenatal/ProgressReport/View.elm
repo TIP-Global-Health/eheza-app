@@ -37,7 +37,8 @@ import Backend.PrenatalActivity.Utils
         ( generateRiskFactorAlertData
         , getEncounterTrimesterData
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounter, PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Interval(..), Unit(..))
 import EverySet exposing (EverySet)

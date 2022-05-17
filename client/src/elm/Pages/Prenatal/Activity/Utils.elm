@@ -6,7 +6,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueF
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -1397,7 +1398,7 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
-        Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+        Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
             symptomRecorded assembled.measurements CoughContinuous
 
         -- Non Symptoms diagnoses.
@@ -1588,7 +1589,7 @@ symptomsDiagnoses =
     , DiagnosisCandidiasis
     , DiagnosisGonorrhea
     , DiagnosisTrichomonasOrBacterialVaginosis
-    , Backend.PrenatalEncounter.Model.DiagnosisTuberculosis
+    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
     ]
 
 
