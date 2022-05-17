@@ -1798,7 +1798,7 @@ translationSet trans =
 
         AdministerIronHelper ->
             { english = "Take 2 60 mg tabs 2x a day x 3 months"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Fata mg 260 inshuro 2 ku munsi mu mezi atatu"
             }
 
         AdministeVitaminAHelper ->
@@ -7498,7 +7498,7 @@ translationSet trans =
 
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ekalampusi"
                     }
 
                 DiagnosisHIV ->
@@ -7508,7 +7508,7 @@ translationSet trans =
 
                 DiagnosisDiscordantPartnership ->
                     { english = "Discordant Partnership"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwe mubo babana afite ubwandu"
                     }
 
                 DiagnosisSyphilis ->
@@ -7695,7 +7695,7 @@ translationSet trans =
 
                 DiagnosisDiscordantPartnership ->
                     { english = "Discordant Partnership"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwe mubo babana afite ubwandu"
                     }
 
                 DiagnosisSyphilis ->
