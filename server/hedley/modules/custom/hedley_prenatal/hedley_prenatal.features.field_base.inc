@@ -420,6 +420,74 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_outside_care_medications'.
+  $field_bases['field_outside_care_medications'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_outside_care_medications',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'quinine-sulphate' => 'Quinine Sulphate',
+        'coartem' => 'Coartem',
+        'no-treatment-malaria' => 'No Treatment for Malaria',
+        'penecilin-1' => 'Penecilin 1',
+        'penecilin-3' => 'Penecilin 3',
+        'erythromycin' => 'Erythromycin',
+        'azithromycin' => 'Azithromycin',
+        'ceftriaxon' => 'Ceftriaxon',
+        'no-treatment-syphilis' => 'No Treatment for Syphilis',
+        'methyldopa-2' => 'Methyldopa twice a day',
+        'methyldopa-3' => 'Methyldopa three times a day',
+        'methyldopa-4' => 'Methyldopa four times a day',
+        'carvedilol' => 'Carvedilol',
+        'amlodipine' => 'Amlodipine',
+        'no-treatment-hypertension' => 'No Treatment for Hypertension',
+        'hiv' => 'HIV medications',
+        'anemia' => 'Anemia medications',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_outside_care_signs'.
+  $field_bases['field_outside_care_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_outside_care_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'seen-at-another-facility' => 'Seen at another facility',
+        'given-new-diagnoses' => 'Given new diagnoses',
+        'given-medicine' => 'Given medicine',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_patient_notified'.
   $field_bases['field_patient_notified'] = array(
     'active' => 1,
