@@ -5087,17 +5087,17 @@ translationSet trans =
 
         KnownPositive ->
             { english = "Known Positive"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Asanzwe arwaye"
             }
 
         KnownPositiveHepatitisB ->
             { english = "Known Hepatitis B positive"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Asanzwe afite indwara y'Umwijima wo mu bwoko bwa B"
             }
 
         KnownPositiveHIV ->
             { english = "Known HIV positive"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Asanzwe afite Ubwandu bw'agakoko gatera SIDA"
             }
 
         LabelOnePregnancyEpisodeOpen ->
@@ -5687,6 +5687,8 @@ translationSet trans =
         MedicationDistributionSign sign ->
             case sign of
                 Amoxicillin ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Amoxicillin"
                     , kinyarwanda = Nothing
                     }
@@ -5702,6 +5704,8 @@ translationSet trans =
                     }
 
                 Zinc ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Zinc"
                     , kinyarwanda = Nothing
                     }
@@ -5712,51 +5716,71 @@ translationSet trans =
                     }
 
                 Albendazole ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Albendazole"
                     , kinyarwanda = Nothing
                     }
 
                 Mebendezole ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Mebendazole"
                     , kinyarwanda = Nothing
                     }
 
                 VitaminA ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Vitamin A"
                     , kinyarwanda = Nothing
                     }
 
                 Paracetamol ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Paracetamol"
                     , kinyarwanda = Nothing
                     }
 
                 Tenofovir ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Tenofovir"
                     , kinyarwanda = Nothing
                     }
 
                 Lamivudine ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Lamivudine"
                     , kinyarwanda = Nothing
                     }
 
                 Dolutegravir ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Dolutegravir"
                     , kinyarwanda = Nothing
                     }
 
                 TDF3TC ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "TDF + 3TC"
                     , kinyarwanda = Nothing
                     }
 
                 Iron ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Iron"
                     , kinyarwanda = Nothing
                     }
 
                 FolicAcid ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Folic Acid"
                     , kinyarwanda = Nothing
                     }
@@ -5777,6 +5801,8 @@ translationSet trans =
                     }
 
         MedicationDoxycycline ->
+            -- Names of Medication, therefore,
+            -- no translation is needed.
             { english = "Doxycycline"
             , kinyarwanda = Nothing
             }
@@ -7967,7 +7993,7 @@ translationSet trans =
 
                     else
                         { english = "Have you counseled the patient on family planning options"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Waba wagiriye inama umurwayi (umubyeyi) uburyo bwo kuboneza urubyaro"
                         }
 
                 EducationBreastfeeding ->
@@ -7987,7 +8013,7 @@ translationSet trans =
 
                 EducationPositiveHIV ->
                     { english = "Have you counseled patient on positive HIV test meaning"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wasobanuriye umurwayi (umubyeyi) icyo bisibanuye kugira ibisubizo biri positifu ku bwandu bw'agakoko gatera SIDA"
                     }
 
                 EducationSaferSex ->
@@ -9232,12 +9258,12 @@ translationSet trans =
             case sign of
                 TreatementPenecilin1 ->
                     { english = "IM x 1"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "IM inshuro 1 "
                     }
 
                 TreatementPenecilin3 ->
                     { english = "IM 1x a week for 3 weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "IM inshuro 1 buri cyumweru mu byumweru 3"
                     }
 
                 TreatementErythromycin ->
@@ -9247,12 +9273,12 @@ translationSet trans =
 
                 TreatementAzithromycin ->
                     { english = "4 tabs by mouth x one day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini 4 abinywe mu kanwa umunsi umwe"
                     }
 
                 TreatementCeftriaxon ->
                     { english = "IM daily x 10 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "IM buri munsi mu minsi 10"
                     }
 
                 -- Dosage is not applicable for other options.
@@ -9290,25 +9316,31 @@ translationSet trans =
 
                 TreatementPenecilin1 ->
                     { english = "Penicillin (2.4 million units)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Penisilini (Miliyoni 2.4 )"
                     }
 
                 TreatementPenecilin3 ->
                     { english = "Penicillin (2.4 million units)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Penisilini (Miliyoni 2.4 )"
                     }
 
                 TreatementErythromycin ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Erythromycin (500mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementAzithromycin ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Azithromycin (2g)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementCeftriaxon ->
+                    -- Names of Medication, therefore,
+                    -- no translation is needed.
                     { english = "Ceftriaxone (1g)"
                     , kinyarwanda = Nothing
                     }
