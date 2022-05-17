@@ -57,6 +57,33 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_anemia_treatment'.
+  $field_bases['field_anemia_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_anemia_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_attended'.
   $field_bases['field_attended'] = array(
     'active' => 1,
@@ -810,6 +837,65 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_hiv_treatment'.
+  $field_bases['field_hiv_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'medicine-pmtct' => 'Medicine given by PMTCT',
+        'no-medicine-not-seen' => 'No Medicine - not seen at PMTCT',
+        'no-medicine-out-of-stock' => 'No Medicine - out of stock',
+        'no-medicine-patient-refused' => 'No Medicine - patient refused',
+        'no-medicine-other' => 'No Medicine - other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hypertension_treatment'.
+  $field_bases['field_hypertension_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hypertension_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_lactation_signs'.
   $field_bases['field_lactation_signs'] = array(
     'active' => 1,
@@ -928,6 +1014,33 @@ function hedley_activity_field_default_field_bases() {
         'wheezes' => 'Wheezes',
         'crackles' => 'Crackles',
         'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_malaria_treatment'.
+  $field_bases['field_malaria_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_malaria_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -1594,6 +1707,33 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_syphilis_treatment'.
+  $field_bases['field_syphilis_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_syphilis_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_sys'.

@@ -502,7 +502,7 @@ resolveRecommendedTreatmentForMalariaInputsAndTasks language currentDate setReco
       , viewCheckBoxSelectInput language
             [ medicationTreatment
             , TreatmentWrittenProtocols
-            , TreatementReferToHospital
+            , TreatmentReferToHospital
             , NoTreatmentForMalaria
             ]
             []
@@ -521,7 +521,7 @@ recommendedTreatmentSignsForMalaria =
     [ TreatmentQuinineSulphate
     , TreatmentCoartem
     , TreatmentWrittenProtocols
-    , TreatementReferToHospital
+    , TreatmentReferToHospital
     , NoTreatmentForMalaria
     ]
 
@@ -551,7 +551,7 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
                 (\signs ->
                     if
                         List.any (\sign -> List.member sign signs)
-                            [ TreatementErythromycin, TreatementAzithromycin ]
+                            [ TreatmentErythromycin, TreatmentAzithromycin ]
                     then
                         div [ class "warning" ]
                             [ img [ src "assets/images/exclamation-red.png" ] []
@@ -586,19 +586,27 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
 
 viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionWithDosage language sign =
+    let
+        suffix =
+            if sign == NoTreatmentForSyphilis then
+                ""
+
+            else
+                ":"
+    in
     label []
-        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ suffix ]
         , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
         ]
 
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
 recommendedTreatmentSignsForSyphilis =
-    [ TreatementPenecilin1
-    , TreatementPenecilin3
-    , TreatementErythromycin
-    , TreatementAzithromycin
-    , TreatementCeftriaxon
+    [ TreatmentPenecilin1
+    , TreatmentPenecilin3
+    , TreatmentErythromycin
+    , TreatmentAzithromycin
+    , TreatmentCeftriaxon
     , NoTreatmentForSyphilis
     ]
 
@@ -779,6 +787,7 @@ resolveMedicationsSetByDiagnoses language currentDate phase assembled =
                         prescribeMebendazole =
                             showMebendazoleQuestion currentDate assembled
                                 && (getMeasurementValueFunc assembled.measurements.medication
+                                        |> Maybe.andThen .signs
                                         |> Maybe.map (EverySet.member Mebendazole >> not)
                                         |> Maybe.withDefault False
                                    )
@@ -799,7 +808,7 @@ resolveMedicationsSetByDiagnoses language currentDate phase assembled =
                             diagnosed DiagnosisHIV assembled
 
                         hivProgramHC =
-                            hivProgramAtHC assembled
+                            hivProgramAtHC assembled.measurements
                     in
                     if hivDiagnosed && not hivProgramHC then
                         Just
@@ -889,8 +898,9 @@ showMebendazoleQuestion currentDate assembled =
                     dewormingPillNotGiven =
                         List.filter
                             (\( _, _, measurements ) ->
-                                measurements.medication
-                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                getMeasurementValueFunc measurements.medication
+                                    |> Maybe.andThen .signs
+                                    |> Maybe.map (EverySet.member DewormingPill)
                                     |> Maybe.withDefault False
                             )
                             assembled.nursePreviousMeasurementsWithDates
@@ -1568,9 +1578,9 @@ medicationsRecurrentPhase =
     ]
 
 
-hivProgramAtHC : AssembledData -> Bool
-hivProgramAtHC assembled =
-    getMeasurementValueFunc assembled.measurements.hivTest
+hivProgramAtHC : PrenatalMeasurements -> Bool
+hivProgramAtHC measurements =
+    getMeasurementValueFunc measurements.hivTest
         |> Maybe.andThen .hivSigns
         |> Maybe.map (EverySet.member HIVProgramHC)
         |> Maybe.withDefault False

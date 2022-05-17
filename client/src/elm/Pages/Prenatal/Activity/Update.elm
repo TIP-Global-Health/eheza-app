@@ -96,6 +96,10 @@ update language currentDate id db msg model =
             in
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage destinationPage ]
+
+        generateMedicationSubActivityMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveTreatmentReviewTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
     in
     case msg of
         NoOp ->
@@ -2989,3 +2993,71 @@ update language currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveTreatmentReviewTask task ->
+            let
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationSubActivityBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.treatmentReviewData.medicationForm
+
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | medicationForm = updatedForm })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVMedicationNotGivenReason value ->
+            let
+                updatedForm =
+                    model.treatmentReviewData.medicationForm
+                        |> (\form -> { form | hivMedicationNotGivenReason = Just value, hivMedicationNotGivenReasonDirty = True })
+
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | medicationForm = updatedForm })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMedicationSubActivity personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationSubActivityMsgs nextTask
+
+                appMsgs =
+                    model.treatmentReviewData.medicationForm
+                        |> toMedicationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMedication personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs

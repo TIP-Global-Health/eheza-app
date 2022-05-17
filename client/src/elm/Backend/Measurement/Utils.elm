@@ -1515,25 +1515,25 @@ recommendedTreatmentSignToString sign =
         TreatmentWrittenProtocols ->
             "written-protocols"
 
-        TreatementReferToHospital ->
+        TreatmentReferToHospital ->
             "refer-to-hospital"
 
         NoTreatmentForMalaria ->
             "no-treatment-malaria"
 
-        TreatementPenecilin1 ->
+        TreatmentPenecilin1 ->
             "penecilin-1"
 
-        TreatementPenecilin3 ->
+        TreatmentPenecilin3 ->
             "penecilin-3"
 
-        TreatementErythromycin ->
+        TreatmentErythromycin ->
             "erythromycin"
 
-        TreatementAzithromycin ->
+        TreatmentAzithromycin ->
             "azithromycin"
 
-        TreatementCeftriaxon ->
+        TreatmentCeftriaxon ->
             "ceftriaxon"
 
         NoTreatmentForSyphilis ->
@@ -1583,25 +1583,25 @@ recommendedTreatmentSignFromString sign =
             Just TreatmentWrittenProtocols
 
         "refer-to-hospital" ->
-            Just TreatementReferToHospital
+            Just TreatmentReferToHospital
 
         "no-treatment-malaria" ->
             Just NoTreatmentForMalaria
 
         "penecilin-1" ->
-            Just TreatementPenecilin1
+            Just TreatmentPenecilin1
 
         "penecilin-3" ->
-            Just TreatementPenecilin3
+            Just TreatmentPenecilin3
 
         "erythromycin" ->
-            Just TreatementErythromycin
+            Just TreatmentErythromycin
 
         "azithromycin" ->
-            Just TreatementAzithromycin
+            Just TreatmentAzithromycin
 
         "ceftriaxon" ->
-            Just TreatementCeftriaxon
+            Just TreatmentCeftriaxon
 
         "no-treatment-syphilis" ->
             Just NoTreatmentForSyphilis

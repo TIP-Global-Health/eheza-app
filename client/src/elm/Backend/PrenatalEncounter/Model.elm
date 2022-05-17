@@ -200,7 +200,7 @@ type Msg
     | HandleSavedLastMenstrualPeriod (WebData ())
     | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) (EverySet MedicalHistorySign)
     | HandleSavedMedicalHistory (WebData ())
-    | SaveMedication PersonId (Maybe MedicationId) (EverySet MedicationSign)
+    | SaveMedication PersonId (Maybe MedicationId) MedicationValue
     | HandleSavedMedication (WebData ())
     | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
     | HandleSavedObstetricalExam (WebData ())

@@ -66,3 +66,12 @@ type HeartburnReliefMethod
     | ReliefMethodCeaseSmoking
     | ReliefMethodAvoidAlcohom
     | ReliefMethodSleepWithHeadRaised
+
+
+type TreatmentReviewTask
+    = TreatmentReviewPrenatalMedication
+    | TreatmentReviewHIV
+    | TreatmentReviewHypertension
+    | TreatmentReviewMalaria
+    | TreatmentReviewAnemia
+    | TreatmentReviewSyphilis

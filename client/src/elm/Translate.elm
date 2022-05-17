@@ -99,6 +99,7 @@ import Pages.Prenatal.Activity.Types
         , HistoryTask(..)
         , LegCrampsReliefMethod(..)
         , LmpRange(..)
+        , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
@@ -642,6 +643,7 @@ type TranslationId
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | HIVTreatmentSign HIVTreatmentSign
     | Home
     | HomeVisitActivityTitle HomeVisitActivity
     | HouseholdSize
@@ -1209,6 +1211,16 @@ type TranslationId
     | TreatedWithMethyldopa
     | TreatedWithNot
     | Treatment
+    | TreatmentDetailsAnemia
+    | TreatmentDetailsHIV
+    | TreatmentDetailsHypertension RecommendedTreatmentSign
+    | TreatmentDetailsMalaria RecommendedTreatmentSign
+    | TreatmentDetailsSyphilis RecommendedTreatmentSign
+    | TreatmentReviewQuestionAdverseEvents
+    | TreatmentReviewQuestionMedicationByPMTCT
+    | TreatmentReviewQuestionMissedDoses
+    | TreatmentReviewQuestionStillTaking TreatmentReviewTask
+    | TreatmentReviewTask TreatmentReviewTask
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -4790,6 +4802,34 @@ translationSet trans =
             , kinyarwanda = Just "Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA"
             }
 
+        HIVTreatmentSign sign ->
+            case sign of
+                HIVTreatmentNoMedicineNotSeenAtPMTCT ->
+                    { english = "Never seen at PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                HIVTreatmentNoMedicineOutOfStock ->
+                    { english = "Stock Out"
+                    , kinyarwanda = Nothing
+                    }
+
+                HIVTreatmentNoMedicinePatientRefused ->
+                    { english = "Patient Refused"
+                    , kinyarwanda = Nothing
+                    }
+
+                HIVTreatmentNoMedicineOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- We do not require translation for other signs.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         Home ->
             { english = "Home"
             , kinyarwanda = Just "Mu rugo"
@@ -7589,6 +7629,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
+                Backend.PrenatalActivity.Model.PrenatalTreatmentReview ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Just "Kureba imiti yahawe"
+                    }
+
         PrenatalRecurrentActivitiesTitle activity ->
             case activity of
                 Backend.PrenatalActivity.Model.LabResults ->
@@ -9868,27 +9913,27 @@ translationSet trans =
 
         RecommendedTreatmentSignDosage sign ->
             case sign of
-                TreatementPenecilin1 ->
+                TreatmentPenecilin1 ->
                     { english = "IM x 1"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementPenecilin3 ->
+                TreatmentPenecilin3 ->
                     { english = "IM 1x a week for 3 weeks"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementErythromycin ->
+                TreatmentErythromycin ->
                     { english = "by mouth 4x a day for 14 days"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementAzithromycin ->
+                TreatmentAzithromycin ->
                     { english = "4 tabs by mouth x one day"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementCeftriaxon ->
+                TreatmentCeftriaxon ->
                     { english = "IM daily x 10 days"
                     , kinyarwanda = Nothing
                     }
@@ -9941,7 +9986,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TreatementReferToHospital ->
+                TreatmentReferToHospital ->
                     { english = "Severe Malaria: Stabilize and Refer to Hospital"
                     , kinyarwanda = Nothing
                     }
@@ -9951,27 +9996,27 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TreatementPenecilin1 ->
+                TreatmentPenecilin1 ->
                     { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementPenecilin3 ->
+                TreatmentPenecilin3 ->
                     { english = "Penicillin (2.4 million units)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementErythromycin ->
+                TreatmentErythromycin ->
                     { english = "Erythromycin (500mg)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementAzithromycin ->
+                TreatmentAzithromycin ->
                     { english = "Azithromycin (2g)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatementCeftriaxon ->
+                TreatmentCeftriaxon ->
                     { english = "Ceftriaxone (1g)"
                     , kinyarwanda = Nothing
                     }
@@ -11364,6 +11409,147 @@ translationSet trans =
             { english = "Treatment"
             , kinyarwanda = Just "Ubuvuzi"
             }
+
+        TreatmentDetailsAnemia ->
+            { english = "At the previous visit you were given Iron (120mg) take one 60mg tablet 2x a day for 3 months and Folic Acid (400 IU) take daily for 3 months."
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentDetailsHIV ->
+            { english = "At the previous visit you were given TDF + 3TC (1 tablet) by mouth 1x a day."
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentDetailsHypertension sign ->
+            case sign of
+                TreatmentMethyldopa2 ->
+                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 2x a day for hypertension."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa3 ->
+                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 3x a day for hypertension."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa4 ->
+                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day for hypertension."
+                    , kinyarwanda = Nothing
+                    }
+
+                -- @todo: extend with additional signs?
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        TreatmentDetailsMalaria sign ->
+            case sign of
+                TreatmentQuinineSulphate ->
+                    { english = "At the previous visit you were given Quinine Sulphate per os 10 mg/kg/dose, 3 times a day for 7 days."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCoartem ->
+                    { english = "At the previous visit you were given Coartem 4 tablets by mouth twice per day x 3 days."
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        TreatmentDetailsSyphilis sign ->
+            case sign of
+                TreatmentPenecilin1 ->
+                    { english = "At the previous visit you were given Penicillin (2.4 million units) IM x 1."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentPenecilin3 ->
+                    { english = "At the previous visit you were given Penicillin (2.4 million units) IM 1x a week for 3 weeks."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentErythromycin ->
+                    { english = "At the previous visit you were given Erythromycin (500mg) by mouth 4x a day for 14 days."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAzithromycin ->
+                    { english = "At the previous visit you were given Azithromycin (2g) 4 tabs by mouth x one day."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCeftriaxon ->
+                    { english = "At the previous visit you were given Ceftriaxone (1g) IM daily x 10 days."
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        TreatmentReviewQuestionAdverseEvents ->
+            { english = "Have you experienced any adverse events"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewQuestionMedicationByPMTCT ->
+            { english = "Did you receive medicine from PMTCT"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewQuestionMissedDoses ->
+            { english = "Have you missed any doses"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewQuestionStillTaking task ->
+            case task of
+                TreatmentReviewHIV ->
+                    { english = "Are you still taking ARVs"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = "Are you still taking this medication"
+                    , kinyarwanda = Nothing
+                    }
+
+        TreatmentReviewTask task ->
+            case task of
+                TreatmentReviewPrenatalMedication ->
+                    { english = "Prenatal Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewHIV ->
+                    { english = "HIV Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewHypertension ->
+                    { english = "Hypertension Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewMalaria ->
+                    { english = "Malaria Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewAnemia ->
+                    { english = "Anemia Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentReviewSyphilis ->
+                    { english = "Syphilis Medication"
+                    , kinyarwanda = Nothing
+                    }
 
         TrySyncing ->
             { english = "Try syncing with backend"

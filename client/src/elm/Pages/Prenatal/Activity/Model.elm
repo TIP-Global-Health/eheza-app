@@ -171,6 +171,11 @@ type Msg
     | SetPrenatalSymptomQuestionBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SetFlankPainSign PrenatalFlankPainSign
     | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
+      -- TREATMENT REVIEW msgs
+    | SetActiveTreatmentReviewTask TreatmentReviewTask
+    | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SetHIVMedicationNotGivenReason HIVTreatmentSign
+    | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
 
 
 type alias Model =
@@ -186,6 +191,7 @@ type alias Model =
     , laboratoryData : LaboratoryData
     , healthEducationData : HealthEducationData
     , symptomReviewData : SymptomReviewData
+    , treatmentReviewData : TreatmentReviewData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -206,6 +212,7 @@ emptyModel =
     , laboratoryData = emptyLaboratoryData
     , healthEducationData = emptyHealthEducationData
     , symptomReviewData = emptySymptomReviewData
+    , treatmentReviewData = emptyTreatmentReviewData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -316,12 +323,51 @@ type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
     , receivedMebendazole : Maybe Bool
+    , hivMedicationByPMTCT : Maybe Bool
+    , hivMedicationNotGivenReason : Maybe HIVTreatmentSign
+    , hivMedicationNotGivenReasonDirty : Bool
+    , hivStillTaking : Maybe Bool
+    , hivMissedDoses : Maybe Bool
+    , hivAdverseEvents : Maybe Bool
+    , hypertensionStillTaking : Maybe Bool
+    , hypertensionMissedDoses : Maybe Bool
+    , hypertensionAdverseEvents : Maybe Bool
+    , malariaStillTaking : Maybe Bool
+    , malariaMissedDoses : Maybe Bool
+    , malariaAdverseEvents : Maybe Bool
+    , anemiaStillTaking : Maybe Bool
+    , anemiaMissedDoses : Maybe Bool
+    , anemiaAdverseEvents : Maybe Bool
+    , syphilisStillTaking : Maybe Bool
+    , syphilisMissedDoses : Maybe Bool
+    , syphilisAdverseEvents : Maybe Bool
     }
 
 
 emptyMedicationForm : MedicationForm
 emptyMedicationForm =
-    MedicationForm Nothing Nothing Nothing
+    { receivedIronFolicAcid = Nothing
+    , receivedDewormingPill = Nothing
+    , receivedMebendazole = Nothing
+    , hivMedicationByPMTCT = Nothing
+    , hivMedicationNotGivenReason = Nothing
+    , hivMedicationNotGivenReasonDirty = False
+    , hivStillTaking = Nothing
+    , hivMissedDoses = Nothing
+    , hivAdverseEvents = Nothing
+    , hypertensionStillTaking = Nothing
+    , hypertensionMissedDoses = Nothing
+    , hypertensionAdverseEvents = Nothing
+    , malariaStillTaking = Nothing
+    , malariaMissedDoses = Nothing
+    , malariaAdverseEvents = Nothing
+    , anemiaStillTaking = Nothing
+    , anemiaMissedDoses = Nothing
+    , anemiaAdverseEvents = Nothing
+    , syphilisStillTaking = Nothing
+    , syphilisMissedDoses = Nothing
+    , syphilisAdverseEvents = Nothing
+    }
 
 
 type alias DangerSignsData =
@@ -448,6 +494,19 @@ emptySymptomReviewForm =
     , vaginalItching = Nothing
     , partnerUrethralDischarge = Nothing
     , flankPainSign = Nothing
+    }
+
+
+type alias TreatmentReviewData =
+    { medicationForm : MedicationForm
+    , activeTask : Maybe TreatmentReviewTask
+    }
+
+
+emptyTreatmentReviewData : TreatmentReviewData
+emptyTreatmentReviewData =
+    { medicationForm = emptyMedicationForm
+    , activeTask = Nothing
     }
 
 

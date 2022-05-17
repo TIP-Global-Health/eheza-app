@@ -592,8 +592,37 @@ type MedicationSign
     | NoMedication
 
 
+type MedicationTreatmentSign
+    = MedicationTreatmentStillTaking
+    | MedicationTreatmentMissedDoses
+    | MedicationTreatmentAdverseEvents
+    | NoMedicationTreatment
+
+
+type HIVTreatmentSign
+    = HIVTreatmentStillTaking
+    | HIVTreatmentMissedDoses
+    | HIVTreatmentAdverseEvents
+    | HIVTreatmentMedicineByPMTCT
+    | HIVTreatmentNoMedicineNotSeenAtPMTCT
+    | HIVTreatmentNoMedicineOutOfStock
+    | HIVTreatmentNoMedicinePatientRefused
+    | HIVTreatmentNoMedicineOther
+    | NoHIVTreatment
+
+
 type alias Medication =
-    PrenatalMeasurement (EverySet MedicationSign)
+    PrenatalMeasurement MedicationValue
+
+
+type alias MedicationValue =
+    { signs : Maybe (EverySet MedicationSign)
+    , hivTreatment : Maybe (EverySet HIVTreatmentSign)
+    , hypertensionTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , malariaTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , anemiaTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , syphilisTreatment : Maybe (EverySet MedicationTreatmentSign)
+    }
 
 
 type alias ObstetricalExamValue =
@@ -1113,14 +1142,14 @@ type RecommendedTreatmentSign
       TreatmentQuinineSulphate
     | TreatmentCoartem
     | TreatmentWrittenProtocols
-    | TreatementReferToHospital
+    | TreatmentReferToHospital
     | NoTreatmentForMalaria
       -- For Syphilis:
-    | TreatementPenecilin1
-    | TreatementPenecilin3
-    | TreatementErythromycin
-    | TreatementAzithromycin
-    | TreatementCeftriaxon
+    | TreatmentPenecilin1
+    | TreatmentPenecilin3
+    | TreatmentErythromycin
+    | TreatmentAzithromycin
+    | TreatmentCeftriaxon
     | NoTreatmentForSyphilis
       -- For Hypertension:
     | TreatmentMethyldopa2
