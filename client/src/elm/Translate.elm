@@ -1220,7 +1220,7 @@ type TranslationId
     | TreatedWithNot
     | Treatment
     | TreatmentDetailsAnemia
-    | TreatmentDetailsHIV
+    | TreatmentDetailsHIV Bool Bool
     | TreatmentDetailsHypertension RecommendedTreatmentSign
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
@@ -11624,10 +11624,26 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TreatmentDetailsHIV ->
-            { english = "At the previous visit you were given TDF + 3TC (1 tablet) by mouth 1x a day."
-            , kinyarwanda = Nothing
-            }
+        TreatmentDetailsHIV dolutegravir arvs ->
+            if dolutegravir && arvs then
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet) by mouth 1x a day and Doltegravir (50mg) by mouth 1x a day."
+                , kinyarwanda = Nothing
+                }
+
+            else if dolutegravir then
+                { english = "At the previous visit you were given Doltegravir (50mg) by mouth 1x a day."
+                , kinyarwanda = Nothing
+                }
+
+            else if arvs then
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet) by mouth 1x a day."
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = ""
+                , kinyarwanda = Nothing
+                }
 
         TreatmentDetailsHypertension sign ->
             case sign of

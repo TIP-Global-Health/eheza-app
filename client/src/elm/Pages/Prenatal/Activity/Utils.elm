@@ -394,7 +394,7 @@ expectTreatmentReviewTask assembled task =
             True
 
         TreatmentReviewHIV ->
-            -- Show, if HIV diagnosis was made at one of previous encounters.
+            -- Show, if there was medication treatment.
             latestMedicationTreatmentForHIV assembled
                 |> isJust
 
@@ -451,20 +451,34 @@ expectHistoryTask assembled task =
 latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHIV assembled =
     let
-        hivDiagnosed =
-            List.filter
-                (\( _, diagnoses, _ ) ->
-                    EverySet.member DiagnosisHIV diagnoses
-                )
-                assembled.nursePreviousMeasurementsWithDates
-                |> List.isEmpty
-                |> not
-    in
-    if hivDiagnosed then
-        Just Translate.TreatmentDetailsHIV
+        prescribedMedications =
+            List.reverse assembled.nursePreviousMeasurementsWithDates
+                |> List.filterMap
+                    (\( _, _, measurements ) ->
+                        getMeasurementValueFunc measurements.medicationDistribution
+                            |> Maybe.andThen
+                                (\value ->
+                                    let
+                                        dolutegravirPrescribed =
+                                            EverySet.member Dolutegravir value.distributionSigns
 
-    else
-        Nothing
+                                        arvsPrescribed =
+                                            EverySet.member TDF3TC value.distributionSigns
+                                    in
+                                    if dolutegravirPrescribed || arvsPrescribed then
+                                        Just ( dolutegravirPrescribed, arvsPrescribed )
+
+                                    else
+                                        Nothing
+                                )
+                    )
+                |> List.head
+    in
+    Maybe.map
+        (\( dolutegravir, arvs ) ->
+            Translate.TreatmentDetailsHIV dolutegravir arvs
+        )
+        prescribedMedications
 
 
 latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
