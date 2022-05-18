@@ -4856,8 +4856,14 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                                             (\value form_ ->
                                                                 { form_
                                                                     | givenMedicine = Just value
+                                                                    , malariaMedication = Nothing
+                                                                    , malariaMedicationDirty = True
+                                                                    , hypertensionMedication = Nothing
+                                                                    , hypertensionMedicationDirty = True
+                                                                    , syphilisMedication = Nothing
+                                                                    , syphilisMedicationDirty = True
 
-                                                                    --@todo : Empty second step fields?
+                                                                    --@todo : Empty HIV and Anemia fields
                                                                 }
                                                             )
                                                         )
@@ -5052,7 +5058,7 @@ outsideCareFormInputsAndTasksMedications language form =
                         div [ class "label" ]
                             [ span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilityPrefix ]
                             , text " "
-                            , span [] [ text <| translate language diagnosisTransId ]
+                            , span [ class "diagnosis" ] [ text <| translate language diagnosisTransId ]
                             , text " "
                             , span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilitySuffix ]
                             ]
@@ -5077,7 +5083,11 @@ viewOutsideCareMedicationOption language medication =
             , NoOutsideCareMedicationForSyphilis
             ]
     then
-        label [] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
+        label []
+            [ span
+                [ class "treatment" ]
+                [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
+            ]
 
     else
         viewOutsideCareMedicationOptionWithDosage language medication

@@ -1002,5 +1002,5 @@ prenatalSymptomReviewEndpoint =
 
 prenatalOutsideCareEndpoint : ReadWriteEndPoint Error PrenatalOutsideCareId PrenatalOutsideCare PrenatalOutsideCare ()
 prenatalOutsideCareEndpoint =
-    swEndpoint "nodes/prenatal_symptom_review" decodePrenatalOutsideCare
+    swEndpoint "nodes/prenatal_outside_care" decodePrenatalOutsideCare
         |> withValueEncoder (object << encodePrenatalOutsideCare)

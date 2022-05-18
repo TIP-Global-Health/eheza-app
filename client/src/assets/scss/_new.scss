@@ -1828,6 +1828,17 @@ div.page-activity.prenatal {
           margin-top: 0;
         }
       }
+
+      .form.history.outside-care {
+
+        label .treatment {
+            margin-right: 0;
+          }
+
+        .label .diagnosis {
+          color: $color-primary;
+        }
+      }
     }
   }
 }
