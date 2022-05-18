@@ -586,6 +586,17 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetOutsideCareStep step ->
+            let
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareStep = step })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetOutsideCareSignBoolInput formUpdateFunc value ->
             let
                 updatedForm =
@@ -628,6 +639,84 @@ update language currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetOutsideCareMalariaMedication value ->
+            let
+                form =
+                    model.historyData.outsideCareForm
+
+                updatedForm =
+                    { form | malariaMedication = Just value, malariaMedicationDirty = True }
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareHypertensionMedication value ->
+            let
+                form =
+                    model.historyData.outsideCareForm
+
+                updatedForm =
+                    { form | hypertensionMedication = Just value, hypertensionMedicationDirty = True }
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareSyphilisMedication value ->
+            let
+                form =
+                    model.historyData.outsideCareForm
+
+                updatedForm =
+                    { form | syphilisMedication = Just value, syphilisMedicationDirty = True }
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveOutsideCare personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateHistoryMsgs nextTask
+
+                appMsgs =
+                    toPrenatalOutsideCareValueWithDefault measurement model.historyData.outsideCareForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveOutsideCare personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetActiveExaminationTask task ->
             let

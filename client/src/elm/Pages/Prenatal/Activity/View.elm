@@ -448,15 +448,15 @@ viewHistoryContent language currentDate assembled data =
         ( outsideCareInputs, outsideCareTasks ) =
             case data.outsideCareStep of
                 OutsideCareStepDiagnoses ->
-                    ( outsideCareInputsStep1, totalOutsideCareTasksStep1 )
+                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
 
                 OutsideCareStepMedications ->
-                    ( outsideCareInputsStep2, totalOutsideCareTasksStep2 )
+                    ( outsideCareInputsStep2, outsideCareTasksStep2 )
 
-        ( outsideCareInputsStep1, totalOutsideCareTasksStep1 ) =
+        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
             outsideCareFormInputsAndTasks language OutsideCareStepDiagnoses outsideCareForm
 
-        ( outsideCareInputsStep2, totalOutsideCareTasksStep2 ) =
+        ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
             outsideCareFormInputsAndTasks language OutsideCareStepMedications outsideCareForm
 
         viewForm =
@@ -519,7 +519,7 @@ viewHistoryContent language currentDate assembled data =
                     viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
 
                 Just OutsideCare ->
-                    div [ class "ui form outside-care" ]
+                    div [ class "ui form history outside-care" ]
                         outsideCareInputs
 
                 Nothing ->
@@ -539,18 +539,30 @@ viewHistoryContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            saveButton msg label =
+                                button
+                                    [ classList
+                                        [ ( "ui fluid primary button", True )
+                                        , ( "active", tasksCompleted == totalTasks )
+                                        , ( "disabled", tasksCompleted /= totalTasks )
+                                        ]
+                                    , onClick msg
+                                    ]
+                                    [ text <| translate language label ]
+
                             ( buttons, stepIndicationClass ) =
                                 case task of
                                     Obstetric ->
                                         case data.obstetricHistoryStep of
                                             ObstetricHistoryFirstStep ->
-                                                ( [ button
-                                                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                                        , onClick <| SaveOBHistoryStep1 assembled.participant.person assembled.measurements.obstetricHistory
-                                                        ]
-                                                        [ text <| translate language Translate.SaveAndNext ]
+                                                ( [ saveButton
+                                                        (SaveOBHistoryStep1
+                                                            assembled.participant.person
+                                                            assembled.measurements.obstetricHistory
+                                                        )
+                                                        Translate.SaveAndNext
                                                   ]
-                                                , "first"
+                                                , "obstetric first"
                                                 )
 
                                             ObstetricHistorySecondStep ->
@@ -559,56 +571,70 @@ viewHistoryContent language currentDate assembled data =
                                                         , onClick BackToOBHistoryStep1
                                                         ]
                                                         [ text <| ("< " ++ translate language Translate.Back) ]
-                                                  , button
-                                                        [ classList
-                                                            [ ( "ui fluid primary button", True )
-                                                            , ( "disabled", tasksCompleted /= totalTasks )
-                                                            , ( "active", tasksCompleted == totalTasks )
-                                                            ]
-                                                        , onClick <|
-                                                            SaveOBHistoryStep2
-                                                                assembled.participant.person
-                                                                assembled.measurements.obstetricHistoryStep2
-                                                                nextTask
-                                                        ]
-                                                        [ text <| translate language Translate.Save ]
+                                                  , saveButton
+                                                        (SaveOBHistoryStep2
+                                                            assembled.participant.person
+                                                            assembled.measurements.obstetricHistoryStep2
+                                                            nextTask
+                                                        )
+                                                        Translate.Save
                                                   ]
-                                                , "second"
+                                                , "obstetric second"
                                                 )
 
                                     Medical ->
-                                        ( [ button
-                                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                                , onClick <|
-                                                    SaveMedicalHistory
-                                                        assembled.participant.person
-                                                        assembled.measurements.medicalHistory
-                                                        nextTask
-                                                ]
-                                                [ text <| translate language Translate.Save ]
+                                        ( [ saveButton
+                                                (SaveMedicalHistory
+                                                    assembled.participant.person
+                                                    assembled.measurements.medicalHistory
+                                                    nextTask
+                                                )
+                                                Translate.Save
                                           ]
-                                        , ""
+                                        , "medical"
                                         )
 
                                     Social ->
-                                        ( [ button
-                                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                                , onClick <|
-                                                    SaveSocialHistory
-                                                        assembled.participant.person
-                                                        assembled.measurements.socialHistory
-                                                        nextTask
-                                                ]
-                                                [ text <| translate language Translate.Save ]
+                                        ( [ saveButton
+                                                (SaveSocialHistory
+                                                    assembled.participant.person
+                                                    assembled.measurements.socialHistory
+                                                    nextTask
+                                                )
+                                                Translate.Save
                                           ]
-                                        , ""
+                                        , "social"
                                         )
 
                                     OutsideCare ->
-                                        -- @todo
-                                        ( [], "" )
+                                        let
+                                            saveAction =
+                                                SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare nextTask
+                                        in
+                                        ( case data.outsideCareStep of
+                                            OutsideCareStepDiagnoses ->
+                                                let
+                                                    actionMsg =
+                                                        if List.isEmpty outsideCareTasksStep2 then
+                                                            saveAction
+
+                                                        else
+                                                            SetOutsideCareStep OutsideCareStepMedications
+                                                in
+                                                [ saveButton actionMsg Translate.Save ]
+
+                                            OutsideCareStepMedications ->
+                                                [ button
+                                                    [ class "ui fluid primary button"
+                                                    , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
+                                                    ]
+                                                    [ text <| ("< " ++ translate language Translate.Back) ]
+                                                , saveButton saveAction Translate.Save
+                                                ]
+                                        , "outside-care"
+                                        )
                         in
-                        div [ class <| "actions history obstetric " ++ stepIndicationClass ]
+                        div [ class <| "actions history " ++ stepIndicationClass ]
                             buttons
                     )
                 |> Maybe.withDefault emptyNode

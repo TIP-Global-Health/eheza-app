@@ -48,8 +48,13 @@ type Msg
     | SetSocialHivTestingResult String
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Outside Care
+    | SetOutsideCareStep OutsideCareStep
     | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm -> OutsideCareForm) Bool
     | SetOutsideCareDiagnosis PrenatalDiagnosis
+    | SetOutsideCareMalariaMedication PrenatalOutsideCareMedication
+    | SetOutsideCareHypertensionMedication PrenatalOutsideCareMedication
+    | SetOutsideCareSyphilisMedication PrenatalOutsideCareMedication
+    | SaveOutsideCare PersonId (Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals

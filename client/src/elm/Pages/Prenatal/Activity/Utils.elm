@@ -36,6 +36,7 @@ import Pages.Utils
         , valueConsideringIsDirtyField
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewCustomBoolInput
         , viewCustomLabel
@@ -4745,7 +4746,6 @@ outsideCareFormWithDefault form saved =
                                             , OutsideCareMedicationErythromycin
                                             , OutsideCareMedicationAzithromycin
                                             , OutsideCareMedicationCeftriaxon
-                                            , NoOutsideCareMedicationForSyphilis
                                             ]
                                     )
                                 >> List.head
@@ -4961,4 +4961,132 @@ outsideCareFormInputsAndTasksDiagnoses language form =
 
 outsideCareFormInputsAndTasksMedications : Language -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
 outsideCareFormInputsAndTasksMedications language form =
-    ( [], [] )
+    if form.givenMedicine == Just True then
+        Maybe.map
+            (\diagnoses ->
+                let
+                    ( malariaInputs, malariaTasks ) =
+                        if List.member DiagnosisMalaria diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
+                              , viewCheckBoxSelectCustomInput language
+                                    [ OutsideCareMedicationQuinineSulphate
+                                    , OutsideCareMedicationCoartem
+                                    , NoOutsideCareMedicationForMalaria
+                                    ]
+                                    []
+                                    form.malariaMedication
+                                    SetOutsideCareMalariaMedication
+                                    (viewOutsideCareMedicationOption language)
+                              , div [ class "separator" ] []
+                              ]
+                            , [ if isJust form.malariaMedication then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( hypertensionInputs, hypertensionTasks ) =
+                        if
+                            List.any (\diagnosis -> List.member diagnosis diagnoses)
+                                [ DiagnosisGestationalHypertensionImmediate
+                                , DiagnosisChronicHypertensionImmediate
+                                ]
+                        then
+                            ( [ viewHeader Translate.Hypertension
+                              , viewCheckBoxSelectCustomInput language
+                                    [ OutsideCareMedicationMethyldopa2
+                                    , OutsideCareMedicationMethyldopa3
+                                    , OutsideCareMedicationMethyldopa4
+                                    , OutsideCareMedicationCarvedilol
+                                    , OutsideCareMedicationAmlodipine
+                                    , NoOutsideCareMedicationForHypertension
+                                    ]
+                                    []
+                                    form.hypertensionMedication
+                                    SetOutsideCareHypertensionMedication
+                                    (viewOutsideCareMedicationOption language)
+                              , div [ class "separator" ] []
+                              ]
+                            , [ if isJust form.hypertensionMedication then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( syphilisInputs, syphilisTasks ) =
+                        if List.member DiagnosisSyphilis diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
+                              , viewCheckBoxSelectCustomInput language
+                                    [ OutsideCareMedicationQuinineSulphate
+                                    , OutsideCareMedicationCoartem
+                                    , NoOutsideCareMedicationForSyphilis
+                                    ]
+                                    []
+                                    form.syphilisMedication
+                                    SetOutsideCareSyphilisMedication
+                                    (viewOutsideCareMedicationOption language)
+                              , div [ class "separator" ] []
+                              ]
+                            , [ if isJust form.syphilisMedication then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    viewHeader diagnosisTransId =
+                        div [ class "label" ]
+                            [ span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilityPrefix ]
+                            , text " "
+                            , span [] [ text <| translate language diagnosisTransId ]
+                            , text " "
+                            , span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilitySuffix ]
+                            ]
+                in
+                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs
+                , malariaTasks ++ hypertensionTasks ++ syphilisTasks
+                )
+            )
+            form.diagnoses
+            |> Maybe.withDefault ( [], [] )
+
+    else
+        ( [], [] )
+
+
+viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any
+viewOutsideCareMedicationOption language medication =
+    if
+        List.member medication
+            [ NoOutsideCareMedicationForMalaria
+            , NoOutsideCareMedicationForHypertension
+            , NoOutsideCareMedicationForSyphilis
+            ]
+    then
+        label [] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
+
+    else
+        viewOutsideCareMedicationOptionWithDosage language medication
+
+
+viewOutsideCareMedicationOptionWithDosage : Language -> PrenatalOutsideCareMedication -> Html any
+viewOutsideCareMedicationOptionWithDosage language medication =
+    label []
+        [ span [ class "treatment" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
+        , text ": "
+        , span [ class "dosage" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationDosage medication ]
+        ]

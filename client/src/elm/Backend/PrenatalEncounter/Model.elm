@@ -93,6 +93,7 @@ type alias Model =
     , saveLabsResults : WebData ()
     , saveMedicationDistribution : WebData ()
     , saveSymptomReview : WebData ()
+    , saveOutsideCare : WebData ()
     }
 
 
@@ -131,6 +132,7 @@ emptyModel =
     , saveLabsResults = NotAsked
     , saveMedicationDistribution = NotAsked
     , saveSymptomReview = NotAsked
+    , saveOutsideCare = NotAsked
     }
 
 
@@ -202,3 +204,5 @@ type Msg
     | HandleSavedMedicationDistribution (WebData ())
     | SaveSymptomReview PersonId (Maybe PrenatalSymptomReviewId) PrenatalSymptomReviewValue
     | HandleSavedSymptomReview (WebData ())
+    | SaveOutsideCare PersonId (Maybe PrenatalOutsideCareId) PrenatalOutsideCareValue
+    | HandleSavedOutsideCare (WebData ())
