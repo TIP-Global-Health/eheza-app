@@ -47,6 +47,9 @@ type Msg
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
     | SetSocialHivTestingResult String
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
+      -- HistoryMsgs, Outside Care
+    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm -> OutsideCareForm) Bool
+    | SetOutsideCareDiagnosis PrenatalDiagnosis
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals
@@ -172,7 +175,7 @@ type Msg
     | SetPrenatalSymptomQuestionBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SetFlankPainSign PrenatalFlankPainSign
     | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
-      -- TREATMENT REVIEW msgs
+      -- TREATMENTREVIEWMsgs
     | SetActiveTreatmentReviewTask TreatmentReviewTask
     | SetTreatmentReviewWarningPopupState (Maybe Msg)
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool

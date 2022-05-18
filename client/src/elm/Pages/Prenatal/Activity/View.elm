@@ -381,7 +381,7 @@ viewHistoryContent language currentDate assembled data =
                             "social"
 
                         OutsideCare ->
-                            "medication"
+                            "outside-care"
 
                 navigationAction =
                     if isActive then
@@ -429,8 +429,35 @@ viewHistoryContent language currentDate assembled data =
                 |> Maybe.withDefault (List.head tasks)
 
         ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
-                |> Maybe.withDefault ( 0, 0 )
+            case activeTask of
+                Just OutsideCare ->
+                    ( Maybe.Extra.values outsideCareTasks
+                        |> List.length
+                    , List.length outsideCareTasks
+                    )
+
+                _ ->
+                    Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                        |> Maybe.withDefault ( 0, 0 )
+
+        outsideCareForm =
+            assembled.measurements.outsideCare
+                |> getMeasurementValueFunc
+                |> outsideCareFormWithDefault data.outsideCareForm
+
+        ( outsideCareInputs, outsideCareTasks ) =
+            case data.outsideCareStep of
+                OutsideCareStepDiagnoses ->
+                    ( outsideCareInputsStep1, totalOutsideCareTasksStep1 )
+
+                OutsideCareStepMedications ->
+                    ( outsideCareInputsStep2, totalOutsideCareTasksStep2 )
+
+        ( outsideCareInputsStep1, totalOutsideCareTasksStep1 ) =
+            outsideCareFormInputsAndTasks language OutsideCareStepDiagnoses outsideCareForm
+
+        ( outsideCareInputsStep2, totalOutsideCareTasksStep2 ) =
+            outsideCareFormInputsAndTasks language OutsideCareStepMedications outsideCareForm
 
         viewForm =
             case activeTask of
@@ -492,8 +519,8 @@ viewHistoryContent language currentDate assembled data =
                     viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
 
                 Just OutsideCare ->
-                    --@todo
-                    text "@todo"
+                    div [ class "ui form outside-care" ]
+                        outsideCareInputs
 
                 Nothing ->
                     emptyNode

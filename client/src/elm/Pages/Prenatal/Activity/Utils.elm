@@ -4814,3 +4814,151 @@ toPrenatalOutsideCareValue form =
             }
         )
         maybeSigns
+
+
+outsideCareFormInputsAndTasks : Language -> OutsideCareStep -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
+outsideCareFormInputsAndTasks language step form =
+    case step of
+        OutsideCareStepDiagnoses ->
+            outsideCareFormInputsAndTasksDiagnoses language form
+
+        OutsideCareStepMedications ->
+            outsideCareFormInputsAndTasksMedications language form
+
+
+outsideCareFormInputsAndTasksDiagnoses : Language -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
+outsideCareFormInputsAndTasksDiagnoses language form =
+    let
+        ( givenNewDiagnosisSection, givenNewDiagnosisTasks ) =
+            if form.seenAtAnotherFacility == Just True then
+                let
+                    ( newDiagnosisSection, newDiagnosisTasks ) =
+                        if form.givenNewDiagnosis == Just True then
+                            let
+                                ( givenMedicineSection, givenMedicineTasks ) =
+                                    Maybe.map
+                                        (\diagnoses ->
+                                            if
+                                                List.any (\diagnosis -> List.member diagnosis diagnoses)
+                                                    [ DiagnosisHIV
+                                                    , DiagnosisSyphilis
+                                                    , DiagnosisMalaria
+                                                    , DiagnosisModerateAnemia
+                                                    , DiagnosisGestationalHypertensionImmediate
+                                                    , DiagnosisChronicHypertensionImmediate
+                                                    ]
+                                            then
+                                                ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenMedicine
+                                                  , viewBoolInput
+                                                        language
+                                                        form.givenMedicine
+                                                        (SetOutsideCareSignBoolInput
+                                                            (\value form_ ->
+                                                                { form_
+                                                                    | givenMedicine = Just value
+
+                                                                    --@todo : Empty second step fields?
+                                                                }
+                                                            )
+                                                        )
+                                                        "given-medicine"
+                                                        Nothing
+                                                  ]
+                                                , [ form.givenMedicine ]
+                                                )
+
+                                            else
+                                                ( [], [] )
+                                        )
+                                        form.diagnoses
+                                        |> Maybe.withDefault ( [], [] )
+                            in
+                            ( [ viewLabel language Translate.SelectAllDiagnoses
+                              , viewCheckBoxMultipleSelectInput language
+                                    [ DiagnosisHIV
+                                    , DiagnosisSyphilis
+                                    , DiagnosisNeurosyphilis
+                                    , DiagnosisMalaria
+                                    , DiagnosisHepatitisB
+                                    , DiagnosisModerateAnemia
+                                    , DiagnosisSevereAnemia
+                                    , DiagnosisPelvicPainIntense
+                                    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+                                    ]
+                                    [ DiagnosisChronicHypertensionImmediate
+                                    , DiagnosisGestationalHypertensionImmediate
+                                    , DiagnosisModeratePreeclampsiaImmediate
+                                    , DiagnosisDeepVeinThrombosis
+                                    , DiagnosisPyelonephritis
+                                    , DiagnosisHeartburnPersistent
+                                    , DiagnosisPlacentaPrevia
+                                    , DiagnosisHyperemesisGravidum
+                                    ]
+                                    (form.diagnoses |> Maybe.withDefault [])
+                                    Nothing
+                                    SetOutsideCareDiagnosis
+                                    Translate.PrenatalDiagnosis
+                              ]
+                                ++ givenMedicineSection
+                            , [ if isJust form.diagnoses then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                                ++ givenMedicineTasks
+                            )
+
+                        else
+                            ( [], [] )
+                in
+                ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenNewDiagnoses
+                  , viewBoolInput
+                        language
+                        form.givenNewDiagnosis
+                        (SetOutsideCareSignBoolInput
+                            (\value form_ ->
+                                { form_
+                                    | givenNewDiagnosis = Just value
+                                    , givenMedicine = Nothing
+                                    , diagnoses = Nothing
+                                    , diagnosesDirty = True
+                                }
+                            )
+                        )
+                        "given-new-diagnosis"
+                        Nothing
+                  ]
+                    ++ newDiagnosisSection
+                , [ form.givenNewDiagnosis ] ++ newDiagnosisTasks
+                )
+
+            else
+                ( [], [] )
+    in
+    ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion SeenAtAnotherFacility
+      , viewBoolInput
+            language
+            form.seenAtAnotherFacility
+            (SetOutsideCareSignBoolInput
+                (\value form_ ->
+                    { form_
+                        | seenAtAnotherFacility = Just value
+                        , givenNewDiagnosis = Nothing
+                        , givenMedicine = Nothing
+                        , diagnoses = Nothing
+                        , diagnosesDirty = True
+                    }
+                )
+            )
+            "seen-at-another-facility"
+            Nothing
+      ]
+        ++ givenNewDiagnosisSection
+    , [ form.seenAtAnotherFacility ] ++ givenNewDiagnosisTasks
+    )
+
+
+outsideCareFormInputsAndTasksMedications : Language -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
+outsideCareFormInputsAndTasksMedications language form =
+    ( [], [] )

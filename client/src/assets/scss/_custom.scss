@@ -2289,6 +2289,7 @@ input::placeholder {
   }
 }
 
+.icon-outside-care,
 .icon-next-steps-medication-distribution {
   .active &:after {
     background-image: url(#{$img-path}icon-medication-distribution-white.svg);

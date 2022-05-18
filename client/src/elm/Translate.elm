@@ -976,6 +976,7 @@ type TranslationId
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
+    | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalPhotoHelper
     | PrenatalRecurrentNextStepsTask Pages.Prenatal.RecurrentActivity.Types.NextStepsTask
     | PrenatalSymptom PrenatalSymptom
@@ -1099,6 +1100,7 @@ type TranslationId
     | SeeLabResults
     | SeeMore
     | SelectAntenatalVisit
+    | SelectAllDiagnoses
     | SelectAllSigns
     | SelectDangerSigns
     | SelectDate
@@ -9273,6 +9275,29 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalOutsideCareSignQuestion sign ->
+            case sign of
+                SeenAtAnotherFacility ->
+                    { english = "Have you been seen at another facility since your last visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                GivenNewDiagnoses ->
+                    { english = "Were you given a new diagnosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                GivenMedicine ->
+                    { english = "Were you given medicine"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- There's not question for this sign.
+                NoPrenatalOutsideCareSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalPhotoHelper ->
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
             , kinyarwanda = Just "Fata ifoto y'inda y'umubyeyi hanyuma uyimwereke arebe uko yakuze/yiyongereye."
@@ -10654,6 +10679,11 @@ translationSet trans =
         SelectAntenatalVisit ->
             { english = "Select an Antenatal Visit"
             , kinyarwanda = Just "Hitamo inshuro aje kwipimishaho inda"
+            }
+
+        SelectAllDiagnoses ->
+            { english = "Select all diagnoses"
+            , kinyarwanda = Nothing
             }
 
         SelectAllSigns ->

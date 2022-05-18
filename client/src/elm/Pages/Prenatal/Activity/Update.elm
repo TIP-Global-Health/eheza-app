@@ -26,6 +26,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -584,6 +585,49 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetOutsideCareSignBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.historyData.outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareDiagnosis diagnosis ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.outsideCare
+                                >> getMeasurementValueFunc
+                                >> outsideCareFormWithDefault model.historyData.outsideCareForm
+                            )
+                        |> Maybe.withDefault model.historyData.outsideCareForm
+
+                updatedForm =
+                    setMultiSelectInputValue .diagnoses
+                        (\value -> { form | diagnoses = value })
+                        NoPrenatalDiagnosis
+                        diagnosis
+                        form
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SetActiveExaminationTask task ->
             let

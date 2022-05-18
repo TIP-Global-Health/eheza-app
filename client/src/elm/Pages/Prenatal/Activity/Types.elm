@@ -80,4 +80,4 @@ type TreatmentReviewTask
 
 type OutsideCareStep
     = OutsideCareStepDiagnoses
-    | OutsideCareStepMedication
+    | OutsideCareStepMedications
