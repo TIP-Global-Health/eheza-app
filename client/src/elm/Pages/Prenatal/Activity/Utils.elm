@@ -604,8 +604,7 @@ historyTaskCompleted assembled task =
             isJust assembled.measurements.socialHistory
 
         OutsideCare ->
-            --@todo
-            False
+            isJust assembled.measurements.outsideCare
 
 
 referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
@@ -3530,7 +3529,8 @@ historyTasksCompletedFromTotal assembled data task =
             )
 
         OutsideCare ->
-            -- @todo
+            -- This is not in use, because OutsideCare task got
+            -- special treatment at viewHistoryContent().
             ( 0, 0 )
 
 
@@ -4709,10 +4709,7 @@ outsideCareFormWithDefault form saved =
                             (EverySet.toList
                                 >> List.filter
                                     (\medication ->
-                                        List.member medication
-                                            [ OutsideCareMedicationQuinineSulphate
-                                            , OutsideCareMedicationCoartem
-                                            ]
+                                        List.member medication outsideCareMedicationOptionsMalaria
                                     )
                                 >> List.head
                             )
@@ -4723,13 +4720,7 @@ outsideCareFormWithDefault form saved =
                             (EverySet.toList
                                 >> List.filter
                                     (\medication ->
-                                        List.member medication
-                                            [ OutsideCareMedicationMethyldopa2
-                                            , OutsideCareMedicationMethyldopa3
-                                            , OutsideCareMedicationMethyldopa4
-                                            , OutsideCareMedicationCarvedilol
-                                            , OutsideCareMedicationAmlodipine
-                                            ]
+                                        List.member medication outsideCareMedicationOptionsHypertension
                                     )
                                 >> List.head
                             )
@@ -4740,13 +4731,7 @@ outsideCareFormWithDefault form saved =
                             (EverySet.toList
                                 >> List.filter
                                     (\medication ->
-                                        List.member medication
-                                            [ OutsideCareMedicationPenecilin1
-                                            , OutsideCareMedicationPenecilin3
-                                            , OutsideCareMedicationErythromycin
-                                            , OutsideCareMedicationAzithromycin
-                                            , OutsideCareMedicationCeftriaxon
-                                            ]
+                                        List.member medication outsideCareMedicationOptionsSyphilis
                                     )
                                 >> List.head
                             )
@@ -4975,10 +4960,7 @@ outsideCareFormInputsAndTasksMedications language form =
                         if List.member DiagnosisMalaria diagnoses then
                             ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
                               , viewCheckBoxSelectCustomInput language
-                                    [ OutsideCareMedicationQuinineSulphate
-                                    , OutsideCareMedicationCoartem
-                                    , NoOutsideCareMedicationForMalaria
-                                    ]
+                                    outsideCareMedicationOptionsMalaria
                                     []
                                     form.malariaMedication
                                     SetOutsideCareMalariaMedication
@@ -5005,13 +4987,7 @@ outsideCareFormInputsAndTasksMedications language form =
                         then
                             ( [ viewHeader Translate.Hypertension
                               , viewCheckBoxSelectCustomInput language
-                                    [ OutsideCareMedicationMethyldopa2
-                                    , OutsideCareMedicationMethyldopa3
-                                    , OutsideCareMedicationMethyldopa4
-                                    , OutsideCareMedicationCarvedilol
-                                    , OutsideCareMedicationAmlodipine
-                                    , NoOutsideCareMedicationForHypertension
-                                    ]
+                                    outsideCareMedicationOptionsHypertension
                                     []
                                     form.hypertensionMedication
                                     SetOutsideCareHypertensionMedication
@@ -5033,10 +5009,7 @@ outsideCareFormInputsAndTasksMedications language form =
                         if List.member DiagnosisSyphilis diagnoses then
                             ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
                               , viewCheckBoxSelectCustomInput language
-                                    [ OutsideCareMedicationQuinineSulphate
-                                    , OutsideCareMedicationCoartem
-                                    , NoOutsideCareMedicationForSyphilis
-                                    ]
+                                    outsideCareMedicationOptionsSyphilis
                                     []
                                     form.syphilisMedication
                                     SetOutsideCareSyphilisMedication
@@ -5072,6 +5045,36 @@ outsideCareFormInputsAndTasksMedications language form =
 
     else
         ( [], [] )
+
+
+outsideCareMedicationOptionsMalaria : List PrenatalOutsideCareMedication
+outsideCareMedicationOptionsMalaria =
+    [ OutsideCareMedicationQuinineSulphate
+    , OutsideCareMedicationCoartem
+    , NoOutsideCareMedicationForMalaria
+    ]
+
+
+outsideCareMedicationOptionsHypertension : List PrenatalOutsideCareMedication
+outsideCareMedicationOptionsHypertension =
+    [ OutsideCareMedicationMethyldopa2
+    , OutsideCareMedicationMethyldopa3
+    , OutsideCareMedicationMethyldopa4
+    , OutsideCareMedicationCarvedilol
+    , OutsideCareMedicationAmlodipine
+    , NoOutsideCareMedicationForHypertension
+    ]
+
+
+outsideCareMedicationOptionsSyphilis : List PrenatalOutsideCareMedication
+outsideCareMedicationOptionsSyphilis =
+    [ OutsideCareMedicationPenecilin1
+    , OutsideCareMedicationPenecilin3
+    , OutsideCareMedicationErythromycin
+    , OutsideCareMedicationAzithromycin
+    , OutsideCareMedicationCeftriaxon
+    , NoOutsideCareMedicationForSyphilis
+    ]
 
 
 viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any

@@ -409,11 +409,21 @@ viewHistoryContent language currentDate assembled data =
             resolveHistoryTasks assembled
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, historyTasksCompletedFromTotal assembled data task )
-                    )
+            List.map
+                (\task ->
+                    case task of
+                        OutsideCare ->
+                            ( OutsideCare
+                            , ( Maybe.Extra.values outsideCareTasks
+                                    |> List.length
+                              , List.length outsideCareTasks
+                              )
+                            )
+
+                        _ ->
+                            ( task, historyTasksCompletedFromTotal assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
         activeTask =
@@ -429,16 +439,8 @@ viewHistoryContent language currentDate assembled data =
                 |> Maybe.withDefault (List.head tasks)
 
         ( tasksCompleted, totalTasks ) =
-            case activeTask of
-                Just OutsideCare ->
-                    ( Maybe.Extra.values outsideCareTasks
-                        |> List.length
-                    , List.length outsideCareTasks
-                    )
-
-                _ ->
-                    Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
-                        |> Maybe.withDefault ( 0, 0 )
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
 
         outsideCareForm =
             assembled.measurements.outsideCare
