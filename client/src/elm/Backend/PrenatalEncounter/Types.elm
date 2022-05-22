@@ -18,6 +18,7 @@ type PrenatalDiagnosis
     | DiagnosisNeurosyphilis
     | DiagnosisHepatitisB
     | DiagnosisMalaria
+    | DiagnosisMalariaContinued
     | DiagnosisMalariaWithAnemia
     | DiagnosisMalariaWithSevereAnemia
     | DiagnosisModerateAnemia
@@ -46,9 +47,13 @@ type PrenatalDiagnosis
     | DiagnosisDeepVeinThrombosis
     | DiagnosisPelvicPainIntense
     | DiagnosisUrinaryTractInfection
+    | DiagnosisUrinaryTractInfectionContinued
     | DiagnosisPyelonephritis
     | DiagnosisCandidiasis
+    | DiagnosisCandidiasisContinued
     | DiagnosisGonorrhea
+    | DiagnosisGonorrheaContinued
     | DiagnosisTrichomonasOrBacterialVaginosis
+    | DiagnosisTrichomonasOrBacterialVaginosisContinued
     | DiagnosisTuberculosis
     | NoPrenatalDiagnosis

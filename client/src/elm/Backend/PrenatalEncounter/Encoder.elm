@@ -109,6 +109,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisMalaria ->
                 "malaria"
 
+            DiagnosisMalariaContinued ->
+                "malaria-continued"
+
             DiagnosisMalariaWithAnemia ->
                 "malaria-anemia"
 
@@ -187,17 +190,29 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisUrinaryTractInfection ->
                 "urinary-tract-infection"
 
+            DiagnosisUrinaryTractInfectionContinued ->
+                "urinary-tract-infection-continued"
+
             DiagnosisPyelonephritis ->
                 "pyelonephritis"
 
             DiagnosisCandidiasis ->
+                "candidiasis-continued"
+
+            DiagnosisCandidiasisContinued ->
                 "candidiasis"
 
             DiagnosisGonorrhea ->
                 "gonorrhea"
 
+            DiagnosisGonorrheaContinued ->
+                "gonorrhea-continued"
+
             DiagnosisTrichomonasOrBacterialVaginosis ->
                 "trichomonas-or-bv"
+
+            DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+                "trichomonas-or-bv-continued"
 
             DiagnosisTuberculosis ->
                 "Tuberculosis"

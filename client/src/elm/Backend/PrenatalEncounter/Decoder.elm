@@ -115,6 +115,9 @@ decodePrenatalDiagnosis =
                     "malaria" ->
                         succeed DiagnosisMalaria
 
+                    "malaria-continued" ->
+                        succeed DiagnosisMalariaContinued
+
                     "malaria-anemia" ->
                         succeed DiagnosisMalariaWithAnemia
 
@@ -193,17 +196,26 @@ decodePrenatalDiagnosis =
                     "urinary-tract-infection" ->
                         succeed DiagnosisUrinaryTractInfection
 
+                    "urinary-tract-infection-continued" ->
+                        succeed DiagnosisUrinaryTractInfectionContinued
+
                     "pyelonephritis" ->
                         succeed DiagnosisPyelonephritis
 
                     "candidiasis" ->
                         succeed DiagnosisCandidiasis
 
+                    "candidiasis-continued" ->
+                        succeed DiagnosisCandidiasisContinued
+
                     "gonorrhea" ->
                         succeed DiagnosisGonorrhea
 
                     "trichomonas-or-bv" ->
                         succeed DiagnosisTrichomonasOrBacterialVaginosis
+
+                    "trichomonas-or-bv-continued" ->
+                        succeed DiagnosisTrichomonasOrBacterialVaginosisContinued
 
                     "tuberculosis" ->
                         succeed DiagnosisTuberculosis
