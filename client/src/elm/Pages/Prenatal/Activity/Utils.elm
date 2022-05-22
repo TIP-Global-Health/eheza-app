@@ -1056,7 +1056,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 assembled.globalLmpDate
 
         diagnosesByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements)
+            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
                 labResultsDiagnoses
                 |> EverySet.fromList
 
@@ -1190,9 +1190,12 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             False
 
 
-matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
+matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
+matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
     let
+        measurements =
+            assembled.measurements
+
         positiveMalariaTest =
             testedPositiveAt .malariaTest
 
@@ -1221,6 +1224,28 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
                         EverySet.member PallorHands exam.hands || EverySet.member PaleConjuctiva exam.eyes
                     )
                 |> Maybe.withDefault False
+
+        malariaDiagnosed =
+            positiveMalariaTest
+                && ((-- Either hemoglobin test was not performed, or,
+                     -- hemoglobin count is within normal ranges.
+                     Maybe.map (\count -> count >= 11) hemoglobinCount
+                        |> Maybe.withDefault True
+                    )
+                        || -- When severe Anemia with complications is diagnosed,
+                           -- we view Malaia as separate diagnosis.
+                           -- Therefore's not 'Malarial and Severe Anemia with
+                           -- complications' diagnosis.
+                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled DiagnosisSevereAnemiaWithComplications
+                   )
+
+        malariaWithAnemiaDiagnosed =
+            positiveMalariaTest
+                && (-- Hemoglobin test was performed, and,
+                    -- hemoglobin count indicates mild to moderate anemia.
+                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
@@ -1302,26 +1327,26 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
             testedPositiveAt .hepatitisBTest
 
         DiagnosisMalaria ->
-            positiveMalariaTest
-                && ((-- Either hemoglobin test was not performed, or,
-                     -- hemoglobin count is within normal ranges.
-                     Maybe.map (\count -> count >= 11) hemoglobinCount
-                        |> Maybe.withDefault True
-                    )
-                        || -- When severe Anemia with complications is diagnosed,
-                           -- we view Malaia as separate diagnosis.
-                           -- Therefore's not 'Malarial and Severe Anemia with
-                           -- complications' diagnosis.
-                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements DiagnosisSevereAnemiaWithComplications
+            malariaDiagnosed
+                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
+                        || (not <| diagnosedPreviously DiagnosisMalaria assembled)
                    )
 
+        DiagnosisMalariaMedicatedContinued ->
+            malariaDiagnosed
+                && (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviously DiagnosisMalaria assembled
+
         DiagnosisMalariaWithAnemia ->
-            positiveMalariaTest
-                && (-- Hemoglobin test was performed, and,
-                    -- hemoglobin count indicates mild to moderate anemia.
-                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
-                        |> Maybe.withDefault False
+            malariaWithAnemiaDiagnosed
+                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
+                        || (not <| diagnosedPreviously DiagnosisMalariaWithAnemia assembled)
                    )
+
+        DiagnosisMalariaWithAnemiaMedicatedContinued ->
+            malariaWithAnemiaDiagnosed
+                && (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviously DiagnosisMalariaWithAnemia assembled
 
         DiagnosisMalariaWithSevereAnemia ->
             positiveMalariaTest
@@ -1392,25 +1417,11 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
 
 matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
 matchSymptomsPrenatalDiagnosis assembled diagnosis =
-    case diagnosis of
-        DiagnosisHyperemesisGravidumBySymptoms ->
-            hospitalizeDueToNauseaAndVomiting assembled
-
-        DiagnosisHeartburn ->
+    let
+        heartburnDiagnosed =
             symptomRecorded assembled.measurements Heartburn
-                && (not <| symptomRecordedPreviously assembled Heartburn)
 
-        DiagnosisHeartburnPersistent ->
-            symptomRecorded assembled.measurements Heartburn
-                && symptomRecordedPreviously assembled Heartburn
-
-        DiagnosisDeepVeinThrombosis ->
-            hospitalizeDueToLegPainRedness assembled
-
-        DiagnosisPelvicPainIntense ->
-            hospitalizeDueToPelvicPain assembled
-
-        DiagnosisUrinaryTractInfection ->
+        urinaryTractInfectionDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1421,16 +1432,7 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
-        DiagnosisPyelonephritis ->
-            getMeasurementValueFunc assembled.measurements.symptomReview
-                |> Maybe.map
-                    (\value ->
-                        EverySet.member BurningWithUrination value.symptoms
-                            && flankPainPresent value.flankPainSign
-                    )
-                |> Maybe.withDefault False
-
-        DiagnosisCandidiasis ->
+        candidiasisDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1446,7 +1448,7 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
-        DiagnosisGonorrhea ->
+        gonorrheaDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1455,7 +1457,7 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
-        DiagnosisTrichomonasOrBacterialVaginosis ->
+        trichomonasOrBacterialVaginosisDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1464,6 +1466,65 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                                 [ SymptomQuestionVaginalItching, SymptomQuestionPartnerUrethralDischarge ]
                     )
                 |> Maybe.withDefault False
+    in
+    case diagnosis of
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            hospitalizeDueToNauseaAndVomiting assembled
+
+        DiagnosisHeartburn ->
+            heartburnDiagnosed
+                && (not <| diagnosedPreviously DiagnosisHeartburn assembled)
+
+        DiagnosisHeartburnPersistent ->
+            heartburnDiagnosed
+                && diagnosedPreviously DiagnosisHeartburn assembled
+
+        DiagnosisDeepVeinThrombosis ->
+            hospitalizeDueToLegPainRedness assembled
+
+        DiagnosisPelvicPainIntense ->
+            hospitalizeDueToPelvicPain assembled
+
+        DiagnosisUrinaryTractInfection ->
+            urinaryTractInfectionDiagnosed
+                && (not <| diagnosedPreviously DiagnosisUrinaryTractInfection assembled)
+
+        DiagnosisUrinaryTractInfectionContinued ->
+            urinaryTractInfectionDiagnosed
+                && diagnosedPreviously DiagnosisUrinaryTractInfection assembled
+
+        DiagnosisPyelonephritis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member BurningWithUrination value.symptoms
+                            && flankPainPresent value.flankPainSign
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisCandidiasis ->
+            candidiasisDiagnosed
+                && (not <| diagnosedPreviously DiagnosisCandidiasis assembled)
+
+        DiagnosisCandidiasisContinued ->
+            candidiasisDiagnosed
+                && diagnosedPreviously DiagnosisCandidiasis assembled
+
+        DiagnosisGonorrhea ->
+            gonorrheaDiagnosed
+                && (not <| diagnosedPreviously DiagnosisGonorrhea assembled)
+
+        DiagnosisGonorrheaContinued ->
+            gonorrheaDiagnosed
+                && diagnosedPreviously DiagnosisGonorrhea assembled
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            trichomonasOrBacterialVaginosisDiagnosed
+                && (not <| diagnosedPreviously DiagnosisGonorrhea assembled)
+
+        DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+            trichomonasOrBacterialVaginosisDiagnosed
+                && diagnosedPreviously DiagnosisGonorrhea assembled
 
         Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
             symptomRecorded assembled.measurements CoughContinuous

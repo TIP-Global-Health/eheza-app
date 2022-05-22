@@ -64,6 +64,17 @@ diagnosed diagnosis assembled =
     EverySet.member diagnosis assembled.encounter.diagnoses
 
 
+diagnosedPreviously : PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedPreviously diagnosis assembled =
+    assembled.nursePreviousMeasurementsWithDates
+        |> List.filter
+            (\( _, diagnoses, _ ) ->
+                EverySet.member diagnosis diagnoses
+            )
+        |> List.isEmpty
+        |> not
+
+
 diagnosedAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
 diagnosedAnyOf diagnoses assembled =
     List.any
