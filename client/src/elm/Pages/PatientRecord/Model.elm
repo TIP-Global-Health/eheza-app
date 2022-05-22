@@ -1,6 +1,8 @@
 module Pages.PatientRecord.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Person.Model exposing (Person)
 import Pages.Page exposing (Page)
 import Pages.WellChildProgressReport.Model exposing (DiagnosisMode(..))
 
@@ -39,9 +41,16 @@ type PatientRecordFilter
     | FilterDemographics
 
 
-patientRecordFilters : List PatientRecordFilter
-patientRecordFilters =
-    [ FilterAcuteIllness
-    , FilterAntenatal
-    , FilterDemographics
-    ]
+patientRecordFilters : Person -> List PatientRecordFilter
+patientRecordFilters person =
+    case person.gender of
+        Male ->
+            [ FilterAcuteIllness
+            , FilterDemographics
+            ]
+
+        Female ->
+            [ FilterAcuteIllness
+            , FilterAntenatal
+            , FilterDemographics
+            ]
