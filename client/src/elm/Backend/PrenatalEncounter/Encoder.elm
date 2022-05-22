@@ -124,6 +124,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisSevereAnemia ->
                 "severe-anemia"
 
+            DiagnosisSevereAnemiaContinued ->
+                "severe-anemia-continued"
+
             DiagnosisSevereAnemiaWithComplications ->
                 "severe-anemia-complications"
 

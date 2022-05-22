@@ -7775,8 +7775,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisMalariaContinued ->
+                    { english = "Malaria Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisMalariaWithAnemia ->
                     { english = "Malaria with Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithAnemiaContinued ->
+                    { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Nothing
                     }
 
@@ -7905,8 +7915,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisUrinaryTractInfectionContinued ->
+                    { english = "Urinary Tract Infection Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisPyelonephritis ->
                     { english = "Pyelonephritis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisCandidiasisContinued ->
+                    { english = "Candidiasis Continued"
                     , kinyarwanda = Nothing
                     }
 
@@ -7920,8 +7940,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisGonorrheaContinued ->
+                    { english = "Gonorrhea Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisTrichomonasOrBacterialVaginosis ->
                     { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+                    { english = "Trichomonas or Bacterial Vaginosis Continued"
                     , kinyarwanda = Nothing
                     }
 
@@ -8017,8 +8047,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisMalariaContinued ->
+                    { english = "Malaria Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisMalariaWithAnemia ->
                     { english = "Malaria with Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithAnemiaContinued ->
+                    { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Nothing
                     }
 
@@ -8147,6 +8187,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisUrinaryTractInfectionContinued ->
+                    { english = "Urinary Tract Infection Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisPyelonephritis ->
                     { english = "Pyelonephritis"
                     , kinyarwanda = Nothing
@@ -8157,13 +8202,28 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisCandidiasisContinued ->
+                    { english = "Candidiasis Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisGonorrhea ->
                     { english = "Gonorrhea"
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisGonorrheaContinued ->
+                    { english = "Gonorrhea Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisTrichomonasOrBacterialVaginosis ->
                     { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+                    { english = "Trichomonas or Bacterial Vaginosis Continued"
                     , kinyarwanda = Nothing
                     }
 
@@ -8214,8 +8274,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisMalariaContinued ->
+                    { english = "Patient has tested positive for Malaria Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisMalariaWithAnemia ->
                     { english = "Malaria with Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaWithAnemiaContinued ->
+                    { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Nothing
                     }
 
@@ -8304,6 +8374,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisUrinaryTractInfectionContinued ->
+                    { english = "Urinary Tract Infection Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisPyelonephritis ->
                     { english = "Pyelonephritis"
                     , kinyarwanda = Nothing
@@ -8314,8 +8389,23 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisCandidiasisContinued ->
+                    { english = "Candidiasis Continued"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGonorrheaContinued ->
+                    { english = "Gonorrhea Continued"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisGonorrhea ->
                     { english = "Gonorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+                    { english = "Trichomonas or Bacterial Vaginosis Continued"
                     , kinyarwanda = Nothing
                     }
 

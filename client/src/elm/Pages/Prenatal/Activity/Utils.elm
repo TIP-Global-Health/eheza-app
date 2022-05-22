@@ -637,6 +637,12 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisDeepVeinThrombosis
             , DiagnosisPelvicPainIntense
             , DiagnosisPyelonephritis
+            , DiagnosisMalariaContinued
+            , DiagnosisMalariaWithAnemiaContinued
+            , DiagnosisUrinaryTractInfectionContinued
+            , DiagnosisCandidiasisContinued
+            , DiagnosisGonorrheaContinued
+            , DiagnosisTrichomonasOrBacterialVaginosisContinued
             ]
             assembled
 
@@ -1619,7 +1625,9 @@ labResultsDiagnoses =
     , DiagnosisNeurosyphilis
     , DiagnosisHepatitisB
     , DiagnosisMalaria
+    , DiagnosisMalariaContinued
     , DiagnosisMalariaWithAnemia
+    , DiagnosisMalariaWithAnemiaContinued
     , DiagnosisMalariaWithSevereAnemia
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia
@@ -1646,10 +1654,14 @@ symptomsDiagnoses =
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
     , DiagnosisUrinaryTractInfection
+    , DiagnosisUrinaryTractInfectionContinued
     , DiagnosisPyelonephritis
     , DiagnosisCandidiasis
+    , DiagnosisCandidiasisContinued
     , DiagnosisGonorrhea
+    , DiagnosisGonorrheaContinued
     , DiagnosisTrichomonasOrBacterialVaginosis
+    , DiagnosisTrichomonasOrBacterialVaginosisContinued
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
     ]
 

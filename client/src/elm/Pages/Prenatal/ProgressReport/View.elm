@@ -2105,8 +2105,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisMalaria ->
             malariaTreatmentMessage
 
+        DiagnosisMalariaContinued ->
+            -- @todo
+            []
+
         DiagnosisMalariaWithAnemia ->
             malariaTreatmentMessage
+
+        DiagnosisMalariaWithAnemiaContinued ->
+            -- @todo
+            []
 
         DiagnosisMalariaWithSevereAnemia ->
             malariaTreatmentMessage ++ referredToHospitalMessage
@@ -2153,6 +2161,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
+        DiagnosisUrinaryTractInfectionContinued ->
+            --@todo
+            []
+
         DiagnosisPyelonephritis ->
             --@todo
             []
@@ -2161,11 +2173,23 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
+        DiagnosisCandidiasisContinuedq ->
+            --@todo
+            []
+
         DiagnosisGonorrhea ->
             --@todo
             []
 
+        DiagnosisGonorrheaContinued ->
+            --@todo
+            []
+
         DiagnosisTrichomonasOrBacterialVaginosis ->
+            --@todo
+            []
+
+        DiagnosisTrichomonasOrBacterialVaginosisContinued ->
             --@todo
             []
 

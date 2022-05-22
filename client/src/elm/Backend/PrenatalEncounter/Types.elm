@@ -20,6 +20,7 @@ type PrenatalDiagnosis
     | DiagnosisMalaria
     | DiagnosisMalariaContinued
     | DiagnosisMalariaWithAnemia
+    | DiagnosisMalariaWithAnemiaContinued
     | DiagnosisMalariaWithSevereAnemia
     | DiagnosisModerateAnemia
     | DiagnosisSevereAnemia
