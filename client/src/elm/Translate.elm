@@ -7775,7 +7775,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMalariaContinued ->
+                DiagnosisMalariaMedicatedContinued ->
                     { english = "Malaria Continued"
                     , kinyarwanda = Nothing
                     }
@@ -7785,7 +7785,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMalariaWithAnemiaContinued ->
+                DiagnosisMalariaWithAnemiaMedicatedContinued ->
                     { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Nothing
                     }
@@ -8047,7 +8047,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMalariaContinued ->
+                DiagnosisMalariaMedicatedContinued ->
                     { english = "Malaria Continued"
                     , kinyarwanda = Nothing
                     }
@@ -8057,7 +8057,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMalariaWithAnemiaContinued ->
+                DiagnosisMalariaWithAnemiaMedicatedContinued ->
                     { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Nothing
                     }
@@ -8274,7 +8274,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMalariaContinued ->
+                DiagnosisMalariaMedicatedContinued ->
                     { english = "Patient has tested positive for Malaria Continued"
                     , kinyarwanda = Nothing
                     }
@@ -8284,7 +8284,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMalariaWithAnemiaContinued ->
+                DiagnosisMalariaWithAnemiaMedicatedContinued ->
                     { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Nothing
                     }

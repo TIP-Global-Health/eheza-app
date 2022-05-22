@@ -2105,14 +2105,14 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisMalaria ->
             malariaTreatmentMessage
 
-        DiagnosisMalariaContinued ->
+        DiagnosisMalariaMedicatedContinued ->
             -- @todo
             []
 
         DiagnosisMalariaWithAnemia ->
             malariaTreatmentMessage
 
-        DiagnosisMalariaWithAnemiaContinued ->
+        DiagnosisMalariaWithAnemiaMedicatedContinued ->
             -- @todo
             []
 

@@ -18,9 +18,9 @@ type PrenatalDiagnosis
     | DiagnosisNeurosyphilis
     | DiagnosisHepatitisB
     | DiagnosisMalaria
-    | DiagnosisMalariaContinued
+    | DiagnosisMalariaMedicatedContinued
     | DiagnosisMalariaWithAnemia
-    | DiagnosisMalariaWithAnemiaContinued
+    | DiagnosisMalariaWithAnemiaMedicatedContinued
     | DiagnosisMalariaWithSevereAnemia
     | DiagnosisModerateAnemia
     | DiagnosisSevereAnemia

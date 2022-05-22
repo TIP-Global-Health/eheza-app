@@ -637,8 +637,8 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisDeepVeinThrombosis
             , DiagnosisPelvicPainIntense
             , DiagnosisPyelonephritis
-            , DiagnosisMalariaContinued
-            , DiagnosisMalariaWithAnemiaContinued
+            , DiagnosisMalariaMedicatedContinued
+            , DiagnosisMalariaWithAnemiaMedicatedContinued
             , DiagnosisUrinaryTractInfectionContinued
             , DiagnosisCandidiasisContinued
             , DiagnosisGonorrheaContinued
@@ -1625,9 +1625,9 @@ labResultsDiagnoses =
     , DiagnosisNeurosyphilis
     , DiagnosisHepatitisB
     , DiagnosisMalaria
-    , DiagnosisMalariaContinued
+    , DiagnosisMalariaMedicatedContinued
     , DiagnosisMalariaWithAnemia
-    , DiagnosisMalariaWithAnemiaContinued
+    , DiagnosisMalariaWithAnemiaMedicatedContinued
     , DiagnosisMalariaWithSevereAnemia
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia

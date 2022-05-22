@@ -109,7 +109,7 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisMalaria ->
                 "malaria"
 
-            DiagnosisMalariaContinued ->
+            DiagnosisMalariaMedicatedContinued ->
                 "malaria-continued"
 
             DiagnosisMalariaWithAnemia ->

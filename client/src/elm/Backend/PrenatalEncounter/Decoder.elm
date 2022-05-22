@@ -116,13 +116,13 @@ decodePrenatalDiagnosis =
                         succeed DiagnosisMalaria
 
                     "malaria-continued" ->
-                        succeed DiagnosisMalariaContinued
+                        succeed DiagnosisMalariaMedicatedContinued
 
                     "malaria-anemia" ->
                         succeed DiagnosisMalariaWithAnemia
 
                     "malaria-anemia-continued" ->
-                        succeed DiagnosisMalariaWithAnemiaContinued
+                        succeed DiagnosisMalariaWithAnemiaMedicatedContinued
 
                     "malaria-severe-anemia" ->
                         succeed DiagnosisMalariaWithSevereAnemia
