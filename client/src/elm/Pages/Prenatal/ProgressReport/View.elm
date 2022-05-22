@@ -2173,7 +2173,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
-        DiagnosisCandidiasisContinuedq ->
+        DiagnosisCandidiasisContinued ->
             --@todo
             []
 

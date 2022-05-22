@@ -115,6 +115,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisMalariaWithAnemia ->
                 "malaria-anemia"
 
+            DiagnosisMalariaWithAnemiaMedicatedContinued ->
+                "malaria-anemia-continued"
+
             DiagnosisMalariaWithSevereAnemia ->
                 "malaria-severe-anemia"
 
@@ -123,9 +126,6 @@ encodePrenatalDiagnosis diagnosis =
 
             DiagnosisSevereAnemia ->
                 "severe-anemia"
-
-            DiagnosisSevereAnemiaContinued ->
-                "severe-anemia-continued"
 
             DiagnosisSevereAnemiaWithComplications ->
                 "severe-anemia-complications"
