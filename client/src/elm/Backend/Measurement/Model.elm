@@ -1156,6 +1156,8 @@ type RecommendedTreatmentSign
     | TreatmentMethyldopa2
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
+    | TreatmentHypertensionAddCarvedilol
+    | TreatmentHypertensionAddAmlodipine
     | NoTreatmentForHypertension
       -- For Heartburn:
     | TreatmentAluminiumHydroxide
@@ -1256,8 +1258,8 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationMethyldopa2
     | OutsideCareMedicationMethyldopa3
     | OutsideCareMedicationMethyldopa4
-    | OutsideCareMedicationCarvedilol
-    | OutsideCareMedicationAmlodipine
+    | OutsideCareMedicationAddCarvedilol
+    | OutsideCareMedicationAddAmlodipine
     | NoOutsideCareMedicationForHypertension
       -- For HIV:
     | OutsideCareMedicationHIV

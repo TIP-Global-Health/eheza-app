@@ -358,6 +358,7 @@ expectNextStepsTask currentDate assembled task =
                             , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
+                        || updateHypertensionTreatmentWithMedication assembled
                    )
 
         NextStepsWait ->
@@ -483,17 +484,18 @@ latestMedicationTreatmentForHIV assembled =
 
 latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHypertension assembled =
-    let
-        treatmentOptions =
-            [ TreatmentMethyldopa2
-            , TreatmentMethyldopa3
-            , TreatmentMethyldopa4
-
-            -- @todo: extend with additional signs?
-            ]
-    in
-    getLatestTreatmentByTreatmentOptions treatmentOptions assembled
+    getLatestTreatmentByTreatmentOptions medicationTreatmentOptionsForHypertension assembled
         |> Maybe.map Translate.TreatmentDetailsHypertension
+
+
+medicationTreatmentOptionsForHypertension : List RecommendedTreatmentSign
+medicationTreatmentOptionsForHypertension =
+    [ TreatmentMethyldopa2
+    , TreatmentMethyldopa3
+    , TreatmentMethyldopa4
+    , TreatmentHypertensionAddCarvedilol
+    , TreatmentHypertensionAddAmlodipine
+    ]
 
 
 latestMedicationTreatmentForMalaria : AssembledData -> Maybe Translate.TranslationId
@@ -645,6 +647,7 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisTrichomonasOrBacterialVaginosisContinued
             ]
             assembled
+        || updateHypertensionTreatmentWithHospitalization assembled
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -1076,7 +1079,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         diagnosesByExamination =
             Maybe.map
                 (\egaWeeks ->
-                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements)
+                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled)
                         examinationDiagnoses
                         |> EverySet.fromList
                 )
@@ -1389,20 +1392,31 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
             False
 
 
-matchExaminationPrenatalDiagnosis : Int -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
+matchExaminationPrenatalDiagnosis : Int -> AssembledData -> PrenatalDiagnosis -> Bool
+matchExaminationPrenatalDiagnosis egaInWeeks assembled diagnosis =
+    let
+        measurements =
+            assembled.measurements
+    in
     case diagnosis of
         DiagnosisChronicHypertensionImmediate ->
-            egaInWeeks < 20 && immediateHypertensionByMeasurements measurements
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks < 20 && immediateHypertensionByMeasurements measurements)
 
         DiagnosisChronicHypertensionAfterRecheck ->
-            egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionImmediate ->
-            egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionAfterRecheck ->
-            egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements)
 
         DiagnosisModeratePreeclampsiaImmediate ->
             egaInWeeks >= 20 && immediatePreeclampsiaByMeasurements measurements
@@ -1621,6 +1635,217 @@ repeatedTestForMarginalBloodPressure measurements =
 highBloodPressureCondition : Float -> Float -> Bool
 highBloodPressureCondition dia sys =
     dia >= 110 || sys >= 160
+
+
+updateHypertensionTreatmentWithMedication : AssembledData -> Bool
+updateHypertensionTreatmentWithMedication assembled =
+    resolveHypertensionTreatementUpdateMedication assembled
+        |> isJust
+
+
+updateHypertensionTreatmentWithHospitalization : AssembledData -> Bool
+updateHypertensionTreatmentWithHospitalization assembled =
+    resolveHypertensionTreatementUpdateRecommendation assembled
+        |> Maybe.map ((==) hypertensionTreatementHospitalizationOption)
+        |> Maybe.withDefault False
+
+
+hypertensionTreatementHospitalizationOption : ( RecommendedTreatmentSign, Bool )
+hypertensionTreatementHospitalizationOption =
+    ( NoTreatmentForHypertension, True )
+
+
+resolveHypertensionTreatementUpdateMedication : AssembledData -> Maybe RecommendedTreatmentSign
+resolveHypertensionTreatementUpdateMedication assembled =
+    resolveHypertensionTreatementUpdateRecommendation assembled
+        |> Maybe.andThen
+            (\( medication, hospitalizationRequired ) ->
+                if hospitalizationRequired || medication == NoTreatmentForHypertension then
+                    Nothing
+
+                else
+                    Just medication
+            )
+
+
+resolveHypertensionTreatementUpdateRecommendation : AssembledData -> Maybe ( RecommendedTreatmentSign, Bool )
+resolveHypertensionTreatementUpdateRecommendation assembled =
+    Maybe.map2
+        (\currentTreatment treatementUpdateByBP ->
+            let
+                medicationOption medication =
+                    ( medication, False )
+            in
+            case currentTreatment of
+                NoTreatmentForHypertension ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            -- No treatment was given and BP seems normal, however,
+                            -- we still recommend taking Methyldopa because Hypertension
+                            -- was diagnosed previously.
+                            medicationOption TreatmentMethyldopa2
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentMethyldopa2
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentMethyldopa3
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentMethyldopa2 ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentMethyldopa2
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentMethyldopa3
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentMethyldopa4
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentMethyldopa3 ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentMethyldopa3
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentMethyldopa4
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentHypertensionAddCarvedilol
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentMethyldopa4 ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentMethyldopa4
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentHypertensionAddCarvedilol
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentHypertensionAddAmlodipine
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentHypertensionAddCarvedilol ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentHypertensionAddCarvedilol
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentHypertensionAddAmlodipine
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            hypertensionTreatementHospitalizationOption
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentHypertensionAddAmlodipine ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentHypertensionAddAmlodipine
+
+                        TreatementUpdateIncreaseOneDose ->
+                            hypertensionTreatementHospitalizationOption
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            hypertensionTreatementHospitalizationOption
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                -- We should never get here, since these are not
+                -- Hypertension options.
+                _ ->
+                    ( NoTreatmentForHypertension, False )
+        )
+        (getLatestTreatmentByTreatmentOptions medicationTreatmentOptionsForHypertension assembled)
+        (hypertensionTreatementUpdateRecommendationByBP assembled)
+
+
+hypertensionTreatementUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatementUpdate
+hypertensionTreatementUpdateRecommendationByBP assembled =
+    if diagnosedHypertensionPrevoiusly assembled then
+        getMeasurementValueFunc assembled.measurements.vitals
+            |> Maybe.andThen
+                (\value ->
+                    Maybe.map2
+                        (\sys dia ->
+                            let
+                                bySys =
+                                    hypertensionTreatementUpdateRecommendationBySys sys
+
+                                byDia =
+                                    hypertensionTreatementUpdateRecommendationBySys dia
+                            in
+                            if hypertensionTreatementUpdateToNumber bySys < hypertensionTreatementUpdateToNumber byDia then
+                                byDia
+
+                            else
+                                bySys
+                        )
+                        value.sys
+                        value.dia
+                )
+
+    else
+        Nothing
+
+
+hypertensionTreatementUpdateRecommendationBySys : Float -> HypertensionTreatementUpdate
+hypertensionTreatementUpdateRecommendationBySys value =
+    if value < 140 then
+        TreatementUpdateMaintainCurrentDoasage
+
+    else if value < 160 then
+        TreatementUpdateIncreaseOneDose
+
+    else if value < 160 then
+        TreatementUpdateIncreaseTwoDoses
+
+    else
+        TreatementUpdateHospitalize
+
+
+hypertensionTreatementUpdateRecommendationByDia : Float -> HypertensionTreatementUpdate
+hypertensionTreatementUpdateRecommendationByDia value =
+    if value < 90 then
+        TreatementUpdateMaintainCurrentDoasage
+
+    else if value < 100 then
+        TreatementUpdateIncreaseOneDose
+
+    else if value < 110 then
+        TreatementUpdateIncreaseTwoDoses
+
+    else
+        TreatementUpdateHospitalize
+
+
+hypertensionTreatementUpdateToNumber : HypertensionTreatementUpdate -> Int
+hypertensionTreatementUpdateToNumber value =
+    case value of
+        TreatementUpdateMaintainCurrentDoasage ->
+            0
+
+        TreatementUpdateIncreaseOneDose ->
+            1
+
+        TreatementUpdateIncreaseTwoDoses ->
+            2
+
+        TreatementUpdateHospitalize ->
+            3
 
 
 edemaOnHandOrLegs : PrenatalMeasurements -> Bool
@@ -5147,8 +5372,8 @@ outsideCareMedicationOptionsHypertension =
     [ OutsideCareMedicationMethyldopa2
     , OutsideCareMedicationMethyldopa3
     , OutsideCareMedicationMethyldopa4
-    , OutsideCareMedicationCarvedilol
-    , OutsideCareMedicationAmlodipine
+    , OutsideCareMedicationAddCarvedilol
+    , OutsideCareMedicationAddAmlodipine
     , NoOutsideCareMedicationForHypertension
     ]
 

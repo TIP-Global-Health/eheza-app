@@ -64,22 +64,27 @@ diagnosed diagnosis assembled =
     EverySet.member diagnosis assembled.encounter.diagnoses
 
 
-diagnosedPreviously : PrenatalDiagnosis -> AssembledData -> Bool
-diagnosedPreviously diagnosis assembled =
-    assembled.nursePreviousMeasurementsWithDates
-        |> List.filter
-            (\( _, diagnoses, _ ) ->
-                EverySet.member diagnosis diagnoses
-            )
-        |> List.isEmpty
-        |> not
-
-
 diagnosedAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
 diagnosedAnyOf diagnoses assembled =
     List.any
         (\diagnosis -> diagnosed diagnosis assembled)
         diagnoses
+
+
+diagnosedPreviously : PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedPreviously diagnosis assembled =
+    diagnosedPreviouslyAnyOf [ diagnosis ] assembled
+
+
+diagnosedPreviouslyAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedPreviouslyAnyOf diagnoses assembled =
+    assembled.nursePreviousMeasurementsWithDates
+        |> List.filter
+            (\( _, encounterDiagnoses, _ ) ->
+                List.any (\diagnosis -> EverySet.member diagnosis encounterDiagnoses) diagnoses
+            )
+        |> List.isEmpty
+        |> not
 
 
 listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
@@ -1696,6 +1701,17 @@ diagnosedHypertension phase =
                 [ DiagnosisChronicHypertensionAfterRecheck
                 , DiagnosisGestationalHypertensionAfterRecheck
                 ]
+
+
+diagnosedHypertensionPrevoiusly : AssembledData -> Bool
+diagnosedHypertensionPrevoiusly assembled =
+    diagnosedPreviouslyAnyOf
+        [ DiagnosisChronicHypertensionImmediate
+        , DiagnosisGestationalHypertensionImmediate
+        , DiagnosisChronicHypertensionAfterRecheck
+        , DiagnosisGestationalHypertensionAfterRecheck
+        ]
+        assembled
 
 
 diagnosedMalaria : AssembledData -> Bool

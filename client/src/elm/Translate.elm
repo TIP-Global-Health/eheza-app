@@ -9460,12 +9460,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationCarvedilol ->
+                OutsideCareMedicationAddCarvedilol ->
                     { english = "by mouth 2x a day"
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationAmlodipine ->
+                OutsideCareMedicationAddAmlodipine ->
                     { english = "by mouth 1x a day"
                     , kinyarwanda = Nothing
                     }
@@ -9538,12 +9538,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationCarvedilol ->
+                OutsideCareMedicationAddCarvedilol ->
                     { english = "Carvedilol (6.25mg)"
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationAmlodipine ->
+                OutsideCareMedicationAddAmlodipine ->
                     { english = "Amlodipine (5pmg)"
                     , kinyarwanda = Nothing
                     }
@@ -10257,6 +10257,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentHypertensionAddCarvedilol ->
+                    { english = "by mouth 2x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddAmlodipine ->
+                    { english = "by mouth 1x a day"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -10332,6 +10342,16 @@ translationSet trans =
 
                 TreatmentMethyldopa4 ->
                     { english = "Methyldopa 250mg by mouth four times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddCarvedilol ->
+                    { english = "Carvedilol (6.25mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddAmlodipine ->
+                    { english = "Amlodipine (5mg)"
                     , kinyarwanda = Nothing
                     }
 

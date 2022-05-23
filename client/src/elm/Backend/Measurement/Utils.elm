@@ -1548,6 +1548,12 @@ recommendedTreatmentSignToString sign =
         TreatmentMethyldopa4 ->
             "methyldopa-4"
 
+        TreatmentHypertensionAddCarvedilol ->
+            "add-carvedilol"
+
+        TreatmentHypertensionAddAmlodipine ->
+            "add-amlodipine"
+
         NoTreatmentForHypertension ->
             "no-treatment-hypertension"
 
@@ -1614,6 +1620,12 @@ recommendedTreatmentSignFromString sign =
 
         "methyldopa-4" ->
             Just TreatmentMethyldopa4
+
+        "add-carvedilol" ->
+            Just TreatmentHypertensionAddCarvedilol
+
+        "add-amlodipine" ->
+            Just TreatmentHypertensionAddAmlodipine
 
         "no-treatment-hypertension" ->
             Just NoTreatmentForHypertension
@@ -2001,11 +2013,11 @@ prenatalOutsideCareMedicationToString value =
         NoOutsideCareMedicationForHypertension ->
             "no-treatment-hypertension"
 
-        OutsideCareMedicationCarvedilol ->
-            "carvedilol"
+        OutsideCareMedicationAddCarvedilol ->
+            "add-carvedilol"
 
-        OutsideCareMedicationAmlodipine ->
-            "amlodipine"
+        OutsideCareMedicationAddAmlodipine ->
+            "add-amlodipine"
 
         OutsideCareMedicationHIV ->
             "hiv"
@@ -2056,11 +2068,11 @@ prenatalOutsideCareMedicationFromString value =
         "methyldopa-4" ->
             Just OutsideCareMedicationMethyldopa4
 
-        "carvedilol" ->
-            Just OutsideCareMedicationCarvedilol
+        "add-carvedilol" ->
+            Just OutsideCareMedicationAddCarvedilol
 
-        "amlodipine" ->
-            Just OutsideCareMedicationAmlodipine
+        "add-amlodipine" ->
+            Just OutsideCareMedicationAddAmlodipine
 
         "no-treatment-hypertension" ->
             Just NoOutsideCareMedicationForHypertension

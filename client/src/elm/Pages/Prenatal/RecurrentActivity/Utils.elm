@@ -512,15 +512,20 @@ expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
 expectExaminationTask currentDate assembled task =
     case task of
         ExaminationVitals ->
-            getMeasurementValueFunc assembled.measurements.vitals
-                |> Maybe.andThen
-                    (\value ->
-                        Maybe.map2
-                            marginalBloodPressureCondition
-                            value.dia
-                            value.sys
-                    )
-                |> Maybe.withDefault False
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy. If diagnised, we do not need to recheck the BP.
+            -- Measurement taken at initial phase of encounter is sufficient.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (getMeasurementValueFunc assembled.measurements.vitals
+                        |> Maybe.andThen
+                            (\value ->
+                                Maybe.map2
+                                    marginalBloodPressureCondition
+                                    value.dia
+                                    value.sys
+                            )
+                        |> Maybe.withDefault False
+                   )
 
 
 examinationMeasurementTaken : AssembledData -> ExaminationTask -> Bool
