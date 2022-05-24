@@ -63,3 +63,10 @@ emptyMedicationDistributionForm =
 type PrenatalEncounterPhase
     = PrenatalEncounterPhaseInitial
     | PrenatalEncounterPhaseRecurrent
+
+
+type HypertensionTreatementUpdateOption
+    = TreatementUpdateMaintainCurrentDoasage
+    | TreatementUpdateIncreaseOneDose
+    | TreatementUpdateIncreaseTwoDoses
+    | TreatementUpdateHospitalize

@@ -81,10 +81,3 @@ type TreatmentReviewTask
 type OutsideCareStep
     = OutsideCareStepDiagnoses
     | OutsideCareStepMedications
-
-
-type HypertensionTreatementUpdate
-    = TreatementUpdateMaintainCurrentDoasage
-    | TreatementUpdateIncreaseOneDose
-    | TreatementUpdateIncreaseTwoDoses
-    | TreatementUpdateHospitalize

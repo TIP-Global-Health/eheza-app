@@ -1779,7 +1779,7 @@ div.page-activity.prenatal {
           margin-bottom: 35px;
         }
       }
-      
+
       .form.history.outside-care,
       .form.medication-distribution {
 
@@ -1792,18 +1792,20 @@ div.page-activity.prenatal {
           margin-top: 15px;
         }
 
-        label {
+        .label {
 
-          .treatment {
+          .highlight {
             color: $color-primary;
-            font-size: 23px;
-            font-weight: 500;
-            margin-right: 10px;
           }
 
-          .dosage {
-            font-size: 22px;
+          .footer {
+            font-weight: normal;
+            margin-bottom: 0;
           }
+        }
+
+        .label.overview {
+          font-weight: 600;
         }
 
         .warning {
@@ -1819,9 +1821,22 @@ div.page-activity.prenatal {
           }
         }
 
-        .label.footer {
-          font-weight: normal;
-          margin-bottom: 0;
+        label {
+
+          .treatment {
+            color: $color-primary;
+            font-size: 23px;
+            font-weight: 500;
+            margin-right: 10px;
+          }
+
+          .dosage {
+            font-size: 22px;
+          }
+
+          b {
+            font-size: 22px;
+          }
         }
 
         ul {

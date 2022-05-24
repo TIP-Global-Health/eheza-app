@@ -102,6 +102,7 @@ import Pages.Prenatal.Activity.Types
         , LmpRange(..)
         , TreatmentReviewTask(..)
         )
+import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
 import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
@@ -657,6 +658,10 @@ type TranslationId
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
     | HypertensionRecommendedTreatmentHelper
+    | HypertensionRecommendedTreatmentUpdateHeader
+    | HypertensionRecommendedTreatmentUpdateBPLabel
+    | HypertensionRecommendedTreatmentUpdateCurrentTreatment
+    | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
     | IdleWaitingForSync
     | IllnessSymptom IllnessSymptom
     | Immunisation
@@ -4919,6 +4924,44 @@ translationSet trans =
             { english = "Select the best treatment option for the patient bellow"
             , kinyarwanda = Nothing
             }
+
+        HypertensionRecommendedTreatmentUpdateHeader ->
+            { english = "This patient was previously diagnosed with Hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateBPLabel ->
+            { english = "The patients current BP is"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateCurrentTreatment ->
+            { english = "The patient is currently prescribed"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateNewTreatment value ->
+            case value of
+                TreatementUpdateMaintainCurrentDoasage ->
+                    { english = "It is recommend that the medication remain unchanged -"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementUpdateIncreaseOneDose ->
+                    { english = "It is recommend that the medication increase one dosage level to"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementUpdateIncreaseTwoDoses ->
+                    { english = "It is recommend that the medication increase two dosage levels to"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- We're not required to view this option.
+                TreatementUpdateHospitalize ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
@@ -10257,6 +10300,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentMethyldopa2 ->
+                    { english = "by mouth 2x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa3 ->
+                    { english = "by mouth 3x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa4 ->
+                    { english = "by mouth 4x a day"
+                    , kinyarwanda = Nothing
+                    }
+
                 TreatmentHypertensionAddCarvedilol ->
                     { english = "by mouth 2x a day"
                     , kinyarwanda = Nothing
@@ -10331,17 +10389,17 @@ translationSet trans =
                     }
 
                 TreatmentMethyldopa2 ->
-                    { english = "Methyldopa 250mg by mouth two times a day"
+                    { english = "Methyldopa (250mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "Methyldopa 250mg by mouth three times a day"
+                    { english = "Methyldopa (250mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "Methyldopa 250mg by mouth four times a day"
+                    { english = "Methyldopa (250mg)"
                     , kinyarwanda = Nothing
                     }
 

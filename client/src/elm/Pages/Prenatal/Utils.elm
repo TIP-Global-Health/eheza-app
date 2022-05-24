@@ -329,7 +329,14 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
             let
                 ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
                     if diagnosedHypertension phase assembled then
-                        resolveRecommendedTreatmentForHypertensionInputsAndTasks language
+                        resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language
+                            currentDate
+                            (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
+                            assembled
+                            form
+
+                    else if diagnosedHypertensionPrevoiusly assembled then
+                        resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language
                             currentDate
                             (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
                             assembled
@@ -431,14 +438,123 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
     )
 
 
-resolveRecommendedTreatmentForHypertensionInputsAndTasks :
+resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks :
     Language
     -> NominalDate
     -> (RecommendedTreatmentSign -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveRecommendedTreatmentForHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg assembled form =
+resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg assembled form =
+    let
+        ( input, completed, active ) =
+            recommendedTreatmentForHypertensionInputAndTask language
+                currentDate
+                recommendedTreatmentSignsForHypertensionInitial
+                setRecommendedTreatmentSignMsg
+                assembled
+                form
+    in
+    ( viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+        :: input
+        ++ [ div [ class "separator" ] [] ]
+    , completed
+    , active
+    )
+
+
+resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (RecommendedTreatmentSign -> msg)
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg assembled form =
+    Maybe.map2
+        (\recommendationDosageUpdate recommendedMedication ->
+            let
+                currentBPLabel =
+                    getMeasurementValueFunc assembled.measurements.vitals
+                        |> Maybe.andThen
+                            (\value ->
+                                Maybe.map2
+                                    (\sys dia ->
+                                        let
+                                            floatToString =
+                                                round >> String.fromInt
+                                        in
+                                        div [ class "label overview" ]
+                                            [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateBPLabel
+                                            , text " "
+                                            , span [ class "highlight" ] [ text <| floatToString sys ++ "/" ++ floatToString dia ]
+                                            , text "."
+                                            ]
+                                    )
+                                    value.sys
+                                    value.dia
+                            )
+                        |> Maybe.withDefault emptyNode
+
+                currentTreatmentLabel =
+                    getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
+                        |> Maybe.map
+                            (\currentTreatment ->
+                                div [ class "label overview" ]
+                                    [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateCurrentTreatment
+                                    , text " "
+                                    , text <| translate language <| Translate.RecommendedTreatmentSignLabel currentTreatment
+                                    , text " "
+                                    , text <| translate language <| Translate.RecommendedTreatmentSignDosage currentTreatment
+                                    , text "."
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+
+                newTreatmentLabel =
+                    div [ class "label overview" ]
+                        [ text <| translate language <| Translate.HypertensionRecommendedTreatmentUpdateNewTreatment recommendationDosageUpdate
+                        , span [ class "highlight" ]
+                            [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
+                            , text " "
+                            , text <| translate language <| Translate.RecommendedTreatmentSignDosage recommendedMedication
+                            , text "."
+                            ]
+                        ]
+
+                ( input, completed, active ) =
+                    recommendedTreatmentForHypertensionInputAndTask language
+                        currentDate
+                        recommendedTreatmentSignsForHypertension
+                        setRecommendedTreatmentSignMsg
+                        assembled
+                        form
+            in
+            ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentUpdateHeader "." "label"
+              , currentBPLabel
+              , currentTreatmentLabel
+              , newTreatmentLabel
+              ]
+                ++ input
+                ++ [ div [ class "separator" ] [] ]
+            , completed
+            , active
+            )
+        )
+        (hypertensionTreatementUpdateRecommendationByBP assembled)
+        (resolveHypertensionTreatementUpdateMedication assembled)
+        |> Maybe.withDefault ( [], 0, 0 )
+
+
+recommendedTreatmentForHypertensionInputAndTask :
+    Language
+    -> NominalDate
+    -> List RecommendedTreatmentSign
+    -> (RecommendedTreatmentSign -> msg)
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+recommendedTreatmentForHypertensionInputAndTask language currentDate options setRecommendedTreatmentSignMsg assembled form =
     let
         -- Since we may have values set for another diagnosis, or from
         -- the other phase of encounter, we need to filter them out,
@@ -449,29 +565,281 @@ resolveRecommendedTreatmentForHypertensionInputsAndTasks language currentDate se
                     >> List.head
                 )
                 form.recommendedTreatmentSigns
-
-        recommendedSign =
-            recommendTreatmentForHypertension assembled
     in
-    ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
-      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+    ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
       , div [ class "instructions" ]
             [ viewInstructionsLabel
                 "icon-pills"
                 (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
             ]
-      , viewCheckBoxSelectInputWithRecommendation language
-            recommendedTreatmentSignsForHypertension
+      , viewCheckBoxSelectCustomInput language
+            options
             []
-            recommendedSign
             currentValue
             setRecommendedTreatmentSignMsg
-            Translate.RecommendedTreatmentSignLabel
-      , div [ class "separator" ] []
+            (viewTreatmentOptioForHypertension language)
       ]
     , taskCompleted currentValue
     , 1
     )
+
+
+viewTreatmentOptioForHypertension : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptioForHypertension language sign =
+    let
+        multipleTreatmentWithDosage =
+            List.map (viewtreatmentWithDosage language)
+                >> List.intersperse [ b [] [ text <| " " ++ (String.toUpper <| translate language Translate.And) ++ " " ] ]
+                >> List.concat
+                >> label []
+    in
+    case sign of
+        TreatmentHypertensionAddCarvedilol ->
+            multipleTreatmentWithDosage
+                [ TreatmentMethyldopa4
+                , TreatmentHypertensionAddCarvedilol
+                ]
+
+        TreatmentHypertensionAddAmlodipine ->
+            multipleTreatmentWithDosage
+                [ TreatmentMethyldopa4
+                , TreatmentHypertensionAddCarvedilol
+                , TreatmentHypertensionAddAmlodipine
+                ]
+
+        _ ->
+            viewTreatmentOptionWithDosage language sign
+
+
+updateHypertensionTreatmentWithMedication : AssembledData -> Bool
+updateHypertensionTreatmentWithMedication assembled =
+    resolveHypertensionTreatementUpdateMedication assembled
+        |> isJust
+
+
+updateHypertensionTreatmentWithHospitalization : AssembledData -> Bool
+updateHypertensionTreatmentWithHospitalization assembled =
+    resolveHypertensionTreatementUpdateRecommendation assembled
+        |> Maybe.map ((==) hypertensionTreatementHospitalizationOption)
+        |> Maybe.withDefault False
+
+
+hypertensionTreatementHospitalizationOption : ( RecommendedTreatmentSign, Bool )
+hypertensionTreatementHospitalizationOption =
+    ( NoTreatmentForHypertension, True )
+
+
+resolveHypertensionTreatementUpdateMedication : AssembledData -> Maybe RecommendedTreatmentSign
+resolveHypertensionTreatementUpdateMedication assembled =
+    resolveHypertensionTreatementUpdateRecommendation assembled
+        |> Maybe.andThen
+            (\( medication, hospitalizationRequired ) ->
+                if hospitalizationRequired || medication == NoTreatmentForHypertension then
+                    Nothing
+
+                else
+                    Just medication
+            )
+
+
+resolveHypertensionTreatementUpdateRecommendation : AssembledData -> Maybe ( RecommendedTreatmentSign, Bool )
+resolveHypertensionTreatementUpdateRecommendation assembled =
+    Maybe.map2
+        (\currentTreatment treatementUpdateByBP ->
+            let
+                medicationOption medication =
+                    ( medication, False )
+            in
+            case currentTreatment of
+                NoTreatmentForHypertension ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            -- No treatment was given and BP seems normal, however,
+                            -- we still recommend taking Methyldopa because Hypertension
+                            -- was diagnosed previously.
+                            medicationOption TreatmentMethyldopa2
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentMethyldopa2
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentMethyldopa3
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentMethyldopa2 ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentMethyldopa2
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentMethyldopa3
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentMethyldopa4
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentMethyldopa3 ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentMethyldopa3
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentMethyldopa4
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentHypertensionAddCarvedilol
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentMethyldopa4 ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentMethyldopa4
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentHypertensionAddCarvedilol
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            medicationOption TreatmentHypertensionAddAmlodipine
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentHypertensionAddCarvedilol ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentHypertensionAddCarvedilol
+
+                        TreatementUpdateIncreaseOneDose ->
+                            medicationOption TreatmentHypertensionAddAmlodipine
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            hypertensionTreatementHospitalizationOption
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                TreatmentHypertensionAddAmlodipine ->
+                    case treatementUpdateByBP of
+                        TreatementUpdateMaintainCurrentDoasage ->
+                            medicationOption TreatmentHypertensionAddAmlodipine
+
+                        TreatementUpdateIncreaseOneDose ->
+                            hypertensionTreatementHospitalizationOption
+
+                        TreatementUpdateIncreaseTwoDoses ->
+                            hypertensionTreatementHospitalizationOption
+
+                        TreatementUpdateHospitalize ->
+                            hypertensionTreatementHospitalizationOption
+
+                -- We should never get here, since these are not
+                -- Hypertension options.
+                _ ->
+                    ( NoTreatmentForHypertension, False )
+        )
+        (getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled)
+        (hypertensionTreatementUpdateRecommendationByBP assembled)
+
+
+hypertensionTreatementUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatementUpdateOption
+hypertensionTreatementUpdateRecommendationByBP assembled =
+    if diagnosedHypertensionPrevoiusly assembled then
+        getMeasurementValueFunc assembled.measurements.vitals
+            |> Maybe.andThen
+                (\value ->
+                    Maybe.map2
+                        (\sys dia ->
+                            let
+                                bySys =
+                                    hypertensionTreatementUpdateRecommendationBySys sys
+
+                                byDia =
+                                    hypertensionTreatementUpdateRecommendationBySys dia
+                            in
+                            if hypertensionTreatementUpdateToNumber bySys < hypertensionTreatementUpdateToNumber byDia then
+                                byDia
+
+                            else
+                                bySys
+                        )
+                        value.sys
+                        value.dia
+                )
+
+    else
+        Nothing
+
+
+hypertensionTreatementUpdateRecommendationBySys : Float -> HypertensionTreatementUpdateOption
+hypertensionTreatementUpdateRecommendationBySys value =
+    if value < 140 then
+        TreatementUpdateMaintainCurrentDoasage
+
+    else if value < 160 then
+        TreatementUpdateIncreaseOneDose
+
+    else if value < 160 then
+        TreatementUpdateIncreaseTwoDoses
+
+    else
+        TreatementUpdateHospitalize
+
+
+hypertensionTreatementUpdateRecommendationByDia : Float -> HypertensionTreatementUpdateOption
+hypertensionTreatementUpdateRecommendationByDia value =
+    if value < 90 then
+        TreatementUpdateMaintainCurrentDoasage
+
+    else if value < 100 then
+        TreatementUpdateIncreaseOneDose
+
+    else if value < 110 then
+        TreatementUpdateIncreaseTwoDoses
+
+    else
+        TreatementUpdateHospitalize
+
+
+hypertensionTreatementUpdateToNumber : HypertensionTreatementUpdateOption -> Int
+hypertensionTreatementUpdateToNumber value =
+    case value of
+        TreatementUpdateMaintainCurrentDoasage ->
+            0
+
+        TreatementUpdateIncreaseOneDose ->
+            1
+
+        TreatementUpdateIncreaseTwoDoses ->
+            2
+
+        TreatementUpdateHospitalize ->
+            3
+
+
+getLatestTreatmentByTreatmentOptions : List RecommendedTreatmentSign -> AssembledData -> Maybe RecommendedTreatmentSign
+getLatestTreatmentByTreatmentOptions treatmentOptions assembled =
+    List.reverse assembled.nursePreviousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, _, measurements ) ->
+                getMeasurementValueFunc measurements.medicationDistribution
+                    |> Maybe.andThen
+                        (\value ->
+                            Maybe.map
+                                (EverySet.toList
+                                    >> List.filter (\sign -> List.member sign treatmentOptions)
+                                    >> List.head
+                                )
+                                value.recommendedTreatmentSigns
+                        )
+            )
+        |> Maybe.Extra.values
+        |> List.head
 
 
 resolveRecommendedTreatmentForMalariaInputsAndTasks :
@@ -603,18 +971,25 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
 
 viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionWithDosage language sign =
-    let
-        suffix =
-            if sign == NoTreatmentForSyphilis then
-                ""
+    if
+        List.member sign
+            [ NoTreatmentForHypertension
+            , NoTreatmentForMalaria
+            , NoTreatmentForSyphilis
+            ]
+    then
+        label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
 
-            else
-                ":"
-    in
-    label []
-        [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ suffix ]
-        , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
-        ]
+    else
+        viewtreatmentWithDosage language sign
+            |> label []
+
+
+viewtreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
+viewtreatmentWithDosage language sign =
+    [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+    , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+    ]
 
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
@@ -1645,32 +2020,13 @@ resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
         ( 0, 0 )
 
 
-recommendTreatmentForHypertension : AssembledData -> RecommendedTreatmentSign
-recommendTreatmentForHypertension assembled =
-    let
-        numberOfTimesMethyldopaWasPerscribed =
-            assembled.nursePreviousMeasurementsWithDates
-                |> List.filter
-                    (\( _, _, measurements ) ->
-                        getMeasurementValueFunc measurements.medicationDistribution
-                            |> Maybe.andThen .recommendedTreatmentSigns
-                            |> Maybe.map
-                                (\signs ->
-                                    List.any (\sign -> EverySet.member sign signs) recommendedTreatmentSignsForHypertension
-                                )
-                            |> Maybe.withDefault False
-                    )
-                |> List.length
-    in
-    case numberOfTimesMethyldopaWasPerscribed of
-        0 ->
-            TreatmentMethyldopa2
-
-        1 ->
-            TreatmentMethyldopa3
-
-        _ ->
-            TreatmentMethyldopa4
+recommendedTreatmentSignsForHypertensionInitial : List RecommendedTreatmentSign
+recommendedTreatmentSignsForHypertensionInitial =
+    [ TreatmentMethyldopa2
+    , TreatmentMethyldopa3
+    , TreatmentMethyldopa4
+    , NoTreatmentForHypertension
+    ]
 
 
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
@@ -1678,6 +2034,8 @@ recommendedTreatmentSignsForHypertension =
     [ TreatmentMethyldopa2
     , TreatmentMethyldopa3
     , TreatmentMethyldopa4
+    , TreatmentHypertensionAddCarvedilol
+    , TreatmentHypertensionAddAmlodipine
     , NoTreatmentForHypertension
     ]
 
