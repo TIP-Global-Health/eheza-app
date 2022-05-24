@@ -1135,6 +1135,7 @@ type alias PrenatalMedicationDistributionValue =
     { distributionSigns : EverySet MedicationDistributionSign
     , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
     , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
+    , avoidingGuidanceReason : Maybe (EverySet AvoidingGuidanceReason)
     }
 
 
@@ -1168,6 +1169,15 @@ type RecommendedTreatmentSign
       -- For Candidiasis:
     | TreatmentClotrimaxazole200
     | TreatmentClotrimaxazole500
+
+
+type AvoidingGuidanceReason
+    = AvoidingGuidanceHypertensionLackOfStock
+    | AvoidingGuidanceHypertensionKnownAllergy
+    | AvoidingGuidanceHypertensionPatientDeclined
+    | AvoidingGuidanceHypertensionPatientUnableToAfford
+    | AvoidingGuidanceHypertensionReinforceAdherence
+    | AvoidingGuidanceHypertensionOther
 
 
 type alias PrenatalSymptomReview =

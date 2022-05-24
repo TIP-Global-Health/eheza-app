@@ -130,6 +130,20 @@ emergencyReferralDiagnosesRecurrent =
     ]
 
 
+medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
+medicationDistributionFormWithDefault valueForNone form saved =
+    case valueForNone of
+        NoMedicationDistributionSignsInitialPhase ->
+            medicationDistributionFormWithDefaultInitialPhase form saved
+
+        NoMedicationDistributionSignsRecurrentPhase ->
+            medicationDistributionFormWithDefaultRecurrentPhase form saved
+
+        -- We should never get here.
+        _ ->
+            form
+
+
 medicationDistributionFormWithDefaultInitialPhase : MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefaultInitialPhase form saved =
     saved
@@ -155,6 +169,7 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , folicAcid = EverySet.member FolicAcid value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
+                , hypertensionAvoidingGuidanceReason = or form.hypertensionAvoidingGuidanceReason (Maybe.andThen (EverySet.toList >> List.head) value.avoidingGuidanceReason)
                 }
             )
 
@@ -172,7 +187,7 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 { iron = or form.iron (medicationDistributionResolveFromValue allowedSigns value Iron)
                 , folicAcid = or form.folicAcid (medicationDistributionResolveFromValue allowedSigns value FolicAcid)
 
-                -- Following 7 do not participate at recurrent phase, therefore,
+                -- Following 8 do not participate at recurrent phase, therefore,
                 -- resolved directly from value.
                 , mebendezole = EverySet.member Mebendezole value.distributionSigns |> Just
                 , tenofovir = EverySet.member Tenofovir value.distributionSigns |> Just
@@ -184,6 +199,7 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 , metronidazole = EverySet.member Metronidazole value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
+                , hypertensionAvoidingGuidanceReason = or form.hypertensionAvoidingGuidanceReason (Maybe.andThen (EverySet.toList >> List.head) value.avoidingGuidanceReason)
                 }
             )
 
@@ -212,20 +228,6 @@ medicationDistributionResolveFromValue allowedSigns value sign =
 
     else
         Nothing
-
-
-medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
-medicationDistributionFormWithDefault valueForNone form saved =
-    case valueForNone of
-        NoMedicationDistributionSignsInitialPhase ->
-            medicationDistributionFormWithDefaultInitialPhase form saved
-
-        NoMedicationDistributionSignsRecurrentPhase ->
-            medicationDistributionFormWithDefaultRecurrentPhase form saved
-
-        -- We should never get here.
-        _ ->
-            form
 
 
 toMedicationDistributionValueWithDefaultInitialPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
@@ -271,10 +273,15 @@ toMedicationDistributionValue valueForNone form =
         recommendedTreatmentSigns =
             Maybe.map EverySet.fromList form.recommendedTreatmentSigns
                 |> Just
+
+        avoidingGuidanceReason =
+            Maybe.map EverySet.singleton form.hypertensionAvoidingGuidanceReason
+                |> Just
     in
     Maybe.map PrenatalMedicationDistributionValue distributionSigns
         |> andMap nonAdministrationSigns
         |> andMap recommendedTreatmentSigns
+        |> andMap avoidingGuidanceReason
 
 
 resolveMedicationDistributionInputsAndTasks :
