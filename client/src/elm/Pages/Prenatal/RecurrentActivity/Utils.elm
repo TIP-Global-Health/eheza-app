@@ -483,6 +483,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
                         SetRecommendedTreatmentSign
+                        (always NoOp)
                         form
             in
             ( completed, total )

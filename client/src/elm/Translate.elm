@@ -373,6 +373,7 @@ type TranslationId
     | Asthma
     | At
     | Attendance
+    | AvoidingGuidanceReason AvoidingGuidanceReason
     | Baby
     | BabyDiedOnDayOfBirthPreviousDelivery
     | BabyName String
@@ -824,6 +825,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NotFollowingRecommendationQuestion
     | NotTaken
     | NumberOfAbortions
     | NumberOfChildrenUnder5
@@ -2450,6 +2452,38 @@ translationSet trans =
             { english = "Attendance"
             , kinyarwanda = Just "Ubwitabire"
             }
+
+        AvoidingGuidanceReason value ->
+            case value of
+                AvoidingGuidanceHypertensionLackOfStock ->
+                    { english = "Out of Stock"
+                    , kinyarwanda = Just "Nta miti iri mu bubiko"
+                    }
+
+                AvoidingGuidanceHypertensionKnownAllergy ->
+                    { english = "Known Allergy"
+                    , kinyarwanda = Just "Uyu muti usanzwe umutera ifurutwa"
+                    }
+
+                AvoidingGuidanceHypertensionPatientDeclined ->
+                    { english = "Patient Declined"
+                    , kinyarwanda = Just "Umurwayi yanze"
+                    }
+
+                AvoidingGuidanceHypertensionPatientUnableToAfford ->
+                    { english = "Patient Unable to Afford"
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                AvoidingGuidanceHypertensionReinforceAdherence ->
+                    { english = "Reinforce adherence of existing dosage"
+                    , kinyarwanda = Nothing
+                    }
+
+                AvoidingGuidanceHypertensionOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    }
 
         Baby ->
             { english = "Baby"
@@ -6678,6 +6712,11 @@ translationSet trans =
         NotConnected ->
             { english = "Not Connected"
             , kinyarwanda = Just "Ntamurandasi"
+            }
+
+        NotFollowingRecommendationQuestion ->
+            { english = "Why recomendatoins were not followed"
+            , kinyarwanda = Just "Nta bipimo byafashwe"
             }
 
         NotTaken ->

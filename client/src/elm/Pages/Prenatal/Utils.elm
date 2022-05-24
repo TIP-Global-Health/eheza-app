@@ -153,6 +153,9 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 let
                     allowedSigns =
                         NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+
+                    hypertensionAvoidingGuidanceReason =
+                        Maybe.andThen (EverySet.toList >> List.head) value.avoidingGuidanceReason
                 in
                 { mebendezole = or form.mebendezole (medicationDistributionResolveFromValue allowedSigns value Mebendezole)
                 , tenofovir = or form.tenofovir (medicationDistributionResolveFromValue allowedSigns value Tenofovir)
@@ -169,7 +172,8 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , folicAcid = EverySet.member FolicAcid value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
-                , hypertensionAvoidingGuidanceReason = or form.hypertensionAvoidingGuidanceReason (Maybe.andThen (EverySet.toList >> List.head) value.avoidingGuidanceReason)
+                , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
+                , hypertensionAvoidingGuidanceReasonDirty = form.hypertensionAvoidingGuidanceReasonDirty
                 }
             )
 
@@ -183,6 +187,9 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 let
                     allowedSigns =
                         NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+
+                    hypertensionAvoidingGuidanceReason =
+                        Maybe.andThen (EverySet.toList >> List.head) value.avoidingGuidanceReason
                 in
                 { iron = or form.iron (medicationDistributionResolveFromValue allowedSigns value Iron)
                 , folicAcid = or form.folicAcid (medicationDistributionResolveFromValue allowedSigns value FolicAcid)
@@ -199,7 +206,8 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 , metronidazole = EverySet.member Metronidazole value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
-                , hypertensionAvoidingGuidanceReason = or form.hypertensionAvoidingGuidanceReason (Maybe.andThen (EverySet.toList >> List.head) value.avoidingGuidanceReason)
+                , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
+                , hypertensionAvoidingGuidanceReasonDirty = form.hypertensionAvoidingGuidanceReasonDirty
                 }
             )
 
@@ -292,9 +300,10 @@ resolveMedicationDistributionInputsAndTasks :
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
     -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> (AvoidingGuidanceReason -> msg)
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg form =
+resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg avoidingGuidanceReasonMsg form =
     let
         foldResults =
             List.foldr
@@ -346,6 +355,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language
                             currentDate
                             (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
+                            avoidingGuidanceReasonMsg
                             assembled
                             form
 
@@ -474,10 +484,11 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks :
     Language
     -> NominalDate
     -> (RecommendedTreatmentSign -> msg)
+    -> (AvoidingGuidanceReason -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg assembled form =
+resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg setAvoidingGuidanceReasonMsg assembled form =
     Maybe.map2
         (\recommendationDosageUpdate recommendedMedication ->
             let
@@ -536,6 +547,34 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                         setRecommendedTreatmentSignMsg
                         assembled
                         form
+
+                ( derrivedInput, derrivedCompleted, derrivedActive ) =
+                    Maybe.map
+                        (\recommendedTreatmentSigns ->
+                            if not <| List.member recommendedMedication recommendedTreatmentSigns then
+                                ( [ viewQuestionLabel language Translate.NotFollowingRecommendationQuestion
+                                  , viewCheckBoxSelectInput language
+                                        [ AvoidingGuidanceHypertensionLackOfStock
+                                        , AvoidingGuidanceHypertensionKnownAllergy
+                                        , AvoidingGuidanceHypertensionPatientDeclined
+                                        ]
+                                        [ AvoidingGuidanceHypertensionPatientUnableToAfford
+                                        , AvoidingGuidanceHypertensionOther
+                                        , AvoidingGuidanceHypertensionReinforceAdherence
+                                        ]
+                                        form.hypertensionAvoidingGuidanceReason
+                                        setAvoidingGuidanceReasonMsg
+                                        Translate.AvoidingGuidanceReason
+                                  ]
+                                , taskCompleted form.hypertensionAvoidingGuidanceReason
+                                , 1
+                                )
+
+                            else
+                                ( [], 0, 0 )
+                        )
+                        form.recommendedTreatmentSigns
+                        |> Maybe.withDefault ( [], 0, 0 )
             in
             ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentUpdateHeader "." "label"
               , currentBPLabel
@@ -543,9 +582,10 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
               , newTreatmentLabel
               ]
                 ++ input
+                ++ derrivedInput
                 ++ [ div [ class "separator" ] [] ]
-            , completed
-            , active
+            , completed + derrivedCompleted
+            , active + derrivedActive
             )
         )
         (hypertensionTreatementUpdateRecommendationByBP assembled)

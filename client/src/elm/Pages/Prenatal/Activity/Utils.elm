@@ -2366,6 +2366,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
                         SetRecommendedTreatmentSign
+                        SetAvoidingGuidanceReason
                         form
             in
             ( completed, total )

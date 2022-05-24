@@ -1670,6 +1670,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             SetMedicationDistributionBoolInput
                             SetMedicationDistributionAdministrationNote
                             SetRecommendedTreatmentSign
+                            SetAvoidingGuidanceReason
 
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled

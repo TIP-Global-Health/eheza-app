@@ -708,6 +708,7 @@ viewNextStepsContent language currentDate assembled data =
                             SetMedicationDistributionBoolInput
                             SetMedicationDistributionAdministrationNote
                             SetRecommendedTreatmentSign
+                            (always NoOp)
 
                 Nothing ->
                     emptyNode

@@ -48,6 +48,7 @@ type alias MedicationDistributionForm =
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     , hypertensionAvoidingGuidanceReason : Maybe AvoidingGuidanceReason
+    , hypertensionAvoidingGuidanceReasonDirty : Bool
     }
 
 
@@ -66,6 +67,7 @@ emptyMedicationDistributionForm =
     , nonAdministrationSigns = Nothing
     , recommendedTreatmentSigns = Nothing
     , hypertensionAvoidingGuidanceReason = Nothing
+    , hypertensionAvoidingGuidanceReasonDirty = False
     }
 
 
