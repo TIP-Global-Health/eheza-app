@@ -787,6 +787,7 @@ decodePrenatalMedicationDistributionValue =
         |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
         |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
         |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
+        |> optional "avoiding_guidance_reason" (nullable (decodeEverySet decodeAvoidingGuidanceReason)) Nothing
 
 
 decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign
@@ -797,6 +798,17 @@ decodeRecommendedTreatmentSign =
                 recommendedTreatmentSignFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized RecommendedTreatmentSign")
+            )
+
+
+decodeAvoidingGuidanceReason : Decoder AvoidingGuidanceReason
+decodeAvoidingGuidanceReason =
+    string
+        |> andThen
+            (\s ->
+                avoidingGuidanceReasonFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized AvoidingGuidanceReason")
             )
 
 

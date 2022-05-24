@@ -2547,6 +2547,18 @@ encodePrenatalMedicationDistributionValue value =
                 )
                 value.recommendedTreatmentSigns
                 |> Maybe.withDefault []
+
+        avoidingGuidanceReason =
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "avoiding_guidance_reason", encodeEverySet encodeAvoidingGuidanceReason signs ) ]
+                )
+                value.avoidingGuidanceReason
+                |> Maybe.withDefault []
     in
     [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
@@ -2554,6 +2566,7 @@ encodePrenatalMedicationDistributionValue value =
     , ( "type", string "prenatal_medication_distribution" )
     ]
         ++ treatment
+        ++ avoidingGuidanceReason
 
 
 encondeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -2681,6 +2694,12 @@ encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value
 encodeRecommendedTreatmentSign sign =
     string <|
         recommendedTreatmentSignToString sign
+
+
+encodeAvoidingGuidanceReason : AvoidingGuidanceReason -> Value
+encodeAvoidingGuidanceReason sign =
+    string <|
+        avoidingGuidanceReasonToString sign
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )
