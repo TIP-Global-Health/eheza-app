@@ -5132,8 +5132,8 @@ outsideCareMedicationOptionsHypertension =
     [ OutsideCareMedicationMethyldopa2
     , OutsideCareMedicationMethyldopa3
     , OutsideCareMedicationMethyldopa4
-    , OutsideCareMedicationAddCarvedilol
-    , OutsideCareMedicationAddAmlodipine
+    , OutsideCareMedicationCarvedilol
+    , OutsideCareMedicationAmlodipine
     , NoOutsideCareMedicationForHypertension
     ]
 

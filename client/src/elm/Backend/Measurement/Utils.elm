@@ -2060,11 +2060,11 @@ prenatalOutsideCareMedicationToString value =
         NoOutsideCareMedicationForHypertension ->
             "no-treatment-hypertension"
 
-        OutsideCareMedicationAddCarvedilol ->
-            "add-carvedilol"
+        OutsideCareMedicationCarvedilol ->
+            "carvedilol"
 
-        OutsideCareMedicationAddAmlodipine ->
-            "add-amlodipine"
+        OutsideCareMedicationAmlodipine ->
+            "amlodipine"
 
         OutsideCareMedicationHIV ->
             "hiv"
@@ -2115,11 +2115,11 @@ prenatalOutsideCareMedicationFromString value =
         "methyldopa-4" ->
             Just OutsideCareMedicationMethyldopa4
 
-        "add-carvedilol" ->
-            Just OutsideCareMedicationAddCarvedilol
+        "carvedilol" ->
+            Just OutsideCareMedicationCarvedilol
 
-        "add-amlodipine" ->
-            Just OutsideCareMedicationAddAmlodipine
+        "amlodipine" ->
+            Just OutsideCareMedicationAmlodipine
 
         "no-treatment-hypertension" ->
             Just NoOutsideCareMedicationForHypertension

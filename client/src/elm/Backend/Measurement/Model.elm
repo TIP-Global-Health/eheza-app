@@ -1268,8 +1268,8 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationMethyldopa2
     | OutsideCareMedicationMethyldopa3
     | OutsideCareMedicationMethyldopa4
-    | OutsideCareMedicationAddCarvedilol
-    | OutsideCareMedicationAddAmlodipine
+    | OutsideCareMedicationCarvedilol
+    | OutsideCareMedicationAmlodipine
     | NoOutsideCareMedicationForHypertension
       -- For HIV:
     | OutsideCareMedicationHIV

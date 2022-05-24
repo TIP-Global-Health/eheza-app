@@ -9542,12 +9542,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationAddCarvedilol ->
+                OutsideCareMedicationCarvedilol ->
                     { english = "by mouth 2x a day"
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationAddAmlodipine ->
+                OutsideCareMedicationAmlodipine ->
                     { english = "by mouth 1x a day"
                     , kinyarwanda = Nothing
                     }
@@ -9620,12 +9620,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationAddCarvedilol ->
+                OutsideCareMedicationCarvedilol ->
                     { english = "Carvedilol (6.25mg)"
                     , kinyarwanda = Nothing
                     }
 
-                OutsideCareMedicationAddAmlodipine ->
+                OutsideCareMedicationAmlodipine ->
                     { english = "Amlodipine (5pmg)"
                     , kinyarwanda = Nothing
                     }
