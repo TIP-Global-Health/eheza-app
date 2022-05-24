@@ -5166,13 +5166,7 @@ outsideCareMedicationOptionsSyphilis =
 
 viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any
 viewOutsideCareMedicationOption language medication =
-    if
-        List.member medication
-            [ NoOutsideCareMedicationForMalaria
-            , NoOutsideCareMedicationForHypertension
-            , NoOutsideCareMedicationForSyphilis
-            ]
-    then
+    if List.member medication noOutsideCareMedicationOptions then
         label []
             [ span
                 [ class "treatment" ]
@@ -5181,6 +5175,16 @@ viewOutsideCareMedicationOption language medication =
 
     else
         viewOutsideCareMedicationOptionWithDosage language medication
+
+
+noOutsideCareMedicationOptions : List PrenatalOutsideCareMedication
+noOutsideCareMedicationOptions =
+    [ NoOutsideCareMedicationForMalaria
+    , NoOutsideCareMedicationForHypertension
+    , NoOutsideCareMedicationForSyphilis
+    , NoOutsideCareMedicationForAnemia
+    , NoOutsideCareMedicationForHIV
+    ]
 
 
 viewOutsideCareMedicationOptionWithDosage : Language -> PrenatalOutsideCareMedication -> Html any
