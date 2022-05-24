@@ -44,6 +44,36 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_avoiding_guidance_reason'.
+  $field_bases['field_avoiding_guidance_reason'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_avoiding_guidance_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hypertension-lack-of-stock' => 'Hypertension - Lack of stock',
+        'hypertension-known-allergy' => 'Hypertension - Known allergy',
+        'hypertension-patient-declined' => 'Hypertension - Patient declined',
+        'hypertension-patient-unable-to-afford' => 'Hypertension - Patient unable to afford',
+        'hypertension-reinforce-adherence' => 'Hypertension - Reinforce adherence',
+        'hypertension-other' => 'Hypertension - Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_bilirubin'.
   $field_bases['field_bilirubin'] = array(
     'active' => 1,
