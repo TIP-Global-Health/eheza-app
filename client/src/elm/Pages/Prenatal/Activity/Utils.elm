@@ -35,6 +35,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
@@ -4915,14 +4916,11 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                                             (\value form_ ->
                                                                 { form_
                                                                     | givenMedicine = Just value
-                                                                    , malariaMedication = Nothing
-                                                                    , malariaMedicationDirty = True
-                                                                    , hypertensionMedication = Nothing
-                                                                    , hypertensionMedicationDirty = True
-                                                                    , syphilisMedication = Nothing
-                                                                    , syphilisMedicationDirty = True
-
-                                                                    --@todo : Empty HIV and Anemia fields
+                                                                    , malariaMedications = Nothing
+                                                                    , hypertensionMedications = Nothing
+                                                                    , syphilisMedications = Nothing
+                                                                    , hivMedications = Nothing
+                                                                    , anemiaMedications = Nothing
                                                                 }
                                                             )
                                                         )
@@ -5033,15 +5031,12 @@ outsideCareFormInputsAndTasksMedications language form =
                     ( malariaInputs, malariaTasks ) =
                         if List.member DiagnosisMalaria diagnoses then
                             ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
-                              , viewCheckBoxSelectCustomInput language
-                                    outsideCareMedicationOptionsMalaria
-                                    []
-                                    form.malariaMedication
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsMalaria
+                                    NoOutsideCareMedicationForMalaria
+                                    form.malariaMedications
                                     SetOutsideCareMalariaMedication
-                                    (viewOutsideCareMedicationOption language)
-                              , div [ class "separator" ] []
                               ]
-                            , [ if isJust form.malariaMedication then
+                            , [ if isJust form.malariaMedications then
                                     Just True
 
                                 else
@@ -5060,15 +5055,12 @@ outsideCareFormInputsAndTasksMedications language form =
                                 ]
                         then
                             ( [ viewHeader Translate.Hypertension
-                              , viewCheckBoxSelectCustomInput language
-                                    outsideCareMedicationOptionsHypertension
-                                    []
-                                    form.hypertensionMedication
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
+                                    NoOutsideCareMedicationForHypertension
+                                    form.hypertensionMedications
                                     SetOutsideCareHypertensionMedication
-                                    (viewOutsideCareMedicationOption language)
-                              , div [ class "separator" ] []
                               ]
-                            , [ if isJust form.hypertensionMedication then
+                            , [ if isJust form.hypertensionMedications then
                                     Just True
 
                                 else
@@ -5082,15 +5074,12 @@ outsideCareFormInputsAndTasksMedications language form =
                     ( syphilisInputs, syphilisTasks ) =
                         if List.member DiagnosisSyphilis diagnoses then
                             ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
-                              , viewCheckBoxSelectCustomInput language
-                                    outsideCareMedicationOptionsSyphilis
-                                    []
-                                    form.syphilisMedication
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsSyphilis
+                                    NoOutsideCareMedicationForSyphilis
+                                    form.syphilisMedications
                                     SetOutsideCareSyphilisMedication
-                                    (viewOutsideCareMedicationOption language)
-                              , div [ class "separator" ] []
                               ]
-                            , [ if isJust form.syphilisMedication then
+                            , [ if isJust form.syphilisMedications then
                                     Just True
 
                                 else
@@ -5101,6 +5090,57 @@ outsideCareFormInputsAndTasksMedications language form =
                         else
                             ( [], [] )
 
+                    ( anemiaInputs, anemiaTasks ) =
+                        if List.member DiagnosisModerateAnemia diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisModerateAnemia
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsAnemia
+                                    NoOutsideCareMedicationForAnemia
+                                    form.anemiaMedications
+                                    SetOutsideCareAnemiaMedication
+                              ]
+                            , [ if isJust form.anemiaMedications then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( hivInputs, hivTasks ) =
+                        if List.member DiagnosisHIV diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisHIV
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHIV
+                                    NoOutsideCareMedicationForHIV
+                                    form.hivMedications
+                                    SetOutsideCareHIVMedication
+                              ]
+                            , [ if isJust form.hivMedications then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    selectTreatmentOptionsInput allOptions noneOption currentValue setMsg =
+                        let
+                            options =
+                                List.filter ((/=) noneOption) allOptions
+                        in
+                        viewCheckBoxMultipleSelectCustomInput language
+                            options
+                            []
+                            (Maybe.withDefault [] currentValue)
+                            (Just noneOption)
+                            setMsg
+                            (viewOutsideCareMedicationOption language)
+
                     viewHeader diagnosisTransId =
                         div [ class "label" ]
                             [ span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilityPrefix ]
@@ -5110,8 +5150,8 @@ outsideCareFormInputsAndTasksMedications language form =
                             , span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilitySuffix ]
                             ]
                 in
-                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs
-                , malariaTasks ++ hypertensionTasks ++ syphilisTasks
+                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs ++ anemiaInputs ++ hivInputs
+                , malariaTasks ++ hypertensionTasks ++ syphilisTasks ++ anemiaTasks ++ hivTasks
                 )
             )
             form.diagnoses
@@ -5124,11 +5164,7 @@ outsideCareFormInputsAndTasksMedications language form =
 viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any
 viewOutsideCareMedicationOption language medication =
     if List.member medication noOutsideCareMedicationOptions then
-        label []
-            [ span
-                [ class "treatment" ]
-                [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
-            ]
+        label [] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
 
     else
         viewOutsideCareMedicationOptionWithDosage language medication

@@ -54,6 +54,8 @@ type Msg
     | SetOutsideCareMalariaMedication PrenatalOutsideCareMedication
     | SetOutsideCareHypertensionMedication PrenatalOutsideCareMedication
     | SetOutsideCareSyphilisMedication PrenatalOutsideCareMedication
+    | SetOutsideCareAnemiaMedication PrenatalOutsideCareMedication
+    | SetOutsideCareHIVMedication PrenatalOutsideCareMedication
     | SaveOutsideCare PersonId (Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
