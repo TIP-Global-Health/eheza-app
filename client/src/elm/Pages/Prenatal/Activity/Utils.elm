@@ -344,7 +344,7 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
-                && ((resolveMedicationsSetByDiagnoses English currentDate PrenatalEncounterPhaseInitial assembled
+                && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
                         |> List.isEmpty
                         |> not
                     )
@@ -395,9 +395,10 @@ expectTreatmentReviewTask assembled task =
             True
 
         TreatmentReviewHIV ->
-            -- Show, if there was medication treatment.
-            latestMedicationTreatmentForHIV assembled
-                |> isJust
+            -- Show, if there was medication treatment, or if patient was
+            -- referred to HIV program.
+            (isJust <| latestMedicationTreatmentForHIV assembled)
+                || referredToHIVProgramPreviously assembled
 
         TreatmentReviewHypertension ->
             -- Show, if there was medication treatment.
@@ -447,6 +448,22 @@ expectHistoryTask assembled task =
 
         OutsideCare ->
             not firstEnconter
+
+
+referredToHIVProgramPreviously : AssembledData -> Bool
+referredToHIVProgramPreviously assembled =
+    List.filterMap
+        (\( _, diagnoses, measurements ) ->
+            if EverySet.member DiagnosisHIV diagnoses then
+                Just measurements
+
+            else
+                Nothing
+        )
+        assembled.nursePreviousMeasurementsWithDates
+        |> List.head
+        |> Maybe.map hivProgramAtHC
+        |> Maybe.withDefault False
 
 
 latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
@@ -2911,21 +2928,22 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
     case task of
         TreatmentReviewHIV ->
             let
-                referredToHIVProgram =
-                    List.filterMap
-                        (\( _, diagnoses, measurements ) ->
-                            if EverySet.member DiagnosisHIV diagnoses then
-                                Just measurements
+                recievedHIVMedicationAtHC =
+                    latestMedicationTreatmentForHIV assembled
+                        |> isJust
 
-                            else
-                                Nothing
-                        )
-                        assembled.nursePreviousMeasurementsWithDates
-                        |> List.head
-                        |> Maybe.map hivProgramAtHC
-                        |> Maybe.withDefault False
+                referredToHIVProgram =
+                    referredToHIVProgramPreviously assembled
             in
-            if referredToHIVProgram then
+            -- There's a scenarion when there's HIV program at HC,
+            -- patient is referred there, but did not get medication there.
+            -- In this case we'll find this out at Treatment review, and
+            -- prescribe medication at HC, essentially, moving that patient
+            -- from PMTCT to our care.
+            -- Therefore, we take HIV program path, only if patient was
+            -- referred to HIV program, and also was not medicated for
+            -- HIV at HC.
+            if referredToHIVProgramPreviously assembled && not recievedHIVMedicationAtHC then
                 let
                     updateFunc =
                         \value form_ ->

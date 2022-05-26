@@ -313,7 +313,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                 ( [], 0, 0 )
 
         ( inputsByMedications, completedByMedications, activeByMedications ) =
-            resolveMedicationsSetByDiagnoses language currentDate phase assembled
+            resolveRequiredMedicationsSet language currentDate phase assembled
                 |> List.map
                     (\( helper, medications, footer ) ->
                         let
@@ -1211,13 +1211,13 @@ medicationDistributionMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-resolveMedicationsSetByDiagnoses :
+resolveRequiredMedicationsSet :
     Language
     -> NominalDate
     -> PrenatalEncounterPhase
     -> AssembledData
     -> List ( TranslationId, List MedicationDistributionSign, List (Html any) )
-resolveMedicationsSetByDiagnoses language currentDate phase assembled =
+resolveRequiredMedicationsSet language currentDate phase assembled =
     case phase of
         PrenatalEncounterPhaseInitial ->
             let
@@ -1249,7 +1249,10 @@ resolveMedicationsSetByDiagnoses language currentDate phase assembled =
                         hivProgramHC =
                             hivProgramAtHC assembled.measurements
                     in
-                    if hivDiagnosed && not hivProgramHC then
+                    if
+                        (hivDiagnosed && not hivProgramHC)
+                            || patientReportedNoMedicineRecievedFromPMTCT assembled.measurements
+                    then
                         Just
                             ( Translate.MedicationDistributionHelperHIV
                             , [ TDF3TC, Dolutegravir ]
@@ -1364,6 +1367,22 @@ showMebendazoleQuestion currentDate assembled =
                        dewormingPillNotGiven
                     && -- Mebendazole was not prescribed during the current pregnancy.
                        mebenadazoleNotPrescribed
+            )
+        |> Maybe.withDefault False
+
+
+patientReportedNoMedicineRecievedFromPMTCT : PrenatalMeasurements -> Bool
+patientReportedNoMedicineRecievedFromPMTCT measurements =
+    getMeasurementValueFunc measurements.medication
+        |> Maybe.andThen .hivTreatment
+        |> Maybe.map
+            (\hivTreatment ->
+                List.any (\sign -> EverySet.member sign hivTreatment)
+                    [ HIVTreatmentNoMedicineNotSeenAtPMTCT
+                    , HIVTreatmentNoMedicineOutOfStock
+                    , HIVTreatmentNoMedicinePatientRefused
+                    , HIVTreatmentNoMedicineOther
+                    ]
             )
         |> Maybe.withDefault False
 
