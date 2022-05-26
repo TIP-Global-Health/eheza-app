@@ -205,7 +205,7 @@ viewContentForAdult language currentDate isChw personId person initiator db mode
                     , div [ class "pane progress-reports" ]
                         [ div [ class "pane-heading" ]
                             [ text <| translate language Translate.ProgressReports ]
-                        , viewFilters language model
+                        , viewFilters language person model
                         ]
                     , selectedPane
                     , viewStartEncounterButton language (SetViewMode ViewStartEncounter)
@@ -317,8 +317,8 @@ viewAdultDetails language currentDate personId person db =
     ]
 
 
-viewFilters : Language -> Model -> Html Msg
-viewFilters language model =
+viewFilters : Language -> Person -> Model -> Html Msg
+viewFilters language person model =
     let
         renderButton filter =
             button
@@ -330,7 +330,8 @@ viewFilters language model =
                 ]
                 [ translateText language <| Translate.PatientRecordFilter filter ]
     in
-    List.map renderButton patientRecordFilters
+    patientRecordFilters person
+        |> List.map renderButton
         |> div [ class "ui segment filters" ]
 
 
