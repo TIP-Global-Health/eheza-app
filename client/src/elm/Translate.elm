@@ -9321,7 +9321,7 @@ translationSet trans =
 
                 TreatementPenecilin3 ->
                     { english = "Penicillin (2.4 million units)"
-                    , kinyarwanda = Just "Penisilini (Miliyoni 2.4 )"
+                    , kinyarwanda = Just "Penisilini (Miliyoni 2.4)"
                     }
 
                 TreatementErythromycin ->
