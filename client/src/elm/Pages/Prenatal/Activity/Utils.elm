@@ -2687,28 +2687,71 @@ medicationFormWithDefault form saved =
                                 >> List.head
                             )
                             value.hivTreatment
+
+                    treatmentSignFromValue sign treatment =
+                        Maybe.map (EverySet.member sign) treatment
+
+                    treatmentStillTakingFromValue =
+                        treatmentSignFromValue MedicationTreatmentStillTaking
+
+                    treatmentMissedDosesFromValue =
+                        treatmentSignFromValue MedicationTreatmentMissedDoses
+
+                    treatmentAdverseEventsFromValue =
+                        treatmentSignFromValue MedicationTreatmentAdverseEvents
+
+                    treatmentAdverseEventsHospitalizationFromValue =
+                        treatmentSignFromValue MedicationTreatmentAdverseEventsHospitalization
                 in
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (Maybe.map (EverySet.member IronAndFolicAcidSupplement) value.signs)
                 , receivedDewormingPill = or form.receivedDewormingPill (Maybe.map (EverySet.member DewormingPill) value.signs)
                 , receivedMebendazole = or form.receivedMebendazole (Maybe.map (EverySet.member Mebendazole) value.signs)
                 , hivMedicationByPMTCT = or form.hivMedicationByPMTCT (Maybe.map (EverySet.member HIVTreatmentMedicineByPMTCT) value.hivTreatment)
-                , hivMedicationNotGivenReason = maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty form.hivMedicationNotGivenReason hivMedicationNotGivenReason
+                , hivMedicationNotGivenReason =
+                    maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty
+                        form.hivMedicationNotGivenReason
+                        hivMedicationNotGivenReason
                 , hivMedicationNotGivenReasonDirty = form.hivMedicationNotGivenReasonDirty
-                , hivStillTaking = or form.hivStillTaking (Maybe.map (EverySet.member HIVTreatmentStillTaking) value.hivTreatment)
-                , hivMissedDoses = or form.hivMissedDoses (Maybe.map (EverySet.member HIVTreatmentMissedDoses) value.hivTreatment)
-                , hivAdverseEvents = or form.hivAdverseEvents (Maybe.map (EverySet.member HIVTreatmentAdverseEvents) value.hivTreatment)
-                , hypertensionStillTaking = or form.hypertensionStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.hypertensionTreatment)
-                , hypertensionMissedDoses = or form.hypertensionMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.hypertensionTreatment)
-                , hypertensionAdverseEvents = or form.hypertensionAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.hypertensionTreatment)
-                , malariaStillTaking = or form.malariaStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.malariaTreatment)
-                , malariaMissedDoses = or form.malariaMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.malariaTreatment)
-                , malariaAdverseEvents = or form.malariaAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.malariaTreatment)
-                , anemiaStillTaking = or form.anemiaStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.anemiaTreatment)
-                , anemiaMissedDoses = or form.anemiaMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.anemiaTreatment)
-                , anemiaAdverseEvents = or form.anemiaAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.anemiaTreatment)
-                , syphilisStillTaking = or form.syphilisStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.syphilisTreatment)
-                , syphilisMissedDoses = or form.syphilisMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.syphilisTreatment)
-                , syphilisAdverseEvents = or form.syphilisAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.syphilisTreatment)
+                , hivStillTaking = or form.hivStillTaking (treatmentSignFromValue HIVTreatmentStillTaking value.hivTreatment)
+                , hivMissedDoses = or form.hivMissedDoses (treatmentSignFromValue HIVTreatmentMissedDoses value.hivTreatment)
+                , hivAdverseEvents = or form.hivAdverseEvents (treatmentSignFromValue HIVTreatmentAdverseEvents value.hivTreatment)
+                , hivAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.hivAdverseEventsHospitalizationDirty
+                        form.hivAdverseEventsHospitalization
+                        (treatmentSignFromValue HIVTreatmentAdverseEventsHospitalization value.hivTreatment)
+                , hivAdverseEventsHospitalizationDirty = form.hivAdverseEventsHospitalizationDirty
+                , hypertensionStillTaking = or form.hypertensionStillTaking (treatmentStillTakingFromValue value.hypertensionTreatment)
+                , hypertensionMissedDoses = or form.hypertensionMissedDoses (treatmentMissedDosesFromValue value.hypertensionTreatment)
+                , hypertensionAdverseEvents = or form.hypertensionAdverseEvents (treatmentAdverseEventsFromValue value.hypertensionTreatment)
+                , hypertensionAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.hypertensionAdverseEventsHospitalizationDirty
+                        form.hypertensionAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.hypertensionTreatment)
+                , hypertensionAdverseEventsHospitalizationDirty = form.hypertensionAdverseEventsHospitalizationDirty
+                , malariaStillTaking = or form.malariaStillTaking (treatmentStillTakingFromValue value.malariaTreatment)
+                , malariaMissedDoses = or form.malariaMissedDoses (treatmentMissedDosesFromValue value.malariaTreatment)
+                , malariaAdverseEvents = or form.malariaAdverseEvents (treatmentAdverseEventsFromValue value.malariaTreatment)
+                , malariaAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.malariaAdverseEventsHospitalizationDirty
+                        form.malariaAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.malariaTreatment)
+                , malariaAdverseEventsHospitalizationDirty = form.malariaAdverseEventsHospitalizationDirty
+                , anemiaStillTaking = or form.anemiaStillTaking (treatmentStillTakingFromValue value.anemiaTreatment)
+                , anemiaMissedDoses = or form.anemiaMissedDoses (treatmentMissedDosesFromValue value.anemiaTreatment)
+                , anemiaAdverseEvents = or form.anemiaAdverseEvents (treatmentAdverseEventsFromValue value.anemiaTreatment)
+                , anemiaAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.anemiaAdverseEventsHospitalizationDirty
+                        form.anemiaAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.anemiaTreatment)
+                , anemiaAdverseEventsHospitalizationDirty = form.anemiaAdverseEventsHospitalizationDirty
+                , syphilisStillTaking = or form.syphilisStillTaking (treatmentStillTakingFromValue value.syphilisTreatment)
+                , syphilisMissedDoses = or form.syphilisMissedDoses (treatmentMissedDosesFromValue value.syphilisTreatment)
+                , syphilisAdverseEvents = or form.syphilisAdverseEvents (treatmentAdverseEventsFromValue value.syphilisTreatment)
+                , syphilisAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.syphilisAdverseEventsHospitalizationDirty
+                        form.syphilisAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.syphilisTreatment)
+                , syphilisAdverseEventsHospitalizationDirty = form.syphilisAdverseEventsHospitalizationDirty
                 }
             )
 
@@ -2742,6 +2785,7 @@ toMedicationValue form =
                         , form.hivStillTaking
                         , form.hivMissedDoses
                         , form.hivAdverseEvents
+                        , form.hivAdverseEventsHospitalization
                         ]
             then
                 Nothing
@@ -2751,6 +2795,7 @@ toMedicationValue form =
                 , ifNullableTrue HIVTreatmentStillTaking form.hivStillTaking
                 , ifNullableTrue HIVTreatmentMissedDoses form.hivMissedDoses
                 , ifNullableTrue HIVTreatmentAdverseEvents form.hivAdverseEvents
+                , ifNullableTrue HIVTreatmentAdverseEventsHospitalization form.hivAdverseEventsHospitalization
                 ]
                     ++ [ Maybe.map (EverySet.singleton >> Just) form.hivMedicationNotGivenReason
                             |> Maybe.withDefault (Just EverySet.empty)
@@ -2759,37 +2804,61 @@ toMedicationValue form =
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVTreatment)
 
         hypertensionTreatment =
-            if List.all isNothing [ form.hypertensionStillTaking, form.hypertensionMissedDoses, form.hypertensionAdverseEvents ] then
+            if
+                List.all isNothing
+                    [ form.hypertensionStillTaking
+                    , form.hypertensionMissedDoses
+                    , form.hypertensionAdverseEvents
+                    , form.hypertensionAdverseEventsHospitalization
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue MedicationTreatmentStillTaking form.hypertensionStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.hypertensionMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.hypertensionAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.hypertensionAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
 
         malariaTreatment =
-            if List.all isNothing [ form.malariaStillTaking, form.malariaMissedDoses, form.malariaAdverseEvents ] then
+            if
+                List.all isNothing
+                    [ form.malariaStillTaking
+                    , form.malariaMissedDoses
+                    , form.malariaAdverseEvents
+                    , form.malariaAdverseEventsHospitalization
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue MedicationTreatmentStillTaking form.malariaStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.malariaMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.malariaAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.malariaAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
 
         anemiaTreatment =
-            if List.all isNothing [ form.anemiaStillTaking, form.anemiaMissedDoses, form.anemiaAdverseEvents ] then
+            if
+                List.all isNothing
+                    [ form.anemiaStillTaking
+                    , form.anemiaMissedDoses
+                    , form.anemiaAdverseEvents
+                    , form.anemiaAdverseEventsHospitalization
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue MedicationTreatmentStillTaking form.anemiaStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.anemiaMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.anemiaAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.anemiaAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
@@ -2802,6 +2871,7 @@ toMedicationValue form =
                 [ ifNullableTrue MedicationTreatmentStillTaking form.syphilisStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.syphilisMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.syphilisAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.syphilisAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
@@ -2935,8 +3005,8 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
                 referredToHIVProgram =
                     referredToHIVProgramPreviously assembled
             in
-            -- There's a scenarion when there's HIV program at HC,
-            -- patient is referred there, but did not get medication there.
+            -- There's a scenario when there's HIV program at HC,
+            -- patient is referred there, but did not get medication.
             -- In this case we'll find this out at Treatment review, and
             -- prescribe medication at HC, essentially, moving that patient
             -- from PMTCT to our care.
@@ -2995,10 +3065,10 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
             else
                 -- No HIV program at heath center => patient was supposed to get medication.
-                resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task
+                resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
 
         _ ->
-            resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task
+            resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
 
 
 reasonsForNoMedicationByPMTCT : List HIVTreatmentSign
@@ -3010,7 +3080,7 @@ reasonsForNoMedicationByPMTCT =
     ]
 
 
-resolveMedicationTreatmentFormInputsAndTasksStandard :
+resolveMedicationTreatmentFormInputsAndTasksCommon :
     Language
     -> NominalDate
     -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
@@ -3018,7 +3088,7 @@ resolveMedicationTreatmentFormInputsAndTasksStandard :
     -> MedicationForm
     -> TreatmentReviewTask
     -> ( List (Html Msg), List (Maybe Bool) )
-resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task =
+resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task =
     let
         configForTask =
             case task of

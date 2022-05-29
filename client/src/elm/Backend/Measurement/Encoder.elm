@@ -1300,6 +1300,9 @@ encodeMedicationTreatmentSign sign =
             MedicationTreatmentAdverseEvents ->
                 "adverse-events"
 
+            MedicationTreatmentAdverseEventsHospitalization ->
+                "adverse-events-hospitalization"
+
             NoMedicationTreatment ->
                 "none"
 
@@ -1316,6 +1319,9 @@ encodeHIVTreatmentSign sign =
 
             HIVTreatmentAdverseEvents ->
                 "adverse-events"
+
+            HIVTreatmentAdverseEventsHospitalization ->
+                "adverse-events-hospitalization"
 
             HIVTreatmentMedicineByPMTCT ->
                 "medicine-pmtct"

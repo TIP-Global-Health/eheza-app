@@ -597,6 +597,7 @@ type MedicationTreatmentSign
     = MedicationTreatmentStillTaking
     | MedicationTreatmentMissedDoses
     | MedicationTreatmentAdverseEvents
+    | MedicationTreatmentAdverseEventsHospitalization
     | NoMedicationTreatment
 
 
@@ -604,6 +605,7 @@ type HIVTreatmentSign
     = HIVTreatmentStillTaking
     | HIVTreatmentMissedDoses
     | HIVTreatmentAdverseEvents
+    | HIVTreatmentAdverseEventsHospitalization
     | HIVTreatmentMedicineByPMTCT
     | HIVTreatmentNoMedicineNotSeenAtPMTCT
     | HIVTreatmentNoMedicineOutOfStock

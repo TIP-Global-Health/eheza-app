@@ -344,18 +344,28 @@ type alias MedicationForm =
     , hivStillTaking : Maybe Bool
     , hivMissedDoses : Maybe Bool
     , hivAdverseEvents : Maybe Bool
+    , hivAdverseEventsHospitalization : Maybe Bool
+    , hivAdverseEventsHospitalizationDirty : Bool
     , hypertensionStillTaking : Maybe Bool
     , hypertensionMissedDoses : Maybe Bool
     , hypertensionAdverseEvents : Maybe Bool
+    , hypertensionAdverseEventsHospitalization : Maybe Bool
+    , hypertensionAdverseEventsHospitalizationDirty : Bool
     , malariaStillTaking : Maybe Bool
     , malariaMissedDoses : Maybe Bool
     , malariaAdverseEvents : Maybe Bool
+    , malariaAdverseEventsHospitalization : Maybe Bool
+    , malariaAdverseEventsHospitalizationDirty : Bool
     , anemiaStillTaking : Maybe Bool
     , anemiaMissedDoses : Maybe Bool
     , anemiaAdverseEvents : Maybe Bool
+    , anemiaAdverseEventsHospitalization : Maybe Bool
+    , anemiaAdverseEventsHospitalizationDirty : Bool
     , syphilisStillTaking : Maybe Bool
     , syphilisMissedDoses : Maybe Bool
     , syphilisAdverseEvents : Maybe Bool
+    , syphilisAdverseEventsHospitalization : Maybe Bool
+    , syphilisAdverseEventsHospitalizationDirty : Bool
     }
 
 
@@ -370,18 +380,28 @@ emptyMedicationForm =
     , hivStillTaking = Nothing
     , hivMissedDoses = Nothing
     , hivAdverseEvents = Nothing
+    , hivAdverseEventsHospitalization = Nothing
+    , hivAdverseEventsHospitalizationDirty = False
     , hypertensionStillTaking = Nothing
     , hypertensionMissedDoses = Nothing
     , hypertensionAdverseEvents = Nothing
+    , hypertensionAdverseEventsHospitalization = Nothing
+    , hypertensionAdverseEventsHospitalizationDirty = False
     , malariaStillTaking = Nothing
     , malariaMissedDoses = Nothing
     , malariaAdverseEvents = Nothing
+    , malariaAdverseEventsHospitalization = Nothing
+    , malariaAdverseEventsHospitalizationDirty = False
     , anemiaStillTaking = Nothing
     , anemiaMissedDoses = Nothing
     , anemiaAdverseEvents = Nothing
+    , anemiaAdverseEventsHospitalization = Nothing
+    , anemiaAdverseEventsHospitalizationDirty = False
     , syphilisStillTaking = Nothing
     , syphilisMissedDoses = Nothing
     , syphilisAdverseEvents = Nothing
+    , syphilisAdverseEventsHospitalization = Nothing
+    , syphilisAdverseEventsHospitalizationDirty = False
     }
 
 

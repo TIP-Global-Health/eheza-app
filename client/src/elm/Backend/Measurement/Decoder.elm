@@ -1528,6 +1528,9 @@ decodeMedicationTreatmentSign =
                     "adverse-events" ->
                         succeed MedicationTreatmentAdverseEvents
 
+                    "adverse-events-hospitalization" ->
+                        succeed MedicationTreatmentAdverseEventsHospitalization
+
                     "none" ->
                         succeed NoMedicationTreatment
 
@@ -1550,6 +1553,9 @@ decodeHIVTreatmentSign =
 
                     "adverse-events" ->
                         succeed HIVTreatmentAdverseEvents
+
+                    "adverse-events-hospitalization" ->
+                        succeed HIVTreatmentAdverseEventsHospitalization
 
                     "medicine-pmtct" ->
                         succeed HIVTreatmentMedicineByPMTCT
