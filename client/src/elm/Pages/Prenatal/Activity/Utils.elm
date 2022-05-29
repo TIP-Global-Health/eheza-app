@@ -300,6 +300,7 @@ expectNextStepsTask currentDate assembled task =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
+                        || referToHospitatDueToAdverseEvent assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
 
                 _ ->
@@ -635,6 +636,29 @@ referToHospitalForNonHIVDiagnosis assembled =
             ]
             assembled
         || updateHypertensionTreatmentWithHospitalization assembled
+
+
+referToHospitatDueToAdverseEvent : AssembledData -> Bool
+referToHospitatDueToAdverseEvent assembled =
+    getMeasurementValueFunc assembled.measurements.medication
+        |> Maybe.map
+            (\value ->
+                let
+                    referByTreatment =
+                        Maybe.map (EverySet.member MedicationTreatmentAdverseEventsHospitalization)
+                            >> Maybe.withDefault False
+
+                    referByHIVTreatement =
+                        Maybe.map (EverySet.member HIVTreatmentAdverseEventsHospitalization) value.hivTreatment
+                            |> Maybe.withDefault False
+                in
+                referByHIVTreatement
+                    || referByTreatment value.hypertensionTreatment
+                    || referByTreatment value.malariaTreatment
+                    || referByTreatment value.anemiaTreatment
+                    || referByTreatment value.hypertensionTreatment
+            )
+        |> Maybe.withDefault False
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -2336,7 +2360,10 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     if isChw then
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
-                    else if referToHospitalForNonHIVDiagnosis assembled then
+                    else if
+                        referToHospitalForNonHIVDiagnosis assembled
+                            || referToHospitatDueToAdverseEvent assembled
+                    then
                         ( 0, 0 )
 
                     else
@@ -3101,9 +3128,22 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         , stillTakingFormValue = form.hivStillTaking
                         , missedDosesFormValue = form.hivMissedDoses
                         , adverseEventsFormValue = form.hivAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.hivAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | hivStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | hivMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | hivAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hivAdverseEvents = Just value
+                                    , hivAdverseEventsHospitalization = Nothing
+                                    , hivAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hivAdverseEventsHospitalization = Just value
+                                    , hivAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewHypertension ->
@@ -3112,9 +3152,22 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         , stillTakingFormValue = form.hypertensionStillTaking
                         , missedDosesFormValue = form.hypertensionMissedDoses
                         , adverseEventsFormValue = form.hypertensionAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.hypertensionAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | hypertensionStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | hypertensionMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | hypertensionAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hypertensionAdverseEvents = Just value
+                                    , hypertensionAdverseEventsHospitalization = Nothing
+                                    , hypertensionAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hypertensionAdverseEventsHospitalization = Just value
+                                    , hypertensionAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewMalaria ->
@@ -3123,9 +3176,22 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         , stillTakingFormValue = form.malariaStillTaking
                         , missedDosesFormValue = form.malariaMissedDoses
                         , adverseEventsFormValue = form.malariaAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.malariaAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | malariaStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | malariaMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | malariaAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | malariaAdverseEvents = Just value
+                                    , malariaAdverseEventsHospitalization = Nothing
+                                    , malariaAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | malariaAdverseEventsHospitalization = Just value
+                                    , malariaAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewAnemia ->
@@ -3134,9 +3200,22 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         , stillTakingFormValue = form.anemiaStillTaking
                         , missedDosesFormValue = form.anemiaMissedDoses
                         , adverseEventsFormValue = form.anemiaAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.anemiaAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | anemiaStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | anemiaMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | anemiaAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | anemiaAdverseEvents = Just value
+                                    , anemiaAdverseEventsHospitalization = Nothing
+                                    , anemiaAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | anemiaAdverseEventsHospitalization = Just value
+                                    , anemiaAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewSyphilis ->
@@ -3145,9 +3224,22 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         , stillTakingFormValue = form.syphilisStillTaking
                         , missedDosesFormValue = form.syphilisMissedDoses
                         , adverseEventsFormValue = form.syphilisAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.syphilisAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | syphilisStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | syphilisMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | syphilisAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | syphilisAdverseEvents = Just value
+                                    , syphilisAdverseEventsHospitalization = Nothing
+                                    , syphilisAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | syphilisAdverseEventsHospitalization = Just value
+                                    , syphilisAdverseEventsHospitalizationDirty = True
+                                }
                         }
     in
     Maybe.map
@@ -3160,6 +3252,22 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         )
                         config.latestMedicationTreatment
                         |> Maybe.withDefault emptyNode
+
+                ( derrivedInput, derrivedTask ) =
+                    if config.adverseEventsFormValue == Just True then
+                        ( [ viewQuestionLabel language <| Translate.TreatmentReviewQuestionStillTaking task
+                          , viewBoolInput
+                                language
+                                config.adverseEventsHospitalizationFormValue
+                                (setBoolInputMsg config.adverseEventsHospitalizationUpdateFunc)
+                                "adverse-events-hospitalization"
+                                Nothing
+                          ]
+                        , [ config.adverseEventsHospitalizationFormValue ]
+                        )
+
+                    else
+                        ( [], [] )
             in
             ( [ header
               , viewQuestionLabel language <| Translate.TreatmentReviewQuestionStillTaking task
@@ -3184,10 +3292,12 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                     "adverse-events"
                     Nothing
               ]
+                ++ derrivedInput
             , [ config.stillTakingFormValue
               , config.missedDosesFormValue
               , config.adverseEventsFormValue
               ]
+                ++ derrivedTask
             )
         )
         configForTask

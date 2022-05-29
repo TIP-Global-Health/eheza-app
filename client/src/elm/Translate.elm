@@ -1232,6 +1232,7 @@ type TranslationId
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
     | TreatmentReviewQuestionAdverseEvents
+    | TreatmentReviewQuestionAdverseEventsHospitalization
     | TreatmentReviewQuestionMedicationByPMTCT
     | TreatmentReviewQuestionMissedDoses
     | TreatmentReviewQuestionStillTaking TreatmentReviewTask
@@ -11926,6 +11927,11 @@ translationSet trans =
 
         TreatmentReviewQuestionAdverseEvents ->
             { english = "Have you experienced any adverse events"
+            , kinyarwanda = Nothing
+            }
+
+        TreatmentReviewQuestionAdverseEventsHospitalization ->
+            { english = "The patient had an adverse reaction to the medication. Would you like to refer them to the hospital as next step"
             , kinyarwanda = Nothing
             }
 
