@@ -919,8 +919,20 @@ type PrenatalHIVSign
     | NoPrenatalHIVSign
 
 
+type alias PrenatalHIVPCRTest =
+    PrenatalMeasurement PrenatalHIVPCRTestValue
+
+
 type alias PrenatalHepatitisBTest =
     PrenatalMeasurement PrenatalHepatitisBTestValue
+
+
+type alias PrenatalHIVPCRTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hivLevelUndetectable : Maybe Bool
+    , hivViralLoad : Maybe Float
+    }
 
 
 type alias PrenatalHepatitisBTestValue =
@@ -2150,6 +2162,7 @@ type alias PrenatalMeasurements =
     , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
     , symptomReview : Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview )
     , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
+    , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
     }
 
 
@@ -2188,6 +2201,7 @@ emptyPrenatalMeasurements =
     , medicationDistribution = Nothing
     , symptomReview = Nothing
     , outsideCare = Nothing
+    , hivPCRTest = Nothing
     }
 
 
