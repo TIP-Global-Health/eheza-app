@@ -110,6 +110,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_hemoglobin_test' => 'prenatal-hemoglobin-test',
   'prenatal_hepatitis_b_test' => 'prenatal-hepatitis-b-test',
   'prenatal_hiv_test' => 'prenatal-hiv-test',
+  'prenatal_hiv_pcr_test' => 'prenatal-hiv-pcr-test',
   'prenatal_labs_results' => 'prenatal-labs-results',
   'prenatal_malaria_test' => 'prenatal-malaria-test',
   'prenatal_medication_distribution' => 'prenatal-medication-distribution',
