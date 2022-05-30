@@ -1004,3 +1004,9 @@ prenatalOutsideCareEndpoint : ReadWriteEndPoint Error PrenatalOutsideCareId Pren
 prenatalOutsideCareEndpoint =
     swEndpoint "nodes/prenatal_outside_care" decodePrenatalOutsideCare
         |> withValueEncoder (object << encodePrenatalOutsideCare)
+
+
+prenatalHIVPCRTestEndpoint : ReadWriteEndPoint Error PrenatalHIVPCRTestId PrenatalHIVPCRTest PrenatalHIVPCRTest ()
+prenatalHIVPCRTestEndpoint =
+    swEndpoint "nodes/prenatal_hiv_pcr_test" decodePrenatalHIVPCRTest
+        |> withValueEncoder (object << encodePrenatalHIVPCRTest)
