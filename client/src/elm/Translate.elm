@@ -1235,7 +1235,7 @@ type TranslationId
     | TreatmentReviewQuestionAdverseEventsHospitalization
     | TreatmentReviewQuestionMedicationByPMTCT
     | TreatmentReviewQuestionMissedDoses
-    | TreatmentReviewQuestionStillTaking TreatmentReviewTask
+    | TreatmentReviewQuestionStillTaking
     | TreatmentReviewTask TreatmentReviewTask
     | TreatmentReviewWarningPopupMessage
     | TreatmentReviewWarningPopupInstructions
@@ -11945,17 +11945,10 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TreatmentReviewQuestionStillTaking task ->
-            case task of
-                TreatmentReviewHIV ->
-                    { english = "Are you still taking ARVs"
-                    , kinyarwanda = Nothing
-                    }
-
-                _ ->
-                    { english = "Are you still taking this medication"
-                    , kinyarwanda = Nothing
-                    }
+        TreatmentReviewQuestionStillTaking ->
+            { english = "Are you still taking this medication"
+            , kinyarwanda = Nothing
+            }
 
         TreatmentReviewTask task ->
             case task of

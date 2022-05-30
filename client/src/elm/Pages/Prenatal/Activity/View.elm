@@ -1634,7 +1634,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                             if isChw then
                                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
-                            else if referToHospitalForNonHIVDiagnosis assembled then
+                            else if
+                                referToHospitalForNonHIVDiagnosis assembled
+                                    || referToHospitalDueToAdverseEvent assembled
+                            then
                                 ( viewSendToHospitalForm, Nothing )
 
                             else

@@ -300,7 +300,7 @@ expectNextStepsTask currentDate assembled task =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
-                        || referToHospitatDueToAdverseEvent assembled
+                        || referToHospitalDueToAdverseEvent assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
 
                 _ ->
@@ -638,8 +638,8 @@ referToHospitalForNonHIVDiagnosis assembled =
         || updateHypertensionTreatmentWithHospitalization assembled
 
 
-referToHospitatDueToAdverseEvent : AssembledData -> Bool
-referToHospitatDueToAdverseEvent assembled =
+referToHospitalDueToAdverseEvent : AssembledData -> Bool
+referToHospitalDueToAdverseEvent assembled =
     getMeasurementValueFunc assembled.measurements.medication
         |> Maybe.map
             (\value ->
@@ -656,7 +656,7 @@ referToHospitatDueToAdverseEvent assembled =
                     || referByTreatment value.hypertensionTreatment
                     || referByTreatment value.malariaTreatment
                     || referByTreatment value.anemiaTreatment
-                    || referByTreatment value.hypertensionTreatment
+                    || referByTreatment value.syphilisTreatment
             )
         |> Maybe.withDefault False
 
@@ -2365,7 +2365,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
 
                     else if
                         referToHospitalForNonHIVDiagnosis assembled
-                            || referToHospitatDueToAdverseEvent assembled
+                            || referToHospitalDueToAdverseEvent assembled
                     then
                         ( 0, 0 )
 
@@ -3258,7 +3258,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
 
                 ( derrivedInput, derrivedTask ) =
                     if config.adverseEventsFormValue == Just True then
-                        ( [ viewQuestionLabel language <| Translate.TreatmentReviewQuestionStillTaking task
+                        ( [ viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEventsHospitalization
                           , viewBoolInput
                                 language
                                 config.adverseEventsHospitalizationFormValue
@@ -3273,7 +3273,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         ( [], [] )
             in
             ( [ header
-              , viewQuestionLabel language <| Translate.TreatmentReviewQuestionStillTaking task
+              , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
               , viewBoolInput
                     language
                     config.stillTakingFormValue
