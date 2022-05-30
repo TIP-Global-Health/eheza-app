@@ -16,7 +16,6 @@ class HedleyRestfulPrenatalHIVPCRTest extends HedleyRestfulPrenatalActivityBase 
   protected $fields = [
     'field_test_execution_note',
     'field_execution_date',
-    'field_test_result',
     'field_hiv_level_undetectable',
     'field_hiv_viral_load',
   ];
