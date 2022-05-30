@@ -784,6 +784,9 @@ decodePrenatalLaboratoryTest =
                     "vitals-recheck" ->
                         succeed TestVitalsRecheck
 
+                    "hiv-pcr" ->
+                        succeed TestHIVPCR
+
                     _ ->
                         fail <|
                             value

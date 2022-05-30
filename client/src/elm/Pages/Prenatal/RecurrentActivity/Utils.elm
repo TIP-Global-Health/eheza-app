@@ -81,6 +81,7 @@ laboratoryResultTasks =
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
+    , TaskHIVPCRTest
     ]
 
 

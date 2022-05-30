@@ -1139,6 +1139,7 @@ type PrenatalLaboratoryTest
     | TestSyphilis
     | TestUrineDipstick
     | TestVitalsRecheck
+    | TestHIVPCR
 
 
 type alias PrenatalMedicationDistribution =

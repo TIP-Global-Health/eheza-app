@@ -782,6 +782,9 @@ encodePrenatalLaboratoryTest value =
             TestVitalsRecheck ->
                 "vitals-recheck"
 
+            TestHIVPCR ->
+                "hiv-pcr"
+
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =

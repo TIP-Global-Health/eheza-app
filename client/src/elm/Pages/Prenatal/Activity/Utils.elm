@@ -4424,7 +4424,7 @@ laboratoryTaskCompleted currentDate assembled task =
             (not <| taskExpected TaskRandomBloodSugarTest) || isJust measurements.randomBloodSugarTest
 
         TaskHIVPCRTest ->
-            (not <| taskExpected TaskHIVTest) || isJust measurements.hivPCRTest
+            (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
 
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -4508,8 +4508,7 @@ expectLaboratoryTask currentDate assembled task =
                 isInitialTest TaskRandomBloodSugarTest
 
             TaskHIVPCRTest ->
-                -- @todo
-                True
+                isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
