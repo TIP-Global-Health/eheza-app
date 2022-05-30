@@ -1317,7 +1317,10 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
             Maybe.Extra.values [ mebendazoleSet, hivPositiveSet, discordantPartnershipSet, gonorheaSet, trichomonasOrBVSet ]
 
         PrenatalEncounterPhaseRecurrent ->
-            if diagnosed DiagnosisModerateAnemia assembled then
+            if
+                diagnosed DiagnosisModerateAnemia assembled
+                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
+            then
                 [ ( Translate.MedicationDistributionHelperAnemia
                   , [ Iron, FolicAcid ]
                   , []
@@ -1326,6 +1329,69 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
 
             else
                 []
+
+
+referToHospitalDueToAdverseEvent : AssembledData -> Bool
+referToHospitalDueToAdverseEvent =
+    referToHospitalDueToAdverseEventForDiagnosesTreatment
+        [ DiagnosisHIV, DiagnosisChronicHypertensionImmediate, DiagnosisMalaria, DiagnosisModerateAnemia, DiagnosisSyphilis ]
+
+
+referToHospitalDueToAdverseEventForHypertensionTreatment : AssembledData -> Bool
+referToHospitalDueToAdverseEventForHypertensionTreatment =
+    referToHospitalDueToAdverseEventForDiagnosesTreatment
+        [ DiagnosisChronicHypertensionImmediate ]
+
+
+referToHospitalDueToAdverseEventForAnemiaTreatment : AssembledData -> Bool
+referToHospitalDueToAdverseEventForAnemiaTreatment =
+    referToHospitalDueToAdverseEventForDiagnosesTreatment
+        [ DiagnosisModerateAnemia ]
+
+
+referToHospitalDueToAdverseEventForMalariaTreatment : AssembledData -> Bool
+referToHospitalDueToAdverseEventForMalariaTreatment =
+    referToHospitalDueToAdverseEventForDiagnosesTreatment
+        [ DiagnosisMalaria ]
+
+
+referToHospitalDueToAdverseEventForDiagnosesTreatment : List PrenatalDiagnosis -> AssembledData -> Bool
+referToHospitalDueToAdverseEventForDiagnosesTreatment diagnoses assembled =
+    getMeasurementValueFunc assembled.measurements.medication
+        |> Maybe.map
+            (\value ->
+                let
+                    conditionByDiagnosis diagnosis =
+                        case diagnosis of
+                            DiagnosisHIV ->
+                                Maybe.map (EverySet.member HIVTreatmentAdverseEventsHospitalization) value.hivTreatment
+                                    |> Maybe.withDefault False
+
+                            DiagnosisChronicHypertensionImmediate ->
+                                referByTreatment value.hypertensionTreatment
+
+                            DiagnosisMalaria ->
+                                referByTreatment value.malariaTreatment
+
+                            DiagnosisModerateAnemia ->
+                                referByTreatment value.anemiaTreatment
+
+                            DiagnosisSyphilis ->
+                                referByTreatment value.syphilisTreatment
+
+                            -- There's no other diagnosis treatment we revise
+                            -- at Ttreatment Review activity.
+                            _ ->
+                                False
+
+                    referByTreatment =
+                        Maybe.map (EverySet.member MedicationTreatmentAdverseEventsHospitalization)
+                            >> Maybe.withDefault False
+                in
+                List.map conditionByDiagnosis diagnoses
+                    |> List.any ((==) True)
+            )
+        |> Maybe.withDefault False
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool

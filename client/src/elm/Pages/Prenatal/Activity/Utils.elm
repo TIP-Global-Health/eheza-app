@@ -349,7 +349,9 @@ expectNextStepsTask currentDate assembled task =
                         |> List.isEmpty
                         |> not
                     )
-                        || diagnosedMalaria assembled
+                        || (diagnosedMalaria assembled
+                                && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
+                           )
                         || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
                         || diagnosedAnyOf
                             [ DiagnosisHeartburn
@@ -359,7 +361,9 @@ expectNextStepsTask currentDate assembled task =
                             , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
-                        || updateHypertensionTreatmentWithMedication assembled
+                        || (updateHypertensionTreatmentWithMedication assembled
+                                && (not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled)
+                           )
                    )
 
         NextStepsWait ->
@@ -636,29 +640,6 @@ referToHospitalForNonHIVDiagnosis assembled =
             ]
             assembled
         || updateHypertensionTreatmentWithHospitalization assembled
-
-
-referToHospitalDueToAdverseEvent : AssembledData -> Bool
-referToHospitalDueToAdverseEvent assembled =
-    getMeasurementValueFunc assembled.measurements.medication
-        |> Maybe.map
-            (\value ->
-                let
-                    referByTreatment =
-                        Maybe.map (EverySet.member MedicationTreatmentAdverseEventsHospitalization)
-                            >> Maybe.withDefault False
-
-                    referByHIVTreatement =
-                        Maybe.map (EverySet.member HIVTreatmentAdverseEventsHospitalization) value.hivTreatment
-                            |> Maybe.withDefault False
-                in
-                referByHIVTreatement
-                    || referByTreatment value.hypertensionTreatment
-                    || referByTreatment value.malariaTreatment
-                    || referByTreatment value.anemiaTreatment
-                    || referByTreatment value.syphilisTreatment
-            )
-        |> Maybe.withDefault False
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
