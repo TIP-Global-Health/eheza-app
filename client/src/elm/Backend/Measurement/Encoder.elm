@@ -429,6 +429,41 @@ encodePrenatalHIVTestValue value =
            ]
 
 
+encodePrenatalHIVPCRTest : PrenatalHIVPCRTest -> List ( String, Value )
+encodePrenatalHIVPCRTest =
+    encodePrenatalMeasurement encodePrenatalHIVPCRTestValue
+
+
+encodePrenatalHIVPCRTestValue : PrenatalHIVPCRTestValue -> List ( String, Value )
+encodePrenatalHIVPCRTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        hivLevelUndetectable =
+            Maybe.map
+                (\levelUndetectable -> [ ( "hiv_level_undetectable", bool levelUndetectable ) ])
+                value.hivLevelUndetectable
+                |> Maybe.withDefault []
+
+        hivViralLoad =
+            Maybe.map
+                (\viralLoad -> [ ( "hiv_viral_load", float viralLoad ) ])
+                value.hivViralLoad
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ hivLevelUndetectable
+        ++ hivViralLoad
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hiv_pcr_test" )
+           ]
+
+
 encodePrenatalHIVSign : PrenatalHIVSign -> Value
 encodePrenatalHIVSign signs =
     string <|
