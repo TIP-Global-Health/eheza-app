@@ -1380,7 +1380,7 @@ referToHospitalDueToAdverseEventForDiagnosesTreatment diagnoses assembled =
                                 referByTreatment value.syphilisTreatment
 
                             -- There's no other diagnosis treatment we revise
-                            -- at Ttreatment Review activity.
+                            -- at Treatment Review activity.
                             _ ->
                                 False
 
