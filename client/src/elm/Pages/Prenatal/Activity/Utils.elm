@@ -1247,10 +1247,10 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                         |> Maybe.withDefault True
                     )
                         || -- When severe Anemia with complications is diagnosed,
-                           -- we view Malaia as separate diagnosis.
-                           -- Therefore's not 'Malarial and Severe Anemia with
+                           -- we view Malaria as separate diagnosis.
+                           -- There's not 'Malaria and Severe Anemia with
                            -- complications' diagnosis.
-                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled DiagnosisSevereAnemiaWithComplications
+                           severeAnemiaWithComplicationsDiagnosed
                    )
 
         malariaWithAnemiaDiagnosed =
@@ -1260,6 +1260,15 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                     Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
                         |> Maybe.withDefault False
                    )
+
+        severeAnemiaWithComplicationsDiagnosed =
+            (-- No indication for being positive for malaria,
+             -- Hemoglobin test was performed, and, hemoglobin
+             -- count indicates severe anemia.
+             Maybe.map (\count -> count < 7) hemoglobinCount
+                |> Maybe.withDefault False
+            )
+                && anemiaComplicationSignsPresent
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
@@ -1390,13 +1399,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                 && not anemiaComplicationSignsPresent
 
         DiagnosisSevereAnemiaWithComplications ->
-            (-- No indication for being positive for malaria,
-             -- Hemoglobin test was performed, and, hemoglobin
-             -- count indicates severe anemia.
-             Maybe.map (\count -> count < 7) hemoglobinCount
-                |> Maybe.withDefault False
-            )
-                && anemiaComplicationSignsPresent
+            severeAnemiaWithComplicationsDiagnosed
 
         -- Non Lab Results diagnoses.
         _ ->
