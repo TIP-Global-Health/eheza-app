@@ -202,6 +202,12 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> prenatalRandomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
                                 |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+
+                        TaskHIVPCRTest ->
+                            measurements.hivPCRTest
+                                |> getMeasurementValueFunc
+                                |> prenatalHIVPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
+                                |> prenatalHIVPCRResultFormAndTasks language currentDate
                     )
                 )
                 tasks
@@ -255,6 +261,9 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskRandomBloodSugarTest ->
                                     SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest nextTask |> Just
+
+                                TaskHIVPCRTest ->
+                                    SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
                     in
                     Maybe.map
                         (\msg ->
@@ -591,6 +600,46 @@ prenatalRandomBloodSugarResultFormAndTasks language currentDate form =
             )
     in
     ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+prenatalHIVPCRResultFormAndTasks : Language -> NominalDate -> PrenatalHIVPCRResultForm -> ( Html Msg, Int, Int )
+prenatalHIVPCRResultFormAndTasks language currentDate form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                ( derrivedSection, derrivedTasksCompleted, derrivedTasksTotal ) =
+                    if form.hivLevelUndetectable == Just False then
+                        ( [ viewMeasurementInput language
+                                form.hivViralLoad
+                                SetHIVViralLoad
+                                "hiv-viral-load"
+                                Translate.UnitCopiesPerMM3
+                          ]
+                        , taskCompleted form.hivViralLoad
+                        , 1
+                        )
+
+                    else
+                        ( [], 0, 0 )
+            in
+            ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+              , viewBoolInput language
+                    form.hivLevelUndetectable
+                    SetHIVLevelUndetectable
+                    "hiv-level-undetectable"
+                    Nothing
+              ]
+                ++ derrivedSection
+            , taskCompleted form.hivLevelUndetectable + derrivedTasksCompleted
+            , 1 + derrivedTasksTotal
+            )
+    in
+    ( div [ class "ui form laboratory hiv-prc-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
             ++ testResultSection
     , testResultTasksCompleted

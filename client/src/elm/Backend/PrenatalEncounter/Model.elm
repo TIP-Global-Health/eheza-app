@@ -94,6 +94,7 @@ type alias Model =
     , saveMedicationDistribution : WebData ()
     , saveSymptomReview : WebData ()
     , saveOutsideCare : WebData ()
+    , saveHIVPCRTest : WebData ()
     }
 
 
@@ -133,6 +134,7 @@ emptyModel =
     , saveMedicationDistribution = NotAsked
     , saveSymptomReview = NotAsked
     , saveOutsideCare = NotAsked
+    , saveHIVPCRTest = NotAsked
     }
 
 
@@ -206,3 +208,5 @@ type Msg
     | HandleSavedSymptomReview (WebData ())
     | SaveOutsideCare PersonId (Maybe PrenatalOutsideCareId) PrenatalOutsideCareValue
     | HandleSavedOutsideCare (WebData ())
+    | SaveHIVPCRTest PersonId (Maybe PrenatalHIVPCRTestId) PrenatalHIVPCRTestValue
+    | HandleSavedHIVPCRTest (WebData ())

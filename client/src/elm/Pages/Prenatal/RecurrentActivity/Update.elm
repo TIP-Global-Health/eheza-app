@@ -601,6 +601,67 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetHIVLevelUndetectable value ->
+            let
+                form =
+                    model.labResultsData.hivPCRTestForm
+
+                updatedForm =
+                    { form | hivLevelUndetectable = Just value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVViralLoad value ->
+            let
+                form =
+                    model.labResultsData.hivPCRTestForm
+
+                updatedForm =
+                    { form | hivViralLoad = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHIVPCRResult personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLabResultsMsgs nextTask
+
+                appMsgs =
+                    toPrenatalHIVPCRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
         SetActiveNextStepsTask task ->
             let
                 updatedData =

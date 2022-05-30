@@ -151,6 +151,11 @@ type Msg
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetHIVPCRTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetHIVPCRTestExecutionNote PrenatalTestExecutionNote
+    | SetHIVPCRTestExecutionDate NominalDate
+    | SetHIVPCRTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
@@ -445,6 +450,7 @@ type alias LaboratoryData =
     , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
     , urineDipstickTestForm : PrenatalUrineDipstickForm
+    , hivPCRTestForm : PrenatalLabsNonRDTForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -460,6 +466,7 @@ emptyLaboratoryData =
     , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
+    , hivPCRTestForm = emptyPrenatalLabsNonRDTForm
     , activeTask = Nothing
     }
 

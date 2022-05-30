@@ -977,6 +977,7 @@ type TranslationId
     | PrenatalLaboratoryBilirubinValue BilirubinValue
     | PrenatalLaboratoryHemoglobinTestResult
     | PrenatalLaboratoryRandomBloodSugarTestResult
+    | PrenatalLaboratoryHIVPCRTestResult
     | PrenatalLaboratoryTask Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskLabel Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskDate Pages.Prenatal.Activity.Types.LaboratoryTask
@@ -1248,6 +1249,7 @@ type TranslationId
     | Type
     | UbudeheLabel
     | UbudeheNumber Ubudehe
+    | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
     | Unknown
@@ -5299,7 +5301,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
-                    { english = "Is this patient known to be yphilis - RPR positive"
+                    { english = "Is this patient known to be Syphilis - RPR positive"
                     , kinyarwanda = Nothing
                     }
 
@@ -5337,6 +5339,13 @@ translationSet trans =
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -9273,6 +9282,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PrenatalLaboratoryHIVPCRTestResult ->
+            { english = "HIV PCR Test Result"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalLaboratoryTask task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
@@ -9312,6 +9326,11 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
+                    { english = "HIV PCR"
                     , kinyarwanda = Nothing
                     }
 
@@ -9357,6 +9376,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
+                    { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryTaskDate task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
@@ -9399,6 +9423,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
+                    { english = "HIV PCR Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryTaskResult task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
@@ -9438,6 +9467,11 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
+                    { english = "HIV PCR Test Result"
                     , kinyarwanda = Nothing
                     }
 
@@ -12053,6 +12087,11 @@ translationSet trans =
                     { english = "4"
                     , kinyarwanda = Nothing
                     }
+
+        UnitCopiesPerMM3 ->
+            { english = "copies/mm3"
+            , kinyarwanda = Nothing
+            }
 
         UnitGramsPerDeciliter ->
             { english = "g/dL"

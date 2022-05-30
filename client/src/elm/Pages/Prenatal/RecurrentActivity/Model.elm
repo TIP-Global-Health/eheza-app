@@ -46,6 +46,9 @@ type Msg
     | SaveHemoglobinResult PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugar String
     | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetHIVLevelUndetectable Bool
+    | SetHIVViralLoad String
+    | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
@@ -97,6 +100,7 @@ type alias LabResultsData =
     , randomBloodSugarTestForm : PrenatalRandomBloodSugarResultForm
     , syphilisTestForm : SyphilisResultForm
     , urineDipstickTestForm : PrenatalUrineDipstickResultForm
+    , hivPCRTestForm : PrenatalHIVPCRResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -109,6 +113,7 @@ emptyLabResultsData =
     , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarResultForm
     , syphilisTestForm = emptySyphilisResultForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
+    , hivPCRTestForm = emptyPrenatalHIVPCRResultForm
     , activeTask = Nothing
     }
 
@@ -224,3 +229,16 @@ type alias PrenatalRandomBloodSugarResultForm =
 emptyPrenatalRandomBloodSugarResultForm : PrenatalRandomBloodSugarResultForm
 emptyPrenatalRandomBloodSugarResultForm =
     PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing
+
+
+type alias PrenatalHIVPCRResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hivLevelUndetectable : Maybe Bool
+    , hivViralLoad : Maybe Float
+    }
+
+
+emptyPrenatalHIVPCRResultForm : PrenatalHIVPCRResultForm
+emptyPrenatalHIVPCRResultForm =
+    PrenatalHIVPCRResultForm Nothing Nothing Nothing Nothing

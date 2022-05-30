@@ -46,6 +46,7 @@ type LaboratoryTask
     | TaskRandomBloodSugarTest
     | TaskSyphilisTest
     | TaskUrineDipstickTest
+    | TaskHIVPCRTest
 
 
 type SymptomReviewStep

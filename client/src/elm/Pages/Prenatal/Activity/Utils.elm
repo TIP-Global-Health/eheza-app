@@ -4370,6 +4370,11 @@ toBloodGpRsTestValueWithEmptyResults note date =
     PrenatalBloodGpRsTestValue note date Nothing Nothing
 
 
+toHIVPCRTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHIVPCRTestValue
+toHIVPCRTestValueWithEmptyResults note date =
+    PrenatalHIVPCRTestValue note date Nothing Nothing
+
+
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
     [ TaskHIVTest
@@ -4380,6 +4385,7 @@ laboratoryTasks =
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
+    , TaskHIVPCRTest
     ]
 
 
@@ -4416,6 +4422,9 @@ laboratoryTaskCompleted currentDate assembled task =
 
         TaskRandomBloodSugarTest ->
             (not <| taskExpected TaskRandomBloodSugarTest) || isJust measurements.randomBloodSugarTest
+
+        TaskHIVPCRTest ->
+            (not <| taskExpected TaskHIVTest) || isJust measurements.hivPCRTest
 
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -4497,6 +4506,10 @@ expectLaboratoryTask currentDate assembled task =
 
             TaskRandomBloodSugarTest ->
                 isInitialTest TaskRandomBloodSugarTest
+
+            TaskHIVPCRTest ->
+                -- @todo
+                True
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
@@ -4591,6 +4604,9 @@ laboratoryTaskIconClass task =
 
         TaskRandomBloodSugarTest ->
             "laboratory-blood-sugar"
+
+        TaskHIVPCRTest ->
+            "laboratory-hiv"
 
 
 symptomReviewFormWithDefault : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue -> SymptomReviewForm
