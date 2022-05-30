@@ -1125,3 +1125,11 @@ type alias PrenatalOutsideCareId =
 
 type PrenatalOutsideCareUuidType
     = PrenatalOutsideCareUuidType
+
+
+type alias PrenatalHIVPCRTestId =
+    EntityUuid PrenatalHIVPCRTestUuidType
+
+
+type PrenatalHIVPCRTestUuidType
+    = PrenatalHIVPCRTestUuidType
