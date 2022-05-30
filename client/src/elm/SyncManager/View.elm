@@ -582,6 +582,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalHIVTest identifier ->
                 viewMeasurement identifier "Prenatal HIV Test"
 
+            BackendAuthorityPrenatalHIVPCRTest identifier ->
+                viewMeasurement identifier "Prenatal HIV PCR Test"
+
             BackendAuthorityPrenatalLabsResults identifier ->
                 viewMeasurement identifier "Prenatal Labs Results"
 
