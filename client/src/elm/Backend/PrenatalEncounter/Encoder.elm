@@ -91,6 +91,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisHIV ->
                 "hiv"
 
+            DiagnosisHIVDetectableViralLoad ->
+                "hiv-detectable-viral-load"
+
             DiagnosisDiscordantPartnership ->
                 "partner-hiv"
 
