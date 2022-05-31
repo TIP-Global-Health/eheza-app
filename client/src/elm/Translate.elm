@@ -8812,6 +8812,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gutanga Imiti"
                     }
 
+                Pages.Prenatal.RecurrentActivity.Types.NextStepsHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
         PrenatalHIVProgramHelper ->
             { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
             , kinyarwanda = Nothing

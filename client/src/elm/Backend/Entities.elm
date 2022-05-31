@@ -767,7 +767,7 @@ type PrenatalFollowUpUuidType
     = PrenatalFollowUpUuidType
 
 
-type alias PrenatalSendToHcId =
+type alias PrenatalSendToHCId =
     EntityUuid PrenatalSendToHcUuidType
 
 

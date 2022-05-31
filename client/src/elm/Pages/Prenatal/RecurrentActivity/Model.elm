@@ -54,11 +54,12 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) (Maybe NextStepsTask)
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
+    | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -121,6 +122,7 @@ emptyLabResultsData =
 type alias NextStepsData =
     { sendToHCForm : SendToHCForm
     , medicationDistributionForm : MedicationDistributionForm
+    , healthEducationForm : HealthEducationForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -129,6 +131,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = emptyMedicationDistributionForm
+    , healthEducationForm = emptyHealthEducationForm
     , activeTask = Nothing
     }
 

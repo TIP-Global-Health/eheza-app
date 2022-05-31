@@ -415,6 +415,9 @@ expectNextStepsTask currentDate assembled task =
                         || diagnosedHypertension PrenatalEncounterPhaseRecurrent assembled
                    )
 
+        NextStepsHealthEducation ->
+            diagnosed DiagnosisHIVDetectableViralLoad assembled
+
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
 nextStepsMeasurementTaken assembled task =
@@ -444,6 +447,10 @@ nextStepsMeasurementTaken assembled task =
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
+
+        NextStepsHealthEducation ->
+            -- @todo
+            True
 
 
 nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
@@ -494,6 +501,10 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         form
             in
             ( completed, total )
+
+        NextStepsHealthEducation ->
+            -- @todo
+            ( 0, 0 )
 
 
 emergencyReferalRequired : AssembledData -> Bool

@@ -2154,7 +2154,7 @@ type alias PrenatalMeasurements =
     , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
     , healthEducation : Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )
     , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
-    , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
+    , sendToHC : Maybe ( PrenatalSendToHCId, PrenatalSendToHC )
     , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
     , bloodGpRsTest : Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )
     , hemoglobinTest : Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )

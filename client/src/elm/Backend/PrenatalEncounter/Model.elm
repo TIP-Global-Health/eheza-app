@@ -180,7 +180,7 @@ type Msg
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) PrenatalFollowUpValue
     | HandleSavedFollowUp (WebData ())
-    | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) SendToHCValue
+    | SaveSendToHC PersonId (Maybe PrenatalSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())

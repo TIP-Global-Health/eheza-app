@@ -238,17 +238,27 @@ medicationDistributionResolveFromValue allowedSigns value sign =
         Nothing
 
 
-toMedicationDistributionValueWithDefaultInitialPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValueWithDefaultInitialPhase :
+    Maybe PrenatalMedicationDistributionValue
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultInitialPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsInitialPhase
 
 
-toMedicationDistributionValueWithDefaultRecurrentPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValueWithDefaultRecurrentPhase :
+    Maybe PrenatalMedicationDistributionValue
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultRecurrentPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsRecurrentPhase
 
 
-toMedicationDistributionValueWithDefault : MedicationDistributionSign -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValueWithDefault :
+    MedicationDistributionSign
+    -> Maybe PrenatalMedicationDistributionValue
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefault valueForNone saved form =
     medicationDistributionFormWithDefault valueForNone form saved
         |> toMedicationDistributionValue valueForNone

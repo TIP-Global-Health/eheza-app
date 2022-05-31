@@ -856,3 +856,31 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SaveHealthEducation personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    model.nextStepsData.healthEducationForm
+                        |> toHealthEducationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs

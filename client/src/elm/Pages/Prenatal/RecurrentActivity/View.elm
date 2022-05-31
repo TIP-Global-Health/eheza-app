@@ -693,6 +693,9 @@ viewNextStepsContent language currentDate assembled data =
                         NextStepsMedicationDistribution ->
                             "next-steps-medication-distribution"
 
+                        NextStepsHealthEducation ->
+                            "next-steps-health-education"
+
                 isActive =
                     activeTask == Just task
 
@@ -760,6 +763,10 @@ viewNextStepsContent language currentDate assembled data =
                             SetRecommendedTreatmentSign
                             (always NoOp)
 
+                Just NextStepsHealthEducation ->
+                    -- @todo
+                    emptyNode
+
                 Nothing ->
                     emptyNode
 
@@ -784,6 +791,9 @@ viewNextStepsContent language currentDate assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
