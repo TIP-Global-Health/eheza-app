@@ -2219,3 +2219,66 @@ diagnosedSyphilis =
         [ DiagnosisSyphilis
         , DiagnosisSyphilisWithComplications
         ]
+
+
+healthEducationFormWithDefault : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\signs ->
+                { expectations = or form.expectations (EverySet.member EducationExpectations signs |> Just)
+                , visitsReview = or form.visitsReview (EverySet.member EducationVisitsReview signs |> Just)
+                , warningSigns = or form.warningSigns (EverySet.member EducationWarningSigns signs |> Just)
+                , hemorrhaging = or form.hemorrhaging (EverySet.member EducationHemorrhaging signs |> Just)
+                , familyPlanning = or form.familyPlanning (EverySet.member EducationFamilyPlanning signs |> Just)
+                , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding signs |> Just)
+                , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
+                , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
+                , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
+                , saferSexHIV = or form.saferSexHIV (EverySet.member EducationSaferSexHIV signs |> Just)
+                , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
+                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNausiaVomiting signs |> Just)
+                , legCramps = or form.legCramps (EverySet.member EducationLegCramps signs |> Just)
+                , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain signs |> Just)
+                , constipation = or form.constipation (EverySet.member EducationConstipation signs |> Just)
+                , heartburn = or form.heartburn (EverySet.member EducationHeartburn signs |> Just)
+                , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins signs |> Just)
+                , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
+                , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
+                }
+            )
+
+
+toHealthEducationValueWithDefault : Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue
+
+
+toHealthEducationValue : HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValue form =
+    [ ifNullableTrue EducationExpectations form.expectations
+    , ifNullableTrue EducationVisitsReview form.visitsReview
+    , ifNullableTrue EducationWarningSigns form.warningSigns
+    , ifNullableTrue EducationHemorrhaging form.hemorrhaging
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationBreastfeeding form.breastfeeding
+    , ifNullableTrue EducationImmunization form.immunization
+    , ifNullableTrue EducationHygiene form.hygiene
+    , ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationNausiaVomiting form.nauseaVomiting
+    , ifNullableTrue EducationLegCramps form.legCramps
+    , ifNullableTrue EducationLowBackPain form.lowBackPain
+    , ifNullableTrue EducationConstipation form.constipation
+    , ifNullableTrue EducationHeartburn form.heartburn
+    , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
+    , ifNullableTrue EducationLegPainRedness form.legPainRedness
+    , ifNullableTrue EducationPelvicPain form.pelvicPain
+    , ifNullableTrue EducationSaferSex form.saferSex
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

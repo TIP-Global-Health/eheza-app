@@ -71,6 +71,55 @@ emptyMedicationDistributionForm =
     }
 
 
+type alias HealthEducationForm =
+    { expectations : Maybe Bool
+    , visitsReview : Maybe Bool
+    , warningSigns : Maybe Bool
+    , hemorrhaging : Maybe Bool
+    , familyPlanning : Maybe Bool
+    , breastfeeding : Maybe Bool
+    , immunization : Maybe Bool
+    , hygiene : Maybe Bool
+    , positiveHIV : Maybe Bool
+    , saferSexHIV : Maybe Bool
+    , partnerTesting : Maybe Bool
+    , nauseaVomiting : Maybe Bool
+    , legCramps : Maybe Bool
+    , lowBackPain : Maybe Bool
+    , constipation : Maybe Bool
+    , heartburn : Maybe Bool
+    , varicoseVeins : Maybe Bool
+    , legPainRedness : Maybe Bool
+    , pelvicPain : Maybe Bool
+    , saferSex : Maybe Bool
+    }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    { expectations = Nothing
+    , visitsReview = Nothing
+    , warningSigns = Nothing
+    , hemorrhaging = Nothing
+    , familyPlanning = Nothing
+    , breastfeeding = Nothing
+    , immunization = Nothing
+    , hygiene = Nothing
+    , positiveHIV = Nothing
+    , saferSexHIV = Nothing
+    , partnerTesting = Nothing
+    , nauseaVomiting = Nothing
+    , legCramps = Nothing
+    , lowBackPain = Nothing
+    , constipation = Nothing
+    , heartburn = Nothing
+    , varicoseVeins = Nothing
+    , legPainRedness = Nothing
+    , pelvicPain = Nothing
+    , saferSex = Nothing
+    }
+
+
 type PrenatalEncounterPhase
     = PrenatalEncounterPhaseInitial
     | PrenatalEncounterPhaseRecurrent
