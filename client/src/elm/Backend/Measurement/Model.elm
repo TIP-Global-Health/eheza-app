@@ -839,7 +839,7 @@ type PrenatalHealthEducationSign
     | EducationLegPainRedness
     | EducationPelvicPain
     | EducationSaferSex
-    | EducatioHIVDetectableViralLoad
+    | EducationHIVDetectableViralLoad
     | NoPrenatalHealthEducationSigns
     | NoPrenatalHealthEducationSignsInitialPhase
     | NoPrenatalHealthEducationSignsRecurrentPhase

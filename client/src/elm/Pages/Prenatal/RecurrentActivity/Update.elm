@@ -857,6 +857,23 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetEducationHIVDetectableViralLoad value ->
+            let
+                form =
+                    model.nextStepsData.healthEducationForm
+
+                updatedForm =
+                    { form | hivDetectableViralLoad = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveHealthEducation personId saved nextTask ->
             let
                 measurementId =

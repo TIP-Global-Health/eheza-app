@@ -342,7 +342,7 @@ decodePrenatalHealthEducationSign =
                         succeed EducationSaferSex
 
                     "hiv-detectable-viral-load" ->
-                        succeed EducatioHIVDetectableViralLoad
+                        succeed EducationHIVDetectableViralLoad
 
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns

@@ -231,7 +231,7 @@ encodePrenatalHealthEducationSign sign =
             EducationSaferSex ->
                 "safer-sex"
 
-            EducatioHIVDetectableViralLoad ->
+            EducationHIVDetectableViralLoad ->
                 "hiv-detectable-viral-load"
 
             NoPrenatalHealthEducationSigns ->
