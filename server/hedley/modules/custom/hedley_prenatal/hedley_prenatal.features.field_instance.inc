@@ -2102,7 +2102,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -2158,51 +2158,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-prenatal_hiv_pcr_test-field_hiv_level_undetectable'.
-  $field_instances['node-prenatal_hiv_pcr_test-field_hiv_level_undetectable'] = array(
-    'bundle' => 'prenatal_hiv_pcr_test',
-    'default_value' => array(
-      0 => array(
-        'value' => 0,
-      ),
-    ),
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 8,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_hiv_level_undetectable',
-    'label' => 'HIV Level Undetectable',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(
-        'display_label' => 0,
-      ),
-      'type' => 'options_onoff',
-      'weight' => 13,
+      'weight' => 8,
     ),
   );
 
@@ -2248,7 +2204,45 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 15,
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_hiv_pcr_test-field_hiv_viral_load_status'.
+  $field_instances['node-prenatal_hiv_pcr_test-field_hiv_viral_load_status'] = array(
+    'bundle' => 'prenatal_hiv_pcr_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hiv_viral_load_status',
+    'label' => 'HIV Viral Load	Status',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
     ),
   );
 
@@ -2292,7 +2286,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -2336,7 +2330,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -2381,7 +2375,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -2425,7 +2419,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -2463,7 +2457,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 9,
+      'weight' => 7,
     ),
   );
 
@@ -7097,8 +7091,8 @@ function hedley_prenatal_field_default_field_instances() {
   t('Flank pain sign');
   t('Follow up options');
   t('Glucose');
-  t('HIV Level Undetectable');
   t('HIV Viral Load');
+  t('HIV Viral Load	Status');
   t('HIV signs');
   t('Haemoglobin');
   t('Hemoglobin Count');

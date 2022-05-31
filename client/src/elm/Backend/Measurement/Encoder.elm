@@ -443,10 +443,10 @@ encodePrenatalHIVPCRTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
-        hivLevelUndetectable =
+        hivViralLoadStatus =
             Maybe.map
-                (\levelUndetectable -> [ ( "hiv_level_undetectable", bool levelUndetectable ) ])
-                value.hivLevelUndetectable
+                (\viralLoadStatus -> [ ( "hiv_viral_load_status", encodeViralLoadStatus viralLoadStatus ) ])
+                value.hivViralLoadStatus
                 |> Maybe.withDefault []
 
         hivViralLoad =
@@ -457,11 +457,22 @@ encodePrenatalHIVPCRTestValue value =
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
-        ++ hivLevelUndetectable
+        ++ hivViralLoadStatus
         ++ hivViralLoad
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hiv_pcr_test" )
            ]
+
+
+encodeViralLoadStatus : ViralLoadStatus -> Value
+encodeViralLoadStatus value =
+    string <|
+        case value of
+            ViralLoadDetectable ->
+                "detectable"
+
+            ViralLoadUndetectable ->
+                "undetectable"
 
 
 encodePrenatalHIVSign : PrenatalHIVSign -> Value

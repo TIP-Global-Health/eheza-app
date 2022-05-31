@@ -128,7 +128,7 @@ laboratoryResultTaskCompleted currentDate assembled task =
             (not <| taskExpected TaskRandomBloodSugarTest) || testResultsCompleted .randomBloodSugarTest .sugarCount
 
         TaskHIVPCRTest ->
-            not <| taskExpected TaskHIVPCRTest || testResultsCompleted .hivPCRTest .hivLevelUndetectable
+            (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -572,7 +572,7 @@ prenatalHIVPCRResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
-                , hivLevelUndetectable = or form.hivLevelUndetectable value.hivLevelUndetectable
+                , hivViralLoadStatus = or form.hivViralLoadStatus value.hivViralLoadStatus
                 , hivViralLoad = or form.hivViralLoad value.hivViralLoad
                 }
             )
@@ -590,7 +590,7 @@ toPrenatalHIVPCRResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , hivLevelUndetectable = form.hivLevelUndetectable
+            , hivViralLoadStatus = form.hivViralLoadStatus
             , hivViralLoad = form.hivViralLoad
             }
         )

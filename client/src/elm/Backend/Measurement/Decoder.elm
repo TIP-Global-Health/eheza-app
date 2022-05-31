@@ -477,8 +477,27 @@ decodePrenatalHIVPCRTestValue =
     succeed PrenatalHIVPCRTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "hiv_level_undetectable" (nullable bool) Nothing
+        |> optional "hiv_viral_load_status" (nullable decodeViralLoadStatus) Nothing
         |> optional "hiv_viral_load" (nullable decodeFloat) Nothing
+
+
+decodeViralLoadStatus : Decoder ViralLoadStatus
+decodeViralLoadStatus =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "detectable" ->
+                        succeed ViralLoadDetectable
+
+                    "undetectable" ->
+                        succeed ViralLoadUndetectable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized ViralLoadStatus"
+            )
 
 
 decodePrenatalHIVSign : Decoder PrenatalHIVSign

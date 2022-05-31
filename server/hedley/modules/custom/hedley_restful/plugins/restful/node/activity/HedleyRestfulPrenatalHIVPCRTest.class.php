@@ -16,7 +16,7 @@ class HedleyRestfulPrenatalHIVPCRTest extends HedleyRestfulPrenatalActivityBase 
   protected $fields = [
     'field_test_execution_note',
     'field_execution_date',
-    'field_hiv_level_undetectable',
+    'field_hiv_viral_load_status',
     'field_hiv_viral_load',
   ];
 
@@ -26,18 +26,5 @@ class HedleyRestfulPrenatalHIVPCRTest extends HedleyRestfulPrenatalActivityBase 
   protected $dateFields = [
     'field_execution_date',
   ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
-    $items = parent::postExecuteQueryForViewWithDbSelect($items);
-
-    foreach ($items as &$item) {
-      $item->hiv_level_undetectable = (bool) $item->hiv_level_undetectable;
-    }
-
-    return $items;
-  }
 
 }

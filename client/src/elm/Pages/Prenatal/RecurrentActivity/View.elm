@@ -613,8 +613,9 @@ prenatalHIVPCRResultFormAndTasks language currentDate form =
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
                 ( derrivedSection, derrivedTasksCompleted, derrivedTasksTotal ) =
-                    if form.hivLevelUndetectable == Just False then
-                        ( [ viewMeasurementInput language
+                    if form.hivViralLoadStatus == Just ViralLoadDetectable then
+                        ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+                          , viewMeasurementInput language
                                 form.hivViralLoad
                                 SetHIVViralLoad
                                 "hiv-viral-load"
@@ -627,20 +628,20 @@ prenatalHIVPCRResultFormAndTasks language currentDate form =
                     else
                         ( [], 0, 0 )
             in
-            ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+            ( [ viewQuestionLabel language Translate.PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
               , viewBoolInput language
-                    form.hivLevelUndetectable
-                    SetHIVLevelUndetectable
+                    (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
+                    SetHIVViralLoadUndetectable
                     "hiv-level-undetectable"
                     Nothing
               ]
                 ++ derrivedSection
-            , taskCompleted form.hivLevelUndetectable + derrivedTasksCompleted
+            , taskCompleted form.hivViralLoadStatus + derrivedTasksCompleted
             , 1 + derrivedTasksTotal
             )
     in
     ( div [ class "ui form laboratory hiv-prc-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
+        resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal

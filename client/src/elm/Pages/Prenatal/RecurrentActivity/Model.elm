@@ -46,7 +46,7 @@ type Msg
     | SaveHemoglobinResult PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugar String
     | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
-    | SetHIVLevelUndetectable Bool
+    | SetHIVViralLoadUndetectable Bool
     | SetHIVViralLoad String
     | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
@@ -234,7 +234,7 @@ emptyPrenatalRandomBloodSugarResultForm =
 type alias PrenatalHIVPCRResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
-    , hivLevelUndetectable : Maybe Bool
+    , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float
     }
 

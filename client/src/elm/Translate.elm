@@ -978,6 +978,7 @@ type TranslationId
     | PrenatalLaboratoryHemoglobinTestResult
     | PrenatalLaboratoryRandomBloodSugarTestResult
     | PrenatalLaboratoryHIVPCRTestResult
+    | PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
     | PrenatalLaboratoryTask Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskLabel Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskDate Pages.Prenatal.Activity.Types.LaboratoryTask
@@ -9284,6 +9285,11 @@ translationSet trans =
 
         PrenatalLaboratoryHIVPCRTestResult ->
             { english = "HIV PCR Test Result"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryHIVPCRViralLoadStatusQuestion ->
+            { english = "Are there <20 copies/mm3"
             , kinyarwanda = Nothing
             }
 

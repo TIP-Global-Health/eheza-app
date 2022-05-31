@@ -930,9 +930,14 @@ type alias PrenatalHepatitisBTest =
 type alias PrenatalHIVPCRTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
-    , hivLevelUndetectable : Maybe Bool
+    , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float
     }
+
+
+type ViralLoadStatus
+    = ViralLoadDetectable
+    | ViralLoadUndetectable
 
 
 type alias PrenatalHepatitisBTestValue =

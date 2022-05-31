@@ -3,7 +3,7 @@ module Pages.Prenatal.RecurrentActivity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (IllnessSymptom(..))
+import Backend.Measurement.Model exposing (IllnessSymptom(..), ViralLoadStatus(..))
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
@@ -601,13 +601,20 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetHIVLevelUndetectable value ->
+        SetHIVViralLoadUndetectable undetectable ->
             let
                 form =
                     model.labResultsData.hivPCRTestForm
 
+                status =
+                    if undetectable then
+                        ViralLoadUndetectable
+
+                    else
+                        ViralLoadDetectable
+
                 updatedForm =
-                    { form | hivLevelUndetectable = Just value }
+                    { form | hivViralLoadStatus = Just status }
 
                 updatedData =
                     model.labResultsData

@@ -1798,7 +1798,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 data.encounterId
                                 Backend.Measurement.Model.TestHIVPCR
                                 data.value.executionNote
-                                (isJust data.value.hivLevelUndetectable)
+                                (isJust data.value.hivViralLoadStatus)
 
                         ( newModel, extraMsgsForAssessment ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
