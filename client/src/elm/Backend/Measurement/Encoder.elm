@@ -231,8 +231,17 @@ encodePrenatalHealthEducationSign sign =
             EducationSaferSex ->
                 "safer-sex"
 
+            EducatioHIVDetectableViralLoad ->
+                "hiv-detectable-viral-load"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
+
+            NoPrenatalHealthEducationSignsInitialPhase ->
+                "none-initial"
+
+            NoPrenatalHealthEducationSignsRecurrentPhase ->
+                "none-recurrent"
 
 
 encodePrenatalFollowUp : PrenatalFollowUp -> List ( String, Value )

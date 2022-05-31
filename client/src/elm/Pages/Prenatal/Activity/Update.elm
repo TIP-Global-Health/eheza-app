@@ -2595,7 +2595,9 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.healthEducationData.form
-                        |> toHealthEducationValueWithDefault measurement
+                        |> -- Health Education activity is explicitly for CHW,
+                           -- therefore we select CHW specific function.
+                           toHealthEducationValueWithDefaultChw measurement
                         |> unwrap
                             []
                             (\value ->
@@ -2650,7 +2652,9 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
-                        |> toHealthEducationValueWithDefault measurement
+                        |> -- Health Education sub activity is explicitly
+                           -- for nurses, therefore we select nurse specific function.
+                           toHealthEducationValueWithDefaultInitialPhase measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

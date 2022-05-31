@@ -839,7 +839,10 @@ type PrenatalHealthEducationSign
     | EducationLegPainRedness
     | EducationPelvicPain
     | EducationSaferSex
+    | EducatioHIVDetectableViralLoad
     | NoPrenatalHealthEducationSigns
+    | NoPrenatalHealthEducationSignsInitialPhase
+    | NoPrenatalHealthEducationSignsRecurrentPhase
 
 
 type alias PrenatalFollowUp =

@@ -1749,7 +1749,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
         form =
             assembled.measurements.healthEducation
                 |> getMeasurementValueFunc
-                |> healthEducationFormWithDefault healthEducationForm
+                |> healthEducationFormWithDefaultInitialPhase healthEducationForm
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
@@ -2369,16 +2369,13 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 form =
                     assembled.measurements.healthEducation
                         |> getMeasurementValueFunc
-                        |> healthEducationFormWithDefault data.healthEducationForm
-
-                tasksCompleted =
-                    List.map taskCompleted tasks
-                        |> List.sum
+                        |> healthEducationFormWithDefaultInitialPhase data.healthEducationForm
 
                 ( _, tasks ) =
-                    healthEducationFormInputsAndTasks language assembled data.healthEducationForm
+                    healthEducationFormInputsAndTasks language assembled form
             in
-            ( tasksCompleted
+            ( List.map taskCompleted tasks
+                |> List.sum
             , List.length tasks
             )
 

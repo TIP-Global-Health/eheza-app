@@ -92,6 +92,7 @@ type alias HealthEducationForm =
     , legPainRedness : Maybe Bool
     , pelvicPain : Maybe Bool
     , saferSex : Maybe Bool
+    , hivDetectableViralLoad : Maybe Bool
     }
 
 
@@ -117,6 +118,7 @@ emptyHealthEducationForm =
     , legPainRedness = Nothing
     , pelvicPain = Nothing
     , saferSex = Nothing
+    , hivDetectableViralLoad = Nothing
     }
 
 
