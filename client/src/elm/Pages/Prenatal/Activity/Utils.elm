@@ -1268,6 +1268,12 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
         DiagnosisHIV ->
             testedPositiveAt .hivTest
 
+        DiagnosisHIVDetectableViralLoad ->
+            getMeasurementValueFunc measurements.hivPCRTest
+                |> Maybe.andThen
+                    (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
+                |> Maybe.withDefault False
+
         DiagnosisDiscordantPartnership ->
             getMeasurementValueFunc measurements.hivTest
                 |> Maybe.andThen .hivSigns
@@ -1689,6 +1695,7 @@ labResultsDiagnoses : List PrenatalDiagnosis
 labResultsDiagnoses =
     [ DiagnosisSeverePreeclampsiaAfterRecheck
     , DiagnosisHIV
+    , DiagnosisHIVDetectableViralLoad
     , DiagnosisDiscordantPartnership
     , DiagnosisSyphilis
     , DiagnosisSyphilisWithComplications

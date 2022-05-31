@@ -7838,6 +7838,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHIVDetectableViralLoad ->
+                    { english = "Detectable HIV Viral Load"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDiscordantPartnership ->
                     { english = "Discordant Partnership"
                     , kinyarwanda = Nothing
@@ -8110,6 +8115,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHIVDetectableViralLoad ->
+                    { english = "Detectable HIV Viral Load"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDiscordantPartnership ->
                     { english = "Discordant Partnership"
                     , kinyarwanda = Nothing
@@ -8334,6 +8344,11 @@ translationSet trans =
             case diagnosis of
                 DiagnosisHIV ->
                     { english = "Patient has tested positive for HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHIVDetectableViralLoad ->
+                    { english = "Patient has a detectable HIV Viral Load"
                     , kinyarwanda = Nothing
                     }
 

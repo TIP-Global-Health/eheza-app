@@ -89,6 +89,7 @@ medicalDiagnoses =
     , DiagnosisSevereAnemia
     , DiagnosisSevereAnemiaWithComplications
     , DiagnosisHIV
+    , DiagnosisHIVDetectableViralLoad
     , DiagnosisDiscordantPartnership
     , DiagnosisHepatitisB
     , DiagnosisMalaria
