@@ -4892,7 +4892,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- We do not require translation for reother signs.
+                -- We do not require translation for other signs.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -9534,12 +9534,12 @@ translationSet trans =
         PrenatalOutsideCareMedicationDosage medication ->
             case medication of
                 OutsideCareMedicationQuinineSulphate ->
-                    { english = "per os 10 mg/kg/dose, 3 times a day for 7 days"
+                    { english = "3 x a day for 7 days"
                     , kinyarwanda = Nothing
                     }
 
                 OutsideCareMedicationCoartem ->
-                    { english = "4 tablets by mouth twice per day x 3 days"
+                    { english = "4 tablets by mouth 2x a day for 7 days"
                     , kinyarwanda = Nothing
                     }
 
@@ -9593,6 +9593,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                OutsideCareMedicationTDF3TC ->
+                    { english = "one tab by mouth 1x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationDolutegravir ->
+                    { english = "one tab by mouth 1x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationIron1 ->
+                    { english = "one tab by mouth 1x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationIron2 ->
+                    { english = "one tab by mouth 2x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationFolicAcid ->
+                    { english = "by mouth 3x a day"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -9602,7 +9627,7 @@ translationSet trans =
         PrenatalOutsideCareMedicationLabel medication ->
             case medication of
                 OutsideCareMedicationQuinineSulphate ->
-                    { english = "Quinine Sulphate"
+                    { english = "Quinine Sulphate per os (10 mg/kg/dose)"
                     , kinyarwanda = Nothing
                     }
 
@@ -9676,7 +9701,41 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- Not applicable for other options.
+                OutsideCareMedicationTDF3TC ->
+                    { english = "TDF+3TC"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationDolutegravir ->
+                    { english = "Dolutegravir (50mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoOutsideCareMedicationForHIV ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationIron1 ->
+                    { english = "Iron (60mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationIron2 ->
+                    { english = "Iron (60mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationFolicAcid ->
+                    { english = "Folic Acid (400IU)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoOutsideCareMedicationForAnemia ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing

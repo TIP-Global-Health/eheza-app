@@ -2066,11 +2066,26 @@ prenatalOutsideCareMedicationToString value =
         OutsideCareMedicationAmlodipine ->
             "amlodipine"
 
-        OutsideCareMedicationHIV ->
-            "hiv"
+        OutsideCareMedicationTDF3TC ->
+            "tdf3tc"
 
-        OutsideCareMedicationAnemia ->
-            "anemia"
+        OutsideCareMedicationDolutegravir ->
+            "dolutegravir"
+
+        NoOutsideCareMedicationForHIV ->
+            "no-treatment-hiv"
+
+        OutsideCareMedicationIron1 ->
+            "iron1"
+
+        OutsideCareMedicationIron2 ->
+            "iron2"
+
+        OutsideCareMedicationFolicAcid ->
+            "folic-acid"
+
+        NoOutsideCareMedicationForAnemia ->
+            "no-treatment-anemia"
 
         NoPrenatalOutsideCareMedications ->
             "none"
@@ -2124,11 +2139,26 @@ prenatalOutsideCareMedicationFromString value =
         "no-treatment-hypertension" ->
             Just NoOutsideCareMedicationForHypertension
 
-        "hiv" ->
-            Just OutsideCareMedicationHIV
+        "tdf3tc" ->
+            Just OutsideCareMedicationTDF3TC
 
-        "anemia" ->
-            Just OutsideCareMedicationAnemia
+        "dolutegravir" ->
+            Just OutsideCareMedicationDolutegravir
+
+        "no-treatment-hiv" ->
+            Just NoOutsideCareMedicationForHIV
+
+        "iron1" ->
+            Just OutsideCareMedicationIron1
+
+        "iron2" ->
+            Just OutsideCareMedicationIron2
+
+        "folic-acid" ->
+            Just OutsideCareMedicationFolicAcid
+
+        "no-treatment-anemia" ->
+            Just NoOutsideCareMedicationForAnemia
 
         "none" ->
             Just NoPrenatalOutsideCareMedications
