@@ -54,6 +54,8 @@ type Msg
     | SetOutsideCareMalariaMedication PrenatalOutsideCareMedication
     | SetOutsideCareHypertensionMedication PrenatalOutsideCareMedication
     | SetOutsideCareSyphilisMedication PrenatalOutsideCareMedication
+    | SetOutsideCareAnemiaMedication PrenatalOutsideCareMedication
+    | SetOutsideCareHIVMedication PrenatalOutsideCareMedication
     | SaveOutsideCare PersonId (Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
@@ -728,14 +730,11 @@ type alias OutsideCareForm =
     , givenMedicine : Maybe Bool
     , diagnoses : Maybe (List PrenatalDiagnosis)
     , diagnosesDirty : Bool
-    , malariaMedication : Maybe PrenatalOutsideCareMedication
-    , malariaMedicationDirty : Bool
-    , hypertensionMedication : Maybe PrenatalOutsideCareMedication
-    , hypertensionMedicationDirty : Bool
-    , syphilisMedication : Maybe PrenatalOutsideCareMedication
-    , syphilisMedicationDirty : Bool
-    , hivMedication : Maybe Bool
-    , anemiaMedication : Maybe Bool
+    , malariaMedications : Maybe (List PrenatalOutsideCareMedication)
+    , hypertensionMedications : Maybe (List PrenatalOutsideCareMedication)
+    , syphilisMedications : Maybe (List PrenatalOutsideCareMedication)
+    , hivMedications : Maybe (List PrenatalOutsideCareMedication)
+    , anemiaMedications : Maybe (List PrenatalOutsideCareMedication)
     }
 
 
@@ -746,14 +745,11 @@ emptyOutsideCareForm =
     , givenMedicine = Nothing
     , diagnoses = Nothing
     , diagnosesDirty = False
-    , malariaMedication = Nothing
-    , malariaMedicationDirty = False
-    , hypertensionMedication = Nothing
-    , hypertensionMedicationDirty = False
-    , syphilisMedication = Nothing
-    , syphilisMedicationDirty = False
-    , hivMedication = Nothing
-    , anemiaMedication = Nothing
+    , malariaMedications = Nothing
+    , hypertensionMedications = Nothing
+    , syphilisMedications = Nothing
+    , hivMedications = Nothing
+    , anemiaMedications = Nothing
     }
 
 
