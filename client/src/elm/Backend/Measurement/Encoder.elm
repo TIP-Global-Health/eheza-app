@@ -8,6 +8,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.Person.Utils exposing (genderToString)
+import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
@@ -3761,3 +3762,47 @@ encodePrenatalFlankPainSign : PrenatalFlankPainSign -> Value
 encodePrenatalFlankPainSign sign =
     string <|
         prenatalFlankPainSignToString sign
+
+
+encodePrenatalOutsideCare : PrenatalOutsideCare -> List ( String, Value )
+encodePrenatalOutsideCare =
+    encodePrenatalMeasurement encodePrenatalOutsideCareValue
+
+
+encodePrenatalOutsideCareValue : PrenatalOutsideCareValue -> List ( String, Value )
+encodePrenatalOutsideCareValue value =
+    let
+        diagnoses =
+            Maybe.map
+                (\diagnoses_ ->
+                    [ ( "prenatal_diagnoses", encodeEverySet encodePrenatalDiagnosis diagnoses_ ) ]
+                )
+                value.diagnoses
+                |> Maybe.withDefault []
+
+        medications =
+            Maybe.map
+                (\medications_ ->
+                    [ ( "outside_care_medications", encodeEverySet encodePrenatalOutsideCareMedication medications_ ) ]
+                )
+                value.medications
+                |> Maybe.withDefault []
+    in
+    [ ( "outside_care_signs", encodeEverySet encodePrenatalOutsideCareSign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_outside_care" )
+    ]
+        ++ diagnoses
+        ++ medications
+
+
+encodePrenatalOutsideCareSign : PrenatalOutsideCareSign -> Value
+encodePrenatalOutsideCareSign sign =
+    string <|
+        prenatalOutsideCareSignToString sign
+
+
+encodePrenatalOutsideCareMedication : PrenatalOutsideCareMedication -> Value
+encodePrenatalOutsideCareMedication sign =
+    string <|
+        prenatalOutsideCareMedicationToString sign

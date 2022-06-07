@@ -9,7 +9,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueF
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (DateSelectorConfig, viewCalendarPopup)
 import EverySet exposing (EverySet)
@@ -358,42 +359,44 @@ viewPregnancyDatingContent language currentDate assembled data =
 
 
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
-viewHistoryContent language currentDate assembled data_ =
+viewHistoryContent language currentDate assembled data =
     let
-        firstEnconter =
-            nurseEncounterNotPerformed assembled
-
-        ( tasks, data ) =
-            if firstEnconter then
-                ( [ Obstetric, Medical, Social ], data_ )
-
-            else
-                ( [ Social ], { data_ | activeTask = Social } )
-
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    historyTaskCompleted assembled task
+
+                iconClass =
                     case task of
                         Obstetric ->
-                            ( "obstetric", isJust assembled.measurements.obstetricHistory && isJust assembled.measurements.obstetricHistoryStep2 )
+                            "obstetric"
 
                         Medical ->
-                            ( "medical", isJust assembled.measurements.medicalHistory )
+                            "medical"
 
                         Social ->
-                            ( "social", isJust assembled.measurements.socialHistory )
+                            "social"
 
-                isActive =
-                    task == data.activeTask
+                        OutsideCare ->
+                            "outside-care"
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveHistoryTask task ]
 
                 attributes =
-                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
-                        :: (if isActive then
-                                []
-
-                            else
-                                [ onClick <| SetActiveHistoryTask task ]
-                           )
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
             in
             div [ class "column" ]
                 [ div attributes
@@ -402,50 +405,85 @@ viewHistoryContent language currentDate assembled data_ =
                     ]
                 ]
 
+        tasks =
+            resolveHistoryTasks assembled
+
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, historyTasksCompletedFromTotal assembled data task )
-                    )
+            List.map
+                (\task ->
+                    case task of
+                        OutsideCare ->
+                            ( OutsideCare
+                            , ( Maybe.Extra.values outsideCareTasks
+                                    |> List.length
+                              , List.length outsideCareTasks
+                              )
+                            )
+
+                        _ ->
+                            ( task, historyTasksCompletedFromTotal assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        outsideCareForm =
+            assembled.measurements.outsideCare
+                |> getMeasurementValueFunc
+                |> outsideCareFormWithDefault data.outsideCareForm
+
+        ( outsideCareInputs, outsideCareTasks ) =
+            case data.outsideCareStep of
+                OutsideCareStepDiagnoses ->
+                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+
+                OutsideCareStepMedications ->
+                    ( outsideCareInputsStep2, outsideCareTasksStep2 )
+
+        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
+            outsideCareFormInputsAndTasks language OutsideCareStepDiagnoses outsideCareForm
+
+        ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
+            outsideCareFormInputsAndTasks language OutsideCareStepMedications outsideCareForm
+
         viewForm =
-            case data.activeTask of
-                Obstetric ->
+            case activeTask of
+                Just Obstetric ->
                     case data.obstetricHistoryStep of
                         ObstetricHistoryFirstStep ->
-                            let
-                                formStep1_ =
-                                    assembled.measurements.obstetricHistory
-                                        |> getMeasurementValueFunc
-                                        |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-                            in
-                            viewObstetricFormFirstStep language currentDate assembled formStep1_
+                            assembled.measurements.obstetricHistory
+                                |> getMeasurementValueFunc
+                                |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
+                                |> viewObstetricFormFirstStep language currentDate assembled
 
                         ObstetricHistorySecondStep ->
-                            let
-                                formStep2_ =
-                                    assembled.measurements.obstetricHistoryStep2
-                                        |> getMeasurementValueFunc
-                                        |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-                            in
-                            viewObstetricFormSecondStep language currentDate assembled formStep2_
-
-                Medical ->
-                    let
-                        medicalForm =
-                            assembled.measurements.medicalHistory
+                            assembled.measurements.obstetricHistoryStep2
                                 |> getMeasurementValueFunc
-                                |> medicalHistoryFormWithDefault data.medicalForm
-                    in
-                    viewMedicalForm language currentDate assembled medicalForm
+                                |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
+                                |> viewObstetricFormSecondStep language currentDate assembled
 
-                Social ->
+                Just Medical ->
+                    assembled.measurements.medicalHistory
+                        |> getMeasurementValueFunc
+                        |> medicalHistoryFormWithDefault data.medicalForm
+                        |> viewMedicalForm language currentDate assembled
+
+                Just Social ->
                     let
                         socialForm =
                             assembled.measurements.socialHistory
@@ -482,104 +520,124 @@ viewHistoryContent language currentDate assembled data_ =
                     in
                     viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
 
-        getNextTask currentTask =
-            if not firstEnconter then
-                Nothing
+                Just OutsideCare ->
+                    div [ class "ui form history outside-care" ]
+                        outsideCareInputs
 
-            else
-                case currentTask of
-                    Obstetric ->
-                        case data.obstetricHistoryStep of
-                            ObstetricHistoryFirstStep ->
-                                Nothing
+                Nothing ->
+                    emptyNode
 
-                            ObstetricHistorySecondStep ->
-                                [ Medical, Social ]
-                                    |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                                    |> List.head
-
-                    Medical ->
-                        [ Social, Obstetric ]
-                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                            |> List.head
-
-                    Social ->
-                        [ Obstetric, Medical ]
-                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                            |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveButton msg label =
+                                button
+                                    [ classList
+                                        [ ( "ui fluid primary button", True )
+                                        , ( "disabled", tasksCompleted /= totalTasks )
+                                        , ( "active", tasksCompleted == totalTasks )
+                                        ]
+                                    , onClick msg
+                                    ]
+                                    [ text <| translate language label ]
 
-                ( buttons, stepIndicationClass ) =
-                    case data.activeTask of
-                        Obstetric ->
-                            case data.obstetricHistoryStep of
-                                ObstetricHistoryFirstStep ->
-                                    ( [ button
-                                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                            , onClick <| SaveOBHistoryStep1 assembled.participant.person assembled.measurements.obstetricHistory
-                                            ]
-                                            [ text <| translate language Translate.SaveAndNext ]
-                                      ]
-                                    , "first"
-                                    )
-
-                                ObstetricHistorySecondStep ->
-                                    ( [ button
-                                            [ class "ui fluid primary button"
-                                            , onClick BackToOBHistoryStep1
-                                            ]
-                                            [ text <| ("< " ++ translate language Translate.Back) ]
-                                      , button
-                                            [ classList
-                                                [ ( "ui fluid primary button", True )
-                                                , ( "disabled", tasksCompleted /= totalTasks )
-                                                , ( "active", tasksCompleted == totalTasks )
+                            buttons =
+                                case task of
+                                    Obstetric ->
+                                        case data.obstetricHistoryStep of
+                                            ObstetricHistoryFirstStep ->
+                                                [ saveButton
+                                                    (SaveOBHistoryStep1
+                                                        assembled.participant.person
+                                                        assembled.measurements.obstetricHistory
+                                                    )
+                                                    Translate.SaveAndNext
                                                 ]
-                                            , onClick <|
-                                                SaveOBHistoryStep2
-                                                    assembled.participant.person
-                                                    assembled.measurements.obstetricHistoryStep2
-                                                    nextTask
-                                            ]
-                                            [ text <| translate language Translate.Save ]
-                                      ]
-                                    , "second"
-                                    )
 
-                        Medical ->
-                            ( [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <|
-                                        SaveMedicalHistory
-                                            assembled.participant.person
-                                            assembled.measurements.medicalHistory
-                                            nextTask
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                              ]
-                            , ""
-                            )
+                                            ObstetricHistorySecondStep ->
+                                                [ button
+                                                    [ class "ui fluid primary button"
+                                                    , onClick BackToOBHistoryStep1
+                                                    ]
+                                                    [ text <| ("< " ++ translate language Translate.Back) ]
+                                                , saveButton
+                                                    (SaveOBHistoryStep2
+                                                        assembled.participant.person
+                                                        assembled.measurements.obstetricHistoryStep2
+                                                        nextTask
+                                                    )
+                                                    Translate.Save
+                                                ]
 
-                        Social ->
-                            ( [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <|
-                                        SaveSocialHistory
-                                            assembled.participant.person
-                                            assembled.measurements.socialHistory
-                                            nextTask
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                              ]
-                            , ""
-                            )
-            in
-            div [ class <| "actions history obstetric " ++ stepIndicationClass ]
-                buttons
+                                    Medical ->
+                                        [ saveButton
+                                            (SaveMedicalHistory
+                                                assembled.participant.person
+                                                assembled.measurements.medicalHistory
+                                                nextTask
+                                            )
+                                            Translate.Save
+                                        ]
+
+                                    Social ->
+                                        [ saveButton
+                                            (SaveSocialHistory
+                                                assembled.participant.person
+                                                assembled.measurements.socialHistory
+                                                nextTask
+                                            )
+                                            Translate.Save
+                                        ]
+
+                                    OutsideCare ->
+                                        let
+                                            saveAction =
+                                                SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare nextTask
+                                        in
+                                        case data.outsideCareStep of
+                                            OutsideCareStepDiagnoses ->
+                                                let
+                                                    actionMsg =
+                                                        if List.isEmpty outsideCareTasksStep2 then
+                                                            saveAction
+
+                                                        else
+                                                            SetOutsideCareStep OutsideCareStepMedications
+                                                in
+                                                [ saveButton actionMsg Translate.Save ]
+
+                                            OutsideCareStepMedications ->
+                                                [ button
+                                                    [ class "ui fluid primary button"
+                                                    , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
+                                                    ]
+                                                    [ text <| ("< " ++ translate language Translate.Back) ]
+                                                , saveButton saveAction Translate.Save
+                                                ]
+                        in
+                        div
+                            [ classList
+                                [ ( "actions", True )
+                                , ( "two"
+                                  , (task == Obstetric && data.obstetricHistoryStep == ObstetricHistorySecondStep)
+                                        || (task == OutsideCare && data.outsideCareStep == OutsideCareStepMedications)
+                                  )
+                                ]
+                            ]
+                            buttons
+                    )
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", id tasksBarId ]
         [ div [ class "ui five column grid" ] <|

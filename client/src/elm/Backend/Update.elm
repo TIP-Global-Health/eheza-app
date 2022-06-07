@@ -46,12 +46,12 @@ import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
     exposing
-        ( PrenatalDiagnosis(..)
-        , PrenatalEncounterPostCreateDestination(..)
+        ( PrenatalEncounterPostCreateDestination(..)
         , PrenatalEncounterType(..)
         , PrenatalProgressReportInitiator(..)
         , emptyPrenatalEncounter
         )
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
@@ -3579,6 +3579,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalOutsideCareRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
                 model
             , recalc
             )

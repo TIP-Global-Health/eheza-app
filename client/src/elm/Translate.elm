@@ -55,7 +55,8 @@ import Backend.PrenatalActivity.Model
         , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
@@ -514,6 +515,8 @@ type TranslationId
     | DeviceNotAuthorized
     | DeviceStatus
     | Diabetes
+    | DiagnosedAtAnotherFacilityPrefix
+    | DiagnosedAtAnotherFacilitySuffix
     | Diagnosis
     | DiagnosisDate
     | DifferenceBetweenDueAndDeliveryDates
@@ -650,6 +653,7 @@ type TranslationId
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
+    | Hypertension
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
     | HypertensionRecommendedTreatmentHelper
@@ -975,6 +979,9 @@ type TranslationId
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
+    | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
+    | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
+    | PrenatalOutsideCareMedicationDosage PrenatalOutsideCareMedication
     | PrenatalPhotoHelper
     | PrenatalRecurrentNextStepsTask Pages.Prenatal.RecurrentActivity.Types.NextStepsTask
     | PrenatalSymptom PrenatalSymptom
@@ -1098,6 +1105,7 @@ type TranslationId
     | SeeLabResults
     | SeeMore
     | SelectAntenatalVisit
+    | SelectAllDiagnoses
     | SelectAllSigns
     | SelectDangerSigns
     | SelectDate
@@ -3498,6 +3506,16 @@ translationSet trans =
             , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
             }
 
+        DiagnosedAtAnotherFacilityPrefix ->
+            { english = "You were diagnosed with"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosedAtAnotherFacilitySuffix ->
+            { english = "at another facility and were given medication. Which medication was given?"
+            , kinyarwanda = Nothing
+            }
+
         Diagnosis ->
             { english = "Diagnosis"
             , kinyarwanda = Just "Uburwayi bwabonetse"
@@ -4767,6 +4785,11 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru y'uwo bashakanye (umugabo)"
                     }
 
+                OutsideCare ->
+                    { english = "Outside Care"
+                    , kinyarwanda = Nothing
+                    }
+
         HIV ->
             { english = "HIV"
             , kinyarwanda = Just "Amaguru atameze neza(yagize imitego)"
@@ -4876,6 +4899,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        Hypertension ->
+            { english = "Hypertension"
+            , kinyarwanda = Nothing
+            }
 
         HypertensionBeforePregnancy ->
             { english = "Hypertension before pregnancy"
@@ -7897,7 +7925,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }
@@ -8139,7 +8167,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }
@@ -8296,7 +8324,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Backend.PrenatalEncounter.Model.DiagnosisTuberculosis ->
+                Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
                     , kinyarwanda = Nothing
                     }
@@ -9264,6 +9292,180 @@ translationSet trans =
 
                 PrenatalLabsEntryClosingSoon ->
                     { english = "Closing Soon"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalOutsideCareSignQuestion sign ->
+            case sign of
+                SeenAtAnotherFacility ->
+                    { english = "Have you been seen at another facility since your last visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                GivenNewDiagnoses ->
+                    { english = "Were you given a new diagnosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                GivenMedicine ->
+                    { english = "Were you given medicine"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- There's not question for this sign.
+                NoPrenatalOutsideCareSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalOutsideCareMedicationDosage medication ->
+            case medication of
+                OutsideCareMedicationQuinineSulphate ->
+                    { english = "per os 10 mg/kg/dose, 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationCoartem ->
+                    { english = "4 tablets by mouth twice per day x 3 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationPenecilin1 ->
+                    { english = "IM x 1"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationPenecilin3 ->
+                    { english = "IM 1x a week for 3 weeks"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationErythromycin ->
+                    { english = "by mouth 4x a day for 14 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationAzithromycin ->
+                    { english = "4 tabs by mouth x one day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationCeftriaxon ->
+                    { english = "IM daily x 10 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationMethyldopa2 ->
+                    { english = "by mouth 2x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationMethyldopa3 ->
+                    { english = "by mouth 3x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationMethyldopa4 ->
+                    { english = "by mouth 4x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationCarvedilol ->
+                    { english = "by mouth 2x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationAmlodipine ->
+                    { english = "by mouth 1x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Dosage is not applicable for other options.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalOutsideCareMedicationLabel medication ->
+            case medication of
+                OutsideCareMedicationQuinineSulphate ->
+                    { english = "Quinine Sulphate"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationCoartem ->
+                    { english = "Coartem"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoOutsideCareMedicationForMalaria ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationPenecilin1 ->
+                    { english = "Penicillin (2.4 million units)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationPenecilin3 ->
+                    { english = "Penicillin (2.4 million units)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationErythromycin ->
+                    { english = "Erythromycin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationAzithromycin ->
+                    { english = "Azithromycin (2g)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationCeftriaxon ->
+                    { english = "Ceftriaxone (1g)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoOutsideCareMedicationForSyphilis ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationMethyldopa2 ->
+                    { english = "Methyldopa (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationMethyldopa3 ->
+                    { english = "Methyldopa (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationMethyldopa4 ->
+                    { english = "Methyldopa (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationCarvedilol ->
+                    { english = "Carvedilol (6.25mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutsideCareMedicationAmlodipine ->
+                    { english = "Amlodipine (5pmg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoOutsideCareMedicationForHypertension ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Not applicable for other options.
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -10648,6 +10850,11 @@ translationSet trans =
         SelectAntenatalVisit ->
             { english = "Select an Antenatal Visit"
             , kinyarwanda = Just "Hitamo inshuro aje kwipimishaho inda"
+            }
+
+        SelectAllDiagnoses ->
+            { english = "Select all diagnoses"
+            , kinyarwanda = Nothing
             }
 
         SelectAllSigns ->

@@ -1779,7 +1779,8 @@ div.page-activity.prenatal {
           margin-bottom: 35px;
         }
       }
-
+      
+      .form.history.outside-care,
       .form.medication-distribution {
 
         .separator:last-of-type {
@@ -1825,6 +1826,17 @@ div.page-activity.prenatal {
 
         ul {
           margin-top: 0;
+        }
+      }
+
+      .form.history.outside-care {
+
+        label .treatment {
+            margin-right: 0;
+          }
+
+        .label .diagnosis {
+          color: $color-primary;
         }
       }
     }

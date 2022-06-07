@@ -1117,3 +1117,11 @@ type alias PrenatalSymptomReviewId =
 
 type PrenatalSymptomReviewUuidType
     = PrenatalSymptomReviewUuidType
+
+
+type alias PrenatalOutsideCareId =
+    EntityUuid PrenatalOutsideCareUuidType
+
+
+type PrenatalOutsideCareUuidType
+    = PrenatalOutsideCareUuidType

@@ -1,6 +1,7 @@
-module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
+module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounter)
 
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)

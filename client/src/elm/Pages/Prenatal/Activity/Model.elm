@@ -2,6 +2,7 @@ module Pages.Prenatal.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -46,6 +47,14 @@ type Msg
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
     | SetSocialHivTestingResult String
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
+      -- HistoryMsgs, Outside Care
+    | SetOutsideCareStep OutsideCareStep
+    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm -> OutsideCareForm) Bool
+    | SetOutsideCareDiagnosis PrenatalDiagnosis
+    | SetOutsideCareMalariaMedication PrenatalOutsideCareMedication
+    | SetOutsideCareHypertensionMedication PrenatalOutsideCareMedication
+    | SetOutsideCareSyphilisMedication PrenatalOutsideCareMedication
+    | SaveOutsideCare PersonId (Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals
@@ -171,7 +180,7 @@ type Msg
     | SetPrenatalSymptomQuestionBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SetFlankPainSign PrenatalFlankPainSign
     | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
-      -- TREATMENT REVIEW msgs
+      -- TREATMENTREVIEWMsgs
     | SetActiveTreatmentReviewTask TreatmentReviewTask
     | SetTreatmentReviewWarningPopupState (Maybe Msg)
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
@@ -241,7 +250,9 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
-    , activeTask : HistoryTask
+    , outsideCareForm : OutsideCareForm
+    , outsideCareStep : OutsideCareStep
+    , activeTask : Maybe HistoryTask
     }
 
 
@@ -252,7 +263,9 @@ emptyHistoryData =
     , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
-    , activeTask = Obstetric
+    , outsideCareForm = emptyOutsideCareForm
+    , outsideCareStep = OutsideCareStepDiagnoses
+    , activeTask = Nothing
     }
 
 
@@ -679,6 +692,41 @@ type alias SocialHistoryForm =
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
+
+
+type alias OutsideCareForm =
+    { seenAtAnotherFacility : Maybe Bool
+    , givenNewDiagnosis : Maybe Bool
+    , givenMedicine : Maybe Bool
+    , diagnoses : Maybe (List PrenatalDiagnosis)
+    , diagnosesDirty : Bool
+    , malariaMedication : Maybe PrenatalOutsideCareMedication
+    , malariaMedicationDirty : Bool
+    , hypertensionMedication : Maybe PrenatalOutsideCareMedication
+    , hypertensionMedicationDirty : Bool
+    , syphilisMedication : Maybe PrenatalOutsideCareMedication
+    , syphilisMedicationDirty : Bool
+    , hivMedication : Maybe Bool
+    , anemiaMedication : Maybe Bool
+    }
+
+
+emptyOutsideCareForm : OutsideCareForm
+emptyOutsideCareForm =
+    { seenAtAnotherFacility = Nothing
+    , givenNewDiagnosis = Nothing
+    , givenMedicine = Nothing
+    , diagnoses = Nothing
+    , diagnosesDirty = False
+    , malariaMedication = Nothing
+    , malariaMedicationDirty = False
+    , hypertensionMedication = Nothing
+    , hypertensionMedicationDirty = False
+    , syphilisMedication = Nothing
+    , syphilisMedicationDirty = False
+    , hivMedication = Nothing
+    , anemiaMedication = Nothing
+    }
 
 
 encodeLmpRange : LmpRange -> String

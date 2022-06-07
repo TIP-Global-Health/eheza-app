@@ -13,6 +13,7 @@ type HistoryTask
     = Obstetric
     | Medical
     | Social
+    | OutsideCare
 
 
 type LmpRange
@@ -75,3 +76,8 @@ type TreatmentReviewTask
     | TreatmentReviewMalaria
     | TreatmentReviewAnemia
     | TreatmentReviewSyphilis
+
+
+type OutsideCareStep
+    = OutsideCareStepDiagnoses
+    | OutsideCareStepMedications

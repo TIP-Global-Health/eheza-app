@@ -5,6 +5,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (MedicationNonAdministrationSign, ObstetricHistoryValue, PrenatalMeasurements, RecommendedTreatmentSign)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
