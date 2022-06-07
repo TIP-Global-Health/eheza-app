@@ -174,6 +174,7 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
+    | SetAvoidingGuidanceReason AvoidingGuidanceReason
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
     | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue Bool (Maybe NextStepsTask)
       -- SYMPTOMREVIEWMsgs

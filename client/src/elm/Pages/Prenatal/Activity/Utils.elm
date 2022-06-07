@@ -359,6 +359,7 @@ expectNextStepsTask currentDate assembled task =
                             , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
+                        || updateHypertensionTreatmentWithMedication assembled
                    )
 
         NextStepsWait ->
@@ -484,16 +485,7 @@ latestMedicationTreatmentForHIV assembled =
 
 latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHypertension assembled =
-    let
-        treatmentOptions =
-            [ TreatmentMethyldopa2
-            , TreatmentMethyldopa3
-            , TreatmentMethyldopa4
-
-            -- @todo: extend with additional signs?
-            ]
-    in
-    getLatestTreatmentByTreatmentOptions treatmentOptions assembled
+    getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
         |> Maybe.map Translate.TreatmentDetailsHypertension
 
 
@@ -549,26 +541,6 @@ latestMedicationTreatmentForSyphilis assembled =
     in
     getLatestTreatmentByTreatmentOptions treatmentOptions assembled
         |> Maybe.map Translate.TreatmentDetailsSyphilis
-
-
-getLatestTreatmentByTreatmentOptions : List RecommendedTreatmentSign -> AssembledData -> Maybe RecommendedTreatmentSign
-getLatestTreatmentByTreatmentOptions treatmentOptions assembled =
-    List.reverse assembled.nursePreviousMeasurementsWithDates
-        |> List.filterMap
-            (\( _, _, measurements ) ->
-                getMeasurementValueFunc measurements.medicationDistribution
-                    |> Maybe.andThen
-                        (\value ->
-                            Maybe.map
-                                (EverySet.toList
-                                    >> List.filter (\sign -> List.member sign treatmentOptions)
-                                    >> List.head
-                                )
-                                value.recommendedTreatmentSigns
-                        )
-            )
-        |> Maybe.Extra.values
-        |> List.head
 
 
 treatmentReviewTaskCompleted : AssembledData -> TreatmentReviewTask -> Bool
@@ -646,6 +618,7 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisTrichomonasOrBacterialVaginosisContinued
             ]
             assembled
+        || updateHypertensionTreatmentWithHospitalization assembled
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -1077,7 +1050,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         diagnosesByExamination =
             Maybe.map
                 (\egaWeeks ->
-                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled.measurements)
+                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled)
                         examinationDiagnoses
                         |> EverySet.fromList
                 )
@@ -1390,20 +1363,31 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
             False
 
 
-matchExaminationPrenatalDiagnosis : Int -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
+matchExaminationPrenatalDiagnosis : Int -> AssembledData -> PrenatalDiagnosis -> Bool
+matchExaminationPrenatalDiagnosis egaInWeeks assembled diagnosis =
+    let
+        measurements =
+            assembled.measurements
+    in
     case diagnosis of
         DiagnosisChronicHypertensionImmediate ->
-            egaInWeeks < 20 && immediateHypertensionByMeasurements measurements
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks < 20 && immediateHypertensionByMeasurements measurements)
 
         DiagnosisChronicHypertensionAfterRecheck ->
-            egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionImmediate ->
-            egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionAfterRecheck ->
-            egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements)
 
         DiagnosisModeratePreeclampsiaImmediate ->
             egaInWeeks >= 20 && immediatePreeclampsiaByMeasurements measurements
@@ -2383,6 +2367,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
                         SetRecommendedTreatmentSign
+                        SetAvoidingGuidanceReason
                         form
             in
             ( completed, total )

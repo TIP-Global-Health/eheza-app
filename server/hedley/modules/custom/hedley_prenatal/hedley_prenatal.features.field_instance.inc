@@ -3338,6 +3338,44 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-prenatal_medication_distribution-field_avoiding_guidance_reason'.
+  $field_instances['node-prenatal_medication_distribution-field_avoiding_guidance_reason'] = array(
+    'bundle' => 'prenatal_medication_distribution',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_avoiding_guidance_reason',
+    'label' => 'Avoiding Guidance reason',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-prenatal_medication_distribution-field_date_measured'.
   $field_instances['node-prenatal_medication_distribution-field_date_measured'] = array(
     'bundle' => 'prenatal_medication_distribution',
@@ -6591,6 +6629,7 @@ function hedley_prenatal_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Appointment Confirmation');
+  t('Avoiding Guidance reason');
   t('Bilirubin');
   t('Blood Group');
   t('Completed Tests');

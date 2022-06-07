@@ -102,6 +102,7 @@ import Pages.Prenatal.Activity.Types
         , LmpRange(..)
         , TreatmentReviewTask(..)
         )
+import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
 import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
@@ -372,6 +373,7 @@ type TranslationId
     | Asthma
     | At
     | Attendance
+    | AvoidingGuidanceReason AvoidingGuidanceReason
     | Baby
     | BabyDiedOnDayOfBirthPreviousDelivery
     | BabyName String
@@ -657,6 +659,10 @@ type TranslationId
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
     | HypertensionRecommendedTreatmentHelper
+    | HypertensionRecommendedTreatmentUpdateHeader
+    | HypertensionRecommendedTreatmentUpdateBPLabel
+    | HypertensionRecommendedTreatmentUpdateCurrentTreatment
+    | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
     | IdleWaitingForSync
     | IllnessSymptom IllnessSymptom
     | Immunisation
@@ -819,6 +825,7 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NotFollowingRecommendationQuestion
     | NotTaken
     | NumberOfAbortions
     | NumberOfChildrenUnder5
@@ -2445,6 +2452,38 @@ translationSet trans =
             { english = "Attendance"
             , kinyarwanda = Just "Ubwitabire"
             }
+
+        AvoidingGuidanceReason value ->
+            case value of
+                AvoidingGuidanceHypertensionLackOfStock ->
+                    { english = "Out of Stock"
+                    , kinyarwanda = Just "Nta miti iri mu bubiko"
+                    }
+
+                AvoidingGuidanceHypertensionKnownAllergy ->
+                    { english = "Known Allergy"
+                    , kinyarwanda = Just "Uyu muti usanzwe umutera ifurutwa"
+                    }
+
+                AvoidingGuidanceHypertensionPatientDeclined ->
+                    { english = "Patient Declined"
+                    , kinyarwanda = Just "Umurwayi yanze"
+                    }
+
+                AvoidingGuidanceHypertensionPatientUnableToAfford ->
+                    { english = "Patient Unable to Afford"
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                AvoidingGuidanceHypertensionReinforceAdherence ->
+                    { english = "Reinforce adherence of existing dosage"
+                    , kinyarwanda = Nothing
+                    }
+
+                AvoidingGuidanceHypertensionOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    }
 
         Baby ->
             { english = "Baby"
@@ -4920,6 +4959,44 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HypertensionRecommendedTreatmentUpdateHeader ->
+            { english = "This patient was previously diagnosed with Hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateBPLabel ->
+            { english = "The patients current BP is"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateCurrentTreatment ->
+            { english = "The patient is currently prescribed"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateNewTreatment value ->
+            case value of
+                TreatementUpdateMaintainCurrentDoasage ->
+                    { english = "It is recommend that the medication remain unchanged -"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementUpdateIncreaseOneDose ->
+                    { english = "It is recommend that the medication increase one dosage level to"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatementUpdateIncreaseTwoDoses ->
+                    { english = "It is recommend that the medication increase two dosage levels to"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- We're not required to view this option.
+                TreatementUpdateHospitalize ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
             , kinyarwanda = Nothing
@@ -6635,6 +6712,11 @@ translationSet trans =
         NotConnected ->
             { english = "Not Connected"
             , kinyarwanda = Just "Ntamurandasi"
+            }
+
+        NotFollowingRecommendationQuestion ->
+            { english = "Why recomendatoins were not followed"
+            , kinyarwanda = Just "Nta bipimo byafashwe"
             }
 
         NotTaken ->
@@ -10316,6 +10398,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentMethyldopa2 ->
+                    { english = "by mouth 2x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa3 ->
+                    { english = "by mouth 3x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMethyldopa4 ->
+                    { english = "by mouth 4x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddCarvedilol ->
+                    { english = "by mouth 2x a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddAmlodipine ->
+                    { english = "by mouth 1x a day"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -10380,17 +10487,27 @@ translationSet trans =
                     }
 
                 TreatmentMethyldopa2 ->
-                    { english = "Methyldopa 250mg by mouth two times a day"
+                    { english = "Methyldopa (250mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "Methyldopa 250mg by mouth three times a day"
+                    { english = "Methyldopa (250mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "Methyldopa 250mg by mouth four times a day"
+                    { english = "Methyldopa (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddCarvedilol ->
+                    { english = "Carvedilol (6.25mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddAmlodipine ->
+                    { english = "Amlodipine (5mg)"
                     , kinyarwanda = Nothing
                     }
 

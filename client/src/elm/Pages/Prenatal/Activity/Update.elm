@@ -2875,7 +2875,28 @@ update language currentDate id db msg model =
                         |> Maybe.withDefault [ sign ]
 
                 updatedForm =
-                    { medicationDistributionForm | recommendedTreatmentSigns = Just updatedSigns }
+                    { medicationDistributionForm
+                        | recommendedTreatmentSigns = Just updatedSigns
+                        , hypertensionAvoidingGuidanceReason = Nothing
+                        , hypertensionAvoidingGuidanceReasonDirty = True
+                    }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAvoidingGuidanceReason value ->
+            let
+                updatedForm =
+                    { medicationDistributionForm
+                        | hypertensionAvoidingGuidanceReason = Just value
+                        , hypertensionAvoidingGuidanceReasonDirty = True
+                    }
 
                 updatedData =
                     model.nextStepsData

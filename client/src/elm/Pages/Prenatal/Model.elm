@@ -2,7 +2,14 @@ module Pages.Prenatal.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (MedicationNonAdministrationSign, ObstetricHistoryValue, PrenatalMeasurements, RecommendedTreatmentSign)
+import Backend.Measurement.Model
+    exposing
+        ( AvoidingGuidanceReason
+        , MedicationNonAdministrationSign
+        , ObstetricHistoryValue
+        , PrenatalMeasurements
+        , RecommendedTreatmentSign
+        )
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -40,6 +47,8 @@ type alias MedicationDistributionForm =
     , metronidazole : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
+    , hypertensionAvoidingGuidanceReason : Maybe AvoidingGuidanceReason
+    , hypertensionAvoidingGuidanceReasonDirty : Bool
     }
 
 
@@ -57,9 +66,18 @@ emptyMedicationDistributionForm =
     , metronidazole = Nothing
     , nonAdministrationSigns = Nothing
     , recommendedTreatmentSigns = Nothing
+    , hypertensionAvoidingGuidanceReason = Nothing
+    , hypertensionAvoidingGuidanceReasonDirty = False
     }
 
 
 type PrenatalEncounterPhase
     = PrenatalEncounterPhaseInitial
     | PrenatalEncounterPhaseRecurrent
+
+
+type HypertensionTreatementUpdateOption
+    = TreatementUpdateMaintainCurrentDoasage
+    | TreatementUpdateIncreaseOneDose
+    | TreatementUpdateIncreaseTwoDoses
+    | TreatementUpdateHospitalize

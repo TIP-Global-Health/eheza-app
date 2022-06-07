@@ -1548,6 +1548,12 @@ recommendedTreatmentSignToString sign =
         TreatmentMethyldopa4 ->
             "methyldopa-4"
 
+        TreatmentHypertensionAddCarvedilol ->
+            "add-carvedilol"
+
+        TreatmentHypertensionAddAmlodipine ->
+            "add-amlodipine"
+
         NoTreatmentForHypertension ->
             "no-treatment-hypertension"
 
@@ -1615,6 +1621,12 @@ recommendedTreatmentSignFromString sign =
         "methyldopa-4" ->
             Just TreatmentMethyldopa4
 
+        "add-carvedilol" ->
+            Just TreatmentHypertensionAddCarvedilol
+
+        "add-amlodipine" ->
+            Just TreatmentHypertensionAddAmlodipine
+
         "no-treatment-hypertension" ->
             Just NoTreatmentForHypertension
 
@@ -1638,6 +1650,53 @@ recommendedTreatmentSignFromString sign =
 
         _ ->
             Nothing
+
+
+avoidingGuidanceReasonFromString : String -> Maybe AvoidingGuidanceReason
+avoidingGuidanceReasonFromString value =
+    case value of
+        "hypertension-lack-of-stock" ->
+            Just AvoidingGuidanceHypertensionLackOfStock
+
+        "hypertension-known-allergy" ->
+            Just AvoidingGuidanceHypertensionKnownAllergy
+
+        "hypertension-patient-declined" ->
+            Just AvoidingGuidanceHypertensionPatientDeclined
+
+        "hypertension-patient-unable-to-afford" ->
+            Just AvoidingGuidanceHypertensionPatientUnableToAfford
+
+        "hypertension-reinforce-adherence" ->
+            Just AvoidingGuidanceHypertensionReinforceAdherence
+
+        "hypertension-other" ->
+            Just AvoidingGuidanceHypertensionOther
+
+        _ ->
+            Nothing
+
+
+avoidingGuidanceReasonToString : AvoidingGuidanceReason -> String
+avoidingGuidanceReasonToString value =
+    case value of
+        AvoidingGuidanceHypertensionLackOfStock ->
+            "hypertension-lack-of-stock"
+
+        AvoidingGuidanceHypertensionKnownAllergy ->
+            "hypertension-known-allergy"
+
+        AvoidingGuidanceHypertensionPatientDeclined ->
+            "hypertension-patient-declined"
+
+        AvoidingGuidanceHypertensionPatientUnableToAfford ->
+            "hypertension-patient-unable-to-afford"
+
+        AvoidingGuidanceHypertensionReinforceAdherence ->
+            "hypertension-reinforce-adherence"
+
+        AvoidingGuidanceHypertensionOther ->
+            "hypertension-other"
 
 
 illnessSymptomToString : IllnessSymptom -> String
