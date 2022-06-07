@@ -124,6 +124,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalLabsResults (BackendEntity PrenatalLabsResults)
     | BackendAuthorityPrenatalMalariaTest (BackendEntity PrenatalMalariaTest)
     | BackendAuthorityPrenatalMedicationDistribution (BackendEntity PrenatalMedicationDistribution)
+    | BackendAuthorityPrenatalMentalHealth (BackendEntity PrenatalMentalHealth)
     | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
     | BackendAuthorityPrenatalOutsideCare (BackendEntity PrenatalOutsideCare)
     | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)

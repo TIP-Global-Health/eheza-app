@@ -705,6 +705,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalMedicationDistribution
                             BackendAuthorityPrenatalMedicationDistribution
 
+                    "prenatal_mental_health" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMentalHealth
+                            BackendAuthorityPrenatalMentalHealth
+
                     "prenatal_nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalNutrition
