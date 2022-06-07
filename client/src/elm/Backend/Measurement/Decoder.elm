@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (genderFromString)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntAsFloat, decodeIntDict, decodeStringWithDefault)
+import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntAsFloat, decodeIntDict, decodeStringWithDefault, dict2)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
@@ -130,6 +130,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_symptom_review" (decodeHead decodePrenatalSymptomReview) Nothing
         |> optional "prenatal_outside_care" (decodeHead decodePrenatalOutsideCare) Nothing
         |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
+        |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -855,6 +856,76 @@ decodeAvoidingGuidanceReason =
                 avoidingGuidanceReasonFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized AvoidingGuidanceReason")
+            )
+
+
+decodePrenatalMentalHealth : Decoder PrenatalMentalHealth
+decodePrenatalMentalHealth =
+    decodePrenatalMeasurement decodePrenatalMentalHealthValue
+
+
+decodePrenatalMentalHealthValue : Decoder PrenatalMentalHealthValue
+decodePrenatalMentalHealthValue =
+    list decodePrenatalMentalHealthQuestionTuple
+        |> map Dict.fromList
+
+
+decodePrenatalMentalHealthQuestionTuple : Decoder ( PrenatalMentalHealthQuestion, PrenatalMentalHealthQuestionOption )
+decodePrenatalMentalHealthQuestionTuple =
+    string
+        |> andThen
+            (\s ->
+                let
+                    parts =
+                        String.split "-" s
+
+                    failure =
+                        fail <|
+                            s
+                                ++ " is not a recognized decodePrenatalMentalHealthQuestionTuple"
+                in
+                case parts of
+                    [ question, answer ] ->
+                        Maybe.map2
+                            (\decodedQuestion decodedAnswer ->
+                                succeed ( decodedQuestion, decodedAnswer )
+                            )
+                            (prenatalMentalHealthQuestionFromString question)
+                            (prenatalMentalHealthQuestionOptionFromString answer)
+                            |> Maybe.withDefault failure
+
+                    _ ->
+                        failure
+            )
+
+
+decodePrenatalMentalHealthQuestion : Decoder PrenatalMentalHealthQuestion
+decodePrenatalMentalHealthQuestion =
+    string
+        |> andThen
+            (\s ->
+                prenatalMentalHealthQuestionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized PrenatalMentalHealthQuestion"
+                        )
+            )
+
+
+decodePrenatalMentalHealthQuestionOption : Decoder PrenatalMentalHealthQuestionOption
+decodePrenatalMentalHealthQuestionOption =
+    string
+        |> andThen
+            (\s ->
+                prenatalMentalHealthQuestionOptionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized PrenatalMentalHealthQuestionOption"
+                        )
             )
 
 

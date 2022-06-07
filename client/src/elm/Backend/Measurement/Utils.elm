@@ -2165,3 +2165,109 @@ prenatalOutsideCareMedicationFromString value =
 
         _ ->
             Nothing
+
+
+prenatalMentalHealthQuestionToString : PrenatalMentalHealthQuestion -> String
+prenatalMentalHealthQuestionToString value =
+    case value of
+        MentalHealthQuestion1 ->
+            "q1"
+
+        MentalHealthQuestion2 ->
+            "q2"
+
+        MentalHealthQuestion3 ->
+            "q3"
+
+        MentalHealthQuestion4 ->
+            "q4"
+
+        MentalHealthQuestion5 ->
+            "q5"
+
+        MentalHealthQuestion6 ->
+            "q6"
+
+        MentalHealthQuestion7 ->
+            "q7"
+
+        MentalHealthQuestion8 ->
+            "q8"
+
+        MentalHealthQuestion9 ->
+            "q9"
+
+        MentalHealthQuestion10 ->
+            "q10"
+
+
+prenatalMentalHealthQuestionFromString : String -> Maybe PrenatalMentalHealthQuestion
+prenatalMentalHealthQuestionFromString value =
+    case value of
+        "q1" ->
+            Just MentalHealthQuestion1
+
+        "q2" ->
+            Just MentalHealthQuestion2
+
+        "q3" ->
+            Just MentalHealthQuestion3
+
+        "q4" ->
+            Just MentalHealthQuestion4
+
+        "q5" ->
+            Just MentalHealthQuestion5
+
+        "q6" ->
+            Just MentalHealthQuestion6
+
+        "q7" ->
+            Just MentalHealthQuestion7
+
+        "q8" ->
+            Just MentalHealthQuestion8
+
+        "q9" ->
+            Just MentalHealthQuestion9
+
+        "q10" ->
+            Just MentalHealthQuestion10
+
+        _ ->
+            Nothing
+
+
+prenatalMentalHealthQuestionOptionToString : PrenatalMentalHealthQuestionOption -> String
+prenatalMentalHealthQuestionOptionToString value =
+    case value of
+        MentalHealthQuestionOption1 ->
+            "1"
+
+        MentalHealthQuestionOption2 ->
+            "2"
+
+        MentalHealthQuestionOption3 ->
+            "3"
+
+        MentalHealthQuestionOption4 ->
+            "4"
+
+
+prenatalMentalHealthQuestionOptionFromString : String -> Maybe PrenatalMentalHealthQuestionOption
+prenatalMentalHealthQuestionOptionFromString value =
+    case value of
+        "1" ->
+            Just MentalHealthQuestionOption1
+
+        "2" ->
+            Just MentalHealthQuestionOption2
+
+        "3" ->
+            Just MentalHealthQuestionOption3
+
+        "4" ->
+            Just MentalHealthQuestionOption4
+
+        _ ->
+            Nothing
