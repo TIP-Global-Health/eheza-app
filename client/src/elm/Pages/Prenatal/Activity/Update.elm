@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumMotherDangerSign(..)
+        , PrenatalOutsideCareMedication(..)
         , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
@@ -81,6 +82,17 @@ update language currentDate id db msg model =
                         >> symptomReviewFormWithDefault model.symptomReviewData.form
                     )
                 |> Maybe.withDefault model.symptomReviewData.form
+
+        outsideCareForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.outsideCare
+                        >> getMeasurementValueFunc
+                        >> outsideCareFormWithDefault model.historyData.outsideCareForm
+                    )
+                |> Maybe.withDefault model.historyData.outsideCareForm
 
         generateLaboratoryMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
@@ -613,23 +625,12 @@ update language currentDate id db msg model =
 
         SetOutsideCareDiagnosis diagnosis ->
             let
-                form =
-                    Dict.get id db.prenatalMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
-                        |> Maybe.map
-                            (.outsideCare
-                                >> getMeasurementValueFunc
-                                >> outsideCareFormWithDefault model.historyData.outsideCareForm
-                            )
-                        |> Maybe.withDefault model.historyData.outsideCareForm
-
                 updatedForm =
                     setMultiSelectInputValue .diagnoses
-                        (\value -> { form | diagnoses = value })
+                        (\value -> { outsideCareForm | diagnoses = value })
                         NoPrenatalDiagnosis
                         diagnosis
-                        form
+                        outsideCareForm
 
                 updatedData =
                     model.historyData
@@ -642,11 +643,12 @@ update language currentDate id db msg model =
 
         SetOutsideCareMalariaMedication value ->
             let
-                form =
-                    model.historyData.outsideCareForm
-
                 updatedForm =
-                    { form | malariaMedication = Just value, malariaMedicationDirty = True }
+                    setMultiSelectInputValue .malariaMedications
+                        (\medication -> { outsideCareForm | malariaMedications = medication })
+                        NoOutsideCareMedicationForMalaria
+                        value
+                        outsideCareForm
 
                 updatedData =
                     model.historyData
@@ -659,11 +661,12 @@ update language currentDate id db msg model =
 
         SetOutsideCareHypertensionMedication value ->
             let
-                form =
-                    model.historyData.outsideCareForm
-
                 updatedForm =
-                    { form | hypertensionMedication = Just value, hypertensionMedicationDirty = True }
+                    setMultiSelectInputValue .hypertensionMedications
+                        (\medication -> { outsideCareForm | hypertensionMedications = medication })
+                        NoOutsideCareMedicationForHypertension
+                        value
+                        outsideCareForm
 
                 updatedData =
                     model.historyData
@@ -676,11 +679,48 @@ update language currentDate id db msg model =
 
         SetOutsideCareSyphilisMedication value ->
             let
-                form =
-                    model.historyData.outsideCareForm
-
                 updatedForm =
-                    { form | syphilisMedication = Just value, syphilisMedicationDirty = True }
+                    setMultiSelectInputValue .syphilisMedications
+                        (\medication -> { outsideCareForm | syphilisMedications = medication })
+                        NoOutsideCareMedicationForSyphilis
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareAnemiaMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .anemiaMedications
+                        (\medication -> { outsideCareForm | anemiaMedications = medication })
+                        NoOutsideCareMedicationForAnemia
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareHIVMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .hivMedications
+                        (\medication -> { outsideCareForm | hivMedications = medication })
+                        NoOutsideCareMedicationForHIV
+                        value
+                        outsideCareForm
 
                 updatedData =
                     model.historyData

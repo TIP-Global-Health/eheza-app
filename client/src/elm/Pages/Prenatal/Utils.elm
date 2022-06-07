@@ -605,7 +605,7 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
     let
         -- Since we may have values set for another diagnosis, or from
         -- the other phase of encounter, we need to filter them out,
-        -- to be able to determine current value.
+        -- to be able to determine the current value.
         currentValue =
             Maybe.andThen
                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
@@ -918,7 +918,7 @@ resolveRecommendedTreatmentForMalariaInputsAndTasks language currentDate setReco
 
         -- Since we may have values set for another diagnosis, or from
         -- the other phase of encounter, we need to filter them out,
-        -- to be able to determine current value.
+        -- to be able to determine the current value.
         currentValue =
             Maybe.andThen
                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForMalaria)
@@ -970,7 +970,7 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
     let
         -- Since we may have values set for another diagnosis, or from
         -- inital phase of encounter, we need to filter them out,
-        -- to be able to determine current value.
+        -- to be able to determine the current value.
         currentValue =
             Maybe.andThen
                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForSyphilis)
@@ -1061,7 +1061,7 @@ resolveRecommendedTreatmentForHeartburnInputsAndTasks :
 resolveRecommendedTreatmentForHeartburnInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
     let
         -- Since we may have values set for another diagnosis,
-        -- we need to filter them out, to be able to determine current value.
+        -- we need to filter them out, to be able to determine the current value.
         currentValue =
             Maybe.andThen
                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHeartburn)
@@ -1114,7 +1114,7 @@ resolveRecommendedTreatmentForUrinaryTractInfectionInputsAndTasks :
 resolveRecommendedTreatmentForUrinaryTractInfectionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
     let
         -- Since we may have values set for another diagnosis,
-        -- we need to filter them out, to be able to determine current value.
+        -- we need to filter them out, to be able to determine the current value.
         currentValue =
             Maybe.andThen
                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForUrinaryTractInfection)
@@ -1159,7 +1159,7 @@ resolveRecommendedTreatmentForCandidiasisInputsAndTasks :
 resolveRecommendedTreatmentForCandidiasisInputsAndTasks language currentDate setRecommendedTreatmentSignMsg allowedSigns assembled form =
     let
         -- Since we may have values set for another diagnosis,
-        -- we need to filter them out, to be able to determine current value.
+        -- we need to filter them out, to be able to determine the current value.
         currentValue =
             Maybe.andThen
                 (List.filter (\sign -> List.member sign recommendedTreatmentSignsForCandidiasis)
