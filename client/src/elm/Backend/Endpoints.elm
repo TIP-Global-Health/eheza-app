@@ -1010,3 +1010,9 @@ prenatalHIVPCRTestEndpoint : ReadWriteEndPoint Error PrenatalHIVPCRTestId Prenat
 prenatalHIVPCRTestEndpoint =
     swEndpoint "nodes/prenatal_hiv_pcr_test" decodePrenatalHIVPCRTest
         |> withValueEncoder (object << encodePrenatalHIVPCRTest)
+
+
+prenatalMentalHealthEndpoint : ReadWriteEndPoint Error PrenatalMentalHealthId PrenatalMentalHealth PrenatalMentalHealth ()
+prenatalMentalHealthEndpoint =
+    swEndpoint "nodes/prenatal_mental_health" decodePrenatalMentalHealth
+        |> withValueEncoder (object << encodePrenatalMentalHealth)
