@@ -1133,3 +1133,11 @@ type alias PrenatalHIVPCRTestId =
 
 type PrenatalHIVPCRTestUuidType
     = PrenatalHIVPCRTestUuidType
+
+
+type alias PrenatalMentalHealthId =
+    EntityUuid PrenatalMentalHealthUuidType
+
+
+type PrenatalMentalHealthUuidType
+    = PrenatalMentalHealthUuidType
