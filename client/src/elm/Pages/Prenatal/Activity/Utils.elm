@@ -35,6 +35,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
@@ -637,6 +638,12 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisDeepVeinThrombosis
             , DiagnosisPelvicPainIntense
             , DiagnosisPyelonephritis
+            , DiagnosisMalariaMedicatedContinued
+            , DiagnosisMalariaWithAnemiaMedicatedContinued
+            , DiagnosisUrinaryTractInfectionContinued
+            , DiagnosisCandidiasisContinued
+            , DiagnosisGonorrheaContinued
+            , DiagnosisTrichomonasOrBacterialVaginosisContinued
             ]
             assembled
 
@@ -1050,7 +1057,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 assembled.globalLmpDate
 
         diagnosesByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled.measurements)
+            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
                 labResultsDiagnoses
                 |> EverySet.fromList
 
@@ -1184,9 +1191,12 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             False
 
 
-matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> PrenatalMeasurements -> PrenatalDiagnosis -> Bool
-matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
+matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
+matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
     let
+        measurements =
+            assembled.measurements
+
         positiveMalariaTest =
             testedPositiveAt .malariaTest
 
@@ -1215,6 +1225,28 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
                         EverySet.member PallorHands exam.hands || EverySet.member PaleConjuctiva exam.eyes
                     )
                 |> Maybe.withDefault False
+
+        malariaDiagnosed =
+            positiveMalariaTest
+                && ((-- Either hemoglobin test was not performed, or,
+                     -- hemoglobin count is within normal ranges.
+                     Maybe.map (\count -> count >= 11) hemoglobinCount
+                        |> Maybe.withDefault True
+                    )
+                        || -- When severe Anemia with complications is diagnosed,
+                           -- we view Malaia as separate diagnosis.
+                           -- Therefore's not 'Malarial and Severe Anemia with
+                           -- complications' diagnosis.
+                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled DiagnosisSevereAnemiaWithComplications
+                   )
+
+        malariaWithAnemiaDiagnosed =
+            positiveMalariaTest
+                && (-- Hemoglobin test was performed, and,
+                    -- hemoglobin count indicates mild to moderate anemia.
+                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
@@ -1296,26 +1328,26 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements diagnosis =
             testedPositiveAt .hepatitisBTest
 
         DiagnosisMalaria ->
-            positiveMalariaTest
-                && ((-- Either hemoglobin test was not performed, or,
-                     -- hemoglobin count is within normal ranges.
-                     Maybe.map (\count -> count >= 11) hemoglobinCount
-                        |> Maybe.withDefault True
-                    )
-                        || -- When severe Anemia with complications is diagnosed,
-                           -- we view Malaia as separate diagnosis.
-                           -- Therefore's not 'Malarial and Severe Anemia with
-                           -- complications' diagnosis.
-                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns measurements DiagnosisSevereAnemiaWithComplications
+            malariaDiagnosed
+                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
+                        || (not <| diagnosedPreviously DiagnosisMalaria assembled)
                    )
 
+        DiagnosisMalariaMedicatedContinued ->
+            malariaDiagnosed
+                && (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviously DiagnosisMalaria assembled
+
         DiagnosisMalariaWithAnemia ->
-            positiveMalariaTest
-                && (-- Hemoglobin test was performed, and,
-                    -- hemoglobin count indicates mild to moderate anemia.
-                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
-                        |> Maybe.withDefault False
+            malariaWithAnemiaDiagnosed
+                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
+                        || (not <| diagnosedPreviously DiagnosisMalariaWithAnemia assembled)
                    )
+
+        DiagnosisMalariaWithAnemiaMedicatedContinued ->
+            malariaWithAnemiaDiagnosed
+                && (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviously DiagnosisMalariaWithAnemia assembled
 
         DiagnosisMalariaWithSevereAnemia ->
             positiveMalariaTest
@@ -1386,25 +1418,11 @@ matchExaminationPrenatalDiagnosis egaInWeeks measurements diagnosis =
 
 matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
 matchSymptomsPrenatalDiagnosis assembled diagnosis =
-    case diagnosis of
-        DiagnosisHyperemesisGravidumBySymptoms ->
-            hospitalizeDueToNauseaAndVomiting assembled
-
-        DiagnosisHeartburn ->
+    let
+        heartburnDiagnosed =
             symptomRecorded assembled.measurements Heartburn
-                && (not <| symptomRecordedPreviously assembled Heartburn)
 
-        DiagnosisHeartburnPersistent ->
-            symptomRecorded assembled.measurements Heartburn
-                && symptomRecordedPreviously assembled Heartburn
-
-        DiagnosisDeepVeinThrombosis ->
-            hospitalizeDueToLegPainRedness assembled
-
-        DiagnosisPelvicPainIntense ->
-            hospitalizeDueToPelvicPain assembled
-
-        DiagnosisUrinaryTractInfection ->
+        urinaryTractInfectionDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1415,16 +1433,7 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
-        DiagnosisPyelonephritis ->
-            getMeasurementValueFunc assembled.measurements.symptomReview
-                |> Maybe.map
-                    (\value ->
-                        EverySet.member BurningWithUrination value.symptoms
-                            && flankPainPresent value.flankPainSign
-                    )
-                |> Maybe.withDefault False
-
-        DiagnosisCandidiasis ->
+        candidiasisDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1440,7 +1449,7 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
-        DiagnosisGonorrhea ->
+        gonorrheaDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1449,7 +1458,7 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                     )
                 |> Maybe.withDefault False
 
-        DiagnosisTrichomonasOrBacterialVaginosis ->
+        trichomonasOrBacterialVaginosisDiagnosed =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
                     (\value ->
@@ -1458,6 +1467,65 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
                                 [ SymptomQuestionVaginalItching, SymptomQuestionPartnerUrethralDischarge ]
                     )
                 |> Maybe.withDefault False
+    in
+    case diagnosis of
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            hospitalizeDueToNauseaAndVomiting assembled
+
+        DiagnosisHeartburn ->
+            heartburnDiagnosed
+                && (not <| diagnosedPreviously DiagnosisHeartburn assembled)
+
+        DiagnosisHeartburnPersistent ->
+            heartburnDiagnosed
+                && diagnosedPreviously DiagnosisHeartburn assembled
+
+        DiagnosisDeepVeinThrombosis ->
+            hospitalizeDueToLegPainRedness assembled
+
+        DiagnosisPelvicPainIntense ->
+            hospitalizeDueToPelvicPain assembled
+
+        DiagnosisUrinaryTractInfection ->
+            urinaryTractInfectionDiagnosed
+                && (not <| diagnosedPreviously DiagnosisUrinaryTractInfection assembled)
+
+        DiagnosisUrinaryTractInfectionContinued ->
+            urinaryTractInfectionDiagnosed
+                && diagnosedPreviously DiagnosisUrinaryTractInfection assembled
+
+        DiagnosisPyelonephritis ->
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member BurningWithUrination value.symptoms
+                            && flankPainPresent value.flankPainSign
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisCandidiasis ->
+            candidiasisDiagnosed
+                && (not <| diagnosedPreviously DiagnosisCandidiasis assembled)
+
+        DiagnosisCandidiasisContinued ->
+            candidiasisDiagnosed
+                && diagnosedPreviously DiagnosisCandidiasis assembled
+
+        DiagnosisGonorrhea ->
+            gonorrheaDiagnosed
+                && (not <| diagnosedPreviously DiagnosisGonorrhea assembled)
+
+        DiagnosisGonorrheaContinued ->
+            gonorrheaDiagnosed
+                && diagnosedPreviously DiagnosisGonorrhea assembled
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            trichomonasOrBacterialVaginosisDiagnosed
+                && (not <| diagnosedPreviously DiagnosisGonorrhea assembled)
+
+        DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+            trichomonasOrBacterialVaginosisDiagnosed
+                && diagnosedPreviously DiagnosisGonorrhea assembled
 
         Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
             symptomRecorded assembled.measurements CoughContinuous
@@ -1619,7 +1687,9 @@ labResultsDiagnoses =
     , DiagnosisNeurosyphilis
     , DiagnosisHepatitisB
     , DiagnosisMalaria
+    , DiagnosisMalariaMedicatedContinued
     , DiagnosisMalariaWithAnemia
+    , DiagnosisMalariaWithAnemiaMedicatedContinued
     , DiagnosisMalariaWithSevereAnemia
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia
@@ -1646,10 +1716,14 @@ symptomsDiagnoses =
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
     , DiagnosisUrinaryTractInfection
+    , DiagnosisUrinaryTractInfectionContinued
     , DiagnosisPyelonephritis
     , DiagnosisCandidiasis
+    , DiagnosisCandidiasisContinued
     , DiagnosisGonorrhea
+    , DiagnosisGonorrheaContinued
     , DiagnosisTrichomonasOrBacterialVaginosis
+    , DiagnosisTrichomonasOrBacterialVaginosisContinued
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
     ]
 
@@ -4718,36 +4792,28 @@ outsideCareFormWithDefault form saved =
             form
             (\value ->
                 let
-                    malariaMedication =
-                        Maybe.andThen
-                            (EverySet.toList
-                                >> List.filter
-                                    (\medication ->
-                                        List.member medication outsideCareMedicationOptionsMalaria
-                                    )
-                                >> List.head
-                            )
-                            value.medications
+                    malariaMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsMalaria
 
-                    hypertensionMedication =
-                        Maybe.andThen
-                            (EverySet.toList
-                                >> List.filter
-                                    (\medication ->
-                                        List.member medication outsideCareMedicationOptionsHypertension
-                                    )
-                                >> List.head
-                            )
-                            value.medications
+                    hypertensionMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsHypertension
 
-                    syphilisMedication =
-                        Maybe.andThen
+                    syphilisMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsSyphilis
+
+                    anemiaMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsAnemia
+
+                    hivMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsHIV
+
+                    filterIllnessOptions options =
+                        Maybe.map
                             (EverySet.toList
                                 >> List.filter
                                     (\medication ->
-                                        List.member medication outsideCareMedicationOptionsSyphilis
+                                        List.member medication options
                                     )
-                                >> List.head
                             )
                             value.medications
                 in
@@ -4756,14 +4822,11 @@ outsideCareFormWithDefault form saved =
                 , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
                 , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
                 , diagnosesDirty = form.diagnosesDirty
-                , malariaMedication = maybeValueConsideringIsDirtyField form.malariaMedicationDirty form.malariaMedication malariaMedication
-                , malariaMedicationDirty = form.malariaMedicationDirty
-                , hypertensionMedication = maybeValueConsideringIsDirtyField form.hypertensionMedicationDirty form.hypertensionMedication hypertensionMedication
-                , hypertensionMedicationDirty = form.hypertensionMedicationDirty
-                , syphilisMedication = maybeValueConsideringIsDirtyField form.syphilisMedicationDirty form.syphilisMedication syphilisMedication
-                , syphilisMedicationDirty = form.syphilisMedicationDirty
-                , hivMedication = or form.hivMedication (Maybe.map (EverySet.member OutsideCareMedicationHIV) value.medications)
-                , anemiaMedication = or form.anemiaMedication (Maybe.map (EverySet.member OutsideCareMedicationAnemia) value.medications)
+                , malariaMedications = or form.malariaMedications malariaMedications
+                , hypertensionMedications = or form.hypertensionMedications hypertensionMedications
+                , syphilisMedications = or form.syphilisMedications syphilisMedications
+                , hivMedications = or form.hivMedications hivMedications
+                , anemiaMedications = or form.anemiaMedications anemiaMedications
                 }
             )
 
@@ -4791,19 +4854,17 @@ toPrenatalOutsideCareValue form =
                 diagnoses =
                     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoPrenatalDiagnosis) form.diagnoses
 
-                medications =
-                    [ ifNullableTrue OutsideCareMedicationHIV form.hivMedication
-                    , ifNullableTrue OutsideCareMedicationAnemia form.anemiaMedication
+                mapMedications illnessMedications =
+                    [ Maybe.map (EverySet.fromList >> Just) illnessMedications
+                        |> Maybe.withDefault (Just EverySet.empty)
                     ]
-                        ++ [ Maybe.map (EverySet.singleton >> Just) form.malariaMedication
-                                |> Maybe.withDefault (Just EverySet.empty)
-                           ]
-                        ++ [ Maybe.map (EverySet.singleton >> Just) form.hypertensionMedication
-                                |> Maybe.withDefault (Just EverySet.empty)
-                           ]
-                        ++ [ Maybe.map (EverySet.singleton >> Just) form.syphilisMedication
-                                |> Maybe.withDefault (Just EverySet.empty)
-                           ]
+
+                medications =
+                    mapMedications form.malariaMedications
+                        ++ mapMedications form.hypertensionMedications
+                        ++ mapMedications form.syphilisMedications
+                        ++ mapMedications form.anemiaMedications
+                        ++ mapMedications form.hivMedications
                         |> Maybe.Extra.combine
                         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareMedications)
             in
@@ -4855,14 +4916,11 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                                             (\value form_ ->
                                                                 { form_
                                                                     | givenMedicine = Just value
-                                                                    , malariaMedication = Nothing
-                                                                    , malariaMedicationDirty = True
-                                                                    , hypertensionMedication = Nothing
-                                                                    , hypertensionMedicationDirty = True
-                                                                    , syphilisMedication = Nothing
-                                                                    , syphilisMedicationDirty = True
-
-                                                                    --@todo : Empty HIV and Anemia fields
+                                                                    , malariaMedications = Nothing
+                                                                    , hypertensionMedications = Nothing
+                                                                    , syphilisMedications = Nothing
+                                                                    , hivMedications = Nothing
+                                                                    , anemiaMedications = Nothing
                                                                 }
                                                             )
                                                         )
@@ -4973,15 +5031,12 @@ outsideCareFormInputsAndTasksMedications language form =
                     ( malariaInputs, malariaTasks ) =
                         if List.member DiagnosisMalaria diagnoses then
                             ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
-                              , viewCheckBoxSelectCustomInput language
-                                    outsideCareMedicationOptionsMalaria
-                                    []
-                                    form.malariaMedication
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsMalaria
+                                    NoOutsideCareMedicationForMalaria
+                                    form.malariaMedications
                                     SetOutsideCareMalariaMedication
-                                    (viewOutsideCareMedicationOption language)
-                              , div [ class "separator" ] []
                               ]
-                            , [ if isJust form.malariaMedication then
+                            , [ if isJust form.malariaMedications then
                                     Just True
 
                                 else
@@ -5000,15 +5055,12 @@ outsideCareFormInputsAndTasksMedications language form =
                                 ]
                         then
                             ( [ viewHeader Translate.Hypertension
-                              , viewCheckBoxSelectCustomInput language
-                                    outsideCareMedicationOptionsHypertension
-                                    []
-                                    form.hypertensionMedication
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
+                                    NoOutsideCareMedicationForHypertension
+                                    form.hypertensionMedications
                                     SetOutsideCareHypertensionMedication
-                                    (viewOutsideCareMedicationOption language)
-                              , div [ class "separator" ] []
                               ]
-                            , [ if isJust form.hypertensionMedication then
+                            , [ if isJust form.hypertensionMedications then
                                     Just True
 
                                 else
@@ -5022,15 +5074,12 @@ outsideCareFormInputsAndTasksMedications language form =
                     ( syphilisInputs, syphilisTasks ) =
                         if List.member DiagnosisSyphilis diagnoses then
                             ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
-                              , viewCheckBoxSelectCustomInput language
-                                    outsideCareMedicationOptionsSyphilis
-                                    []
-                                    form.syphilisMedication
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsSyphilis
+                                    NoOutsideCareMedicationForSyphilis
+                                    form.syphilisMedications
                                     SetOutsideCareSyphilisMedication
-                                    (viewOutsideCareMedicationOption language)
-                              , div [ class "separator" ] []
                               ]
-                            , [ if isJust form.syphilisMedication then
+                            , [ if isJust form.syphilisMedications then
                                     Just True
 
                                 else
@@ -5041,6 +5090,57 @@ outsideCareFormInputsAndTasksMedications language form =
                         else
                             ( [], [] )
 
+                    ( anemiaInputs, anemiaTasks ) =
+                        if List.member DiagnosisModerateAnemia diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisModerateAnemia
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsAnemia
+                                    NoOutsideCareMedicationForAnemia
+                                    form.anemiaMedications
+                                    SetOutsideCareAnemiaMedication
+                              ]
+                            , [ if isJust form.anemiaMedications then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( hivInputs, hivTasks ) =
+                        if List.member DiagnosisHIV diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisHIV
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHIV
+                                    NoOutsideCareMedicationForHIV
+                                    form.hivMedications
+                                    SetOutsideCareHIVMedication
+                              ]
+                            , [ if isJust form.hivMedications then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    selectTreatmentOptionsInput allOptions noneOption currentValue setMsg =
+                        let
+                            options =
+                                List.filter ((/=) noneOption) allOptions
+                        in
+                        viewCheckBoxMultipleSelectCustomInput language
+                            options
+                            []
+                            (Maybe.withDefault [] currentValue)
+                            (Just noneOption)
+                            setMsg
+                            (viewOutsideCareMedicationOption language)
+
                     viewHeader diagnosisTransId =
                         div [ class "label" ]
                             [ span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilityPrefix ]
@@ -5050,8 +5150,8 @@ outsideCareFormInputsAndTasksMedications language form =
                             , span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilitySuffix ]
                             ]
                 in
-                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs
-                , malariaTasks ++ hypertensionTasks ++ syphilisTasks
+                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs ++ anemiaInputs ++ hivInputs
+                , malariaTasks ++ hypertensionTasks ++ syphilisTasks ++ anemiaTasks ++ hivTasks
                 )
             )
             form.diagnoses
@@ -5059,6 +5159,15 @@ outsideCareFormInputsAndTasksMedications language form =
 
     else
         ( [], [] )
+
+
+viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any
+viewOutsideCareMedicationOption language medication =
+    if List.member medication noOutsideCareMedicationOptions then
+        label [] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
+
+    else
+        viewOutsideCareMedicationOptionWithDosage language medication
 
 
 outsideCareMedicationOptionsMalaria : List PrenatalOutsideCareMedication
@@ -5091,23 +5200,31 @@ outsideCareMedicationOptionsSyphilis =
     ]
 
 
-viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any
-viewOutsideCareMedicationOption language medication =
-    if
-        List.member medication
-            [ NoOutsideCareMedicationForMalaria
-            , NoOutsideCareMedicationForHypertension
-            , NoOutsideCareMedicationForSyphilis
-            ]
-    then
-        label []
-            [ span
-                [ class "treatment" ]
-                [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
-            ]
+outsideCareMedicationOptionsAnemia : List PrenatalOutsideCareMedication
+outsideCareMedicationOptionsAnemia =
+    [ OutsideCareMedicationIron1
+    , OutsideCareMedicationIron2
+    , OutsideCareMedicationFolicAcid
+    , NoOutsideCareMedicationForAnemia
+    ]
 
-    else
-        viewOutsideCareMedicationOptionWithDosage language medication
+
+outsideCareMedicationOptionsHIV : List PrenatalOutsideCareMedication
+outsideCareMedicationOptionsHIV =
+    [ OutsideCareMedicationTDF3TC
+    , OutsideCareMedicationDolutegravir
+    , NoOutsideCareMedicationForHIV
+    ]
+
+
+noOutsideCareMedicationOptions : List PrenatalOutsideCareMedication
+noOutsideCareMedicationOptions =
+    [ NoOutsideCareMedicationForMalaria
+    , NoOutsideCareMedicationForHypertension
+    , NoOutsideCareMedicationForSyphilis
+    , NoOutsideCareMedicationForAnemia
+    , NoOutsideCareMedicationForHIV
+    ]
 
 
 viewOutsideCareMedicationOptionWithDosage : Language -> PrenatalOutsideCareMedication -> Html any

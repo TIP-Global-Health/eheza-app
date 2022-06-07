@@ -1779,7 +1779,7 @@ div.page-activity.prenatal {
           margin-bottom: 35px;
         }
       }
-      
+
       .form.history.outside-care,
       .form.medication-distribution {
 
@@ -1837,6 +1837,10 @@ div.page-activity.prenatal {
 
         .label .diagnosis {
           color: $color-primary;
+        }
+
+        .checkbox-select-input {
+          margin-bottom: 40px;
         }
       }
     }

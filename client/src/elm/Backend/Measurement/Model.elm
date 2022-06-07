@@ -1260,9 +1260,14 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationAmlodipine
     | NoOutsideCareMedicationForHypertension
       -- For HIV:
-    | OutsideCareMedicationHIV
+    | OutsideCareMedicationTDF3TC
+    | OutsideCareMedicationDolutegravir
+    | NoOutsideCareMedicationForHIV
       -- For Anemia:
-    | OutsideCareMedicationAnemia
+    | OutsideCareMedicationIron1
+    | OutsideCareMedicationIron2
+    | OutsideCareMedicationFolicAcid
+    | NoOutsideCareMedicationForAnemia
     | NoPrenatalOutsideCareMedications
 
 
