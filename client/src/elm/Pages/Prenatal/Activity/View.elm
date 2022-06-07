@@ -198,6 +198,10 @@ viewActivity language currentDate isChw activity assembled db model =
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
 
+        MaternalMentalHealth ->
+            -- @todo
+            []
+
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
             []

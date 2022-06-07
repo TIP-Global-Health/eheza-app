@@ -34,6 +34,7 @@ getAllActivities assembled =
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , DangerSigns
                 , Laboratory
+                , MaternalMentalHealth
                 , PrenatalPhoto
                 , NextSteps
                 ]
@@ -47,6 +48,7 @@ getAllActivities assembled =
                 , PrenatalTreatmentReview
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , Laboratory
+                , MaternalMentalHealth
                 , PrenatalPhoto
                 , NextSteps
                 ]

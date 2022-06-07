@@ -52,7 +52,7 @@ import Translate.Model exposing (Language(..))
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
 expectActivity currentDate assembled activity =
     case assembled.encounter.encounterType of
-        -- Note that for nurse it's always ised after
+        -- Note that for nurse it's always used after
         -- Pages.Prenatal.Encounter.Utils.getAllActivities, which supplies
         -- different activities, depending if nurse encounter was performed
         -- previously, or not.
@@ -108,6 +108,10 @@ expectActivity currentDate assembled activity =
                 PrenatalTreatmentReview ->
                     -- There will always be at least the Prenatal Medication
                     -- task to complete.
+                    True
+
+                MaternalMentalHealth ->
+                    -- @todo - from 28 weeks EGA and not done already.
                     True
 
                 -- Unique Chw activities.
@@ -258,6 +262,10 @@ activityCompleted currentDate assembled activity =
         PrenatalTreatmentReview ->
             resolveTreatmentReviewTasks assembled
                 |> List.all (treatmentReviewTaskCompleted assembled)
+
+        MaternalMentalHealth ->
+            --@todo
+            False
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask

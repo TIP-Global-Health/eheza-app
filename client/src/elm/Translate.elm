@@ -7759,9 +7759,14 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
-                Backend.PrenatalActivity.Model.PrenatalTreatmentReview ->
+                PrenatalTreatmentReview ->
                     { english = "Treatment Review"
                     , kinyarwanda = Just "Kureba imiti yahawe"
+                    }
+
+                MaternalMentalHealth ->
+                    { english = "Maternal Mental Health"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalRecurrentActivitiesTitle activity ->
