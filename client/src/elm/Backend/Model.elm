@@ -450,6 +450,7 @@ type Revision
     | PrenatalHIVPCRTestRevision PrenatalHIVPCRTestId PrenatalHIVPCRTest
     | PrenatalLabsResultsRevision PrenatalLabsResultsId PrenatalLabsResults
     | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
+    | PrenatalMentalHealthRevision PrenatalMentalHealthId PrenatalMentalHealth
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
