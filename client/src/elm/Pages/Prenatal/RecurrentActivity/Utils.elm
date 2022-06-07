@@ -81,6 +81,7 @@ laboratoryResultTasks =
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
+    , TaskHIVPCRTest
     ]
 
 
@@ -126,6 +127,9 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskRandomBloodSugarTest ->
             (not <| taskExpected TaskRandomBloodSugarTest) || testResultsCompleted .randomBloodSugarTest .sugarCount
 
+        TaskHIVPCRTest ->
+            (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
+
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryResultTask currentDate assembled task =
@@ -163,6 +167,9 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskRandomBloodSugarTest ->
             wasTestPerformed .randomBloodSugarTest
+
+        TaskHIVPCRTest ->
+            wasTestPerformed .hivPCRTest
 
 
 hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm
@@ -555,3 +562,36 @@ examinationTasksCompletedFromTotal assembled data task =
             ( taskAllCompleted [ form.sysRepeated, form.diaRepeated ]
             , 1
             )
+
+
+prenatalHIVPCRResultFormWithDefault : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm
+prenatalHIVPCRResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , hivViralLoadStatus = or form.hivViralLoadStatus value.hivViralLoadStatus
+                , hivViralLoad = or form.hivViralLoad value.hivViralLoad
+                }
+            )
+
+
+toPrenatalHIVPCRResultsValueWithDefault : Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
+toPrenatalHIVPCRResultsValueWithDefault saved form =
+    prenatalHIVPCRResultFormWithDefault form saved
+        |> toPrenatalHIVPCRResultsValue
+
+
+toPrenatalHIVPCRResultsValue : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
+toPrenatalHIVPCRResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , hivViralLoadStatus = form.hivViralLoadStatus
+            , hivViralLoad = form.hivViralLoad
+            }
+        )
+        form.executionNote

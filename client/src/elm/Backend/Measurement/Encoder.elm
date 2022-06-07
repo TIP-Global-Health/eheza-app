@@ -429,6 +429,52 @@ encodePrenatalHIVTestValue value =
            ]
 
 
+encodePrenatalHIVPCRTest : PrenatalHIVPCRTest -> List ( String, Value )
+encodePrenatalHIVPCRTest =
+    encodePrenatalMeasurement encodePrenatalHIVPCRTestValue
+
+
+encodePrenatalHIVPCRTestValue : PrenatalHIVPCRTestValue -> List ( String, Value )
+encodePrenatalHIVPCRTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        hivViralLoadStatus =
+            Maybe.map
+                (\viralLoadStatus -> [ ( "hiv_viral_load_status", encodeViralLoadStatus viralLoadStatus ) ])
+                value.hivViralLoadStatus
+                |> Maybe.withDefault []
+
+        hivViralLoad =
+            Maybe.map
+                (\viralLoad -> [ ( "hiv_viral_load", float viralLoad ) ])
+                value.hivViralLoad
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ hivViralLoadStatus
+        ++ hivViralLoad
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hiv_pcr_test" )
+           ]
+
+
+encodeViralLoadStatus : ViralLoadStatus -> Value
+encodeViralLoadStatus value =
+    string <|
+        case value of
+            ViralLoadDetectable ->
+                "detectable"
+
+            ViralLoadUndetectable ->
+                "undetectable"
+
+
 encodePrenatalHIVSign : PrenatalHIVSign -> Value
 encodePrenatalHIVSign signs =
     string <|
@@ -746,6 +792,9 @@ encodePrenatalLaboratoryTest value =
 
             TestVitalsRecheck ->
                 "vitals-recheck"
+
+            TestHIVPCR ->
+                "hiv-pcr"
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
@@ -1300,6 +1349,9 @@ encodeMedicationTreatmentSign sign =
             MedicationTreatmentAdverseEvents ->
                 "adverse-events"
 
+            MedicationTreatmentAdverseEventsHospitalization ->
+                "adverse-events-hospitalization"
+
             NoMedicationTreatment ->
                 "none"
 
@@ -1316,6 +1368,9 @@ encodeHIVTreatmentSign sign =
 
             HIVTreatmentAdverseEvents ->
                 "adverse-events"
+
+            HIVTreatmentAdverseEventsHospitalization ->
+                "adverse-events-hospitalization"
 
             HIVTreatmentMedicineByPMTCT ->
                 "medicine-pmtct"

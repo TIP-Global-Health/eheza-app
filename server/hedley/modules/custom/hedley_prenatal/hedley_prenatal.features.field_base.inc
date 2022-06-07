@@ -151,6 +151,7 @@ function hedley_prenatal_field_default_field_bases() {
         'hemoglobin' => 'Hemoglobin',
         'random-blood-sugar' => 'Random Blood Sugar',
         'vitals-recheck' => 'Vitals Recheck',
+        'hiv-pcr' => 'HIV PCR',
       ),
       'allowed_values_function' => '',
     ),
@@ -331,6 +332,48 @@ function hedley_prenatal_field_default_field_bases() {
         'partner-taking-arv' => 'Partner taking ARVs',
         'partner-surpressed-viral-load' => 'Partner got surpressed viral load',
         'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hiv_viral_load'.
+  $field_bases['field_hiv_viral_load'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_viral_load',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_hiv_viral_load_status'.
+  $field_bases['field_hiv_viral_load_status'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_viral_load_status',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'detectable' => 'Detectable',
+        'undetectable' => 'Undetectable',
       ),
       'allowed_values_function' => '',
     ),
@@ -571,6 +614,7 @@ function hedley_prenatal_field_default_field_bases() {
         'hemoglobin' => 'Hemoglobin',
         'random-blood-sugar' => 'Random Blood Sugar',
         'vitals-recheck' => 'Vitals Recheck',
+        'hiv-pcr' => 'HIV PCR',
       ),
       'allowed_values_function' => '',
     ),

@@ -129,6 +129,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
         |> optional "prenatal_symptom_review" (decodeHead decodePrenatalSymptomReview) Nothing
         |> optional "prenatal_outside_care" (decodeHead decodePrenatalOutsideCare) Nothing
+        |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -457,14 +458,6 @@ decodePrenatalHIVTest =
     decodePrenatalMeasurement decodePrenatalHIVTestValue
 
 
-decodePrenatalMalariaTestValue : Decoder PrenatalMalariaTestValue
-decodePrenatalMalariaTestValue =
-    succeed PrenatalMalariaTestValue
-        |> required "test_execution_note" decodePrenatalTestExecutionNote
-        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
-
-
 decodePrenatalHIVTestValue : Decoder PrenatalHIVTestValue
 decodePrenatalHIVTestValue =
     succeed PrenatalHIVTestValue
@@ -472,6 +465,39 @@ decodePrenatalHIVTestValue =
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
         |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
+
+
+decodePrenatalHIVPCRTest : Decoder PrenatalHIVPCRTest
+decodePrenatalHIVPCRTest =
+    decodePrenatalMeasurement decodePrenatalHIVPCRTestValue
+
+
+decodePrenatalHIVPCRTestValue : Decoder PrenatalHIVPCRTestValue
+decodePrenatalHIVPCRTestValue =
+    succeed PrenatalHIVPCRTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "hiv_viral_load_status" (nullable decodeViralLoadStatus) Nothing
+        |> optional "hiv_viral_load" (nullable decodeFloat) Nothing
+
+
+decodeViralLoadStatus : Decoder ViralLoadStatus
+decodeViralLoadStatus =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "detectable" ->
+                        succeed ViralLoadDetectable
+
+                    "undetectable" ->
+                        succeed ViralLoadUndetectable
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized ViralLoadStatus"
+            )
 
 
 decodePrenatalHIVSign : Decoder PrenatalHIVSign
@@ -488,6 +514,14 @@ decodePrenatalHIVSign =
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
 decodePrenatalMalariaTest =
     decodePrenatalMeasurement decodePrenatalMalariaTestValue
+
+
+decodePrenatalMalariaTestValue : Decoder PrenatalMalariaTestValue
+decodePrenatalMalariaTestValue =
+    succeed PrenatalMalariaTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest
@@ -768,6 +802,9 @@ decodePrenatalLaboratoryTest =
 
                     "vitals-recheck" ->
                         succeed TestVitalsRecheck
+
+                    "hiv-pcr" ->
+                        succeed TestHIVPCR
 
                     _ ->
                         fail <|
@@ -1528,6 +1565,9 @@ decodeMedicationTreatmentSign =
                     "adverse-events" ->
                         succeed MedicationTreatmentAdverseEvents
 
+                    "adverse-events-hospitalization" ->
+                        succeed MedicationTreatmentAdverseEventsHospitalization
+
                     "none" ->
                         succeed NoMedicationTreatment
 
@@ -1550,6 +1590,9 @@ decodeHIVTreatmentSign =
 
                     "adverse-events" ->
                         succeed HIVTreatmentAdverseEvents
+
+                    "adverse-events-hospitalization" ->
+                        succeed HIVTreatmentAdverseEventsHospitalization
 
                     "medicine-pmtct" ->
                         succeed HIVTreatmentMedicineByPMTCT

@@ -588,6 +588,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalHIVTest identifier ->
             getIdentifier identifier "prenatal_hiv_test"
 
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            getIdentifier identifier "prenatal_hiv_pcr_test"
+
         BackendAuthorityPrenatalLabsResults identifier ->
             getIdentifier identifier "prenatal_labs_results"
 
@@ -1152,6 +1155,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalHIVTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalHIVTest identifier
 
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHIVPCRTest identifier
+
         BackendAuthorityPrenatalLabsResults identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalLabsResults identifier
 
@@ -1678,6 +1684,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalHIVTest identifier ->
             PrenatalHIVTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            PrenatalHIVPCRTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalLabsResults identifier ->
             PrenatalLabsResultsRevision (toEntityUuid identifier.uuid) identifier.entity

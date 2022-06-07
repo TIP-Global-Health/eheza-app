@@ -597,6 +597,7 @@ type MedicationTreatmentSign
     = MedicationTreatmentStillTaking
     | MedicationTreatmentMissedDoses
     | MedicationTreatmentAdverseEvents
+    | MedicationTreatmentAdverseEventsHospitalization
     | NoMedicationTreatment
 
 
@@ -604,6 +605,7 @@ type HIVTreatmentSign
     = HIVTreatmentStillTaking
     | HIVTreatmentMissedDoses
     | HIVTreatmentAdverseEvents
+    | HIVTreatmentAdverseEventsHospitalization
     | HIVTreatmentMedicineByPMTCT
     | HIVTreatmentNoMedicineNotSeenAtPMTCT
     | HIVTreatmentNoMedicineOutOfStock
@@ -917,8 +919,25 @@ type PrenatalHIVSign
     | NoPrenatalHIVSign
 
 
+type alias PrenatalHIVPCRTest =
+    PrenatalMeasurement PrenatalHIVPCRTestValue
+
+
 type alias PrenatalHepatitisBTest =
     PrenatalMeasurement PrenatalHepatitisBTestValue
+
+
+type alias PrenatalHIVPCRTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hivViralLoadStatus : Maybe ViralLoadStatus
+    , hivViralLoad : Maybe Float
+    }
+
+
+type ViralLoadStatus
+    = ViralLoadDetectable
+    | ViralLoadUndetectable
 
 
 type alias PrenatalHepatitisBTestValue =
@@ -1125,6 +1144,7 @@ type PrenatalLaboratoryTest
     | TestSyphilis
     | TestUrineDipstick
     | TestVitalsRecheck
+    | TestHIVPCR
 
 
 type alias PrenatalMedicationDistribution =
@@ -2153,6 +2173,7 @@ type alias PrenatalMeasurements =
     , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
     , symptomReview : Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview )
     , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
+    , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
     }
 
 
@@ -2191,6 +2212,7 @@ emptyPrenatalMeasurements =
     , medicationDistribution = Nothing
     , symptomReview = Nothing
     , outsideCare = Nothing
+    , hivPCRTest = Nothing
     }
 
 

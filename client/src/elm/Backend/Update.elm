@@ -1787,6 +1787,27 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ PrenatalHIVPCRTestRevision uuid data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHIVPCR
+                                data.value.executionNote
+                                (isJust data.value.hivViralLoadStatus)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
                 [ PrenatalSyphilisTestRevision uid data ] ->
                     let
                         -- We do not catch changes done to model, because
@@ -3540,6 +3561,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHIVPCRTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivPCRTest = Just ( uuid, data ) })
                 model
             , recalc
             )

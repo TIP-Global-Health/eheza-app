@@ -3,7 +3,7 @@ module Pages.Prenatal.RecurrentActivity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (IllnessSymptom(..))
+import Backend.Measurement.Model exposing (IllnessSymptom(..), ViralLoadStatus(..))
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
@@ -589,6 +589,74 @@ update language currentDate id db msg model =
                     toPrenatalRandomBloodSugarResultsValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetHIVViralLoadUndetectable undetectable ->
+            let
+                form =
+                    model.labResultsData.hivPCRTestForm
+
+                status =
+                    if undetectable then
+                        ViralLoadUndetectable
+
+                    else
+                        ViralLoadDetectable
+
+                updatedForm =
+                    { form | hivViralLoadStatus = Just status }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVViralLoad value ->
+            let
+                form =
+                    model.labResultsData.hivPCRTestForm
+
+                updatedForm =
+                    { form | hivViralLoad = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHIVPCRResult personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLabResultsMsgs nextTask
+
+                appMsgs =
+                    toPrenatalHIVPCRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

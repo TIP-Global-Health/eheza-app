@@ -1350,6 +1350,12 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> getMeasurementValueFunc
                                 |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
                                 |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
+
+                        TaskHIVPCRTest ->
+                            measurements.hivPCRTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.hivPCRTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskHIVPCRTest
                     )
                 )
                 tasks
@@ -1403,6 +1409,9 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskRandomBloodSugarTest ->
                                     SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+
+                                TaskHIVPCRTest ->
+                                    SaveHIVPCRTest personId measurements.hivPCRTest nextTask
                     in
                     viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
@@ -1634,7 +1643,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                             if isChw then
                                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
-                            else if referToHospitalForNonHIVDiagnosis assembled then
+                            else if
+                                referToHospitalForNonHIVDiagnosis assembled
+                                    || referToHospitalDueToAdverseEvent assembled
+                            then
                                 ( viewSendToHospitalForm, Nothing )
 
                             else
@@ -3600,6 +3612,10 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
                 TaskRandomBloodSugarTest ->
                     -- Known as positive is not applicable for this test.
                     always NoOp
+
+                TaskHIVPCRTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
     in
     ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
       , viewBoolInput
@@ -3679,6 +3695,11 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                 TaskRandomBloodSugarTest ->
                     { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
                     , setExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    }
+
+                TaskHIVPCRTest ->
+                    { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetHIVPCRTestExecutionNote
                     }
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -3810,6 +3831,12 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
                         , setDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                        }
+
+                    TaskHIVPCRTest ->
+                        { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetHIVPCRTestExecutionDate
+                        , setDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
                         }
 
             ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =

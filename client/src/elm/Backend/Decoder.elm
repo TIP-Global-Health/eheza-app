@@ -262,6 +262,9 @@ decodeRevision =
                     "prenatal_hiv_test" ->
                         decodeWithUuid PrenatalHIVTestRevision decodePrenatalHIVTest
 
+                    "prenatal_hiv_pcr_test" ->
+                        decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
+
                     "prenatal_follow_up" ->
                         decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
 

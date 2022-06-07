@@ -447,6 +447,7 @@ type Revision
     | PrenatalHemoglobinTestRevision PrenatalHemoglobinTestId PrenatalHemoglobinTest
     | PrenatalHepatitisBTestRevision PrenatalHepatitisBTestId PrenatalHepatitisBTest
     | PrenatalHIVTestRevision PrenatalHIVTestId PrenatalHIVTest
+    | PrenatalHIVPCRTestRevision PrenatalHIVPCRTestId PrenatalHIVPCRTest
     | PrenatalLabsResultsRevision PrenatalLabsResultsId PrenatalLabsResults
     | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution

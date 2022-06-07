@@ -301,6 +301,7 @@ expectNextStepsTask currentDate assembled task =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
+                        || referToHospitalDueToAdverseEvent assembled
                         || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
 
                 _ ->
@@ -349,7 +350,9 @@ expectNextStepsTask currentDate assembled task =
                         |> List.isEmpty
                         |> not
                     )
-                        || diagnosedMalaria assembled
+                        || (diagnosedMalaria assembled
+                                && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
+                           )
                         || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
                         || diagnosedAnyOf
                             [ DiagnosisHeartburn
@@ -359,7 +362,9 @@ expectNextStepsTask currentDate assembled task =
                             , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
-                        || updateHypertensionTreatmentWithMedication assembled
+                        || (updateHypertensionTreatmentWithMedication assembled
+                                && (not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled)
+                           )
                    )
 
         NextStepsWait ->
@@ -1224,10 +1229,10 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                         |> Maybe.withDefault True
                     )
                         || -- When severe Anemia with complications is diagnosed,
-                           -- we view Malaia as separate diagnosis.
-                           -- Therefore's not 'Malarial and Severe Anemia with
+                           -- we view Malaria as separate diagnosis.
+                           -- There's not 'Malaria and Severe Anemia with
                            -- complications' diagnosis.
-                           matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled DiagnosisSevereAnemiaWithComplications
+                           severeAnemiaWithComplicationsDiagnosed
                    )
 
         malariaWithAnemiaDiagnosed =
@@ -1237,6 +1242,15 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                     Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
                         |> Maybe.withDefault False
                    )
+
+        severeAnemiaWithComplicationsDiagnosed =
+            (-- No indication for being positive for malaria,
+             -- Hemoglobin test was performed, and, hemoglobin
+             -- count indicates severe anemia.
+             Maybe.map (\count -> count < 7) hemoglobinCount
+                |> Maybe.withDefault False
+            )
+                && anemiaComplicationSignsPresent
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
@@ -1367,13 +1381,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                 && not anemiaComplicationSignsPresent
 
         DiagnosisSevereAnemiaWithComplications ->
-            (-- No indication for being positive for malaria,
-             -- Hemoglobin test was performed, and, hemoglobin
-             -- count indicates severe anemia.
-             Maybe.map (\count -> count < 7) hemoglobinCount
-                |> Maybe.withDefault False
-            )
-                && anemiaComplicationSignsPresent
+            severeAnemiaWithComplicationsDiagnosed
 
         -- Non Lab Results diagnoses.
         _ ->
@@ -2337,7 +2345,10 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     if isChw then
                         ( taskCompleted form.accompanyToHealthCenter, 1 )
 
-                    else if referToHospitalForNonHIVDiagnosis assembled then
+                    else if
+                        referToHospitalForNonHIVDiagnosis assembled
+                            || referToHospitalDueToAdverseEvent assembled
+                    then
                         ( 0, 0 )
 
                     else
@@ -2688,28 +2699,71 @@ medicationFormWithDefault form saved =
                                 >> List.head
                             )
                             value.hivTreatment
+
+                    treatmentSignFromValue sign treatment =
+                        Maybe.map (EverySet.member sign) treatment
+
+                    treatmentStillTakingFromValue =
+                        treatmentSignFromValue MedicationTreatmentStillTaking
+
+                    treatmentMissedDosesFromValue =
+                        treatmentSignFromValue MedicationTreatmentMissedDoses
+
+                    treatmentAdverseEventsFromValue =
+                        treatmentSignFromValue MedicationTreatmentAdverseEvents
+
+                    treatmentAdverseEventsHospitalizationFromValue =
+                        treatmentSignFromValue MedicationTreatmentAdverseEventsHospitalization
                 in
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (Maybe.map (EverySet.member IronAndFolicAcidSupplement) value.signs)
                 , receivedDewormingPill = or form.receivedDewormingPill (Maybe.map (EverySet.member DewormingPill) value.signs)
                 , receivedMebendazole = or form.receivedMebendazole (Maybe.map (EverySet.member Mebendazole) value.signs)
                 , hivMedicationByPMTCT = or form.hivMedicationByPMTCT (Maybe.map (EverySet.member HIVTreatmentMedicineByPMTCT) value.hivTreatment)
-                , hivMedicationNotGivenReason = maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty form.hivMedicationNotGivenReason hivMedicationNotGivenReason
+                , hivMedicationNotGivenReason =
+                    maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty
+                        form.hivMedicationNotGivenReason
+                        hivMedicationNotGivenReason
                 , hivMedicationNotGivenReasonDirty = form.hivMedicationNotGivenReasonDirty
-                , hivStillTaking = or form.hivStillTaking (Maybe.map (EverySet.member HIVTreatmentStillTaking) value.hivTreatment)
-                , hivMissedDoses = or form.hivMissedDoses (Maybe.map (EverySet.member HIVTreatmentMissedDoses) value.hivTreatment)
-                , hivAdverseEvents = or form.hivAdverseEvents (Maybe.map (EverySet.member HIVTreatmentAdverseEvents) value.hivTreatment)
-                , hypertensionStillTaking = or form.hypertensionStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.hypertensionTreatment)
-                , hypertensionMissedDoses = or form.hypertensionMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.hypertensionTreatment)
-                , hypertensionAdverseEvents = or form.hypertensionAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.hypertensionTreatment)
-                , malariaStillTaking = or form.malariaStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.malariaTreatment)
-                , malariaMissedDoses = or form.malariaMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.malariaTreatment)
-                , malariaAdverseEvents = or form.malariaAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.malariaTreatment)
-                , anemiaStillTaking = or form.anemiaStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.anemiaTreatment)
-                , anemiaMissedDoses = or form.anemiaMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.anemiaTreatment)
-                , anemiaAdverseEvents = or form.anemiaAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.anemiaTreatment)
-                , syphilisStillTaking = or form.syphilisStillTaking (Maybe.map (EverySet.member MedicationTreatmentStillTaking) value.syphilisTreatment)
-                , syphilisMissedDoses = or form.syphilisMissedDoses (Maybe.map (EverySet.member MedicationTreatmentMissedDoses) value.syphilisTreatment)
-                , syphilisAdverseEvents = or form.syphilisAdverseEvents (Maybe.map (EverySet.member MedicationTreatmentAdverseEvents) value.syphilisTreatment)
+                , hivStillTaking = or form.hivStillTaking (treatmentSignFromValue HIVTreatmentStillTaking value.hivTreatment)
+                , hivMissedDoses = or form.hivMissedDoses (treatmentSignFromValue HIVTreatmentMissedDoses value.hivTreatment)
+                , hivAdverseEvents = or form.hivAdverseEvents (treatmentSignFromValue HIVTreatmentAdverseEvents value.hivTreatment)
+                , hivAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.hivAdverseEventsHospitalizationDirty
+                        form.hivAdverseEventsHospitalization
+                        (treatmentSignFromValue HIVTreatmentAdverseEventsHospitalization value.hivTreatment)
+                , hivAdverseEventsHospitalizationDirty = form.hivAdverseEventsHospitalizationDirty
+                , hypertensionStillTaking = or form.hypertensionStillTaking (treatmentStillTakingFromValue value.hypertensionTreatment)
+                , hypertensionMissedDoses = or form.hypertensionMissedDoses (treatmentMissedDosesFromValue value.hypertensionTreatment)
+                , hypertensionAdverseEvents = or form.hypertensionAdverseEvents (treatmentAdverseEventsFromValue value.hypertensionTreatment)
+                , hypertensionAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.hypertensionAdverseEventsHospitalizationDirty
+                        form.hypertensionAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.hypertensionTreatment)
+                , hypertensionAdverseEventsHospitalizationDirty = form.hypertensionAdverseEventsHospitalizationDirty
+                , malariaStillTaking = or form.malariaStillTaking (treatmentStillTakingFromValue value.malariaTreatment)
+                , malariaMissedDoses = or form.malariaMissedDoses (treatmentMissedDosesFromValue value.malariaTreatment)
+                , malariaAdverseEvents = or form.malariaAdverseEvents (treatmentAdverseEventsFromValue value.malariaTreatment)
+                , malariaAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.malariaAdverseEventsHospitalizationDirty
+                        form.malariaAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.malariaTreatment)
+                , malariaAdverseEventsHospitalizationDirty = form.malariaAdverseEventsHospitalizationDirty
+                , anemiaStillTaking = or form.anemiaStillTaking (treatmentStillTakingFromValue value.anemiaTreatment)
+                , anemiaMissedDoses = or form.anemiaMissedDoses (treatmentMissedDosesFromValue value.anemiaTreatment)
+                , anemiaAdverseEvents = or form.anemiaAdverseEvents (treatmentAdverseEventsFromValue value.anemiaTreatment)
+                , anemiaAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.anemiaAdverseEventsHospitalizationDirty
+                        form.anemiaAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.anemiaTreatment)
+                , anemiaAdverseEventsHospitalizationDirty = form.anemiaAdverseEventsHospitalizationDirty
+                , syphilisStillTaking = or form.syphilisStillTaking (treatmentStillTakingFromValue value.syphilisTreatment)
+                , syphilisMissedDoses = or form.syphilisMissedDoses (treatmentMissedDosesFromValue value.syphilisTreatment)
+                , syphilisAdverseEvents = or form.syphilisAdverseEvents (treatmentAdverseEventsFromValue value.syphilisTreatment)
+                , syphilisAdverseEventsHospitalization =
+                    maybeValueConsideringIsDirtyField form.syphilisAdverseEventsHospitalizationDirty
+                        form.syphilisAdverseEventsHospitalization
+                        (treatmentAdverseEventsHospitalizationFromValue value.syphilisTreatment)
+                , syphilisAdverseEventsHospitalizationDirty = form.syphilisAdverseEventsHospitalizationDirty
                 }
             )
 
@@ -2743,6 +2797,7 @@ toMedicationValue form =
                         , form.hivStillTaking
                         , form.hivMissedDoses
                         , form.hivAdverseEvents
+                        , form.hivAdverseEventsHospitalization
                         ]
             then
                 Nothing
@@ -2752,6 +2807,7 @@ toMedicationValue form =
                 , ifNullableTrue HIVTreatmentStillTaking form.hivStillTaking
                 , ifNullableTrue HIVTreatmentMissedDoses form.hivMissedDoses
                 , ifNullableTrue HIVTreatmentAdverseEvents form.hivAdverseEvents
+                , ifNullableTrue HIVTreatmentAdverseEventsHospitalization form.hivAdverseEventsHospitalization
                 ]
                     ++ [ Maybe.map (EverySet.singleton >> Just) form.hivMedicationNotGivenReason
                             |> Maybe.withDefault (Just EverySet.empty)
@@ -2760,37 +2816,61 @@ toMedicationValue form =
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVTreatment)
 
         hypertensionTreatment =
-            if List.all isNothing [ form.hypertensionStillTaking, form.hypertensionMissedDoses, form.hypertensionAdverseEvents ] then
+            if
+                List.all isNothing
+                    [ form.hypertensionStillTaking
+                    , form.hypertensionMissedDoses
+                    , form.hypertensionAdverseEvents
+                    , form.hypertensionAdverseEventsHospitalization
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue MedicationTreatmentStillTaking form.hypertensionStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.hypertensionMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.hypertensionAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.hypertensionAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
 
         malariaTreatment =
-            if List.all isNothing [ form.malariaStillTaking, form.malariaMissedDoses, form.malariaAdverseEvents ] then
+            if
+                List.all isNothing
+                    [ form.malariaStillTaking
+                    , form.malariaMissedDoses
+                    , form.malariaAdverseEvents
+                    , form.malariaAdverseEventsHospitalization
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue MedicationTreatmentStillTaking form.malariaStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.malariaMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.malariaAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.malariaAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
 
         anemiaTreatment =
-            if List.all isNothing [ form.anemiaStillTaking, form.anemiaMissedDoses, form.anemiaAdverseEvents ] then
+            if
+                List.all isNothing
+                    [ form.anemiaStillTaking
+                    , form.anemiaMissedDoses
+                    , form.anemiaAdverseEvents
+                    , form.anemiaAdverseEventsHospitalization
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue MedicationTreatmentStillTaking form.anemiaStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.anemiaMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.anemiaAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.anemiaAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
@@ -2803,6 +2883,7 @@ toMedicationValue form =
                 [ ifNullableTrue MedicationTreatmentStillTaking form.syphilisStillTaking
                 , ifNullableTrue MedicationTreatmentMissedDoses form.syphilisMissedDoses
                 , ifNullableTrue MedicationTreatmentAdverseEvents form.syphilisAdverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.syphilisAdverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
@@ -2936,9 +3017,9 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
                 referredToHIVProgram =
                     referredToHIVProgramPreviously assembled
             in
-            -- There's a scenarion when there's HIV program at HC,
-            -- patient is referred there, but did not get medication there.
-            -- In this case, we'll find this out at the Treatment review, and
+            -- There's a scenario when there's HIV program at HC,
+            -- patient is referred there, but did not get medication.
+            -- In this case we'll find this out at Treatment review, and
             -- prescribe medication at HC, essentially, moving that patient
             -- from PMTCT to our care.
             -- Therefore, we take HIV program path, only if patient was
@@ -2996,10 +3077,10 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
             else
                 -- No HIV program at heath center => patient was supposed to get medication.
-                resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task
+                resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
 
         _ ->
-            resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task
+            resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
 
 
 reasonsForNoMedicationByPMTCT : List HIVTreatmentSign
@@ -3011,7 +3092,7 @@ reasonsForNoMedicationByPMTCT =
     ]
 
 
-resolveMedicationTreatmentFormInputsAndTasksStandard :
+resolveMedicationTreatmentFormInputsAndTasksCommon :
     Language
     -> NominalDate
     -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
@@ -3019,7 +3100,7 @@ resolveMedicationTreatmentFormInputsAndTasksStandard :
     -> MedicationForm
     -> TreatmentReviewTask
     -> ( List (Html Msg), List (Maybe Bool) )
-resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoolInputMsg assembled form task =
+resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task =
     let
         configForTask =
             case task of
@@ -3032,9 +3113,22 @@ resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoo
                         , stillTakingFormValue = form.hivStillTaking
                         , missedDosesFormValue = form.hivMissedDoses
                         , adverseEventsFormValue = form.hivAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.hivAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | hivStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | hivMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | hivAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hivAdverseEvents = Just value
+                                    , hivAdverseEventsHospitalization = Nothing
+                                    , hivAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hivAdverseEventsHospitalization = Just value
+                                    , hivAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewHypertension ->
@@ -3043,9 +3137,22 @@ resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoo
                         , stillTakingFormValue = form.hypertensionStillTaking
                         , missedDosesFormValue = form.hypertensionMissedDoses
                         , adverseEventsFormValue = form.hypertensionAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.hypertensionAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | hypertensionStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | hypertensionMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | hypertensionAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hypertensionAdverseEvents = Just value
+                                    , hypertensionAdverseEventsHospitalization = Nothing
+                                    , hypertensionAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hypertensionAdverseEventsHospitalization = Just value
+                                    , hypertensionAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewMalaria ->
@@ -3054,9 +3161,22 @@ resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoo
                         , stillTakingFormValue = form.malariaStillTaking
                         , missedDosesFormValue = form.malariaMissedDoses
                         , adverseEventsFormValue = form.malariaAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.malariaAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | malariaStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | malariaMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | malariaAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | malariaAdverseEvents = Just value
+                                    , malariaAdverseEventsHospitalization = Nothing
+                                    , malariaAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | malariaAdverseEventsHospitalization = Just value
+                                    , malariaAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewAnemia ->
@@ -3065,9 +3185,22 @@ resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoo
                         , stillTakingFormValue = form.anemiaStillTaking
                         , missedDosesFormValue = form.anemiaMissedDoses
                         , adverseEventsFormValue = form.anemiaAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.anemiaAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | anemiaStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | anemiaMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | anemiaAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | anemiaAdverseEvents = Just value
+                                    , anemiaAdverseEventsHospitalization = Nothing
+                                    , anemiaAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | anemiaAdverseEventsHospitalization = Just value
+                                    , anemiaAdverseEventsHospitalizationDirty = True
+                                }
                         }
 
                 TreatmentReviewSyphilis ->
@@ -3076,9 +3209,22 @@ resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoo
                         , stillTakingFormValue = form.syphilisStillTaking
                         , missedDosesFormValue = form.syphilisMissedDoses
                         , adverseEventsFormValue = form.syphilisAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.syphilisAdverseEventsHospitalization
                         , stillTakingUpdateFunc = \value form_ -> { form_ | syphilisStillTaking = Just value }
                         , missedDosesUpdateFunc = \value form_ -> { form_ | syphilisMissedDoses = Just value }
-                        , adverseEventsUpdateFunc = \value form_ -> { form_ | syphilisAdverseEvents = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | syphilisAdverseEvents = Just value
+                                    , syphilisAdverseEventsHospitalization = Nothing
+                                    , syphilisAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | syphilisAdverseEventsHospitalization = Just value
+                                    , syphilisAdverseEventsHospitalizationDirty = True
+                                }
                         }
     in
     Maybe.map
@@ -3091,9 +3237,25 @@ resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoo
                         )
                         config.latestMedicationTreatment
                         |> Maybe.withDefault emptyNode
+
+                ( derrivedInput, derrivedTask ) =
+                    if config.adverseEventsFormValue == Just True then
+                        ( [ viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEventsHospitalization
+                          , viewBoolInput
+                                language
+                                config.adverseEventsHospitalizationFormValue
+                                (setBoolInputMsg config.adverseEventsHospitalizationUpdateFunc)
+                                "adverse-events-hospitalization"
+                                Nothing
+                          ]
+                        , [ config.adverseEventsHospitalizationFormValue ]
+                        )
+
+                    else
+                        ( [], [] )
             in
             ( [ header
-              , viewQuestionLabel language <| Translate.TreatmentReviewQuestionStillTaking task
+              , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
               , viewBoolInput
                     language
                     config.stillTakingFormValue
@@ -3115,10 +3277,12 @@ resolveMedicationTreatmentFormInputsAndTasksStandard language currentDate setBoo
                     "adverse-events"
                     Nothing
               ]
+                ++ derrivedInput
             , [ config.stillTakingFormValue
               , config.missedDosesFormValue
               , config.adverseEventsFormValue
               ]
+                ++ derrivedTask
             )
         )
         configForTask
@@ -4207,6 +4371,11 @@ toBloodGpRsTestValueWithEmptyResults note date =
     PrenatalBloodGpRsTestValue note date Nothing Nothing
 
 
+toHIVPCRTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHIVPCRTestValue
+toHIVPCRTestValueWithEmptyResults note date =
+    PrenatalHIVPCRTestValue note date Nothing Nothing
+
+
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
     [ TaskHIVTest
@@ -4217,6 +4386,7 @@ laboratoryTasks =
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
+    , TaskHIVPCRTest
     ]
 
 
@@ -4253,6 +4423,9 @@ laboratoryTaskCompleted currentDate assembled task =
 
         TaskRandomBloodSugarTest ->
             (not <| taskExpected TaskRandomBloodSugarTest) || isJust measurements.randomBloodSugarTest
+
+        TaskHIVPCRTest ->
+            (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
 
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -4334,6 +4507,9 @@ expectLaboratoryTask currentDate assembled task =
 
             TaskRandomBloodSugarTest ->
                 isInitialTest TaskRandomBloodSugarTest
+
+            TaskHIVPCRTest ->
+                isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
@@ -4428,6 +4604,9 @@ laboratoryTaskIconClass task =
 
         TaskRandomBloodSugarTest ->
             "laboratory-blood-sugar"
+
+        TaskHIVPCRTest ->
+            "laboratory-hiv"
 
 
 symptomReviewFormWithDefault : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue -> SymptomReviewForm

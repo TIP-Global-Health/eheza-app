@@ -2512,6 +2512,105 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetHIVPCRTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVPCRTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVPCRTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVPCRTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHIVPCRTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.hivPCRTestForm
+                        |> toPrenatalNonRDTValueWithDefault measurement toHIVPCRTestValueWithEmptyResults
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
         SetHealthEducationBoolInput formUpdateFunc value ->
             let
                 updatedForm =
