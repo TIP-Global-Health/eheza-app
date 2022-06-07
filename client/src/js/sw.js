@@ -119,6 +119,7 @@ var tableForType = {
     prenatal_labs_results: 'shards',
     prenatal_malaria_test: 'shards',
     prenatal_medication_distribution: 'shards',
+    prenatal_mental_health: 'shards',
     prenatal_nutrition: 'shards',
     prenatal_outside_care: 'shards',
     prenatal_random_blood_sugar_test: 'shards',
