@@ -71,3 +71,48 @@ foreach ($queries as $label => $query) {
   }
   drush_print($table->render($data));
 }
+
+
+
+
+$queries = [
+  // As the group of all pregnancies.
+  "First Visits - Any location" => file_get_contents(__DIR__ . '/anc-first-visit-all-pregnancies.SQL'),
+  "First Visits - Health Center" => file_get_contents(__DIR__ . '/anc-first-visit-nurse-pregnancies.SQL'),
+  "First Visits - CHW" => file_get_contents(__DIR__ . '/anc-first-visit-chw-pregnancies.SQL'),
+];
+
+foreach ($queries as $label => $query) {
+  $data = [];
+  $results = db_query($query, [':limit' => $limit_date])->fetchAll(PDO::FETCH_ASSOC);
+  foreach ($results as $result) {
+    $total_first_visits = $result['first_trimester'] + $result['second_trimester'] + $result['third_trimester'];
+    $first_trimester_percentage = ($result['first_trimester'] !=0) ? $result['first_trimester'] / $total_first_visits : '0';
+    $second_trimester_percentage = ($result['second_trimester'] !=0) ? $result['second_trimester'] / $total_first_visits : '0';
+    $third_trimester_percentage = ($result['third_trimester'] !=0) ? $result['third_trimester'] / $total_first_visits : '0';
+
+    $data = [
+      [
+        'First Trimester',
+        $result['first_trimester'],
+        $first_trimester_percentage,
+      ],
+      [
+        'Second Trimester',
+        $result['second_trimester'],
+        $second_trimester_percentage,
+      ],
+      [
+        'Third Trimester',
+        $result['third_trimester'],
+        $third_trimester_percentage,
+      ],
+    ];
+  }
+
+  $text_table = new HedleyAdminTextTable(['Trimester', 'Count', 'Percentage']);
+  $text_table->addData($data);
+
+  drush_print('## ' . $label);
+  drush_print($text_table->render());
+}
