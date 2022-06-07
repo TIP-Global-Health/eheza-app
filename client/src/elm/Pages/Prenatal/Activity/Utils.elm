@@ -2937,7 +2937,7 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
             in
             -- There's a scenarion when there's HIV program at HC,
             -- patient is referred there, but did not get medication there.
-            -- In this case we'll find this out at Treatment review, and
+            -- In this case, we'll find this out at the Treatment review, and
             -- prescribe medication at HC, essentially, moving that patient
             -- from PMTCT to our care.
             -- Therefore, we take HIV program path, only if patient was
