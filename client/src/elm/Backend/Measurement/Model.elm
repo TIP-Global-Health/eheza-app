@@ -1306,6 +1306,34 @@ type PrenatalOutsideCareMedication
     | NoPrenatalOutsideCareMedications
 
 
+type alias PrenatalMentalHealth =
+    PrenatalMeasurement PrenatalMentalHealthValue
+
+
+type alias PrenatalMentalHealthValue =
+    Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+
+
+type PrenatalMentalHealthQuestion
+    = MentalHealthQuestion1
+    | MentalHealthQuestion2
+    | MentalHealthQuestion3
+    | MentalHealthQuestion4
+    | MentalHealthQuestion5
+    | MentalHealthQuestion6
+    | MentalHealthQuestion7
+    | MentalHealthQuestion8
+    | MentalHealthQuestion9
+    | MentalHealthQuestion10
+
+
+type PrenatalMentalHealthQuestionOption
+    = MentalHealthQuestionOption1
+    | MentalHealthQuestionOption2
+    | MentalHealthQuestionOption3
+    | MentalHealthQuestionOption4
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2177,6 +2205,7 @@ type alias PrenatalMeasurements =
     , symptomReview : Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview )
     , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
     , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
+    , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
     }
 
 
@@ -2216,6 +2245,7 @@ emptyPrenatalMeasurements =
     , symptomReview = Nothing
     , outsideCare = Nothing
     , hivPCRTest = Nothing
+    , mentalHealth = Nothing
     }
 
 
