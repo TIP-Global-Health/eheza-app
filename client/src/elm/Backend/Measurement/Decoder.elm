@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (genderFromString)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntAsFloat, decodeIntDict, decodeStringWithDefault, dict2)
+import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntAsFloat, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
