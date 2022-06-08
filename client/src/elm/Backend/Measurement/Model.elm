@@ -1328,10 +1328,10 @@ type PrenatalMentalHealthQuestion
 
 
 type PrenatalMentalHealthQuestionOption
-    = MentalHealthQuestionOption1
+    = MentalHealthQuestionOption0
+    | MentalHealthQuestionOption1
     | MentalHealthQuestionOption2
     | MentalHealthQuestionOption3
-    | MentalHealthQuestionOption4
 
 
 

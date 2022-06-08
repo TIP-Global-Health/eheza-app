@@ -2241,6 +2241,9 @@ prenatalMentalHealthQuestionFromString value =
 prenatalMentalHealthQuestionOptionToString : PrenatalMentalHealthQuestionOption -> String
 prenatalMentalHealthQuestionOptionToString value =
     case value of
+        MentalHealthQuestionOption0 ->
+            "0"
+
         MentalHealthQuestionOption1 ->
             "1"
 
@@ -2250,13 +2253,13 @@ prenatalMentalHealthQuestionOptionToString value =
         MentalHealthQuestionOption3 ->
             "3"
 
-        MentalHealthQuestionOption4 ->
-            "4"
-
 
 prenatalMentalHealthQuestionOptionFromString : String -> Maybe PrenatalMentalHealthQuestionOption
 prenatalMentalHealthQuestionOptionFromString value =
     case value of
+        "0" ->
+            Just MentalHealthQuestionOption0
+
         "1" ->
             Just MentalHealthQuestionOption1
 
@@ -2265,9 +2268,6 @@ prenatalMentalHealthQuestionOptionFromString value =
 
         "3" ->
             Just MentalHealthQuestionOption3
-
-        "4" ->
-            Just MentalHealthQuestionOption4
 
         _ ->
             Nothing
