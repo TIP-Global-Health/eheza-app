@@ -1,5 +1,6 @@
 module Pages.Prenatal.Activity.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
@@ -210,6 +211,7 @@ type alias Model =
     , healthEducationData : HealthEducationData
     , symptomReviewData : SymptomReviewData
     , treatmentReviewData : TreatmentReviewData
+    , mentalHealthData : MentalHealthData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -231,6 +233,7 @@ emptyModel =
     , healthEducationData = emptyHealthEducationData
     , symptomReviewData = emptySymptomReviewData
     , treatmentReviewData = emptyTreatmentReviewData
+    , mentalHealthData = emptyMentalHealthData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -554,6 +557,15 @@ emptyTreatmentReviewData =
     , activeTask = Nothing
     , warningPopupState = Nothing
     }
+
+
+type alias MentalHealthData =
+    { form : MentalHealthForm }
+
+
+emptyMentalHealthData : MentalHealthData
+emptyMentalHealthData =
+    { form = emptyMentalHealthForm }
 
 
 type alias NextStepsData =
@@ -1049,3 +1061,16 @@ type alias NewbornEnrolmentForm =
 emptyNewbornEnrolmentForm : NewbornEnrolmentForm
 emptyNewbornEnrolmentForm =
     {}
+
+
+type alias MentalHealthForm =
+    { signs : Maybe (Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption)
+    , step : PrenatalMentalHealthQuestion
+    }
+
+
+emptyMentalHealthForm : MentalHealthForm
+emptyMentalHealthForm =
+    { signs = Nothing
+    , step = MentalHealthQuestion1
+    }
