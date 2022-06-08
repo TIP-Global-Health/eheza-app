@@ -5367,7 +5367,7 @@ mentalHealthFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { signs = Just value
+                { signs = or form.signs (Just value)
                 , step = form.step
                 }
             )

@@ -866,8 +866,10 @@ decodePrenatalMentalHealth =
 
 decodePrenatalMentalHealthValue : Decoder PrenatalMentalHealthValue
 decodePrenatalMentalHealthValue =
-    list decodePrenatalMentalHealthQuestionTuple
-        |> map Dict.fromList
+    field "mental_health_signs"
+        (list decodePrenatalMentalHealthQuestionTuple
+            |> map Dict.fromList
+        )
 
 
 decodePrenatalMentalHealthQuestionTuple : Decoder ( PrenatalMentalHealthQuestion, PrenatalMentalHealthQuestionOption )
