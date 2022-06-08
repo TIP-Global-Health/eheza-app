@@ -9707,7 +9707,7 @@ translationSet trans =
                             }
 
                         MentalHealthQuestionOption3 ->
-                            { english = "Yes, quite a lo"
+                            { english = "Yes, quite a lot"
                             , kinyarwanda = Nothing
                             }
 
