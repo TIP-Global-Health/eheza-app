@@ -544,23 +544,16 @@ viewHistoryContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
-                            saveButton msg label =
-                                button
-                                    [ classList
-                                        [ ( "ui fluid primary button", True )
-                                        , ( "disabled", tasksCompleted /= totalTasks )
-                                        , ( "active", tasksCompleted == totalTasks )
-                                        ]
-                                    , onClick msg
-                                    ]
-                                    [ text <| translate language label ]
+                            saveButtonActive =
+                                tasksCompleted == totalTasks
 
                             buttons =
                                 case task of
                                     Obstetric ->
                                         case data.obstetricHistoryStep of
                                             ObstetricHistoryFirstStep ->
-                                                [ saveButton
+                                                [ customSaveButton language
+                                                    saveButtonActive
                                                     (SaveOBHistoryStep1
                                                         assembled.participant.person
                                                         assembled.measurements.obstetricHistory
@@ -574,33 +567,33 @@ viewHistoryContent language currentDate assembled data =
                                                     , onClick BackToOBHistoryStep1
                                                     ]
                                                     [ text <| ("< " ++ translate language Translate.Back) ]
-                                                , saveButton
+                                                , saveButton language
+                                                    saveButtonActive
                                                     (SaveOBHistoryStep2
                                                         assembled.participant.person
                                                         assembled.measurements.obstetricHistoryStep2
                                                         nextTask
                                                     )
-                                                    Translate.Save
                                                 ]
 
                                     Medical ->
-                                        [ saveButton
+                                        [ saveButton language
+                                            saveButtonActive
                                             (SaveMedicalHistory
                                                 assembled.participant.person
                                                 assembled.measurements.medicalHistory
                                                 nextTask
                                             )
-                                            Translate.Save
                                         ]
 
                                     Social ->
-                                        [ saveButton
+                                        [ saveButton language
+                                            saveButtonActive
                                             (SaveSocialHistory
                                                 assembled.participant.person
                                                 assembled.measurements.socialHistory
                                                 nextTask
                                             )
-                                            Translate.Save
                                         ]
 
                                     OutsideCare ->
@@ -618,7 +611,7 @@ viewHistoryContent language currentDate assembled data =
                                                         else
                                                             SetOutsideCareStep OutsideCareStepMedications
                                                 in
-                                                [ saveButton actionMsg Translate.Save ]
+                                                [ saveButton language saveButtonActive actionMsg ]
 
                                             OutsideCareStepMedications ->
                                                 [ button
@@ -626,7 +619,7 @@ viewHistoryContent language currentDate assembled data =
                                                     , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
                                                     ]
                                                     [ text <| ("< " ++ translate language Translate.Back) ]
-                                                , saveButton saveAction Translate.Save
+                                                , saveButton language saveButtonActive saveAction
                                                 ]
                         in
                         div
@@ -1605,6 +1598,27 @@ viewMentalHealthContent language currentDate assembled data =
                 MentalHealthQuestion10 ->
                     Nothing
 
+        actions =
+            getPrevStep question
+                |> Maybe.map
+                    (\prevStep ->
+                        div [ class "actions two" ]
+                            [ button
+                                [ class "ui fluid primary button"
+                                , onClick <| SetMentalHealthStep prevStep
+                                ]
+                                [ text <| ("< " ++ translate language Translate.Back) ]
+                            , saveButton language saveButtonActive saveAction
+                            ]
+                    )
+                |> Maybe.withDefault
+                    (div [ class "actions" ]
+                        [ saveButton language saveButtonActive saveAction ]
+                    )
+
+        saveButtonActive =
+            tasksCompleted == totalTasks
+
         getPrevStep currentStep =
             case currentStep of
                 MentalHealthQuestion1 ->
@@ -1643,13 +1657,7 @@ viewMentalHealthContent language currentDate assembled data =
             [ div [ class "ui form mental-health" ]
                 input
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick saveAction
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , actions
         ]
     ]
 
@@ -1988,19 +1996,11 @@ viewSymptomReviewContent language currentDate assembled data =
 
         actions =
             let
-                saveButton msg =
-                    button
-                        [ classList
-                            [ ( "ui fluid primary button", True )
-                            , ( "active", tasksCompleted == totalTasks )
-                            , ( "disabled", tasksCompleted /= totalTasks )
-                            ]
-                        , onClick msg
-                        ]
-                        [ text <| translate language Translate.Save ]
-
                 saveAction =
                     SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
+
+                saveButtonActive =
+                    tasksCompleted == totalTasks
             in
             case data.step of
                 SymptomReviewStepSymptoms ->
@@ -2013,7 +2013,7 @@ viewSymptomReviewContent language currentDate assembled data =
                                 SetSymptomReviewStep SymptomReviewStepQuestions
                     in
                     div [ class "actions" ]
-                        [ saveButton actionMsg ]
+                        [ saveButton language saveButtonActive actionMsg ]
 
                 SymptomReviewStepQuestions ->
                     div [ class "actions two" ]
@@ -2022,7 +2022,7 @@ viewSymptomReviewContent language currentDate assembled data =
                             , onClick <| SetSymptomReviewStep SymptomReviewStepSymptoms
                             ]
                             [ text <| ("< " ++ translate language Translate.Back) ]
-                        , saveButton saveAction
+                        , saveButton language saveButtonActive saveAction
                         ]
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
@@ -4169,3 +4169,21 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
+
+
+saveButton : Language -> Bool -> Msg -> Html Msg
+saveButton language active msg =
+    customSaveButton language active msg Translate.Save
+
+
+customSaveButton : Language -> Bool -> Msg -> Translate.TranslationId -> Html Msg
+customSaveButton language active msg label =
+    button
+        [ classList
+            [ ( "ui fluid primary button", True )
+            , ( "active", active )
+            , ( "disabled", not active )
+            ]
+        , onClick msg
+        ]
+        [ text <| translate language label ]
