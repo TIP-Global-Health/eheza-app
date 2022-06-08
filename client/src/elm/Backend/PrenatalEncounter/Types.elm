@@ -56,4 +56,8 @@ type PrenatalDiagnosis
     | DiagnosisTrichomonasOrBacterialVaginosis
     | DiagnosisTrichomonasOrBacterialVaginosisContinued
     | DiagnosisTuberculosis
+    | DiagnosisDepressionPossible
+    | DiagnosisDepressionHighlyPossible
+    | DiagnosisDepressionProbable
+    | DiagnosisSuicideRisk
     | NoPrenatalDiagnosis

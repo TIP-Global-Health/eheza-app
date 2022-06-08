@@ -226,6 +226,18 @@ decodePrenatalDiagnosis =
                     "tuberculosis" ->
                         succeed DiagnosisTuberculosis
 
+                    "depression-possible" ->
+                        succeed DiagnosisDepressionPossible
+
+                    "depression-highly-possible" ->
+                        succeed DiagnosisDepressionHighlyPossible
+
+                    "depression-probable" ->
+                        succeed DiagnosisDepressionProbable
+
+                    "suicide-risk" ->
+                        succeed DiagnosisSuicideRisk
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

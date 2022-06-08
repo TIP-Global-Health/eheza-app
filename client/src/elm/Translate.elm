@@ -8072,6 +8072,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionPossible ->
+                    { english = "Depression Possible"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionHighlyPossible ->
+                    { english = "Fairly High Possibility of Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionProbable ->
+                    { english = "Probable Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSuicideRisk ->
+                    { english = "Suicide Risk"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8349,6 +8369,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionPossible ->
+                    { english = "Depression Possible"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionHighlyPossible ->
+                    { english = "Fairly High Possibility of Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionProbable ->
+                    { english = "Probable Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSuicideRisk ->
+                    { english = "Suicide Risk"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8538,6 +8578,26 @@ translationSet trans =
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionPossible ->
+                    { english = "Patient show signs of possible depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionHighlyPossible ->
+                    { english = "Patient show signs of fairly hight possiblity of depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionProbable ->
+                    { english = "Patient show signs of probable depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSuicideRisk ->
+                    { english = "Patient show signs of being a suicide risk"
                     , kinyarwanda = Nothing
                     }
 

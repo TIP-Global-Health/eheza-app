@@ -2201,5 +2201,21 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
+        DiagnosisDepressionPossible ->
+            --@todo
+            []
+
+        DiagnosisDepressionHighlyPossible ->
+            --@todo
+            []
+
+        DiagnosisDepressionProbable ->
+            --@todo
+            []
+
+        DiagnosisSuicideRisk ->
+            --@todo
+            []
+
         NoPrenatalDiagnosis ->
             []
