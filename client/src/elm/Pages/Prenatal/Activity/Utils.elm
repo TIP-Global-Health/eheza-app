@@ -1108,10 +1108,16 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             List.filter (matchSymptomsPrenatalDiagnosis assembled)
                 symptomsDiagnoses
                 |> EverySet.fromList
+
+        diagnosesByMentalHealth =
+            List.filter (matchMentalHealthPrenatalDiagnosis assembled)
+                mentalHealthDiagnoses
+                |> EverySet.fromList
     in
     EverySet.union diagnosesByLabResults emergencyReferalDiagnoses
         |> EverySet.union diagnosesByExamination
         |> EverySet.union diagnosesBySymptoms
+        |> EverySet.union diagnosesByMentalHealth
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -1575,6 +1581,65 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
             False
 
 
+matchMentalHealthPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
+matchMentalHealthPrenatalDiagnosis assembled diagnosis =
+    let
+        suicideRiskDiagnosed =
+            getMeasurementValueFunc assembled.measurements.mentalHealth
+                |> Maybe.andThen
+                    (Dict.get MentalHealthQuestion10
+                        >> Maybe.map
+                            (\answer ->
+                                List.member answer
+                                    [ MentalHealthQuestionOption3
+                                    , MentalHealthQuestionOption2
+                                    , MentalHealthQuestionOption1
+                                    ]
+                            )
+                    )
+                |> Maybe.withDefault False
+
+        mentalHealthScore =
+            getMeasurementValueFunc assembled.measurements.mentalHealth
+                |> Maybe.map (Dict.values >> List.map mentalHealthQuestionOptionToScore >> List.sum)
+                |> Maybe.withDefault 0
+    in
+    case diagnosis of
+        DiagnosisDepressionPossible ->
+            not suicideRiskDiagnosed
+                && (mentalHealthScore >= 9 && mentalHealthScore < 12)
+
+        DiagnosisDepressionHighlyPossible ->
+            not suicideRiskDiagnosed
+                && (mentalHealthScore >= 12 && mentalHealthScore < 14)
+
+        DiagnosisDepressionProbable ->
+            not suicideRiskDiagnosed && mentalHealthScore >= 14
+
+        DiagnosisSuicideRisk ->
+            suicideRiskDiagnosed
+
+        -- Others are not mental health diagnoses.
+        _ ->
+            False
+
+
+mentalHealthQuestionOptionToScore : PrenatalMentalHealthQuestionOption -> Int
+mentalHealthQuestionOptionToScore option =
+    case option of
+        MentalHealthQuestionOption0 ->
+            0
+
+        MentalHealthQuestionOption1 ->
+            1
+
+        MentalHealthQuestionOption2 ->
+            2
+
+        MentalHealthQuestionOption3 ->
+            3
+
+
 {-| Flank pain on left, right or both sides.
 -}
 flankPainPresent : Maybe PrenatalFlankPainSign -> Bool
@@ -1766,6 +1831,15 @@ symptomsDiagnoses =
     , DiagnosisTrichomonasOrBacterialVaginosis
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+    ]
+
+
+mentalHealthDiagnoses : List PrenatalDiagnosis
+mentalHealthDiagnoses =
+    [ DiagnosisDepressionPossible
+    , DiagnosisDepressionHighlyPossible
+    , DiagnosisDepressionProbable
+    , DiagnosisSuicideRisk
     ]
 
 
