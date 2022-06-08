@@ -111,8 +111,26 @@ expectActivity currentDate assembled activity =
                     True
 
                 MaternalMentalHealth ->
-                    -- @todo - from 28 weeks EGA and not done already.
-                    True
+                    -- From 28 weeks EGA and not done already.
+                    Maybe.map
+                        (\lmpDate ->
+                            let
+                                egaInWeeks =
+                                    calculateEGAWeeks currentDate lmpDate
+
+                                performedPreviously =
+                                    assembled.nursePreviousMeasurementsWithDates
+                                        |> List.filter
+                                            (\( _, _, measurements ) ->
+                                                isJust measurements.mentalHealth
+                                            )
+                                        |> List.isEmpty
+                                        |> not
+                            in
+                            egaInWeeks >= 28 && not performedPreviously
+                        )
+                        assembled.globalLmpDate
+                        |> Maybe.withDefault False
 
                 -- Unique Chw activities.
                 _ ->
@@ -264,8 +282,7 @@ activityCompleted currentDate assembled activity =
                 |> List.all (treatmentReviewTaskCompleted assembled)
 
         MaternalMentalHealth ->
-            --@todo
-            False
+            isJust assembled.measurements.mentalHealth
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
