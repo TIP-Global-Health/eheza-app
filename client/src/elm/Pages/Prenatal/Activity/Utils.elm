@@ -3535,12 +3535,6 @@ toPrenatalNutritionValue form =
         |> andMap (Maybe.map MuacInCm form.muac)
 
 
-fromMalariaPreventionValue : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
-fromMalariaPreventionValue saved =
-    { receivedMosquitoNet = Maybe.map (EverySet.member MosquitoNet) saved
-    }
-
-
 malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
 malariaPreventionFormWithDefault form saved =
     saved
@@ -5365,3 +5359,26 @@ viewOutsideCareMedicationOptionWithDosage language medication =
         , text ": "
         , span [ class "dosage" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationDosage medication ]
         ]
+
+
+mentalHealthFormWithDefault : MentalHealthForm -> Maybe PrenatalMentalHealthValue -> MentalHealthForm
+mentalHealthFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = Just value
+                , step = form.step
+                }
+            )
+
+
+toPrenatalMentalHealthValueWithDefault : Maybe PrenatalMentalHealthValue -> MentalHealthForm -> Maybe PrenatalMentalHealthValue
+toPrenatalMentalHealthValueWithDefault saved form =
+    mentalHealthFormWithDefault form saved
+        |> toPrenatalMentalHealthValue
+
+
+toPrenatalMentalHealthValue : MentalHealthForm -> Maybe PrenatalMentalHealthValue
+toPrenatalMentalHealthValue form =
+    form.signs
