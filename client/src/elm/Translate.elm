@@ -989,6 +989,8 @@ type TranslationId
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
+    | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
+    | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -9544,6 +9546,280 @@ translationSet trans =
                     { english = "Closing Soon"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalMentalHealthQuestion question ->
+            case question of
+                MentalHealthQuestion1 ->
+                    { english = "I have been able to laugh and see the funny side of things"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion2 ->
+                    { english = "I have looked forward with enjoyment to things"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion3 ->
+                    { english = "I have blamed myself unnecessarily when things went wrong"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion4 ->
+                    { english = "I have been anxious or worried for no good reason"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion5 ->
+                    { english = "I have felt scared or panicky for no very good reason"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion6 ->
+                    { english = "Things have been getting on top of me"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion7 ->
+                    { english = "I have been so unhappy that I have had difficulty sleeping"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion8 ->
+                    { english = "I have felt sad or miserable"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion9 ->
+                    { english = "I have been so unhappy that I have been crying"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion10 ->
+                    { english = "The thought of harming myself has occured to me"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalMentalHealthOptionForQuestion question option ->
+            case question of
+                MentalHealthQuestion1 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "As much as I always could"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Not quite so much now"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Definitely not so much now"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion2 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "As much as I ever did"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Rather less than I used to"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Definitely less than I used to"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Hardly at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion3 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, never"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Not very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, some of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion4 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Hardly ever"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion5 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "No, not much"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, quite a lo"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion6 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, I have been coping as well as ever"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "No, most of the time I have coped quite well"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes I haven’t been coping as well as usual"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time I haven’t been able to cope"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion7 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "No, not very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion8 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Not very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, quite often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion9 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, never"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Only occasionally"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, quite often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion10 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Never"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Hardly ever"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, quite often"
+                            , kinyarwanda = Nothing
+                            }
 
         PrenatalOutsideCareSignQuestion sign ->
             case sign of

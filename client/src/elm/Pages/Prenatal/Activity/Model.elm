@@ -195,6 +195,10 @@ type Msg
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SetHIVMedicationNotGivenReason HIVTreatmentSign
     | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
+      -- MENTALHEALTHMsgs
+    | SetMentalHealthStep PrenatalMentalHealthQuestion
+    | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
 
 
 type alias Model =

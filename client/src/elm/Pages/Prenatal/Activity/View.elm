@@ -195,12 +195,11 @@ viewActivity language currentDate isChw activity assembled db model =
         PrenatalTreatmentReview ->
             viewTreatmentReviewContent language currentDate assembled model.treatmentReviewData
 
+        MaternalMentalHealth ->
+            viewMentalHealthContent language currentDate assembled model.mentalHealthData
+
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
-
-        MaternalMentalHealth ->
-            -- @todo
-            []
 
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
@@ -1511,6 +1510,143 @@ viewHealthEducationContent language currentDate assembled data =
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                 , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewMentalHealthContent : Language -> NominalDate -> AssembledData -> MentalHealthData -> List (Html Msg)
+viewMentalHealthContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.mentalHealth
+                |> getMeasurementValueFunc
+                |> mentalHealthFormWithDefault data.form
+
+        question =
+            form.step
+
+        currentValue =
+            Maybe.andThen (Dict.get question) form.signs
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted currentValue
+
+        input =
+            [ viewCustomLabel language (Translate.PrenatalMentalHealthQuestion question) "." "label"
+            , viewCheckBoxSelectInput language
+                (getMentalHealtOptionsForQuestion question)
+                []
+                currentValue
+                (SetMentalHealthOptionForQuestion question)
+                (Translate.PrenatalMentalHealthOptionForQuestion question)
+            ]
+
+        getMentalHealtOptionsForQuestion value =
+            if
+                List.member value
+                    [ MentalHealthQuestion1
+                    , MentalHealthQuestion2
+                    , MentalHealthQuestion4
+                    ]
+            then
+                [ MentalHealthQuestionOption0
+                , MentalHealthQuestionOption1
+                , MentalHealthQuestionOption2
+                , MentalHealthQuestionOption3
+                ]
+
+            else
+                [ MentalHealthQuestionOption3
+                , MentalHealthQuestionOption2
+                , MentalHealthQuestionOption1
+                , MentalHealthQuestionOption0
+                ]
+
+        saveAction =
+            getNextStep question
+                |> Maybe.map SetMentalHealthStep
+                |> Maybe.withDefault (SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth)
+
+        getNextStep currentStep =
+            case currentStep of
+                MentalHealthQuestion1 ->
+                    Just MentalHealthQuestion2
+
+                MentalHealthQuestion2 ->
+                    Just MentalHealthQuestion3
+
+                MentalHealthQuestion3 ->
+                    Just MentalHealthQuestion4
+
+                MentalHealthQuestion4 ->
+                    Just MentalHealthQuestion5
+
+                MentalHealthQuestion5 ->
+                    Just MentalHealthQuestion6
+
+                MentalHealthQuestion6 ->
+                    Just MentalHealthQuestion7
+
+                MentalHealthQuestion7 ->
+                    Just MentalHealthQuestion8
+
+                MentalHealthQuestion8 ->
+                    Just MentalHealthQuestion9
+
+                MentalHealthQuestion9 ->
+                    Just MentalHealthQuestion10
+
+                MentalHealthQuestion10 ->
+                    Nothing
+
+        getPrevStep currentStep =
+            case currentStep of
+                MentalHealthQuestion1 ->
+                    Nothing
+
+                MentalHealthQuestion2 ->
+                    Just MentalHealthQuestion1
+
+                MentalHealthQuestion3 ->
+                    Just MentalHealthQuestion2
+
+                MentalHealthQuestion4 ->
+                    Just MentalHealthQuestion3
+
+                MentalHealthQuestion5 ->
+                    Just MentalHealthQuestion4
+
+                MentalHealthQuestion6 ->
+                    Just MentalHealthQuestion6
+
+                MentalHealthQuestion7 ->
+                    Just MentalHealthQuestion7
+
+                MentalHealthQuestion8 ->
+                    Just MentalHealthQuestion7
+
+                MentalHealthQuestion9 ->
+                    Just MentalHealthQuestion8
+
+                MentalHealthQuestion10 ->
+                    Just MentalHealthQuestion9
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form mental-health" ]
+                input
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick saveAction
                 ]
                 [ text <| translate language Translate.Save ]
             ]

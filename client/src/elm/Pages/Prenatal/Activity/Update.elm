@@ -3257,3 +3257,79 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetMentalHealthStep step ->
+            let
+                updatedForm =
+                    model.mentalHealthData.form
+                        |> (\form -> { form | step = step })
+
+                updatedData =
+                    model.mentalHealthData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | mentalHealthData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMentalHealthOptionForQuestion question option ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.mentalHealth
+                                >> getMeasurementValueFunc
+                                >> mentalHealthFormWithDefault model.mentalHealthData.form
+                            )
+                        |> Maybe.withDefault model.mentalHealthData.form
+
+                updatedSigns =
+                    Maybe.map (Dict.insert question option) form.signs
+                        |> Maybe.withDefault (Dict.singleton question option)
+
+                updatedForm =
+                    { form | signs = Just updatedSigns }
+
+                updatedData =
+                    model.mentalHealthData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | mentalHealthData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMentalHealth personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    if List.isEmpty appMsgs then
+                        []
+
+                    else
+                        [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+
+                appMsgs =
+                    model.mentalHealthData.form
+                        |> toPrenatalMentalHealthValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMentalHealth personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
