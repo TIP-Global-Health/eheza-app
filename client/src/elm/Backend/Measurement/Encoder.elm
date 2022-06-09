@@ -234,6 +234,9 @@ encodePrenatalHealthEducationSign sign =
             EducationHIVDetectableViralLoad ->
                 "hiv-detectable-viral-load"
 
+            EducationMentalHealth ->
+                "mental-health"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

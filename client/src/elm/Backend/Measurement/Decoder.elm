@@ -345,6 +345,9 @@ decodePrenatalHealthEducationSign =
                     "hiv-detectable-viral-load" ->
                         succeed EducationHIVDetectableViralLoad
 
+                    "mental-health" ->
+                        succeed EducationMentalHealth
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

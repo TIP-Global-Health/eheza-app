@@ -840,6 +840,7 @@ type PrenatalHealthEducationSign
     | EducationPelvicPain
     | EducationSaferSex
     | EducationHIVDetectableViralLoad
+    | EducationMentalHealth
     | NoPrenatalHealthEducationSigns
     | NoPrenatalHealthEducationSignsInitialPhase
     | NoPrenatalHealthEducationSignsRecurrentPhase

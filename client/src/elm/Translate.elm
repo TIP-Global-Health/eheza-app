@@ -939,6 +939,7 @@ type TranslationId
     | PrenatalHealthEducationLegPainRednessInform
     | PrenatalHealthEducationPelvicPainInform
     | PrenatalHealthEducationSaferSexInform
+    | PrenatalHealthEducationMentalHealthInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -8706,6 +8707,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationMentalHealth ->
+                    { english = "Maternal Mental Health"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -8836,6 +8842,11 @@ translationSet trans =
 
         PrenatalHealthEducationSaferSexInform ->
             { english = "Council patient on safer sex parctices"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationMentalHealthInform ->
+            { english = "Provide information to support patients mental well being during pregnancy"
             , kinyarwanda = Nothing
             }
 
