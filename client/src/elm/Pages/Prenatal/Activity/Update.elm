@@ -3302,6 +3302,21 @@ update language currentDate id db msg model =
             , []
             )
 
+        SetSpecialistAtHC value ->
+            let
+                updatedForm =
+                    model.mentalHealthData.form
+                        |> (\form -> { form | specialistAtHC = Just value })
+
+                updatedData =
+                    model.mentalHealthData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | mentalHealthData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveMentalHealth personId saved ->
             let
                 measurementId =

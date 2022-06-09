@@ -991,6 +991,7 @@ type TranslationId
     | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    | PrenatalMentalHealthSpecialistQuestion
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -9880,6 +9881,11 @@ translationSet trans =
                             { english = "Yes, quite often"
                             , kinyarwanda = Nothing
                             }
+
+        PrenatalMentalHealthSpecialistQuestion ->
+            { english = "Does this health center have a mental health specialist available"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalOutsideCareSignQuestion sign ->
             case sign of

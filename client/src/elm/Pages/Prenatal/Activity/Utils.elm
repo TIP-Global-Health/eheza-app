@@ -1587,7 +1587,8 @@ matchMentalHealthPrenatalDiagnosis assembled diagnosis =
         suicideRiskDiagnosed =
             getMeasurementValueFunc assembled.measurements.mentalHealth
                 |> Maybe.andThen
-                    (Dict.get MentalHealthQuestion10
+                    (.signs
+                        >> Dict.get MentalHealthQuestion10
                         >> Maybe.map
                             (\answer ->
                                 List.member answer
@@ -1601,7 +1602,7 @@ matchMentalHealthPrenatalDiagnosis assembled diagnosis =
 
         mentalHealthScore =
             getMeasurementValueFunc assembled.measurements.mentalHealth
-                |> Maybe.map (Dict.values >> List.map mentalHealthQuestionOptionToScore >> List.sum)
+                |> Maybe.map (.signs >> Dict.values >> List.map mentalHealthQuestionOptionToScore >> List.sum)
                 |> Maybe.withDefault 0
     in
     case diagnosis of

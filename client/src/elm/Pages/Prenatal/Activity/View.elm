@@ -1518,27 +1518,37 @@ viewMentalHealthContent language currentDate assembled data =
                 |> getMeasurementValueFunc
                 |> mentalHealthFormWithDefault data.form
 
-        question =
-            form.step
+        ( input, tasksCompleted ) =
+            case form.step of
+                MentalHealthQuestion question ->
+                    let
+                        value =
+                            Maybe.andThen (Dict.get question) form.signs
+                    in
+                    ( [ viewCustomLabel language (Translate.PrenatalMentalHealthQuestion question) "." "label"
+                      , viewCheckBoxSelectInput language
+                            (getMentalHealtOptionsForQuestion question)
+                            []
+                            value
+                            (SetMentalHealthOptionForQuestion question)
+                            (Translate.PrenatalMentalHealthOptionForQuestion question)
+                      ]
+                    , taskCompleted value
+                    )
 
-        currentValue =
-            Maybe.andThen (Dict.get question) form.signs
+                MentalHealthSpecialistQuestion ->
+                    ( [ viewQuestionLabel language Translate.PrenatalMentalHealthSpecialistQuestion
+                      , viewBoolInput language
+                            form.specialistAtHC
+                            SetSpecialistAtHC
+                            "specialist"
+                            Nothing
+                      ]
+                    , taskCompleted form.specialistAtHC
+                    )
 
         totalTasks =
             1
-
-        tasksCompleted =
-            taskCompleted currentValue
-
-        input =
-            [ viewCustomLabel language (Translate.PrenatalMentalHealthQuestion question) "." "label"
-            , viewCheckBoxSelectInput language
-                (getMentalHealtOptionsForQuestion question)
-                []
-                currentValue
-                (SetMentalHealthOptionForQuestion question)
-                (Translate.PrenatalMentalHealthOptionForQuestion question)
-            ]
 
         getMentalHealtOptionsForQuestion value =
             if
@@ -1561,45 +1571,8 @@ viewMentalHealthContent language currentDate assembled data =
                 , MentalHealthQuestionOption0
                 ]
 
-        saveAction =
-            getNextStep question
-                |> Maybe.map SetMentalHealthStep
-                |> Maybe.withDefault (SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth)
-
-        getNextStep currentStep =
-            case currentStep of
-                MentalHealthQuestion1 ->
-                    Just MentalHealthQuestion2
-
-                MentalHealthQuestion2 ->
-                    Just MentalHealthQuestion3
-
-                MentalHealthQuestion3 ->
-                    Just MentalHealthQuestion4
-
-                MentalHealthQuestion4 ->
-                    Just MentalHealthQuestion5
-
-                MentalHealthQuestion5 ->
-                    Just MentalHealthQuestion6
-
-                MentalHealthQuestion6 ->
-                    Just MentalHealthQuestion7
-
-                MentalHealthQuestion7 ->
-                    Just MentalHealthQuestion8
-
-                MentalHealthQuestion8 ->
-                    Just MentalHealthQuestion9
-
-                MentalHealthQuestion9 ->
-                    Just MentalHealthQuestion10
-
-                MentalHealthQuestion10 ->
-                    Nothing
-
         actions =
-            getPrevStep question
+            getPrevStep form.step
                 |> Maybe.map
                     (\prevStep ->
                         div [ class "actions two" ]
@@ -1619,37 +1592,84 @@ viewMentalHealthContent language currentDate assembled data =
         saveButtonActive =
             tasksCompleted == totalTasks
 
-        getPrevStep currentStep =
+        saveAction =
+            getNextStep form.step
+                |> Maybe.map SetMentalHealthStep
+                |> Maybe.withDefault (SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth)
+
+        getNextStep currentStep =
             case currentStep of
-                MentalHealthQuestion1 ->
+                MentalHealthQuestion question ->
+                    case question of
+                        MentalHealthQuestion1 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion2)
+
+                        MentalHealthQuestion2 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion3)
+
+                        MentalHealthQuestion3 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion4)
+
+                        MentalHealthQuestion4 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion5)
+
+                        MentalHealthQuestion5 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion6)
+
+                        MentalHealthQuestion6 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion7)
+
+                        MentalHealthQuestion7 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion8)
+
+                        MentalHealthQuestion8 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion9)
+
+                        MentalHealthQuestion9 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion10)
+
+                        MentalHealthQuestion10 ->
+                            Just MentalHealthSpecialistQuestion
+
+                MentalHealthSpecialistQuestion ->
                     Nothing
 
-                MentalHealthQuestion2 ->
-                    Just MentalHealthQuestion1
+        getPrevStep currentStep =
+            case currentStep of
+                MentalHealthQuestion question ->
+                    case question of
+                        MentalHealthQuestion1 ->
+                            Nothing
 
-                MentalHealthQuestion3 ->
-                    Just MentalHealthQuestion2
+                        MentalHealthQuestion2 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion1)
 
-                MentalHealthQuestion4 ->
-                    Just MentalHealthQuestion3
+                        MentalHealthQuestion3 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion2)
 
-                MentalHealthQuestion5 ->
-                    Just MentalHealthQuestion4
+                        MentalHealthQuestion4 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion3)
 
-                MentalHealthQuestion6 ->
-                    Just MentalHealthQuestion6
+                        MentalHealthQuestion5 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion4)
 
-                MentalHealthQuestion7 ->
-                    Just MentalHealthQuestion7
+                        MentalHealthQuestion6 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion5)
 
-                MentalHealthQuestion8 ->
-                    Just MentalHealthQuestion7
+                        MentalHealthQuestion7 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion6)
 
-                MentalHealthQuestion9 ->
-                    Just MentalHealthQuestion8
+                        MentalHealthQuestion8 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion7)
 
-                MentalHealthQuestion10 ->
-                    Just MentalHealthQuestion9
+                        MentalHealthQuestion9 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion8)
+
+                        MentalHealthQuestion10 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion9)
+
+                MentalHealthSpecialistQuestion ->
+                    Just (MentalHealthQuestion MentalHealthQuestion10)
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]

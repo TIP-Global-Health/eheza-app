@@ -196,8 +196,9 @@ type Msg
     | SetHIVMedicationNotGivenReason HIVTreatmentSign
     | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
       -- MENTALHEALTHMsgs
-    | SetMentalHealthStep PrenatalMentalHealthQuestion
+    | SetMentalHealthStep MentalHealthStep
     | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    | SetSpecialistAtHC Bool
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
 
 
