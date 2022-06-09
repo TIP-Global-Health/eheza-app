@@ -4489,6 +4489,50 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_mental_health-field_specialist_at_hc'.
+  $field_instances['node-prenatal_mental_health-field_specialist_at_hc'] = array(
+    'bundle' => 'prenatal_mental_health',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_specialist_at_hc',
+    'label' => 'Specialist At HC',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 0,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_mental_health-field_uuid'.
   $field_instances['node-prenatal_mental_health-field_uuid'] = array(
     'bundle' => 'prenatal_mental_health',
@@ -7433,6 +7477,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Rhesus');
   t('Send to HC');
   t('Shards');
+  t('Specialist At HC');
   t('Specific Gravity');
   t('Sugar Count');
   t('Sys Repeated');
