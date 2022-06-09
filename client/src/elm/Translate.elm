@@ -992,6 +992,8 @@ type TranslationId
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalMentalHealthSpecialistQuestion
+    | PrenatalMentalHealthWarningPopupMessage
+    | PrenatalMentalHealthWarningPopupInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -9884,6 +9886,16 @@ translationSet trans =
 
         PrenatalMentalHealthSpecialistQuestion ->
             { english = "Does this health center have a mental health specialist available"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalMentalHealthWarningPopupMessage ->
+            { english = "Patient shows signs of being a suicide risk"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalMentalHealthWarningPopupInstructions ->
+            { english = "Contact mental health specialist immediately"
             , kinyarwanda = Nothing
             }
 

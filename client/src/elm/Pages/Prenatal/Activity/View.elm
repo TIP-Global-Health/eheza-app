@@ -1595,7 +1595,21 @@ viewMentalHealthContent language currentDate assembled data =
         saveAction =
             getNextStep form.step
                 |> Maybe.map SetMentalHealthStep
-                |> Maybe.withDefault (SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth)
+                |> Maybe.withDefault
+                    (let
+                        suicideRiskDiagnosed =
+                            Maybe.andThen suicideRiskDiagnosedBySigns form.signs
+                                |> Maybe.withDefault False
+
+                        saveMsg =
+                            SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth
+                     in
+                     if suicideRiskDiagnosed then
+                        SetMentalHealthWarningPopupState (Just saveMsg)
+
+                     else
+                        saveMsg
+                    )
 
         getNextStep currentStep =
             case currentStep of
@@ -1679,7 +1693,22 @@ viewMentalHealthContent language currentDate assembled data =
             ]
         , actions
         ]
+    , viewModal <|
+        mentalHealthWarningPopup language data.warningPopupState
     ]
+
+
+mentalHealthWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
+mentalHealthWarningPopup language actionMsg =
+    let
+        state =
+            Just
+                ( translate language Translate.PrenatalMentalHealthWarningPopupMessage
+                , translate language Translate.PrenatalMentalHealthWarningPopupInstructions
+                )
+    in
+    Maybe.andThen (\action -> customWarningPopup language action state)
+        actionMsg
 
 
 viewNextStepsContent : Language -> NominalDate -> Bool -> AssembledData -> NextStepsData -> List (Html Msg)

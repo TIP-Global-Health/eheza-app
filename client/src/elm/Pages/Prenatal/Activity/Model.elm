@@ -199,6 +199,7 @@ type Msg
     | SetMentalHealthStep MentalHealthStep
     | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | SetSpecialistAtHC Bool
+    | SetMentalHealthWarningPopupState (Maybe Msg)
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
 
 
@@ -565,12 +566,16 @@ emptyTreatmentReviewData =
 
 
 type alias MentalHealthData =
-    { form : MentalHealthForm }
+    { form : MentalHealthForm
+    , warningPopupState : Maybe Msg
+    }
 
 
 emptyMentalHealthData : MentalHealthData
 emptyMentalHealthData =
-    { form = emptyMentalHealthForm }
+    { form = emptyMentalHealthForm
+    , warningPopupState = Nothing
+    }
 
 
 type alias NextStepsData =
