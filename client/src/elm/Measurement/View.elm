@@ -12,6 +12,7 @@ module Measurement.View exposing
     , viewSendToHIVProgramForm
     , viewSendToHealthCenterForm
     , viewSendToHospitalForm
+    , viewSendToMentalSpecialistForm
     , viewVitalsForm
     , zScoreForHeightOrLength
     )
@@ -1178,6 +1179,19 @@ viewSendToHIVProgramForm language currentDate =
     viewSendToFacilityForm language currentDate FacilityHIVProgram
 
 
+viewSendToMentalSpecialistForm :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToMentalSpecialistForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityMentalHealthSpecialist
+
+
 viewSendToFacilityForm :
     Language
     -> NominalDate
@@ -1200,6 +1214,9 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
 
                 FacilityHIVProgram ->
                     viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions"
+
+                FacilityMentalHealthSpecialist ->
+                    viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions"
 
         sendToHCSection =
             let
@@ -1266,14 +1283,22 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                 )
                 setAccompanyToHCMsg
                 |> Maybe.withDefault []
+
+        instructions =
+            case facility of
+                FacilityMentalHealthSpecialist ->
+                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing ]
+
+                _ ->
+                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                    ]
     in
     div [ class "ui form send-to-hc" ] <|
         [ headerHelper
         , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
         , div [ class "instructions" ]
-            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-            , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-            ]
+            instructions
         ]
             ++ sendToHCSection
             ++ handReferralFormSection

@@ -327,7 +327,8 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
                         || referToHospitalDueToAdverseEvent assembled
-                        || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
+                        || referToHIVProgram assembled
+                        || referToMentalHealthSpecialist assembled
 
                 _ ->
                     dangerSigns
@@ -664,6 +665,29 @@ referToHospitalForNonHIVDiagnosis assembled =
             ]
             assembled
         || updateHypertensionTreatmentWithHospitalization assembled
+        || referToHospitalForMentalHealthDiagnosis assembled
+
+
+referToHospitalForMentalHealthDiagnosis : AssembledData -> Bool
+referToHospitalForMentalHealthDiagnosis assembled =
+    not (mentalHealthSpecialistAtHC assembled) && diagnosedAnyOf mentalHealthDiagnoses assembled
+
+
+referToMentalHealthSpecialist : AssembledData -> Bool
+referToMentalHealthSpecialist assembled =
+    mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnoses assembled
+
+
+mentalHealthSpecialistAtHC : AssembledData -> Bool
+mentalHealthSpecialistAtHC assembled =
+    getMeasurementValueFunc assembled.measurements.mentalHealth
+        |> Maybe.map .specialistAtHC
+        |> Maybe.withDefault False
+
+
+referToHIVProgram : AssembledData -> Bool
+referToHIVProgram assembled =
+    diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -2492,6 +2516,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     else if
                         referToHospitalForNonHIVDiagnosis assembled
                             || referToHospitalDueToAdverseEvent assembled
+                            || referToMentalHealthSpecialist assembled
                     then
                         ( 0, 0 )
 

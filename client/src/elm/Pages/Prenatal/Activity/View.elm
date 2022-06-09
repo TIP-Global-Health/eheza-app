@@ -24,7 +24,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewSendToMentalSpecialistForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -1845,6 +1845,9 @@ viewNextStepsContent language currentDate isChw assembled data =
                                     || referToHospitalDueToAdverseEvent assembled
                             then
                                 ( viewSendToHospitalForm, Nothing )
+
+                            else if referToMentalHealthSpecialist assembled then
+                                ( viewSendToMentalSpecialistForm, Nothing )
 
                             else
                                 ( viewSendToHIVProgramForm, Just SetAccompanyToHC )

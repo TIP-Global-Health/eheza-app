@@ -992,6 +992,7 @@ type TranslationId
     | PrenatalLabsEntryState PrenatalLabsEntryState
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    | PrenatalMentalHealthSpecialistHelper
     | PrenatalMentalHealthSpecialistQuestion
     | PrenatalMentalHealthWarningPopupMessage
     | PrenatalMentalHealthWarningPopupInstructions
@@ -1399,6 +1400,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Will you accompany the patient to Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Will you accompany the patient to mental health specialist"
                     , kinyarwanda = Nothing
                     }
 
@@ -2986,6 +2992,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Complete an Integration HIV/PMTCT referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Complete a referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -9895,6 +9906,11 @@ translationSet trans =
                             , kinyarwanda = Nothing
                             }
 
+        PrenatalMentalHealthSpecialistHelper ->
+            { english = "Refer patient to mental health specialist for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalMentalHealthSpecialistQuestion ->
             { english = "Does this health center have a mental health specialist available"
             , kinyarwanda = Nothing
@@ -11023,6 +11039,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityMentalHealthSpecialist ->
+                    { english = "Have you referred the patient to the specialist"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacility facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -11040,6 +11061,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityMentalHealthSpecialist ->
+                    { english = "Referred to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacilityNot facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -11054,6 +11080,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Not referred to HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Not referred to mental health specialist"
                     , kinyarwanda = Nothing
                     }
 
@@ -12148,6 +12179,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Direct patient to the appropriate location"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Refer patient to mental health specialist for further evaluation"
                     , kinyarwanda = Nothing
                     }
 
