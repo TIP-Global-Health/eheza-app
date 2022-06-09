@@ -1069,12 +1069,19 @@ emptyNewbornEnrolmentForm =
 
 type alias MentalHealthForm =
     { signs : Maybe (Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption)
-    , step : PrenatalMentalHealthQuestion
+    , specialistAtHC : Maybe Bool
+    , step : MentalHealthStep
     }
+
+
+type MentalHealthStep
+    = MentalHealthQuestion PrenatalMentalHealthQuestion
+    | MentalHealthSpecialistQuestion
 
 
 emptyMentalHealthForm : MentalHealthForm
 emptyMentalHealthForm =
     { signs = Nothing
-    , step = MentalHealthQuestion1
+    , specialistAtHC = Nothing
+    , step = MentalHealthQuestion MentalHealthQuestion1
     }

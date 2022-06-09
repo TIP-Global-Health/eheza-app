@@ -1311,7 +1311,9 @@ type alias PrenatalMentalHealth =
 
 
 type alias PrenatalMentalHealthValue =
-    Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    { signs : Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    , specialistAtHC : Bool
+    }
 
 
 type PrenatalMentalHealthQuestion

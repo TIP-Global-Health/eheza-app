@@ -815,7 +815,7 @@ encodePrenatalMentalHealthValue : PrenatalMentalHealthValue -> List ( String, Va
 encodePrenatalMentalHealthValue value =
     let
         signs =
-            Dict.toList value
+            Dict.toList value.signs
                 |> List.map
                     (\( question, answer ) ->
                         prenatalMentalHealthQuestionToString question
@@ -823,8 +823,10 @@ encodePrenatalMentalHealthValue value =
                             ++ prenatalMentalHealthQuestionOptionToString answer
                     )
     in
-    ( "mental_health_signs", list string signs )
-        :: [ ( "deleted", bool False )
+    [ ( "mental_health_signs", list string signs )
+    , ( "specialist_at_hc", bool value.specialistAtHC )
+    ]
+        ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_mental_health" )
            ]
 

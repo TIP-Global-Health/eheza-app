@@ -5458,7 +5458,8 @@ mentalHealthFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (Just value)
+                { signs = or form.signs (Just value.signs)
+                , specialistAtHC = or form.specialistAtHC (Just value.specialistAtHC)
                 , step = form.step
                 }
             )
@@ -5472,4 +5473,11 @@ toPrenatalMentalHealthValueWithDefault saved form =
 
 toPrenatalMentalHealthValue : MentalHealthForm -> Maybe PrenatalMentalHealthValue
 toPrenatalMentalHealthValue form =
-    form.signs
+    Maybe.map2
+        (\signs specialistAtHC ->
+            { signs = signs
+            , specialistAtHC = specialistAtHC
+            }
+        )
+        form.signs
+        form.specialistAtHC
