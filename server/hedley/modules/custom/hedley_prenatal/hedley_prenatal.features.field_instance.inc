@@ -4505,7 +4505,7 @@ function hedley_prenatal_field_default_field_instances() {
         'label' => 'above',
         'module' => 'list',
         'settings' => array(),
-        'type' => 'list_default',
+        'type' => 'list_key',
         'weight' => 7,
       ),
       'teaser' => array(
@@ -4517,7 +4517,7 @@ function hedley_prenatal_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_specialist_at_hc',
-    'label' => 'Specialist At HC',
+    'label' => 'Specialist at HC',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -4526,7 +4526,7 @@ function hedley_prenatal_field_default_field_instances() {
       'active' => 1,
       'module' => 'options',
       'settings' => array(
-        'display_label' => 0,
+        'display_label' => 1,
       ),
       'type' => 'options_onoff',
       'weight' => 8,
@@ -7477,7 +7477,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Rhesus');
   t('Send to HC');
   t('Shards');
-  t('Specialist At HC');
+  t('Specialist at HC');
   t('Specific Gravity');
   t('Sugar Count');
   t('Sys Repeated');
