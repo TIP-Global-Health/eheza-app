@@ -72,9 +72,6 @@ foreach ($queries as $label => $query) {
   drush_print($table->render($data));
 }
 
-
-
-
 $queries = [
   // As the group of all pregnancies.
   "First Visits - Any location" => file_get_contents(__DIR__ . '/anc-first-visit-all-pregnancies.SQL'),
@@ -87,9 +84,9 @@ foreach ($queries as $label => $query) {
   $results = db_query($query, [':limit' => $limit_date])->fetchAll(PDO::FETCH_ASSOC);
   foreach ($results as $result) {
     $total_first_visits = $result['first_trimester'] + $result['second_trimester'] + $result['third_trimester'];
-    $first_trimester_percentage = ($result['first_trimester'] !=0) ? $result['first_trimester'] / $total_first_visits : '0';
-    $second_trimester_percentage = ($result['second_trimester'] !=0) ? $result['second_trimester'] / $total_first_visits : '0';
-    $third_trimester_percentage = ($result['third_trimester'] !=0) ? $result['third_trimester'] / $total_first_visits : '0';
+    $first_trimester_percentage = ($result['first_trimester'] != 0) ? $result['first_trimester'] / $total_first_visits : '0';
+    $second_trimester_percentage = ($result['second_trimester'] != 0) ? $result['second_trimester'] / $total_first_visits : '0';
+    $third_trimester_percentage = ($result['third_trimester'] != 0) ? $result['third_trimester'] / $total_first_visits : '0';
 
     $data = [
       [
