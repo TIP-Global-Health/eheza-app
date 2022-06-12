@@ -238,17 +238,27 @@ medicationDistributionResolveFromValue allowedSigns value sign =
         Nothing
 
 
-toMedicationDistributionValueWithDefaultInitialPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValueWithDefaultInitialPhase :
+    Maybe PrenatalMedicationDistributionValue
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultInitialPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsInitialPhase
 
 
-toMedicationDistributionValueWithDefaultRecurrentPhase : Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValueWithDefaultRecurrentPhase :
+    Maybe PrenatalMedicationDistributionValue
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefaultRecurrentPhase =
     toMedicationDistributionValueWithDefault NoMedicationDistributionSignsRecurrentPhase
 
 
-toMedicationDistributionValueWithDefault : MedicationDistributionSign -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValueWithDefault :
+    MedicationDistributionSign
+    -> Maybe PrenatalMedicationDistributionValue
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValueWithDefault valueForNone saved form =
     medicationDistributionFormWithDefault valueForNone form saved
         |> toMedicationDistributionValue valueForNone
@@ -290,6 +300,153 @@ toMedicationDistributionValue valueForNone form =
         |> andMap nonAdministrationSigns
         |> andMap recommendedTreatmentSigns
         |> andMap avoidingGuidanceReason
+
+
+toHealthEducationValueWithDefaultChw :
+    Maybe (EverySet PrenatalHealthEducationSign)
+    -> HealthEducationForm
+    -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValueWithDefaultChw =
+    toHealthEducationValueWithDefault NoPrenatalHealthEducationSigns
+
+
+toHealthEducationValueWithDefaultInitialPhase :
+    Maybe (EverySet PrenatalHealthEducationSign)
+    -> HealthEducationForm
+    -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValueWithDefaultInitialPhase =
+    toHealthEducationValueWithDefault NoPrenatalHealthEducationSignsInitialPhase
+
+
+toHealthEducationValueWithDefaultRecurrentPhase :
+    Maybe (EverySet PrenatalHealthEducationSign)
+    -> HealthEducationForm
+    -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValueWithDefaultRecurrentPhase =
+    toHealthEducationValueWithDefault NoPrenatalHealthEducationSignsRecurrentPhase
+
+
+toHealthEducationValueWithDefault : PrenatalHealthEducationSign -> Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValueWithDefault valueForNone saved form =
+    healthEducationFormWithDefault valueForNone form saved
+        |> toHealthEducationValue valueForNone
+
+
+healthEducationFormWithDefault : PrenatalHealthEducationSign -> HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign) -> HealthEducationForm
+healthEducationFormWithDefault valueForNone form saved =
+    case valueForNone of
+        NoPrenatalHealthEducationSignsInitialPhase ->
+            healthEducationFormWithDefaultInitialPhase form saved
+
+        NoPrenatalHealthEducationSignsRecurrentPhase ->
+            healthEducationFormWithDefaultRecurrentPhase form saved
+
+        -- We should never get here.
+        _ ->
+            form
+
+
+healthEducationFormWithDefaultInitialPhase :
+    HealthEducationForm
+    -> Maybe (EverySet PrenatalHealthEducationSign)
+    -> HealthEducationForm
+healthEducationFormWithDefaultInitialPhase form saved =
+    saved
+        |> unwrap
+            form
+            (\signs ->
+                { expectations = or form.expectations (EverySet.member EducationExpectations signs |> Just)
+                , visitsReview = or form.visitsReview (EverySet.member EducationVisitsReview signs |> Just)
+                , warningSigns = or form.warningSigns (EverySet.member EducationWarningSigns signs |> Just)
+                , hemorrhaging = or form.hemorrhaging (EverySet.member EducationHemorrhaging signs |> Just)
+                , familyPlanning = or form.familyPlanning (EverySet.member EducationFamilyPlanning signs |> Just)
+                , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding signs |> Just)
+                , immunization = or form.immunization (EverySet.member EducationImmunization signs |> Just)
+                , hygiene = or form.hygiene (EverySet.member EducationHygiene signs |> Just)
+                , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
+                , saferSexHIV = or form.saferSexHIV (EverySet.member EducationSaferSexHIV signs |> Just)
+                , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
+                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNausiaVomiting signs |> Just)
+                , legCramps = or form.legCramps (EverySet.member EducationLegCramps signs |> Just)
+                , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain signs |> Just)
+                , constipation = or form.constipation (EverySet.member EducationConstipation signs |> Just)
+                , heartburn = or form.heartburn (EverySet.member EducationHeartburn signs |> Just)
+                , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins signs |> Just)
+                , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
+                , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
+
+                -- Only sign that does not participate at recurrent phase. Resolved directly
+                -- from value.
+                , hivDetectableViralLoad = EverySet.member EducationHIVDetectableViralLoad signs |> Just
+                }
+            )
+
+
+healthEducationFormWithDefaultRecurrentPhase :
+    HealthEducationForm
+    -> Maybe (EverySet PrenatalHealthEducationSign)
+    -> HealthEducationForm
+healthEducationFormWithDefaultRecurrentPhase form saved =
+    saved
+        |> unwrap
+            form
+            (\signs ->
+                { -- None of these participate at recurrent phase. Resolved directly
+                  -- from value.
+                  expectations = EverySet.member EducationExpectations signs |> Just
+                , visitsReview = EverySet.member EducationVisitsReview signs |> Just
+                , warningSigns = EverySet.member EducationWarningSigns signs |> Just
+                , hemorrhaging = EverySet.member EducationHemorrhaging signs |> Just
+                , familyPlanning = EverySet.member EducationFamilyPlanning signs |> Just
+                , breastfeeding = EverySet.member EducationBreastfeeding signs |> Just
+                , immunization = EverySet.member EducationImmunization signs |> Just
+                , hygiene = EverySet.member EducationHygiene signs |> Just
+                , positiveHIV = EverySet.member EducationPositiveHIV signs |> Just
+                , saferSexHIV = EverySet.member EducationSaferSexHIV signs |> Just
+                , partnerTesting = EverySet.member EducationPartnerTesting signs |> Just
+                , nauseaVomiting = EverySet.member EducationNausiaVomiting signs |> Just
+                , legCramps = EverySet.member EducationLegCramps signs |> Just
+                , lowBackPain = EverySet.member EducationLowBackPain signs |> Just
+                , constipation = EverySet.member EducationConstipation signs |> Just
+                , heartburn = EverySet.member EducationHeartburn signs |> Just
+                , varicoseVeins = EverySet.member EducationVaricoseVeins signs |> Just
+                , legPainRedness = EverySet.member EducationLegPainRedness signs |> Just
+                , pelvicPain = EverySet.member EducationPelvicPain signs |> Just
+                , saferSex = EverySet.member EducationSaferSex signs |> Just
+
+                -- Only sign that participates at recurrent phase.
+                , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad signs |> Just)
+                }
+            )
+
+
+toHealthEducationValue : PrenatalHealthEducationSign -> HealthEducationForm -> Maybe (EverySet PrenatalHealthEducationSign)
+toHealthEducationValue valueForNone form =
+    [ ifNullableTrue EducationExpectations form.expectations
+    , ifNullableTrue EducationVisitsReview form.visitsReview
+    , ifNullableTrue EducationWarningSigns form.warningSigns
+    , ifNullableTrue EducationHemorrhaging form.hemorrhaging
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationBreastfeeding form.breastfeeding
+    , ifNullableTrue EducationImmunization form.immunization
+    , ifNullableTrue EducationHygiene form.hygiene
+    , ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationNausiaVomiting form.nauseaVomiting
+    , ifNullableTrue EducationLegCramps form.legCramps
+    , ifNullableTrue EducationLowBackPain form.lowBackPain
+    , ifNullableTrue EducationConstipation form.constipation
+    , ifNullableTrue EducationHeartburn form.heartburn
+    , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
+    , ifNullableTrue EducationLegPainRedness form.legPainRedness
+    , ifNullableTrue EducationPelvicPain form.pelvicPain
+    , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty valueForNone)
 
 
 resolveMedicationDistributionInputsAndTasks :
@@ -624,15 +781,15 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
             []
             currentValue
             setRecommendedTreatmentSignMsg
-            (viewTreatmentOptioForHypertension language)
+            (viewTreatmentOptionForHypertension language)
       ]
     , taskCompleted currentValue
     , 1
     )
 
 
-viewTreatmentOptioForHypertension : Language -> RecommendedTreatmentSign -> Html any
-viewTreatmentOptioForHypertension language sign =
+viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForHypertension language sign =
     let
         multipleTreatmentWithDosage =
             List.map (viewtreatmentWithDosage language)

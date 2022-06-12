@@ -513,6 +513,7 @@ type TranslationId
     | DeliveryOutcome
     | DemographicInformation
     | DemographicsReport
+    | DetectableViralLoad
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
@@ -927,6 +928,7 @@ type TranslationId
     | PrenatalHealthEducationAppropriateProvided
     | PrenatalHealthEducationLabel PrenatalHealthEducationSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
+    | PrenatalHealthEducationHivDetectableViralLoadInform
     | PrenatalHealthEducationNauseaAndVomitingAdvise
     | PrenatalHealthEducationNauseaAndVomitingInform
     | PrenatalHealthEducationLegCrampsInform
@@ -3522,6 +3524,11 @@ translationSet trans =
         DemographicsReport ->
             { english = "Demographics Report"
             , kinyarwanda = Just "Raporo y'umwirondoro"
+            }
+
+        DetectableViralLoad ->
+            { english = "Detectable Viral Load"
+            , kinyarwanda = Nothing
             }
 
         Device ->
@@ -7838,6 +7845,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHIVDetectableViralLoad ->
+                    { english = "Detectable HIV Viral Load"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDiscordantPartnership ->
                     { english = "Discordant Partnership"
                     , kinyarwanda = Nothing
@@ -8110,6 +8122,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHIVDetectableViralLoad ->
+                    { english = "Detectable HIV Viral Load"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDiscordantPartnership ->
                     { english = "Discordant Partnership"
                     , kinyarwanda = Nothing
@@ -8334,6 +8351,11 @@ translationSet trans =
             case diagnosis of
                 DiagnosisHIV ->
                     { english = "Patient has tested positive for HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHIVDetectableViralLoad ->
+                    { english = "Patient has a detectable HIV Viral Load"
                     , kinyarwanda = Nothing
                     }
 
@@ -8692,6 +8714,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalHealthEducationHivDetectableViralLoadInform ->
+            { english = "Instruct the patient on the importance of strict adherence to their medication and the dangers of transmission to their child during labor and delivery"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalHealthEducationNauseaAndVomitingAdvise ->
             { english = "Advise the patient that small amounts of chamomile tea, ginger, and Vitamin B6 can help relieve these symptoms if these are available to the patient"
             , kinyarwanda = Nothing
@@ -8795,6 +8822,11 @@ translationSet trans =
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
                     { english = "Medication Distribution"
                     , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
+                Pages.Prenatal.RecurrentActivity.Types.NextStepsHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
         PrenatalHIVProgramHelper ->

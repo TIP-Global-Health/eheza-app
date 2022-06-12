@@ -1898,6 +1898,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
+        DiagnosisHIVDetectableViralLoad ->
+            -- @todo
+            []
+
         DiagnosisDiscordantPartnership ->
             getMeasurementValueFunc measurements.medicationDistribution
                 |> Maybe.andThen

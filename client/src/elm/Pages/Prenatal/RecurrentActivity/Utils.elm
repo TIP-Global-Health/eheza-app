@@ -386,7 +386,7 @@ toPrenatalUrineDipstickResultsValue form =
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
     -- The order is important. Do not change.
-    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter (expectNextStepsTask currentDate assembled)
 
 
@@ -414,6 +414,9 @@ expectNextStepsTask currentDate assembled task =
                         || diagnosedSyphilis assembled
                         || diagnosedHypertension PrenatalEncounterPhaseRecurrent assembled
                    )
+
+        NextStepsHealthEducation ->
+            diagnosed DiagnosisHIVDetectableViralLoad assembled
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -444,6 +447,15 @@ nextStepsMeasurementTaken assembled task =
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
+
+        NextStepsHealthEducation ->
+            getMeasurementValueFunc assembled.measurements.healthEducation
+                |> Maybe.map
+                    (\signs ->
+                        List.any (\sign -> EverySet.member sign signs)
+                            [ EducationHIVDetectableViralLoad, NoPrenatalHealthEducationSignsRecurrentPhase ]
+                    )
+                |> Maybe.withDefault False
 
 
 nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
@@ -494,6 +506,16 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         form
             in
             ( completed, total )
+
+        NextStepsHealthEducation ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.healthEducation
+                        |> healthEducationFormWithDefaultRecurrentPhase data.healthEducationForm
+            in
+            ( taskCompleted form.hivDetectableViralLoad
+            , 1
+            )
 
 
 emergencyReferalRequired : AssembledData -> Bool

@@ -703,6 +703,7 @@ function hedley_prenatal_field_default_field_bases() {
         'severe-preeclampsia-recheck' => 'Severe Preeclampsia After Recheck',
         'eclampsia' => 'Eclampsia',
         'hiv' => 'HIV',
+        'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'partner-hiv' => 'HIV positive partner',
         'syphilis' => 'Syphilis',
         'syphilis-complications' => 'Syphilis with Complications',

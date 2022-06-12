@@ -455,7 +455,7 @@ type Revision
     | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
-    | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
+    | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
     | PrenatalSymptomReviewRevision PrenatalSymptomReviewId PrenatalSymptomReview
     | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest

@@ -97,6 +97,9 @@ decodePrenatalDiagnosis =
                     "hiv" ->
                         succeed DiagnosisHIV
 
+                    "hiv-detectable-viral-load" ->
+                        succeed DiagnosisHIVDetectableViralLoad
+
                     "partner-hiv" ->
                         succeed DiagnosisDiscordantPartnership
 

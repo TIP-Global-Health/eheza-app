@@ -341,8 +341,17 @@ decodePrenatalHealthEducationSign =
                     "safer-sex" ->
                         succeed EducationSaferSex
 
+                    "hiv-detectable-viral-load" ->
+                        succeed EducationHIVDetectableViralLoad
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
+
+                    "none-initial" ->
+                        succeed NoPrenatalHealthEducationSignsInitialPhase
+
+                    "none-recurrent" ->
+                        succeed NoPrenatalHealthEducationSignsRecurrentPhase
 
                     _ ->
                         sign ++ " is not a recognized PrenatalHealthEducationSign" |> fail

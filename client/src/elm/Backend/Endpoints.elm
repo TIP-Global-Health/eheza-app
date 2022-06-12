@@ -748,7 +748,7 @@ prenatalFollowUpEndpoint =
         |> withValueEncoder (object << encodePrenatalFollowUp)
 
 
-prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHcId PrenatalSendToHC PrenatalSendToHC ()
+prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHCId PrenatalSendToHC PrenatalSendToHC ()
 prenatalSendToHcEndpoint =
     swEndpoint "nodes/prenatal_send_to_hc" decodePrenatalSendToHc
         |> withValueEncoder (object << encodePrenatalSendToHC)

@@ -28,7 +28,7 @@ import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
@@ -693,6 +693,9 @@ viewNextStepsContent language currentDate assembled data =
                         NextStepsMedicationDistribution ->
                             "next-steps-medication-distribution"
 
+                        NextStepsHealthEducation ->
+                            "next-steps-health-education"
+
                 isActive =
                     activeTask == Just task
 
@@ -737,8 +740,7 @@ viewNextStepsContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsSendToHC ->
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHospitalForm language
                             currentDate
@@ -748,8 +750,7 @@ viewNextStepsContent language currentDate assembled data =
                             Nothing
 
                 Just NextStepsMedicationDistribution ->
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefaultRecurrentPhase data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
@@ -759,6 +760,11 @@ viewNextStepsContent language currentDate assembled data =
                             SetMedicationDistributionAdministrationNote
                             SetRecommendedTreatmentSign
                             (always NoOp)
+
+                Just NextStepsHealthEducation ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefaultRecurrentPhase data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -784,6 +790,9 @@ viewNextStepsContent language currentDate assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -936,6 +945,21 @@ viewVitalsForm language currentDate assembled form =
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
+
+
+viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate assembled form =
+    div [ class "ui form health-education" ]
+        [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
+        , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
+        , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+        , viewBoolInput
+            language
+            form.hivDetectableViralLoad
+            SetEducationHIVDetectableViralLoad
+            "hiv-detectable-viral-load"
+            Nothing
+        ]
 
 
 
