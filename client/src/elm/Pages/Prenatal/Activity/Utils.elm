@@ -2491,7 +2491,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentCompleted, reasonForNotSentActive ) =
                     form.referToHealthCenter

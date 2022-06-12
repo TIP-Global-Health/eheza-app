@@ -15,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
@@ -2386,3 +2387,48 @@ diagnosedSyphilis =
         [ DiagnosisSyphilis
         , DiagnosisSyphilisWithComplications
         ]
+
+
+prenatalSendToHCFormWithDefault : SendToHCForm -> Maybe PrenatalSendToHCValue -> SendToHCForm
+prenatalSendToHCFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
+                , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
+                , enrollToNutritionProgram = or form.enrollToNutritionProgram (EverySet.member EnrollToNutritionProgram value.signs |> Just)
+
+                -- These 2 are not used at prenatal.
+                , referToNutritionProgram = form.referToNutritionProgram
+                , reasonForNotSendingToHC = form.reasonForNotSendingToHC
+                }
+            )
+
+
+toPrenatalSendToHCValueWithDefault : Maybe PrenatalSendToHCValue -> Maybe ReferralFacility -> SendToHCForm -> Maybe PrenatalSendToHCValue
+toPrenatalSendToHCValueWithDefault saved referralFacility form =
+    prenatalSendToHCFormWithDefault form saved
+        |> toPrenatalSendToHCValue referralFacility
+
+
+toPrenatalSendToHCValue : Maybe ReferralFacility -> SendToHCForm -> Maybe PrenatalSendToHCValue
+toPrenatalSendToHCValue referralFacility form =
+    let
+        signs =
+            [ ifNullableTrue HandReferrerForm form.handReferralForm
+            , ifNullableTrue ReferToHealthCenter form.referToHealthCenter
+            , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+        reasonForNotSendingToHC =
+            form.reasonForNotSendingToHC
+                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Just
+    in
+    Maybe.map PrenatalSendToHCValue signs
+        |> andMap reasonForNotSendingToHC
+        |> andMap (Just referralFacility)

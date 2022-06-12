@@ -863,7 +863,24 @@ type PrenatalAssesment
 
 
 type alias PrenatalSendToHC =
-    PrenatalMeasurement SendToHCValue
+    PrenatalMeasurement PrenatalSendToHCValue
+
+
+type alias PrenatalSendToHCValue =
+    { signs : EverySet SendToHCSign
+    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+
+    -- This field will be populated in case of non standard facility.
+    -- Standards are Health center for CHW and Hopital for nurse.
+    , referralFacility : Maybe ReferralFacility
+    }
+
+
+type ReferralFacility
+    = FacilityHealthCenter
+    | FacilityHospital
+    | FacilityHIVProgram
+    | FacilityMentalHealthSpecialist
 
 
 type alias PrenatalAppointmentConfirmationValue =

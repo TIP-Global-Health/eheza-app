@@ -2833,7 +2833,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveSendToHC personId saved secondPhaseRequired nextTask ->
+        SaveSendToHC personId saved secondPhaseRequired referralFacility nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2846,7 +2846,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.sendToHCForm
-                        |> toSendToHCValueWithDefault measurement
+                        |> toPrenatalSendToHCValueWithDefault measurement referralFacility
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

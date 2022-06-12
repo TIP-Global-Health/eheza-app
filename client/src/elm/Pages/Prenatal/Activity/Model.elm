@@ -173,7 +173,7 @@ type Msg
     | SetHandReferralForm Bool
     | SetAccompanyToHC Bool
     | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe ReferralFacility) (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) Bool (Maybe NextStepsTask)

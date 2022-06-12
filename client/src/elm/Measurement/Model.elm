@@ -407,10 +407,3 @@ type InvokationModule
     = InvokationModulePrenatal
     | InvokationModuleAcuteIllness
     | InvokationModuleWellChild
-
-
-type ReferralFacility
-    = FacilityHealthCenter
-    | FacilityHospital
-    | FacilityHIVProgram
-    | FacilityMentalHealthSpecialist

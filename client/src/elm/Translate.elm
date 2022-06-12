@@ -65,7 +65,7 @@ import Form.Error exposing (ErrorValue(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html, text)
 import Http
-import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
+import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..))
 import Pages.AcuteIllness.Activity.Types
     exposing
         ( DangerSignsTask(..)
