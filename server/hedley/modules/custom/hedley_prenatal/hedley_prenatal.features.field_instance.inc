@@ -5606,6 +5606,44 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_send_to_hc-field_referral_facility'.
+  $field_instances['node-prenatal_send_to_hc-field_referral_facility'] = array(
+    'bundle' => 'prenatal_send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_referral_facility',
+    'label' => 'Referral Facility',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 12,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_send_to_hc-field_send_to_hc'.
   $field_instances['node-prenatal_send_to_hc-field_send_to_hc'] = array(
     'bundle' => 'prenatal_send_to_hc',
@@ -7474,6 +7512,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Protein');
   t('Reason for Not Sending to HC');
   t('Recommended Treatment');
+  t('Referral Facility');
   t('Rhesus');
   t('Send to HC');
   t('Shards');
