@@ -987,9 +987,8 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'default' => 'Default',
         'hiv-program' => 'HIV program',
-        'mental-health-specialist' => 'Mental helath specialist',
+        'mental-health-specialist' => 'Mental health specialist',
       ),
       'allowed_values_function' => '',
     ),
