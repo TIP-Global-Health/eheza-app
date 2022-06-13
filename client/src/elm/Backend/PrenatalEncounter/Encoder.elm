@@ -203,10 +203,10 @@ encodePrenatalDiagnosis diagnosis =
                 "pyelonephritis"
 
             DiagnosisCandidiasis ->
-                "candidiasis-continued"
+                "candidiasis"
 
             DiagnosisCandidiasisContinued ->
-                "candidiasis"
+                "candidiasis-continued"
 
             DiagnosisGonorrhea ->
                 "gonorrhea"
