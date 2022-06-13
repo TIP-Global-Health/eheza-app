@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , PrenatalHIVSign(..)
         , PrenatalMeasurements
+        , PrenatalSymptomQuestion(..)
         , PrenatalTestExecutionNote(..)
         , PrenatalTestVariant(..)
         , ReasonForNotSendingToHC(..)
@@ -1607,21 +1608,36 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessageWithComplications ""
 
         referredToHospitalMessageWithComplications complications =
+            referredToFacilityMessageWithComplications Nothing complications
+
+        referredToFacilityMessage nonDefaultReferralFacility =
+            referredToFacilityMessageWithComplications nonDefaultReferralFacility ""
+
+        referredToFacilityMessageWithComplications nonDefaultReferralFacility complications =
             if isNothing measurements.sendToHC then
                 noTreatmentRecordedMessageWithComplications complications
 
             else
                 let
-                    sentToHospital =
+                    refferedToFacility =
                         getMeasurementValueFunc measurements.sendToHC
-                            |> Maybe.map (.signs >> EverySet.member ReferToHealthCenter)
+                            |> Maybe.map
+                                (\value ->
+                                    EverySet.member ReferToHealthCenter value.signs
+                                        && (value.referralFacility == nonDefaultReferralFacility)
+                                )
                             |> Maybe.withDefault False
+
+                    referralFacility =
+                        -- If nonDefaultReferralFacility is Nothing, we know it's
+                        -- default facility, which is a hospital.
+                        Maybe.withDefault FacilityHospital nonDefaultReferralFacility
                 in
-                if sentToHospital then
+                if refferedToFacility then
                     diagnosisForProgressReport
                         ++ complications
                         ++ " - "
-                        ++ (String.toLower <| translate language <| Translate.ReferredToFacility FacilityHospital)
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacility referralFacility)
                         ++ " "
                         ++ (String.toLower <| translate language Translate.On)
                         ++ " "
@@ -1641,7 +1657,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ""
 
                                     else
-                                        " - " ++ (translate language <| Translate.ReasonForNotSendingToHC reason_)
+                                        " - " ++ (String.toLower <| translate language <| Translate.ReasonForNotSendingToHC reason_)
                                 )
                                 reason
                                 |> Maybe.withDefault ""
@@ -1649,7 +1665,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     diagnosisForProgressReport
                         ++ complications
                         ++ " - "
-                        ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot FacilityHospital)
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot referralFacility)
                         ++ " "
                         ++ (String.toLower <| translate language Translate.On)
                         ++ " "
@@ -1771,6 +1787,31 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
+        heartburnTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (\signs ->
+                        if EverySet.member TreatmentAluminiumHydroxide signs then
+                            diagnosisForProgressReport
+                                ++ " - "
+                                ++ (String.toLower <| translate language Translate.TreatedWith)
+                                ++ " "
+                                ++ (translate language <| Translate.RecommendedTreatmentSignLabel TreatmentAluminiumHydroxide)
+                                ++ " "
+                                ++ (String.toLower <| translate language Translate.On)
+                                ++ " "
+                                ++ formatDDMMYYYY date
+                                |> intoLIs
+
+                        else if EverySet.member TreatmentHealthEducationForHeartburn signs then
+                            noTreatmentAdministeredMessage
+
+                        else
+                            noTreatmentRecordedMessage
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
 
@@ -1830,7 +1871,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.map
                     (\value ->
                         if value.referralFacility == Just FacilityHIVProgram then
-                            noTreatmentAdministeredMessage
+                            referredToFacilityMessage (Just FacilityHIVProgram)
 
                         else
                             getMeasurementValueFunc measurements.medicationDistribution
@@ -1860,7 +1901,15 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                             (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons TDF3TC)
                                             (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons Dolutegravir)
                                     )
-                                |> Maybe.withDefault noTreatmentRecordedMessage
+                                |> Maybe.withDefault
+                                    (if EverySet.member ReferToHealthCenter value.signs then
+                                        -- Patient was referred to hospital, and is supposed to get
+                                        -- HIV treatment there.
+                                        referredToHospitalMessage
+
+                                     else
+                                        noTreatmentRecordedMessage
+                                    )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
@@ -2076,15 +2125,13 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             malariaTreatmentMessage
 
         DiagnosisMalariaMedicatedContinued ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisMalariaWithAnemia ->
             malariaTreatmentMessage
 
         DiagnosisMalariaWithAnemiaMedicatedContinued ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisMalariaWithSevereAnemia ->
             malariaTreatmentMessage ++ referredToHospitalMessage
@@ -2108,20 +2155,29 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisHyperemesisGravidumBySymptoms ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisHeartburn ->
-            -- @todo
-            []
+            heartburnTreatmentMessage
 
         DiagnosisHeartburnPersistent ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisDeepVeinThrombosis ->
-            -- @todo
-            []
+            let
+                location =
+                    getMeasurementValueFunc measurements.symptomReview
+                        |> Maybe.map
+                            (\value ->
+                                if EverySet.member SymptomQuestionLegPainRednessLeft value.symptomQuestions then
+                                    " (" ++ String.toLower (translate language Translate.LegLeft) ++ ") "
+
+                                else
+                                    " (" ++ String.toLower (translate language Translate.LegRight) ++ ") "
+                            )
+                        |> Maybe.withDefault ""
+            in
+            referredToHospitalMessageWithComplications location
 
         DiagnosisPelvicPainIntense ->
             --@todo
@@ -2132,8 +2188,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             []
 
         DiagnosisUrinaryTractInfectionContinued ->
-            --@todo
-            []
+            referredToHospitalMessage
 
         DiagnosisPyelonephritis ->
             --@todo
@@ -2144,24 +2199,21 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             []
 
         DiagnosisCandidiasisContinued ->
-            --@todo
-            []
+            referredToHospitalMessage
 
         DiagnosisGonorrhea ->
             --@todo
             []
 
         DiagnosisGonorrheaContinued ->
-            --@todo
-            []
+            referredToHospitalMessage
 
         DiagnosisTrichomonasOrBacterialVaginosis ->
             --@todo
             []
 
         DiagnosisTrichomonasOrBacterialVaginosisContinued ->
-            --@todo
-            []
+            referredToHospitalMessage
 
         DiagnosisTuberculosis ->
             --@todo

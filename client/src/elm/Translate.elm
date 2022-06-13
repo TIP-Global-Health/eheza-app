@@ -700,6 +700,8 @@ type TranslationId
     | LastSuccesfulContactLabel
     | Left
     | LegCrampsReliefMethod LegCrampsReliefMethod
+    | LegLeft
+    | LegRight
     | Legs
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
@@ -5570,6 +5572,16 @@ translationSet trans =
                     { english = "Massage"
                     , kinyarwanda = Nothing
                     }
+
+        LegLeft ->
+            { english = "Left leg"
+            , kinyarwanda = Nothing
+            }
+
+        LegRight ->
+            { english = "Right leg"
+            , kinyarwanda = Nothing
+            }
 
         Legs ->
             { english = "Legs"
