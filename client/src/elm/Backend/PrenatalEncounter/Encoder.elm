@@ -221,7 +221,7 @@ encodePrenatalDiagnosis diagnosis =
                 "trichomonas-or-bv-continued"
 
             DiagnosisTuberculosis ->
-                "Tuberculosis"
+                "tuberculosis"
 
             DiagnosisDepressionPossible ->
                 "depression-possible"
