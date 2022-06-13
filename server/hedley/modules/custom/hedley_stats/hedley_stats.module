@@ -365,6 +365,9 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id, $cach
     // Store in cache only the hash. All statistics have their own cache.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id, NULL, $stats['stats_cache_hash']);
 
+    // Free up memory.
+    drupal_static_reset();
+
     return $stats;
   }
   catch (Exception $exception) {
@@ -471,6 +474,9 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     ];
   }
 
+  // Free up memory.
+  drupal_static_reset();
+
   // Resolve encounters data.
   $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter');
   $fields_to_join = [
@@ -550,6 +556,9 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     ];
   }
 
+  // Free up memory.
+  drupal_static_reset();
+
   $values = array_values($items);
 
   // Store in cache.
@@ -618,6 +627,9 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     ];
   }
 
+  // Free up memory.
+  drupal_static_reset();
+
   $individual_participants = array_keys($items);
 
   $query = hedley_stats_get_base_query($health_center_id, 'prenatal_encounter');
@@ -649,6 +661,9 @@ function hedley_stats_get_prenatal_data($health_center_id) {
       'danger_signs' => explode(',', $row->danger_signs),
     ];
   }
+
+  // Free up memory.
+  drupal_static_reset();
 
   $values = array_values($items);
 
@@ -753,6 +768,9 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
     ];
   }
 
+  // Free up memory.
+  drupal_static_reset();
+
   return $items;
 }
 
@@ -811,6 +829,9 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
     ];
   }
 
+  // Free up memory.
+  drupal_static_reset();
+
   return $items;
 }
 
@@ -866,6 +887,9 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
     unset($row->field_shards);
     unset($row->field_family_planning_signs);
   }
+
+  // Free up memory.
+  drupal_static_reset();
 
   // Set the cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_FAMILY_PLANNING, $health_center_id, $period, array_values($result));
@@ -1335,6 +1359,9 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
         }
       }
     }
+
+    // Free up memory.
+    drupal_static_reset();
 
     $result[$program_type] = array_values($people);
   }
