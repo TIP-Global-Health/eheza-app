@@ -2320,9 +2320,7 @@ resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
         ( 0, 0 )
 
 
-tmentSignsForHypertensionInitial : List RecommendedTreatmentSign
-
-
+recommendedTreatmentSignsForHypertensionInitial : List RecommendedTreatmentSign
 recommendedTreatmentSignsForHypertensionInitial =
     [ TreatmentMethyldopa2
     , TreatmentMethyldopa3
