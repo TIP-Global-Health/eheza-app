@@ -1793,22 +1793,52 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.map
                     (\signs ->
                         if EverySet.member TreatmentAluminiumHydroxide signs then
-                            diagnosisForProgressReport
-                                ++ " - "
-                                ++ (String.toLower <| translate language Translate.TreatedWith)
-                                ++ " "
-                                ++ (translate language <| Translate.RecommendedTreatmentSignLabel TreatmentAluminiumHydroxide)
-                                ++ " "
-                                ++ (String.toLower <| translate language Translate.On)
-                                ++ " "
-                                ++ formatDDMMYYYY date
-                                |> intoLIs
+                            diagnosisTreatedWithOnDateMessage TreatmentAluminiumHydroxide
 
                         else if EverySet.member TreatmentHealthEducationForHeartburn signs then
                             noTreatmentAdministeredMessage
 
                         else
                             noTreatmentRecordedMessage
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
+        urinaryTractTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (\signs ->
+                        if EverySet.member TreatmentNitrfurantion signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentNitrfurantion
+
+                        else if EverySet.member TreatmentAmoxicilin signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentAmoxicilin
+
+                        else
+                            noTreatmentRecordedMessage
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
+        trichomonasOrBacterialVaginosisTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        treatmentMessageForMedicationLower value.distributionSigns nonAdministrationReasons Metronidazole
+                            |> Maybe.map
+                                (\message ->
+                                    diagnosisForProgressReport
+                                        ++ " - "
+                                        ++ message
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> intoLIs
+                                )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
@@ -1836,9 +1866,18 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
                 |> intoLIs
 
-        treatmentMessageForMedication distributionSigns nonAdministrationReasons medication =
+        treatmentMessageForMedication =
+            translate language Translate.TreatedWith
+                |> customTreatmentMessageForMedication
+
+        treatmentMessageForMedicationLower =
+            translate language Translate.TreatedWith
+                |> String.toLower
+                |> customTreatmentMessageForMedication
+
+        customTreatmentMessageForMedication treatmentLabel distributionSigns nonAdministrationReasons medication =
             if EverySet.member medication distributionSigns then
-                translate language Translate.TreatedWith
+                treatmentLabel
                     ++ " "
                     ++ (translate language <| Translate.MedicationDistributionSign medication)
                     |> Just
@@ -1855,6 +1894,18 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                 ++ " "
                                 ++ (translate language <| Translate.AdministrationNote nonAdministrationReason)
                         )
+
+        diagnosisTreatedWithOnDateMessage recommendedTreatmentSign =
+            diagnosisForProgressReport
+                ++ " - "
+                ++ (String.toLower <| translate language Translate.TreatedWith)
+                ++ " "
+                ++ (translate language <| Translate.RecommendedTreatmentSignLabel recommendedTreatmentSign)
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> intoLIs
 
         diagnosisForProgressReport =
             translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis
@@ -2180,12 +2231,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessageWithComplications location
 
         DiagnosisPelvicPainIntense ->
-            --@todo
-            []
+            referredToHospitalMessage
 
         DiagnosisUrinaryTractInfection ->
-            --@todo
-            []
+            urinaryTractTreatmentMessage
 
         DiagnosisUrinaryTractInfectionContinued ->
             referredToHospitalMessage
@@ -2209,8 +2258,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisTrichomonasOrBacterialVaginosis ->
-            --@todo
-            []
+            trichomonasOrBacterialVaginosisTreatmentMessage
 
         DiagnosisTrichomonasOrBacterialVaginosisContinued ->
             referredToHospitalMessage

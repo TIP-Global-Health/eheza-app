@@ -107,6 +107,8 @@ medicalDiagnoses =
     , DiagnosisGonorrhea
     , DiagnosisGonorrheaContinued
     , DiagnosisTuberculosis
+    , DiagnosisTrichomonasOrBacterialVaginosis
+    , DiagnosisTrichomonasOrBacterialVaginosisContinued
     , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
