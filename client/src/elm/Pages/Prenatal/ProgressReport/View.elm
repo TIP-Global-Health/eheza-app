@@ -1858,6 +1858,36 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
+        gonorrheaTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        Maybe.map2
+                            (\ceftriaxoneMessage azithromycinMessage ->
+                                let
+                                    diagnosisMessage =
+                                        diagnosisForProgressReport
+                                            ++ " "
+                                            ++ (String.toLower <| translate language Translate.On)
+                                            ++ " "
+                                            ++ formatDDMMYYYY date
+                                in
+                                [ li []
+                                    [ p [] [ text diagnosisMessage ]
+                                    , p [] [ text ceftriaxoneMessage ]
+                                    , p [] [ text azithromycinMessage ]
+                                    ]
+                                ]
+                            )
+                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Ceftriaxone)
+                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Azithromycin)
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
 
@@ -2265,8 +2295,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisGonorrhea ->
-            --@todo
-            []
+            gonorrheaTreatmentMessage
 
         DiagnosisGonorrheaContinued ->
             referredToHospitalMessage
