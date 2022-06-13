@@ -8064,13 +8064,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisCandidiasisContinued ->
-                    { english = "Candidiasis Continued"
+                DiagnosisCandidiasis ->
+                    { english = "Candidiasis"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisCandidiasis ->
-                    { english = "Candidiasis"
+                DiagnosisCandidiasisContinued ->
+                    { english = "Candidiasis Continued"
                     , kinyarwanda = Nothing
                     }
 

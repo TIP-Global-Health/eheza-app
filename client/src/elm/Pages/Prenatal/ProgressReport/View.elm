@@ -1842,6 +1842,22 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
+        candidiasisTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (\signs ->
+                        if EverySet.member TreatmentClotrimaxazole200 signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentClotrimaxazole200
+
+                        else if EverySet.member TreatmentClotrimaxazole500 signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentClotrimaxazole500
+
+                        else
+                            noTreatmentRecordedMessage
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
 
@@ -2240,12 +2256,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisPyelonephritis ->
-            --@todo
-            []
+            referredToHospitalMessage
 
         DiagnosisCandidiasis ->
-            --@todo
-            []
+            candidiasisTreatmentMessage
 
         DiagnosisCandidiasisContinued ->
             referredToHospitalMessage
