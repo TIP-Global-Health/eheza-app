@@ -2258,7 +2258,7 @@ encodeReferralFacility facility =
                 "hiv-program"
 
             FacilityMentalHealthSpecialist ->
-                "mental-health-specialit"
+                "mental-health-specialist"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )

@@ -2807,7 +2807,7 @@ decodeReferralFacility =
                     "hiv-program" ->
                         succeed FacilityHIVProgram
 
-                    "mental-health-specialit" ->
+                    "mental-health-specialist" ->
                         succeed FacilityMentalHealthSpecialist
 
                     _ ->
