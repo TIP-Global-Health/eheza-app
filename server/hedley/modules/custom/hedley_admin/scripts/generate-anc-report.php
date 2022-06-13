@@ -73,10 +73,7 @@ foreach ($queries as $label => $query) {
 }
 
 $queries = [
-  // As the group of all pregnancies.
   "First Visits - Any location" => file_get_contents(__DIR__ . '/anc-first-visit-all-pregnancies.SQL'),
-  "First Visits - Health Center" => file_get_contents(__DIR__ . '/anc-first-visit-nurse-pregnancies.SQL'),
-  "First Visits - CHW" => file_get_contents(__DIR__ . '/anc-first-visit-chw-pregnancies.SQL'),
 ];
 
 foreach ($queries as $label => $query) {
