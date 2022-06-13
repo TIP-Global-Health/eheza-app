@@ -2320,7 +2320,9 @@ resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
         ( 0, 0 )
 
 
-recommendedTreatmentSignsForHypertensionInitial : List RecommendedTreatmentSign
+tmentSignsForHypertensionInitial : List RecommendedTreatmentSign
+
+
 recommendedTreatmentSignsForHypertensionInitial =
     [ TreatmentMethyldopa2
     , TreatmentMethyldopa3
@@ -2398,11 +2400,13 @@ prenatalSendToHCFormWithDefault form saved =
                 { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
                 , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
                 , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
-                , enrollToNutritionProgram = or form.enrollToNutritionProgram (EverySet.member EnrollToNutritionProgram value.signs |> Just)
 
-                -- These 2 are not used at prenatal.
+                -- Not used at prenatal.
+                , enrollToNutritionProgram = form.enrollToNutritionProgram
+
+                -- Not used at prenatal.
                 , referToNutritionProgram = form.referToNutritionProgram
-                , reasonForNotSendingToHC = form.reasonForNotSendingToHC
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
 
