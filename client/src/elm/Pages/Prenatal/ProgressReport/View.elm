@@ -65,9 +65,11 @@ import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
         ( diagnosedMalaria
+        , hypertensionDiagnoses
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForSyphilis
+        , resolvePreviousHypertensionDiagnosis
         )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -363,9 +365,23 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
+                        diagnosesIncludingCronical =
+                            List.filter
+                                -- We want to be looking at encounters performed
+                                -- before the encounter we're processing.
+                                (\( date_, _, _ ) ->
+                                    Date.compare date_ date == LT
+                                )
+                                assembled.nursePreviousMeasurementsWithDates
+                                |> resolvePreviousHypertensionDiagnosis
+                                |> Maybe.map
+                                    (\previousHypertensionDiagnosis ->
+                                        EverySet.insert previousHypertensionDiagnosis diagnoses
+                                    )
+                                |> Maybe.withDefault diagnoses
+
                         filteredDiagnoses =
-                            EverySet.toList diagnoses
-                                |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
+                            generateFilteredDiagnoses date diagnoses assembled medicalDiagnoses
 
                         diagnosisEntries =
                             List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
@@ -411,8 +427,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 (\( date, diagnoses, measurements ) ->
                     let
                         filteredDiagnoses =
-                            EverySet.toList diagnoses
-                                |> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
+                            generateFilteredDiagnoses date diagnoses assembled obstetricalDiagnoses
                     in
                     List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
                         |> List.concat
@@ -432,6 +447,26 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             dignoses
                 :: alerts
         ]
+
+
+generateFilteredDiagnoses : NominalDate -> EverySet PrenatalDiagnosis -> AssembledData -> List PrenatalDiagnosis -> List PrenatalDiagnosis
+generateFilteredDiagnoses encounterDate encounterDiagnoses assembled filterList =
+    List.filter
+        -- We want to be looking at encounters performed
+        -- before the encounter we're processing, to be able to locate
+        -- previous cronichal diagnosis.
+        (\( date, _, _ ) ->
+            Date.compare date encounterDate == LT
+        )
+        assembled.nursePreviousMeasurementsWithDates
+        |> resolvePreviousHypertensionDiagnosis
+        |> Maybe.map
+            (\previousHypertensionDiagnosis ->
+                EverySet.insert previousHypertensionDiagnosis encounterDiagnoses
+            )
+        |> Maybe.withDefault encounterDiagnoses
+        |> EverySet.toList
+        |> List.filter (\diagnosis -> List.member diagnosis filterList)
 
 
 viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
@@ -1679,23 +1714,68 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.map
                     (EverySet.toList
                         >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
-                        >> (\treatment ->
-                                if List.isEmpty treatment then
-                                    noTreatmentRecordedMessage
-
-                                else if List.member NoTreatmentForHypertension treatment then
+                        >> List.head
+                        >> Maybe.map
+                            (\treatmentSign ->
+                                if treatmentSign == NoTreatmentForHypertension then
                                     noTreatmentAdministeredMessage
 
                                 else
+                                    let
+                                        continued =
+                                            if
+                                                List.any
+                                                    (\hypertensionDiagnosis ->
+                                                        EverySet.member hypertensionDiagnosis allDiagnoses
+                                                    )
+                                                    hypertensionDiagnoses
+                                            then
+                                                ""
+
+                                            else
+                                                " (" ++ (String.toLower <| translate language Translate.Continued) ++ ") "
+
+                                        treatmentLabel =
+                                            case treatmentSign of
+                                                TreatmentHypertensionAddCarvedilol ->
+                                                    [ TreatmentMethyldopa4, TreatmentHypertensionAddCarvedilol ]
+                                                        |> List.map (Translate.RecommendedTreatmentSignLabel >> translate language)
+                                                        |> String.join ", "
+
+                                                TreatmentHypertensionAddAmlodipine ->
+                                                    [ TreatmentMethyldopa4, TreatmentHypertensionAddCarvedilol, TreatmentHypertensionAddAmlodipine ]
+                                                        |> List.map (Translate.RecommendedTreatmentSignLabel >> translate language)
+                                                        |> String.join ", "
+
+                                                _ ->
+                                                    translate language <| Translate.RecommendedTreatmentSignLabel treatmentSign
+                                    in
                                     diagnosisForProgressReport
+                                        ++ continued
                                         ++ " - "
-                                        ++ translate language Translate.TreatedWithMethyldopa
+                                        ++ (String.toLower <| translate language Translate.TreatedWith)
+                                        ++ " "
+                                        ++ treatmentLabel
                                         ++ " "
                                         ++ (String.toLower <| translate language Translate.On)
                                         ++ " "
                                         ++ formatDDMMYYYY date
                                         |> intoLIs
-                           )
+                            )
+                        >> Maybe.withDefault
+                            (getMeasurementValueFunc measurements.sendToHC
+                                |> Maybe.map
+                                    (\value ->
+                                        if EverySet.member ReferToHealthCenter value.signs then
+                                            -- Patient was referred to hospital, and is supposed to get
+                                            -- Hypertension treatment there.
+                                            referredToHospitalMessage
+
+                                        else
+                                            noTreatmentRecordedMessage
+                                    )
+                                |> Maybe.withDefault noTreatmentRecordedMessage
+                            )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
@@ -2307,8 +2387,14 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisTuberculosis ->
-            --@todo
-            []
+            diagnosisForProgressReport
+                ++ " - "
+                ++ translate language Translate.TuberculosisInstructionsFollowed
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> intoLIs
 
         DiagnosisDepressionPossible ->
             --@todo

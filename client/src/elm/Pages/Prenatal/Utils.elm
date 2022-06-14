@@ -2363,13 +2363,28 @@ diagnosedHypertension phase =
 
 diagnosedHypertensionPrevoiusly : AssembledData -> Bool
 diagnosedHypertensionPrevoiusly assembled =
-    diagnosedPreviouslyAnyOf
-        [ DiagnosisChronicHypertensionImmediate
-        , DiagnosisGestationalHypertensionImmediate
-        , DiagnosisChronicHypertensionAfterRecheck
-        , DiagnosisGestationalHypertensionAfterRecheck
-        ]
-        assembled
+    diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled
+
+
+resolvePreviousHypertensionDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolvePreviousHypertensionDiagnosis nursePreviousMeasurementsWithDates =
+    List.filterMap
+        (\( _, diagnoses, _ ) ->
+            EverySet.toList diagnoses
+                |> List.filter (\diagnosis -> List.member diagnosis hypertensionDiagnoses)
+                |> List.head
+        )
+        nursePreviousMeasurementsWithDates
+        |> List.head
+
+
+hypertensionDiagnoses : List PrenatalDiagnosis
+hypertensionDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionAfterRecheck
+    ]
 
 
 diagnosedMalaria : AssembledData -> Bool

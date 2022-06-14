@@ -450,6 +450,7 @@ type TranslationId
     | ContactsTracingHelper
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
+    | Continued
     | ContributingFactor ContributingFactorsSign
     | ContributingFactorsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
@@ -1236,7 +1237,6 @@ type TranslationId
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
     | TreatedWith
-    | TreatedWithMethyldopa
     | TreatedWithNot
     | Treatment
     | TreatmentDetailsAnemia
@@ -1256,6 +1256,7 @@ type TranslationId
     | TuberculosisPast
     | TuberculosisPresent
     | TuberculosisInstructions
+    | TuberculosisInstructionsFollowed
     | TuberculosisWarning
     | TwoVisits
     | Type
@@ -3050,6 +3051,11 @@ translationSet trans =
         ContactWithCOVID19SymptomsQuestion ->
             { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
             , kinyarwanda = Just "Waba warigeze uhura n'abantu bagaragaje ibimenyetso bya covid-19 cyangwa n'abari bafite ibyago byo kuyandura"
+            }
+
+        Continued ->
+            { english = "Continued"
+            , kinyarwanda = Nothing
             }
 
         ContributingFactor factor ->
@@ -8327,37 +8333,37 @@ translationSet trans =
                     }
 
                 DiagnosisHeartburn ->
-                    { english = "Heartburn"
+                    { english = "Heartburn in pregnancy"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisHeartburnPersistent ->
-                    { english = "Persistent Heartburn"
+                    { english = "Heartburn in pregnancy (persistent)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDeepVeinThrombosis ->
-                    { english = "Deep Vein Thrombosis"
+                    { english = "Possible DVT"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPelvicPainIntense ->
-                    { english = "Intense Pelvic Pain"
+                    { english = "Severe pelvic pain in pregnancy"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfection ->
-                    { english = "Urinary Tract Infection"
+                    { english = "Lower urinary tract infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfectionContinued ->
-                    { english = "Urinary Tract Infection Continued"
+                    { english = "Lower urinary tract infection (continued)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPyelonephritis ->
-                    { english = "Pyelonephritis"
+                    { english = "Possible Pyelonephritis"
                     , kinyarwanda = Nothing
                     }
 
@@ -8367,7 +8373,7 @@ translationSet trans =
                     }
 
                 DiagnosisCandidiasisContinued ->
-                    { english = "Candidiasis Continued"
+                    { english = "Candidiasis (continued)"
                     , kinyarwanda = Nothing
                     }
 
@@ -8377,7 +8383,7 @@ translationSet trans =
                     }
 
                 DiagnosisGonorrheaContinued ->
-                    { english = "Gonorrhea Continued"
+                    { english = "Gonorrhea (continued)"
                     , kinyarwanda = Nothing
                     }
 
@@ -8387,12 +8393,12 @@ translationSet trans =
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosisContinued ->
-                    { english = "Trichomonas or Bacterial Vaginosis Continued"
+                    { english = "Trichomonas or Bacterial Vaginosis (continued)"
                     , kinyarwanda = Nothing
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
-                    { english = "Tuberculosis"
+                    { english = "Possible Active Tuberculosis"
                     , kinyarwanda = Nothing
                     }
 
@@ -12366,11 +12372,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TreatedWithMethyldopa ->
-            { english = "treated with Methyldopa"
-            , kinyarwanda = Nothing
-            }
-
         Treatment ->
             { english = "Treatment"
             , kinyarwanda = Just "Ubuvuzi"
@@ -12558,6 +12559,11 @@ translationSet trans =
 
         TuberculosisInstructions ->
             { english = "Follow TB protocols"
+            , kinyarwanda = Nothing
+            }
+
+        TuberculosisInstructionsFollowed ->
+            { english = "followed TB protocols"
             , kinyarwanda = Nothing
             }
 
