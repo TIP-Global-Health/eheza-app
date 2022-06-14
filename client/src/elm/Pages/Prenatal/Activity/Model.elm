@@ -1,5 +1,6 @@
 module Pages.Prenatal.Activity.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
@@ -194,6 +195,12 @@ type Msg
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SetHIVMedicationNotGivenReason HIVTreatmentSign
     | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
+      -- MENTALHEALTHMsgs
+    | SetMentalHealthStep MentalHealthStep
+    | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    | SetSpecialistAtHC Bool
+    | SetMentalHealthWarningPopupState (Maybe Msg)
+    | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
 
 
 type alias Model =
@@ -210,6 +217,7 @@ type alias Model =
     , healthEducationData : HealthEducationData
     , symptomReviewData : SymptomReviewData
     , treatmentReviewData : TreatmentReviewData
+    , mentalHealthData : MentalHealthData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -231,6 +239,7 @@ emptyModel =
     , healthEducationData = emptyHealthEducationData
     , symptomReviewData = emptySymptomReviewData
     , treatmentReviewData = emptyTreatmentReviewData
+    , mentalHealthData = emptyMentalHealthData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -552,6 +561,19 @@ emptyTreatmentReviewData : TreatmentReviewData
 emptyTreatmentReviewData =
     { medicationForm = emptyMedicationForm
     , activeTask = Nothing
+    , warningPopupState = Nothing
+    }
+
+
+type alias MentalHealthData =
+    { form : MentalHealthForm
+    , warningPopupState : Maybe Msg
+    }
+
+
+emptyMentalHealthData : MentalHealthData
+emptyMentalHealthData =
+    { form = emptyMentalHealthForm
     , warningPopupState = Nothing
     }
 
@@ -1049,3 +1071,23 @@ type alias NewbornEnrolmentForm =
 emptyNewbornEnrolmentForm : NewbornEnrolmentForm
 emptyNewbornEnrolmentForm =
     {}
+
+
+type alias MentalHealthForm =
+    { signs : Maybe (Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption)
+    , specialistAtHC : Maybe Bool
+    , step : MentalHealthStep
+    }
+
+
+type MentalHealthStep
+    = MentalHealthQuestion PrenatalMentalHealthQuestion
+    | MentalHealthSpecialistQuestion
+
+
+emptyMentalHealthForm : MentalHealthForm
+emptyMentalHealthForm =
+    { signs = Nothing
+    , specialistAtHC = Nothing
+    , step = MentalHealthQuestion MentalHealthQuestion1
+    }

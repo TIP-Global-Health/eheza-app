@@ -104,6 +104,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'pregnancy_testing' => 'pregnancy-testings',
   'prenatal_family_planning' => 'prenatal-family-plannings',
   'prenatal_health_education' => 'prenatal-health-education',
+  'prenatal_mental_health' => 'prenatal-mental-health',
   'prenatal_nutrition' => 'prenatal-nutritions',
   'prenatal_photo' => 'prenatal-photos',
   'prenatal_blood_gprs_test' => 'prenatal-blood-gprs-test',

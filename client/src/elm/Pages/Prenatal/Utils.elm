@@ -71,6 +71,13 @@ diagnosedAnyOf diagnoses assembled =
         diagnoses
 
 
+diagnosedNoneOf : List PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedNoneOf diagnoses assembled =
+    List.all
+        (\diagnosis -> not <| diagnosed diagnosis assembled)
+        diagnoses
+
+
 diagnosedPreviously : PrenatalDiagnosis -> AssembledData -> Bool
 diagnosedPreviously diagnosis assembled =
     diagnosedPreviouslyAnyOf [ diagnosis ] assembled
@@ -375,6 +382,7 @@ healthEducationFormWithDefaultInitialPhase form saved =
                 , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness signs |> Just)
                 , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain signs |> Just)
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
+                , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth signs |> Just)
 
                 -- Only sign that does not participate at recurrent phase. Resolved directly
                 -- from value.
@@ -414,6 +422,7 @@ healthEducationFormWithDefaultRecurrentPhase form saved =
                 , legPainRedness = EverySet.member EducationLegPainRedness signs |> Just
                 , pelvicPain = EverySet.member EducationPelvicPain signs |> Just
                 , saferSex = EverySet.member EducationSaferSex signs |> Just
+                , mentalHealth = EverySet.member EducationMentalHealth signs |> Just
 
                 -- Only sign that participates at recurrent phase.
                 , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad signs |> Just)
@@ -443,6 +452,7 @@ toHealthEducationValue valueForNone form =
     , ifNullableTrue EducationLegPainRedness form.legPainRedness
     , ifNullableTrue EducationPelvicPain form.pelvicPain
     , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationMentalHealth form.mentalHealth
     , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
     ]
         |> Maybe.Extra.combine

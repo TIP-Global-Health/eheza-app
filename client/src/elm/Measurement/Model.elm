@@ -413,3 +413,4 @@ type ReferralFacility
     = FacilityHealthCenter
     | FacilityHospital
     | FacilityHIVProgram
+    | FacilityMentalHealthSpecialist

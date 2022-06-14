@@ -939,6 +939,7 @@ type TranslationId
     | PrenatalHealthEducationLegPainRednessInform
     | PrenatalHealthEducationPelvicPainInform
     | PrenatalHealthEducationSaferSexInform
+    | PrenatalHealthEducationMentalHealthInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalLaboratoryBloodGroupLabel
@@ -989,6 +990,12 @@ type TranslationId
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
+    | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
+    | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    | PrenatalMentalHealthSpecialistHelper
+    | PrenatalMentalHealthSpecialistQuestion
+    | PrenatalMentalHealthWarningPopupMessage
+    | PrenatalMentalHealthWarningPopupInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -1393,6 +1400,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Will you accompany the patient to Integration HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Will you accompany the patient to mental health specialist"
                     , kinyarwanda = Nothing
                     }
 
@@ -2980,6 +2992,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Complete an Integration HIV/PMTCT referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Complete a referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -7759,9 +7776,14 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
-                Backend.PrenatalActivity.Model.PrenatalTreatmentReview ->
+                PrenatalTreatmentReview ->
                     { english = "Treatment Review"
                     , kinyarwanda = Just "Kureba imiti yahawe"
+                    }
+
+                MaternalMentalHealth ->
+                    { english = "Maternal Mental Health"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalRecurrentActivitiesTitle activity ->
@@ -8065,6 +8087,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionPossible ->
+                    { english = "Depression Possible"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionHighlyPossible ->
+                    { english = "Fairly High Possibility of Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionProbable ->
+                    { english = "Probable Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSuicideRisk ->
+                    { english = "Suicide Risk"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8342,6 +8384,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionPossible ->
+                    { english = "Depression Possible"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionHighlyPossible ->
+                    { english = "Fairly High Possibility of Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionProbable ->
+                    { english = "Probable Depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSuicideRisk ->
+                    { english = "Suicide Risk"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8534,6 +8596,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionPossible ->
+                    { english = "Patient show signs of possible depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionHighlyPossible ->
+                    { english = "Patient show signs of fairly hight possiblity of depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionProbable ->
+                    { english = "Patient show signs of probable depression"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSuicideRisk ->
+                    { english = "Patient show signs of being a suicide risk"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Non Not Urgent diagnoses.
                 _ ->
                     { english = ""
@@ -8633,6 +8715,11 @@ translationSet trans =
 
                 EducationSaferSex ->
                     { english = "Safer Sex Practices"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationMentalHealth ->
+                    { english = "Maternal Mental Health"
                     , kinyarwanda = Nothing
                     }
 
@@ -8766,6 +8853,11 @@ translationSet trans =
 
         PrenatalHealthEducationSaferSexInform ->
             { english = "Council patient on safer sex parctices"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationMentalHealthInform ->
+            { english = "Provide information to support patients mental well being during pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -9539,6 +9631,300 @@ translationSet trans =
                     { english = "Closing Soon"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalMentalHealthQuestion question ->
+            case question of
+                MentalHealthQuestion1 ->
+                    { english = "I have been able to laugh and see the funny side of things"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion2 ->
+                    { english = "I have looked forward with enjoyment to things"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion3 ->
+                    { english = "I have blamed myself unnecessarily when things went wrong"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion4 ->
+                    { english = "I have been anxious or worried for no good reason"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion5 ->
+                    { english = "I have felt scared or panicky for no very good reason"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion6 ->
+                    { english = "Things have been getting on top of me"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion7 ->
+                    { english = "I have been so unhappy that I have had difficulty sleeping"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion8 ->
+                    { english = "I have felt sad or miserable"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion9 ->
+                    { english = "I have been so unhappy that I have been crying"
+                    , kinyarwanda = Nothing
+                    }
+
+                MentalHealthQuestion10 ->
+                    { english = "The thought of harming myself has occured to me"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalMentalHealthOptionForQuestion question option ->
+            case question of
+                MentalHealthQuestion1 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "As much as I always could"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Not quite so much now"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Definitely not so much now"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion2 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "As much as I ever did"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Rather less than I used to"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Definitely less than I used to"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Hardly at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion3 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, never"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Not very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, some of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion4 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Hardly ever"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion5 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "No, not much"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, quite a lot"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion6 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, I have been coping as well as ever"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "No, most of the time I have coped quite well"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes I haven’t been coping as well as usual"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time I haven’t been able to cope"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion7 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "No, not very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion8 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Not at all"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Not very often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, quite often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion9 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "No, never"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Only occasionally"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Yes, quite often"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, most of the time"
+                            , kinyarwanda = Nothing
+                            }
+
+                MentalHealthQuestion10 ->
+                    case option of
+                        MentalHealthQuestionOption0 ->
+                            { english = "Never"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption1 ->
+                            { english = "Hardly ever"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption2 ->
+                            { english = "Sometimes"
+                            , kinyarwanda = Nothing
+                            }
+
+                        MentalHealthQuestionOption3 ->
+                            { english = "Yes, quite often"
+                            , kinyarwanda = Nothing
+                            }
+
+        PrenatalMentalHealthSpecialistHelper ->
+            { english = "Refer patient to mental health specialist for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalMentalHealthSpecialistQuestion ->
+            { english = "Does this health center have a mental health specialist available"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalMentalHealthWarningPopupMessage ->
+            { english = "Patient shows signs of being a suicide risk"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalMentalHealthWarningPopupInstructions ->
+            { english = "Contact mental health specialist immediately"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalOutsideCareSignQuestion sign ->
             case sign of
@@ -10653,6 +11039,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityMentalHealthSpecialist ->
+                    { english = "Have you referred the patient to the specialist"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacility facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -10670,6 +11061,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityMentalHealthSpecialist ->
+                    { english = "Referred to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacilityNot facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -10684,6 +11080,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Not referred to HIV/PMTCT"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Not referred to mental health specialist"
                     , kinyarwanda = Nothing
                     }
 
@@ -11778,6 +12179,11 @@ translationSet trans =
 
                 FacilityHIVProgram ->
                     { english = "Direct patient to the appropriate location"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityMentalHealthSpecialist ->
+                    { english = "Refer patient to mental health specialist for further evaluation"
                     , kinyarwanda = Nothing
                     }
 

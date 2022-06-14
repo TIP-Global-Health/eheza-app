@@ -840,6 +840,7 @@ type PrenatalHealthEducationSign
     | EducationPelvicPain
     | EducationSaferSex
     | EducationHIVDetectableViralLoad
+    | EducationMentalHealth
     | NoPrenatalHealthEducationSigns
     | NoPrenatalHealthEducationSignsInitialPhase
     | NoPrenatalHealthEducationSignsRecurrentPhase
@@ -1304,6 +1305,36 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationFolicAcid
     | NoOutsideCareMedicationForAnemia
     | NoPrenatalOutsideCareMedications
+
+
+type alias PrenatalMentalHealth =
+    PrenatalMeasurement PrenatalMentalHealthValue
+
+
+type alias PrenatalMentalHealthValue =
+    { signs : Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    , specialistAtHC : Bool
+    }
+
+
+type PrenatalMentalHealthQuestion
+    = MentalHealthQuestion1
+    | MentalHealthQuestion2
+    | MentalHealthQuestion3
+    | MentalHealthQuestion4
+    | MentalHealthQuestion5
+    | MentalHealthQuestion6
+    | MentalHealthQuestion7
+    | MentalHealthQuestion8
+    | MentalHealthQuestion9
+    | MentalHealthQuestion10
+
+
+type PrenatalMentalHealthQuestionOption
+    = MentalHealthQuestionOption0
+    | MentalHealthQuestionOption1
+    | MentalHealthQuestionOption2
+    | MentalHealthQuestionOption3
 
 
 
@@ -2177,6 +2208,7 @@ type alias PrenatalMeasurements =
     , symptomReview : Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview )
     , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
     , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
+    , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
     }
 
 
@@ -2216,6 +2248,7 @@ emptyPrenatalMeasurements =
     , symptomReview = Nothing
     , outsideCare = Nothing
     , hivPCRTest = Nothing
+    , mentalHealth = Nothing
     }
 
 

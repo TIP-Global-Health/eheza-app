@@ -52,7 +52,7 @@ import Translate.Model exposing (Language(..))
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
 expectActivity currentDate assembled activity =
     case assembled.encounter.encounterType of
-        -- Note that for nurse it's always ised after
+        -- Note that for nurse it's always used after
         -- Pages.Prenatal.Encounter.Utils.getAllActivities, which supplies
         -- different activities, depending if nurse encounter was performed
         -- previously, or not.
@@ -109,6 +109,28 @@ expectActivity currentDate assembled activity =
                     -- There will always be at least the Prenatal Medication
                     -- task to complete.
                     True
+
+                MaternalMentalHealth ->
+                    -- From 28 weeks EGA and not done already.
+                    Maybe.map
+                        (\lmpDate ->
+                            let
+                                egaInWeeks =
+                                    calculateEGAWeeks currentDate lmpDate
+
+                                performedPreviously =
+                                    assembled.nursePreviousMeasurementsWithDates
+                                        |> List.filter
+                                            (\( _, _, measurements ) ->
+                                                isJust measurements.mentalHealth
+                                            )
+                                        |> List.isEmpty
+                                        |> not
+                            in
+                            egaInWeeks >= 28 && not performedPreviously
+                        )
+                        assembled.globalLmpDate
+                        |> Maybe.withDefault False
 
                 -- Unique Chw activities.
                 _ ->
@@ -259,6 +281,9 @@ activityCompleted currentDate assembled activity =
             resolveTreatmentReviewTasks assembled
                 |> List.all (treatmentReviewTaskCompleted assembled)
 
+        MaternalMentalHealth ->
+            isJust assembled.measurements.mentalHealth
+
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
@@ -302,7 +327,8 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
                         || referToHospitalDueToAdverseEvent assembled
-                        || (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
+                        || referToHIVProgram assembled
+                        || referToMentalHealthSpecialist assembled
 
                 _ ->
                     dangerSigns
@@ -313,23 +339,21 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
-                        && (if nurseEncounterNotPerformed assembled then
-                                -- Appear whenever HIV test was performed.
-                                isJust assembled.measurements.hivTest
-
-                            else
-                                provideNauseaAndVomitingEducation assembled
-                                    || List.any (symptomRecorded assembled.measurements)
-                                        [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
-                                    || provideLegPainRednessEducation assembled
-                                    || providePelvicPainEducation assembled
-                                    || diagnosedAnyOf
-                                        [ DiagnosisHeartburn
-                                        , DiagnosisCandidiasis
-                                        , DiagnosisGonorrhea
-                                        , DiagnosisTrichomonasOrBacterialVaginosis
-                                        ]
-                                        assembled
+                        && (-- HIV education appears whenever HIV test was performed.
+                            isJust assembled.measurements.hivTest
+                                || provideNauseaAndVomitingEducation assembled
+                                || List.any (symptomRecorded assembled.measurements)
+                                    [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
+                                || provideLegPainRednessEducation assembled
+                                || providePelvicPainEducation assembled
+                                || diagnosedAnyOf
+                                    [ DiagnosisHeartburn
+                                    , DiagnosisCandidiasis
+                                    , DiagnosisGonorrhea
+                                    , DiagnosisTrichomonasOrBacterialVaginosis
+                                    ]
+                                    assembled
+                                || provideMentalHealthEducation assembled
                            )
 
                 ChwPostpartumEncounter ->
@@ -641,6 +665,29 @@ referToHospitalForNonHIVDiagnosis assembled =
             ]
             assembled
         || updateHypertensionTreatmentWithHospitalization assembled
+        || referToHospitalForMentalHealthDiagnosis assembled
+
+
+referToHospitalForMentalHealthDiagnosis : AssembledData -> Bool
+referToHospitalForMentalHealthDiagnosis assembled =
+    not (mentalHealthSpecialistAtHC assembled) && diagnosedAnyOf mentalHealthDiagnoses assembled
+
+
+referToMentalHealthSpecialist : AssembledData -> Bool
+referToMentalHealthSpecialist assembled =
+    mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnoses assembled
+
+
+mentalHealthSpecialistAtHC : AssembledData -> Bool
+mentalHealthSpecialistAtHC assembled =
+    getMeasurementValueFunc assembled.measurements.mentalHealth
+        |> Maybe.map .specialistAtHC
+        |> Maybe.withDefault False
+
+
+referToHIVProgram : AssembledData -> Bool
+referToHIVProgram assembled =
+    diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -734,6 +781,14 @@ providePelvicPainEducation assembled =
             not <| symptomRecordedPreviously assembled PelvicPain
     in
     byCurrentEncounter && byPreviousEncounters
+
+
+provideMentalHealthEducation : AssembledData -> Bool
+provideMentalHealthEducation assembled =
+    -- Mental health survey was taken and none of
+    -- mental health diagnoses was determined.
+    isJust assembled.measurements.mentalHealth
+        && diagnosedNoneOf mentalHealthDiagnoses assembled
 
 
 hospitalizeDueToPelvicPain : AssembledData -> Bool
@@ -1083,10 +1138,16 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             List.filter (matchSymptomsPrenatalDiagnosis assembled)
                 symptomsDiagnoses
                 |> EverySet.fromList
+
+        diagnosesByMentalHealth =
+            List.filter (matchMentalHealthPrenatalDiagnosis assembled)
+                mentalHealthDiagnoses
+                |> EverySet.fromList
     in
     EverySet.union diagnosesByLabResults emergencyReferalDiagnoses
         |> EverySet.union diagnosesByExamination
         |> EverySet.union diagnosesBySymptoms
+        |> EverySet.union diagnosesByMentalHealth
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -1550,6 +1611,68 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
             False
 
 
+matchMentalHealthPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
+matchMentalHealthPrenatalDiagnosis assembled diagnosis =
+    let
+        suicideRiskDiagnosed =
+            getMeasurementValueFunc assembled.measurements.mentalHealth
+                |> Maybe.andThen (.signs >> suicideRiskDiagnosedBySigns)
+                |> Maybe.withDefault False
+
+        mentalHealthScore =
+            getMeasurementValueFunc assembled.measurements.mentalHealth
+                |> Maybe.map (.signs >> Dict.values >> List.map mentalHealthQuestionOptionToScore >> List.sum)
+                |> Maybe.withDefault 0
+    in
+    case diagnosis of
+        DiagnosisDepressionPossible ->
+            not suicideRiskDiagnosed
+                && (mentalHealthScore >= 9 && mentalHealthScore < 12)
+
+        DiagnosisDepressionHighlyPossible ->
+            not suicideRiskDiagnosed
+                && (mentalHealthScore >= 12 && mentalHealthScore < 14)
+
+        DiagnosisDepressionProbable ->
+            not suicideRiskDiagnosed && mentalHealthScore >= 14
+
+        DiagnosisSuicideRisk ->
+            suicideRiskDiagnosed
+
+        -- Others are not mental health diagnoses.
+        _ ->
+            False
+
+
+suicideRiskDiagnosedBySigns : Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption -> Maybe Bool
+suicideRiskDiagnosedBySigns signs =
+    Dict.get MentalHealthQuestion10 signs
+        |> Maybe.map
+            (\answer ->
+                List.member answer
+                    [ MentalHealthQuestionOption3
+                    , MentalHealthQuestionOption2
+                    , MentalHealthQuestionOption1
+                    ]
+            )
+
+
+mentalHealthQuestionOptionToScore : PrenatalMentalHealthQuestionOption -> Int
+mentalHealthQuestionOptionToScore option =
+    case option of
+        MentalHealthQuestionOption0 ->
+            0
+
+        MentalHealthQuestionOption1 ->
+            1
+
+        MentalHealthQuestionOption2 ->
+            2
+
+        MentalHealthQuestionOption3 ->
+            3
+
+
 {-| Flank pain on left, right or both sides.
 -}
 flankPainPresent : Maybe PrenatalFlankPainSign -> Bool
@@ -1744,6 +1867,15 @@ symptomsDiagnoses =
     ]
 
 
+mentalHealthDiagnoses : List PrenatalDiagnosis
+mentalHealthDiagnoses =
+    [ DiagnosisDepressionPossible
+    , DiagnosisDepressionHighlyPossible
+    , DiagnosisDepressionProbable
+    , DiagnosisSuicideRisk
+    ]
+
+
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
     let
@@ -1754,113 +1886,22 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            if nurseEncounterNotPerformed assembled then
-                healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form
-
-            else
-                healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled form
+            healthEducationFormInputsAndTasksForNurse language assembled form
 
         _ ->
             healthEducationFormInputsAndTasksForChw language assembled form
 
 
-healthEducationFormInputsAndTasksForNurseFirstEncounter : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForNurseFirstEncounter language assembled form =
+healthEducationFormInputsAndTasksForNurse : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurse language assembled form =
     let
-        translatePrenatalHealthEducationQuestion =
-            Translate.PrenatalHealthEducationQuestion False
+        ( hivInputs, hivTasks ) =
+            if isJust assembled.measurements.hivTest then
+                healthEducationFormInputsAndTasksForHIV language assembled form
 
-        positiveHIVUpdateFunc value form_ =
-            { form_ | positiveHIV = Just value }
+            else
+                ( [], [] )
 
-        positiveHIVInput =
-            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
-            , viewBoolInput
-                language
-                form.positiveHIV
-                (SetHealthEducationSubActivityBoolInput positiveHIVUpdateFunc)
-                "positive-hiv"
-                Nothing
-            ]
-
-        saferSexHIVUpdateFunc value form_ =
-            { form_ | saferSexHIV = Just value }
-
-        saferSexHIVInput =
-            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSexHIV
-            , viewBoolInput
-                language
-                form.saferSexHIV
-                (SetHealthEducationSubActivityBoolInput saferSexHIVUpdateFunc)
-                "safer-sex-hiv"
-                Nothing
-            ]
-
-        partnerTestingUpdateFunc value form_ =
-            { form_ | partnerTesting = Just value }
-
-        partnerTestingInput =
-            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPartnerTesting
-            , viewBoolInput
-                language
-                form.partnerTesting
-                (SetHealthEducationSubActivityBoolInput partnerTestingUpdateFunc)
-                "partner-testing"
-                Nothing
-            ]
-
-        familyPlanningInput =
-            healthEducationFormFamilyPlanningInput language False form
-
-        partnerSurpressedViralLoad =
-            getMeasurementValueFunc assembled.measurements.hivTest
-                |> Maybe.andThen .hivSigns
-                |> Maybe.map
-                    (\hivSigns ->
-                        -- Partner is HIV positive.
-                        EverySet.member PartnerHIVPositive hivSigns
-                            -- Partner is taking ARVs.
-                            && EverySet.member PartnerTakingARV hivSigns
-                            -- Partner reached surpressed viral load.
-                            && EverySet.member PartnerSurpressedViralLoad hivSigns
-                    )
-                |> Maybe.withDefault False
-    in
-    if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
-        ( positiveHIVInput ++ saferSexHIVInput ++ partnerTestingInput ++ familyPlanningInput
-        , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
-        )
-
-    else if partnerSurpressedViralLoad then
-        ( saferSexHIVInput
-        , [ form.saferSexHIV ]
-        )
-
-    else
-        ( saferSexHIVInput ++ partnerTestingInput
-        , [ form.saferSexHIV, form.partnerTesting ]
-        )
-
-
-healthEducationFormFamilyPlanningInput : Language -> Bool -> HealthEducationForm -> List (Html Msg)
-healthEducationFormFamilyPlanningInput language isChw form =
-    let
-        familyPlanningUpdateFunc value form_ =
-            { form_ | familyPlanning = Just value }
-    in
-    [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion isChw EducationFamilyPlanning
-    , viewBoolInput
-        language
-        form.familyPlanning
-        (SetHealthEducationSubActivityBoolInput familyPlanningUpdateFunc)
-        "family-planning"
-        Nothing
-    ]
-
-
-healthEducationFormInputsAndTasksForNurseSubsequentEncounter : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled form =
-    let
         nauseaVomiting =
             if provideNauseaAndVomitingEducation assembled then
                 ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNausiaVomiting) "" "label header"
@@ -2079,6 +2120,24 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             else
                 ( [], Nothing )
 
+        mentalHealth =
+            if provideMentalHealthEducation assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationMentalHealth) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationMentalHealthInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.mentalHealth
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | mentalHealth = Just value }))
+                        "mental-health"
+                        Nothing
+                  ]
+                , Just form.mentalHealth
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
             [ nauseaVomiting
             , legCramps
@@ -2089,13 +2148,115 @@ healthEducationFormInputsAndTasksForNurseSubsequentEncounter language assembled 
             , legPainRedness
             , pelvicPain
             , saferSex
+            , mentalHealth
             ]
     in
-    ( List.map Tuple.first inputsAndTasks
-        |> List.concat
-    , List.map Tuple.second inputsAndTasks
-        |> Maybe.Extra.values
+    ( hivInputs
+        ++ (List.map Tuple.first inputsAndTasks
+                |> List.concat
+           )
+    , hivTasks
+        ++ (List.map Tuple.second inputsAndTasks
+                |> Maybe.Extra.values
+           )
     )
+
+
+healthEducationFormInputsAndTasksForHIV : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForHIV language assembled form =
+    let
+        translatePrenatalHealthEducationQuestion =
+            Translate.PrenatalHealthEducationQuestion False
+
+        positiveHIVUpdateFunc value form_ =
+            { form_ | positiveHIV = Just value }
+
+        positiveHIVInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
+            , viewBoolInput
+                language
+                form.positiveHIV
+                (SetHealthEducationSubActivityBoolInput positiveHIVUpdateFunc)
+                "positive-hiv"
+                Nothing
+            ]
+
+        saferSexHIVUpdateFunc value form_ =
+            { form_ | saferSexHIV = Just value }
+
+        saferSexHIVInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSexHIV
+            , viewBoolInput
+                language
+                form.saferSexHIV
+                (SetHealthEducationSubActivityBoolInput saferSexHIVUpdateFunc)
+                "safer-sex-hiv"
+                Nothing
+            ]
+
+        partnerTestingUpdateFunc value form_ =
+            { form_ | partnerTesting = Just value }
+
+        partnerTestingInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPartnerTesting
+            , viewBoolInput
+                language
+                form.partnerTesting
+                (SetHealthEducationSubActivityBoolInput partnerTestingUpdateFunc)
+                "partner-testing"
+                Nothing
+            ]
+
+        familyPlanningInput =
+            healthEducationFormFamilyPlanningInput language False form
+
+        partnerSurpressedViralLoad =
+            getMeasurementValueFunc assembled.measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            -- Partner is taking ARVs.
+                            && EverySet.member PartnerTakingARV hivSigns
+                            -- Partner reached surpressed viral load.
+                            && EverySet.member PartnerSurpressedViralLoad hivSigns
+                    )
+                |> Maybe.withDefault False
+
+        header =
+            viewCustomLabel language Translate.HIV "" "label header"
+    in
+    if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
+        ( header :: positiveHIVInput ++ saferSexHIVInput ++ partnerTestingInput ++ familyPlanningInput
+        , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
+        )
+
+    else if partnerSurpressedViralLoad then
+        ( header :: saferSexHIVInput
+        , [ form.saferSexHIV ]
+        )
+
+    else
+        ( header :: saferSexHIVInput ++ partnerTestingInput
+        , [ form.saferSexHIV, form.partnerTesting ]
+        )
+
+
+healthEducationFormFamilyPlanningInput : Language -> Bool -> HealthEducationForm -> List (Html Msg)
+healthEducationFormFamilyPlanningInput language isChw form =
+    let
+        familyPlanningUpdateFunc value form_ =
+            { form_ | familyPlanning = Just value }
+    in
+    [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion isChw EducationFamilyPlanning
+    , viewBoolInput
+        language
+        form.familyPlanning
+        (SetHealthEducationSubActivityBoolInput familyPlanningUpdateFunc)
+        "family-planning"
+        Nothing
+    ]
 
 
 healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -2355,6 +2516,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     else if
                         referToHospitalForNonHIVDiagnosis assembled
                             || referToHospitalDueToAdverseEvent assembled
+                            || referToMentalHealthSpecialist assembled
                     then
                         ( 0, 0 )
 
@@ -3525,12 +3687,6 @@ toPrenatalNutritionValue form =
     Maybe.map PrenatalNutritionValue (Maybe.map HeightInCm form.height)
         |> andMap (Maybe.map WeightInKg form.weight)
         |> andMap (Maybe.map MuacInCm form.muac)
-
-
-fromMalariaPreventionValue : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
-fromMalariaPreventionValue saved =
-    { receivedMosquitoNet = Maybe.map (EverySet.member MosquitoNet) saved
-    }
 
 
 malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
@@ -5357,3 +5513,34 @@ viewOutsideCareMedicationOptionWithDosage language medication =
         , text ": "
         , span [ class "dosage" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationDosage medication ]
         ]
+
+
+mentalHealthFormWithDefault : MentalHealthForm -> Maybe PrenatalMentalHealthValue -> MentalHealthForm
+mentalHealthFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (Just value.signs)
+                , specialistAtHC = or form.specialistAtHC (Just value.specialistAtHC)
+                , step = form.step
+                }
+            )
+
+
+toPrenatalMentalHealthValueWithDefault : Maybe PrenatalMentalHealthValue -> MentalHealthForm -> Maybe PrenatalMentalHealthValue
+toPrenatalMentalHealthValueWithDefault saved form =
+    mentalHealthFormWithDefault form saved
+        |> toPrenatalMentalHealthValue
+
+
+toPrenatalMentalHealthValue : MentalHealthForm -> Maybe PrenatalMentalHealthValue
+toPrenatalMentalHealthValue form =
+    Maybe.map2
+        (\signs specialistAtHC ->
+            { signs = signs
+            , specialistAtHC = specialistAtHC
+            }
+        )
+        form.signs
+        form.specialistAtHC

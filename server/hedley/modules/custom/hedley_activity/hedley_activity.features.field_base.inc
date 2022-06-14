@@ -1503,6 +1503,7 @@ function hedley_activity_field_default_field_bases() {
         'pelvic-pain' => 'Pelvic Pain',
         'safer-sex' => 'Safer sex',
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
+        'mental-health' => 'Mental Health',
         'none' => 'None',
         'none-initial' => 'None Initial Phase',
         'none-recurrent' => 'None Recurrent Phase',

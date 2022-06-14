@@ -274,6 +274,9 @@ decodeRevision =
                     "prenatal_malaria_test" ->
                         decodeWithUuid PrenatalMalariaTestRevision decodePrenatalMalariaTest
 
+                    "prenatal_mental_health" ->
+                        decodeWithUuid PrenatalMentalHealthRevision decodePrenatalMentalHealth
+
                     "prenatal_medication_distribution" ->
                         decodeWithUuid PrenatalMedicationDistributionRevision decodePrenatalMedicationDistribution
 

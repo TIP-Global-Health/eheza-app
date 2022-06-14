@@ -130,6 +130,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_symptom_review" (decodeHead decodePrenatalSymptomReview) Nothing
         |> optional "prenatal_outside_care" (decodeHead decodePrenatalOutsideCare) Nothing
         |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
+        |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -343,6 +344,9 @@ decodePrenatalHealthEducationSign =
 
                     "hiv-detectable-viral-load" ->
                         succeed EducationHIVDetectableViralLoad
+
+                    "mental-health" ->
+                        succeed EducationMentalHealth
 
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
@@ -855,6 +859,77 @@ decodeAvoidingGuidanceReason =
                 avoidingGuidanceReasonFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized AvoidingGuidanceReason")
+            )
+
+
+decodePrenatalMentalHealth : Decoder PrenatalMentalHealth
+decodePrenatalMentalHealth =
+    decodePrenatalMeasurement decodePrenatalMentalHealthValue
+
+
+decodePrenatalMentalHealthValue : Decoder PrenatalMentalHealthValue
+decodePrenatalMentalHealthValue =
+    succeed PrenatalMentalHealthValue
+        |> required "mental_health_signs" (list decodePrenatalMentalHealthQuestionTuple |> map Dict.fromList)
+        |> required "specialist_at_hc" bool
+
+
+decodePrenatalMentalHealthQuestionTuple : Decoder ( PrenatalMentalHealthQuestion, PrenatalMentalHealthQuestionOption )
+decodePrenatalMentalHealthQuestionTuple =
+    string
+        |> andThen
+            (\s ->
+                let
+                    parts =
+                        String.split "-" s
+
+                    failure =
+                        fail <|
+                            s
+                                ++ " is not a recognized decodePrenatalMentalHealthQuestionTuple"
+                in
+                case parts of
+                    [ question, answer ] ->
+                        Maybe.map2
+                            (\decodedQuestion decodedAnswer ->
+                                succeed ( decodedQuestion, decodedAnswer )
+                            )
+                            (prenatalMentalHealthQuestionFromString question)
+                            (prenatalMentalHealthQuestionOptionFromString answer)
+                            |> Maybe.withDefault failure
+
+                    _ ->
+                        failure
+            )
+
+
+decodePrenatalMentalHealthQuestion : Decoder PrenatalMentalHealthQuestion
+decodePrenatalMentalHealthQuestion =
+    string
+        |> andThen
+            (\s ->
+                prenatalMentalHealthQuestionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized PrenatalMentalHealthQuestion"
+                        )
+            )
+
+
+decodePrenatalMentalHealthQuestionOption : Decoder PrenatalMentalHealthQuestionOption
+decodePrenatalMentalHealthQuestionOption =
+    string
+        |> andThen
+            (\s ->
+                prenatalMentalHealthQuestionOptionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized PrenatalMentalHealthQuestionOption"
+                        )
             )
 
 

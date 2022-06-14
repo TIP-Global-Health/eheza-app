@@ -24,7 +24,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewSendToMentalSpecialistForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -194,6 +194,9 @@ viewActivity language currentDate isChw activity assembled db model =
 
         PrenatalTreatmentReview ->
             viewTreatmentReviewContent language currentDate assembled model.treatmentReviewData
+
+        MaternalMentalHealth ->
+            viewMentalHealthContent language currentDate assembled model.mentalHealthData
 
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
@@ -541,23 +544,16 @@ viewHistoryContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
-                            saveButton msg label =
-                                button
-                                    [ classList
-                                        [ ( "ui fluid primary button", True )
-                                        , ( "disabled", tasksCompleted /= totalTasks )
-                                        , ( "active", tasksCompleted == totalTasks )
-                                        ]
-                                    , onClick msg
-                                    ]
-                                    [ text <| translate language label ]
+                            saveButtonActive =
+                                tasksCompleted == totalTasks
 
                             buttons =
                                 case task of
                                     Obstetric ->
                                         case data.obstetricHistoryStep of
                                             ObstetricHistoryFirstStep ->
-                                                [ saveButton
+                                                [ customSaveButton language
+                                                    saveButtonActive
                                                     (SaveOBHistoryStep1
                                                         assembled.participant.person
                                                         assembled.measurements.obstetricHistory
@@ -571,33 +567,33 @@ viewHistoryContent language currentDate assembled data =
                                                     , onClick BackToOBHistoryStep1
                                                     ]
                                                     [ text <| ("< " ++ translate language Translate.Back) ]
-                                                , saveButton
+                                                , saveButton language
+                                                    saveButtonActive
                                                     (SaveOBHistoryStep2
                                                         assembled.participant.person
                                                         assembled.measurements.obstetricHistoryStep2
                                                         nextTask
                                                     )
-                                                    Translate.Save
                                                 ]
 
                                     Medical ->
-                                        [ saveButton
+                                        [ saveButton language
+                                            saveButtonActive
                                             (SaveMedicalHistory
                                                 assembled.participant.person
                                                 assembled.measurements.medicalHistory
                                                 nextTask
                                             )
-                                            Translate.Save
                                         ]
 
                                     Social ->
-                                        [ saveButton
+                                        [ saveButton language
+                                            saveButtonActive
                                             (SaveSocialHistory
                                                 assembled.participant.person
                                                 assembled.measurements.socialHistory
                                                 nextTask
                                             )
-                                            Translate.Save
                                         ]
 
                                     OutsideCare ->
@@ -615,7 +611,7 @@ viewHistoryContent language currentDate assembled data =
                                                         else
                                                             SetOutsideCareStep OutsideCareStepMedications
                                                 in
-                                                [ saveButton actionMsg Translate.Save ]
+                                                [ saveButton language saveButtonActive actionMsg ]
 
                                             OutsideCareStepMedications ->
                                                 [ button
@@ -623,7 +619,7 @@ viewHistoryContent language currentDate assembled data =
                                                     , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
                                                     ]
                                                     [ text <| ("< " ++ translate language Translate.Back) ]
-                                                , saveButton saveAction Translate.Save
+                                                , saveButton language saveButtonActive saveAction
                                                 ]
                         in
                         div
@@ -1514,6 +1510,207 @@ viewHealthEducationContent language currentDate assembled data =
     ]
 
 
+viewMentalHealthContent : Language -> NominalDate -> AssembledData -> MentalHealthData -> List (Html Msg)
+viewMentalHealthContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.mentalHealth
+                |> getMeasurementValueFunc
+                |> mentalHealthFormWithDefault data.form
+
+        ( input, tasksCompleted ) =
+            case form.step of
+                MentalHealthQuestion question ->
+                    let
+                        value =
+                            Maybe.andThen (Dict.get question) form.signs
+                    in
+                    ( [ viewCustomLabel language (Translate.PrenatalMentalHealthQuestion question) "." "label"
+                      , viewCheckBoxSelectInput language
+                            (getMentalHealtOptionsForQuestion question)
+                            []
+                            value
+                            (SetMentalHealthOptionForQuestion question)
+                            (Translate.PrenatalMentalHealthOptionForQuestion question)
+                      ]
+                    , taskCompleted value
+                    )
+
+                MentalHealthSpecialistQuestion ->
+                    ( [ viewQuestionLabel language Translate.PrenatalMentalHealthSpecialistQuestion
+                      , viewBoolInput language
+                            form.specialistAtHC
+                            SetSpecialistAtHC
+                            "specialist"
+                            Nothing
+                      ]
+                    , taskCompleted form.specialistAtHC
+                    )
+
+        totalTasks =
+            1
+
+        getMentalHealtOptionsForQuestion value =
+            if
+                List.member value
+                    [ MentalHealthQuestion1
+                    , MentalHealthQuestion2
+                    , MentalHealthQuestion4
+                    ]
+            then
+                [ MentalHealthQuestionOption0
+                , MentalHealthQuestionOption1
+                , MentalHealthQuestionOption2
+                , MentalHealthQuestionOption3
+                ]
+
+            else
+                [ MentalHealthQuestionOption3
+                , MentalHealthQuestionOption2
+                , MentalHealthQuestionOption1
+                , MentalHealthQuestionOption0
+                ]
+
+        actions =
+            getPrevStep form.step
+                |> Maybe.map
+                    (\prevStep ->
+                        div [ class "actions two" ]
+                            [ button
+                                [ class "ui fluid primary button"
+                                , onClick <| SetMentalHealthStep prevStep
+                                ]
+                                [ text <| ("< " ++ translate language Translate.Back) ]
+                            , saveButton language saveButtonActive saveAction
+                            ]
+                    )
+                |> Maybe.withDefault
+                    (div [ class "actions" ]
+                        [ saveButton language saveButtonActive saveAction ]
+                    )
+
+        saveButtonActive =
+            tasksCompleted == totalTasks
+
+        saveAction =
+            getNextStep form.step
+                |> Maybe.map SetMentalHealthStep
+                |> Maybe.withDefault
+                    (let
+                        suicideRiskDiagnosed =
+                            Maybe.andThen suicideRiskDiagnosedBySigns form.signs
+                                |> Maybe.withDefault False
+
+                        saveMsg =
+                            SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth
+                     in
+                     if suicideRiskDiagnosed then
+                        SetMentalHealthWarningPopupState (Just saveMsg)
+
+                     else
+                        saveMsg
+                    )
+
+        getNextStep currentStep =
+            case currentStep of
+                MentalHealthQuestion question ->
+                    case question of
+                        MentalHealthQuestion1 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion2)
+
+                        MentalHealthQuestion2 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion3)
+
+                        MentalHealthQuestion3 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion4)
+
+                        MentalHealthQuestion4 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion5)
+
+                        MentalHealthQuestion5 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion6)
+
+                        MentalHealthQuestion6 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion7)
+
+                        MentalHealthQuestion7 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion8)
+
+                        MentalHealthQuestion8 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion9)
+
+                        MentalHealthQuestion9 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion10)
+
+                        MentalHealthQuestion10 ->
+                            Just MentalHealthSpecialistQuestion
+
+                MentalHealthSpecialistQuestion ->
+                    Nothing
+
+        getPrevStep currentStep =
+            case currentStep of
+                MentalHealthQuestion question ->
+                    case question of
+                        MentalHealthQuestion1 ->
+                            Nothing
+
+                        MentalHealthQuestion2 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion1)
+
+                        MentalHealthQuestion3 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion2)
+
+                        MentalHealthQuestion4 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion3)
+
+                        MentalHealthQuestion5 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion4)
+
+                        MentalHealthQuestion6 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion5)
+
+                        MentalHealthQuestion7 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion6)
+
+                        MentalHealthQuestion8 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion7)
+
+                        MentalHealthQuestion9 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion8)
+
+                        MentalHealthQuestion10 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion9)
+
+                MentalHealthSpecialistQuestion ->
+                    Just (MentalHealthQuestion MentalHealthQuestion10)
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form mental-health" ]
+                input
+            ]
+        , actions
+        ]
+    , viewModal <|
+        mentalHealthWarningPopup language data.warningPopupState
+    ]
+
+
+mentalHealthWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
+mentalHealthWarningPopup language actionMsg =
+    let
+        state =
+            Just
+                ( translate language Translate.PrenatalMentalHealthWarningPopupMessage
+                , translate language Translate.PrenatalMentalHealthWarningPopupInstructions
+                )
+    in
+    Maybe.andThen (\action -> customWarningPopup language action state)
+        actionMsg
+
+
 viewNextStepsContent : Language -> NominalDate -> Bool -> AssembledData -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate isChw assembled data =
     let
@@ -1648,6 +1845,9 @@ viewNextStepsContent language currentDate isChw assembled data =
                                     || referToHospitalDueToAdverseEvent assembled
                             then
                                 ( viewSendToHospitalForm, Nothing )
+
+                            else if referToMentalHealthSpecialist assembled then
+                                ( viewSendToMentalSpecialistForm, Nothing )
 
                             else
                                 ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
@@ -1848,19 +2048,11 @@ viewSymptomReviewContent language currentDate assembled data =
 
         actions =
             let
-                saveButton msg =
-                    button
-                        [ classList
-                            [ ( "ui fluid primary button", True )
-                            , ( "active", tasksCompleted == totalTasks )
-                            , ( "disabled", tasksCompleted /= totalTasks )
-                            ]
-                        , onClick msg
-                        ]
-                        [ text <| translate language Translate.Save ]
-
                 saveAction =
                     SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
+
+                saveButtonActive =
+                    tasksCompleted == totalTasks
             in
             case data.step of
                 SymptomReviewStepSymptoms ->
@@ -1873,7 +2065,7 @@ viewSymptomReviewContent language currentDate assembled data =
                                 SetSymptomReviewStep SymptomReviewStepQuestions
                     in
                     div [ class "actions" ]
-                        [ saveButton actionMsg ]
+                        [ saveButton language saveButtonActive actionMsg ]
 
                 SymptomReviewStepQuestions ->
                     div [ class "actions two" ]
@@ -1882,7 +2074,7 @@ viewSymptomReviewContent language currentDate assembled data =
                             , onClick <| SetSymptomReviewStep SymptomReviewStepSymptoms
                             ]
                             [ text <| ("< " ++ translate language Translate.Back) ]
-                        , saveButton saveAction
+                        , saveButton language saveButtonActive saveAction
                         ]
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
@@ -4029,3 +4221,21 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
+
+
+saveButton : Language -> Bool -> Msg -> Html Msg
+saveButton language active msg =
+    customSaveButton language active msg Translate.Save
+
+
+customSaveButton : Language -> Bool -> Msg -> Translate.TranslationId -> Html Msg
+customSaveButton language active msg label =
+    button
+        [ classList
+            [ ( "ui fluid primary button", True )
+            , ( "active", active )
+            , ( "disabled", not active )
+            ]
+        , onClick msg
+        ]
+        [ text <| translate language label ]

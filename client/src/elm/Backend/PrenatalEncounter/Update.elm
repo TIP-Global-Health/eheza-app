@@ -368,6 +368,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveMentalHealth personId valueId value ->
+            ( { model | saveMentalHealth = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMentalHealthEndpoint HandleSavedMentalHealth
+            )
+
+        HandleSavedMentalHealth data ->
+            ( { model | saveMentalHealth = data }
+            , Cmd.none
+            )
+
 
 updateEncounter : NominalDate -> PrenatalEncounterId -> Maybe PrenatalEncounter -> (PrenatalEncounter -> PrenatalEncounter) -> Model -> ( Model, Cmd Msg )
 updateEncounter currentDate encounterId maybeEncounter updateFunc model =

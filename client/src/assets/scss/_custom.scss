@@ -516,6 +516,11 @@ h3.ui.header {
   background-size: 100px 100px;
 }
 
+.icon-task-mental-health {
+  background-image: url(#{$img-path}icon-mental-health-white.svg);
+  background-size: 100px 100px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {

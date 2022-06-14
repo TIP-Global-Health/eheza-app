@@ -234,6 +234,9 @@ encodePrenatalHealthEducationSign sign =
             EducationHIVDetectableViralLoad ->
                 "hiv-detectable-viral-load"
 
+            EducationMentalHealth ->
+                "mental-health"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -804,6 +807,31 @@ encodePrenatalLaboratoryTest value =
 
             TestHIVPCR ->
                 "hiv-pcr"
+
+
+encodePrenatalMentalHealth : PrenatalMentalHealth -> List ( String, Value )
+encodePrenatalMentalHealth =
+    encodePrenatalMeasurement encodePrenatalMentalHealthValue
+
+
+encodePrenatalMentalHealthValue : PrenatalMentalHealthValue -> List ( String, Value )
+encodePrenatalMentalHealthValue value =
+    let
+        signs =
+            Dict.toList value.signs
+                |> List.map
+                    (\( question, answer ) ->
+                        prenatalMentalHealthQuestionToString question
+                            ++ "-"
+                            ++ prenatalMentalHealthQuestionOptionToString answer
+                    )
+    in
+    [ ( "mental_health_signs", list string signs )
+    , ( "specialist_at_hc", bool value.specialistAtHC )
+    ]
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_mental_health" )
+           ]
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )

@@ -223,5 +223,17 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisTuberculosis ->
                 "Tuberculosis"
 
+            DiagnosisDepressionPossible ->
+                "depression-possible"
+
+            DiagnosisDepressionHighlyPossible ->
+                "depression-highly-possible"
+
+            DiagnosisDepressionProbable ->
+                "depression-probable"
+
+            DiagnosisSuicideRisk ->
+                "suicide-risk"
+
             NoPrenatalDiagnosis ->
                 "none"
