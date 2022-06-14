@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , PrenatalHIVSign(..)
         , PrenatalMeasurements
+        , PrenatalOutsideCareMedication(..)
         , PrenatalSymptomQuestion(..)
         , PrenatalTestExecutionNote(..)
         , PrenatalTestVariant(..)
@@ -53,7 +54,15 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
+import Pages.Prenatal.Activity.Utils
+    exposing
+        ( outsideCareMedicationOptionsAnemia
+        , outsideCareMedicationOptionsHIV
+        , outsideCareMedicationOptionsHypertension
+        , outsideCareMedicationOptionsMalaria
+        , outsideCareMedicationOptionsSyphilis
+        , respiratoryRateElevated
+        )
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
@@ -66,6 +75,8 @@ import Pages.Prenatal.Utils
     exposing
         ( diagnosedMalaria
         , hypertensionDiagnoses
+        , outsideCareDiagnoses
+        , outsideCareDiagnosesWithPossibleMedication
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForSyphilis
@@ -365,32 +376,31 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
-                        diagnosesIncludingCronical =
-                            List.filter
-                                -- We want to be looking at encounters performed
-                                -- before the encounter we're processing.
-                                (\( date_, _, _ ) ->
-                                    Date.compare date_ date == LT
-                                )
-                                assembled.nursePreviousMeasurementsWithDates
-                                |> resolvePreviousHypertensionDiagnosis
-                                |> Maybe.map
-                                    (\previousHypertensionDiagnosis ->
-                                        EverySet.insert previousHypertensionDiagnosis diagnoses
-                                    )
-                                |> Maybe.withDefault diagnoses
-
                         filteredDiagnoses =
                             generateFilteredDiagnoses date diagnoses assembled medicalDiagnoses
 
-                        diagnosisEntries =
+                        diagnosesEntries =
                             List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
                                 |> List.concat
+
+                        outsideCareDiagnosesEntries =
+                            getMeasurementValueFunc measurements.outsideCare
+                                |> Maybe.andThen
+                                    (\value ->
+                                        Maybe.map
+                                            (EverySet.toList
+                                                >> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
+                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language date value.medications)
+                                                >> List.concat
+                                            )
+                                            value.diagnoses
+                                    )
+                                |> Maybe.withDefault []
 
                         knownAsPositiveEntries =
                             viewKnownPositives language date measurements
                     in
-                    knownAsPositiveEntries ++ diagnosisEntries
+                    knownAsPositiveEntries ++ diagnosesEntries ++ outsideCareDiagnosesEntries
                 )
                 allMeasurementsWithDates
                 |> List.concat
@@ -428,9 +438,26 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                     let
                         filteredDiagnoses =
                             generateFilteredDiagnoses date diagnoses assembled obstetricalDiagnoses
+
+                        diagnosesEntries =
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                                |> List.concat
+
+                        outsideCareDiagnosesEntries =
+                            getMeasurementValueFunc measurements.outsideCare
+                                |> Maybe.andThen
+                                    (\value ->
+                                        Maybe.map
+                                            (EverySet.toList
+                                                >> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
+                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language date value.medications)
+                                                >> List.concat
+                                            )
+                                            value.diagnoses
+                                    )
+                                |> Maybe.withDefault []
                     in
-                    List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
-                        |> List.concat
+                    diagnosesEntries ++ outsideCareDiagnosesEntries
                 )
                 allMeasurementsWithDates
                 |> List.concat
@@ -1639,6 +1666,9 @@ viewTreatmentForDiagnosis :
     -> List (Html any)
 viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
     let
+        diagnosisForProgressReport =
+            diagnosisForProgressReportToString language diagnosis
+
         referredToHospitalMessage =
             referredToHospitalMessageWithComplications ""
 
@@ -1677,7 +1707,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ (String.toLower <| translate language Translate.On)
                         ++ " "
                         ++ formatDDMMYYYY date
-                        |> intoLIs
+                        |> wrapWithLI
 
                 else
                     let
@@ -1706,7 +1736,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ " "
                         ++ formatDDMMYYYY date
                         ++ suffix
-                        |> intoLIs
+                        |> wrapWithLI
 
         hypertensionTreatmentMessage =
             getMeasurementValueFunc measurements.medicationDistribution
@@ -1760,7 +1790,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ++ (String.toLower <| translate language Translate.On)
                                         ++ " "
                                         ++ formatDDMMYYYY date
-                                        |> intoLIs
+                                        |> wrapWithLI
                             )
                         >> Maybe.withDefault
                             (getMeasurementValueFunc measurements.sendToHC
@@ -1812,7 +1842,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ++ (String.toLower <| translate language Translate.On)
                                         ++ " "
                                         ++ formatDDMMYYYY date
-                                        |> intoLIs
+                                        |> wrapWithLI
                            )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
@@ -1841,7 +1871,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ++ formatDDMMYYYY date
                                         ++ " - "
                                         ++ translate language Translate.WrittenProtocolsFollowed
-                                        |> intoLIs
+                                        |> wrapWithLI
 
                                 else
                                     let
@@ -1862,7 +1892,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ++ (String.toLower <| translate language Translate.On)
                                         ++ " "
                                         ++ formatDDMMYYYY date
-                                        |> intoLIs
+                                        |> wrapWithLI
                            )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
@@ -1917,7 +1947,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ++ (String.toLower <| translate language Translate.On)
                                         ++ " "
                                         ++ formatDDMMYYYY date
-                                        |> intoLIs
+                                        |> wrapWithLI
                                 )
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
@@ -1980,7 +2010,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ formatDDMMYYYY date
                 ++ " - "
                 ++ (String.toLower <| translate language Translate.NoTreatmentRecorded)
-                |> intoLIs
+                |> wrapWithLI
 
         noTreatmentAdministeredMessage =
             diagnosisForProgressReport
@@ -1990,7 +2020,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ formatDDMMYYYY date
                 ++ " - "
                 ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
-                |> intoLIs
+                |> wrapWithLI
 
         treatmentMessageForMedication =
             translate language Translate.TreatedWith
@@ -2031,16 +2061,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ (String.toLower <| translate language Translate.On)
                 ++ " "
                 ++ formatDDMMYYYY date
-                |> intoLIs
-
-        diagnosisForProgressReport =
-            translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis
-
-        intoLIs =
-            intoLI >> List.singleton
-
-        intoLI =
-            text >> List.singleton >> li []
+                |> wrapWithLI
     in
     case diagnosis of
         DiagnosisHIV ->
@@ -2397,7 +2418,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ (String.toLower <| translate language Translate.On)
                 ++ " "
                 ++ formatDDMMYYYY date
-                |> intoLIs
+                |> wrapWithLI
 
         DiagnosisDepressionPossible ->
             --@todo
@@ -2417,3 +2438,111 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
 
         NoPrenatalDiagnosis ->
             []
+
+
+viewTreatmentForOutsideCareDiagnosis :
+    Language
+    -> NominalDate
+    -> Maybe (EverySet PrenatalOutsideCareMedication)
+    -> PrenatalDiagnosis
+    -> List (Html any)
+viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
+    let
+        completePhrase maybeTreatedWithPhrase =
+            let
+                treatedWith =
+                    Maybe.map (\phrase -> ", " ++ phrase)
+                        maybeTreatedWithPhrase
+                        |> Maybe.withDefault ""
+            in
+            diagnosisForProgressReportToString language diagnosis
+                ++ " - "
+                ++ (String.toLower <| translate language <| Translate.DiagnosedByOutsideCare)
+                ++ treatedWith
+                ++ ", "
+                ++ (String.toLower <| translate language Translate.AddedToPatientRecordOn)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> wrapWithLI
+    in
+    if List.member diagnosis outsideCareDiagnosesWithPossibleMedication then
+        let
+            treatedWithPhrase treartmentOptions noTreatmentOption =
+                Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\treatment -> List.member treatment treartmentOptions)
+                        >> (\treatments ->
+                                if List.isEmpty treatments || List.member noTreatmentOption treatments then
+                                    noTreatmentAdministeredPhrase
+
+                                else
+                                    " "
+                                        ++ (String.toLower <| translate language Translate.TreatedWith)
+                                        ++ " "
+                                        ++ (List.map
+                                                (Translate.PrenatalOutsideCareMedicationLabel >> translate language)
+                                                treatments
+                                                |> String.join ", "
+                                           )
+                                        ++ " "
+                           )
+                    )
+                    medications
+                    |> Maybe.withDefault noTreatmentAdministeredPhrase
+
+            noTreatmentAdministeredPhrase =
+                " "
+                    ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
+                    ++ " "
+        in
+        case diagnosis of
+            DiagnosisHIV ->
+                treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
+                    |> Just
+                    |> completePhrase
+
+            DiagnosisSyphilis ->
+                treatedWithPhrase outsideCareMedicationOptionsSyphilis NoOutsideCareMedicationForSyphilis
+                    |> Just
+                    |> completePhrase
+
+            DiagnosisMalaria ->
+                treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
+                    |> Just
+                    |> completePhrase
+
+            DiagnosisModerateAnemia ->
+                treatedWithPhrase outsideCareMedicationOptionsAnemia NoOutsideCareMedicationForAnemia
+                    |> Just
+                    |> completePhrase
+
+            DiagnosisGestationalHypertensionImmediate ->
+                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
+                    |> Just
+                    |> completePhrase
+
+            DiagnosisChronicHypertensionImmediate ->
+                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
+                    |> Just
+                    |> completePhrase
+
+            -- Will never get here.
+            _ ->
+                []
+
+    else if List.member diagnosis outsideCareDiagnoses then
+        completePhrase Nothing
+
+    else
+        -- Not an outside care diagnosis.
+        []
+
+
+diagnosisForProgressReportToString : Language -> PrenatalDiagnosis -> String
+diagnosisForProgressReportToString language diagnosis =
+    translate language <| Translate.PrenatalDiagnosisForProgressReport diagnosis
+
+
+wrapWithLI : String -> List (Html any)
+wrapWithLI =
+    text >> List.singleton >> li [] >> List.singleton

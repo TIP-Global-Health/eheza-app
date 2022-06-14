@@ -5177,13 +5177,7 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                         (\diagnoses ->
                                             if
                                                 List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                                    [ DiagnosisHIV
-                                                    , DiagnosisSyphilis
-                                                    , DiagnosisMalaria
-                                                    , DiagnosisModerateAnemia
-                                                    , DiagnosisGestationalHypertensionImmediate
-                                                    , DiagnosisChronicHypertensionImmediate
-                                                    ]
+                                                    outsideCareDiagnosesWithPossibleMedication
                                             then
                                                 ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenMedicine
                                                   , viewBoolInput
@@ -5215,25 +5209,8 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                             in
                             ( [ viewLabel language Translate.SelectAllDiagnoses
                               , viewCheckBoxMultipleSelectInput language
-                                    [ DiagnosisHIV
-                                    , DiagnosisSyphilis
-                                    , DiagnosisNeurosyphilis
-                                    , DiagnosisMalaria
-                                    , DiagnosisHepatitisB
-                                    , DiagnosisModerateAnemia
-                                    , DiagnosisSevereAnemia
-                                    , DiagnosisPelvicPainIntense
-                                    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
-                                    ]
-                                    [ DiagnosisChronicHypertensionImmediate
-                                    , DiagnosisGestationalHypertensionImmediate
-                                    , DiagnosisModeratePreeclampsiaImmediate
-                                    , DiagnosisDeepVeinThrombosis
-                                    , DiagnosisPyelonephritis
-                                    , DiagnosisHeartburnPersistent
-                                    , DiagnosisPlacentaPrevia
-                                    , DiagnosisHyperemesisGravidum
-                                    ]
+                                    outsideCareDiagnosesLeftColumn
+                                    outsideCareDiagnosesRightColumn
                                     (form.diagnoses |> Maybe.withDefault [])
                                     Nothing
                                     SetOutsideCareDiagnosis

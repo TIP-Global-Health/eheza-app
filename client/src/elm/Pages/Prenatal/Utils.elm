@@ -2404,6 +2404,49 @@ diagnosedSyphilis =
         ]
 
 
+outsideCareDiagnoses : List PrenatalDiagnosis
+outsideCareDiagnoses =
+    outsideCareDiagnosesLeftColumn ++ outsideCareDiagnosesRightColumn
+
+
+outsideCareDiagnosesLeftColumn : List PrenatalDiagnosis
+outsideCareDiagnosesLeftColumn =
+    [ DiagnosisHIV
+    , DiagnosisSyphilis
+    , DiagnosisNeurosyphilis
+    , DiagnosisMalaria
+    , DiagnosisHepatitisB
+    , DiagnosisModerateAnemia
+    , DiagnosisSevereAnemia
+    , DiagnosisPelvicPainIntense
+    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+    ]
+
+
+outsideCareDiagnosesRightColumn : List PrenatalDiagnosis
+outsideCareDiagnosesRightColumn =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisDeepVeinThrombosis
+    , DiagnosisPyelonephritis
+    , DiagnosisHeartburnPersistent
+    , DiagnosisPlacentaPrevia
+    , DiagnosisHyperemesisGravidum
+    ]
+
+
+outsideCareDiagnosesWithPossibleMedication : List PrenatalDiagnosis
+outsideCareDiagnosesWithPossibleMedication =
+    [ DiagnosisHIV
+    , DiagnosisSyphilis
+    , DiagnosisMalaria
+    , DiagnosisModerateAnemia
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisChronicHypertensionImmediate
+    ]
+
+
 prenatalSendToHCFormWithDefault : SendToHCForm -> Maybe PrenatalSendToHCValue -> SendToHCForm
 prenatalSendToHCFormWithDefault form saved =
     saved

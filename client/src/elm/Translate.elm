@@ -320,6 +320,7 @@ type TranslationId
     | AcuteIllnessActivityTitle AcuteIllnessActivity
     | AddChild
     | AddContact
+    | AddedToPatientRecordOn
     | AddFamilyMember
     | AddFamilyMemberFor String
     | AddNewParticipant
@@ -521,6 +522,7 @@ type TranslationId
     | Diabetes
     | DiagnosedAtAnotherFacilityPrefix
     | DiagnosedAtAnotherFacilitySuffix
+    | DiagnosedByOutsideCare
     | Diagnosis
     | DiagnosisDate
     | DifferenceBetweenDueAndDeliveryDates
@@ -1825,6 +1827,11 @@ translationSet trans =
         AddContact ->
             { english = "Add Contact"
             , kinyarwanda = Just "Ongeraho uwo bahuye"
+            }
+
+        AddedToPatientRecordOn ->
+            { english = "Added to patient record on"
+            , kinyarwanda = Nothing
             }
 
         AddFamilyMember ->
@@ -3588,6 +3595,11 @@ translationSet trans =
 
         DiagnosedAtAnotherFacilitySuffix ->
             { english = "at another facility and were given medication. Which medication was given?"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosedByOutsideCare ->
+            { english = "Diagnosed by outside care"
             , kinyarwanda = Nothing
             }
 
