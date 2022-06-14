@@ -46,6 +46,7 @@ type PrenatalDiagnosis
     | DiagnosisHeartburnPersistent
     | DiagnosisDeepVeinThrombosis
     | DiagnosisPelvicPainIntense
+    | DiagnosisPelvicPainContinued
     | DiagnosisUrinaryTractInfection
     | DiagnosisUrinaryTractInfectionContinued
     | DiagnosisPyelonephritis

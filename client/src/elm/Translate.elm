@@ -8055,6 +8055,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPelvicPainContinued ->
+                    { english = "Persistent Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisUrinaryTractInfection ->
                     { english = "Urinary Tract Infection"
                     , kinyarwanda = Nothing
@@ -8352,6 +8357,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPelvicPainContinued ->
+                    { english = "Persistent pelvic pain in pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisUrinaryTractInfection ->
                     { english = "Lower urinary tract infection"
                     , kinyarwanda = Nothing
@@ -8561,6 +8571,11 @@ translationSet trans =
 
                 DiagnosisPelvicPainIntense ->
                     { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPelvicPainContinued ->
+                    { english = "Persistent Pelvic Pain"
                     , kinyarwanda = Nothing
                     }
 

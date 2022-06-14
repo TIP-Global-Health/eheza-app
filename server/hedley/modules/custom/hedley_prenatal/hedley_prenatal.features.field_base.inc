@@ -799,6 +799,7 @@ function hedley_prenatal_field_default_field_bases() {
         'heartburn-persistent' => 'Persistent Heartburn',
         'dvt' => 'Deep Vein Thrombosis',
         'pelvic-pain-intense' => 'Intense Pelvic Pain',
+        'pelvic-pain-continued' => 'Intense Pelvic Continued',
         'urinary-tract-infection' => 'Urinary Tract Infection',
         'urinary-tract-infection-continued' => 'Urinary Tract Infection Continued',
         'pyelonephritis' => 'Pyelonephritis',

@@ -79,6 +79,7 @@ obstetricalDiagnoses =
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
+    , DiagnosisPelvicPainContinued
     ]
 
 

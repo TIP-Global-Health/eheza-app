@@ -2359,6 +2359,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisPelvicPainIntense ->
             referredToHospitalMessage
 
+        DiagnosisPelvicPainContinued ->
+            referredToHospitalMessage
+
         DiagnosisUrinaryTractInfection ->
             urinaryTractTreatmentMessage
 

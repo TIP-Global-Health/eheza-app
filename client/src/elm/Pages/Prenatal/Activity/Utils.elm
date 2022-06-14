@@ -655,6 +655,7 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisHeartburnPersistent
             , DiagnosisDeepVeinThrombosis
             , DiagnosisPelvicPainIntense
+            , DiagnosisPelvicPainContinued
             , DiagnosisPyelonephritis
             , DiagnosisMalariaMedicatedContinued
             , DiagnosisMalariaWithAnemiaMedicatedContinued
@@ -793,23 +794,15 @@ provideMentalHealthEducation assembled =
 
 hospitalizeDueToPelvicPain : AssembledData -> Bool
 hospitalizeDueToPelvicPain assembled =
-    let
-        -- PelvicPain reported at current encounter, and
-        -- any of follow up questions was answered Yes.
-        byCurrentEncounter =
-            getMeasurementValueFunc assembled.measurements.symptomReview
-                |> Maybe.map
-                    (\value ->
-                        EverySet.member PelvicPain value.symptoms
-                            && EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions
-                    )
-                |> Maybe.withDefault False
-
-        -- PelvicPain was reported at any of previous encounters.
-        byPreviousEncounters =
-            symptomRecordedPreviously assembled PelvicPain
-    in
-    byCurrentEncounter || byPreviousEncounters
+    -- PelvicPain reported at current encounter, and
+    -- any of follow up questions was answered Yes.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member PelvicPain value.symptoms
+                    && EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions
+            )
+        |> Maybe.withDefault False
 
 
 symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
@@ -1562,6 +1555,10 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
         DiagnosisPelvicPainIntense ->
             hospitalizeDueToPelvicPain assembled
 
+        DiagnosisPelvicPainContinued ->
+            -- Pelvic pain was reported previously.
+            symptomRecordedPreviously assembled PelvicPain
+
         DiagnosisUrinaryTractInfection ->
             urinaryTractInfectionDiagnosed
                 && (not <| diagnosedPreviously DiagnosisUrinaryTractInfection assembled)
@@ -1854,6 +1851,7 @@ symptomsDiagnoses =
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
+    , DiagnosisPelvicPainContinued
     , DiagnosisUrinaryTractInfection
     , DiagnosisUrinaryTractInfectionContinued
     , DiagnosisPyelonephritis

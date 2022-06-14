@@ -199,6 +199,9 @@ decodePrenatalDiagnosis =
                     "pelvic-pain-intense" ->
                         succeed DiagnosisPelvicPainIntense
 
+                    "pelvic-pain-continued" ->
+                        succeed DiagnosisPelvicPainContinued
+
                     "urinary-tract-infection" ->
                         succeed DiagnosisUrinaryTractInfection
 
