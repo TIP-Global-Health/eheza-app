@@ -4579,14 +4579,14 @@ expectLaboratoryTask currentDate assembled task =
         case task of
             TaskHIVTest ->
                 (not <| isKnownAsPositive .hivTest)
-                    && isRepeatingTestOnWeek 38 TaskHIVTest
+                    && isInitialTest TaskHIVTest
 
             TaskSyphilisTest ->
                 isRepeatingTestOnWeek 38 TaskSyphilisTest
 
             TaskHepatitisBTest ->
                 (not <| isKnownAsPositive .hepatitisBTest)
-                    && isRepeatingTestOnWeek 34 TaskHepatitisBTest
+                    && isInitialTest TaskHepatitisBTest
 
             TaskMalariaTest ->
                 True
