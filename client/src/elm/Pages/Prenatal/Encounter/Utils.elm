@@ -33,6 +33,7 @@ getAllActivities assembled =
                 , Medication
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , DangerSigns
+                , PrenatalImmunisation
                 , Laboratory
                 , MaternalMentalHealth
                 , PrenatalPhoto
@@ -47,6 +48,7 @@ getAllActivities assembled =
                 , FamilyPlanning
                 , PrenatalTreatmentReview
                 , Backend.PrenatalActivity.Model.MalariaPrevention
+                , PrenatalImmunisation
                 , Laboratory
                 , MaternalMentalHealth
                 , PrenatalPhoto

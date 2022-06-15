@@ -198,6 +198,10 @@ viewActivity language currentDate isChw activity assembled db model =
         MaternalMentalHealth ->
             viewMentalHealthContent language currentDate assembled model.mentalHealthData
 
+        PrenatalImmunisation ->
+            -- @todo
+            []
+
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
 

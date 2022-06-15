@@ -132,6 +132,10 @@ expectActivity currentDate assembled activity =
                         assembled.globalLmpDate
                         |> Maybe.withDefault False
 
+                PrenatalImmunisation ->
+                    -- @todo
+                    True
+
                 -- Unique Chw activities.
                 _ ->
                     False
@@ -283,6 +287,10 @@ activityCompleted currentDate assembled activity =
 
         MaternalMentalHealth ->
             isJust assembled.measurements.mentalHealth
+
+        PrenatalImmunisation ->
+            -- @todo
+            False
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask

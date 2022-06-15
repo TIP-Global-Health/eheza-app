@@ -7816,6 +7816,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalImmunisation ->
+                    { english = "Immunizations"
+                    , kinyarwanda = Just "Ikingira"
+                    }
+
         PrenatalRecurrentActivitiesTitle activity ->
             case activity of
                 Backend.PrenatalActivity.Model.LabResults ->
